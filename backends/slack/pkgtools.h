@@ -4,27 +4,7 @@
 #include <glib-object.h>
 #include <pk-backend.h>
 
-G_BEGIN_DECLS
-
-#define SLACK_TYPE_PKGTOOLS slack_pkgtools_get_type()
-G_DECLARE_INTERFACE(SlackPkgtools, slack_pkgtools, SLACK, PKGTOOLS, GObject)
-
-struct _SlackPkgtoolsInterface
-{
-	GTypeInterface parent;
-
-	GSList *(*collect_cache_info) (SlackPkgtools *pkgtools, const gchar *tmpl);
-	void (*generate_cache) (SlackPkgtools *pkgtools,
-	                        PkBackendJob *job,
-	                        const gchar *tmpl);
-};
-
-GSList *slack_pkgtools_collect_cache_info(SlackPkgtools *pkgtools,
-                                          const gchar *tmpl);
-void slack_pkgtools_generate_cache(SlackPkgtools *pkgtools,
-                                   PkBackendJob *job,
-                                   const gchar *tmpl);
-class _SlackPkgtools
+class SlackPkgtools
 {
 public:
 	const gchar *get_name () noexcept;
@@ -32,11 +12,21 @@ public:
 	guint8 get_order () noexcept;
 	gboolean is_blacklisted (const gchar *pkg) noexcept;
 
+	virtual ~SlackPkgtools () noexcept;
+
 	gboolean download (PkBackendJob *job,
 			gchar *dest_dir_name, gchar *pkg_name) noexcept;
 	void install (PkBackendJob *job, gchar *pkg_name) noexcept;
-};
 
-G_END_DECLS
+	virtual GSList *collect_cache_info (const gchar *tmpl) noexcept = 0;
+	virtual void generate_cache (PkBackendJob *job,
+			const gchar *tmpl) noexcept = 0;
+
+protected:
+	gchar *name = NULL;
+	gchar *mirror = NULL;
+	guint8 order;
+	GRegex *blacklist = NULL;
+};
 
 #endif /* __SLACK_PKGTOOLS_H */

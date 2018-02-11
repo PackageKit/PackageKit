@@ -1,30 +1,28 @@
 #ifndef __SLACK_SLACKPKG_H
 #define __SLACK_SLACKPKG_H
 
-#include <glib-object.h>
 #include "pkgtools.h"
-
-G_BEGIN_DECLS
-
-#define SLACK_TYPE_SLACKPKG slack_slackpkg_get_type()
-G_DECLARE_FINAL_TYPE(SlackSlackpkg, slack_slackpkg, SLACK, SLACKPKG, GObject)
 
 /* Public static members */
 extern GHashTable *slack_slackpkg_cat_map;
 
 #define SLACK_BINARY_MAX_BUF_SIZE 8192
 
-SlackSlackpkg *slack_slackpkg_new(const gchar *name,
-                                  const gchar *mirror,
-                                  guint8 order,
-                                  const gchar *blacklist,
-                                  gchar **priority);
-
-class _SlackSlackpkg final : public SlackPkgtools
+class SlackSlackpkg final : public SlackPkgtools
 {
-	GObject parent;
-};
+public:
+	SlackSlackpkg (const gchar *name, const gchar *mirror,
+			guint8 order, const gchar *blacklist, gchar **priority) noexcept;
+	~SlackSlackpkg () noexcept;
 
-G_END_DECLS
+	GSList *collect_cache_info (const gchar *tmpl) noexcept;
+	void generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept;
+
+private:
+	gchar **priority = NULL;
+
+	void manifest (PkBackendJob *job,
+			const gchar *tmpl, gchar *filename) noexcept;
+};
 
 #endif /* __SLACK_SLACKPKG_H */

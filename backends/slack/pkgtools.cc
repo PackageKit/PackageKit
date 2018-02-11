@@ -3,36 +3,6 @@
 #include "pkgtools.h"
 #include "slack-utils.h"
 
-G_DEFINE_INTERFACE(SlackPkgtools, slack_pkgtools, G_TYPE_OBJECT)
-
-static void
-slack_pkgtools_default_init(SlackPkgtoolsInterface *iface)
-{
-	GParamSpec *param;
-	param = g_param_spec_string("name",
-	                            "Name",
-	                            "Repository name",
-	                            NULL,
-	                            static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-	g_object_interface_install_property(iface, param);
-
-	param = g_param_spec_string("mirror",
-	                            "Mirror",
-	                            "Repository mirror",
-	                            NULL,
-	                            static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-	g_object_interface_install_property(iface, param);
-
-	param = g_param_spec_uint("order",
-	                          "Order",
-	                          "Repository order",
-	                          0,
-	                          G_MAXUINT8,
-	                          0,
-	                          static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-	g_object_interface_install_property(iface, param);
-}
-
 /**
  * SlackPkgtools::download:
  * @job: A #PkBackendJob.
@@ -141,55 +111,8 @@ SlackPkgtools::install (PkBackendJob *job, gchar *pkg_name) noexcept
 	sqlite3_finalize(statement);
 }
 
-/**
- * slack_pkgtools_collect_cache_info:
- * @pkgtools: This class instance.
- * @tmpl: temporary directory for downloading the files.
- *
- * Download files needed to get the information like the list of packages
- * in available repositories, updates, package descriptions and so on.
- *
- * Returns: List of files needed for building the cache.
- **/
-GSList *
-slack_pkgtools_collect_cache_info(SlackPkgtools *pkgtools, const gchar *tmpl)
+SlackPkgtools::~SlackPkgtools () noexcept
 {
-	SlackPkgtoolsInterface *iface;
-
-	g_return_val_if_fail(SLACK_IS_PKGTOOLS(pkgtools), NULL);
-	g_return_val_if_fail(tmpl != NULL, NULL);
-
-	iface = SLACK_PKGTOOLS_GET_IFACE(pkgtools);
-	g_return_val_if_fail(iface->collect_cache_info != NULL, NULL);
-
-	return iface->collect_cache_info(pkgtools, tmpl);
-}
-
-/**
- * slack_pkgtools_generate_cache:
- * @pkgtools: This class instance.
- * @tmpl: temporary directory for downloading the files.
- *
- * Download files needed to get the information like the list of packages
- * in available repositories, updates, package descriptions and so on.
- *
- * Returns: List of files needed for building the cache.
- **/
-void
-slack_pkgtools_generate_cache(SlackPkgtools *pkgtools,
-                              PkBackendJob *job,
-                              const gchar *tmpl)
-{
-	SlackPkgtoolsInterface *iface;
-
-	g_return_if_fail(SLACK_IS_PKGTOOLS(pkgtools));
-	g_return_if_fail(job != NULL);
-	g_return_if_fail(tmpl != NULL);
-
-	iface = SLACK_PKGTOOLS_GET_IFACE(pkgtools);
-	g_return_if_fail(iface->generate_cache != NULL);
-
-	iface->generate_cache(pkgtools, job, tmpl);
 }
 
 /**
@@ -202,12 +125,7 @@ slack_pkgtools_generate_cache(SlackPkgtools *pkgtools,
 const gchar *
 SlackPkgtools::get_name () noexcept
 {
-	GValue name = G_VALUE_INIT;
-
-	g_value_init (&name, G_TYPE_STRING);
-	g_object_get_property (G_OBJECT (this), "name", &name);
-
-	return g_value_get_string (&name);
+	return this->name;
 }
 
 /**
@@ -220,12 +138,7 @@ SlackPkgtools::get_name () noexcept
 const gchar *
 SlackPkgtools::get_mirror () noexcept
 {
-	GValue mirror = G_VALUE_INIT;
-
-	g_value_init (&mirror, G_TYPE_STRING);
-	g_object_get_property (G_OBJECT (this), "mirror", &mirror);
-
-	return g_value_get_string (&mirror);
+	return this->mirror;
 }
 
 /**
@@ -238,12 +151,7 @@ SlackPkgtools::get_mirror () noexcept
 guint8
 SlackPkgtools::get_order () noexcept
 {
-	GValue order = G_VALUE_INIT;
-
-	g_value_init (&order, G_TYPE_UINT);
-	g_object_get_property (G_OBJECT (this), "order", &order);
-
-	return g_value_get_uint (&order);
+	return this->order;
 }
 
 /**
@@ -257,12 +165,7 @@ SlackPkgtools::get_order () noexcept
 gboolean
 SlackPkgtools::is_blacklisted (const gchar *pkg) noexcept
 {
-	GValue blacklist = G_VALUE_INIT;
-
-	g_value_init (&blacklist, G_TYPE_REGEX);
-	g_object_get_property  (G_OBJECT (this), "blacklist", &blacklist);
-
-	auto regex = static_cast<GRegex *> (g_value_get_boxed (&blacklist));
-	return regex
-		&& g_regex_match (regex, pkg, static_cast<GRegexMatchFlags> (0), NULL);
+	return this->blacklist
+		&& g_regex_match (this->blacklist,
+				pkg, static_cast<GRegexMatchFlags> (0), NULL);
 }

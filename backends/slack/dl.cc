@@ -3,53 +3,32 @@
 #include "dl.h"
 #include "slack-utils.h"
 
-typedef struct
-{
-	gchar *name;
-	gchar *mirror;
-	guint8 order;
-	GRegex *blacklist;
-	gchar *index_file;
-} SlackDlPrivate;
-
-enum
-{
-	PROP_BLACKLIST = 1,
-	N_PROPERTIES,
-	PROP_NAME,
-	PROP_MIRROR,
-	PROP_ORDER
-};
-
-static GParamSpec *properties[N_PROPERTIES] = { NULL, };
-
-static void
-slack_dl_pkgtools_interface_init(SlackPkgtoolsInterface *iface);
-
-G_DEFINE_TYPE_WITH_CODE(SlackDl, slack_dl, G_TYPE_OBJECT,
-                        G_IMPLEMENT_INTERFACE(SLACK_TYPE_PKGTOOLS,
-                                              slack_dl_pkgtools_interface_init);
-						G_ADD_PRIVATE(SlackDl))
-
-static GSList *
-slack_dl_collect_cache_info(SlackPkgtools *pkgtools, const gchar *tmpl)
+/**
+ * SlackDl::collect_cache_info:
+ * @tmpl: temporary directory for downloading the files.
+ *
+ * Download files needed to get the information like the list of packages
+ * in available repositories, updates, package descriptions and so on.
+ *
+ * Returns: List of files needed for building the cache.
+ **/
+GSList *
+SlackDl::collect_cache_info (const gchar *tmpl) noexcept
 {
 	CURL *curl = NULL;
-	SlackDl *dl = SLACK_DL(pkgtools);
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
 	GSList *file_list = NULL;
 	GFile *tmp_dir, *repo_tmp_dir;
 
 	/* Create the temporary directory for the repository */
 	tmp_dir = g_file_new_for_path(tmpl);
-	repo_tmp_dir = g_file_get_child(tmp_dir, dl->get_name ());
+	repo_tmp_dir = g_file_get_child(tmp_dir, this->get_name ());
 	g_file_make_directory(repo_tmp_dir, NULL, NULL);
 
 	/* There is no ChangeLog yet to check if there are updates or not. Just mark the index file for download */
 	auto source_dest = static_cast<gchar **> (g_malloc_n(3, sizeof(gchar *)));
-	source_dest[0] = g_strdup(priv->index_file);
+	source_dest[0] = g_strdup(this->index_file);
 	source_dest[1] = g_build_filename(tmpl,
-	                                  dl->get_name (),
+	                                  this->get_name (),
 	                                  "IndexFile",
 	                                  NULL);
 	source_dest[2] = NULL;
@@ -72,12 +51,19 @@ slack_dl_collect_cache_info(SlackPkgtools *pkgtools, const gchar *tmpl)
 	return file_list;
 }
 
-static void
-slack_dl_generate_cache(SlackPkgtools *pkgtools,
-                        PkBackendJob *job,
-                        const gchar *tmpl)
+/**
+ * SlackDl::generate_cache:
+ * @job: A #PkBackendJob.
+ * @tmpl: temporary directory for downloading the files.
+ *
+ * Download files needed to get the information like the list of packages
+ * in available repositories, updates, package descriptions and so on.
+ *
+ * Returns: List of files needed for building the cache.
+ **/
+void
+SlackDl::generate_cache(PkBackendJob *job, const gchar *tmpl) noexcept
 {
-	SlackDl *dl = SLACK_DL(pkgtools);
 	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
 	gboolean skip = FALSE;
 	GFile *list_file;
@@ -88,7 +74,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 
 	/* Check if the temporary directory for this repository exists. If so the file metadata have to be generated */
 	list_filename = g_build_filename(tmpl,
-	                                 dl->get_name (),
+	                                 this->get_name (),
 	                                 "IndexFile",
 	                                 NULL);
 	list_file = g_file_new_for_path(list_filename);
@@ -104,7 +90,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 						   -1,
 						   &stmt,
 						   NULL) == SQLITE_OK) {
-		sqlite3_bind_text(stmt, 1, dl->get_name (), -1, SQLITE_TRANSIENT);
+		sqlite3_bind_text(stmt, 1, this->get_name (), -1, SQLITE_TRANSIENT);
 		sqlite3_step(stmt);
 		sqlite3_finalize(stmt);
 	}
@@ -116,8 +102,8 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 	{
 		goto out;
 	}
-	sqlite3_bind_int(stmt, 1, dl->get_order ());
-	sqlite3_bind_text(stmt, 2, dl->get_name (), -1, SQLITE_TRANSIENT);
+	sqlite3_bind_int(stmt, 1, this->get_order ());
+	sqlite3_bind_text(stmt, 2, this->get_name (), -1, SQLITE_TRANSIENT);
 	sqlite3_step(stmt);
 	if (sqlite3_finalize(stmt) != SQLITE_OK)
 	{
@@ -142,7 +128,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 	{
 		line_tokens = g_strsplit(line, ":", 0);
 		if ((g_strv_length(line_tokens) > 6)
-		 && !dl->is_blacklisted (line_tokens[0]))
+		 && !this->is_blacklisted (line_tokens[0]))
 		{
 			pkg_tokens = slack_split_package_name(line_tokens[0]);
 
@@ -185,7 +171,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 				sqlite3_bind_text(stmt, 6, line_tokens[2], -1, SQLITE_TRANSIENT);
 				sqlite3_bind_int(stmt, 7, atoi(line_tokens[5]));
 				sqlite3_bind_int(stmt, 8, atoi(line_tokens[5]));
-				sqlite3_bind_int(stmt, 10, dl->get_order ());
+				sqlite3_bind_int(stmt, 10, this->get_order ());
 
 				sqlite3_step(stmt);
 				sqlite3_clear_bindings(stmt);
@@ -210,7 +196,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 		{
 			line_tokens = g_strsplit(line, ":", 0);
 			if ((g_strv_length(line_tokens) > 6)
-			 && !dl->is_blacklisted (line_tokens[0]))
+			 && !this->is_blacklisted (line_tokens[0]))
 			{
 				pkg_tokens = slack_split_package_name(line_tokens[0]);
 
@@ -218,7 +204,7 @@ slack_dl_generate_cache(SlackPkgtools *pkgtools,
 				if (pkg_tokens[3]) /* Save this package as a part of the collection */
 				{
 					sqlite3_bind_text(stmt, 1, collection_name, -1, SQLITE_TRANSIENT);
-					sqlite3_bind_int(stmt, 2, dl->get_order ());
+					sqlite3_bind_int(stmt, 2, this->get_order ());
 					sqlite3_bind_text(stmt, 3, pkg_tokens[0], -1, SQLITE_TRANSIENT);
 					sqlite3_step(stmt);
 					sqlite3_clear_bindings(stmt);
@@ -248,141 +234,20 @@ out:
 	g_free(list_filename);
 }
 
-static void
-slack_dl_pkgtools_interface_init(SlackPkgtoolsInterface *iface)
+SlackDl::~SlackDl () noexcept
 {
-	iface->collect_cache_info = slack_dl_collect_cache_info;
-	iface->generate_cache = slack_dl_generate_cache;
-}
-
-static void
-slack_dl_init(SlackDl *dl)
-{
-}
-
-static void
-slack_dl_dispose(GObject *object)
-{
-	SlackDl *dl = SLACK_DL(object);
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
-
-	if (priv->blacklist)
+	if (this->blacklist)
 	{
-		g_regex_unref(priv->blacklist);
+		g_regex_unref (this->blacklist);
 	}
 
-	G_OBJECT_CLASS(slack_dl_parent_class)->dispose(object);
-}
-
-static void
-slack_dl_finalize(GObject *object)
-{
-	SlackDl *dl = SLACK_DL(object);
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
-
-	g_free(priv->name);
-	g_free(priv->mirror);
-	g_free(priv->index_file);
-
-	G_OBJECT_CLASS(slack_dl_parent_class)->finalize(object);
-}
-
-static void
-slack_dl_set_property(GObject *object,
-                      guint prop_id,
-                      const GValue *value,
-                      GParamSpec *pspec)
-{
-	SlackDl *dl = SLACK_DL(object);
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
-
-	switch (prop_id)
-	{
-		case PROP_NAME:
-			g_free(priv->name);
-			priv->name = g_value_dup_string(value);
-			break;
-
-		case PROP_MIRROR:
-			g_free(priv->mirror);
-			priv->mirror = g_value_dup_string(value);
-			break;
-
-		case PROP_ORDER:
-			priv->order = g_value_get_uint(value);
-			break;
-
-		case PROP_BLACKLIST:
-			if (priv->blacklist)
-			{
-				g_regex_unref(priv->blacklist);
-			}
-			priv->blacklist = static_cast<GRegex *> (g_value_get_boxed(value));
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
-slack_dl_get_property(GObject *object,
-                            guint prop_id,
-                            GValue *value,
-                            GParamSpec *pspec)
-{
-	SlackDl *dl = SLACK_DL(object);
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
-
-	switch (prop_id)
-	{
-		case PROP_NAME:
-			g_value_set_string(value, priv->name);
-			break;
-
-		case PROP_MIRROR:
-			g_value_set_string(value, priv->mirror);
-			break;
-
-		case PROP_ORDER:
-			g_value_set_uint(value, priv->order);
-			break;
-
-		case PROP_BLACKLIST:
-			g_value_set_boxed(value, priv->blacklist);
-			break;
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
-slack_dl_class_init(SlackDlClass *klass)
-{
-	GObjectClass *object_class = G_OBJECT_CLASS(klass);
-
-	object_class->dispose = slack_dl_dispose;
-	object_class->finalize = slack_dl_finalize;
-
-	object_class->set_property = slack_dl_set_property;
-	object_class->get_property = slack_dl_get_property;
-
-	g_object_class_override_property(object_class, PROP_NAME, "name");
-	g_object_class_override_property(object_class, PROP_MIRROR, "mirror");
-	g_object_class_override_property(object_class, PROP_ORDER, "order");
-
-	properties[PROP_BLACKLIST] = g_param_spec_boxed ("blacklist",
-			"Blacklist", "Blacklist", G_TYPE_REGEX,
-			static_cast<GParamFlags> (G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE));
-
-	g_object_class_install_properties(object_class, N_PROPERTIES, properties);
+	g_free (this->name);
+	g_free (this->mirror);
+	g_free (this->index_file);
 }
 
 /**
- * slack_dl_new:
+ * SlackDl::SlackDl:
  * @name: Repository name.
  * @mirror: Repository mirror.
  * @order: Repository order.
@@ -393,37 +258,27 @@ slack_dl_class_init(SlackDlClass *klass)
  *
  * Return value: New #SlackDl.
  **/
-SlackDl *
-slack_dl_new(const gchar *name,
-             const gchar *mirror,
-             guint8 order,
-             const gchar *blacklist,
-             gchar *index_file)
+SlackDl::SlackDl (const gchar *name, const gchar *mirror,
+		guint8 order, const gchar *blacklist, gchar *index_file) noexcept
 {
 	GRegex *regex;
 
 	if (blacklist)
 	{
-		regex = g_regex_new(blacklist, G_REGEX_OPTIMIZE, static_cast<GRegexMatchFlags> (0), NULL);
+		regex = static_cast<GRegex *> (g_regex_new (blacklist,
+					G_REGEX_OPTIMIZE, static_cast<GRegexMatchFlags> (0), NULL));
 	}
 	else
 	{
 		regex = NULL;
 	}
 
-	auto dl = static_cast<SlackDl *> (g_object_new (SLACK_TYPE_DL,
-				"name", name,
-				"mirror", mirror,
-				"order", order,
-				"blacklist", regex,
-				NULL));
-	auto priv = static_cast<SlackDlPrivate *> (slack_dl_get_instance_private(dl));
-	priv->index_file = index_file;
+	this->name = g_strdup (name);
+	this->mirror = g_strdup (mirror);
 
-	if (regex)
-	{
-		g_regex_unref(regex);
-	}
+	this->order = order;
 
-	return dl;
+	this->blacklist = regex;
+
+	this->index_file = index_file;
 }
