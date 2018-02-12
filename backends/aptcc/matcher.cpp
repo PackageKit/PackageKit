@@ -55,14 +55,13 @@ bool string_matches(const char *s, regex_t &pattern_nogroup)
 
 bool Matcher::matches(const string &s)
 {
-    int matchesCount = 0;
     for (regex_t &rx : m_matches) {
         if (string_matches(s.c_str(), rx)) {
-            matchesCount++;
+            return true;
         }
     }
 
-    return m_matches.size() == matchesCount;
+    return false;
 }
 
 bool Matcher::parse_pattern(string::const_iterator &start,
@@ -189,6 +188,9 @@ string Matcher::parse_substr(string::const_iterator &start,
                 done = true;
             }
         } else {
+            if (*start == '|') {
+                start += 1;
+            }
             done = true;
         }
     } while(!done);
