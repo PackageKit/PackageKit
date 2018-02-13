@@ -7,10 +7,10 @@
 class SlackPkgtools
 {
 public:
-	const gchar *get_name () noexcept;
-	const gchar *get_mirror () noexcept;
-	guint8 get_order () noexcept;
-	gboolean is_blacklisted (const gchar *pkg) noexcept;
+	const gchar *get_name () const noexcept;
+	const gchar *get_mirror () const noexcept;
+	guint8 get_order () const noexcept;
+	gboolean is_blacklisted (const gchar *pkg) const noexcept;
 
 	virtual ~SlackPkgtools () noexcept;
 

@@ -1,7 +1,7 @@
 #include <sqlite3.h>
 #include <stdlib.h>
 #include "dl.h"
-#include "slack-utils.h"
+#include "utils.h"
 
 /**
  * SlackDl::collect_cache_info:

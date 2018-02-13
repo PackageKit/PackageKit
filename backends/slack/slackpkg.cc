@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "slackpkg.h"
-#include "slack-utils.h"
+#include "utils.h"
 
 GHashTable *slack_slackpkg_cat_map = NULL;
 

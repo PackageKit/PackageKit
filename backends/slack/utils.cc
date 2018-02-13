@@ -1,6 +1,7 @@
 #include <sqlite3.h>
 #include <string.h>
-#include "slack-utils.h"
+#include "utils.h"
+#include "pkgtools.h"
 
 /**
  * slack_get_file:
@@ -68,14 +69,14 @@ slack_get_file(CURL **curl, gchar *source_url, gchar *dest)
  * Got the name of a package, without version-arch-release data.
  **/
 gchar **
-slack_split_package_name(const gchar *pkg_filename)
+slack_split_package_name (const gchar *pkg_filename)
 {
-	gchar *pkg_full_name, **pkg_tokens, **reversed_tokens;
-	gint len;
+	gchar *pkg_full_name;
+	gchar **pkg_tokens;
 
 	g_return_val_if_fail(pkg_filename != NULL, NULL);
 
-	len = strlen(pkg_filename);
+	gint len = strlen(pkg_filename);
 	if (len < 4)
 	{
 		return NULL;
@@ -83,34 +84,34 @@ slack_split_package_name(const gchar *pkg_filename)
 
 	if (pkg_filename[len - 4] == '.')
 	{
-		pkg_tokens = g_malloc_n(6, sizeof(gchar *));
+		pkg_tokens = static_cast<gchar **> (g_malloc_n (6, sizeof (gchar *)));
 
 		/* Full name without extension */
 		len -= 4;
-		pkg_full_name = g_strndup(pkg_filename, len);
-		pkg_tokens[3] = g_strdup(pkg_full_name);
+		pkg_full_name = g_strndup (pkg_filename, len);
+		pkg_tokens[3] = g_strdup (pkg_full_name);
 
 		/* The last 3 characters should be the file extension */
-		pkg_tokens[4] = g_strdup(pkg_filename + len + 1);
+		pkg_tokens[4] = g_strdup (pkg_filename + len + 1);
 		pkg_tokens[5] = NULL;
 	}
 	else
 	{
-		pkg_tokens = g_malloc_n(4, sizeof(gchar *));
-		pkg_full_name = g_strdup(pkg_filename);
+		pkg_tokens = static_cast<gchar **> (g_malloc_n (4, sizeof (gchar *)));
+		pkg_full_name = g_strdup (pkg_filename);
 		pkg_tokens[3] = NULL;
 	}
 
 	/* Reverse all of the bytes in the package filename to get the name, version and the architecture */
-	g_strreverse(pkg_full_name);
-	reversed_tokens = g_strsplit(pkg_full_name, "-", 4);
-	pkg_tokens[0] = g_strreverse(reversed_tokens[3]); /* Name */
-	pkg_tokens[1] = g_strreverse(reversed_tokens[2]); /* Version */
-	pkg_tokens[2] = g_strreverse(reversed_tokens[1]); /* Architecture */
+	g_strreverse (pkg_full_name);
+	gchar **reversed_tokens = g_strsplit (pkg_full_name, "-", 4);
+	pkg_tokens[0] = g_strreverse (reversed_tokens[3]); /* Name */
+	pkg_tokens[1] = g_strreverse (reversed_tokens[2]); /* Version */
+	pkg_tokens[2] = g_strreverse (reversed_tokens[1]); /* Architecture */
 
-	g_free(reversed_tokens[0]); /* Build number */
-	g_free(reversed_tokens);
-	g_free(pkg_full_name);
+	g_free (reversed_tokens[0]); /* Build number */
+	g_free (reversed_tokens);
+	g_free (pkg_full_name);
 
 	return pkg_tokens;
 }
@@ -217,12 +218,10 @@ slack_is_installed(const gchar *pkg_fullname)
 /**
  * slack_cmp_repo:
  **/
-gint slack_cmp_repo(gconstpointer a, gconstpointer b)
+gint
+slack_cmp_repo (gconstpointer a, gconstpointer b)
 {
-	GValue value = G_VALUE_INIT;
+	auto repo = static_cast<const SlackPkgtools *> (a);
 
-	g_value_init(&value, G_TYPE_STRING);
-	g_object_get_property(G_OBJECT(a), "name", &value);
-
-	return g_strcmp0(g_value_get_string(&value), (gchar *) b);
+	return g_strcmp0 (repo->get_name (), (gchar *) b);
 }

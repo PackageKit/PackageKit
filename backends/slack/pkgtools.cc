@@ -1,7 +1,7 @@
 #include <curl/curl.h>
 #include <sqlite3.h>
 #include "pkgtools.h"
-#include "slack-utils.h"
+#include "utils.h"
 
 /**
  * SlackPkgtools::download:
@@ -123,7 +123,7 @@ SlackPkgtools::~SlackPkgtools () noexcept
  * Returns: Repository name.
  **/
 const gchar *
-SlackPkgtools::get_name () noexcept
+SlackPkgtools::get_name () const noexcept
 {
 	return this->name;
 }
@@ -136,7 +136,7 @@ SlackPkgtools::get_name () noexcept
  * Returns: Repository mirror.
  **/
 const gchar *
-SlackPkgtools::get_mirror () noexcept
+SlackPkgtools::get_mirror () const noexcept
 {
 	return this->mirror;
 }
@@ -149,7 +149,7 @@ SlackPkgtools::get_mirror () noexcept
  * Returns: Repository order.
  **/
 guint8
-SlackPkgtools::get_order () noexcept
+SlackPkgtools::get_order () const noexcept
 {
 	return this->order;
 }
@@ -163,7 +163,7 @@ SlackPkgtools::get_order () noexcept
  * Returns: %TRUE if the package is blacklisted, %FALSE otherwise.
  **/
 gboolean
-SlackPkgtools::is_blacklisted (const gchar *pkg) noexcept
+SlackPkgtools::is_blacklisted (const gchar *pkg) const noexcept
 {
 	return this->blacklist
 		&& g_regex_match (this->blacklist,

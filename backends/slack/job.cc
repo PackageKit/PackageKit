@@ -1,6 +1,7 @@
 #include "job.h"
 
 #include <string>
+#include "utils.h"
 
 namespace slack {
 

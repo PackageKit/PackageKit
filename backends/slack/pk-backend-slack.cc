@@ -11,7 +11,7 @@
 #include "dl.h"
 #include "pkgtools.h"
 #include "slackpkg.h"
-#include "slack-utils.h"
+#include "utils.h"
 
 static GSList *repos = NULL;
 

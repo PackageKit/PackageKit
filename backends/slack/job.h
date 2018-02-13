@@ -3,7 +3,6 @@
 
 #include <pk-backend.h>
 #include <sqlite3.h>
-#include "slack-utils.h"
 
 namespace slack {
 
