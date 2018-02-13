@@ -1260,7 +1260,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
     return output;
 }
 
-PkgList AptIntf::getUpdates(PkgList &blocked)
+PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades)
 {
     PkgList updates;
 
@@ -1282,6 +1282,11 @@ PkgList AptIntf::getUpdates(PkgList &blocked)
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 updates.push_back(ver);
+            }
+        } else if (state.Downgrade() == true) {
+            const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
+            if (!ver.end()) {
+                downgrades.push_back(ver);
             }
         } else if (state.Upgradable() == true &&
                    pkg->CurrentVer != 0 &&
