@@ -147,7 +147,7 @@ public:
       * Returns a list of all packages that can be updated
       * Pass a PkgList to get the blocked updates as well
       */
-    PkgList getUpdates(PkgList &blocked);
+    PkgList getUpdates(PkgList &blocked, PkgList &downgrades);
 
     /**
      *  Emits a package with the given state
