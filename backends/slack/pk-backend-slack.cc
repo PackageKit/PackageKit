@@ -895,8 +895,8 @@ pk_backend_update_packages_thread(PkBackendJob *job, GVariant *params, gpointer 
 
 				if (repo)
 				{
-					static_cast<SlackPkgtools *> (repo->data)->download (job,
-							dest_dir_name, tokens[PK_PACKAGE_ID_NAME]);
+					static_cast<SlackPkgtools *> (repo->data)->install (job,
+							tokens[PK_PACKAGE_ID_NAME]);
 				}
 			}
 			else
