@@ -3,8 +3,10 @@
 #include "pkgtools.h"
 #include "utils.h"
 
+namespace slack {
+
 /**
- * SlackPkgtools::download:
+ * slack::Pkgtools::download:
  * @job: A #PkBackendJob.
  * @dest_dir_name: Destination directory.
  * @pkg_name: Package name.
@@ -14,7 +16,7 @@
  * Returns: %TRUE on success, %FALSE otherwise.
  **/
 gboolean
-SlackPkgtools::download (PkBackendJob *job,
+Pkgtools::download (PkBackendJob *job,
 		gchar *dest_dir_name, gchar *pkg_name) noexcept
 {
 	gchar *dest_filename, *source_url;
@@ -45,7 +47,7 @@ SlackPkgtools::download (PkBackendJob *job,
 
 		if (!g_file_test(dest_filename, G_FILE_TEST_EXISTS))
 		{
-			if (slack_get_file(&curl, source_url, dest_filename) == CURLE_OK)
+			if (get_file(&curl, source_url, dest_filename) == CURLE_OK)
 			{
 				ret = TRUE;
 			}
@@ -68,14 +70,14 @@ SlackPkgtools::download (PkBackendJob *job,
 }
 
 /**
- * SlackPkgtools::install:
+ * slack::Pkgtools::install:
  * @job: A #PkBackendJob.
  * @pkg_name: Package name.
  *
  * Install a package.
  **/
 void
-SlackPkgtools::install (PkBackendJob *job, gchar *pkg_name) noexcept
+Pkgtools::install (PkBackendJob *job, gchar *pkg_name) noexcept
 {
 	gchar *pkg_filename, *cmd_line;
 	sqlite3_stmt *statement = NULL;
@@ -111,51 +113,51 @@ SlackPkgtools::install (PkBackendJob *job, gchar *pkg_name) noexcept
 	sqlite3_finalize(statement);
 }
 
-SlackPkgtools::~SlackPkgtools () noexcept
+Pkgtools::~Pkgtools () noexcept
 {
 }
 
 /**
- * SlackPkgtools::get_name:
+ * slack::Pkgtools::get_name:
  *
  * Retrieves the repository name.
  *
  * Returns: Repository name.
  **/
 const gchar *
-SlackPkgtools::get_name () const noexcept
+Pkgtools::get_name () const noexcept
 {
 	return this->name;
 }
 
 /**
- * SlackPkgtools::get_mirror:
+ * slack::Pkgtools::get_mirror:
  *
  * Retrieves the repository mirror.
  *
  * Returns: Repository mirror.
  **/
 const gchar *
-SlackPkgtools::get_mirror () const noexcept
+Pkgtools::get_mirror () const noexcept
 {
 	return this->mirror;
 }
 
 /**
- * SlackPkgtools::get_order:
+ * slack::Pkgtools::get_order:
  *
  * Retrieves the repository order.
  *
  * Returns: Repository order.
  **/
 guint8
-SlackPkgtools::get_order () const noexcept
+Pkgtools::get_order () const noexcept
 {
 	return this->order;
 }
 
 /**
- * SlackPkgtools:is_blacklisted:
+ * slack::Pkgtools:is_blacklisted:
  * @pkg: Package name to check for.
  *
  * Checks whether a package is blacklisted.
@@ -163,9 +165,11 @@ SlackPkgtools::get_order () const noexcept
  * Returns: %TRUE if the package is blacklisted, %FALSE otherwise.
  **/
 gboolean
-SlackPkgtools::is_blacklisted (const gchar *pkg) const noexcept
+Pkgtools::is_blacklisted (const gchar *pkg) const noexcept
 {
 	return this->blacklist
 		&& g_regex_match (this->blacklist,
 				pkg, static_cast<GRegexMatchFlags> (0), NULL);
+}
+
 }

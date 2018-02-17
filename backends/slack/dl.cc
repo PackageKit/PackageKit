@@ -3,8 +3,10 @@
 #include "dl.h"
 #include "utils.h"
 
+namespace slack {
+
 /**
- * SlackDl::collect_cache_info:
+ * slack::Dl::collect_cache_info:
  * @tmpl: temporary directory for downloading the files.
  *
  * Download files needed to get the information like the list of packages
@@ -13,7 +15,7 @@
  * Returns: List of files needed for building the cache.
  **/
 GSList *
-SlackDl::collect_cache_info (const gchar *tmpl) noexcept
+Dl::collect_cache_info (const gchar *tmpl) noexcept
 {
 	CURL *curl = NULL;
 	GSList *file_list = NULL;
@@ -33,7 +35,7 @@ SlackDl::collect_cache_info (const gchar *tmpl) noexcept
 	                                  NULL);
 	source_dest[2] = NULL;
 	/* Check if the remote file can be found */
-	if (slack_get_file(&curl, source_dest[0], NULL))
+	if (get_file(&curl, source_dest[0], NULL))
 	{
 		g_strfreev(source_dest);
 	}
@@ -52,7 +54,7 @@ SlackDl::collect_cache_info (const gchar *tmpl) noexcept
 }
 
 /**
- * SlackDl::generate_cache:
+ * slack::Dl::generate_cache:
  * @job: A #PkBackendJob.
  * @tmpl: temporary directory for downloading the files.
  *
@@ -62,7 +64,7 @@ SlackDl::collect_cache_info (const gchar *tmpl) noexcept
  * Returns: List of files needed for building the cache.
  **/
 void
-SlackDl::generate_cache(PkBackendJob *job, const gchar *tmpl) noexcept
+Dl::generate_cache(PkBackendJob *job, const gchar *tmpl) noexcept
 {
 	gchar **line_tokens, **pkg_tokens, *line, *collection_name = NULL, *list_filename;
 	gboolean skip = FALSE;
@@ -130,9 +132,9 @@ SlackDl::generate_cache(PkBackendJob *job, const gchar *tmpl) noexcept
 		if ((g_strv_length(line_tokens) > 6)
 		 && !this->is_blacklisted (line_tokens[0]))
 		{
-			pkg_tokens = slack_split_package_name(line_tokens[0]);
+			pkg_tokens = split_package_name(line_tokens[0]);
 
-			/* If the slack_split_package_name doesn't return a full name and an
+			/* If the split_package_name doesn't return a full name and an
 			 * extension, it is a collection. We save its name in this case */
 			if (pkg_tokens[3])
 			{
@@ -198,7 +200,7 @@ SlackDl::generate_cache(PkBackendJob *job, const gchar *tmpl) noexcept
 			if ((g_strv_length(line_tokens) > 6)
 			 && !this->is_blacklisted (line_tokens[0]))
 			{
-				pkg_tokens = slack_split_package_name(line_tokens[0]);
+				pkg_tokens = split_package_name(line_tokens[0]);
 
 				/* If not a collection itself */
 				if (pkg_tokens[3]) /* Save this package as a part of the collection */
@@ -234,7 +236,7 @@ out:
 	g_free(list_filename);
 }
 
-SlackDl::~SlackDl () noexcept
+Dl::~Dl () noexcept
 {
 	if (this->blacklist)
 	{
@@ -247,7 +249,7 @@ SlackDl::~SlackDl () noexcept
 }
 
 /**
- * SlackDl::SlackDl:
+ * slack::Dl::Dl:
  * @name: Repository name.
  * @mirror: Repository mirror.
  * @order: Repository order.
@@ -256,9 +258,9 @@ SlackDl::~SlackDl () noexcept
  *
  * Constructor.
  *
- * Return value: New #SlackDl.
+ * Return value: New #slack::Dl.
  **/
-SlackDl::SlackDl (const gchar *name, const gchar *mirror,
+Dl::Dl (const gchar *name, const gchar *mirror,
 		guint8 order, const gchar *blacklist, gchar *index_file) noexcept
 {
 	GRegex *regex;
@@ -281,4 +283,6 @@ SlackDl::SlackDl (const gchar *name, const gchar *mirror,
 	this->blacklist = regex;
 
 	this->index_file = index_file;
+}
+
 }

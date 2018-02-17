@@ -1,9 +1,11 @@
 #include "dl.h"
 
+using namespace slack;
+
 static void
 slack_test_dl_construct()
 {
-	auto dl = new SlackDl ("some", "mirror", 1, NULL, NULL);
+	auto dl = new Dl ("some", "mirror", 1, NULL, NULL);
 
 	g_assert_cmpstr (dl->get_name (), ==, "some");
 	g_assert_cmpstr (dl->get_mirror (), ==, "mirror");

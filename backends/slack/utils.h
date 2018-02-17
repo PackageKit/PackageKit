@@ -5,28 +5,28 @@
 #include <pk-backend.h>
 #include <pk-backend-job.h>
 
-typedef struct
+namespace slack {
+
+struct JobData
 {
 	GObjectClass parent_class;
 
 	sqlite3 *db;
 	CURL *curl;
-} JobData;
+};
 
-#ifdef __cplusplus
+CURLcode get_file (CURL **curl, gchar *source_url, gchar *dest);
+
+gchar **split_package_name (const gchar *pkg_filename);
+
+PkInfoEnum is_installed (const gchar *pkg_fullname);
+
 extern "C" {
-#endif
 
-CURLcode slack_get_file(CURL **curl, gchar *source_url, gchar *dest);
+gint cmp_repo (gconstpointer a, gconstpointer b);
 
-gchar **slack_split_package_name(const gchar *pkg_filename);
-
-PkInfoEnum slack_is_installed(const gchar *pkg_fullname);
-
-gint slack_cmp_repo(gconstpointer a, gconstpointer b);
-
-#ifdef __cplusplus
 }
-#endif
+
+}
 
 #endif /* __SLACK_UTILS_H */

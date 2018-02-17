@@ -3,8 +3,10 @@
 #include "utils.h"
 #include "pkgtools.h"
 
+namespace slack {
+
 /**
- * slack_get_file:
+ * slack::get_file:
  * @curl: curl easy handle.
  * @source_url: source url.
  * @dest: destination.
@@ -14,7 +16,7 @@
  * Returns: CURLE_OK (zero) on success, non-zero otherwise.
  **/
 CURLcode
-slack_get_file(CURL **curl, gchar *source_url, gchar *dest)
+get_file (CURL **curl, gchar *source_url, gchar *dest)
 {
 	gchar *dest_dir_name;
 	FILE *fout = NULL;
@@ -65,11 +67,11 @@ slack_get_file(CURL **curl, gchar *source_url, gchar *dest)
 }
 
 /**
- * slack_split_package_name:
+ * slack::split_package_name:
  * Got the name of a package, without version-arch-release data.
  **/
 gchar **
-slack_split_package_name (const gchar *pkg_filename)
+split_package_name (const gchar *pkg_filename)
 {
 	gchar *pkg_full_name;
 	gchar **pkg_tokens;
@@ -117,7 +119,7 @@ slack_split_package_name (const gchar *pkg_filename)
 }
 
 /**
- * slack_is_installed:
+ * slack::is_installed:
  * Checks if a package is already installed in the system.
  *
  * Params:
@@ -128,7 +130,7 @@ slack_split_package_name (const gchar *pkg_filename)
  *          installed, PK_INFO_ENUM_UNKNOWN if pkg_fullname is malformed.
  **/
 PkInfoEnum
-slack_is_installed(const gchar *pkg_fullname)
+is_installed (const gchar *pkg_fullname)
 {
 	GFileEnumerator *pkg_metadata_enumerator;
 	GFileInfo *pkg_metadata_file_info;
@@ -216,12 +218,14 @@ slack_is_installed(const gchar *pkg_fullname)
 }
 
 /**
- * slack_cmp_repo:
+ * slack::cmp_repo:
  **/
 gint
-slack_cmp_repo (gconstpointer a, gconstpointer b)
+cmp_repo (gconstpointer a, gconstpointer b)
 {
-	auto repo = static_cast<const SlackPkgtools *> (a);
+	auto repo = static_cast<const Pkgtools *> (a);
 
 	return g_strcmp0 (repo->get_name (), (gchar *) b);
+}
+
 }

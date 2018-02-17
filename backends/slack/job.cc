@@ -53,7 +53,7 @@ generate_query(PkBitfield filters)
 void
 pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	auto job_data = reinterpret_cast<JobData *> (pk_backend_job_get_user_data (job));
+	auto job_data = reinterpret_cast<slack::JobData *> (pk_backend_job_get_user_data (job));
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
@@ -72,7 +72,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		/* Now we're ready to output all packages */
 		while (sqlite3_step (stmt) == SQLITE_ROW)
 		{
-			PkInfoEnum info = slack_is_installed (
+			PkInfoEnum info = slack::is_installed (
 					reinterpret_cast<const gchar *> (sqlite3_column_text (stmt, 2)));
 
 			if ((info == PK_INFO_ENUM_INSTALLED || info == PK_INFO_ENUM_UPDATING)

@@ -1,9 +1,11 @@
 #include "slackpkg.h"
 
+using namespace slack;
+
 static void
 slack_test_slackpkg_construct()
 {
-	auto slackpkg = new SlackSlackpkg ("some", "mirror", 1, NULL, NULL);
+	auto slackpkg = new Slackpkg ("some", "mirror", 1, NULL, NULL);
 
 	g_assert_cmpstr(slackpkg->get_name (), ==, "some");
 	g_assert_cmpstr(slackpkg->get_mirror (), ==, "mirror");

@@ -79,6 +79,7 @@ slack_dl_test_CFLAGS = $(AM_CFLAGS)
 
 job_test_SOURCES = \
 	utils.cc \
+	pkgtools.cc \
 	job.cc \
 	$(pk_dependencies_SOURCES) \
 	job-test.cc

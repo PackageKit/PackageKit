@@ -3,12 +3,14 @@
 
 #include "pkgtools.h"
 
-class SlackDl final : public SlackPkgtools
+namespace slack {
+
+class Dl final : public Pkgtools
 {
 public:
-	SlackDl (const gchar *name, const gchar *mirror,
+	Dl (const gchar *name, const gchar *mirror,
 		guint8 order, const gchar *blacklist, gchar *index_file) noexcept;
-	~SlackDl () noexcept;
+	~Dl () noexcept;
 
 	GSList *collect_cache_info (const gchar *tmpl) noexcept;
 	void generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept;
@@ -16,5 +18,7 @@ public:
 private:
 	gchar *index_file;
 };
+
+}
 
 #endif /* __SLACK_DL_H */

@@ -5,10 +5,12 @@
 #include "slackpkg.h"
 #include "utils.h"
 
-GHashTable *slack_slackpkg_cat_map = NULL;
+namespace slack {
+
+GHashTable *Slackpkg::cat_map = NULL;
 
 /*
- * SlackSlackpkg::manifest:
+ * slack::Slackpkg::manifest:
  * @job:      a #PkBackendJob.
  * @tmpl:     temporary directory.
  * @filename: manifest filename
@@ -16,13 +18,13 @@ GHashTable *slack_slackpkg_cat_map = NULL;
  * Parse the manifest file and save the file list in the database.
  */
 void
-SlackSlackpkg::manifest (PkBackendJob *job,
+Slackpkg::manifest (PkBackendJob *job,
 		const gchar *tmpl, gchar *filename) noexcept
 {
 	FILE *manifest;
 	gint err, read_len;
 	guint pos;
-	gchar buf[SLACK_BINARY_MAX_BUF_SIZE], *path, *pkg_filename, *rest = NULL, *start;
+	gchar buf[max_buf_size], *path, *pkg_filename, *rest = NULL, *start;
 	gchar *full_name = NULL;
 	gchar **line, **lines;
 	BZFILE *manifest_bz2;
@@ -75,7 +77,7 @@ SlackSlackpkg::manifest (PkBackendJob *job,
 	}
 
 	sqlite3_exec(job_data->db, "BEGIN TRANSACTION", NULL, NULL, NULL);
-	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, SLACK_BINARY_MAX_BUF_SIZE - 1)))
+	while ((read_len = BZ2_bzRead(&err, manifest_bz2, buf, max_buf_size - 1)))
 	{
 		if ((err != BZ_OK) && (err != BZ_STREAM_END))
 		{
@@ -148,7 +150,7 @@ out:
 }
 
 /**
- * SlackSlackpkg::collect_cache_info:
+ * slack::Slackpkg::collect_cache_info:
  * @tmpl: temporary directory for downloading the files.
  *
  * Download files needed to get the information like the list of packages
@@ -157,7 +159,7 @@ out:
  * Returns: List of files needed for building the cache.
  **/
 GSList *
-SlackSlackpkg::collect_cache_info (const gchar *tmpl) noexcept
+Slackpkg::collect_cache_info (const gchar *tmpl) noexcept
 {
 	CURL *curl = NULL;
 	gchar **source_dest;
@@ -183,7 +185,7 @@ SlackSlackpkg::collect_cache_info (const gchar *tmpl) noexcept
 		                                  NULL);
 		source_dest[2] = NULL;
 
-		if (slack_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
+		if (get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 		{
 			file_list = g_slist_prepend(file_list, source_dest);
 		}
@@ -205,7 +207,7 @@ SlackSlackpkg::collect_cache_info (const gchar *tmpl) noexcept
 		                             "/", *cur_priority, "-MANIFEST.bz2",
 		                             NULL);
 		source_dest[2] = NULL;
-		if (slack_get_file(&curl, source_dest[0], NULL) == CURLE_OK)
+		if (get_file(&curl, source_dest[0], NULL) == CURLE_OK)
 		{
 			file_list = g_slist_prepend(file_list, source_dest);
 		}
@@ -226,7 +228,7 @@ out:
 }
 
 /**
- * SlackSlackpkg::generate_cache:
+ * slack::Slackpkg::generate_cache:
  * @job: A #PkBackendJob.
  * @tmpl: temporary directory for downloading the files.
  *
@@ -236,7 +238,7 @@ out:
  * Returns: List of files needed for building the cache.
  **/
 void
-SlackSlackpkg::generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept
+Slackpkg::generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept
 {
 	gchar **pkg_tokens = NULL;
 	gchar *query = NULL, *filename = NULL, *location = NULL, *summary = NULL, *line, *packages_txt;
@@ -364,7 +366,7 @@ SlackSlackpkg::generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept
 			{
 				summary = g_strndup(summary + 1, strlen(summary) - 2); /* Without ( ) */
 			}
-			pkg_tokens = slack_split_package_name(filename);
+			pkg_tokens = split_package_name(filename);
 			pkg_name_len = strlen(pkg_tokens[0]); /* Description begins with pkg_name: */
 		}
 		else if (filename && !strncmp(line, pkg_tokens[0], pkg_name_len))
@@ -379,7 +381,7 @@ SlackSlackpkg::generate_cache (PkBackendJob *job, const gchar *tmpl) noexcept
 				const char *cat = g_strrstr(location, "/");
 				if (cat) /* Else cat = NULL */
 				{
-					cat = static_cast<const char *> (g_hash_table_lookup(slack_slackpkg_cat_map, cat + 1));
+					cat = static_cast<const char *> (g_hash_table_lookup(cat_map, cat + 1));
 				}
 				if (cat)
 				{
@@ -446,7 +448,7 @@ out:
 	}
 }
 
-SlackSlackpkg::~SlackSlackpkg () noexcept
+Slackpkg::~Slackpkg () noexcept
 {
 	if (this->blacklist)
 	{
@@ -462,7 +464,7 @@ SlackSlackpkg::~SlackSlackpkg () noexcept
 }
 
 /**
- * SlackSlackpkg::SlackSlackpkg:
+ * slack::Slackpkg::Slackpkg:
  * @name: Repository name.
  * @mirror: Repository mirror.
  * @order: Repository order.
@@ -471,9 +473,9 @@ SlackSlackpkg::~SlackSlackpkg () noexcept
  *
  * Constructor.
  *
- * Returns: New #SlackSlackpkg.
+ * Returns: New #slack::Slackpkg.
  **/
-SlackSlackpkg::SlackSlackpkg (const gchar *name, const gchar *mirror,
+Slackpkg::Slackpkg (const gchar *name, const gchar *mirror,
 		guint8 order, const gchar *blacklist, gchar **priority) noexcept
 {
 	GRegex *regex;
@@ -498,24 +500,26 @@ SlackSlackpkg::SlackSlackpkg (const gchar *name, const gchar *mirror,
 	this->priority = priority;
 
 	// Initialize category map
-	if (slack_slackpkg_cat_map == NULL)
+	if (cat_map == NULL)
 	{
-		slack_slackpkg_cat_map = g_hash_table_new(g_str_hash, g_str_equal);
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "a", (gpointer) "system");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "ap", (gpointer) "admin-tools");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "d", (gpointer) "programming");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "e", (gpointer) "programming");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "f", (gpointer) "documentation");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "k", (gpointer) "system");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "kde", (gpointer) "desktop-kde");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "kdei", (gpointer) "localization");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "l", (gpointer) "system");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "n", (gpointer) "network");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "t", (gpointer) "publishing");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "tcl", (gpointer) "system");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "x", (gpointer) "desktop-other");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "xap", (gpointer) "accessories");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "xfce", (gpointer) "desktop-xfce");
-		g_hash_table_insert (slack_slackpkg_cat_map, (gpointer) "y", (gpointer) "games");
+		cat_map = g_hash_table_new(g_str_hash, g_str_equal);
+		g_hash_table_insert (cat_map, (gpointer) "a", (gpointer) "system");
+		g_hash_table_insert (cat_map, (gpointer) "ap", (gpointer) "admin-tools");
+		g_hash_table_insert (cat_map, (gpointer) "d", (gpointer) "programming");
+		g_hash_table_insert (cat_map, (gpointer) "e", (gpointer) "programming");
+		g_hash_table_insert (cat_map, (gpointer) "f", (gpointer) "documentation");
+		g_hash_table_insert (cat_map, (gpointer) "k", (gpointer) "system");
+		g_hash_table_insert (cat_map, (gpointer) "kde", (gpointer) "desktop-kde");
+		g_hash_table_insert (cat_map, (gpointer) "kdei", (gpointer) "localization");
+		g_hash_table_insert (cat_map, (gpointer) "l", (gpointer) "system");
+		g_hash_table_insert (cat_map, (gpointer) "n", (gpointer) "network");
+		g_hash_table_insert (cat_map, (gpointer) "t", (gpointer) "publishing");
+		g_hash_table_insert (cat_map, (gpointer) "tcl", (gpointer) "system");
+		g_hash_table_insert (cat_map, (gpointer) "x", (gpointer) "desktop-other");
+		g_hash_table_insert (cat_map, (gpointer) "xap", (gpointer) "accessories");
+		g_hash_table_insert (cat_map, (gpointer) "xfce", (gpointer) "desktop-xfce");
+		g_hash_table_insert (cat_map, (gpointer) "y", (gpointer) "games");
 	}
+}
+
 }

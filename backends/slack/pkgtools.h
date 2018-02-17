@@ -4,7 +4,9 @@
 #include <glib-object.h>
 #include <pk-backend.h>
 
-class SlackPkgtools
+namespace slack {
+
+class Pkgtools
 {
 public:
 	const gchar *get_name () const noexcept;
@@ -12,7 +14,7 @@ public:
 	guint8 get_order () const noexcept;
 	gboolean is_blacklisted (const gchar *pkg) const noexcept;
 
-	virtual ~SlackPkgtools () noexcept;
+	virtual ~Pkgtools () noexcept;
 
 	gboolean download (PkBackendJob *job,
 			gchar *dest_dir_name, gchar *pkg_name) noexcept;
@@ -28,5 +30,7 @@ protected:
 	guint8 order;
 	GRegex *blacklist = NULL;
 };
+
+}
 
 #endif /* __SLACK_PKGTOOLS_H */
