@@ -496,11 +496,6 @@ if test x$enable_slack = xyes; then
 	SLACK_CFLAGS="$CURL_CFLAGS"
 	SLACK_LIBS="$CURL_LIBS"
 
-	# Require C11 support
-	AX_CHECK_COMPILE_FLAG([-std=c11], [
-		SLACK_CFLAGS+=" -std=c11"
-	])
-
 	AC_SUBST(SLACK_PKGMAIN)
 	AC_SUBST(SLACK_CFLAGS)
 	AC_SUBST(SLACK_LIBS)
@@ -546,6 +541,7 @@ backends/dnf/Makefile
 backends/dummy/Makefile
 backends/entropy/Makefile
 backends/slack/Makefile
+backends/slack/tests/Makefile
 backends/test/Makefile
 backends/test/helpers/Makefile
 backends/urpmi/Makefile

@@ -1,3 +1,5 @@
+SUBDIRS = tests
+
 AM_CFLAGS = \
 	$(PK_PLUGIN_CFLAGS) \
 	$(SLACK_CFLAGS) \
@@ -9,23 +11,12 @@ AM_CFLAGS = \
 
 AM_CPPFLAGS = \
 	$(PK_PLUGIN_CFLAGS) \
-	$(filter-out -std=c11,$(SLACK_CFLAGS)) \
+	$(SLACK_CFLAGS) \
 	$(WARNINGFLAGS_CPP) \
 	-DG_LOG_DOMAIN=\"PackageKit-Slackware\" \
 	-DSYSCONFDIR=\""$(sysconfdir)"\" \
 	-DLOCALSTATEDIR=\""$(localstatedir)"\" \
 	-DLIBDIR=\""$(libdir)"\"
-
-PK_GLIB2_LIBS =	\
-	-lbz2 -lcurl \
-	$(SQLITE_LIBS) \
-	$(GLIB_LIBS) \
-	$(top_builddir)/lib/packagekit-glib2/libpackagekit-glib2.la
-
-pk_dependencies_SOURCES = \
-	$(top_builddir)/src/pk-backend.c \
-	$(top_builddir)/src/pk-shared.c \
-	$(top_builddir)/src/pk-backend-job.c
 
 plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_slack.la
@@ -44,6 +35,16 @@ libpk_backend_slack_la_LDFLAGS = -module -avoid-version
 libpk_backend_slack_la_CFLAGS = $(AM_CFLAGS)
 libpk_backend_slack_la_CPPFLAGS = $(AM_CPPFLAGS)
 
+noinst_LIBRARIES = libpk-backend-slack.a
+libpk_backend_slack_a_SOURCES = \
+	pk-backend-slack.cc \
+	utils.cc \
+	pkgtools.cc \
+	slackpkg.cc \
+	dl.cc \
+	job.cc
+libpk_backend_slack_a_CPPFLAGS = $(AM_CPPFLAGS)
+
 confdir = $(sysconfdir)/PackageKit
 conf_in_files = Slackware.conf.in
 conf_DATA = $(conf_in_files:.conf.in=.conf)
@@ -54,46 +55,14 @@ $(conf_DATA): $(conf_in_files) Makefile
 databasedir = $(localstatedir)/cache/PackageKit/metadata
 database_DATA =	metadata.db
 
-check_PROGRAMS = \
-	slack-slackpkg-test \
-	slack-dl-test \
-	job-test
-
-slack_slackpkg_test_SOURCES = \
-	utils.cc \
-	pkgtools.cc \
-	slackpkg.cc \
-	$(pk_dependencies_SOURCES) \
-	slackpkg-test.cc
-slack_slackpkg_test_LDADD = $(PK_GLIB2_LIBS)
-slack_slackpkg_test_CFLAGS = $(AM_CFLAGS)
-
-slack_dl_test_SOURCES = \
-	utils.cc \
-	pkgtools.cc \
-	dl.cc \
-	$(pk_dependencies_SOURCES) \
-	dl-test.cc
-slack_dl_test_LDADD = $(PK_GLIB2_LIBS)
-slack_dl_test_CFLAGS = $(AM_CFLAGS)
-
-job_test_SOURCES = \
-	utils.cc \
-	pkgtools.cc \
-	job.cc \
-	$(pk_dependencies_SOURCES) \
-	job-test.cc
-job_test_LDADD = $(PK_GLIB2_LIBS)
-job_test_CFLAGS = $(AM_CFLAGS)
-job_test_CPPFLAGS = $(AM_CPPFLAGS)
-
-TESTS = $(check_PROGRAMS)
-
 EXTRA_DIST = \
 	$(conf_in_files) \
 	$(database_DATA)
 
+CLEANFILES = *.a
+
 clean-local:
 	rm -f *~
+	rm -f $(CLEANFILES)
 
 -include $(top_srcdir)/git.mk
