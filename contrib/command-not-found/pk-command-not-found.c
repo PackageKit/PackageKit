@@ -435,7 +435,7 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 		break;
 	case PK_STATUS_ENUM_DOWNLOAD_REPOSITORY:
 		/* TRANSLATORS: downloading repo data so we can search */
-		text = _("Downloading details about the software sources.");
+		text = _("Downloading details about the software repositories.");
 		break;
 	case PK_STATUS_ENUM_DOWNLOAD_FILELIST:
 		/* TRANSLATORS: downloading file lists so we can search */

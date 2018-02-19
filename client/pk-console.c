@@ -1379,7 +1379,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     PK_CONSOLE_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     /* TRANSLATORS: The package name was not found in
-			      * any software sources. The detailed error follows */
+			      * any software repositories. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
 		return FALSE;
@@ -1410,7 +1410,7 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 			     PK_CONSOLE_ERROR,
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     /* TRANSLATORS: The package name was not found in
-			      * any software sources. The detailed error follows */
+			      * any software repositories. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
 			     error_local->message);
 		return FALSE;

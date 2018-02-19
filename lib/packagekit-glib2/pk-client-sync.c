@@ -1288,7 +1288,7 @@ pk_client_install_packages (PkClient *client,
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Install a software source signature of the newest and most correct version.
+ * Install a software repository signature of the newest and most correct version.
  *
  * Warning: this function is synchronous, and may block. Do not use it in GUI
  * applications.

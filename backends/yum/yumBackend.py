@@ -1002,7 +1002,7 @@ class PackageKitYumBackend(PackageKitBaseBackend, PackagekitPackage):
                 self._get_groups(cat_id)
 
         # also add the repo category objects
-        self.category("", 'repo:', 'Software Sources', 'Packages from specific software sources', 'base-system')
+        self.category("", 'repo:', 'Software Repositories', 'Packages from specific software repositories', 'base-system')
         try:
             repos = self.yumbase.repos.repos.values()
         except exceptions.IOError, e:

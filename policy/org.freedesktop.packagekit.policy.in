@@ -177,11 +177,11 @@
   <action id="org.freedesktop.packagekit.system-sources-configure">
     <!-- SECURITY:
           - Normal users require admin authentication to enable or disable
-            software sources as this can be used to enable new updates or
+            software repositories as this can be used to enable new updates or
             install different versions of software.
      -->
-    <_description>Change software source parameters</_description>
-    <_message>Authentication is required to change software source parameters</_message>
+    <_description>Change software repository parameters</_description>
+    <_message>Authentication is required to change software repository parameters</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -195,8 +195,8 @@
           - Normal users do not require admin authentication to refresh the
             cache, as this doesn't actually install or remove software.
      -->
-    <_description>Refresh system sources</_description>
-    <_message>Authentication is required to refresh the system sources</_message>
+    <_description>Refresh system repositories</_description>
+    <_message>Authentication is required to refresh the system repositories</_message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>

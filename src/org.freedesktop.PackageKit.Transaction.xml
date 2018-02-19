@@ -877,10 +877,10 @@
             power.
           </doc:para>
           <doc:para>
-            When fetching each software source, ensure to emit RepoDetail for the
-            current source to give the user interface some extra details. Be sure to
+            When fetching each software repository, ensure to emit RepoDetail for the
+            current repository to give the user interface some extra details. Be sure to
             have the "enabled" field set to true, otherwise you wouldn't be fetching
-            that source.
+            that repository.
           </doc:para>
           <doc:para>
             This method typically emits
@@ -1324,7 +1324,7 @@
               <doc:tt>repo:fedora-debuginfo</doc:tt>.
               In this instance all packages that were either installed
               from, or can be installed from the <doc:tt>fedora-debuginfo</doc:tt>
-              source would be returned.
+              repository would be returned.
             </doc:para>
           </doc:summary>
         </doc:doc>

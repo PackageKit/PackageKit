@@ -3611,7 +3611,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * Install a software source signature of the newest and most correct version.
+ * Install a software repository signature of the newest and most correct version.
  *
  * Since: 0.5.2
  **/

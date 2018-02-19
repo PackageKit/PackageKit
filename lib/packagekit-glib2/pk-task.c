@@ -2195,7 +2195,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 /**
  * pk_task_repo_enable_async:
  * @task: a valid #PkTask instance
- * @repo_id: The software source ID
+ * @repo_id: The software repository ID
  * @enabled: %TRUE or %FALSE
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
