@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2016 Neal Gompa <ngompa13@gmail.com>
+ * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -24,25 +25,21 @@
 gboolean
 dnf_validate_supported_repo (const gchar *id)
 {
-	guint i;
-	const gchar *valid[] = { "fedora",
-				 "fedora-debuginfo",
-				 "fedora-source",
-				 "rawhide",
-				 "rawhide-debuginfo",
-				 "rawhide-source",
-				 "updates",
-				 "updates-debuginfo",
-				 "updates-source",
-				 "updates-testing",
-				 "updates-testing-debuginfo",
-				 "updates-testing-source",
-				 "fedora-cisco-openh264",
-				 "fedora-cisco-openh264-debuginfo",
-				 NULL };
-	for (i = 0; valid[i] != NULL; i++) {
-		if (g_strcmp0 (id, valid[i]) == 0)
+	const gchar *default_repos[] = { "fedora",
+	                                 "rawhide",
+	                                 "updates",
+	                                 NULL };
+
+	/* core repos that users shouldn't play with */
+	for (guint i = 0; default_repos[i] != NULL; i++) {
+		if (g_strcmp0 (id, default_repos[i]) == 0)
 			return TRUE;
 	}
+
+	/* hide all debuginfo and source repos by default */
+	if (g_str_has_suffix (id, "-debuginfo") ||
+	    g_str_has_suffix (id, "-source"))
+		return TRUE;
+
 	return FALSE;
 }
