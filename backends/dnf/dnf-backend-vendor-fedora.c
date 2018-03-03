@@ -36,10 +36,5 @@ dnf_validate_supported_repo (const gchar *id)
 			return TRUE;
 	}
 
-	/* hide all debuginfo and source repos by default */
-	if (g_str_has_suffix (id, "-debuginfo") ||
-	    g_str_has_suffix (id, "-source"))
-		return TRUE;
-
 	return FALSE;
 }
