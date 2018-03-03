@@ -50,7 +50,7 @@ pk_task_generic_finish_sync (PkTask *task, GAsyncResult *res, PkTaskHelper *help
 	results = pk_task_generic_finish (task, res, helper->error);
 	if (results != NULL) {
 		g_object_unref (results);
-		helper->results = g_object_ref (G_OBJECT (results));
+		helper->results = g_object_ref (results);
 	}
 	g_main_loop_quit (helper->loop);
 }

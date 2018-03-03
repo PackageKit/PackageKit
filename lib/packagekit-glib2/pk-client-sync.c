@@ -48,7 +48,7 @@ pk_client_generic_finish_sync (PkClient *client, GAsyncResult *res, PkClientHelp
 	PkResults *results;
 	results = pk_client_generic_finish (client, res, helper->error);
 	if (results != NULL) {
-		helper->results = g_object_ref (G_OBJECT(results));
+		helper->results = g_object_ref (results);
 		g_object_unref (results);
 	}
 	g_main_loop_quit (helper->loop);
@@ -1926,7 +1926,7 @@ pk_client_get_progress_finish_sync (PkClient *client, GAsyncResult *res, PkClien
 	PkProgress *progress;
 	progress = pk_client_get_progress_finish (client, res, helper->error);
 	if (progress != NULL) {
-		helper->progress = g_object_ref (G_OBJECT(progress));
+		helper->progress = g_object_ref (progress);
 		g_object_unref (progress);
 	}
 	g_main_loop_quit (helper->loop);
