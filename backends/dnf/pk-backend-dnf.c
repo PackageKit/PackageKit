@@ -122,8 +122,16 @@ pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
  * pk_backend_yum_repos_changed_cb:
  **/
 static void
-pk_backend_yum_repos_changed_cb (DnfRepoLoader *self, PkBackend *backend)
+pk_backend_yum_repos_changed_cb (DnfRepoLoader *repo_loader, PkBackend *backend)
 {
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
+
+	/* ask the context's repo loader for new repos, forcing it to reload them */
+	repos = dnf_repo_loader_get_repos (repo_loader, &error_local);
+	if (repos == NULL)
+		g_warning ("failed to reload repos: %s", error_local->message);
+
 	pk_backend_sack_cache_invalidate (backend, "yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
 }
