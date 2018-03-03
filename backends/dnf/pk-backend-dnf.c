@@ -60,7 +60,6 @@ typedef struct {
 } PkBackendDnfPrivate;
 
 typedef struct {
-	GPtrArray	*repos;
 	DnfContext	*context;
 	DnfTransaction	*transaction;
 	DnfState	*state;
@@ -457,29 +456,10 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		g_object_unref (job_data->transaction);
 	if (job_data->context != NULL)
 		g_object_unref (job_data->context);
-	if (job_data->repos != NULL)
-		g_ptr_array_unref (job_data->repos);
 	if (job_data->goal != NULL)
 		hy_goal_free (job_data->goal);
 	g_free (job_data);
 	pk_backend_job_set_user_data (job, NULL);
-}
-
-/**
- * pk_backend_ensure_repos:
- */
-static gboolean
-pk_backend_ensure_repos (PkBackendDnfJobData *job_data, GError **error)
-{
-	/* already set */
-	if (job_data->repos != NULL)
-		return TRUE;
-
-	/* set the list of repos */
-	job_data->repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), error);
-	if (job_data->repos == NULL)
-		return FALSE;
-	return TRUE;
 }
 
 static gboolean
@@ -515,9 +495,10 @@ dnf_utils_add_remote (PkBackendJob *job,
 		      DnfState *state,
 		      GError **error)
 {
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret;
 	DnfState *state_local;
-	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	GPtrArray *repos;
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
@@ -527,18 +508,16 @@ dnf_utils_add_remote (PkBackendJob *job,
 	if (!ret)
 		return FALSE;
 
-	/* set the list of repos */
-	if (!pk_backend_ensure_repos (job_data, error))
-		return FALSE;
-
 	/* done */
 	if (!dnf_state_done (state, error))
 		return FALSE;
 
+	repos = dnf_context_get_repos (job_data->context);
+
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
-	                          job_data->repos,
+	                          repos,
 	                          pk_backend_job_get_cache_age (job),
 	                          flags,
 	                          state_local,
@@ -547,8 +526,8 @@ dnf_utils_add_remote (PkBackendJob *job,
 		return FALSE;
 
 	/* update the AppStream copies in /var */
-	for (guint i = 0; i < job_data->repos->len; i++) {
-		DnfRepo *repo = g_ptr_array_index (job_data->repos, i);
+	for (guint i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
 		if (!dnf_utils_refresh_repo_appstream (repo, error))
 			return FALSE;
 	}
@@ -946,13 +925,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		break;
 	}
 
-	/* set the list of repos */
-	ret = pk_backend_ensure_repos (job_data, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		goto out;
-	}
-
 	/* get sack */
 	state_local = dnf_state_get_child (job_data->state);
 	sack = dnf_utils_create_sack_for_filters (job,
@@ -1245,24 +1217,16 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	DnfRepo *repo;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	g_autoptr(GPtrArray) repos = NULL;
+	GPtrArray *repos;
 	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t)", &filters);
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
-	if (repos == NULL) {
-		pk_backend_job_error_code (job,
-					   error->code,
-					   "failed to scan yum.repos.d: %s",
-					   error->message);
-		return;
-	}
 
-	/* none? */
-	if (repos->len == 0) {
+	repos = dnf_context_get_repos (job_data->context);
+	if (repos == NULL || repos->len == 0) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_REPO_NOT_FOUND,
 					   "failed to find any repos");
@@ -1529,10 +1493,11 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 GVariant *params,
 				 gpointer user_data)
 {
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	DnfRepo *repo;
 	DnfState *state_local;
 	DnfState *state_loop;
-	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	GPtrArray *repos;
 	gboolean force;
 	gboolean ret;
 	guint cnt = 0;
@@ -1550,16 +1515,10 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 
 	g_variant_get (params, "(b)", &force);
 
-	/* set the list of repos */
-	ret = pk_backend_ensure_repos (job_data, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		return;
-	}
-
 	/* count the enabled repos */
-	for (i = 0; i < job_data->repos->len; i++) {
-		repo = g_ptr_array_index (job_data->repos, i);
+	repos = dnf_context_get_repos (job_data->context);
+	for (i = 0; i < repos->len; i++) {
+		repo = g_ptr_array_index (repos, i);
 		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
 			continue;
 		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
@@ -1573,10 +1532,10 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	refresh_repos = g_ptr_array_new ();
 	state_local = dnf_state_get_child (job_data->state);
 	dnf_state_set_number_steps (state_local, cnt);
-	for (i = 0; i < job_data->repos->len; i++) {
+	for (i = 0; i < repos->len; i++) {
 		gboolean repo_okay;
 
-		repo = g_ptr_array_index (job_data->repos, i);
+		repo = g_ptr_array_index (repos, i);
 		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
 			continue;
 		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
@@ -1592,7 +1551,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		                            NULL);
 		if (!repo_okay || force)
 			g_ptr_array_add (refresh_repos,
-			                 g_ptr_array_index (job_data->repos, i));
+			                 g_ptr_array_index (repos, i));
 
 		/* done */
 		ret = dnf_state_done (state_local, &error);
@@ -2057,13 +2016,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 				   -1);
 	g_assert (ret);
 
-	/* set the list of repos */
-	ret = pk_backend_ensure_repos (job_data, &error);
-	if (!ret) {
-		pk_backend_job_error_code (job, error->code, "%s", error->message);
-		return;
-	}
-
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -2264,11 +2216,6 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 				   99, /* check for untrusted repos */
 				   1, /* emit */
 				   -1);
-	if (!ret)
-		return FALSE;
-
-	/* set the list of repos */
-	ret = pk_backend_ensure_repos (job_data, error);
 	if (!ret)
 		return FALSE;
 
