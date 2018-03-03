@@ -1184,6 +1184,12 @@ repo_is_supported (DnfRepo *repo)
 	return dnf_validate_supported_repo (dnf_repo_get_id (repo));
 }
 
+static gboolean
+repo_is_source (DnfRepo *repo)
+{
+	return g_str_has_suffix (dnf_repo_get_id (repo), "-source");
+}
+
 /**
  * pk_backend_repo_filter:
  */
@@ -1200,10 +1206,10 @@ pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 
 	/* source and ~source */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) &&
-	    !dnf_repo_is_repo (repo))
+	    !repo_is_source (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) &&
-	    dnf_repo_is_repo (repo))
+	    repo_is_source (repo))
 		return FALSE;
 
 	/* installed and ~installed == enabled */
