@@ -4,13 +4,13 @@
 # 
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2017
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-02-19 16:24+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/freedesktop/packagekit/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -327,7 +327,7 @@ msgstr "Жоден з пакунків не потребує оновлення.
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Програмі не вдалося знайти всі пакунки: %s"
@@ -572,8 +572,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Встановлюємо оновлення системи; зачекайте…"
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Звантаження даних щодо джерел програмного забезпечення."
+msgid "Downloading details about the software repositories."
+msgstr "Отримуємо подробиці щодо сховищ програмного забезпечення."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1262,22 +1262,22 @@ msgstr "Для оновлення програмного забезпеченн�
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Зміна параметрів джерела програм"
+msgid "Change software repository parameters"
+msgstr "Зміна параметрів сховища програмного забезпечення"
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Для зміни параметрів джерел програмного забезпечення слід пройти розпізнавання"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Для зміни параметрів сховища програмного забезпечення слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Оновлення списків джерел системи"
+msgid "Refresh system repositories"
+msgstr "Оновлення списків сховищ системи"
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Для оновлення списку джерел системи слід пройти розпізнавання"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Для оновлення списку сховищ системи слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

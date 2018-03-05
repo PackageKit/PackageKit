@@ -15,9 +15,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-02-19 11:42+0000\n"
+"Last-Translator: kalev <kalevlember@gmail.com>\n"
 "Language-Team: French (http://www.transifex.com/freedesktop/packagekit/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -333,7 +333,7 @@ msgstr "Aucune mise à jour de paquet vers une nouvelle version n'est requise."
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Cet outil n'a pas pu trouver tous les paquets : %s"
@@ -578,8 +578,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Installation de la mise à niveau du système ; Cela peut prendre un certain temps..."
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Téléchargement des détails à propos des sources de logiciels."
+msgid "Downloading details about the software repositories."
+msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1268,22 +1268,22 @@ msgstr "Une authentification est nécessaire pour mettre à jour un logiciel"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Modifier les paramètres des dépôts logiciels"
+msgid "Change software repository parameters"
+msgstr ""
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Authentification requise pour changer les paramètres des dépôts"
+msgid "Authentication is required to change software repository parameters"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Actualiser la liste des paquets"
+msgid "Refresh system repositories"
+msgstr ""
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Authentification requise pour mettre à jour la liste des paquets"
+msgid "Authentication is required to refresh the system repositories"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

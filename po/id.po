@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Andika Triwidada <andika@gmail.com>, 2011-2017
+# Andika Triwidada <andika@gmail.com>, 2011-2018
 # Dichi Al Faridi <dichi@alfaridi.info>, 2010
 # dirgita <dirgitadevina@yahoo.co.id>, 2014
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-03-04 13:23+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/freedesktop/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -329,7 +329,7 @@ msgstr "Tak ada paket yang memerlukan pemutakhiran ke versi yang lebih baru."
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Alat ini tidak bisa menemukan semua paket: %s"
@@ -574,8 +574,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Memasang peningkatan sistem, ini bisa makan waktu..."
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Mengunduh rincian tentang sumber perangkat lunak."
+msgid "Downloading details about the software repositories."
+msgstr "Sedang mengunduh rincian tentang repositori perangkat lunak."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -845,7 +845,7 @@ msgstr "Keamanan"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Perbaikan kutu"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -980,7 +980,7 @@ msgstr "Sedang mengambil repositori"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Mengubah repositori"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1163,7 +1163,7 @@ msgstr "Batalkan tugas asing"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Perlu otentikasi untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
+msgstr "Otentikasi diperlukan untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1222,7 +1222,7 @@ msgstr "Percayai suatu kunci yang dipakai untuk menandatangani perangkat lunka"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "Perlu otentikasi untuk menganggap suatu kunci yang dipakai untuk menandatangani perangkat lunak sebagai terpercaya"
+msgstr "Otentikasi diperlukan untuk menganggap suatu kunci yang dipakai untuk menandatangani perangkat lunak sebagai terpercaya"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1233,7 +1233,7 @@ msgid "Accept EULA"
 msgstr "Setujui EULA"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Perlu otentikasi untuk menyetujui suatu EULA"
+msgstr "Otentikasi diperlukan untuk menyetujui suatu EULA"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1248,7 +1248,7 @@ msgid "Remove package"
 msgstr "Hapus paket"
 
 msgid "Authentication is required to remove software"
-msgstr "Perlu otentikasi untuk menghapus perangkat lunak"
+msgstr "Otentikasi diperlukan untuk menghapus perangkat lunak"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1264,22 +1264,22 @@ msgstr "Otentikasi diperlukan untuk memutakhirkan perangkat lunak"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Ubah parameter sumber perangkat lunak"
+msgid "Change software repository parameters"
+msgstr "Ubah parameter repositori perangkat lunak"
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Perlu otentikasi untuk mengubah parameter sumber perangkat lunak"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Otentikasi diperlukan untuk mengubah parameter repositori perangkat lunak"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Segarkan sumber sistem"
+msgid "Refresh system repositories"
+msgstr "Segarkan repositori sistem"
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Perlu otentikasi untuk menyegarkan sumber sistem"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Otentikasi diperlukan untuk menyegarkan repositori sistem"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1290,7 +1290,7 @@ msgstr "Tata proksi jaringan"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "Perlu otentikasi untuk menata proksi jaringan yang dipakai untuk mengunduh perangkat lunak"
+msgstr "Otentikasi diperlukan untuk menata proksi jaringan yang dipakai untuk mengunduh perangkat lunak"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1302,7 +1302,7 @@ msgid "Reload a device"
 msgstr "Muat ulang suatu perangkat"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Perlu otentikasi untuk memuat ulang perangkat dengan penggerak baru"
+msgstr "Otentikasi diperlukan untuk memuat ulang perangkat dengan penggerak baru"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1322,7 +1322,7 @@ msgid "Repair System"
 msgstr "Perbaiki Sistem"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Diperlukan otentikasi untuk memperbaiki perangkat lunak yang telah terpasang"
+msgstr "Otentikasi diperlukan untuk memperbaiki perangkat lunak yang telah terpasang"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system

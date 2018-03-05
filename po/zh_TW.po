@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-23 18:02+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-03-04 12:25+0000\n"
+"Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/freedesktop/packagekit/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -328,7 +328,7 @@ msgstr "無軟體包需要更新至較新版本。"
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "此工具無法找到所有軟體包：%s"
@@ -573,8 +573,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "正在安裝系統升級；這會花上一段時間...s"
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "正在下載關於軟體來源的詳細資料。"
+msgid "Downloading details about the software repositories."
+msgstr "正在下載軟體庫的詳細資訊。"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -844,7 +844,7 @@ msgstr "安全性"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "臭蟲修正"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -979,7 +979,7 @@ msgstr "正在取得軟體庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "正在修改軟體庫"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1232,7 +1232,7 @@ msgid "Accept EULA"
 msgstr "接受終端使用者授權條款協議"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "要接受終端使用者授權條款協議須先通過身份核對"
+msgstr "必須先通過身份核對才能接受終端使用者授權條款協議"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1263,22 +1263,22 @@ msgstr "必須先通過身份核對才能更新軟體"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "更改軟體來源參數"
+msgid "Change software repository parameters"
+msgstr "變更軟體庫參數"
 
-msgid "Authentication is required to change software source parameters"
-msgstr "要更改軟體來源參數須先通過身份核對"
+msgid "Authentication is required to change software repository parameters"
+msgstr "必須先通過身份核對才能變更軟體庫參數"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "重新整理系統來源"
+msgid "Refresh system repositories"
+msgstr "重整系統軟體庫"
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "要重新整理系統來源須先通過身份核對"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "必須先通過身份核對才能重新整理系統軟體庫"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

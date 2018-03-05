@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Piotr Drąg <piotrdrag@gmail.com>, 2011-2017
+# Piotr Drąg <piotrdrag@gmail.com>, 2011-2018
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-02-19 14:47+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/freedesktop/packagekit/language/pl/)\n"
 "MIME-Version: 1.0\n"
@@ -327,7 +327,7 @@ msgstr "Żadne pakiety nie wymagają aktualizacji do nowszych wersji."
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Te narzędzie nie może odnaleźć wszystkich pakietów: %s"
@@ -572,8 +572,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Instalowanie aktualizacji systemu, może to chwilę zająć…"
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Pobieranie szczegółów o źródłach oprogramowania."
+msgid "Downloading details about the software repositories."
+msgstr "Pobieranie informacji o repozytoriach oprogramowania."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -926,11 +926,11 @@ msgstr "Pobieranie zależności"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "Pobieranie szczegółów aktualizacji"
+msgstr "Pobieranie informacji o aktualizacji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "Pobieranie szczegółów"
+msgstr "Pobieranie informacji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
@@ -942,7 +942,7 @@ msgstr "Pobieranie aktualizacji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "Wyszukiwanie według szczegółów"
+msgstr "Wyszukiwanie według informacji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
@@ -1262,22 +1262,22 @@ msgstr "Wymagane jest uwierzytelnienie, aby zaktualizować oprogramowanie"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Zmiana parametrów źródła oprogramowania"
+msgid "Change software repository parameters"
+msgstr "Zmiana parametrów repozytorium oprogramowania"
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Wymagane jest uwierzytelnienie, aby zmienić parametry źródeł oprogramowania"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Wymagane jest uwierzytelnienie, aby zmienić parametry repozytorium oprogramowania"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Odświeżenie źródeł systemu"
+msgid "Refresh system repositories"
+msgstr "Odświeżenie repozytoriów systemu"
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Wymagane jest uwierzytelnienie, aby odświeżyć źródła systemu"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Wymagane jest uwierzytelnienie, aby odświeżyć repozytoria systemu"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1367,7 +1367,7 @@ msgstr "Wyszukuje według nazw"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr "Wyszukuje według szczegółów"
+msgstr "Wyszukuje według informacji"
 
 #. TRANSLATORS: command description
 msgid "Search by files"

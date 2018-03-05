@@ -9,7 +9,7 @@
 # Misha Shnurapet <shnurapet@fedoraproject.org>, 2011-2012
 # Misha Shnurapet <zayzayats@yandex.ru>, 2010
 # Richard Hughes <richard@hughsie.com>, 2011
-# Serge Vylekzhanin <vylekzhanin@mail.ru>, 2014-2017
+# Serge Vylekzhanin <vylekzhanin@mail.ru>, 2014-2018
 # Yulia <ypoyarko@redhat.com>, 2009
 # Yuri Khabarov <madb00blik@gmail.com>, 2011
 # Yuri Kozlov <yuray@komyakino.ru>, 2011,2013-2014
@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-02-19 18:20+0000\n"
 "Last-Translator: Serge Vylekzhanin <vylekzhanin@mail.ru>\n"
 "Language-Team: Russian (http://www.transifex.com/freedesktop/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -337,7 +337,7 @@ msgstr "Нет пакетов, требующих обновлений до по
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Этот инструмент не нашёл всех пакетов: %s"
@@ -582,8 +582,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Установка обновления системы. Это может занять некоторое время…"
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Загрузка подробностей об источниках приложений."
+msgid "Downloading details about the software repositories."
+msgstr "Загрузка подробностей об репозиториях приложений."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1272,22 +1272,22 @@ msgstr "Для обновления приложений требуется ау
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Изменить параметры источника приложений"
+msgid "Change software repository parameters"
+msgstr "Изменить параметры репозитория приложений"
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Для изменения параметров источника приложений необходима аутентификация"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Для изменения параметров репозитория приложений необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Обновить системные источники"
+msgid "Refresh system repositories"
+msgstr "Обновить системные репозитории"
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Для обновления системных источников необходима аутентификация"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Для обновления системных репозиториев необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

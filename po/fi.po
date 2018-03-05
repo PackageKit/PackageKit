@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2017
+# Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2018
 # Richard Hughes <richard@hughsie.com>, 2011
 # Ville-Pekka Vainio <vpvainio@iki.fi>, 2011
 # Ville Skyttä <ville.skytta@iki.fi>, 2011
@@ -11,9 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-01-09 13:29+0100\n"
-"PO-Revision-Date: 2017-09-19 09:10+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-02-19 12:41+0100\n"
+"PO-Revision-Date: 2018-02-19 11:42+0000\n"
+"Last-Translator: kalev <kalevlember@gmail.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/freedesktop/packagekit/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -329,7 +329,7 @@ msgstr "Yksikään paketti ei vaadi päivittämistä uudempaan versioon."
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
-#. * any software sources. The detailed error follows
+#. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Tämä työkalu ei löytänyt paketteja: %s"
@@ -379,7 +379,7 @@ msgstr "Asenna paketit kysymättä vahvistusta"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Valmistele transaktio vain lataamalla paketit"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -486,7 +486,7 @@ msgstr ""
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Toiminto, esim. 'update-packages' vaaditaan"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -574,8 +574,8 @@ msgid "Installing system upgrade; this could take a while..."
 msgstr "Asennetaan järjestelmäpäivitystä, tässä saattaa kestää hetki..."
 
 #. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software sources."
-msgstr "Ladataan tietoja ohjelmistolähteistä."
+msgid "Downloading details about the software repositories."
+msgstr ""
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1222,7 +1222,7 @@ msgstr "Luota ohjelmiston allekirjoittamiseen käytettyyn avaimeen"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr ""
+msgstr "Ohjelmistojen allekirjoittamiseen tarkoitetun avaimen mieltäminen luotetuksi vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1264,22 +1264,22 @@ msgstr "Ohjelmistojen päivittäminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
-#. software sources as this can be used to enable new updates or
+#. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-msgid "Change software source parameters"
-msgstr "Muuta ohjelmistolähdeasetuksia"
+msgid "Change software repository parameters"
+msgstr ""
 
-msgid "Authentication is required to change software source parameters"
-msgstr "Ohjelmistolähdeasetusten muuttaminen vaatii tunnistautumisen"
+msgid "Authentication is required to change software repository parameters"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-msgid "Refresh system sources"
-msgstr "Virkistä järjestelmälähteet"
+msgid "Refresh system repositories"
+msgstr ""
 
-msgid "Authentication is required to refresh the system sources"
-msgstr "Järjestelmälähteiden virkistäminen vaatii tunnistautumisen"
+msgid "Authentication is required to refresh the system repositories"
+msgstr ""
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1397,7 +1397,7 @@ msgstr "Asetustiedoston lataaminen epäonnistui"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr ""
+msgstr "Taustaosan lataaminen epäonnistui"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
