@@ -1,3 +1,45 @@
+Version 1.1.9
+~~~~~~~~~~~~~~
+Released: 2018-03-05
+
+Backends:
+ - aptcc: add support for downgrades as part of updates (Harald Sitter)
+ - aptcc: fix RequireRestart emission by moving it out of destructor (Harald Sitter)
+ - aptcc: Include whether it's a Source repository (Aleix Pol)
+ - dnf: Clean up leftover cache directories (Kalev Lember)
+ - dnf: Don't cache repo list (Kalev Lember)
+ - dnf: Don't filter -source and -debuginfo repos with SUPPORTED filter (Kalev Lember)
+ - dnf: Fix a memory leak when installing packages (Kalev Lember)
+ - dnf: Fix a warning when enabling/disabling repos (Kalev Lember)
+ - dnf: Fix PK_FILTER_ENUM_SOURCE (Kalev Lember)
+ - dnf: Make DnfContext reload its repos when .repo files change (Kalev Lember)
+ - dnf: Make sure cache invalidation doesn't destroy a DnfSack we are using (Kalev Lember)
+ - dnf: strdup temporary string returned by dnf_package_get_nevra() (Kalev Lember)
+ - dnf: Update repos shown with PK_FILTER_ENUM_SUPPORTED filter (Kalev Lember)
+ - slack: Add application filter (Eugen Wissner)
+ - slack: Add first search filters: (not)installed (Eugen Wissner)
+ - slack: Fix install call in UpdatePackages (Eugen Wissner)
+ - slack: Fix slack_cmp_repo (Eugen Wissner)
+ - slack: make global definitions to static members (Eugen Wissner)
+ - slack: Move common props/accessors to parent class (Eugen Wissner)
+ - slack: Put the tests into a separate subdirectory (Eugen Wissner)
+ - slack: Update slackware to latest stable (14.2) (Eugen Wissner)
+ - slack: Use static_cast to cast pointers (Eugen Wissner)
+ - urpmi: typo fix inside pk_backend_get_author() (Julio Faracco)
+ - zypp: removing memory leak from zypp backend (Julio Faracco)
+
+Bugfixes:
+ - Fix missing PK_STATUS_ENUM_RUN_HOOK in pk-enum.c (Daniel Nicoletti)
+ - Fix Qt annotation on DBus signature (Daniel Nicoletti)
+ - client: Fix an invalid read when cancelling races with Finish (Kalev Lember)
+ - engine: Fix a memory leak when handling GetTransactionList (Kalev Lember)
+ - Fix getting user session ID with D-Bus "user bus" model (Kalev Lember)
+ - Fix g_object_ref() type cast warnings with glib 2.56 (Kalev Lember)
+ - Rename "Software Sources" to "Software Repositories" (Kalev Lember)
+ - transaction: Don't leak polkit authority (Kalev Lember)
+ - transaction: Fix a memory leak when authorizing actions (Kalev Lember)
+ - transaction: Log transaction completed messages on debug, not info level (Kalev Lember)
+
 Version 1.1.8
 ~~~~~~~~~~~~~~
 Released: 2018-01-09
