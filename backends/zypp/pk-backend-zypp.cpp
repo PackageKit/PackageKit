@@ -2097,6 +2097,59 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
+/**
+ * backend_get_details_local_thread:
+ */
+static void
+backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	MIL << endl;
+	RepoManager manager;
+	ZyppJob zjob(job);
+	ZYpp::Ptr zypp = zjob.get_zypp();
+
+	gchar **full_paths;
+	g_variant_get (params, "(^a&s)", &full_paths);
+
+	if (zypp == NULL){
+		return;
+	}
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+	for (guint i = 0; full_paths[i]; i++) {
+
+		// check if file is really a rpm
+		Pathname rpmPath (full_paths[i]);
+		target::rpm::RpmHeader::constPtr rpmHeader = target::rpm::RpmHeader::readPackage (rpmPath, target::rpm::RpmHeader::NOSIGNATURE);
+
+		if (rpmHeader == NULL) {
+			zypp_backend_finished_error (
+				job, PK_ERROR_ENUM_INTERNAL_ERROR,
+				"%s is not valid rpm-File", full_paths[i]);
+			return;
+		}
+
+		pk_backend_job_details (job,
+			(rpmHeader->tag_name () + ";" + rpmHeader->tag_version () + "-" + rpmHeader->tag_release () + ";" + rpmHeader->tag_arch ().asString () + ";").c_str (),
+			rpmHeader->tag_summary ().c_str (),
+			rpmHeader->tag_license ().c_str (),
+			get_enum_group (rpmHeader->tag_group ()),
+			rpmHeader->tag_description ().c_str (),
+			rpmHeader->tag_url ().c_str (),
+			(gulong)rpmHeader->tag_size ().blocks (zypp::ByteCount::B));
+	}
+}
+
+/**
+ * pk_backend_get_details_local:
+ */
+void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **full_paths)
+{
+	pk_backend_job_thread_create (job, backend_get_details_local_thread, NULL, NULL);
+}
+
 static void
 backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
