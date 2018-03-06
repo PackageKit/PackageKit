@@ -986,20 +986,27 @@ static gboolean
 zypp_refresh_meta_and_cache (RepoManager &manager, RepoInfo &repo, bool force = false)
 {
 	try {
-		if (manager.checkIfToRefreshMetadata (repo, repo.url())    //RepoManager::RefreshIfNeededIgnoreDelay)
-		    != RepoManager::REFRESH_NEEDED)
-			return TRUE;
-
 		sat::Pool pool = sat::Pool::instance ();
-		// Erase old solv file
-		pool.reposErase (repo.alias ());
+
 		manager.refreshMetadata (repo, force ?
 					 RepoManager::RefreshForced :
 					 RepoManager::RefreshIfNeededIgnoreDelay);
 		manager.buildCache (repo, force ?
 				    RepoManager::BuildForced :
 				    RepoManager::BuildIfNeeded);
-		manager.loadFromCache (repo);
+		try
+		{
+			manager.loadFromCache (repo);
+		}
+		catch (const Exception &exp)
+		{
+			// cachefile has old fomat (or is corrupted): rebuild it
+			manager.cleanCache (repo);
+			manager.buildCache (repo, force ?
+					    RepoManager::BuildForced :
+					    RepoManager::BuildIfNeeded);
+			manager.loadFromCache (repo);
+		}
 		return TRUE;
 	} catch (const AbortTransactionException &ex) {
 		return FALSE;
@@ -1578,9 +1585,30 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 	if (zypp == NULL)
 		return  FALSE;
 	filesystem::Pathname pathname("/");
-	// This call is needed to refresh system rpmdb status while refresh cache
-	zypp->finishTarget ();
-	zypp->initializeTarget (pathname);
+
+	bool poolIsClean = sat::Pool::instance ().reposEmpty ();
+	// Erase and reload all if pool is too holey (densyity [100: good | 0 bad])
+	// NOTE sat::Pool::capacity() > 2 is asserted in division
+	if (!poolIsClean &&
+	    sat::Pool::instance ().solvablesSize () * 100 / sat::Pool::instance ().capacity () < 33)
+	{
+		sat::Pool::instance ().reposEraseAll ();
+		poolIsClean = true;
+	}
+
+	Target_Ptr target = zypp->getTarget ();
+	if (!target)
+	{
+		zypp->initializeTarget (pathname);	// initial target
+		target = zypp->getTarget ();
+	}
+	else
+	{
+		// load rpmdb trusted keys into zypp keyring
+		target->rpmDb ().exportTrustedKeysInZyppKeyRing ();
+	}
+	// load installed packages to pool
+	target->load ();
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
 	pk_backend_job_set_percentage (job, 0);
@@ -1598,6 +1626,22 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		return FALSE;
 	}
 
+	if (!poolIsClean)
+	{
+		std::vector<std::string> aliasesToRemove;
+
+		for (const Repository &poolrepo : zypp->pool ().knownRepositories ())
+		{
+			if (!(poolrepo.isSystemRepo () || manager.hasRepo (poolrepo.alias ())))
+				aliasesToRemove.push_back (poolrepo.alias ());
+		}
+
+		for (const std::string &aliasToRemove : aliasesToRemove)
+		{
+			sat::Pool::instance ().reposErase (aliasToRemove);
+		}
+	}
+
 	int i = 1;
 	int num_of_repos = repos.size ();
 	gchar *repo_messages = NULL;
@@ -1612,7 +1656,11 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 
 		// skip disabled repos
 		if (repo.enabled () == false)
+		{
+			if (!poolIsClean)
+				sat::Pool::instance ().reposErase (repo.alias ());
 			continue;
+		}
 
 		// do as zypper does
 		if (!force && !repo.autorefresh())
@@ -1621,7 +1669,11 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 		// skip changeable media (DVDs and CDs).  Without doing this,
 		// the disc would be required to be physically present.
 		if (repo.baseUrlsBegin ()->schemeIsVolatile())
+		{
+			if (!poolIsClean)
+				sat::Pool::instance ().reposErase (repo.alias ());
 			continue;
+		}
 
 		try {
 			// Refreshing metadata
