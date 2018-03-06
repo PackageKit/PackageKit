@@ -836,7 +836,7 @@ dnf_utils_run_query_with_newest_filter (DnfSack *sack, HyQuery query)
 	hy_query_free (query_tmp);
 	g_ptr_array_unref (results_tmp);
 
-	g_object_unref (pkgset);
+	dnf_packageset_free(pkgset);
 
 	return results;
 }
