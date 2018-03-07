@@ -306,8 +306,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->repos_timer = g_timer_new ();
 	g_signal_connect (dnf_context_get_repo_loader (priv->context), "changed",
 			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
-
-	lr_global_init ();
 }
 
 /**
