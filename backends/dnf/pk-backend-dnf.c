@@ -265,7 +265,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	pk_backend_set_user_data (backend, priv);
 	priv->conf = g_key_file_ref (conf);
 
-	g_debug ("Using Dnf %i.%i.%i",
+	g_debug ("Using libdnf %i.%i.%i",
 		 LIBDNF_MAJOR_VERSION,
 		 LIBDNF_MINOR_VERSION,
 		 LIBDNF_MICRO_VERSION);
