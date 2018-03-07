@@ -57,6 +57,7 @@ typedef struct {
 	GHashTable	*sack_cache;	/* of DnfSackCacheItem */
 	GMutex		 sack_mutex;
 	GTimer		*repos_timer;
+	gchar		*release_ver;
 } PkBackendDnfPrivate;
 
 typedef struct {
@@ -254,7 +255,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	gboolean ret;
 	PkBackendDnfPrivate *priv;
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *release_ver = NULL;
 
 	/* use logging */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
@@ -274,12 +274,12 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 		 LR_VERSION_MINOR,
 		 LR_VERSION_PATCH);
 
-	release_ver = pk_get_distro_version_id (&error);
-	if (release_ver == NULL)
+	priv->release_ver = pk_get_distro_version_id (&error);
+	if (priv->release_ver == NULL)
 		g_error ("Failed to parse os-release: %s", error->message);
 
 	/* clean up any cache directories left over from a distro upgrade */
-	remove_old_cache_directories (backend, release_ver);
+	remove_old_cache_directories (backend, priv->release_ver);
 
 	/* a cache of DnfSacks with the key being which sacks are loaded
 	 *
@@ -322,6 +322,7 @@ pk_backend_destroy (PkBackend *backend)
 	g_timer_destroy (priv->repos_timer);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
+	g_free (priv->release_ver);
 	g_free (priv);
 }
 
