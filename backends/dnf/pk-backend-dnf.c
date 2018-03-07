@@ -246,13 +246,40 @@ remove_old_cache_directories (PkBackend *backend, const gchar *release_ver_str)
 	}
 }
 
+static gboolean
+pk_backend_ensure_default_dnf_context (PkBackend *backend, GError **error)
+{
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(DnfContext) context = NULL;
+
+	/* already set */
+	if (priv->context != NULL)
+		return TRUE;
+
+	g_assert (priv->conf != NULL);
+	g_assert (priv->release_ver != NULL);
+
+	/* set defaults */
+	context = dnf_context_new ();
+	if (!pk_backend_setup_dnf_context (context, priv->conf, priv->release_ver, error))
+		return FALSE;
+
+	/* setup succeeded: store in priv and connect signals */
+	priv->context = g_steal_pointer (&context);
+	g_signal_connect (priv->context, "invalidate",
+			  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
+	g_signal_connect (dnf_context_get_repo_loader (priv->context), "changed",
+			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
+
+	return TRUE;
+}
+
 /**
  * pk_backend_initialize:
  */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
-	gboolean ret;
 	PkBackendDnfPrivate *priv;
 	g_autoptr(GError) error = NULL;
 
@@ -264,6 +291,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv = g_new0 (PkBackendDnfPrivate, 1);
 	pk_backend_set_user_data (backend, priv);
 	priv->conf = g_key_file_ref (conf);
+	priv->repos_timer = g_timer_new ();
 
 	g_debug ("Using libdnf %i.%i.%i",
 		 LIBDNF_MAJOR_VERSION,
@@ -294,18 +322,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  g_free,
 						  (GDestroyNotify) dnf_sack_cache_item_free);
 
-	/* set defaults */
-	priv->context = dnf_context_new ();
-	g_signal_connect (priv->context, "invalidate",
-			  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
-	ret = pk_backend_setup_dnf_context (priv->context, conf, release_ver, &error);
-	if (!ret)
+	if (!pk_backend_ensure_default_dnf_context (backend, &error))
 		g_error ("failed to setup context: %s", error->message);
-
-	/* use context's repository loaders */
-	priv->repos_timer = g_timer_new ();
-	g_signal_connect (dnf_context_get_repo_loader (priv->context), "changed",
-			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
 }
 
 /**
