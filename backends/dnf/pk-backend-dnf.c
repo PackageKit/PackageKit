@@ -323,7 +323,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  (GDestroyNotify) dnf_sack_cache_item_free);
 
 	if (!pk_backend_ensure_default_dnf_context (backend, &error))
-		g_error ("failed to setup context: %s", error->message);
+		g_warning ("failed to setup context: %s", error->message);
 }
 
 /**
@@ -479,7 +479,6 @@ pk_backend_job_set_context (PkBackendJob *job, DnfContext *context)
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	PkBackendDnfJobData *job_data;
 	job_data = g_new0 (PkBackendDnfJobData, 1);
 	job_data->backend = backend;
@@ -501,8 +500,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	g_signal_connect (job_data->state, "notify::speed",
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
-
-	pk_backend_job_set_context (job, priv->context);
 
 #ifdef PK_BUILD_LOCAL
 	/* we don't want to enable this for normal runtime */
@@ -1145,6 +1142,15 @@ pk_backend_get_packages (PkBackend *backend,
 			 PkBackendJob *job,
 			 PkBitfield filters)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1157,6 +1163,15 @@ pk_backend_resolve (PkBackend *backend,
 		    PkBitfield filters,
 		    gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1169,6 +1184,15 @@ pk_backend_search_names (PkBackend *backend,
 			 PkBitfield filters,
 			 gchar **values)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1181,6 +1205,15 @@ pk_backend_search_details (PkBackend *backend,
 			   PkBitfield filters,
 			   gchar **values)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1193,6 +1226,15 @@ pk_backend_search_files (PkBackend *backend,
 			 PkBitfield filters,
 			 gchar **values)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1205,6 +1247,15 @@ pk_backend_what_provides (PkBackend *backend,
 			  PkBitfield filters,
 			  gchar **values)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1216,6 +1267,15 @@ pk_backend_get_updates (PkBackend *backend,
 			PkBackendJob *job,
 			PkBitfield filters)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_search_thread, NULL, NULL);
 }
 
@@ -1328,6 +1388,15 @@ pk_backend_get_repo_list (PkBackend *backend,
 			  PkBackendJob *job,
 			  PkBitfield filters)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_get_repo_list_thread, NULL, NULL);
 }
 
@@ -1444,6 +1513,15 @@ pk_backend_repo_set_data (PkBackend *backend,
 			  const gchar *parameter,
 			  const gchar *value)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_repo_set_data_thread, NULL, NULL);
 }
 
@@ -1456,6 +1534,15 @@ pk_backend_repo_enable (PkBackend *backend,
 			const gchar *repo_id,
 			gboolean enabled)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_repo_set_data_thread, NULL, NULL);
 }
 
@@ -1713,6 +1800,15 @@ pk_backend_refresh_cache (PkBackend *backend,
 			  PkBackendJob *job,
 			  gboolean force)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
@@ -1882,6 +1978,15 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
@@ -1968,6 +2073,15 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, backend_get_details_local_thread, NULL, NULL);
 }
 
@@ -2050,6 +2164,15 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 void
 pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, backend_get_files_local_thread, NULL, NULL);
 }
 
@@ -2203,6 +2326,15 @@ pk_backend_download_packages (PkBackend *backend,
 			      gchar **package_ids,
 			      const gchar *directory)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
@@ -2664,6 +2796,15 @@ pk_backend_repo_remove (PkBackend *backend,
 			const gchar *repo_id,
 			gboolean autoremove)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_repo_remove_thread, NULL, NULL);
 }
 
@@ -2841,6 +2982,15 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 			    gboolean allow_deps,
 			    gboolean autoremove)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
 }
 
@@ -3031,6 +3181,15 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job,
 			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_install_packages_thread, NULL, NULL);
 }
 
@@ -3140,6 +3299,15 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
 			  PkBitfield transaction_flags,
 			  gchar **full_paths)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_install_files_thread, NULL, NULL);
 }
 
@@ -3251,6 +3419,15 @@ void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job,
 			    PkBitfield transaction_flags, gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
@@ -3352,6 +3529,15 @@ pk_backend_upgrade_system (PkBackend *backend,
                            const gchar *distro_id,
                            PkUpgradeKindEnum upgrade_kind)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_upgrade_system_thread, NULL, NULL);
 }
 
@@ -3502,6 +3688,15 @@ pk_backend_get_files (PkBackend *backend,
 		      PkBackendJob *job,
 		      gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_get_files_thread, NULL, NULL);
 }
 
@@ -3645,6 +3840,15 @@ pk_backend_get_update_detail (PkBackend *backend,
 			      PkBackendJob *job,
 			      gchar **package_ids)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_get_update_detail_thread, NULL, NULL);
 }
 
@@ -3715,5 +3919,14 @@ pk_backend_repair_system (PkBackend *backend,
 			  PkBackendJob *job,
 			  PkBitfield transaction_flags)
 {
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
 	pk_backend_job_thread_create (job, pk_backend_repair_system_thread, NULL, NULL);
 }
