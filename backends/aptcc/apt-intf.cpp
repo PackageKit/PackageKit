@@ -363,7 +363,10 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             for (const pkgCache::VerIterator &verIt : ret) {
                 bool found = false;
                 for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
-                    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(*it);
+                    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(*it));
+                    if (archive == nullptr) {
+                        continue;
+                    }
                     const pkgCache::VerIterator ver = archive->version();
                     if ((*it)->Local && verIt == ver) {
                         found = true;
@@ -1516,7 +1519,10 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
         if (!(*I)->IsTrusted()) {
             // The pkgAcquire::Item had a version hiden on it's subclass
             // pkgAcqArchive but it was protected our subclass exposes that
-            pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(*I);
+            pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(*I));
+            if (archive == nullptr) {
+                continue;
+            }
             untrusted.push_back(archive->version());
 
             UntrustedList += string((*I)->ShortDesc()) + " ";
