@@ -198,7 +198,10 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc & Itm, int status)
 
     // The pkgAcquire::Item had a version hiden on it's subclass
     // pkgAcqArchive but it was protected our subclass exposes that
-    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(Itm.Owner);
+    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(Itm.Owner));
+    if (archive == nullptr) {
+        return;
+    }
     const pkgCache::VerIterator ver = archive->version();
     if (ver.end() == true) {
         return;
