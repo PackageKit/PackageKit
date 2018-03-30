@@ -414,7 +414,7 @@ if test x$enable_aptcc = xyes; then
 	AC_LANG([C++])
 
 	# Require C++11 support
-	#AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 
 	# check we have apt and gstreamer headers
 	save_CPPFLAGS="$CPPFLAGS"
@@ -479,7 +479,7 @@ fi
 
 if test x$enable_slack = xyes; then
 	AC_LANG([C++])
-	#AX_CXX_COMPILE_STDCXX_14([ext], [mandatory])
+	AX_CXX_COMPILE_STDCXX_14([ext], [mandatory])
 
 	AC_CHECK_LIB(curl, curl_version, [
 	    CURL_CFLAGS="`curl-config --cflags`"
@@ -506,7 +506,7 @@ if test x$enable_nix = xyes; then
 	AC_LANG([C++])
 
 	# Require C++11 support
-	#AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
+	AX_CXX_COMPILE_STDCXX_11([ext], [mandatory])
 
 	PKG_CHECK_MODULES(NIX, nix-expr >= 1.12)
 	PKG_CHECK_MODULES(NIX, nix-main >= 1.12)
