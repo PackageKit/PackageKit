@@ -1072,7 +1072,14 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
 
 bool AptIntf::matchesQueries(const vector<string> &queries, string s) {
     for (string query : queries) {
-        if (s.find (query) != string::npos) {
+        // Case insensitive "string.contains"
+        auto it = std::search(
+            s.begin(), s.end(),
+            query.begin(), query.end(),
+            [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+        );
+
+        if (it != s.end()) {
             return true;
         }
     }
