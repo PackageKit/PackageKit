@@ -1076,7 +1076,9 @@ bool AptIntf::matchesQueries(const vector<string> &queries, string s) {
         auto it = std::search(
             s.begin(), s.end(),
             query.begin(), query.end(),
-            [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
+            [](char ch1, char ch2) {
+                return std::tolower(static_cast<unsigned char>(ch1)) == std::tolower(static_cast<unsigned char>(ch2));
+            }
         );
 
         if (it != s.end()) {
