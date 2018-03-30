@@ -770,6 +770,10 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
         return;
     }
 
+    if (_error->PendingError() == true) {
+         return;
+    }
+
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
     pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
     pk_backend_job_set_allow_cancel(job, true);
