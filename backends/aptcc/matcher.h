@@ -33,7 +33,7 @@ using namespace std;
 class Matcher
 {
 public:
-    Matcher(const string &matchers);
+    Matcher(const string &matcher);
     ~Matcher();
 
     bool matches(const string &s);
@@ -42,13 +42,9 @@ public:
 private:
     bool m_hasError;
     string m_error;
-    bool parse_pattern(string::const_iterator &start,
-                       const string::const_iterator &end);
-    string parse_substr(string::const_iterator &start,
-                        const string::const_iterator &end);
-    string parse_literal_string_tail(string::const_iterator &start,
-                                     const string::const_iterator end);
-    vector<regex_t> m_matches;
+    bool do_compile(const string &_pattern, int cflags);
+    bool parse_pattern(const string &matcher);
+    regex_t m_matcher;
 };
 
 #endif

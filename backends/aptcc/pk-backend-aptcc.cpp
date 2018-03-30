@@ -757,6 +757,13 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     g_variant_get(params, "(t^a&s)",
                   &filters,
                   &values);
+
+    if (*values) {
+        for (gint i = 0; values[i] != NULL; i++) {
+            values[i] = g_regex_escape_string (values[i], -1);
+        }
+    }
+
     search = g_strjoinv("|", values);
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
