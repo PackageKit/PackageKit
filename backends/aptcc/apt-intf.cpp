@@ -1070,8 +1070,8 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
     return output;
 }
 
-bool AptIntf::matchesQueries(vector<string>* queries, string s) {
-    for (string query : *queries) {
+bool AptIntf::matchesQueries(const vector<string> &queries, string s) {
+    for (string query : queries) {
         if (s.find (query) != string::npos) {
             return true;
         }
@@ -1079,7 +1079,7 @@ bool AptIntf::matchesQueries(vector<string>* queries, string s) {
     return false;
 }
 
-PkgList AptIntf::searchPackageName(vector<string>* queries)
+PkgList AptIntf::searchPackageName(const vector<string> &queries)
 {
     PkgList output;
 
@@ -1115,7 +1115,7 @@ PkgList AptIntf::searchPackageName(vector<string>* queries)
     return output;
 }
 
-PkgList AptIntf::searchPackageDetails(vector<string>* queries)
+PkgList AptIntf::searchPackageDetails(const vector<string> &queries)
 {
     PkgList output;
 

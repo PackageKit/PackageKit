@@ -771,7 +771,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     }
 
     if (_error->PendingError() == true) {
-         return;
+        return;
     }
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
@@ -781,9 +781,9 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     PkgList output;
     role = pk_backend_job_get_role(job);
     if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-        output = apt->searchPackageDetails(&queries);
+        output = apt->searchPackageDetails(queries);
     } else {
-        output = apt->searchPackageName(&queries);
+        output = apt->searchPackageName(queries);
     }
 
     // It's faster to emit the packages here than in the matching part
