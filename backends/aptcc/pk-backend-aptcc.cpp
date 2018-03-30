@@ -750,24 +750,27 @@ void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job, PkBitfield 
 static void backend_search_package_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **values;
-    gchar *search;
     PkBitfield filters;
     PkRoleEnum role;
+    vector<string> queries;
 
     g_variant_get(params, "(t^a&s)",
                   &filters,
                   &values);
-    search = g_strjoinv("|", values);
+
+    if (*values) {
+        for (gint i = 0; values[i] != NULL; i++) {
+            queries.push_back(values[i]);
+        }
+    }
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
-        g_free(search);
         return;
     }
 
     if (_error->PendingError() == true) {
-        g_free(search);
         return;
     }
 
@@ -778,11 +781,10 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     PkgList output;
     role = pk_backend_job_get_role(job);
     if (role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-        output = apt->searchPackageDetails(search);
+        output = apt->searchPackageDetails(queries);
     } else {
-        output = apt->searchPackageName(search);
+        output = apt->searchPackageName(queries);
     }
-    g_free(search);
 
     // It's faster to emit the packages here than in the matching part
     apt->emitPackages(output, filters);
