@@ -394,8 +394,8 @@ AC_SUBST(DBUS_SERVICES_DIR)
 if test x$enable_dnf = xyes; then
 	PKG_CHECK_MODULES(DNF, appstream-glib libdnf >= 0.7.0)
 	AC_ARG_WITH(dnf-vendor,
-			[AS_HELP_STRING([--with-dnf-vendor=<vendor>],[select a vendor configuration (fedora, mageia; default is fedora)])])
-	if test "$with_dnf_vendor" = "fedora" -o "$with_dnf_vendor" = "mageia"; then
+			[AS_HELP_STRING([--with-dnf-vendor=<vendor>],[select a vendor configuration (fedora, mageia, openmandriva; default is fedora)])])
+	if test "$with_dnf_vendor" = "fedora" -o "$with_dnf_vendor" = "mageia" -o "$with_dnf_vendor" = "openmandriva"; then
 		with_dnf_vendor="$with_dnf_vendor"
 	else
 		with_dnf_vendor="fedora"
