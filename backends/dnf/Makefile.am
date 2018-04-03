@@ -2,7 +2,8 @@ plugindir = $(PK_PLUGIN_DIR)
 plugin_LTLIBRARIES = libpk_backend_dnf.la
 EXTRA_DIST =								\
 	dnf-backend-vendor-fedora.c					\
-	dnf-backend-vendor-mageia.c
+	dnf-backend-vendor-mageia.c					\
+	dnf-backend-vendor-openmandriva.c
 libpk_backend_dnf_la_SOURCES =						\
 	dnf-backend-vendor.h						\
 	dnf-backend.c							\
