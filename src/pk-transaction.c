@@ -2351,25 +2351,14 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 
 	/* did not auth */
 	if (!polkit_authorization_result_get_is_authorized (result)) {
-		if (g_strcmp0 (action_id, "org.freedesktop.packagekit.package-install") == 0 &&
-			       pk_bitfield_contain (priv->cached_transaction_flags,
-						    PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
-			g_debug ("allowing just reinstallation");
-			pk_bitfield_add (priv->cached_transaction_flags,
-					 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL);
-		} else {
-			priv->waiting_for_auth = FALSE;
-			/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
-			pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
-			pk_transaction_error_code_emit (data->transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
-							"Failed to obtain authentication.");
-			pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
-
-			syslog (LOG_AUTH | LOG_NOTICE,
-				"uid %i failed to obtain auth",
-				priv->uid);
-			goto out;
-		}
+		priv->waiting_for_auth = FALSE;
+		/* emit an ::StatusChanged, ::ErrorCode() and then ::Finished() */
+		pk_transaction_status_changed_emit (data->transaction, PK_STATUS_ENUM_FINISHED);
+		pk_transaction_error_code_emit (data->transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
+						"Failed to obtain authentication.");
+		pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
+		syslog (LOG_AUTH | LOG_NOTICE, "uid %i failed to obtain auth", priv->uid);
+		goto out;
 	}
 
 	if (data->actions->len <= 1) {
