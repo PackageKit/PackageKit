@@ -1,3 +1,22 @@
+Version 1.1.10
+~~~~~~~~~~~~~~
+Released: 2018-04-23
+
+Notes:
+ - This release fixes CVE-2018-1106 which is a moderate security issue.
+
+Backends:
+ - aptcc: Not all downloads have to be packages (Julian Andres Klode)
+ - aptcc: Return multiple packages when using '|' operator (David Hewitt)
+ - aptcc: Simplify search methods (#247) (David Hewitt)
+ - dnf: Add OpenMandriva vendor (Bernhard Rosenkränzer)
+ - dnf: Don't abort() when failing to set up context (Kalev Lember)
+ - zypp: Implement GetDetailsLocal in zypp backend (Jonathan Kang)
+ - zypp: Improve refresh-cache function in zypp backend (Jonathan Kang)
+
+Bugfixes:
+ - Do not set JUST_REINSTALL on any kind of auth failure (Richard Hughes)
+
 Version 1.1.9
 ~~~~~~~~~~~~~~
 Released: 2018-03-05
