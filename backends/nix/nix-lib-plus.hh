@@ -14,6 +14,8 @@
 #ifndef NIX_LIB_PLUS_HH
 #define NIX_LIB_PLUS_HH
 
+#include <nix/config.h>
+
 #include <nix/nixexpr.hh>
 #include <nix/shared.hh>
 #include <nix/eval.hh>
@@ -24,7 +26,7 @@
 #include <nix/names.hh>
 #include <nix/profiles.hh>
 #include <nix/globals.hh>
-#include <nix/common-opts.hh>
+#include <nix/attr-path.hh>
 
 using namespace nix;
 

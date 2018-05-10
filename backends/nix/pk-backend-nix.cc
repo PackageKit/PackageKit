@@ -222,10 +222,6 @@ pk_backend_get_details_thread (PkBackendJob* job, GVariant* params, gpointer p)
 					license = fullName->value->string.s;
 			}
 
-			int narSize = 0;
-			if (drv.queryOutPath () != "")
-				narSize = state->store->queryPathInfo (drv.queryDrvPath ()).narSize;
-
 			string longDescription = drv.queryMetaString ("longDescription");
 			if (longDescription == "")
 				longDescription = drv.queryMetaString ("description");
@@ -238,7 +234,7 @@ pk_backend_get_details_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				PK_GROUP_ENUM_UNKNOWN, // TODO: hack in group support
 				longDescription.c_str (),
 				drv.queryMetaString ("homepage").c_str (),
-				narSize
+				0
 			);
 		}
 	}
@@ -288,7 +284,7 @@ pk_backend_get_packages_thread (PkBackendJob* job, GVariant* params, gpointer p)
 			auto info = PK_INFO_ENUM_AVAILABLE;
 
 			for (auto _drv : installedDrvs)
-				if (_drv.name == drv.name)
+				if (_drv.queryName() == drv.queryName())
 				{
 					info = PK_INFO_ENUM_INSTALLED;
 					break;
@@ -348,7 +344,7 @@ pk_backend_resolve_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 			for (auto drv : drvs)
 			{
-				DrvName drvName (drv.name);
+				DrvName drvName (drv.queryName());
 				if (searchName.matches (drvName))
 				{
 					if (!nix_filter_drv (*state, drv, settings, filters))
@@ -357,7 +353,7 @@ pk_backend_resolve_thread (PkBackendJob* job, GVariant* params, gpointer p)
 					auto info = PK_INFO_ENUM_AVAILABLE;
 
 					for (auto _drv : installedDrvs)
-						if (_drv.name == drv.name)
+						if (_drv.queryName() == drv.queryName())
 						{
 							info = PK_INFO_ENUM_INSTALLED;
 							break;
@@ -416,7 +412,7 @@ pk_backend_search_names_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				break;
 
 			for (auto drv : drvs)
-				if (drv.name.find(*search) != -1)
+				if (drv.queryName().find(*search) != -1)
 				{
 					if (!nix_filter_drv (*state, drv, settings, filters))
 						continue;
@@ -424,7 +420,7 @@ pk_backend_search_names_thread (PkBackendJob* job, GVariant* params, gpointer p)
 					auto info = PK_INFO_ENUM_AVAILABLE;
 
 					for (auto _drv : installedDrvs)
-						if (_drv.name == drv.name)
+						if (_drv.queryName() == drv.queryName())
 						{
 							info = PK_INFO_ENUM_INSTALLED;
 							break;
@@ -490,7 +486,7 @@ pk_backend_search_details_thread (PkBackendJob* job, GVariant* params, gpointer 
 					auto info = PK_INFO_ENUM_AVAILABLE;
 
 					for (auto _drv : installedDrvs)
-						if (_drv.name == drv.name)
+						if (_drv.queryName() == drv.queryName())
 						{
 							info = PK_INFO_ENUM_INSTALLED;
 							break;
@@ -589,7 +585,7 @@ pk_backend_install_packages_thread (PkBackendJob* job, GVariant* params, gpointe
 
 			for (auto & i : installedElems)
 			{
-				DrvName drvName(i.name);
+				DrvName drvName(i.queryName());
 				allElems.push_back (i);
 			}
 
@@ -728,7 +724,7 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 			DrvInfos newElems;
 			for (auto & i : installedElems)
 			{
-				DrvName drvName (i.name);
+				DrvName drvName (i.queryName());
 
 				try
 				{
@@ -753,7 +749,7 @@ pk_backend_update_packages_thread (PkBackendJob* job, GVariant* params, gpointer
 						if (comparePriorities (*state, i, *j) > 0)
 							continue;
 
-						DrvName newName (j->name);
+						DrvName newName (j->queryName());
 						if (newName.name == drvName.name)
 						{
 							int d = compareVersions (drvName.version, newName.version);

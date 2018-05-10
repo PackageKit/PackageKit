@@ -33,7 +33,7 @@ nix_find_drv (EvalState & state, DrvInfos drvs, gchar* package_id)
 	string attrPath (package_id_parts[3]);
 
 	for (auto drv : drvs)
-		if (drv.attrPath == attrPath && drv.system == system)
+		if (drv.attrPath == attrPath && drv.querySystem() == system)
 			return drv;
 
 	DrvInfo drv (state);
@@ -44,12 +44,12 @@ nix_find_drv (EvalState & state, DrvInfos drvs, gchar* package_id)
 gchar*
 nix_drv_package_id (DrvInfo & drv)
 {
-	DrvName name (drv.name);
+	DrvName name (drv.queryName());
 
 	return pk_package_id_build (
 		name.name.c_str (),
 		name.version.c_str (),
-		drv.system.c_str (),
+		drv.querySystem().c_str (),
 		drv.attrPath.c_str ()
 	);
 }
@@ -89,7 +89,7 @@ nix_filter_drv (EvalState & state, DrvInfo & drv, const Settings & settings, PkB
 		}
 
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH) || pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH))
-		if (drv.system == settings.thisSystem)
+		if (drv.querySystem() == settings.thisSystem)
 		{
 			if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH))
 				return FALSE;
@@ -99,34 +99,6 @@ nix_filter_drv (EvalState & state, DrvInfo & drv, const Settings & settings, PkB
 			if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH))
 				return FALSE;
 		}
-
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED) || pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED))
-	{
-		auto platforms = drv.queryMeta ("platforms");
-
-		if (platforms != NULL && platforms->isList ())
-		{
-			bool hasPlatform = FALSE;
-			for (auto i = platforms->listElems (); i != platforms->listElems () + platforms->listSize (); i++) {
-				if (*i != NULL && (*i)->type == tString && (*i)->string.s == settings.thisSystem)
-				{
-					hasPlatform = TRUE;
-					break;
-				}
-			}
-
-			if (hasPlatform)
-			{
-				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED))
-					return FALSE;
-			}
-			else
-			{
-				if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED))
-					return FALSE;
-			}
-		}
-	}
 
 	return TRUE;
 }
