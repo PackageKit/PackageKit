@@ -118,12 +118,16 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 		/* stop watching for events */
 		if (priv->io_channel_socket_listen_id > 0)
 			g_source_remove (priv->io_channel_socket_listen_id);
+		priv->io_channel_socket_listen_id = 0;
 		if (priv->io_channel_child_stdout_listen_id > 0)
 			g_source_remove (priv->io_channel_child_stdout_listen_id);
+		priv->io_channel_child_stdout_listen_id = 0;
 		if (priv->io_channel_child_stderr_listen_id > 0)
 			g_source_remove (priv->io_channel_child_stderr_listen_id);
+		priv->io_channel_child_stderr_listen_id = 0;
 		if (priv->io_channel_child_stdin_listen_id > 0)
 			g_source_remove (priv->io_channel_child_stdin_listen_id);
+		priv->io_channel_child_stdin_listen_id = 0;
 	}
 
 	/* kill process */
@@ -170,15 +174,16 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
 		g_debug ("helper process exited");
+		priv->io_channel_child_stdout_listen_id = 0;
 		status = g_io_channel_shutdown (priv->io_channel_child_stdout, FALSE, &error);
 		if (status != G_IO_STATUS_NORMAL) {
 			g_warning ("failed to shutdown channel: %s", error->message);
-			return FALSE;
+			return G_SOURCE_REMOVE;
 		}
 		status = g_io_channel_shutdown (priv->io_channel_child_stderr, FALSE, &error);
 		if (status != G_IO_STATUS_NORMAL) {
 			g_warning ("failed to shutdown channel: %s", error->message);
-			return FALSE;
+			return G_SOURCE_REMOVE;
 		}
 		if (priv->active_conn != NULL) {
 			ret = g_socket_close (priv->active_conn, &error);
@@ -188,7 +193,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 			g_object_unref (priv->active_conn);
 			priv->active_conn = NULL;
 		}
-		return FALSE;
+		return G_SOURCE_REMOVE;
 	}
 
 	/* there is data to read */
@@ -198,10 +203,11 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 		status = g_io_channel_read_chars (source, data, 1024, &len, &error);
 		if (status == G_IO_STATUS_EOF) {
 			g_warning ("child closed unexpectedly");
-			return FALSE;
+			priv->io_channel_child_stdout_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		if (len == 0)
-			return TRUE;
+			return G_SOURCE_CONTINUE;
 
 		/* write to socket */
 		data[len] = '\0';
@@ -209,16 +215,18 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 		status = g_io_channel_write_chars (priv->io_channel_socket, data, len, &written, &error);
 		if (status != G_IO_STATUS_NORMAL) {
 			g_warning ("failed to write to socket: %s", error->message);
-			return FALSE;
+			priv->io_channel_child_stdout_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		if (written != len) {
 			g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
 				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
-			return FALSE;
+			priv->io_channel_child_stdout_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		g_debug ("wrote %" G_GSIZE_FORMAT " bytes to socket", written);
 	}
-	return TRUE;
+	return G_SOURCE_CONTINUE;
 }
 
 /*
@@ -227,10 +235,11 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 static gboolean
 pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
 {
+	PkClientHelperPrivate *priv = client_helper->priv;
 	gchar data[1024];
 	gsize len = 0;
 	GIOStatus status;
-	gboolean ret = TRUE;
+	gboolean ret = G_SOURCE_CONTINUE;
 
 	/* there is data to read */
 	if ((condition & G_IO_IN) == 0)
@@ -239,7 +248,8 @@ pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkC
 	/* read data */
 	status = g_io_channel_read_chars (source, data, 1024, &len, NULL);
 	if (status == G_IO_STATUS_EOF) {
-		ret = FALSE;
+		priv->io_channel_child_stderr_listen_id = 0;
+		ret = G_SOURCE_REMOVE;
 		goto out;
 	}
 	if (len == 0)
@@ -261,33 +271,39 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 	PkClientHelperPrivate *priv = client_helper->priv;
 	gchar data[1024];
 	gsize len = 0;
-	GIOStatus status;
 	gsize written = 0;
-	gboolean ret = TRUE;
 	g_autoptr(GError) error = NULL;
 
 	/* package manager is done processing a package */
 	if ((condition & G_IO_HUP) > 0) {
+		gboolean ret;
+
 		g_debug ("socket hung up");
 		ret = g_socket_close (priv->active_conn, &error);
 		if (!ret)
 			g_warning ("failed to close socket");
 		g_object_unref (priv->active_conn);
 		priv->active_conn = NULL;
-		return FALSE;
+		priv->io_channel_child_stdin_listen_id = 0;
+		return G_SOURCE_REMOVE;
 	}
 
 	/* there is data to read */
 	if ((condition & G_IO_IN) > 0) {
+		GIOStatus status;
+
 		status = g_io_channel_read_chars (source, data, 1024, &len, &error);
-		if (status == G_IO_STATUS_EOF)
-			return FALSE;
+		if (status == G_IO_STATUS_EOF) {
+			priv->io_channel_child_stdin_listen_id = 0;
+			return G_SOURCE_REMOVE;
+		}
 		if (error != NULL) {
 			g_warning ("failed to read: %s", error->message);
-			return FALSE;
+			priv->io_channel_child_stdin_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		if (len == 0)
-			return TRUE;
+			return G_SOURCE_CONTINUE;
 
 		/* write to child */
 		data[len] = '\0';
@@ -295,16 +311,18 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 		status = g_io_channel_write_chars (priv->io_channel_child_stdin, data, len, &written, &error);
 		if (status != G_IO_STATUS_NORMAL) {
 			g_warning ("failed to write to stdin: %s", error->message);
-			return FALSE;
+			priv->io_channel_child_stdin_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		if (written != len) {
 			g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
 				   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
-			return FALSE;
+			priv->io_channel_child_stdin_listen_id = 0;
+			return G_SOURCE_REMOVE;
 		}
 		g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, priv->argv[0]);
 	}
-	return TRUE;
+	return G_SOURCE_CONTINUE;
 }
 
 /*
@@ -324,13 +342,13 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	/* delaying connection */
 	if (priv->active_conn != NULL)
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 
 	/* accept the connection request */
 	priv->active_conn = g_socket_accept (priv->socket, NULL, &error);
 	if (priv->active_conn == NULL) {
 		g_warning ("failed to accept socket: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_debug ("accepting connection %i for socket %i",
 		 g_socket_get_fd (priv->active_conn),
@@ -341,7 +359,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 					&standard_input, &standard_output, &standard_error, &error);
 	if (!ret) {
 		g_warning ("failed to spawn: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_debug ("started process %s with pid %i", priv->argv[0], priv->child_pid);
 
@@ -354,7 +372,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	status = g_io_channel_set_encoding (priv->io_channel_child_stdin, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
 		g_warning ("failed to set encoding: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_io_channel_set_buffered (priv->io_channel_child_stdin, FALSE);
 
@@ -362,7 +380,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	status = g_io_channel_set_encoding (priv->io_channel_child_stdout, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
 		g_warning ("failed to set encoding: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_io_channel_set_buffered (priv->io_channel_child_stdout, FALSE);
 
@@ -370,7 +388,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	status = g_io_channel_set_encoding (priv->io_channel_child_stderr, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
 		g_warning ("failed to set encoding: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_io_channel_set_buffered (priv->io_channel_child_stderr, FALSE);
 
@@ -385,7 +403,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	status = g_io_channel_set_encoding (priv->io_channel_socket, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
 		g_warning ("failed to set encoding: %s", error->message);
-		return TRUE;
+		return G_SOURCE_CONTINUE;
 	}
 	g_io_channel_set_buffered (priv->io_channel_socket, FALSE);
 
@@ -397,7 +415,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	priv->io_channel_child_stderr_listen_id =
 		g_io_add_watch_full (priv->io_channel_child_stderr, G_PRIORITY_HIGH_IDLE, G_IO_IN,
 				     (GIOFunc) pk_client_helper_echo_stderr_cb, client_helper, NULL);
-	return TRUE;
+	return G_SOURCE_CONTINUE;
 }
 
 /**
@@ -532,6 +550,15 @@ pk_client_helper_finalize (GObject *object)
 {
 	PkClientHelper *client_helper = PK_CLIENT_HELPER (object);
 	PkClientHelperPrivate *priv = client_helper->priv;
+
+	if (priv->io_channel_socket_listen_id > 0)
+		g_source_remove (priv->io_channel_socket_listen_id);
+	if (priv->io_channel_child_stdout_listen_id > 0)
+		g_source_remove (priv->io_channel_child_stdout_listen_id);
+	if (priv->io_channel_child_stderr_listen_id > 0)
+		g_source_remove (priv->io_channel_child_stderr_listen_id);
+	if (priv->io_channel_child_stdin_listen_id > 0)
+		g_source_remove (priv->io_channel_child_stdin_listen_id);
 
 	if (priv->socket_file != NULL)
 		g_object_unref (priv->socket_file);
