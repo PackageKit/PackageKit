@@ -82,6 +82,11 @@ public:
     inline pkgDepCache* GetDepCache() { BuildCaches(); BuildPolicy(); BuildDepCache(); return DCache; }
 
     /**
+     * Checks if the package is garbage (not depended on)
+     */
+    bool isGarbage(const pkgCache::PkgIterator &pkg);
+
+    /**
      * DoAutomaticRemove - Remove all automatic unused packages
      *
      * Remove unused automatic packages

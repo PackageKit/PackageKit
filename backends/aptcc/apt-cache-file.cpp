@@ -264,6 +264,11 @@ void AptCacheFile::buildPkgRecords()
     m_packageRecords = new pkgRecords(*this);
 }
 
+bool AptCacheFile::isGarbage(const pkgCache::PkgIterator &pkg)
+{
+    return (*this)[pkg].Garbage;
+}
+
 bool AptCacheFile::doAutomaticRemove()
 {
     pkgDepCache::ActionGroup group(*this);

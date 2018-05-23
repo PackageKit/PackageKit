@@ -217,7 +217,7 @@ public:
     /**
       *  Download and install packages
       */
-    bool installPackages(PkBitfield flags, bool autoremove);
+    bool installPackages(PkBitfield flags);
 
     /**
      *  Check which package provides the codec
