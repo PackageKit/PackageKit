@@ -1075,7 +1075,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
  * pk_console_remove_packages:
  **/
 static gboolean
-pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
+pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autoremove, GError **error)
 {
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
@@ -1096,7 +1096,7 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	/* do the async action */
 	pk_task_remove_packages_async (PK_TASK (ctx->task),
 				       package_ids,
-				       TRUE, FALSE,
+				       TRUE, autoremove,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
 				       pk_console_finished_cb, ctx);
@@ -1683,6 +1683,7 @@ main (int argc, char *argv[])
 	gboolean only_download = FALSE;
 	gboolean allow_downgrade = FALSE;
 	gboolean allow_reinstall = FALSE;
+	gboolean autoremove = FALSE;
 	guint cache_age = G_MAXUINT;
 	gint retval_copy = 0;
 	gboolean plain = FALSE;
@@ -1719,6 +1720,8 @@ main (int argc, char *argv[])
 			_("Allow packages to be downgraded during transaction"), NULL},
 		{ "allow-reinstall", 0, 0, G_OPTION_ARG_NONE, &allow_reinstall,
 		    _("Allow packages to be reinstalled during transaction"), NULL},
+		{ "autoremove", 0, 0, G_OPTION_ARG_NONE, &autoremove,
+			_("Automatically remove unused dependencies"), NULL},
 		{ "background", 'n', 0, G_OPTION_ARG_NONE, &background,
 			/* TRANSLATORS: command line argument, this command is not a priority */
 			_("Run the command using idle network bandwidth and also using less power"), NULL},
@@ -1999,7 +2002,7 @@ main (int argc, char *argv[])
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_remove_packages (ctx, argv + 2, &error);
+		run_mainloop = pk_console_remove_packages (ctx, argv + 2, autoremove, &error);
 
 	} else if (strcmp (mode, "download") == 0) {
 		if (value == NULL || details == NULL) {
