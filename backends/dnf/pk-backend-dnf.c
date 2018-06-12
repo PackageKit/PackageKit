@@ -39,6 +39,7 @@
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>
 #include <libdnf/dnf-version.h>
+#include <libdnf/dnf-sack.h>
 #include <libdnf/hy-util.h>
 #include <librepo/librepo.h>
 
@@ -798,6 +799,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 		if (!ret)
 			return NULL;
 	}
+
+	dnf_sack_filter_modules (sack, dnf_context_get_repos (job_data->context), install_root);
 
 	/* save in cache */
 	g_mutex_lock (&priv->sack_mutex);
