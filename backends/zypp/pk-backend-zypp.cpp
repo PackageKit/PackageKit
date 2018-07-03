@@ -875,6 +875,26 @@ zypp_get_packages_by_file (ZYpp::Ptr zypp,
 }
 
 /**
+ * Return the package is from a local file or not.
+ */
+bool
+zypp_package_is_local (const gchar *package_id)
+{
+	MIL << package_id << endl;
+	bool ret = false;
+
+	if (!pk_package_id_check (package_id))
+		return false;
+
+	gchar **id_parts = pk_package_id_split (package_id);
+	if (!strncmp (id_parts[PK_PACKAGE_ID_DATA], "local", 5))
+		ret = true;
+
+	g_strfreev (id_parts);
+	return ret;
+}
+
+/**
  * Returns the Resolvable for the specified package_id.
  * e.g. gnome-packagekit;3.6.1-132.1;x86_64;G:F
 */
@@ -986,8 +1006,6 @@ static gboolean
 zypp_refresh_meta_and_cache (RepoManager &manager, RepoInfo &repo, bool force = false)
 {
 	try {
-		sat::Pool pool = sat::Pool::instance ();
-
 		manager.refreshMetadata (repo, force ?
 					 RepoManager::RefreshForced :
 					 RepoManager::RefreshIfNeededIgnoreDelay);
@@ -2073,6 +2091,11 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	for (uint i = 0; package_ids[i]; i++) {
 		MIL << package_ids[i] << endl;
 
+		if (zypp_package_is_local(package_ids[i])) {
+			pk_backend_job_details (job, package_ids[i], "", "", PK_GROUP_ENUM_UNKNOWN, "", "", (gulong)0);
+			return;
+		}
+
 		sat::Solvable solv = zypp_get_package_by_id( package_ids[i] );
 
 		if (zypp_is_no_solvable(solv)) {
@@ -2156,14 +2179,23 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 			return;
 		}
 
+		gchar *package_id;
+		package_id = g_strjoin (";", rpmHeader->tag_name ().c_str(),
+					(rpmHeader->tag_version () + "-" + rpmHeader->tag_release ()).c_str(),
+					rpmHeader->tag_arch ().asString ().c_str(),
+					"local",
+					NULL);
+
 		pk_backend_job_details (job,
-			(rpmHeader->tag_name () + ";" + rpmHeader->tag_version () + "-" + rpmHeader->tag_release () + ";" + rpmHeader->tag_arch ().asString () + ";").c_str (),
+			package_id,
 			rpmHeader->tag_summary ().c_str (),
 			rpmHeader->tag_license ().c_str (),
 			get_enum_group (rpmHeader->tag_group ()),
 			rpmHeader->tag_description ().c_str (),
 			rpmHeader->tag_url ().c_str (),
 			(gulong)rpmHeader->tag_size ().blocks (zypp::ByteCount::B));
+
+		g_free (package_id);
 	}
 }
 
@@ -2171,6 +2203,71 @@ void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **full_paths)
 {
 	pk_backend_job_thread_create (job, backend_get_details_local_thread, NULL, NULL);
+}
+
+/**
+ * backend_get_files_local_thread:
+ */
+static void
+backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	MIL << endl;
+	RepoManager manager;
+	ZyppJob zjob(job);
+	ZYpp::Ptr zypp = zjob.get_zypp();
+
+	if (zypp == NULL)
+		return;
+
+	gchar **full_paths;
+	g_variant_get (params, "(^a&s)", &full_paths);
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+	pk_backend_job_set_percentage (job, 0);
+
+	for (guint i = 0; full_paths[i]; i++) {
+
+		// check if file is really a rpm
+		Pathname rpmPath (full_paths[i]);
+		target::rpm::RpmHeader::constPtr rpmHeader = target::rpm::RpmHeader::readPackage (rpmPath, target::rpm::RpmHeader::NOSIGNATURE);
+
+		if (rpmHeader == NULL) {
+			zypp_backend_finished_error (
+				job, PK_ERROR_ENUM_INTERNAL_ERROR,
+				"%s is not valid rpm-File", full_paths[i]);
+			return;
+		}
+
+		gchar *package_id;
+		package_id = g_strjoin (";", rpmHeader->tag_name ().c_str(),
+					(rpmHeader->tag_version () + "-" + rpmHeader->tag_release ()).c_str(),
+					rpmHeader->tag_arch ().asString ().c_str(),
+					"local",
+					NULL);
+
+		std::list<std::string> filenames = rpmHeader->tag_filenames ();
+		GPtrArray *array = g_ptr_array_new ();
+
+		for (std::list<std::string>::iterator it = filenames.begin (); it != filenames.end (); it++)
+			g_ptr_array_add (array, g_strdup ((*it).c_str ()));
+
+		g_ptr_array_add(array, NULL);
+		gchar **files_array = (gchar**)g_ptr_array_free (array, FALSE);
+
+		pk_backend_job_files (job, package_id, files_array);
+
+		g_free (package_id);
+		g_strfreev (files_array);
+	}
+}
+
+/**
+ * pk_backend_get_files_local:
+ */
+void
+pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **full_paths)
+{
+	pk_backend_job_thread_create (job, backend_get_files_local_thread, NULL, NULL);
 }
 
 static void
