@@ -3,7 +3,7 @@ Description=Update the operating system whilst offline
 
 DefaultDependencies=no
 Requires=sysinit.target dbus.socket
-After=sysinit.target dbus.socket systemd-journald.socket
+After=sysinit.target dbus.socket systemd-journald.socket system-update-pre.target
 Before=shutdown.target system-update.target
 # See packagekit.service
 ConditionPathExists=!/run/ostree-booted
