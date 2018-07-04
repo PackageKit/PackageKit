@@ -499,6 +499,34 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	return TRUE;
 }
 
+/**
+ * pk_client_helper_is_active:
+ * @client_helper: a valid #PkClientHelper instance
+ *
+ * Return value: TRUE if there is an accepted connection, FALSE
+ *               otherwise.
+ *
+ * Since: 1.1.13
+ */
+gboolean
+pk_client_helper_is_active (PkClientHelper *client_helper)
+{
+	PkClientHelperPrivate *priv;
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+
+	priv = client_helper->priv;
+
+	for (guint i = 0; i < priv->children->len; i++) {
+		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
+		if (!g_source_is_destroyed (child->socket_channel_source) &&
+		    !g_source_is_destroyed (child->stdout_channel_source))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 /*
  * pk_client_helper_class_init:
  **/
