@@ -72,6 +72,9 @@ gboolean	 pk_client_helper_start			(PkClientHelper	*client_helper,
 							 gchar		**envp,
 							 GError		**error);
 
+
+gboolean 	pk_client_helper_is_active		(PkClientHelper	*client_helper);
+
 G_END_DECLS
 
 #endif /* __PK_CLIENT_HELPER_H */
