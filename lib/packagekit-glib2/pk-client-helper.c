@@ -420,7 +420,6 @@ pk_client_helper_start (PkClientHelper *client_helper,
 {
 	guint i;
 	gboolean use_kde_helper = FALSE;
-	gint fd;
 	PkClientHelperPrivate *priv = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
@@ -458,10 +457,6 @@ pk_client_helper_start (PkClientHelper *client_helper,
 		}
 	}
 
-	/* cache for actual start */
-	priv->argv = g_strdupv (argv);
-	priv->envp = g_strdupv (envp);
-
 	/* create socket */
 	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, error);
 	if (priv->socket == NULL)
@@ -474,6 +469,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 
 	/* spawn KDE debconf communicator */
 	if (use_kde_helper) {
+		priv->envp = g_strdupv (envp);
 		priv->argv = g_new0 (gchar *, 2);
 		priv->argv[0] = g_strdup ("/usr/bin/debconf-kde-helper");
 		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
@@ -490,6 +486,52 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	/* listen to the socket */
 	if (!g_socket_listen (priv->socket, error))
 		return FALSE;
+
+	return pk_client_helper_start_with_socket (client_helper, priv->socket, argv, envp, error);
+}
+
+/**
+ * pk_client_helper_start_with_socket:
+ * @client_helper: a valid #PkClientHelper instance
+ * @socket: the (bound and listening) #GSocket instance to use
+ * @argv: the executable, along with any arguments
+ * @envp: the environment
+ * @error: A #GError or %NULL
+ *
+ * Starts the helper process, by running the helper process and setting
+ * up the socket for use.
+ *
+ * Return value: %TRUE for success
+ *
+ * Since: 1.1.13
+ **/
+gboolean
+pk_client_helper_start_with_socket (PkClientHelper *client_helper,
+				    GSocket *socket,
+				    gchar **argv, gchar **envp,
+				    GError **error)
+{
+	gint fd;
+	PkClientHelperPrivate *priv = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+	g_return_val_if_fail (socket != NULL, FALSE);
+	g_return_val_if_fail (argv != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	priv = client_helper->priv;
+
+	/* make sure not been started before */
+	g_return_val_if_fail (priv->argv == NULL, FALSE);
+
+	/* cache for actual start */
+	priv->argv = g_strdupv (argv);
+	priv->envp = g_strdupv (envp);
+
+	/* Set the socket */
+	priv->socket = socket;
 
 	/* socket has data */
 	fd = g_socket_get_fd (priv->socket);
