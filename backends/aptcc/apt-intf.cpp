@@ -2189,7 +2189,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
         // Now we check the state of the packages,
         if ((*m_cache)->BrokenCount() != 0) {
             // if the problem resolver could not fix all broken things
-            // suggest to run RepairSystem by saing that the last transaction
+            // suggest to run RepairSystem by saying that the last transaction
             // did not finish well
             m_cache->ShowBroken(false, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED);
             return false;
