@@ -2160,7 +2160,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
     PkgList initial_garbage;
     if (autoremove) {
         for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); ! pkg.end(); ++pkg) {
-            const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
+            const pkgCache::VerIterator &ver = pkg.CurrentVer();
             if (!ver.end() && m_cache->isGarbage(pkg))
                 initial_garbage.push_back(ver);
         }
@@ -2209,7 +2209,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
     // Remove new garbage that is created
     if (autoremove) {
         for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); ! pkg.end(); ++pkg) {
-            const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
+            const pkgCache::VerIterator &ver = pkg.CurrentVer();
             if (!ver.end() && !initial_garbage.contains(pkg) && m_cache->isGarbage(pkg))
                 m_cache->tryToRemove (Fix, ver);
         }
