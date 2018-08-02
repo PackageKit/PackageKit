@@ -800,7 +800,7 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 			return NULL;
 	}
 
-	dnf_sack_filter_modules (sack, dnf_context_get_repos (job_data->context), install_root);
+	dnf_sack_filter_modules (sack, dnf_context_get_repos (job_data->context), install_root, NULL);
 
 	/* save in cache */
 	g_mutex_lock (&priv->sack_mutex);
