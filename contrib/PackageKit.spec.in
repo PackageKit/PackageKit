@@ -125,6 +125,7 @@ fonts from configured repositories using PackageKit.
 Summary: Ask the user to install command line programs automatically
 Requires: bash
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
+Requires: PackageKit
 
 %description command-not-found
 A simple helper that offers to install new packages on the command line
