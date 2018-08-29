@@ -1,9 +1,8 @@
-FROM fedora:28
+FROM fedora:29
 
 RUN dnf -y update
 RUN dnf -y install dnf-plugins-core libdnf-devel redhat-rpm-config autoconf-archive
 RUN dnf -y builddep PackageKit
-RUN dnf -y --releasever=29 update libdnf-devel
 
 RUN mkdir /build
 WORKDIR /build
