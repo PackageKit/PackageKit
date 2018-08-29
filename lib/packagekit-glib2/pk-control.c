@@ -69,10 +69,6 @@ struct _PkControlPrivate
 	gboolean		 locked;
 	PkNetworkEnum		 network_state;
 	gchar			*distro_id;
-	guint			 transaction_list_changed_id;
-	guint			 restart_schedule_id;
-	guint			 updates_changed_id;
-	guint			 repo_list_changed_id;
 	guint			 watch_id;
 };
 
@@ -2437,16 +2433,6 @@ pk_control_finalize (GObject *object)
 
 	/* disconnect proxy and destroy it */
 	pk_control_proxy_destroy (control);
-
-	/* remove pending sources */
-	if (priv->transaction_list_changed_id != 0)
-		g_source_remove (priv->transaction_list_changed_id);
-	if (priv->restart_schedule_id != 0)
-		g_source_remove (priv->restart_schedule_id);
-	if (priv->updates_changed_id != 0)
-		g_source_remove (priv->updates_changed_id);
-	if (priv->repo_list_changed_id != 0)
-		g_source_remove (priv->repo_list_changed_id);
 
 	g_free (priv->backend_name);
 	g_free (priv->backend_description);
