@@ -6,9 +6,9 @@ services:
   - docker
 
 before_script:
-  - docker build -t packagekit-debian -f tests/ci/Dockerfile-debian .
+#  - docker build -t packagekit-debian -f tests/ci/Dockerfile-debian .
   - docker build -t packagekit-fedora -f tests/ci/Dockerfile-fedora .
 
 script:
-  - docker run -t -v `pwd`:/build packagekit-debian ./tests/ci/build_and_test.sh --enable-aptcc
+#  - docker run -t -v `pwd`:/build packagekit-debian ./tests/ci/build_and_test.sh --enable-aptcc
   - docker run -t -v `pwd`:/build packagekit-fedora ./tests/ci/build_and_test.sh
