@@ -506,7 +506,6 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
 
     for (pkgCache::PkgIterator pkg = m_cache->GetPkgCache()->PkgBegin(); !pkg.end(); ++pkg) {
         if (m_cancel) {
-            delete matcher;
             break;
         }
 
