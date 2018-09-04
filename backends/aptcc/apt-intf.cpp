@@ -523,13 +523,14 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         // TODO search in updates packages
         // Ignore virtual packages
         pkgCache::VerIterator ver = m_cache->findVer(pkg);
-        arch = string(ver.Arch());
         if (ver.end() == true) {
             ver = m_cache->findCandidateVer(pkg);
-            if (ver.end() == true) {
-                continue;
-            }
         }
+        if (ver.end() == true) {
+            continue;
+        }
+
+        arch = string(ver.Arch());
 
         pkgCache::VerFileIterator vf = ver.FileList();
         pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(vf);
