@@ -2,7 +2,7 @@
  *
  * Copyright (c) 1999-2008 Daniel Burrows
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
- *               2009-2016 Daniel Nicoletti <dantti12@gmail.com>
+ *               2009-2018 Daniel Nicoletti <dantti12@gmail.com>
  *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
  *               2016 Harald Sitter <sitter@kde.org>
  *
@@ -499,8 +499,8 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
 void AptIntf::providesCodec(PkgList &output, gchar **values)
 {
     string arch;
-    GstMatcher *matcher = new GstMatcher(values);
-    if (!matcher->hasMatches()) {
+    GstMatcher matcher(values);
+    if (!matcher.hasMatches()) {
         return;
     }
 
@@ -537,12 +537,10 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         const char *start, *stop;
         rec.GetRec(start, stop);
         string record(start, stop - start);
-        if (matcher->matches(record, arch)) {
+        if (matcher.matches(record, arch)) {
             output.push_back(ver);
         }
     }
-
-    delete matcher;
 }
 
 // search packages which provide the libraries specified in "values"
