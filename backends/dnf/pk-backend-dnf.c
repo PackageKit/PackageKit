@@ -36,6 +36,7 @@
 #include <libdnf/libdnf.h>
 #include <libdnf/dnf-advisory.h>
 #include <libdnf/dnf-advisoryref.h>
+#include <libdnf/dnf-db.h>
 #include <libdnf/hy-packageset.h>
 #include <libdnf/hy-query.h>
 #include <libdnf/dnf-version.h>
