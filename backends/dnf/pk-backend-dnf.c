@@ -3152,14 +3152,10 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		if (relations[i] == HY_LT) {
-			hy_goal_downgrade_to (job_data->goal, pkg);
-		} else {
-			if (relations[i] == HY_EQ) {
-				dnf_package_set_action (pkg, DNF_STATE_ACTION_REINSTALL);
-			}
-			hy_goal_install (job_data->goal, pkg);
+		if (relations[i] == HY_EQ) {
+			dnf_package_set_action (pkg, DNF_STATE_ACTION_REINSTALL);
 		}
+		hy_goal_install (job_data->goal, pkg);
 	}
 
 	/* run transaction */
