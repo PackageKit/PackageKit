@@ -942,8 +942,10 @@ dnf_package_get_advisory (DnfPackage *package)
 
 	advisorylist = dnf_package_get_advisories (package, HY_EQ);
 
-	if (advisorylist->len > 0)
-		advisory = g_object_ref (g_ptr_array_index (advisorylist, 0));
+	for (guint i = 0; i < advisorylist->len; i++) {
+		dnf_advisory_free (advisory);
+		advisory = g_ptr_array_index (advisorylist, 0);
+	}
 	g_ptr_array_unref (advisorylist);
 
 	return advisory;
@@ -1115,7 +1117,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			advisory = dnf_package_get_advisory (pkg);
 			if (advisory != NULL) {
 				kind = dnf_advisory_get_kind (advisory);
-				g_object_unref (advisory);
+				dnf_advisory_free (advisory);
 				info_enum = dnf_advisory_kind_to_info_enum (kind);
 				dnf_package_set_info (pkg, info_enum);
 			}
@@ -3822,7 +3824,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 					      NULL /* updated */);
 
 		g_ptr_array_unref (references);
-		g_object_unref (advisory);
+		dnf_advisory_free (advisory);
 	}
 
 	/* done */
