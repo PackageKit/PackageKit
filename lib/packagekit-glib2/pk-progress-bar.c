@@ -58,6 +58,8 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 	gssize count;
 	gssize wrote;
 	count = strlen (tmp) + 1;
+	if (self->priv->tty_fd < 0)
+		return;
 	wrote = write (self->priv->tty_fd, tmp, count);
 	if (wrote != count) {
 		g_warning ("Only wrote %" G_GSSIZE_FORMAT
@@ -366,7 +368,7 @@ pk_progress_bar_finalize (GObject *object)
 	g_free (self->priv->old_start_text);
 	if (self->priv->timer_id != 0)
 		g_source_remove (self->priv->timer_id);
-	if (self->priv->tty_fd > 0)
+	if (self->priv->tty_fd >= 0)
 		close (self->priv->tty_fd);
 	G_OBJECT_CLASS (pk_progress_bar_parent_class)->finalize (object);
 }
@@ -399,7 +401,6 @@ pk_progress_bar_init (PkProgressBar *self)
 		self->priv->tty_fd = open ("/dev/console", O_RDWR, 0);
 	if (self->priv->tty_fd < 0)
 		self->priv->tty_fd = open ("/dev/stdout", O_RDWR, 0);
-	g_assert (self->priv->tty_fd > 0);
 }
 
 /**
