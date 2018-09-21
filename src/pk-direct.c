@@ -57,9 +57,6 @@ typedef struct {
 	PkDirectCommandCb	 callback;
 } PkDirectItem;
 
-/**
- * pk_direct_item_free:
- **/
 static void
 pk_direct_item_free (PkDirectItem *item)
 {
@@ -69,18 +66,12 @@ pk_direct_item_free (PkDirectItem *item)
 	g_free (item);
 }
 
-/**
- * pk_sort_command_name_cb:
- **/
 static gint
 pk_sort_command_name_cb (PkDirectItem **item1, PkDirectItem **item2)
 {
 	return g_strcmp0 ((*item1)->name, (*item2)->name);
 }
 
-/**
- * pk_direct_add:
- **/
 static void
 pk_direct_add (GPtrArray *array,
 	     const gchar *name,
@@ -114,9 +105,6 @@ pk_direct_add (GPtrArray *array,
 	}
 }
 
-/**
- * pk_direct_get_descriptions:
- **/
 static gchar *
 pk_direct_get_descriptions (GPtrArray *array)
 {
@@ -160,9 +148,6 @@ pk_direct_get_descriptions (GPtrArray *array)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_direct_run:
- **/
 static gboolean
 pk_direct_run (PkDirectPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
@@ -191,9 +176,6 @@ pk_direct_run (PkDirectPrivate *priv, const gchar *command, gchar **values, GErr
 	return FALSE;
 }
 
-/**
- * pk_direct_refresh:
- **/
 static gboolean
 pk_direct_refresh (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -204,9 +186,6 @@ pk_direct_refresh (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_refresh_force:
- **/
 static gboolean
 pk_direct_refresh_force (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -217,9 +196,6 @@ pk_direct_refresh_force (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_search_names:
- **/
 static gboolean
 pk_direct_search_names (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -237,9 +213,6 @@ pk_direct_search_names (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_search_details:
- **/
 static gboolean
 pk_direct_search_details (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -257,9 +230,6 @@ pk_direct_search_details (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_search_files:
- **/
 static gboolean
 pk_direct_search_files (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -277,9 +247,6 @@ pk_direct_search_files (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_install:
- **/
 static gboolean
 pk_direct_install (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -304,9 +271,6 @@ pk_direct_install (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_remove:
- **/
 static gboolean
 pk_direct_remove (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -331,9 +295,6 @@ pk_direct_remove (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_repo_set_data:
- **/
 static gboolean
 pk_direct_repo_set_data (PkDirectPrivate *priv, gchar **values, GError **error)
 {
@@ -353,9 +314,6 @@ pk_direct_repo_set_data (PkDirectPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_direct_sigint_cb:
- **/
 static gboolean
 pk_direct_sigint_cb (gpointer user_data)
 {
@@ -365,9 +323,6 @@ pk_direct_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_direct_finished_cb:
- **/
 static void
 pk_direct_finished_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -378,9 +333,6 @@ pk_direct_finished_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 	g_main_loop_quit (priv->loop);
 }
 
-/**
- * pk_direct_percentage_cb:
- **/
 static void
 pk_direct_percentage_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -388,9 +340,6 @@ pk_direct_percentage_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 	g_print ("Done: %i%%\n", percentage);
 }
 
-/**
- * pk_direct_status_changed_cb:
- **/
 static void
 pk_direct_status_changed_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -398,9 +347,6 @@ pk_direct_status_changed_cb (PkBackendJob *job, gpointer object, gpointer user_d
 	g_print ("Status: %s\n", pk_status_enum_to_string (status_enum));
 }
 
-/**
- * pk_direct_package_cb:
- **/
 static void
 pk_direct_package_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -410,9 +356,6 @@ pk_direct_package_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 		 pk_package_get_id (pkg));
 }
 
-/**
- * pk_direct_error_cb:
- **/
 static void
 pk_direct_error_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -422,9 +365,6 @@ pk_direct_error_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 		 pk_error_get_details (err));
 }
 
-/**
- * pk_direct_item_progress_cb:
- **/
 static void
 pk_direct_item_progress_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
@@ -435,9 +375,6 @@ pk_direct_item_progress_cb (PkBackendJob *job, gpointer object, gpointer user_da
 		 pk_item_progress_get_package_id (ip));
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

@@ -52,9 +52,6 @@ _g_test_hang_check_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * _g_test_loop_run_with_timeout:
- **/
 static void
 _g_test_loop_run_with_timeout (guint timeout_ms)
 {
@@ -72,9 +69,6 @@ _g_test_hang_wait_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * _g_test_loop_wait:
- **/
 static void
 _g_test_loop_wait (guint timeout_ms)
 {
@@ -84,9 +78,6 @@ _g_test_loop_wait (guint timeout_ms)
 	g_main_loop_run (_test_loop);
 }
 
-/**
- * _g_test_loop_quit:
- **/
 static void
 _g_test_loop_quit (void)
 {
@@ -105,18 +96,12 @@ _g_test_loop_quit (void)
 
 static guint number_packages = 0;
 
-/**
- * pk_test_backend_finished_cb:
- **/
 static void
 pk_test_backend_finished_cb (PkBackend *backend, PkExitEnum exit, gpointer user_data)
 {
 	_g_test_loop_quit ();
 }
 
-/**
- * pk_test_backend_watch_file_cb:
- **/
 static void
 pk_test_backend_watch_file_cb (PkBackend *backend, gpointer user_data)
 {
@@ -147,9 +132,6 @@ pk_test_backend_func_immediate_false (PkBackendJob *job,
 {
 }
 
-/**
- * pk_test_backend_package_cb:
- **/
 static void
 pk_test_backend_package_cb (PkBackend *backend, PkPackage *package, gpointer user_data)
 {
@@ -302,9 +284,6 @@ pk_test_backend_func (void)
 
 static guint _backend_spawn_number_packages = 0;
 
-/**
- * pk_test_backend_spawn_finished_cb:
- **/
 static void
 pk_test_backend_spawn_finished_cb (PkBackendJob *job,
 				   PkExitEnum exit,
@@ -313,9 +292,6 @@ pk_test_backend_spawn_finished_cb (PkBackendJob *job,
 	_g_test_loop_quit ();
 }
 
-/**
- * pk_test_backend_spawn_package_cb:
- **/
 static void
 pk_test_backend_spawn_package_cb (PkBackend *backend, PkInfoEnum info,
 				  const gchar *package_id, const gchar *summary,
@@ -497,9 +473,6 @@ PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 guint stdout_count = 0;
 guint finished_count = 0;
 
-/**
- * pk_test_exit_cb:
- **/
 static void
 pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, gpointer user_data)
 {
@@ -509,9 +482,6 @@ pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, gpointer user_data)
 	_g_test_loop_quit ();
 }
 
-/**
- * pk_test_stdout_cb:
- **/
 static void
 pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, gpointer user_data)
 {
@@ -892,18 +862,12 @@ pk_test_transaction_db_func (void)
 
 static PkTransactionDb *db = NULL;
 
-/**
- * pk_test_scheduler_finished_cb:
- **/
 static void
 pk_test_scheduler_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, gpointer user_data)
 {
 	_g_test_loop_quit ();
 }
 
-/**
- * pk_test_scheduler_create_transaction:
- **/
 static gchar *
 pk_test_scheduler_create_transaction (PkScheduler *tlist)
 {

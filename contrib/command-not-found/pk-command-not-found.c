@@ -59,7 +59,6 @@ static GCancellable *cancellable = NULL;
 #define EXIT_COMMAND_NOT_FOUND	127
 
 /**
- * pk_cnf_find_alternatives_swizzle:
  *
  * Swizzle ordering, e.g. amke -> make
  **/
@@ -81,7 +80,6 @@ pk_cnf_find_alternatives_swizzle (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
- * pk_cnf_find_alternatives_replace:
  *
  * Replace some easily confused chars, e.g. gnome-power-managir to gnome-power-manager
  **/
@@ -144,7 +142,6 @@ pk_cnf_find_alternatives_replace (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
- * pk_cnf_find_alternatives_truncate:
  *
  * Truncate first and last char, so lshall -> lshal
  **/
@@ -168,7 +165,6 @@ pk_cnf_find_alternatives_truncate (const gchar *cmd, guint len, GPtrArray *array
 }
 
 /**
- * pk_cnf_find_alternatives_remove_double:
  *
  * Remove double chars, e.g. gnome-power-manaager -> gnome-power-manager
  **/
@@ -190,7 +186,6 @@ pk_cnf_find_alternatives_remove_double (const gchar *cmd, guint len, GPtrArray *
 }
 
 /**
- * pk_cnf_find_alternatives_locale:
  *
  * Fix British spellings, e.g. colourdiff -> colordiff
  **/
@@ -212,7 +207,6 @@ pk_cnf_find_alternatives_locale (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
- * pk_cnf_find_alternatives_solaris:
  *
  * Suggest Linux commands for Solaris commands
  **/
@@ -289,7 +283,6 @@ pk_cnf_find_alternatives_solaris (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
- * pk_cnf_find_alternatives_case:
  *
  * Remove double chars, e.g. Lshal -> lshal
  **/
@@ -335,7 +328,6 @@ pk_cnf_find_alternatives_case (const gchar *cmd, guint len, GPtrArray *array)
 }
 
 /**
- * pk_cnf_find_alternatives:
  *
  * Generate a list of commands it might be
  **/
@@ -411,9 +403,6 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	return array;
 }
 
-/**
- * pk_cnf_progress_cb:
- **/
 static void
 pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
@@ -459,9 +448,6 @@ pk_cnf_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 		g_print ("\n * %s... ", text);
 }
 
-/**
- * pk_cnf_cancel_cb:
- */
 static gboolean
 pk_cnf_cancel_cb (GCancellable *_cancellable)
 {
@@ -471,8 +457,6 @@ pk_cnf_cancel_cb (GCancellable *_cancellable)
 }
 
 /**
- * pk_cnf_find_available:
- *
  * Find software we could install
  **/
 static gchar **
@@ -551,10 +535,6 @@ out:
 	return package_ids;
 }
 
-/**
- * pk_cnf_get_policy_from_string:
- **/
-static PkCnfPolicy
 pk_cnf_get_policy_from_string (const gchar *policy_text)
 {
 	if (policy_text == NULL)
@@ -568,9 +548,6 @@ pk_cnf_get_policy_from_string (const gchar *policy_text)
 	return PK_CNF_POLICY_UNKNOWN;
 }
 
-/**
- * pk_cnf_get_policy_from_file:
- **/
 static PkCnfPolicy
 pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 {
@@ -589,9 +566,6 @@ pk_cnf_get_policy_from_file (GKeyFile *file, const gchar *key)
 	return policy;
 }
 
-/**
- * pk_cnf_get_config:
- **/
 static PkCnfPolicyConfig *
 pk_cnf_get_config (void)
 {
@@ -647,9 +621,6 @@ out:
 	return config;
 }
 
-/**
- * pk_cnf_spawn_command:
- **/
 static gint
 pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 {
@@ -670,9 +641,6 @@ pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
 	return exit_status;
 }
 
-/**
- * pk_cnf_install_package_id:
- **/
 static gboolean
 pk_cnf_install_package_id (const gchar *package_id)
 {
@@ -701,9 +669,6 @@ pk_cnf_install_package_id (const gchar *package_id)
 	return TRUE;
 }
 
-/**
- * pk_cnf_sigint_handler:
- **/
 static void
 pk_cnf_sigint_handler (int sig)
 {
@@ -720,9 +685,6 @@ pk_cnf_sigint_handler (int sig)
 	kill (getpid (), SIGINT);
 }
 
-/**
- * pk_cnf_is_backend_fast_enough_to_do_search:
-**/
 static gboolean
 pk_cnf_is_backend_fast_enough_to_do_search (void)
 {
@@ -754,9 +716,6 @@ out:
 	return ret;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

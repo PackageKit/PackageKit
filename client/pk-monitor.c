@@ -29,27 +29,18 @@
 
 static PkClient *client = NULL;
 
-/**
- * pk_monitor_repo_list_changed_cb:
- **/
 static void
 pk_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 {
 	g_print ("repo-list-changed\n");
 }
 
-/**
- * pk_monitor_updates_changed_cb:
- **/
 static void
 pk_monitor_updates_changed_cb (PkControl *control, gpointer data)
 {
 	g_print ("updates-changed\n");
 }
 
-/**
- * pk_monitor_notify_connected_cb:
- **/
 static void
 pk_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
@@ -58,9 +49,6 @@ pk_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer 
 	g_print ("daemon connected=%i\n", connected);
 }
 
-/**
- * pk_monitor_notify_locked_cb:
- **/
 static void
 pk_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
@@ -69,9 +57,6 @@ pk_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer dat
 	g_print ("daemon locked=%i\n", locked);
 }
 
-/**
- * pk_monitor_notify_network_status_cb:
- **/
 static void
 pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
@@ -80,9 +65,6 @@ pk_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpoi
 	g_print ("network status=%s\n", pk_network_enum_to_string (state));
 }
 
-/**
- * pk_monitor_media_change_required_cb:
- **/
 static void
 pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *transaction_id)
 {
@@ -101,9 +83,6 @@ pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *t
 		 transaction_id, pk_media_type_enum_to_string (type), id, text);
 }
 
-/**
- * pk_monitor_adopt_cb:
- **/
 static void
 pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
@@ -149,9 +128,6 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 }
 
-/**
- * pk_monitor_progress_cb:
- **/
 static void
 pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
@@ -213,9 +189,6 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	}
 }
 
-/**
- * pk_monitor_list_print:
- **/
 static void
 pk_monitor_list_print (PkTransactionList *tlist)
 {
@@ -232,9 +205,6 @@ pk_monitor_list_print (PkTransactionList *tlist)
 		g_print (" %i\t%s\n", i+1, list[i]);
 }
 
-/**
- * pk_monitor_get_daemon_state_cb:
- **/
 static void
 pk_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
@@ -250,9 +220,6 @@ pk_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointer 
 	g_print ("Daemon state: '%s'\n", state);
 }
 
-/**
- * pk_monitor_get_daemon_state:
- **/
 static void
 pk_monitor_get_daemon_state (PkControl *control)
 {
@@ -260,9 +227,6 @@ pk_monitor_get_daemon_state (PkControl *control)
 					   (GAsyncReadyCallback) pk_monitor_get_daemon_state_cb, NULL);
 }
 
-/**
- * pk_monitor_transaction_list_changed_cb:
- **/
 static void
 pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
 {
@@ -271,9 +235,6 @@ pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_
 		pk_monitor_get_daemon_state (control);
 }
 
-/**
- * pk_monitor_transaction_list_added_cb:
- **/
 static void
 pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
 {
@@ -284,9 +245,6 @@ pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *tra
 	pk_monitor_list_print (tlist);
 }
 
-/**
- * pk_monitor_transaction_list_removed_cb:
- **/
 static void
 pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
 {
@@ -294,9 +252,6 @@ pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *t
 	pk_monitor_list_print (tlist);
 }
 
-/**
- * pk_control_properties_cb:
- **/
 static void
 pk_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user_data)
 {
@@ -305,9 +260,6 @@ pk_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user_d
 		g_print ("%s: %s", _("Failed to get properties"), error->message);
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

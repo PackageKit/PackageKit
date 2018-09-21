@@ -60,9 +60,6 @@ typedef struct {
 
 static PkBackendDummyPrivate *priv;
 
-/**
- * pk_backend_initialize:
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -74,18 +71,12 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->use_trusted = TRUE;
 }
 
-/**
- * pk_backend_destroy:
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
 	g_free (priv);
 }
 
-/**
- * pk_backend_get_groups:
- */
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
@@ -95,9 +86,6 @@ pk_backend_get_groups (PkBackend *backend)
 		-1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -107,9 +95,6 @@ pk_backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-/**
- * pk_backend_get_mime_types:
- */
 gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
@@ -120,9 +105,6 @@ pk_backend_get_mime_types (PkBackend *backend)
 	return g_strdupv ((gchar **) mime_types);
 }
 
-/**
- * pk_backend_cancel_timeout:
- */
 static gboolean
 pk_backend_cancel_timeout (gpointer data)
 {
@@ -139,9 +121,6 @@ pk_backend_cancel_timeout (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
@@ -158,9 +137,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_depends_on:
- */
 void
 pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
@@ -178,9 +154,6 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_details_local:
- */
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
@@ -193,9 +166,6 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_files_local:
- */
 void
 pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
 {
@@ -210,9 +180,6 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_file
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_details:
- */
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -276,9 +243,6 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_distro_upgrades:
- */
 void
 pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
@@ -293,9 +257,6 @@ out:
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_files:
- */
 void
 pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -333,9 +294,6 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_required_by:
- */
 void
 pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
@@ -347,9 +305,6 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_get_update_detail_timeout:
- **/
 static gboolean
 pk_backend_get_update_detail_timeout (gpointer data)
 {
@@ -471,9 +426,6 @@ pk_backend_get_update_detail_timeout (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -483,9 +435,6 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 	job_data->signal_timeout = g_timeout_add (500, pk_backend_get_update_detail_timeout, job);
 }
 
-/**
- * pk_backend_get_updates_timeout:
- **/
 static gboolean
 pk_backend_get_updates_timeout (gpointer data)
 {
@@ -519,9 +468,6 @@ pk_backend_get_updates_timeout (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_backend_get_updates:
- */
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -537,9 +483,6 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	job_data->signal_timeout = g_timeout_add (1000, pk_backend_get_updates_timeout, job);
 }
 
-/**
- * pk_backend_install_thread:
- */
 static void
 pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -594,9 +537,6 @@ pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	pk_backend_job_set_locked (job, FALSE);
 }
 
-/**
- * pk_backend_install_packages:
- */
 void
 pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -712,9 +652,6 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	pk_backend_job_thread_create (job, pk_backend_install_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_install_signature:
- */
 void
 pk_backend_install_signature (PkBackend *backend, PkBackendJob *job, PkSigTypeEnum type,
 			   const gchar *key_id, const gchar *package_id)
@@ -733,9 +670,6 @@ pk_backend_install_signature (PkBackend *backend, PkBackendJob *job, PkSigTypeEn
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_refresh_cache_timeout:
- */
 static gboolean
 pk_backend_install_files_timeout (gpointer data)
 {
@@ -744,9 +678,6 @@ pk_backend_install_files_timeout (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_backend_install_files:
- */
 void
 pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
 {
@@ -756,9 +687,6 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 	job_data->signal_timeout = g_timeout_add (2000, pk_backend_install_files_timeout, job);
 }
 
-/**
- * pk_backend_refresh_cache_thread:
- */
 static void
 pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -795,9 +723,6 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 	pk_backend_job_set_locked (job, FALSE);
 }
 
-/**
- * pk_backend_refresh_cache:
- */
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
@@ -827,9 +752,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_resolve_thread:
- */
 static void
 pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -889,18 +811,12 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	pk_backend_job_set_percentage (job, 100);
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
 	pk_backend_job_thread_create (job, pk_backend_resolve_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void
 pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 			    PkBitfield transaction_flags,
@@ -929,9 +845,6 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 	pk_backend_job_set_locked (job, FALSE);
 }
 
-/**
- * pk_backend_search_details_thread:
- **/
 static void
 pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -942,18 +855,12 @@ pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer 
 				"The vips \"documentation\" package.");
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, pk_backend_search_details_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_files:
- */
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -970,9 +877,6 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -987,9 +891,6 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_search_names_thread:
- **/
 static void
 pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -1042,9 +943,6 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 				"The vips documentation package.");
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -1055,9 +953,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_thread_create (job, pk_backend_search_names_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_update_packages_download_thread:
- **/
 static void
 pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -1165,9 +1060,6 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 	pk_backend_job_set_locked (job, FALSE);
 }
 
-/**
- * pk_backend_update_system_thread:
- **/
 static void
 pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -1235,9 +1127,6 @@ pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 	}
 }
 
-/**
- * pk_backend_socket_has_data_cb:
- **/
 static gboolean
 pk_backend_socket_has_data_cb (GSocket *socket,
 			       GIOCondition condition,
@@ -1300,9 +1189,6 @@ pk_backend_socket_has_data_cb (GSocket *socket,
 	return TRUE;
 }
 
-/**
- * pk_backend_update_packages:
- */
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -1443,9 +1329,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	pk_backend_job_thread_create (job, pk_backend_update_packages_download_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -1463,9 +1346,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void
 pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
 {
@@ -1489,9 +1369,6 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid,
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_repo_set_data:
- */
 void
 pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *rid, const gchar *parameter, const gchar *value)
 {
@@ -1513,9 +1390,6 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *ri
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_what_provides_timeout:
- */
 static gboolean
 pk_backend_what_provides_timeout (gpointer data)
 {
@@ -1554,9 +1428,6 @@ pk_backend_what_provides_timeout (gpointer data)
 	return TRUE;
 }
 
-/**
- * pk_backend_what_provides:
- */
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -1569,9 +1440,6 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_set_percentage (job, 0);
 }
 
-/**
- * pk_backend_get_packages:
- */
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -1582,9 +1450,6 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_download_packages:
- */
 void
 pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
@@ -1672,9 +1537,6 @@ pk_backend_upgrade_system_timeout (gpointer data)
 	return TRUE;
 }
 
-/**
- * pk_backend_upgrade_system:
- */
 void
 pk_backend_upgrade_system (PkBackend *backend,
 			   PkBackendJob *job,
@@ -1688,18 +1550,12 @@ pk_backend_upgrade_system (PkBackend *backend,
 	job_data->signal_timeout = g_timeout_add (100, pk_backend_upgrade_system_timeout, job);
 }
 
-/**
- * pk_backend_repair_system:
- */
 void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -1714,9 +1570,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	pk_backend_job_set_user_data (job, job_data);
 }
 
-/**
- * pk_backend_stop_job:
- */
 void
 pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -1734,27 +1587,18 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	g_free (job_data);
 }
 
-/**
- * pk_backend_supports_parallelization:
- */
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {
 	return TRUE;
 }
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return "Dummy";
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {

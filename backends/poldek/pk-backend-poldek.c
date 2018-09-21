@@ -306,11 +306,6 @@ get_locale_variants (const gchar *lang)
 	return langs;
 }
 
-/**
- * pkg_uinf_i18n:
- *
- * Returns pointer to struct pkguinf with localized summary and description.
- **/
 static struct pkguinf*
 pkg_uinf_i18n (PkBackendJob *job, struct pkg *pkg)
 {
@@ -358,11 +353,6 @@ do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark)
 	return files;
 }
 
-/**
- * poldek_get_bytes_to_download:
- *
- * Returns: bytes to download
- */
 static long
 poldek_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 {
@@ -420,9 +410,6 @@ do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs)
 	return bytes;
 }
 
-/**
- * VF_PROGRESS
- */
 static void*
 poldek_vf_progress_new (void *user_data, const gchar *label)
 {
@@ -500,11 +487,6 @@ poldek_vf_progress_reset (void *user_data)
 	job_data->progress_data->subpercentage = 0;
 }
 
-/**
- * poldek_pkg_in_array_idx:
- *
- * Returns index of the first matching package. If not found, -1 will be returned.
- **/
 static gint
 poldek_pkg_in_array_idx (const struct pkg *pkg, const tn_array *array, tn_fn_cmp cmp_fn)
 {
@@ -609,11 +591,6 @@ get_ts_summary (PkBackendJob *job, tn_array *ipkgs, tn_array *dpkgs, tn_array *r
 		n_array_sort (*remove_pkgs);
 }
 
-/**
- * ts_confirm:
- * Returns Yes - 1
- *	    No - 0
- */
 static int
 ts_confirm (void *data, struct poldek_ts *ts)
 {
@@ -738,9 +715,6 @@ ts_confirm (void *data, struct poldek_ts *ts)
 	return result;
 }
 
-/**
- * suggests_callback:
- **/
 static gint
 suggests_callback (void *data, const struct poldek_ts *ts, const struct pkg *pkg,
 		   tn_array *caps, tn_array *choices, int hint)
@@ -748,9 +722,6 @@ suggests_callback (void *data, const struct poldek_ts *ts, const struct pkg *pkg
 	/* install all suggested packages */
 	return 1;
 }
-/**
- * setup_vf_progress:
- */
 static void
 setup_vf_progress (struct vf_progress *vf_progress, PkBackendJob *job)
 {
@@ -881,20 +852,12 @@ get_pkgid_from_localpath (const gchar *localpath)
 	return pkgid;
 }
 
-/**
- * poldek_get_security_updates:
- **/
 static tn_array*
 poldek_get_security_updates (void)
 {
 	return execute_packages_command ("cd /all-avail; ls -S");
 }
 
-/**
- * pld_group_to_enum:
- *
- * Converts PLD RPM group to PkGroupEnum.
- **/
 static PkBitfield
 pld_group_to_enum (const gchar *group)
 {
@@ -948,9 +911,6 @@ pld_group_to_enum (const gchar *group)
 		return PK_GROUP_ENUM_OTHER;
 }
 
-/**
- * pld_group_get_regex_from_text:
- **/
 static const gchar*
 pld_group_get_regex_from_text (const gchar *str)
 {
@@ -966,9 +926,6 @@ pld_group_get_regex_from_text (const gchar *str)
 	return NULL;
 }
 
-/**
- * poldek_pkg_evr:
- */
 static gchar*
 poldek_pkg_evr (const struct pkg *pkg)
 {
@@ -995,9 +952,6 @@ poldek_get_vr_from_package_id_evr (const gchar *evr)
 	return result;
 }
 
-/**
- * poldek_get_nvra_from_package_id:
- */
 static gchar*
 poldek_get_nvra_from_package_id (const gchar* package_id)
 {
@@ -1022,9 +976,6 @@ poldek_get_nvra_from_package_id (const gchar* package_id)
 	return nvra;
 }
 
-/**
- * poldek_get_installed_packages:
- */
 static tn_array*
 poldek_get_installed_packages (void)
 {
@@ -1125,9 +1076,6 @@ poldek_pkg_get_cves_from_pld_changelog (struct pkg *pkg, time_t since)
 	return cves;
 }
 
-/**
- * poldek_pkg_is_devel:
- */
 static gboolean
 poldek_pkg_is_devel (struct pkg *pkg)
 {
@@ -1141,9 +1089,6 @@ poldek_pkg_is_devel (struct pkg *pkg)
 	return FALSE;
 }
 
-/**
- * poldek_pkg_is_gui:
- */
 static gboolean
 poldek_pkg_is_gui (struct pkg *pkg)
 {
@@ -1222,9 +1167,6 @@ do_filtering (tn_array *packages, PkBitfield filters)
 	}
 }
 
-/**
- * do_requires:
- */
 static void
 do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	     struct pkg *pkg, PkBitfield filters, gboolean recursive)
@@ -1314,9 +1256,6 @@ do_requires (tn_array *installed, tn_array *available, tn_array *requires,
 	n_array_free (tmp);
 }
 
-/**
- * do_depends:
- */
 static void
 do_depends (tn_array *installed, tn_array *available, tn_array *depends, struct pkg *pkg, PkBitfield filters, gboolean recursive)
 {
@@ -1461,9 +1400,6 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 	return package_id;
 }
 
-/**
- * poldek_backend_package:
- */
 static void
 poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
 {
@@ -1497,9 +1433,6 @@ poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum,
 	g_free (package_id);
 }
 
-/**
- * poldek_get_pkg_from_package_id:
- */
 static struct pkg*
 poldek_get_pkg_from_package_id (const gchar *package_id)
 {
@@ -1572,9 +1505,6 @@ do_search_details (const gchar *tree, gchar **values)
 	return pkgs;
 }
 
-/**
- * search_package_thread:
- */
 static void
 search_package_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -1861,9 +1791,6 @@ update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	g_free (command);
 }
 
-/**
- * do_simulate_packages:
- */
 static void
 do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2288,27 +2215,18 @@ poldek_reload (PkBackendJob *job, gboolean load_packages) {
 		pb_load_packages (job);
 }
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return "Poldek";
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	return "Marcin Banasiak <megabajt@pld-linux.org>";
 }
 
-/**
- * pk_backend_initialize:
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -2334,9 +2252,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	g_debug ("backend initalize end");
 }
-/**
- * pk_backend_destroy:
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
@@ -2353,9 +2268,6 @@ pk_backend_destroy (PkBackend *backend)
 	g_free (pberror);
 }
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -2371,9 +2283,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	poldek_configure (priv->ctx, POLDEK_CONF_TSCONFIRM_CB, ts_confirm, job);
 }
 
-/**
- * pk_backend_stop_job:
- */
 void
 pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -2397,9 +2306,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	pk_backend_job_set_user_data (job, NULL);
 }
 
-/**
- * pk_backend_get_groups:
- */
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
@@ -2424,9 +2330,6 @@ pk_backend_get_groups (PkBackend *backend)
 		-1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -2438,9 +2341,6 @@ pk_backend_get_filters (PkBackend *backend)
 		-1);
 }
 
-/**
- * pk_backend_get_mime_types:
- */
 gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
@@ -2450,9 +2350,6 @@ pk_backend_get_mime_types (PkBackend *backend)
 	return g_strdupv ((gchar **) mime_types);
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
@@ -2461,9 +2358,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	sigint_emit ();
 }
 
-/**
- * backend_download_packages_thread:
- */
 static void
 backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2532,9 +2426,6 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	pk_backend_job_thread_create (job, backend_download_packages_thread, NULL, NULL);
 }
 
-/**
- * backend_depends_on_thread:
- */
 static void
 backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2586,9 +2477,6 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 	pk_backend_job_thread_create (job, backend_depends_on_thread, NULL, NULL);
 }
 
-/**
- * backend_get_details_thread:
- */
 static void
 backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2645,9 +2533,6 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
-/**
- * backend_get_files_thread:
- */
 static void
 backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2714,9 +2599,6 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	pk_backend_job_thread_create (job, backend_get_files_thread, NULL, NULL);
 }
 
-/**
- * backend_get_packages_thread:
- */
 static void
 backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2780,9 +2662,6 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_thread_create (job, backend_get_packages_thread, NULL, NULL);
 }
 
-/**
- * backend_required_by_thread:
- */
 static void
 backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2832,9 +2711,6 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	pk_backend_job_thread_create (job, backend_required_by_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 static GPtrArray *
 get_obsoletedby_pkg (struct pkg *pkg)
 {
@@ -2968,9 +2844,6 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 	pk_backend_job_thread_create (job, backend_get_update_detail_thread, NULL, NULL);
 }
 
-/**
- * backend_get_updates_thread:
- */
 static void
 backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -3020,9 +2893,6 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	pk_backend_job_thread_create (job, backend_get_updates_thread, NULL, NULL);
 }
 
-/**
- * backend_install_packages_thread:
- */
 static void
 backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -3091,10 +2961,6 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job,
 	}
 }
 
-/**
- * FIXME: force currently omited
- * pk_backend_refresh_cache:
- */
 static void
 backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -3160,9 +3026,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	pk_backend_job_thread_create (job, backend_refresh_cache_thread, NULL, NULL);
 }
 
-/**
- * backend_remove_packages_thread:
- */
 static void
 backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -3221,9 +3084,6 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 	}
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
@@ -3233,9 +3093,6 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
 {
@@ -3245,9 +3102,6 @@ pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield fil
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_files:
- */
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
 {
@@ -3257,9 +3111,6 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
 {
@@ -3269,9 +3120,6 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
 {
@@ -3281,9 +3129,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_update_packages:
- */
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -3303,9 +3148,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	}
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -3336,9 +3178,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_what_provides:
- */
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {

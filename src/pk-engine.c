@@ -116,15 +116,8 @@ G_DEFINE_TYPE (PkEngine, pk_engine, G_TYPE_OBJECT)
 /* prototype */
 gboolean pk_engine_filter_check (const gchar *filter, GError **error);
 
-/**
- * pk_engine_error_quark:
- * Return value: Our personal error quark.
- **/
 G_DEFINE_QUARK (pk-engine-error-quark, pk_engine_error)
 
-/**
- * pk_engine_error_get_type:
- **/
 #define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
 GType
 pk_engine_error_get_type (void)
@@ -147,9 +140,6 @@ pk_engine_error_get_type (void)
 	return etype;
 }
 
-/**
- * pk_engine_reset_timer:
- **/
 static void
 pk_engine_reset_timer (PkEngine *engine)
 {
@@ -159,9 +149,6 @@ pk_engine_reset_timer (PkEngine *engine)
 static void pk_engine_inhibit (PkEngine *engine);
 static void pk_engine_uninhibit (PkEngine *engine);
 
-/**
- * pk_engine_set_inhibited:
- **/
 static void
 pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited)
 {
@@ -174,9 +161,6 @@ pk_engine_set_inhibited (PkEngine *engine, gboolean inhibited)
 		pk_engine_uninhibit (engine);
 }
 
-/**
- * pk_engine_scheduler_changed_cb:
- **/
 static void
 pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 {
@@ -200,9 +184,6 @@ pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 	pk_engine_reset_timer (engine);
 }
 
-/**
- * pk_engine_emit_property_changed:
- **/
 static void
 pk_engine_emit_property_changed (PkEngine *engine,
 				 const gchar *property_name,
@@ -234,9 +215,6 @@ pk_engine_emit_property_changed (PkEngine *engine,
 				       NULL);
 }
 
-/**
- * pk_engine_emit_offline_property_changed:
- **/
 static void
 pk_engine_emit_offline_property_changed (PkEngine *engine,
 					 const gchar *property_name,
@@ -275,9 +253,6 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 				       NULL);
 }
 
-/**
- * pk_engine_inhibit:
- **/
 static void
 pk_engine_inhibit (PkEngine *engine)
 {
@@ -325,9 +300,6 @@ pk_engine_inhibit (PkEngine *engine)
 #endif
 }
 
-/**
- * pk_engine_uninhibit:
- **/
 static void
 pk_engine_uninhibit (PkEngine *engine)
 {
@@ -340,9 +312,6 @@ pk_engine_uninhibit (PkEngine *engine)
 #endif
 }
 
-/**
- * pk_engine_set_locked:
- **/
 static void
 pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 {
@@ -359,9 +328,6 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 					 g_variant_new_boolean (is_locked));
 }
 
-/**
- * pk_engine_backend_repo_list_changed_cb:
- **/
 static void
 pk_engine_backend_repo_list_changed_cb (PkBackend *backend, PkEngine *engine)
 {
@@ -377,9 +343,6 @@ pk_engine_backend_repo_list_changed_cb (PkBackend *backend, PkEngine *engine)
 				       NULL);
 }
 
-/**
- * pk_engine_backend_updates_changed_cb:
- **/
 static void
 pk_engine_backend_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 {
@@ -395,11 +358,6 @@ pk_engine_backend_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 				       NULL);
 }
 
-/**
- * pk_engine_state_changed_cb:
- *
- * wait a little delay in case we get multiple requests or we need to setup state
- **/
 static gboolean
 pk_engine_state_changed_cb (gpointer data)
 {
@@ -430,9 +388,6 @@ pk_engine_state_changed_cb (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_engine_emit_restart_schedule:
- **/
 static void
 pk_engine_emit_restart_schedule (PkEngine *engine)
 {
@@ -448,9 +403,6 @@ pk_engine_emit_restart_schedule (PkEngine *engine)
 				       NULL);
 }
 
-/**
- * pk_engine_get_seconds_idle:
- **/
 guint
 pk_engine_get_seconds_idle (PkEngine *engine)
 {
@@ -484,9 +436,6 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 	return idle;
 }
 
-/**
- * pk_engine_set_proxy_internal:
- **/
 static gboolean
 pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 			      const gchar *proxy_http,
@@ -552,9 +501,6 @@ typedef struct {
 	gchar			*value6;
 } PkEngineDbusState;
 
-/**
- * pk_engine_action_obtain_authorization:
- **/
 static void
 pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *authority,
 							 GAsyncResult *res,
@@ -629,9 +575,6 @@ out:
 	g_free (state);
 }
 
-/**
- * pk_engine_is_proxy_unchanged:
- **/
 static gboolean
 pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender,
 			      const gchar *proxy_http,
@@ -689,9 +632,6 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender,
 	return TRUE;
 }
 
-/**
- * pk_engine_set_proxy:
- **/
 static void
 pk_engine_set_proxy (PkEngine *engine,
 		     const gchar *proxy_http,
@@ -786,9 +726,6 @@ out:
 	return;
 }
 
-/**
- * pk_engine_can_authorize:
- **/
 static PkAuthorizeEnum
 pk_engine_can_authorize_action_id (PkEngine *engine,
 				   const gchar *action_id,
@@ -824,10 +761,6 @@ pk_engine_can_authorize_action_id (PkEngine *engine,
 	return PK_AUTHORIZE_ENUM_NO;
 }
 
-/**
- * pk_engine_class_init:
- * @klass: The PkEngineClass
- **/
 static void
 pk_engine_class_init (PkEngineClass *klass)
 {
@@ -845,11 +778,6 @@ pk_engine_class_init (PkEngineClass *klass)
 	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
 
-/**
- * pk_engine_conf_file_changed_cb:
- *
- * A config file has changed, we need to reload the daemon
- **/
 static void
 pk_engine_conf_file_changed_cb (GFileMonitor *file_monitor,
 				GFile *file,
@@ -862,9 +790,6 @@ pk_engine_conf_file_changed_cb (GFileMonitor *file_monitor,
 	engine->priv->shutdown_as_soon_as_possible = TRUE;
 }
 
-/**
- * pk_engine_binary_file_changed_cb:
- **/
 static void
 pk_engine_binary_file_changed_cb (GFileMonitor *file_monitor,
 				  GFile *file,
@@ -877,9 +802,6 @@ pk_engine_binary_file_changed_cb (GFileMonitor *file_monitor,
 	engine->priv->notify_clients_of_upgrade = TRUE;
 }
 
-/**
- * pk_engine_offline_file_changed_cb:
- **/
 static void
 pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
 				   GFile *file, GFile *other_file,
@@ -917,9 +839,6 @@ pk_engine_offline_get_prepared_upgrade_property (GError **error)
 	return g_variant_builder_end (&builder);
 }
 
-/**
- * pk_engine_offline_upgrade_file_changed_cb:
- **/
 static void
 pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
                                            GFile *file, GFile *other_file,
@@ -942,9 +861,6 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 
 }
 
-/**
- * pk_engine_get_network_state:
- **/
 static PkNetworkEnum
 pk_engine_get_network_state (GNetworkMonitor *network_monitor)
 {
@@ -956,9 +872,6 @@ pk_engine_get_network_state (GNetworkMonitor *network_monitor)
 	return PK_NETWORK_ENUM_ONLINE;
 }
 
-/**
- * pk_engine_network_state_changed_cb:
- **/
 static void
 pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
 				    gboolean available,
@@ -978,9 +891,6 @@ pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
 					 g_variant_new_uint32 (network_state));
 }
 
-/**
- * pk_engine_setup_file_monitors:
- **/
 static void
 pk_engine_setup_file_monitors (PkEngine *engine)
 {
@@ -1038,9 +948,6 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 			  G_CALLBACK (pk_engine_offline_upgrade_file_changed_cb), engine);
 }
 
-/**
- * pk_engine_load_backend:
- **/
 gboolean
 pk_engine_load_backend (PkEngine *engine, GError **error)
 {
@@ -1066,9 +973,6 @@ pk_engine_load_backend (PkEngine *engine, GError **error)
 	return TRUE;
 }
 
-/**
- * _g_variant_new_maybe_string:
- **/
 static GVariant *
 _g_variant_new_maybe_string (const gchar *value)
 {
@@ -1077,9 +981,6 @@ _g_variant_new_maybe_string (const gchar *value)
 	return g_variant_new_string (value);
 }
 
-/**
- * pk_engine_offline_get_property:
- **/
 static GVariant *
 pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sender,
 				const gchar *object_path, const gchar *interface_name,
@@ -1137,9 +1038,6 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 	return NULL;
 }
 
-/**
- * pk_engine_daemon_get_property:
- **/
 static GVariant *
 pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender,
 			       const gchar *object_path, const gchar *interface_name,
@@ -1189,9 +1087,6 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 	return NULL;
 }
 
-/**
- * pk_engine_package_name_in_strv:
- **/
 static gboolean
 pk_engine_package_name_in_strv (gchar **strv, PkPackage *pkg)
 {
@@ -1203,11 +1098,6 @@ pk_engine_package_name_in_strv (gchar **strv, PkPackage *pkg)
 	return FALSE;
 }
 
-/**
- * pk_engine_get_package_history_pkg:
- *
- * Create a 'a{sv}' GVariant instance from all the PkTransactionPast data
- **/
 static GVariant *
 pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 {
@@ -1226,9 +1116,6 @@ pk_engine_get_package_history_pkg (PkTransactionPast *item, PkPackage *pkg)
 	return g_variant_builder_end (&builder);
 }
 
-/**
- * pk_engine_is_package_history_interesing:
- **/
 static gboolean
 pk_engine_is_package_history_interesing (PkPackage *package)
 {
@@ -1247,9 +1134,6 @@ pk_engine_is_package_history_interesing (PkPackage *package)
 	return ret;
 }
 
-/**
- * pk_engine_get_package_history:
- **/
 static GVariant *
 pk_engine_get_package_history (PkEngine *engine,
 			       gchar **package_names,
@@ -1372,9 +1256,6 @@ out:
 	return value;
 }
 
-/**
- * pk_engine_daemon_method_call:
- **/
 static void
 pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 			      const gchar *object_path, const gchar *interface_name,
@@ -1604,9 +1485,6 @@ typedef struct {
 	PkOfflineAction		 action;
 } PkEngineOfflineAsyncHelper;
 
-/**
- * pk_engine_offline_helper_free:
- **/
 static void
 pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
 {
@@ -1615,9 +1493,6 @@ pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
 	g_free (helper);
 }
 
-/**
- * pk_engine_offline_helper_cb:
- **/
 static void
 pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 {
@@ -1702,9 +1577,6 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 	pk_engine_offline_helper_free (helper);
 }
 
-/**
- * pk_engine_offline_method_call:
- **/
 static void
 pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender,
 			       const gchar *object_path, const gchar *interface_name,
@@ -1830,9 +1702,6 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 }
 
 #ifdef HAVE_SYSTEMD
-/**
- * pk_engine_proxy_logind_cb:
- **/
 static void
 pk_engine_proxy_logind_cb (GObject *source_object,
 			   GAsyncResult *res,
@@ -1847,9 +1716,6 @@ pk_engine_proxy_logind_cb (GObject *source_object,
 }
 #endif
 
-/**
- * pk_engine_on_bus_acquired_cb:
- **/
 static void
 pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 			      const gchar *name,
@@ -1904,9 +1770,6 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 }
 
 
-/**
- * pk_engine_on_name_acquired_cb:
- **/
 static void
 pk_engine_on_name_acquired_cb (GDBusConnection *connection_,
 			       const gchar *name,
@@ -1916,9 +1779,6 @@ pk_engine_on_name_acquired_cb (GDBusConnection *connection_,
 }
 
 
-/**
- * pk_engine_on_name_lost_cb:
- **/
 static void
 pk_engine_on_name_lost_cb (GDBusConnection *connection_,
 			   const gchar *name,
@@ -1929,9 +1789,6 @@ pk_engine_on_name_lost_cb (GDBusConnection *connection_,
 	g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
 }
 
-/**
- * pk_engine_init:
- **/
 static void
 pk_engine_init (PkEngine *engine)
 {
@@ -1991,10 +1848,6 @@ pk_engine_init (PkEngine *engine)
 				engine, NULL);
 }
 
-/**
- * pk_engine_finalize:
- * @object: The object to finalize
- **/
 static void
 pk_engine_finalize (GObject *object)
 {
@@ -2057,11 +1910,6 @@ pk_engine_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }
 
-/**
- * pk_engine_new:
- *
- * Return value: a new PkEngine object.
- **/
 PkEngine *
 pk_engine_new (GKeyFile *conf)
 {

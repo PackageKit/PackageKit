@@ -23,9 +23,6 @@
 #include <glib.h>
 #include <pk-backend.h>
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {

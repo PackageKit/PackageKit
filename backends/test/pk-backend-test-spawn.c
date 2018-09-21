@@ -27,18 +27,12 @@
 
 static PkBackendSpawn *spawn;
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return g_strdup ("Test-Spawn");
 }
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -50,9 +44,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -67,10 +58,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	g_free (search);
 }
 
-/**
- * pk_backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -79,10 +66,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	pk_backend_spawn_set_name (spawn, "test");
 }
 
-/**
- * pk_backend_destroy:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {

@@ -26,38 +26,24 @@
 
 static gboolean is_cancelled = FALSE;
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return g_strdup ("Test-Thread");
 }
 
-/**
- * pk_backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	g_debug ("backend: initialize");
 }
 
-/**
- * pk_backend_destroy:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("backend: destroy");
 }
 
-/**
- * pk_backend_search_groups_thread:
- */
 static void
 pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -70,18 +56,12 @@ pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer u
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, pk_backend_search_groups_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_names_thread:
- */
 static void
 pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -122,9 +102,6 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 			    "gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -133,9 +110,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 				      NULL, NULL);
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {

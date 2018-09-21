@@ -43,9 +43,6 @@
   #include "pk-resources.h"
 #endif
 
-/**
- * pk_is_thread_default_real:
- **/
 gboolean
 pk_is_thread_default_real (const gchar *strloc, const gchar *strfunc)
 {
@@ -65,11 +62,6 @@ pk_is_thread_default_real (const gchar *strloc, const gchar *strfunc)
 	return TRUE;
 }
 
-/**
- * pk_directory_remove_contents:
- *
- * Does not remove the directory itself, only the contents.
- **/
 gboolean
 pk_directory_remove_contents (const gchar *directory)
 {
@@ -110,9 +102,6 @@ out:
 	return ret;
 }
 
-/**
- * pk_load_introspection:
- **/
 GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
@@ -273,9 +262,6 @@ pk_strlen (const gchar *text, guint len)
 	return i;
 }
 
-/**
- * pk_util_get_config_filename:
- **/
 gchar *
 pk_util_get_config_filename (void)
 {
@@ -302,18 +288,12 @@ out:
 	return path;
 }
 
-/**
- * pk_util_sort_backends_cb:
- **/
 static gint
 pk_util_sort_backends_cb (const gchar **name1, const gchar **name2)
 {
 	return g_strcmp0 (*name2, *name1);
 }
 
-/**
- * pk_util_set_auto_backend:
- **/
 gboolean
 pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 {
@@ -360,11 +340,6 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_ioprio_set_idle:
- *
- * Set the IO priority to idle
- **/
 gboolean
 pk_ioprio_set_idle (GPid pid)
 {
@@ -391,9 +366,6 @@ pk_ioprio_set_idle (GPid pid)
 #endif
 }
 
-/**
- * pk_string_replace:
- **/
 guint
 pk_string_replace (GString *string, const gchar *search, const gchar *replace)
 {

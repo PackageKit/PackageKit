@@ -29,9 +29,6 @@
 
 #include "dnf-backend.h"
 
-/**
- * dnf_emit_package:
- */
 void
 dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 {
@@ -46,9 +43,6 @@ dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 				dnf_package_get_summary (pkg));
 }
 
-/**
- * dnf_emit_package_list:
- */
 void
 dnf_emit_package_list (PkBackendJob *job,
 		       PkInfoEnum info,
@@ -63,9 +57,6 @@ dnf_emit_package_list (PkBackendJob *job,
 	}
 }
 
-/**
- * dnf_emit_package_array:
- */
 void
 dnf_emit_package_array (PkBackendJob *job,
 			 PkInfoEnum info,
@@ -80,9 +71,6 @@ dnf_emit_package_array (PkBackendJob *job,
 	}
 }
 
-/**
- * dnf_emit_package_list_filter:
- */
 void
 dnf_emit_package_list_filter (PkBackendJob *job,
 			      PkBitfield filters,
@@ -186,9 +174,6 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 	}
 }
 
-/**
- * dnf_advisory_kind_to_info_enum:
- */
 PkInfoEnum
 dnf_advisory_kind_to_info_enum (DnfAdvisoryKind kind)
 {
@@ -213,9 +198,6 @@ dnf_advisory_kind_to_info_enum (DnfAdvisoryKind kind)
 	return info_enum;
 }
 
-/**
- * dnf_get_filter_for_ids:
- */
 PkBitfield
 dnf_get_filter_for_ids (gchar **package_ids)
 {

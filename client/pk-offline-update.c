@@ -31,9 +31,6 @@
 #include <unistd.h>
 #include <systemd/sd-journal.h>
 
-/**
- * pk_offline_update_set_plymouth_msg:
- **/
 static void
 pk_offline_update_set_plymouth_msg (const gchar *msg)
 {
@@ -57,9 +54,6 @@ pk_offline_update_set_plymouth_msg (const gchar *msg)
 	}
 }
 
-/**
- * pk_offline_update_set_plymouth_mode:
- **/
 static void
 pk_offline_update_set_plymouth_mode (const gchar *mode)
 {
@@ -83,9 +77,6 @@ pk_offline_update_set_plymouth_mode (const gchar *mode)
 	}
 }
 
-/**
- * pk_offline_update_set_plymouth_percentage:
- **/
 static void
 pk_offline_update_set_plymouth_percentage (guint percentage)
 {
@@ -108,9 +99,6 @@ pk_offline_update_set_plymouth_percentage (guint percentage)
 	}
 }
 
-/**
- * pk_offline_update_progress_cb:
- **/
 static void
 pk_offline_update_progress_cb (PkProgress *progress,
 			       PkProgressType type,
@@ -188,9 +176,6 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	}
 }
 
-/**
- * pk_offline_update_reboot:
- **/
 static int
 pk_offline_update_reboot (void)
 {
@@ -233,9 +218,6 @@ pk_offline_update_reboot (void)
 	return EXIT_SUCCESS;
 }
 
-/**
- * pk_offline_update_power_off:
- **/
 static int
 pk_offline_update_power_off (void)
 {
@@ -278,9 +260,6 @@ pk_offline_update_power_off (void)
 	return EXIT_SUCCESS;
 }
 
-/**
- * pk_offline_update_write_error:
- **/
 static void
 pk_offline_update_write_error (const GError *error)
 {
@@ -301,9 +280,6 @@ pk_offline_update_write_error (const GError *error)
 		sd_journal_print (LOG_WARNING, "%s", error_local->message);
 }
 
-/**
- * pk_offline_update_write_results:
- **/
 static void
 pk_offline_update_write_results (PkResults *results)
 {
@@ -346,9 +322,6 @@ pk_offline_update_write_dummy_results (void)
 	sync ();
 }
 
-/**
- * pk_offline_update_loop_quit_cb:
- **/
 static gboolean
 pk_offline_update_loop_quit_cb (gpointer user_data)
 {
@@ -357,9 +330,6 @@ pk_offline_update_loop_quit_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_offline_update_sigint_cb:
- **/
 static gboolean
 pk_offline_update_sigint_cb (gpointer user_data)
 {
@@ -450,9 +420,6 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 	return TRUE;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

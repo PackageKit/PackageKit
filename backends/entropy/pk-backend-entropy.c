@@ -26,9 +26,6 @@
 static PkBackendSpawn *spawn = 0;
 static const gchar* BACKEND_FILE = "entropyBackend.py";
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -40,10 +37,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -55,10 +48,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	pk_backend_spawn_set_allow_sigkill (spawn, TRUE);
 }
 
-/**
- * pk_backend_destroy:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
@@ -66,9 +55,6 @@ pk_backend_destroy (PkBackend *backend)
 	g_object_unref (spawn);
 }
 
-/**
- * pk_backend_get_groups:
- */
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
@@ -111,9 +97,6 @@ pk_backend_get_groups (PkBackend *backend)
 			-1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -132,9 +115,6 @@ pk_backend_get_filters (PkBackend *backend)
 	 */
 }
 
-/**
- * pk_backend_get_roles:
- */
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
@@ -170,9 +150,6 @@ pk_backend_get_roles (PkBackend *backend)
 	return roles;
 }
 
-/**
- * pk_backend_get_mime_types:
- */
 gchar **
 pk_backend_get_mime_types(PkBackend *backend)
 {
@@ -183,9 +160,6 @@ pk_backend_get_mime_types(PkBackend *backend)
 	return g_strdupv ((gchar **) mime_types);
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
 {
@@ -193,9 +167,6 @@ pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
 	pk_backend_spawn_kill(spawn);
 }
 
-/**
- * pk_backend_download_packages:
- */
 void
 pk_backend_download_packages(PkBackend *backend,
 			     PkBackendJob *job,
@@ -212,9 +183,6 @@ pk_backend_download_packages(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_what_provides:
- */
 void
 pk_backend_what_provides(PkBackend *backend,
 			 PkBackendJob *job,
@@ -229,9 +197,6 @@ pk_backend_what_provides(PkBackend *backend,
 	g_free(filters_text);
 }
 
-/**
- * pk_backend_get_categories:
- */
 void
 pk_backend_get_categories(PkBackend *backend,
 			  PkBackendJob *job)
@@ -240,9 +205,6 @@ pk_backend_get_categories(PkBackend *backend,
 				"get-categories", NULL);
 }
 
-/**
- * pk_backend_depends_on:
- */
 void
 pk_backend_depends_on(PkBackend *backend,
 		       PkBackendJob *job,
@@ -263,9 +225,6 @@ pk_backend_depends_on(PkBackend *backend,
 	g_free(filters_text);
 }
 
-/**
- * pk_backend_get_details:
- */
 void
 pk_backend_get_details (PkBackend *backend,
 			PkBackendJob *job,
@@ -279,9 +238,6 @@ pk_backend_get_details (PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_get_distro_upgrades:
- */
 void
 pk_backend_get_distro_upgrades(PkBackend *backend, PkBackendJob *job)
 {
@@ -289,9 +245,6 @@ pk_backend_get_distro_upgrades(PkBackend *backend, PkBackendJob *job)
 				"get-distro-upgrades", NULL);
 }
 
-/**
- * pk_backend_get_files:
- */
 void
 pk_backend_get_files(PkBackend *backend,
 		      PkBackendJob *job,
@@ -305,9 +258,6 @@ pk_backend_get_files(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 void
 pk_backend_get_update_detail(PkBackend *backend,
 			     PkBackendJob *job,
@@ -321,9 +271,6 @@ pk_backend_get_update_detail(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_get_updates:
- */
 void
 pk_backend_get_updates(PkBackend *backend,
 		       PkBackendJob *job,
@@ -337,9 +284,6 @@ pk_backend_get_updates(PkBackend *backend,
 	g_free(filters_text);
 }
 
-/**
- * pk_backend_install_packages:
- */
 void
 pk_backend_install_packages(PkBackend *backend,
 			    PkBackendJob *job,
@@ -360,9 +304,6 @@ pk_backend_install_packages(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_install_files:
- */
 void
 pk_backend_install_files(PkBackend *backend,
 			 PkBackendJob *job,
@@ -384,9 +325,6 @@ pk_backend_install_files(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_refresh_cache:
- */
 void
 pk_backend_refresh_cache(PkBackend *backend,
 			 PkBackendJob *job,
@@ -406,9 +344,6 @@ pk_backend_refresh_cache(PkBackend *backend,
 				NULL);
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void
 pk_backend_remove_packages(PkBackend *backend,
 			   PkBackendJob *job,
@@ -433,9 +368,6 @@ pk_backend_remove_packages(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void
 pk_backend_repo_enable(PkBackend *backend,
 		       PkBackendJob *job,
@@ -448,9 +380,6 @@ pk_backend_repo_enable(PkBackend *backend,
 				NULL);
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve(PkBackend *backend,
 		   PkBackendJob *job,
@@ -469,9 +398,6 @@ pk_backend_resolve(PkBackend *backend,
 	g_free(filters_text);
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details(PkBackend *backend,
 			  PkBackendJob *job,
@@ -489,9 +415,6 @@ pk_backend_search_details(PkBackend *backend,
 	g_free(search);
 }
 
-/**
- * pk_backend_search_files:
- */
 void
 pk_backend_search_files(PkBackend *backend,
 			PkBackendJob *job,
@@ -509,9 +432,6 @@ pk_backend_search_files(PkBackend *backend,
 	g_free(search);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups(PkBackend *backend,
 			 PkBackendJob *job,
@@ -529,9 +449,6 @@ pk_backend_search_groups(PkBackend *backend,
 	g_free(search);
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names(PkBackend *backend,
 			PkBackendJob *job,
@@ -549,9 +466,6 @@ pk_backend_search_names(PkBackend *backend,
 	g_free(search);
 }
 
-/**
- * pk_backend_update_packages:
- */
 void
 pk_backend_update_packages(PkBackend *backend,
 			   PkBackendJob *job,
@@ -572,9 +486,6 @@ pk_backend_update_packages(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_get_packages:
- */
 void
 pk_backend_get_packages(PkBackend *backend,
 			PkBackendJob *job,
@@ -589,9 +500,6 @@ pk_backend_get_packages(PkBackend *backend,
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list(PkBackend *backend,
 			 PkBackendJob *job,
@@ -605,9 +513,6 @@ pk_backend_get_repo_list(PkBackend *backend,
 	g_free(filters_text);
 }
 
-/**
- * pk_backend_required_by:
- */
 void
 pk_backend_required_by(PkBackend *backend,
 			PkBackendJob *job,
@@ -629,27 +534,18 @@ pk_backend_required_by(PkBackend *backend,
 	g_free(package_ids_temp);
 }
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return "Entropy";
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
 	return "Fabio Erculiani (lxnay) <lxnay@sabayon.org>";
 }
 
-/**
- * pk_backend_supports_parallelization:
- */
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {

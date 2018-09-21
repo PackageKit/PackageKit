@@ -88,9 +88,6 @@ static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkSpawn, pk_spawn, G_TYPE_OBJECT)
 
-/**
- * pk_spawn_read_fd_into_buffer:
- **/
 static gboolean
 pk_spawn_read_fd_into_buffer (gint fd, GString *string)
 {
@@ -106,9 +103,6 @@ pk_spawn_read_fd_into_buffer (gint fd, GString *string)
 	return TRUE;
 }
 
-/**
- * pk_spawn_emit_whole_lines:
- **/
 static gboolean
 pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 {
@@ -142,9 +136,6 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 	return TRUE;
 }
 
-/**
- * pk_spawn_exit_type_enum_to_string:
- **/
 static const gchar *
 pk_spawn_exit_type_enum_to_string (PkSpawnExitType type)
 {
@@ -163,9 +154,6 @@ pk_spawn_exit_type_enum_to_string (PkSpawnExitType type)
 	return "unknown";
 }
 
-/**
- * pk_spawn_check_child:
- **/
 static gboolean
 pk_spawn_check_child (PkSpawn *spawn)
 {
@@ -288,9 +276,6 @@ pk_spawn_check_child (PkSpawn *spawn)
 	return FALSE;
 }
 
-/**
- * pk_spawn_sigkill_cb:
- **/
 static gboolean
 pk_spawn_sigkill_cb (PkSpawn *spawn)
 {
@@ -474,9 +459,6 @@ out:
 	return ret;
 }
 
-/**
- * pk_strvequal:
- **/
 static gboolean
 pk_strvequal (gchar **id1, gchar **id2)
 {
@@ -653,9 +635,6 @@ out:
 	return ret;
 }
 
-/**
- * pk_spawn_get_property:
- **/
 static void
 pk_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
@@ -675,9 +654,6 @@ pk_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec
 	}
 }
 
-/**
- * pk_spawn_set_property:
- **/
 static void
 pk_spawn_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
@@ -697,10 +673,6 @@ pk_spawn_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 	}
 }
 
-/**
- * pk_spawn_class_init:
- * @klass: The PkSpawnClass
- **/
 static void
 pk_spawn_class_init (PkSpawnClass *klass)
 {
@@ -749,10 +721,6 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	g_type_class_add_private (klass, sizeof (PkSpawnPrivate));
 }
 
-/**
- * pk_spawn_init:
- * @spawn: This class instance
- **/
 static void
 pk_spawn_init (PkSpawn *spawn)
 {
@@ -777,10 +745,6 @@ pk_spawn_init (PkSpawn *spawn)
 	spawn->priv->stderr_buf = g_string_new ("");
 }
 
-/**
- * pk_spawn_finalize:
- * @object: The object to finalize
- **/
 static void
 pk_spawn_finalize (GObject *object)
 {
@@ -824,11 +788,6 @@ pk_spawn_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_spawn_parent_class)->finalize (object);
 }
 
-/**
- * pk_spawn_new:
- *
- * Return value: a new PkSpawn object.
- **/
 PkSpawn *
 pk_spawn_new (GKeyFile *conf)
 {

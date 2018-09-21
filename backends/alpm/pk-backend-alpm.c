@@ -98,9 +98,6 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_backend_context_invalidate_cb:
- */
 static void
 pk_backend_context_invalidate_cb (GFileMonitor *monitor, GFile *file, GFile *other_file, GFileMonitorEvent event_type, PkBackend *backend)
 {

@@ -1735,18 +1735,12 @@ pk_backend_supports_parallelization (PkBackend *backend)
 }
 
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
 	return g_strdup ("ZYpp package manager");
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
@@ -1756,10 +1750,6 @@ pk_backend_get_author (PkBackend *backend)
 			 "ZYpp developers <zypp-devel@opensuse.org>");
 }
 
-/**
- * pk_backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -1772,10 +1762,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	g_debug ("zypp_backend_initialize");
 }
 
-/**
- * pk_backend_destroy:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
@@ -1907,9 +1893,6 @@ pk_backend_get_groups (PkBackend *backend)
 		-1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -2063,9 +2046,6 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	}
 }
 
-/**
- * pk_backend_depends_on:
- */
 void
 pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
@@ -2140,18 +2120,12 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 }
 
-/**
- * pk_backend_get_details:
- */
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	pk_backend_job_thread_create (job, backend_get_details_thread, NULL, NULL);
 }
 
-/**
- * backend_get_details_local_thread:
- */
 static void
 backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2193,9 +2167,6 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	}
 }
 
-/**
- * pk_backend_get_details_local:
- */
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **full_paths)
 {
@@ -2246,9 +2217,6 @@ backend_get_distro_upgrades_thread(PkBackendJob *job, GVariant *params, gpointer
 	}
 }
 
-/**
- * pk_backend_get_distro_upgrades:
- */
 void
 pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
@@ -2273,9 +2241,6 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 	zypp_refresh_cache (job, zypp, force);
 }
 
-/**
- * pk_backend_refresh_cache
- */
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
@@ -2377,9 +2342,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	pk_backend_job_set_percentage (job, 100);
 }
 
-/**
- * pk_backend_get_updates
- */
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -2698,9 +2660,6 @@ backend_install_signature_thread (PkBackendJob *job, GVariant *params, gpointer 
 	priv->signatures.push_back ((string)(key_id));
 }
 
-/**
- * pk_backend_install_signature:
- */
 void
 pk_backend_install_signature (PkBackend *backend, PkBackendJob *job, PkSigTypeEnum type, const gchar *key_id, const gchar *package_id)
 {
@@ -2787,9 +2746,6 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void
 pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags,
 			    gchar **package_ids, gboolean allow_deps, gboolean autoremove)
@@ -2879,9 +2835,6 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	}
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
@@ -2965,18 +2918,12 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 	zypp_emit_filtered_packages_in_list (job, _filters, v);
 }
 
-/**
- * pk_backend_search_name:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -3035,27 +2982,18 @@ backend_search_group_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	pk_backend_job_set_percentage (job, 100);
 }
 
-/**
- * pk_backend_search_group:
- */
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, backend_search_group_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_file:
- */
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	pk_backend_job_thread_create (job, backend_find_packages_thread, NULL, NULL);
 }
 
-/**
- * backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -3101,9 +3039,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_finished (job);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void
 pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
 {
@@ -3673,9 +3608,6 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	pk_backend_job_thread_create (job, backend_download_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -3740,9 +3672,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_stop_job:
- */
 void
 pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {

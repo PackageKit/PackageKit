@@ -143,11 +143,6 @@ pk_scheduler_get_from_tid (PkScheduler *scheduler, const gchar *tid)
 	return NULL;
 }
 
-/**
- * pk_scheduler_get_transaction:
- *
- * Return value: Do not unref.
- **/
 PkTransaction *
 pk_scheduler_get_transaction (PkScheduler *scheduler, const gchar *tid)
 {
@@ -193,9 +188,6 @@ pk_scheduler_role_present (PkScheduler *scheduler, PkRoleEnum role)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_item_free:
- **/
 static void
 pk_scheduler_item_free (PkSchedulerItem *item)
 {
@@ -218,9 +210,6 @@ pk_scheduler_item_free (PkSchedulerItem *item)
 	g_free (item);
 }
 
-/**
- * pk_scheduler_remove_internal:
- **/
 static gboolean
 pk_scheduler_remove_internal (PkScheduler *scheduler, PkSchedulerItem *item)
 {
@@ -240,9 +229,6 @@ pk_scheduler_remove_internal (PkScheduler *scheduler, PkSchedulerItem *item)
 	return TRUE;
 }
 
-/**
- * pk_scheduler_remove:
- **/
 gboolean
 pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 {
@@ -282,9 +268,6 @@ pk_scheduler_remove (PkScheduler *scheduler, const gchar *tid)
 	return pk_scheduler_remove_internal (scheduler, item);
 }
 
-/**
- * pk_scheduler_remove_item_cb:
- **/
 static gboolean
 pk_scheduler_remove_item_cb (gpointer user_data)
 {
@@ -294,9 +277,6 @@ pk_scheduler_remove_item_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_run_idle_cb:
- **/
 static gboolean
 pk_scheduler_run_idle_cb (PkSchedulerItem *item)
 {
@@ -314,9 +294,6 @@ pk_scheduler_run_idle_cb (PkSchedulerItem *item)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_run_item:
- **/
 static void
 pk_scheduler_run_item (PkScheduler *scheduler, PkSchedulerItem *item)
 {
@@ -328,10 +305,6 @@ pk_scheduler_run_item (PkScheduler *scheduler, PkSchedulerItem *item)
 	g_source_set_name_by_id (item->idle_id, "[PkScheduler] run");
 }
 
-/**
- * pk_scheduler_get_active_transactions:
- *
- **/
 static GPtrArray *
 pk_scheduler_get_active_transactions (PkScheduler *scheduler)
 {
@@ -390,11 +363,6 @@ pk_scheduler_get_exclusive_running (PkScheduler *scheduler)
 	return exclusive_running;
 }
 
-/**
- * pk_scheduler_get_background_running:
- *
- * Return value: %TRUE if we have running background transactions
- **/
 static gboolean
 pk_scheduler_get_background_running (PkScheduler *scheduler)
 {
@@ -418,9 +386,6 @@ pk_scheduler_get_background_running (PkScheduler *scheduler)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_get_next_item:
- **/
 static PkSchedulerItem *
 pk_scheduler_get_next_item (PkScheduler *scheduler)
 {
@@ -473,9 +438,6 @@ out:
 	return item;
 }
 
-/**
- * pk_scheduler_commit:
- **/
 static void
 pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 {
@@ -518,9 +480,6 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 		pk_scheduler_run_item (scheduler, item);
 }
 
-/**
- * pk_scheduler_transaction_allow_cancel_changed_cb:
- **/
 static void
 pk_scheduler_transaction_allow_cancel_changed_cb (PkTransaction *transaction,
 					          gboolean allow_cancel,
@@ -530,9 +489,6 @@ pk_scheduler_transaction_allow_cancel_changed_cb (PkTransaction *transaction,
 	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
 }
 
-/**
- * pk_scheduler_transaction_state_changed_cb:
- **/
 static void
 pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
 					   PkTransactionState state,
@@ -549,9 +505,6 @@ pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
 	}
 }
 
-/**
- * pk_scheduler_transaction_finished_cb:
- **/
 static void
 pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
 				      PkScheduler *scheduler)
@@ -621,9 +574,6 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
 	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
 }
 
-/**
- * pk_scheduler_no_commit_cb:
- **/
 static gboolean
 pk_scheduler_no_commit_cb (gpointer user_data)
 {
@@ -635,11 +585,6 @@ pk_scheduler_no_commit_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_get_number_transactions_for_uid:
- *
- * Find all the transactions that are pending from this uid.
- **/
 static guint
 pk_scheduler_get_number_transactions_for_uid (PkScheduler *scheduler, guint uid)
 {
@@ -658,9 +603,6 @@ pk_scheduler_get_number_transactions_for_uid (PkScheduler *scheduler, guint uid)
 	return count;
 }
 
-/**
- * pk_scheduler_create:
- **/
 gboolean
 pk_scheduler_create (PkScheduler *scheduler,
 			    const gchar *tid,
@@ -814,9 +756,6 @@ pk_scheduler_get_inhibited (PkScheduler *scheduler)
 	return FALSE;
 }
 
-/**
- * pk_scheduler_cancel_background:
- **/
 void
 pk_scheduler_cancel_background (PkScheduler *scheduler)
 {
@@ -843,9 +782,6 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
 	}
 }
 
-/**
- * pk_scheduler_cancel_queued:
- **/
 void
 pk_scheduler_cancel_queued (PkScheduler *scheduler)
 {
@@ -869,9 +805,6 @@ pk_scheduler_cancel_queued (PkScheduler *scheduler)
 	}
 }
 
-/**
- * pk_scheduler_get_array:
- **/
 gchar **
 pk_scheduler_get_array (PkScheduler *scheduler)
 {
@@ -902,9 +835,6 @@ pk_scheduler_get_array (PkScheduler *scheduler)
 	return pk_ptr_array_to_strv (parray);
 }
 
-/**
- * pk_scheduler_get_size:
- **/
 guint
 pk_scheduler_get_size (PkScheduler *scheduler)
 {
@@ -913,9 +843,6 @@ pk_scheduler_get_size (PkScheduler *scheduler)
 	return scheduler->priv->array->len;
 }
 
-/**
- * pk_scheduler_get_state:
- **/
 gchar *
 pk_scheduler_get_state (PkScheduler *scheduler)
 {
@@ -961,9 +888,6 @@ out:
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_scheduler_print:
- **/
 static void
 pk_scheduler_print (PkScheduler *scheduler)
 {
@@ -1049,9 +973,6 @@ pk_scheduler_is_consistent (PkScheduler *scheduler)
 	return ret;
 }
 
-/**
- * pk_scheduler_wedge_check:
- **/
 static gboolean
 pk_scheduler_wedge_check (PkScheduler *scheduler)
 {
@@ -1079,10 +1000,6 @@ pk_scheduler_set_backend (PkScheduler *scheduler,
 	scheduler->priv->backend = g_object_ref (backend);
 }
 
-/**
- * pk_scheduler_class_init:
- * @klass: The PkSchedulerClass
- **/
 static void
 pk_scheduler_class_init (PkSchedulerClass *klass)
 {
@@ -1099,10 +1016,6 @@ pk_scheduler_class_init (PkSchedulerClass *klass)
 	g_type_class_add_private (klass, sizeof (PkSchedulerPrivate));
 }
 
-/**
- * pk_scheduler_init:
- * @scheduler: This class instance
- **/
 static void
 pk_scheduler_init (PkScheduler *scheduler)
 {
@@ -1115,10 +1028,6 @@ pk_scheduler_init (PkScheduler *scheduler)
 	g_source_set_name_by_id (scheduler->priv->unwedge_id, "[PkScheduler] wedge-check (main)");
 }
 
-/**
- * pk_scheduler_finalize:
- * @object: The object to finalize
- **/
 static void
 pk_scheduler_finalize (GObject *object)
 {
@@ -1143,11 +1052,6 @@ pk_scheduler_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_scheduler_parent_class)->finalize (object);
 }
 
-/**
- * pk_scheduler_new:
- *
- * Return value: a new PkScheduler object.
- **/
 PkScheduler *
 pk_scheduler_new (GKeyFile *conf)
 {

@@ -113,9 +113,6 @@ struct PkBackendJobPrivate
 
 G_DEFINE_TYPE (PkBackendJob, pk_backend_job, G_TYPE_OBJECT)
 
-/**
- * pk_backend_job_disconnect_vfuncs:
- **/
 void
 pk_backend_job_disconnect_vfuncs (PkBackendJob *job)
 {
@@ -131,9 +128,6 @@ pk_backend_job_disconnect_vfuncs (PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_job_get_vfunc_enabled:
- **/
 gboolean
 pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
 				  PkBackendJobSignal signal_kind)
@@ -181,9 +175,6 @@ pk_backend_job_get_backend (PkBackendJob *job)
 	return job->priv->backend;
 }
 
-/**
- * pk_backend_job_set_backend:
- **/
 void
 pk_backend_job_set_backend (PkBackendJob *job, gpointer backend)
 {
@@ -203,9 +194,6 @@ pk_backend_job_get_user_data (PkBackendJob *job)
 	return job->priv->user_data;
 }
 
-/**
- * pk_backend_job_get_transaction_flags:
- **/
 PkBitfield
 pk_backend_job_get_transaction_flags (PkBackendJob *job)
 {
@@ -214,9 +202,6 @@ pk_backend_job_get_transaction_flags (PkBackendJob *job)
 }
 
 
-/**
- * pk_backend_job_set_transaction_flags:
- **/
 void
 pk_backend_job_set_transaction_flags (PkBackendJob *job,
 				      PkBitfield transaction_flags)
@@ -225,9 +210,6 @@ pk_backend_job_set_transaction_flags (PkBackendJob *job,
 	job->priv->transaction_flags = transaction_flags;
 }
 
-/**
- * pk_backend_job_set_proxy:
- **/
 void
 pk_backend_job_set_proxy (PkBackendJob	*job,
 		      const gchar *proxy_http,
@@ -324,9 +306,6 @@ pk_backend_job_get_pac (PkBackendJob *job)
 	return job->priv->pac;
 }
 
-/**
- * pk_backend_job_set_cmdline:
- **/
 void
 pk_backend_job_set_cmdline (PkBackendJob *job, const gchar *cmdline)
 {
@@ -337,9 +316,6 @@ pk_backend_job_set_cmdline (PkBackendJob *job, const gchar *cmdline)
 	g_debug ("install cmdline now %s", job->priv->cmdline);
 }
 
-/**
- * pk_backend_job_get_cmdline:
- **/
 const gchar *
 pk_backend_job_get_cmdline (PkBackendJob *job)
 {
@@ -347,9 +323,6 @@ pk_backend_job_get_cmdline (PkBackendJob *job)
 	return job->priv->cmdline;
 }
 
-/**
- * pk_backend_job_set_uid:
- **/
 void
 pk_backend_job_set_uid (PkBackendJob *job, guint uid)
 {
@@ -362,9 +335,6 @@ pk_backend_job_set_uid (PkBackendJob *job, guint uid)
 	g_debug ("install uid now %i", job->priv->uid);
 }
 
-/**
- * pk_backend_job_get_uid:
- **/
 guint
 pk_backend_job_get_uid (PkBackendJob *job)
 {
@@ -385,9 +355,6 @@ pk_backend_job_get_locale (PkBackendJob *job)
 	return job->priv->locale;
 }
 
-/**
- * pk_backend_job_set_locale:
- **/
 void
 pk_backend_job_set_locale (PkBackendJob *job, const gchar *code)
 {
@@ -402,9 +369,6 @@ pk_backend_job_set_locale (PkBackendJob *job, const gchar *code)
 	job->priv->locale = g_strdup (code);
 }
 
-/**
- * pk_backend_job_get_parameters:
- **/
 GVariant *
 pk_backend_job_get_parameters (PkBackendJob *job)
 {
@@ -412,9 +376,6 @@ pk_backend_job_get_parameters (PkBackendJob *job)
 	return job->priv->params;
 }
 
-/**
- * pk_backend_job_set_parameters:
- **/
 void
 pk_backend_job_set_parameters (PkBackendJob *job, GVariant *params)
 {
@@ -436,9 +397,6 @@ pk_backend_job_get_frontend_socket (PkBackendJob *job)
 	return job->priv->frontend_socket;
 }
 
-/**
- * pk_backend_job_set_frontend_socket:
- **/
 void
 pk_backend_job_set_frontend_socket (PkBackendJob *job, const gchar *frontend_socket)
 {
@@ -466,9 +424,6 @@ pk_backend_job_get_cache_age (PkBackendJob *job)
 	return job->priv->cache_age;
 }
 
-/**
- * pk_backend_job_set_cache_age:
- **/
 void
 pk_backend_job_set_cache_age (PkBackendJob *job, guint cache_age)
 {
@@ -494,9 +449,6 @@ pk_backend_job_set_cache_age (PkBackendJob *job, guint cache_age)
 	job->priv->cache_age = cache_age;
 }
 
-/**
- * pk_backend_job_set_user_data:
- **/
 void
 pk_backend_job_set_user_data (PkBackendJob *job, gpointer user_data)
 {
@@ -504,9 +456,6 @@ pk_backend_job_set_user_data (PkBackendJob *job, gpointer user_data)
 	job->priv->user_data = user_data;
 }
 
-/**
- * pk_backend_job_get_background:
- **/
 gboolean
 pk_backend_job_get_background (PkBackendJob *job)
 {
@@ -514,9 +463,6 @@ pk_backend_job_get_background (PkBackendJob *job)
 	return job->priv->background;
 }
 
-/**
- * pk_backend_job_set_background:
- **/
 void
 pk_backend_job_set_background (PkBackendJob *job, gboolean background)
 {
@@ -524,9 +470,6 @@ pk_backend_job_set_background (PkBackendJob *job, gboolean background)
 	job->priv->background = background;
 }
 
-/**
- * pk_backend_job_get_interactive:
- **/
 gboolean
 pk_backend_job_get_interactive (PkBackendJob *job)
 {
@@ -534,9 +477,6 @@ pk_backend_job_get_interactive (PkBackendJob *job)
 	return job->priv->interactive;
 }
 
-/**
- * pk_backend_job_set_interactive:
- **/
 void
 pk_backend_job_set_interactive (PkBackendJob *job, gboolean interactive)
 {
@@ -544,9 +484,6 @@ pk_backend_job_set_interactive (PkBackendJob *job, gboolean interactive)
 	job->priv->interactive = interactive;
 }
 
-/**
- * pk_backend_job_get_role:
- **/
 PkRoleEnum
 pk_backend_job_get_role (PkBackendJob *job)
 {
@@ -566,18 +503,12 @@ pk_backend_job_get_runtime (PkBackendJob *job)
 	return g_timer_elapsed (job->priv->timer, NULL) * 1000;
 }
 
-/**
- * pk_backend_job_get_is_finished:
- **/
 gboolean
 pk_backend_job_get_is_finished (PkBackendJob *job)
 {
 	return job->priv->finished;
 }
 
-/**
- * pk_backend_job_get_is_error_set:
- **/
 gboolean
 pk_backend_job_get_is_error_set (PkBackendJob *job)
 {
@@ -592,9 +523,6 @@ typedef struct {
 	GDestroyNotify		 destroy_func;
 } PkBackendJobVFuncHelper;
 
-/**
- * pk_backend_job_signal_to_string:
- **/
 static const gchar *
 pk_backend_job_signal_to_string (PkBackendJobSignal id)
 {
@@ -641,9 +569,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 	return NULL;
 }
 
-/**
- * pk_backend_job_vfunc_event_free:
- **/
 static void
 pk_backend_job_vfunc_event_free (PkBackendJobVFuncHelper *helper)
 {
@@ -653,9 +578,6 @@ pk_backend_job_vfunc_event_free (PkBackendJobVFuncHelper *helper)
 	g_free (helper);
 }
 
-/**
- * pk_backend_job_call_vfunc_idle_cb:
- **/
 static gboolean
 pk_backend_job_call_vfunc_idle_cb (gpointer user_data)
 {
@@ -740,9 +662,6 @@ pk_backend_job_set_vfunc (PkBackendJob *job,
 	item->user_data = user_data;
 }
 
-/**
- * pk_backend_job_set_role:
- **/
 void
 pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 {
@@ -781,9 +700,6 @@ pk_backend_job_set_locked (PkBackendJob *job, gboolean locked)
 				   NULL);
 }
 
-/**
- * pk_backend_job_get_locked:
- **/
 gboolean
 pk_backend_job_get_locked (PkBackendJob *job)
 {
@@ -800,9 +716,6 @@ typedef struct {
 	GDestroyNotify		 destroy_func;
 } PkBackendJobThreadHelper;
 
-/**
- * pk_backend_job_thread_setup:
- **/
 static gpointer
 pk_backend_job_thread_setup (gpointer thread_data)
 {
@@ -863,9 +776,6 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	return TRUE;
 }
 
-/**
- * pk_backend_job_set_percentage:
- **/
 void
 pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 {
@@ -904,9 +814,6 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 				   NULL);
 }
 
-/**
- * pk_backend_job_set_speed:
- **/
 void
 pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 {
@@ -930,9 +837,6 @@ pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 				   NULL);
 }
 
-/**
- * pk_backend_job_set_download_size_remaining:
- **/
 void
 pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_size_remaining)
 {
@@ -961,9 +865,6 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
 				   g_free);
 }
 
-/**
- * pk_backend_job_set_item_progress:
- **/
 void
 pk_backend_job_set_item_progress (PkBackendJob *job,
 				  const gchar *package_id,
@@ -998,9 +899,6 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 	g_object_unref (item);
 }
 
-/**
- * pk_backend_job_set_status:
- **/
 void
 pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 {
@@ -1059,9 +957,6 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 				   NULL);
 }
 
-/**
- * pk_backend_job_package:
- **/
 void
 pk_backend_job_package (PkBackendJob *job,
 			PkInfoEnum info,
@@ -1127,9 +1022,6 @@ pk_backend_job_package (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_update_detail:
- **/
 void
 pk_backend_job_update_detail (PkBackendJob *job,
 			      const gchar *package_id,
@@ -1197,9 +1089,6 @@ pk_backend_job_update_detail (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_require_restart:
- **/
 void
 pk_backend_job_require_restart (PkBackendJob *job,
 				PkRestartEnum restart,
@@ -1235,9 +1124,6 @@ pk_backend_job_require_restart (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_details:
- **/
 void
 pk_backend_job_details (PkBackendJob *job,
 			const gchar *package_id,
@@ -1324,9 +1210,6 @@ pk_backend_job_files (PkBackendJob *job,
 	job->priv->download_files++;
 }
 
-/**
- * pk_backend_job_distro_upgrade:
- **/
 void
 pk_backend_job_distro_upgrade (PkBackendJob *job,
 			       PkDistroUpgradeEnum state,
@@ -1361,9 +1244,6 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_repo_signature_required:
- **/
 void
 pk_backend_job_repo_signature_required (PkBackendJob *job,
 					const gchar *package_id,
@@ -1415,9 +1295,6 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 	job->priv->set_signature = TRUE;
 }
 
-/**
- * pk_backend_job_eula_required:
- **/
 void
 pk_backend_job_eula_required (PkBackendJob *job,
 			      const gchar *eula_id,
@@ -1464,9 +1341,6 @@ pk_backend_job_eula_required (PkBackendJob *job,
 	job->priv->set_eula = TRUE;
 }
 
-/**
- * pk_backend_job_media_change_required:
- **/
 void
 pk_backend_job_media_change_required (PkBackendJob *job,
 				      PkMediaTypeEnum media_type,
@@ -1500,9 +1374,6 @@ pk_backend_job_media_change_required (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_repo_detail:
- **/
 void
 pk_backend_job_repo_detail (PkBackendJob *job,
 			    const gchar *repo_id,
@@ -1535,9 +1406,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_category:
- **/
 void
 pk_backend_job_category (PkBackendJob *job,
 			 const gchar *parent_id,
@@ -1574,9 +1442,6 @@ pk_backend_job_category (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_error_code_is_need_untrusted:
- **/
 static gboolean
 pk_backend_job_error_code_is_need_untrusted (PkErrorEnum error_code)
 {
@@ -1595,9 +1460,6 @@ pk_backend_job_error_code_is_need_untrusted (PkErrorEnum error_code)
 	return ret;
 }
 
-/**
- * pk_backend_job_error_code:
- **/
 void
 pk_backend_job_error_code (PkBackendJob *job,
 			   PkErrorEnum error_code,
@@ -1659,18 +1521,12 @@ pk_backend_job_error_code (PkBackendJob *job,
 				   g_object_unref);
 }
 
-/**
- * pk_backend_job_has_set_error_code:
- **/
 gboolean
 pk_backend_job_has_set_error_code (PkBackendJob *job)
 {
 	return job->priv->set_error;
 }
 
-/**
- * pk_backend_job_set_started:
- **/
 void
 pk_backend_job_set_started (PkBackendJob *job, gboolean started)
 {
@@ -1678,18 +1534,12 @@ pk_backend_job_set_started (PkBackendJob *job, gboolean started)
 	job->priv->started = started;
 }
 
-/**
- * pk_backend_job_get_started:
- **/
 gboolean
 pk_backend_job_get_started (PkBackendJob *job)
 {
 	return job->priv->started;
 }
 
-/**
- * pk_backend_job_set_allow_cancel:
- **/
 void
 pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 {
@@ -1707,9 +1557,6 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 				   NULL);
 }
 
-/**
- * pk_backend_job_get_allow_cancel:
- **/
 gboolean
 pk_backend_job_get_allow_cancel (PkBackendJob *job)
 {
@@ -1738,9 +1585,6 @@ pk_backend_job_set_exit_code (PkBackendJob *job, PkExitEnum exit_enum)
 	job->priv->exit = exit_enum;
 }
 
-/**
- * pk_backend_job_get_exit_code:
- **/
 PkExitEnum
 pk_backend_job_get_exit_code (PkBackendJob *job)
 {
@@ -1748,9 +1592,6 @@ pk_backend_job_get_exit_code (PkBackendJob *job)
 	return job->priv->exit;
 }
 
-/**
- * pk_backend_job_finished:
- **/
 void
 pk_backend_job_finished (PkBackendJob *job)
 {
@@ -1800,9 +1641,6 @@ pk_backend_job_finished (PkBackendJob *job)
 				   NULL);
 }
 
-/**
- * pk_backend_job_finalize:
- **/
 static void
 pk_backend_job_finalize (GObject *object)
 {
@@ -1837,9 +1675,6 @@ pk_backend_job_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_backend_job_parent_class)->finalize (object);
 }
 
-/**
- * pk_backend_job_class_init:
- **/
 static void
 pk_backend_job_class_init (PkBackendJobClass *klass)
 {
@@ -1848,9 +1683,6 @@ pk_backend_job_class_init (PkBackendJobClass *klass)
 	g_type_class_add_private (klass, sizeof (PkBackendJobPrivate));
 }
 
-/**
- * pk_backend_job_init:
- **/
 static void
 pk_backend_job_init (PkBackendJob *job)
 {

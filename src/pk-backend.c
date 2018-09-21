@@ -48,9 +48,6 @@
  */
 #define PK_BACKEND_PERCENTAGE_DEFAULT		102
 
-/**
- * PkBackendDesc:
- */
 typedef struct {
 	const gchar	*description;
 	const gchar	*author;
@@ -219,9 +216,6 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-/**
- * pk_backend_get_groups:
- **/
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
@@ -235,11 +229,6 @@ pk_backend_get_groups (PkBackend *backend)
 	return backend->priv->desc->get_groups (backend);
 }
 
-/**
- * pk_backend_get_mime_types:
- *
- * Returns: (transfer full):
- **/
 gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
@@ -253,9 +242,6 @@ pk_backend_get_mime_types (PkBackend *backend)
 	return backend->priv->desc->get_mime_types (backend);
 }
 
-/**
- * pk_backend_supports_parallelization:
- **/
 gboolean
 pk_backend_supports_parallelization (PkBackend	*backend)
 {
@@ -267,9 +253,6 @@ pk_backend_supports_parallelization (PkBackend	*backend)
 	return backend->priv->desc->supports_parallelization (backend);
 }
 
-/**
- * pk_backend_thread_start:
- **/
 void
 pk_backend_thread_start (PkBackend *backend, PkBackendJob *job, gpointer func)
 {
@@ -293,9 +276,6 @@ pk_backend_thread_start (PkBackend *backend, PkBackendJob *job, gpointer func)
 	}
 }
 
-/**
- * pk_backend_thread_stop:
- **/
 void
 pk_backend_thread_stop (PkBackend *backend, PkBackendJob *job, gpointer func)
 {
@@ -305,9 +285,6 @@ pk_backend_thread_stop (PkBackend *backend, PkBackendJob *job, gpointer func)
 	g_mutex_unlock (mutex);
 }
 
-/**
- * pk_backend_get_filters:
- **/
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -321,9 +298,6 @@ pk_backend_get_filters (PkBackend *backend)
 	return backend->priv->desc->get_filters (backend);
 }
 
-/**
- * pk_backend_get_roles:
- **/
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
@@ -418,9 +392,6 @@ out:
 	return backend->priv->roles;
 }
 
-/**
- * pk_backend_is_implemented:
- **/
 gboolean
 pk_backend_is_implemented (PkBackend *backend, PkRoleEnum role)
 {
@@ -430,9 +401,6 @@ pk_backend_is_implemented (PkBackend *backend, PkRoleEnum role)
 	return pk_bitfield_contain (roles, role);
 }
 
-/**
- * pk_backend_build_library_path:
- **/
 static gchar *
 pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
@@ -635,9 +603,6 @@ pk_backend_unload (PkBackend *backend)
 	return TRUE;
 }
 
-/**
- * pk_backend_repo_list_changed_cb:
- **/
 static gboolean
 pk_backend_repo_list_changed_cb (gpointer user_data)
 {
@@ -649,11 +614,6 @@ pk_backend_repo_list_changed_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_backend_repo_list_changed:
- *
- * This function can be called on any thread.
- **/
 void
 pk_backend_repo_list_changed (PkBackend *backend)
 {
@@ -669,9 +629,6 @@ pk_backend_repo_list_changed (PkBackend *backend)
 		g_idle_add (pk_backend_repo_list_changed_cb, backend);
 
 }
-/**
- * pk_backend_updates_changed:
- **/
 gboolean
 pk_backend_updates_changed (PkBackend *backend)
 {
@@ -683,9 +640,6 @@ pk_backend_updates_changed (PkBackend *backend)
 	return TRUE;
 }
 
-/**
- * pk_backend_finished_updates_changed_cb:
- **/
 static gboolean
 pk_backend_finished_updates_changed_cb (gpointer data)
 {
@@ -695,11 +649,6 @@ pk_backend_finished_updates_changed_cb (gpointer data)
 	return FALSE;
 }
 
-/**
- * pk_backend_updates_changed_delay:
- *
- * This function can be called on any thread.
- **/
 gboolean
 pk_backend_updates_changed_delay (PkBackend *backend, guint timeout)
 {
@@ -719,9 +668,6 @@ pk_backend_updates_changed_delay (PkBackend *backend, guint timeout)
 	return TRUE;
 }
 
-/**
- * pk_backend_installed_db_changed_cb:
- **/
 static gboolean
 pk_backend_installed_db_changed_cb (gpointer user_data)
 {
@@ -809,9 +755,6 @@ pk_backend_transaction_inhibit_end (PkBackend *backend)
 	                                                                        backend);
 }
 
-/**
- * pk_backend_is_transaction_inhibited:
- **/
 gboolean
 pk_backend_is_transaction_inhibited (PkBackend *backend)
 {
@@ -899,9 +842,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		backend->priv->desc->job_stop (backend, job);
 }
 
-/**
- * pk_backend_bool_to_string:
- */
 const gchar *
 pk_backend_bool_to_string (gboolean value)
 {
@@ -910,9 +850,6 @@ pk_backend_bool_to_string (gboolean value)
 	return "no";
 }
 
-/**
- * pk_backend_is_online:
- **/
 gboolean
 pk_backend_is_online (PkBackend *backend)
 {
@@ -947,11 +884,6 @@ pk_backend_convert_uri (const gchar *proxy)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_backend_convert_uri_socks:
- *
- * Convert a proxy string to a SOCKS URI.
- **/
 gchar *
 pk_backend_convert_uri_socks (const gchar *proxy)
 {
@@ -970,9 +902,6 @@ pk_backend_convert_uri_socks (const gchar *proxy)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_backend_get_name:
- **/
 const gchar *
 pk_backend_get_name (PkBackend *backend)
 {
@@ -982,9 +911,6 @@ pk_backend_get_name (PkBackend *backend)
 	return backend->priv->name;
 }
 
-/**
- * pk_backend_get_description:
- **/
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
@@ -995,9 +921,6 @@ pk_backend_get_description (PkBackend *backend)
 	return backend->priv->desc->description;
 }
 
-/**
- * pk_backend_get_author:
- **/
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
@@ -1008,9 +931,6 @@ pk_backend_get_author (PkBackend *backend)
 	return backend->priv->desc->author;
 }
 
-/**
- * pk_backend_accept_eula:
- */
 void
 pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
 {
@@ -1028,9 +948,6 @@ pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
 	g_hash_table_insert (backend->priv->eulas, g_strdup (eula_id), GINT_TO_POINTER (1));
 }
 
-/**
- * pk_backend_is_eula_valid:
- */
 gboolean
 pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 {
@@ -1046,9 +963,6 @@ pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 	return FALSE;
 }
 
-/**
- * pk_backend_get_accepted_eula_string:
- */
 gchar *
 pk_backend_get_accepted_eula_string (PkBackend *backend)
 {
@@ -1074,11 +988,6 @@ pk_backend_get_accepted_eula_string (PkBackend *backend)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_backend_get_user_data:
- *
- * Return value: (transfer none): Job user data
- **/
 gpointer
 pk_backend_get_user_data (PkBackend *backend)
 {
@@ -1086,9 +995,6 @@ pk_backend_get_user_data (PkBackend *backend)
 	return backend->priv->user_data;
 }
 
-/**
- * pk_backend_set_user_data:
- **/
 void
 pk_backend_set_user_data (PkBackend *backend, gpointer user_data)
 {
@@ -1096,9 +1002,6 @@ pk_backend_set_user_data (PkBackend *backend, gpointer user_data)
 	backend->priv->user_data = user_data;
 }
 
-/**
- * pk_backend_file_monitor_changed_cb:
- **/
 static void
 pk_backend_file_monitor_changed_cb (GFileMonitor *monitor,
 				    GFile *file,
@@ -1111,10 +1014,6 @@ pk_backend_file_monitor_changed_cb (GFileMonitor *monitor,
 	backend->priv->file_changed_func (backend, backend->priv->file_changed_data);
 }
 
-/**
- * pk_backend_watch_file:
- * @func: (scope call):
- */
 gboolean
 pk_backend_watch_file (PkBackend *backend,
 		       const gchar *filename,
@@ -1154,9 +1053,6 @@ pk_backend_watch_file (PkBackend *backend,
 	return TRUE;
 }
 
-/**
- * pk_backend_finalize:
- **/
 static void
 pk_backend_finalize (GObject *object)
 {
@@ -1185,9 +1081,6 @@ pk_backend_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_backend_parent_class)->finalize (object);
 }
 
-/**
- * pk_backend_class_init:
- **/
 static void
 pk_backend_class_init (PkBackendClass *klass)
 {
@@ -1208,9 +1101,6 @@ pk_backend_class_init (PkBackendClass *klass)
 	g_type_class_add_private (klass, sizeof (PkBackendPrivate));
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
@@ -1229,9 +1119,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	backend->priv->desc->cancel (backend, job);
 }
 
-/**
- * pk_backend_download_packages:
- */
 void
 pk_backend_download_packages (PkBackend *backend,
 			      PkBackendJob *job,
@@ -1252,9 +1139,6 @@ pk_backend_download_packages (PkBackend *backend,
 	backend->priv->desc->download_packages (backend, job, package_ids, directory);
 }
 
-/**
- * pk_pk_backend_get_categories:
- */
 void
 pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
@@ -1269,9 +1153,6 @@ pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 	backend->priv->desc->get_categories (backend, job);
 }
 
-/**
- * pk_backend_depends_on:
- */
 void
 pk_backend_depends_on (PkBackend *backend,
 			PkBackendJob *job,
@@ -1294,9 +1175,6 @@ pk_backend_depends_on (PkBackend *backend,
 	backend->priv->desc->depends_on (backend, job, filters, package_ids, recursive);
 }
 
-/**
- * pk_backend_get_details:
- */
 void
 pk_backend_get_details (PkBackend *backend,
 			PkBackendJob *job,
@@ -1315,9 +1193,6 @@ pk_backend_get_details (PkBackend *backend,
 	backend->priv->desc->get_details (backend, job, package_ids);
 }
 
-/**
- * pk_backend_get_details_local:
- */
 void
 pk_backend_get_details_local (PkBackend *backend,
 			      PkBackendJob *job,
@@ -1336,9 +1211,6 @@ pk_backend_get_details_local (PkBackend *backend,
 	backend->priv->desc->get_details_local (backend, job, files);
 }
 
-/**
- * pk_backend_get_files_local:
- */
 void
 pk_backend_get_files_local (PkBackend *backend,
 			    PkBackendJob *job,
@@ -1357,9 +1229,6 @@ pk_backend_get_files_local (PkBackend *backend,
 	backend->priv->desc->get_files_local (backend, job, files);
 }
 
-/**
- * pk_backend_get_distro_upgrades:
- */
 void
 pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
@@ -1374,9 +1243,6 @@ pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 	backend->priv->desc->get_distro_upgrades (backend, job);
 }
 
-/**
- * pk_backend_get_files:
- */
 void
 pk_backend_get_files (PkBackend *backend,
 		      PkBackendJob *job,
@@ -1395,9 +1261,6 @@ pk_backend_get_files (PkBackend *backend,
 	backend->priv->desc->get_files (backend, job, package_ids);
 }
 
-/**
- * pk_backend_required_by:
- */
 void
 pk_backend_required_by (PkBackend *backend,
 			 PkBackendJob *job,
@@ -1420,9 +1283,6 @@ pk_backend_required_by (PkBackend *backend,
 	backend->priv->desc->required_by (backend, job, filters, package_ids, recursive);
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 void
 pk_backend_get_update_detail (PkBackend *backend,
 			      PkBackendJob *job,
@@ -1441,9 +1301,6 @@ pk_backend_get_update_detail (PkBackend *backend,
 	backend->priv->desc->get_update_detail (backend, job, package_ids);
 }
 
-/**
- * pk_backend_get_updates:
- */
 void
 pk_backend_get_updates (PkBackend *backend,
 			PkBackendJob *job,
@@ -1462,9 +1319,6 @@ pk_backend_get_updates (PkBackend *backend,
 	backend->priv->desc->get_updates (backend, job, filters);
 }
 
-/**
- * pk_backend_install_packages:
- */
 void
 pk_backend_install_packages (PkBackend *backend,
 			     PkBackendJob *job,
@@ -1486,9 +1340,6 @@ pk_backend_install_packages (PkBackend *backend,
 	backend->priv->desc->install_packages (backend, job, transaction_flags, package_ids);
 }
 
-/**
- * pk_backend_install_signature:
- */
 void
 pk_backend_install_signature (PkBackend *backend,
 			      PkBackendJob *job,
@@ -1510,9 +1361,6 @@ pk_backend_install_signature (PkBackend *backend,
 	backend->priv->desc->install_signature (backend, job, type, key_id, package_id);
 }
 
-/**
- * pk_backend_install_files:
- */
 void
 pk_backend_install_files (PkBackend *backend,
 			  PkBackendJob *job,
@@ -1534,9 +1382,6 @@ pk_backend_install_files (PkBackend *backend,
 	backend->priv->desc->install_files (backend, job, transaction_flags, full_paths);
 }
 
-/**
- * pk_backend_refresh_cache:
- */
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
@@ -1553,9 +1398,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	backend->priv->desc->refresh_cache (backend, job, force);
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void
 pk_backend_remove_packages (PkBackend *backend,
 			    PkBackendJob *job,
@@ -1585,9 +1427,6 @@ pk_backend_remove_packages (PkBackend *backend,
 					      autoremove);
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve (PkBackend *backend,
 		    PkBackendJob *job,
@@ -1608,9 +1447,6 @@ pk_backend_resolve (PkBackend *backend,
 	backend->priv->desc->resolve (backend, job, filters, package_ids);
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details (PkBackend *backend,
 			   PkBackendJob *job,
@@ -1631,9 +1467,6 @@ pk_backend_search_details (PkBackend *backend,
 	backend->priv->desc->search_details (backend, job, filters, values);
 }
 
-/**
- * pk_backend_search_files:
- */
 void
 pk_backend_search_files (PkBackend *backend,
 			 PkBackendJob *job,
@@ -1654,9 +1487,6 @@ pk_backend_search_files (PkBackend *backend,
 	backend->priv->desc->search_files (backend, job, filters, values);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups (PkBackend *backend,
 			  PkBackendJob *job,
@@ -1677,9 +1507,6 @@ pk_backend_search_groups (PkBackend *backend,
 	backend->priv->desc->search_groups (backend, job, filters, values);
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend,
 			 PkBackendJob *job,
@@ -1700,9 +1527,6 @@ pk_backend_search_names (PkBackend *backend,
 	backend->priv->desc->search_names (backend, job, filters, values);
 }
 
-/**
- * pk_backend_update_packages:
- */
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -1721,9 +1545,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	backend->priv->desc->update_packages (backend, job, transaction_flags, package_ids);
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -1740,9 +1561,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	backend->priv->desc->get_repo_list (backend, job, filters);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void
 pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
@@ -1760,9 +1578,6 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *repo
 	backend->priv->desc->repo_enable (backend, job, repo_id, enabled);
 }
 
-/**
- * pk_backend_repo_set_data:
- */
 void
 pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *repo_id, const gchar *parameter, const gchar *value)
 {
@@ -1781,9 +1596,6 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *re
 	backend->priv->desc->repo_set_data (backend, job, repo_id, parameter, value);
 }
 
-/**
- * pk_backend_repo_remove:
- */
 void
 pk_backend_repo_remove (PkBackend *backend,
 			PkBackendJob *job,
@@ -1810,9 +1622,6 @@ pk_backend_repo_remove (PkBackend *backend,
 					  autoremove);
 }
 
-/**
- * pk_backend_what_provides:
- */
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job,
 			  PkBitfield filters, gchar **values)
@@ -1831,9 +1640,6 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job,
 	backend->priv->desc->what_provides (backend, job, filters, values);
 }
 
-/**
- * pk_backend_get_packages:
- */
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -1850,9 +1656,6 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	backend->priv->desc->get_packages (backend, job, filters);
 }
 
-/**
- * pk_backend_upgrade_system:
- */
 void
 pk_backend_upgrade_system (PkBackend *backend,
 			   PkBackendJob *job,
@@ -1879,9 +1682,6 @@ pk_backend_upgrade_system (PkBackend *backend,
 					     upgrade_kind);
 }
 
-/**
- * pk_backend_repair_system:
- */
 void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
@@ -1899,9 +1699,6 @@ pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 	backend->priv->desc->repair_system (backend, job, transaction_flags);
 }
 
-/**
- * pk_backend_init:
- **/
 static void
 pk_backend_init (PkBackend *backend)
 {
@@ -1914,11 +1711,6 @@ pk_backend_init (PkBackend *backend)
 	g_mutex_init (&backend->priv->thread_hash_mutex);
 }
 
-/**
- * pk_backend_new:
- *
- * Return value: A new backend class backend.
- **/
 PkBackend *
 pk_backend_new (GKeyFile *conf)
 {

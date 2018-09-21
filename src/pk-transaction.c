@@ -177,11 +177,6 @@ static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
-/**
- * pk_transaction_error_quark:
- *
- * Return value: Our personal error quark.
- **/
 GQuark
 pk_transaction_error_quark (void)
 {
@@ -258,11 +253,6 @@ pk_transaction_error_quark (void)
 	return quark;
 }
 
-/**
- * pk_transaction_get_runtime:
- *
- * Return value: time running in ms
- */
 static guint
 pk_transaction_get_runtime (PkTransaction *transaction)
 {
@@ -271,9 +261,6 @@ pk_transaction_get_runtime (PkTransaction *transaction)
 	return pk_backend_job_get_runtime (transaction->priv->job);
 }
 
-/**
- * pk_transaction_get_background:
- */
 gboolean
 pk_transaction_get_background (PkTransaction *transaction)
 {
@@ -281,9 +268,6 @@ pk_transaction_get_background (PkTransaction *transaction)
 	return pk_backend_job_get_background (transaction->priv->job);
 }
 
-/**
- * pk_transaction_finish_invalidate_caches:
- **/
 static gboolean
 pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 {
@@ -314,9 +298,6 @@ out:
 	return TRUE;
 }
 
-/**
- * pk_transaction_emit_property_changed:
- **/
 static void
 pk_transaction_emit_property_changed (PkTransaction *transaction,
 				      const gchar *property_name,
@@ -344,9 +325,6 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 				       NULL);
 }
 
-/**
- * pk_transaction_progress_changed_emit:
- **/
 static void
 pk_transaction_progress_changed_emit (PkTransaction *transaction,
 				     guint percentage,
@@ -371,9 +349,6 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 					      g_variant_new_uint32 (remaining));
 }
 
-/**
- * pk_transaction_allow_cancel_emit:
- **/
 static void
 pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_cancel)
 {
@@ -394,9 +369,6 @@ pk_transaction_allow_cancel_emit (PkTransaction *transaction, gboolean allow_can
 					      g_variant_new_boolean (allow_cancel));
 }
 
-/**
- * pk_transaction_status_changed_emit:
- **/
 static void
 pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum status)
 {
@@ -415,9 +387,6 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 					      g_variant_new_uint32 (status));
 }
 
-/**
- * pk_transaction_finished_emit:
- **/
 static void
 pk_transaction_finished_emit (PkTransaction *transaction,
 			      PkExitEnum exit_enum,
@@ -440,9 +409,6 @@ pk_transaction_finished_emit (PkTransaction *transaction,
 	g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 }
 
-/**
- * pk_transaction_error_code_emit:
- **/
 static void
 pk_transaction_error_code_emit (PkTransaction *transaction,
 				PkErrorEnum error_enum,
@@ -462,9 +428,6 @@ pk_transaction_error_code_emit (PkTransaction *transaction,
 				       NULL);
 }
 
-/**
- * pk_transaction_allow_cancel_cb:
- **/
 static void
 pk_transaction_allow_cancel_cb (PkBackendJob *job,
 				gboolean allow_cancel,
@@ -477,9 +440,6 @@ pk_transaction_allow_cancel_cb (PkBackendJob *job,
 	pk_transaction_allow_cancel_emit (transaction, allow_cancel);
 }
 
-/**
- * pk_transaction_locked_changed_cb:
- **/
 static void
 pk_transaction_locked_changed_cb (PkBackendJob *job,
 				gboolean locked,
@@ -495,9 +455,6 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 		pk_transaction_make_exclusive (transaction);
 }
 
-/**
- * pk_transaction_details_cb:
- **/
 static void
 pk_transaction_details_cb (PkBackendJob *job,
 			   PkDetails *item,
@@ -553,9 +510,6 @@ pk_transaction_details_cb (PkBackendJob *job,
 				       NULL);
 }
 
-/**
- * pk_transaction_error_code_cb:
- **/
 static void
 pk_transaction_error_code_cb (PkBackendJob *job,
 			      PkError *item,
@@ -591,9 +545,6 @@ pk_transaction_error_code_cb (PkBackendJob *job,
 	}
 }
 
-/**
- * pk_transaction_files_cb:
- **/
 static void
 pk_transaction_files_cb (PkBackendJob *job,
 			 PkFiles *item,
@@ -640,9 +591,6 @@ pk_transaction_files_cb (PkBackendJob *job,
 				       NULL);
 }
 
-/**
- * pk_transaction_category_cb:
- **/
 static void
 pk_transaction_category_cb (PkBackendJob *job,
 			    PkCategory *item,
@@ -685,9 +633,6 @@ pk_transaction_category_cb (PkBackendJob *job,
 				       NULL);
 }
 
-/**
- * pk_transaction_item_progress_cb:
- **/
 static void
 pk_transaction_item_progress_cb (PkBackendJob *job,
 				 PkItemProgress *item_progress,
@@ -713,9 +658,6 @@ pk_transaction_item_progress_cb (PkBackendJob *job,
 				       NULL);
 }
 
-/**
- * pk_transaction_distro_upgrade_cb:
- **/
 static void
 pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 				  PkDistroUpgrade *item,
@@ -754,9 +696,6 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 				       NULL);
 }
 
-/**
- * pk_transaction_package_list_to_string:
- **/
 static gchar *
 pk_transaction_package_list_to_string (GPtrArray *array)
 {
@@ -779,9 +718,6 @@ pk_transaction_package_list_to_string (GPtrArray *array)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_transaction_state_to_string:
- **/
 const gchar *
 pk_transaction_state_to_string (PkTransactionState state)
 {
@@ -873,9 +809,6 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 	}
 }
 
-/**
- * pk_transaction_get_state:
- **/
 PkTransactionState
 pk_transaction_get_state (PkTransaction *transaction)
 {
@@ -884,18 +817,12 @@ pk_transaction_get_state (PkTransaction *transaction)
 	return transaction->priv->state;
 }
 
-/**
- * pk_transaction_get_uid:
- **/
 guint
 pk_transaction_get_uid (PkTransaction *transaction)
 {
 	return transaction->priv->uid;
 }
 
-/**
- * pk_transaction_setup_mime_types:
- **/
 static void
 pk_transaction_setup_mime_types (PkTransaction *transaction)
 {
@@ -910,9 +837,6 @@ pk_transaction_setup_mime_types (PkTransaction *transaction)
 	}
 }
 
-/**
- * pk_transaction_set_backend:
- **/
 void
 pk_transaction_set_backend (PkTransaction *transaction,
 			    PkBackend *backend)
@@ -956,9 +880,6 @@ pk_transaction_is_finished_with_lock_required (PkTransaction *transaction)
 	return FALSE;
 }
 
-/**
- * pk_transaction_offline_invalidate_check:
- */
 static void
 pk_transaction_offline_invalidate_check (PkTransaction *transaction)
 {
@@ -1009,9 +930,6 @@ pk_transaction_offline_invalidate_check (PkTransaction *transaction)
 	}
 }
 
-/**
- * pk_transaction_offline_finished:
- **/
 static void
 pk_transaction_offline_finished (PkTransaction *transaction)
 {
@@ -1088,9 +1006,6 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 	}
 }
 
-/**
- * pk_transaction_finished_cb:
- **/
 static void
 pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransaction *transaction)
 {
@@ -1225,9 +1140,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
 }
 
-/**
- * pk_transaction_package_cb:
- **/
 static void
 pk_transaction_package_cb (PkBackend *backend,
 			   PkPackage *item,
@@ -1308,9 +1220,6 @@ pk_transaction_package_cb (PkBackend *backend,
 				       NULL);
 }
 
-/**
- * pk_transaction_repo_detail_cb:
- **/
 static void
 pk_transaction_repo_detail_cb (PkBackend *backend,
 			       PkRepoDetail *item,
@@ -1343,9 +1252,6 @@ pk_transaction_repo_detail_cb (PkBackend *backend,
 				       NULL);
 }
 
-/**
- * pk_transaction_repo_signature_required_cb:
- **/
 static void
 pk_transaction_repo_signature_required_cb (PkBackend *backend,
 					   PkRepoSignatureRequired *item,
@@ -1403,9 +1309,6 @@ pk_transaction_repo_signature_required_cb (PkBackend *backend,
 	transaction->priv->emit_signature_required = TRUE;
 }
 
-/**
- * pk_transaction_eula_required_cb:
- **/
 static void
 pk_transaction_eula_required_cb (PkBackend *backend,
 				 PkEulaRequired *item,
@@ -1447,9 +1350,6 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 	transaction->priv->emit_eula_required = TRUE;
 }
 
-/**
- * pk_transaction_media_change_required_cb:
- **/
 static void
 pk_transaction_media_change_required_cb (PkBackend *backend,
 					 PkMediaChangeRequired *item,
@@ -1492,9 +1392,6 @@ pk_transaction_media_change_required_cb (PkBackend *backend,
 	transaction->priv->emit_media_change_required = TRUE;
 }
 
-/**
- * pk_transaction_require_restart_cb:
- **/
 static void
 pk_transaction_require_restart_cb (PkBackend *backend,
 				   PkRequireRestart *item,
@@ -1556,9 +1453,6 @@ pk_transaction_require_restart_cb (PkBackend *backend,
 				       NULL);
 }
 
-/**
- * pk_transaction_status_changed_cb:
- **/
 static void
 pk_transaction_status_changed_cb (PkBackendJob *job,
 				  PkStatusEnum status,
@@ -1581,9 +1475,6 @@ pk_transaction_status_changed_cb (PkBackendJob *job,
 	pk_transaction_status_changed_emit (transaction, status);
 }
 
-/**
- * pk_transaction_update_detail_cb:
- **/
 static void
 pk_transaction_update_detail_cb (PkBackend *backend,
 				 PkUpdateDetail *item,
@@ -1640,9 +1531,6 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       NULL);
 }
 
-/**
- * pk_transaction_set_session_state:
- */
 static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction,
 				  GError **error)
@@ -1698,9 +1586,6 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	return TRUE;
 }
 
-/**
- * pk_transaction_speed_cb:
- **/
 static void
 pk_transaction_speed_cb (PkBackendJob *job,
 			 guint speed,
@@ -1713,9 +1598,6 @@ pk_transaction_speed_cb (PkBackendJob *job,
 					      g_variant_new_uint32 (speed));
 }
 
-/**
- * pk_transaction_download_size_remaining_cb:
- **/
 static void
 pk_transaction_download_size_remaining_cb (PkBackendJob *job,
 					   guint64 *download_size_remaining,
@@ -1728,9 +1610,6 @@ pk_transaction_download_size_remaining_cb (PkBackendJob *job,
 					      g_variant_new_uint64 (*download_size_remaining));
 }
 
-/**
- * pk_transaction_percentage_cb:
- **/
 static void
 pk_transaction_percentage_cb (PkBackendJob *job,
 			      guint percentage,
@@ -1743,9 +1622,6 @@ pk_transaction_percentage_cb (PkBackendJob *job,
 					      g_variant_new_uint32 (percentage));
 }
 
-/**
- * pk_transaction_run:
- */
 gboolean
 pk_transaction_run (PkTransaction *transaction)
 {
@@ -2072,9 +1948,6 @@ pk_transaction_run (PkTransaction *transaction)
 	return TRUE;
 }
 
-/**
- * pk_transaction_get_tid:
- */
 const gchar *
 pk_transaction_get_tid (PkTransaction *transaction)
 {
@@ -2084,9 +1957,6 @@ pk_transaction_get_tid (PkTransaction *transaction)
 	return transaction->priv->tid;
 }
 
-/**
- * pk_transaction_is_exclusive:
- */
 gboolean
 pk_transaction_is_exclusive (PkTransaction *transaction)
 {
@@ -2095,11 +1965,6 @@ pk_transaction_is_exclusive (PkTransaction *transaction)
 	return transaction->priv->exclusive;
 }
 
-/**
- * pk_transaction_make_exclusive:
- *
- * Make this transaction exclusive.
- */
 void
 pk_transaction_make_exclusive (PkTransaction *transaction)
 {
@@ -2110,9 +1975,6 @@ pk_transaction_make_exclusive (PkTransaction *transaction)
 	transaction->priv->exclusive = TRUE;
 }
 
-/**
- * pk_transaction_vanished_cb:
- **/
 static void
 pk_transaction_vanished_cb (GDBusConnection *connection,
 			    const gchar *name,
@@ -2130,9 +1992,6 @@ pk_transaction_vanished_cb (GDBusConnection *connection,
 					      g_variant_new_boolean (transaction->priv->caller_active));
 }
 
-/**
- * pk_transaction_set_sender:
- */
 gboolean
 pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 {
@@ -2168,9 +2027,6 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	return TRUE;
 }
 
-/**
- * pk_transaction_finished_idle_cb:
- **/
 static gboolean
 pk_transaction_finished_idle_cb (PkTransaction *transaction)
 {
@@ -2217,9 +2073,6 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_transaction_search_check_item:
- **/
 static gboolean
 pk_transaction_search_check_item (const gchar *values, GError **error)
 {
@@ -2265,9 +2118,6 @@ pk_transaction_search_check_item (const gchar *values, GError **error)
 	return pk_transaction_strvalidate (values, error);
 }
 
-/**
- * pk_transaction_search_check:
- **/
 static gboolean
 pk_transaction_search_check (gchar **values, GError **error)
 {
@@ -2281,9 +2131,6 @@ pk_transaction_search_check (gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * Parameters to pk_transaction_authorize_actions_finished_cb.
- */
 struct AuthorizeActionsData {
 	PkTransaction *transaction;
 	PkRoleEnum role;
@@ -2651,9 +2498,6 @@ pk_transaction_skip_auth_checks (PkTransaction *transaction, gboolean skip_check
 	transaction->priv->skip_auth_check = skip_checks;
 }
 
-/**
- * pk_transaction_get_role:
- **/
 PkRoleEnum
 pk_transaction_get_role (PkTransaction *transaction)
 {
@@ -2661,9 +2505,6 @@ pk_transaction_get_role (PkTransaction *transaction)
 	return transaction->priv->role;
 }
 
-/**
- * pk_transaction_set_role:
- **/
 static void
 pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 {
@@ -2684,9 +2525,6 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 					      g_variant_new_uint32 (role));
 }
 
-/**
- * pk_transaction_dbus_return:
- **/
 static void
 pk_transaction_dbus_return (GDBusMethodInvocation *context, const GError *error)
 {
@@ -2702,11 +2540,6 @@ pk_transaction_dbus_return (GDBusMethodInvocation *context, const GError *error)
 		g_dbus_method_invocation_return_value (context, NULL);
 }
 
-/**
- * pk_transaction_accept_eula:
- *
- * This should be called when a eula_id needs to be added into an internal db.
- **/
 static void
 pk_transaction_accept_eula (PkTransaction *transaction,
 			    GVariant *params,
@@ -2751,9 +2584,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_cancel_bg:
- **/
 void
 pk_transaction_cancel_bg (PkTransaction *transaction)
 {
@@ -2789,9 +2619,6 @@ pk_transaction_cancel_bg (PkTransaction *transaction)
 	pk_backend_cancel (transaction->priv->backend, transaction->priv->job);
 }
 
-/**
- * pk_transaction_cancel:
- **/
 static void
 pk_transaction_cancel (PkTransaction *transaction,
 		       GVariant *params,
@@ -2908,9 +2735,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_download_packages:
- **/
 static void
 pk_transaction_download_packages (PkTransaction *transaction,
 				  GVariant *params,
@@ -2992,9 +2816,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_categories:
- **/
 static void
 pk_transaction_get_categories (PkTransaction *transaction,
 			       GVariant *params,
@@ -3024,9 +2845,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_depends_on:
- **/
 static void
 pk_transaction_depends_on (PkTransaction *transaction,
 			    GVariant *params,
@@ -3095,9 +2913,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_details:
- **/
 static void
 pk_transaction_get_details (PkTransaction *transaction,
 			    GVariant *params,
@@ -3161,9 +2976,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_details_local:
- **/
 static void
 pk_transaction_get_details_local (PkTransaction *transaction,
 				  GVariant *params,
@@ -3265,9 +3077,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_files_local:
- **/
 static void
 pk_transaction_get_files_local (PkTransaction *transaction,
 				  GVariant *params,
@@ -3369,9 +3178,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_distro_upgrades:
- **/
 static void
 pk_transaction_get_distro_upgrades (PkTransaction *transaction,
 				    GVariant *params,
@@ -3402,9 +3208,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_files:
- **/
 static void
 pk_transaction_get_files (PkTransaction *transaction,
 			  GVariant *params,
@@ -3467,9 +3270,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_packages:
- **/
 static void
 pk_transaction_get_packages (PkTransaction *transaction,
 			     GVariant *params,
@@ -3505,9 +3305,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_old_transactions:
- **/
 static void
 pk_transaction_get_old_transactions (PkTransaction *transaction,
 				     GVariant *params,
@@ -3582,9 +3379,6 @@ pk_transaction_get_old_transactions (PkTransaction *transaction,
 	pk_transaction_dbus_return (context, NULL);
 }
 
-/**
- * pk_transaction_get_repo_list:
- **/
 static void
 pk_transaction_get_repo_list (PkTransaction *transaction,
 			      GVariant *params,
@@ -3620,9 +3414,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_required_by:
- **/
 static void
 pk_transaction_required_by (PkTransaction *transaction,
 			     GVariant *params,
@@ -3691,9 +3482,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_update_detail:
- **/
 static void
 pk_transaction_get_update_detail (PkTransaction *transaction,
 				  GVariant *params,
@@ -3757,9 +3545,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_updates:
- **/
 void
 pk_transaction_get_updates (PkTransaction *transaction,
 			    GVariant *params,
@@ -3795,9 +3580,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_get_content_type_for_file:
- **/
 static gchar *
 pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
 {
@@ -3820,9 +3602,6 @@ pk_transaction_get_content_type_for_file (const gchar *filename, GError **error)
 	return g_file_info_get_attribute_as_string (info, "standard::content-type");
 }
 
-/**
- * pk_transaction_is_supported_content_type:
- **/
 static gboolean
 pk_transaction_is_supported_content_type (PkTransaction *transaction,
 					  const gchar *content_type)
@@ -3840,9 +3619,6 @@ pk_transaction_is_supported_content_type (PkTransaction *transaction,
 	return FALSE;
 }
 
-/**
- * pk_transaction_install_files:
- **/
 static void
 pk_transaction_install_files (PkTransaction *transaction,
 			      GVariant *params,
@@ -3951,9 +3727,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_install_packages:
- **/
 void
 pk_transaction_install_packages (PkTransaction *transaction,
 				 GVariant *params,
@@ -4035,9 +3808,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_install_signature:
- **/
 static void
 pk_transaction_install_signature (PkTransaction *transaction,
 				  GVariant *params,
@@ -4108,9 +3878,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_refresh_cache:
- **/
 static void
 pk_transaction_refresh_cache (PkTransaction *transaction,
 			      GVariant *params,
@@ -4155,9 +3922,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_remove_packages:
- **/
 static void
 pk_transaction_remove_packages (PkTransaction *transaction,
 				GVariant *params,
@@ -4245,9 +4009,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_repo_enable:
- **/
 static void
 pk_transaction_repo_enable (PkTransaction *transaction,
 			    GVariant *params,
@@ -4302,9 +4063,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_repo_set_data:
- **/
 static void
 pk_transaction_repo_set_data (PkTransaction *transaction,
 			      GVariant *params,
@@ -4363,9 +4121,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_repo_remove:
- **/
 static void
 pk_transaction_repo_remove (PkTransaction *transaction,
 			    GVariant *params,
@@ -4426,9 +4181,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_resolve:
- **/
 static void
 pk_transaction_resolve (PkTransaction *transaction,
 			GVariant *params,
@@ -4502,9 +4254,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_search_details:
- **/
 void
 pk_transaction_search_details (PkTransaction *transaction,
 			       GVariant *params,
@@ -4552,9 +4301,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_search_files:
- **/
 static void
 pk_transaction_search_files (PkTransaction *transaction,
 			     GVariant *params,
@@ -4615,9 +4361,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_search_groups:
- **/
 static void
 pk_transaction_search_groups (PkTransaction *transaction,
 			      GVariant *params,
@@ -4678,9 +4421,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_search_name:
- **/
 void
 pk_transaction_search_names (PkTransaction *transaction,
 			     GVariant *params,
@@ -4728,11 +4468,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_set_hint:
- *
- * Only return FALSE on error, not invalid parameter name
- */
 static gboolean
 pk_transaction_set_hint (PkTransaction *transaction,
 			 const gchar *key,
@@ -4841,9 +4576,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 	return TRUE;
 }
 
-/**
- * pk_transaction_set_hints:
- */
 static void
 pk_transaction_set_hints (PkTransaction *transaction,
 			  GVariant *params,
@@ -4884,9 +4616,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_update_packages:
- **/
 static void
 pk_transaction_update_packages (PkTransaction *transaction,
 				GVariant *params,
@@ -4969,9 +4698,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_what_provides:
- **/
 static void
 pk_transaction_what_provides (PkTransaction *transaction,
 			      GVariant *params,
@@ -5019,9 +4745,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_upgrade_system:
- **/
 static void
 pk_transaction_upgrade_system (PkTransaction *transaction,
 			       GVariant *params,
@@ -5082,9 +4805,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * pk_transaction_repair_system:
- **/
 static void
 pk_transaction_repair_system (PkTransaction *transaction,
 			      GVariant *params,
@@ -5136,9 +4856,6 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
-/**
- * _g_variant_new_maybe_string:
- **/
 static GVariant *
 _g_variant_new_maybe_string (const gchar *value)
 {
@@ -5147,9 +4864,6 @@ _g_variant_new_maybe_string (const gchar *value)
 	return g_variant_new_string (value);
 }
 
-/**
- * pk_transaction_get_property:
- **/
 static GVariant *
 pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 			     const gchar *object_path, const gchar *interface_name,
@@ -5184,9 +4898,6 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	return NULL;
 }
 
-/**
- * pk_transaction_method_call:
- **/
 static void
 pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 			    const gchar *object_path, const gchar *interface_name,
@@ -5352,9 +5063,6 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 					       sender);
 }
 
-/**
- * pk_transaction_set_tid:
- */
 gboolean
 pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 {
@@ -5385,9 +5093,6 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 	return TRUE;
 }
 
-/**
- * pk_transaction_reset_after_lock_error:
- **/
 void
 pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 {
@@ -5406,10 +5111,6 @@ pk_transaction_reset_after_lock_error (PkTransaction *transaction)
 	g_debug ("transaction has been reset after lock-required issue.");
 }
 
-/**
- * pk_transaction_class_init:
- * @klass: The PkTransactionClass
- **/
 static void
 pk_transaction_class_init (PkTransactionClass *klass)
 {
@@ -5436,10 +5137,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTransactionPrivate));
 }
 
-/**
- * pk_transaction_init:
- * @transaction: This class instance
- **/
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
@@ -5469,9 +5166,6 @@ pk_transaction_init (PkTransaction *transaction)
 		g_error ("PkEngine: failed to load transaction db: %s", error->message);
 }
 
-/**
- * pk_transaction_dispose:
- **/
 static void
 pk_transaction_dispose (GObject *object)
 {
@@ -5510,9 +5204,6 @@ pk_transaction_dispose (GObject *object)
 	G_OBJECT_CLASS (pk_transaction_parent_class)->dispose (object);
 }
 
-/**
- * pk_transaction_finalize:
- **/
 static void
 pk_transaction_finalize (GObject *object)
 {
@@ -5559,11 +5250,6 @@ pk_transaction_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
 }
 
-/**
- * pk_transaction_new:
- *
- * Return value: a new PkTransaction object.
- **/
 PkTransaction *
 pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 {

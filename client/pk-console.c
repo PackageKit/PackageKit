@@ -87,9 +87,6 @@ pk_strpad (const gchar *data, guint length)
 	return g_strdup_printf ("%s%s", data, padding);
 }
 
-/**
- * pk_console_package_cb:
- **/
 static void
 pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 {
@@ -133,9 +130,6 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 		 pk_package_get_summary (package));
 }
 
-/**
- * pk_console_transaction_cb:
- **/
 static void
 pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 {
@@ -216,9 +210,6 @@ pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 	}
 }
 
-/**
- * pk_console_distro_upgrade_cb:
- **/
 static void
 pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 {
@@ -241,9 +232,6 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 	g_print (" %s: %s\n", _("Summary"), summary);
 }
 
-/**
- * pk_console_category_cb:
- **/
 static void
 pk_console_category_cb (PkCategory *item, gpointer user_data)
 {
@@ -280,9 +268,6 @@ pk_console_category_cb (PkCategory *item, gpointer user_data)
 	g_print (" %s: %s\n", _("Icon"), icon);
 }
 
-/**
- * pk_console_update_detail_cb:
- **/
 static void
 pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 {
@@ -389,9 +374,6 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 	}
 }
 
-/**
- * pk_console_repo_detail_cb:
- **/
 static void
 pk_console_repo_detail_cb (PkRepoDetail *item, gpointer data)
 {
@@ -424,9 +406,6 @@ pk_console_repo_detail_cb (PkRepoDetail *item, gpointer data)
 	g_free (description);
 }
 
-/**
- * pk_console_require_restart_cb:
- **/
 static void
 pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 {
@@ -463,9 +442,6 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 	}
 }
 
-/**
- * pk_console_details_cb:
- **/
 static void
 pk_console_details_cb (PkDetails *item, gpointer data)
 {
@@ -503,9 +479,6 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 	g_print ("  url:         %s\n", url);
 }
 
-/**
- * pk_console_files_cb:
- **/
 static void
 pk_console_files_cb (PkFiles *item, gpointer data)
 {
@@ -526,9 +499,6 @@ pk_console_files_cb (PkFiles *item, gpointer data)
 		g_print ("  %s\n", files[i]);
 }
 
-/**
- * pk_console_defer_status_update_cb:
- **/
 static gboolean
 pk_console_defer_status_update_cb (gpointer user_data)
 {
@@ -542,9 +512,6 @@ pk_console_defer_status_update_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_console_defer_status_update:
- **/
 static void
 pk_console_defer_status_update (PkConsoleCtx *ctx, PkStatusEnum status)
 {
@@ -556,9 +523,6 @@ pk_console_defer_status_update (PkConsoleCtx *ctx, PkStatusEnum status)
 						ctx);
 }
 
-/**
- * pk_console_progress_cb:
- **/
 static void
 pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data)
 {
@@ -670,9 +634,6 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	}
 }
 
-/**
- * pk_console_finished_cb:
- **/
 static void
 pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
@@ -869,9 +830,6 @@ out:
 	g_main_loop_quit (ctx->loop);
 }
 
-/**
- * pk_console_resolve_package:
- **/
 static gchar *
 pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError **error)
 {
@@ -957,9 +915,6 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 	return g_strdup (pk_package_get_id (package));
 }
 
-/**
- * pk_console_resolve_packages:
- **/
 static gchar **
 pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1012,9 +967,6 @@ pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	return g_strdupv ((gchar **) array->pdata);
 }
 
-/**
- * pk_console_install_packages:
- **/
 static gboolean
 pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1071,9 +1023,6 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	return TRUE;
 }
 
-/**
- * pk_console_remove_packages:
- **/
 static gboolean
 pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autoremove, GError **error)
 {
@@ -1103,9 +1052,6 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autore
 	return TRUE;
 }
 
-/**
- * pk_console_download_packages:
- **/
 static gboolean
 pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *directory, GError **error)
 {
@@ -1135,9 +1081,6 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 	return TRUE;
 }
 
-/**
- * pk_console_update_packages:
- **/
 static gboolean
 pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1168,9 +1111,6 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_update_system:
- **/
 static gboolean
 pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 {
@@ -1206,9 +1146,6 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_upgrade_system:
- **/
 static gboolean
 pk_console_upgrade_system (PkConsoleCtx *ctx, const gchar *distro_id, const gchar *upgrade_kind, GError **error)
 {
@@ -1221,9 +1158,6 @@ pk_console_upgrade_system (PkConsoleCtx *ctx, const gchar *distro_id, const gcha
 	return TRUE;
 }
 
-/**
- * pk_console_required_by:
- **/
 static gboolean
 pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1254,9 +1188,6 @@ pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_depends_on:
- **/
 static gboolean
 pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1286,9 +1217,6 @@ pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_get_details:
- **/
 static gboolean
 pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1326,9 +1254,6 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_get_details_local:
- **/
 static gboolean
 pk_console_get_details_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 {
@@ -1340,9 +1265,6 @@ pk_console_get_details_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_get_files_local:
- **/
 static gboolean
 pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 {
@@ -1354,9 +1276,6 @@ pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_get_files:
- **/
 static gboolean
 pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1394,9 +1313,6 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_get_update_detail
- **/
 static gboolean
 pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
@@ -1425,9 +1341,6 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 	return TRUE;
 }
 
-/**
- * pk_console_notify_connected_cb:
- **/
 static void
 pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer data)
 {
@@ -1447,9 +1360,6 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 }
 
 
-/**
- * pk_console_sigint_cb:
- **/
 static gboolean
 pk_console_sigint_cb (gpointer user_data)
 {
@@ -1459,9 +1369,6 @@ pk_console_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * pk_console_get_summary:
- **/
 static gchar *
 pk_console_get_summary (PkConsoleCtx *ctx)
 {
@@ -1546,9 +1453,6 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_console_get_time_since_action_cb:
- **/
 static void
 pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
@@ -1570,9 +1474,6 @@ out:
 	g_main_loop_quit (ctx->loop);
 }
 
-/**
- * pk_console_offline_get_prepared:
- **/
 static gboolean
 pk_console_offline_get_prepared (GError **error)
 {
@@ -1597,9 +1498,6 @@ pk_console_offline_get_prepared (GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_offline_status:
- **/
 static gboolean
 pk_console_offline_status (GError **error)
 {
@@ -1630,9 +1528,6 @@ pk_console_offline_status (GError **error)
 	return TRUE;
 }
 
-/**
- * pk_console_set_proxy:
- **/
 static gboolean
 pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 {
@@ -1670,9 +1565,6 @@ pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 	return TRUE;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

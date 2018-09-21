@@ -41,9 +41,6 @@ enum {
 	FIELD_SYSTEMSTREAM
 };
 
-/**
- * pk_gst_parse_codec:
- **/
 static PkGstCodecInfo *
 pk_gst_parse_codec (const gchar *codec)
 {
@@ -111,9 +108,6 @@ pk_gst_parse_codec (const gchar *codec)
 	return info;
 }
 
-/**
- * pk_gst_field_get_type:
- **/
 static int
 pk_gst_field_get_type (const gchar *field_name)
 {
@@ -128,9 +122,6 @@ pk_gst_field_get_type (const gchar *field_name)
 	return -1;
 }
 
-/**
- * pk_gst_fields_type_compare:
- **/
 static gint
 pk_gst_fields_type_compare (const gchar *a, const gchar *b)
 {
@@ -145,9 +136,6 @@ pk_gst_fields_type_compare (const gchar *a, const gchar *b)
 	return 0;
 }
 
-/**
- * pk_gst_structure_to_provide:
- **/
 static gchar *
 pk_gst_structure_to_provide (GstStructure *s)
 {
@@ -205,9 +193,6 @@ pk_gst_structure_to_provide (GstStructure *s)
 	return g_string_free (string, FALSE);
 }
 
-/**
- * pk_gst_codec_free:
- **/
 static void
 pk_gst_codec_free (PkGstCodecInfo *codec)
 {
@@ -220,11 +205,6 @@ pk_gst_codec_free (PkGstCodecInfo *codec)
 	g_free (codec);
 }
 
-/**
- * pk_gst_get_arch_suffix:
- *
- * Return value: something other than blank if we are running on 64 bit.
- **/
 static const gchar *
 pk_gst_get_arch_suffix (void)
 {
@@ -343,9 +323,6 @@ pk_gst_dbus_install_resources_compat (gchar **resources, gint xid, GError **erro
 	return FALSE;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, gchar **argv)
 {

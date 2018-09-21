@@ -26,9 +26,6 @@
 static PkBackendSpawn *spawn = 0;
 static const gchar* BACKEND_FILE = "portageBackend.py";
 
-/**
- * pk_backend_start_job:
- */
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -40,10 +37,6 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/**
- * pk_backend_initialize:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -55,10 +48,6 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	pk_backend_spawn_set_allow_sigkill (spawn, TRUE);
 }
 
-/**
- * pk_backend_destroy:
- * This should only be run once per backend load, i.e. not every transaction
- */
 void
 pk_backend_destroy (PkBackend *backend)
 {
@@ -66,9 +55,6 @@ pk_backend_destroy (PkBackend *backend)
 	g_object_unref (spawn);
 }
 
-/**
- * pk_backend_get_groups:
- */
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
@@ -111,9 +97,6 @@ pk_backend_get_groups (PkBackend *backend)
 			-1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
@@ -132,9 +115,6 @@ pk_backend_get_filters (PkBackend *backend)
 	 */
 }
 
-/**
- * pk_backend_get_roles:
- */
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
@@ -170,9 +150,6 @@ pk_backend_get_roles (PkBackend *backend)
     return roles;
 }
 
-/**
- * pk_backend_cancel:
- */
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
@@ -180,18 +157,12 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	pk_backend_spawn_kill (spawn);
 }
 
-/**
- * pk_backend_get_categories:
- */
 void
 pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
     pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-categories", NULL);
 }
 
-/**
- * pk_backend_depends_on:
- */
 void
 pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
@@ -205,9 +176,6 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_get_details:
- */
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -218,9 +186,6 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_get_files:
- */
 void
 pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -231,9 +196,6 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
@@ -244,9 +206,6 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_get_updates:
- */
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -257,9 +216,6 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_install_packages:
- */
 void
 pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -281,9 +237,6 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_refresh_cache:
- */
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 { 
@@ -297,9 +250,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void
 pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids, gboolean allow_deps, gboolean autoremove)
 {
@@ -313,18 +263,12 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void
 pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
 {
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "repo-enable", rid, pk_backend_bool_to_string (enabled), NULL);
 }
 
-/**
- * pk_backend_resolve:
- */
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
@@ -338,9 +282,6 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_search_details:
- */
 void
 pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -353,9 +294,6 @@ pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield fil
 	g_free (search);
 }
 
-/**
- * pk_backend_search_files:
- */
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -368,9 +306,6 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	g_free (search);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 { 
@@ -383,9 +318,6 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	g_free (search);
 }
 
-/**
- * pk_backend_search_names:
- */
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
@@ -398,9 +330,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	g_free (search);
 }
 
-/**
- * pk_backend_update_packages:
- */
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
@@ -415,9 +344,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_get_packages:
- */
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -428,9 +354,6 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
@@ -441,9 +364,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	g_free (filters_text);
 }
 
-/**
- * pk_backend_required_by:
- */
 void
 pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 { 
@@ -457,27 +377,18 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 	g_free (package_ids_temp);
 }
 
-/**
- * pk_backend_get_description:
- */
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
     return "Portage";
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
     return "Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, Fabio Erculiani <lxnay@sabayon.org>";
 }
 
-/**
- * pk_backend_supports_parallelization:
- */
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {

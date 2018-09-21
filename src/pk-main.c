@@ -59,9 +59,6 @@ timed_exit_cb (GMainLoop *mainloop)
 	return FALSE;
 }
 
-/**
- * pk_main_timeout_check_cb:
- **/
 static gboolean
 pk_main_timeout_check_cb (PkMainHelper *helper)
 {
@@ -76,9 +73,6 @@ pk_main_timeout_check_cb (PkMainHelper *helper)
 	return TRUE;
 }
 
-/**
- * pk_main_quit_cb:
- **/
 static void
 pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 {
@@ -86,9 +80,6 @@ pk_main_quit_cb (PkEngine *engine, GMainLoop *mainloop)
 	g_main_loop_quit (mainloop);
 }
 
-/**
- * pk_main_sigint_cb:
- **/
 static gboolean
 pk_main_sigint_cb (gpointer user_data)
 {
@@ -98,9 +89,6 @@ pk_main_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {

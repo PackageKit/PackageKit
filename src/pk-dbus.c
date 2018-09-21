@@ -185,9 +185,6 @@ pk_dbus_make_logind_session_id (const gchar *session)
 	return g_strdup_printf ("/org/freedesktop/logind/session-%s", session);
 }
 
-/**
- * pk_dbus_get_session_systemd:
- **/
 static gchar *
 pk_dbus_get_session_systemd (guint pid)
 {
@@ -276,9 +273,6 @@ out:
 	return session;
 }
 
-/**
- * pk_dbus_finalize:
- **/
 static void
 pk_dbus_finalize (GObject *object)
 {
@@ -296,9 +290,6 @@ pk_dbus_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_dbus_parent_class)->finalize (object);
 }
 
-/**
- * pk_dbus_class_init:
- **/
 static void
 pk_dbus_class_init (PkDbusClass *klass)
 {
@@ -378,10 +369,6 @@ pk_dbus_init (PkDbus *dbus)
 	}
 }
 
-/**
- * pk_dbus_new:
- * Return value: A new dbus class instance.
- **/
 PkDbus *
 pk_dbus_new (void)
 {

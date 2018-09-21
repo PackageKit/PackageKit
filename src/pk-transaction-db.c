@@ -68,9 +68,6 @@ typedef struct {
 	gboolean	set;
 } PkTransactionDbProxyItem;
 
-/**
- * pk_transaction_sqlite_transaction_cb:
- **/
 static gint
 pk_transaction_db_add_transaction_cb (void *data,
 				      gint argc,
@@ -129,9 +126,6 @@ pk_transaction_db_add_transaction_cb (void *data,
 	return 0;
 }
 
-/**
- * pk_transaction_db_sql_statement:
- **/
 static gboolean
 pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 {
@@ -151,9 +145,6 @@ pk_transaction_db_sql_statement (PkTransactionDb *tdb, const gchar *sql)
 	return TRUE;
 }
 
-/**
- * pk_time_action_sqlite_callback:
- **/
 static gint
 pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col_name)
 {
@@ -203,9 +194,6 @@ pk_transaction_db_iso8601_difference (const gchar *isodate)
 	return time_s;
 }
 
-/**
- * pk_transaction_db_action_time_since:
- **/
 guint
 pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 {
@@ -235,9 +223,6 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 	return pk_transaction_db_iso8601_difference (timespec);
 }
 
-/**
- * pk_transaction_db_action_time_reset:
- **/
 gboolean
 pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 {
@@ -272,9 +257,6 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_get_list:
- **/
 GList *
 pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 {
@@ -306,9 +288,6 @@ out:
 	return list;
 }
 
-/**
- * pk_transaction_db_add:
- **/
 gboolean
 pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 {
@@ -323,9 +302,6 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_set_role:
- **/
 gboolean
 pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum role)
 {
@@ -340,9 +316,6 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_set_uid:
- **/
 gboolean
 pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
 {
@@ -355,9 +328,6 @@ pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_set_cmdline:
- **/
 gboolean
 pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gchar *cmdline)
 {
@@ -370,9 +340,6 @@ pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gch
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_set_data:
- **/
 gboolean
 pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar *data)
 {
@@ -387,11 +354,6 @@ pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar 
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_set_finished:
- * @runtime: time in ms
- *
- **/
 gboolean
 pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean success, guint runtime)
 {
@@ -405,9 +367,6 @@ pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_print:
- **/
 gboolean
 pk_transaction_db_print (PkTransactionDb *tdb)
 {
@@ -421,9 +380,6 @@ pk_transaction_db_print (PkTransactionDb *tdb)
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_empty:
- **/
 gboolean
 pk_transaction_db_empty (PkTransactionDb *tdb)
 {
@@ -437,9 +393,6 @@ pk_transaction_db_empty (PkTransactionDb *tdb)
 	return TRUE;
 }
 
-/**
- * pk_transaction_sqlite_job_id_cb:
- **/
 static gint
 pk_transaction_sqlite_job_id_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
@@ -452,9 +405,6 @@ pk_transaction_sqlite_job_id_cb (void *data, gint argc, gchar **argv, gchar **co
 	return 0;
 }
 
-/**
- * pk_transaction_db_get_random_hex_string:
- **/
 static gchar *
 pk_transaction_db_get_random_hex_string (guint length)
 {
@@ -476,9 +426,6 @@ pk_transaction_db_get_random_hex_string (guint length)
 	return string;
 }
 
-/**
- * pk_transaction_db_defer_write_job_count_cb:
- **/
 static gboolean
 pk_transaction_db_defer_write_job_count_cb (PkTransactionDb *tdb)
 {
@@ -512,9 +459,6 @@ out:
 	return FALSE;
 }
 
-/**
- * pk_transaction_db_generate_id:
- **/
 gchar *
 pk_transaction_db_generate_id (PkTransactionDb *tdb)
 {
@@ -540,9 +484,6 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 	return tid;
 }
 
-/**
- * pk_transaction_sqlite_proxy_cb:
- **/
 static gint
 pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
@@ -577,9 +518,6 @@ pk_transaction_sqlite_proxy_cb (void *data, gint argc, gchar **argv, gchar **col
 	return 0;
 }
 
-/**
- * pk_transaction_db_proxy_item_free:
- **/
 static void
 pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
 {
@@ -594,9 +532,6 @@ pk_transaction_db_proxy_item_free (PkTransactionDbProxyItem *item)
 	g_free (item);
 }
 
-/**
- * pk_transaction_db_is_proxy_set:
- **/
 static gboolean
 pk_transaction_db_is_proxy_set (PkTransactionDb *tdb, guint uid, const gchar *session)
 {
@@ -817,10 +752,6 @@ out:
 	return ret;
 }
 
-/**
- * pk_transaction_db_class_init:
- * @klass: The PkTransactionDbClass
- **/
 static void
 pk_transaction_db_class_init (PkTransactionDbClass *klass)
 {
@@ -829,9 +760,6 @@ pk_transaction_db_class_init (PkTransactionDbClass *klass)
 	g_type_class_add_private (klass, sizeof (PkTransactionDbPrivate));
 }
 
-/**
- * pk_transaction_db_ensure_file_directory:
- **/
 static void
 pk_transaction_db_ensure_file_directory (const gchar *path)
 {
@@ -841,9 +769,6 @@ pk_transaction_db_ensure_file_directory (const gchar *path)
 		g_warning ("%s", g_strerror (errno));
 }
 
-/**
- * pk_transaction_db_execute:
- **/
 static gboolean
 pk_transaction_db_execute (PkTransactionDb *tdb,
 			   const gchar *statement,
@@ -865,9 +790,6 @@ pk_transaction_db_execute (PkTransactionDb *tdb,
 	return ret;
 }
 
-/**
- * pk_transaction_db_load:
- **/
 gboolean
 pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 {
@@ -971,19 +893,12 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	return TRUE;
 }
 
-/**
- * pk_transaction_db_init:
- **/
 static void
 pk_transaction_db_init (PkTransactionDb *tdb)
 {
 	tdb->priv = PK_TRANSACTION_DB_GET_PRIVATE (tdb);
 }
 
-/**
- * pk_transaction_db_finalize:
- * @object: The object to finalize
- **/
 static void
 pk_transaction_db_finalize (GObject *object)
 {
@@ -1004,11 +919,6 @@ pk_transaction_db_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_transaction_db_parent_class)->finalize (object);
 }
 
-/**
- * pk_transaction_db_new:
- *
- * Return value: a new PkTransactionDb object.
- **/
 PkTransactionDb *
 pk_transaction_db_new (void)
 {

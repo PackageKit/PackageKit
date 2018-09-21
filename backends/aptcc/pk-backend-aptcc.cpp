@@ -39,25 +39,16 @@
 /* static bodges */
 static PkBackendSpawn *spawn;
 
-/**
- * pk_backend_get_description:
- */
 const gchar* pk_backend_get_description(PkBackend *backend)
 {
     return "APTcc";
 }
 
-/**
- * pk_backend_get_author:
- */
 const gchar* pk_backend_get_author(PkBackend *backend)
 {
     return "Daniel Nicoletti <dantti12@gmail.com>";
 }
 
-/**
- * pk_backend_supports_parallelization:
- */
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {
@@ -65,9 +56,6 @@ pk_backend_supports_parallelization (PkBackend *backend)
     return FALSE;
 }
 
-/**
- * pk_backend_initialize:
- */
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
     g_debug("APTcc Initializing");
@@ -96,17 +84,11 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
     pk_backend_spawn_set_name(spawn, "aptcc");
 }
 
-/**
- * pk_backend_destroy:
- */
 void pk_backend_destroy(PkBackend *backend)
 {
     g_debug("APTcc being destroyed");
 }
 
-/**
- * pk_backend_get_groups:
- */
 PkBitfield pk_backend_get_groups(PkBackend *backend)
 {
     return pk_bitfield_from_enums(
@@ -134,9 +116,6 @@ PkBitfield pk_backend_get_groups(PkBackend *backend)
                 -1);
 }
 
-/**
- * pk_backend_get_filters:
- */
 PkBitfield pk_backend_get_filters(PkBackend *backend)
 {
     PkBitfield filters;
@@ -158,9 +137,6 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
     return filters;
 }
 
-/**
- * pk_backend_get_mime_types:
- */
 gchar** pk_backend_get_mime_types(PkBackend *backend)
 {
     const gchar *mime_types[] = { "application/vnd.debian.binary-package",
@@ -169,9 +145,6 @@ gchar** pk_backend_get_mime_types(PkBackend *backend)
     return g_strdupv ((gchar **) mime_types);
 }
 
-/**
- * pk_backend_start_job:
- */
 void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
 {
     /* create private state for this job */
@@ -179,9 +152,6 @@ void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
     pk_backend_job_set_user_data(job, apt);
 }
 
-/**
- * pk_backend_stop_job:
- */
 void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 {
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
@@ -193,9 +163,6 @@ void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
     pk_backend_job_set_user_data (job, NULL);
 }
 
-/**
- * pk_backend_cancel:
- */
 void pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
 {
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
@@ -263,18 +230,12 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
     apt->emitPackages(output, filters);
 }
 
-/**
- * pk_backend_depends_on:
- */
 void pk_backend_depends_on(PkBackend *backend, PkBackendJob *job, PkBitfield filters,
                            gchar **package_ids, gboolean recursive)
 {
     pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_required_by:
- */
 void pk_backend_required_by(PkBackend *backend,
                             PkBackendJob *job,
                             PkBitfield filters,
@@ -284,9 +245,6 @@ void pk_backend_required_by(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_get_distro_upgrades:
- */
 void pk_backend_get_distro_upgrades(PkBackend *backend, PkBackendJob *job)
 {
     pk_backend_spawn_helper(spawn, job, "get-distro-upgrade.py", "get-distro-upgrades", NULL);
@@ -337,9 +295,6 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
     }
 }
 
-/**
- * pk_backend_get_files:
- */
 void pk_backend_get_files(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     pk_backend_job_thread_create(job, backend_get_files_thread, NULL, NULL);
@@ -381,17 +336,11 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
     }
 }
 
-/**
- * pk_backend_get_update_detail:
- */
 void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_get_details:
- */
 void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
@@ -445,9 +394,6 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     apt->emitPackages(blocked, filters, PK_INFO_ENUM_BLOCKED);
 }
 
-/**
- * pk_backend_get_updates:
- */
 void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     pk_backend_job_thread_create(job, backend_get_updates_thread, NULL, NULL);
@@ -604,9 +550,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     }
 }
 
-/**
- * pk_backend_download_packages:
- */
 void pk_backend_download_packages(PkBackend *backend,
                                   PkBackendJob *job,
                                   gchar **package_ids,
@@ -615,9 +558,6 @@ void pk_backend_download_packages(PkBackend *backend,
     pk_backend_job_thread_create(job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_refresh_cache_thread:
- */
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     pk_backend_job_set_allow_cancel(job, true);
@@ -642,9 +582,6 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
     }
 }
 
-/**
- * pk_backend_refresh_cache:
- */
 void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
 {
     pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, NULL, NULL);
@@ -672,9 +609,6 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
     apt->emitPackages(pkgs, filters);
 }
 
-/**
- * pk_backend_resolve:
- */
 void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
     pk_backend_job_thread_create(job, pk_backend_resolve_thread, NULL, NULL);
@@ -708,9 +642,6 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
     }
 }
 
-/**
- * pk_backend_search_files:
- */
 void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
     pk_backend_job_thread_create(job, pk_backend_search_files_thread, NULL, NULL);
@@ -739,9 +670,6 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
     pk_backend_job_set_percentage(job, 100);
 }
 
-/**
- * pk_backend_search_groups:
- */
 void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
     pk_backend_job_thread_create(job, backend_search_groups_thread, NULL, NULL);
@@ -792,17 +720,11 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     pk_backend_job_set_percentage(job, 100);
 }
 
-/**
- * pk_backend_search_names:
- */
 void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
     pk_backend_job_thread_create(job, backend_search_package_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_search_details:
- */
 void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
     pk_backend_job_thread_create(job, backend_search_package_thread, NULL, NULL);
@@ -906,9 +828,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 }
 
-/**
- * pk_backend_install_packages:
- */
 void pk_backend_install_packages(PkBackend *backend,
                                  PkBackendJob *job,
                                  PkBitfield transaction_flags,
@@ -917,9 +836,6 @@ void pk_backend_install_packages(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_update_packages:
- */
 void pk_backend_update_packages(PkBackend *backend,
                                 PkBackendJob *job,
                                 PkBitfield transaction_flags,
@@ -928,9 +844,6 @@ void pk_backend_update_packages(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_install_files:
- */
 void pk_backend_install_files(PkBackend *backend,
                               PkBackendJob *job,
                               PkBitfield transaction_flags,
@@ -939,9 +852,6 @@ void pk_backend_install_files(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_remove_packages:
- */
 void pk_backend_remove_packages(PkBackend *backend,
                                 PkBackendJob *job,
                                 PkBitfield transaction_flags,
@@ -952,9 +862,6 @@ void pk_backend_remove_packages(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_repair_system:
- */
 void pk_backend_repair_system(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
     pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
@@ -1093,25 +1000,16 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     }
 }
 
-/**
- * pk_backend_get_repo_list:
- */
 void pk_backend_get_repo_list(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_repo_enable:
- */
 void pk_backend_repo_enable(PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
     pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
 }
 
-/**
- * pk_backend_repo_remove:
- */
 void
 pk_backend_repo_remove (PkBackend *backend,
                         PkBackendJob *job,
@@ -1142,18 +1040,12 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
     apt->emitPackages(output, filters);
 }
 
-/**
- * pk_backend_get_packages:
- */
 void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     pk_backend_job_thread_create(job, backend_get_packages_thread, NULL, NULL);
 }
 
 
-/**
- * pk_backend_get_categories:
- */
 /* TODO
 void
 pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
@@ -1162,9 +1054,6 @@ pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 }
 */
 
-/**
- * pk_backend_get_roles:
- */
 PkBitfield pk_backend_get_roles(PkBackend *backend)
 {
     PkBitfield roles;
