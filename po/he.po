@@ -9,15 +9,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Hebrew (http://www.transifex.com/freedesktop/packagekit/language/he/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: he\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -118,7 +118,7 @@ msgstr "פרטי העדכון:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "חבילות"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -384,6 +384,9 @@ msgid "Allow packages to be downgraded during transaction"
 msgstr ""
 
 msgid "Allow packages to be reinstalled during transaction"
+msgstr ""
+
+msgid "Automatically remove unused dependencies"
 msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority

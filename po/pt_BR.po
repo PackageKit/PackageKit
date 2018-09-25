@@ -14,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/freedesktop/packagekit/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -123,7 +123,7 @@ msgstr "Detalhes sobre a atualização:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Pacote"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -391,6 +391,9 @@ msgstr "Permite que pacotes sejam desatualizados durante a transação"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Permite que pacotes sejam reinstalados durante a transação"
 
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Executa o comando usando a banda de rede ociosa e usando também menos energia"
@@ -578,7 +581,7 @@ msgstr "Instalando atualização do sistema; isto pode levar um tempo…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Baixando detalhes sobre os repositórios de software."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1166,7 +1169,7 @@ msgstr "Cancelar tarefa externa"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "É necessário autenticar para cancelar uma tarefa que não foi iniciada por você"
+msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por você"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1200,7 +1203,7 @@ msgid "Install already installed package again"
 msgstr "Instalar pacote já instalado novamente"
 
 msgid "Authentication is required to reinstall software"
-msgstr "A autenticação é necessário para reinstalar software"
+msgstr "Autenticação é necessária para reinstalar software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1212,7 +1215,7 @@ msgid "Install older version of installed package"
 msgstr "Instalar a versão mais antiga do pacote instalado"
 
 msgid "Authentication is required to downgrade software"
-msgstr "A autenticação é necessária para desatualizar o software"
+msgstr "Autenticação é necessária para desatualizar o software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1236,7 +1239,7 @@ msgid "Accept EULA"
 msgstr "Aceitar a licença EULA"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "É necessário autenticar para aceitar uma licença EULA"
+msgstr "Autenticação é necessária para aceitar uma licença EULA"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1270,19 +1273,19 @@ msgstr "Autenticação é necessária para atualizar softwares"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Alterar parâmetros de repositório de software"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Autenticação é necessária para alterar os parâmetros de repositório de software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Atualizar repositórios de sistema"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Autenticação é necessária para atualizar os repositórios de sistema"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1305,7 +1308,7 @@ msgid "Reload a device"
 msgstr "Recarregar um dispositivo"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "É necessário autenticar para recarregar o dispositivo com o novo driver"
+msgstr "Autenticação é necessária para recarregar o dispositivo com o novo driver"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as

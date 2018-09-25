@@ -12,9 +12,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-21 13:37+0000\n"
-"Last-Translator: Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Catalan (http://www.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -121,7 +121,7 @@ msgstr "Detalls quant a l'actualització:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Paquets"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -321,7 +321,7 @@ msgstr "Aquesta eina no ha pogut trobar el paquet: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr "No hi ha cap paquet que requereixi l'actualització a versions més recents."
+msgstr "No hi ha paquets que requereixin l'actualització a versions més recents."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -372,7 +372,7 @@ msgstr "Mostra la versió de l'aplicació i surt"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Configura el filtre, p. ex. instal·lats"
+msgstr "Estableix el filtre, p. ex. installed"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
@@ -388,6 +388,9 @@ msgstr "Permet la reversió dels paquets durant la transacció"
 
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Permet la reinstal·lació dels paquets durant la transacció"
+
+msgid "Automatically remove unused dependencies"
+msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -738,7 +741,7 @@ msgstr "Sol·licitud de les dades"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr "S'ha completat"
+msgstr "Finalització"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
@@ -1207,7 +1210,7 @@ msgstr "Es requereix autenticació per reinstal·lar programari"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "Instal·la una versió més antiga del paquet"
+msgstr "Instal·la una versió més antiga del paquet instal·lat"
 
 msgid "Authentication is required to downgrade software"
 msgstr "Es requereix autenticació per revertir el programari"

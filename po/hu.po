@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Balázs Meskó <meskobalazs@gmail.com>, 2018
 # Balázs Úr <urbalazs@gmail.com>, 2014-2015
 # Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012
 # kelemeng <kelemeng@ubuntu.com>, 2013-2014
@@ -13,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/freedesktop/packagekit/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -122,7 +123,7 @@ msgstr "A frissítés részletei:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Csomag"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -390,6 +391,9 @@ msgstr "Csomagok visszafejlesztésének engedélyezése a tranzakció során"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Csomagok újratelepítésének engedélyezése a tranzakció során"
 
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb energiát is használ"
@@ -552,7 +556,7 @@ msgstr "PackageKit-figyelő"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Rendszerfrissítés telepítése"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -577,7 +581,7 @@ msgstr "Rendszerfrissítés telepítése, ez eltarthat egy ideig…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "A szoftvertárolókkal kapcsolatos részletek letöltése."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -817,7 +821,7 @@ msgstr "Fájlok másolása"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Hurkok futtatása"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -847,7 +851,7 @@ msgstr "Biztonsági"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Hibajavítás"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -982,7 +986,7 @@ msgstr "Tárolók lekérése"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Tároló módosítása"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1269,19 +1273,19 @@ msgstr "Hitelesítés szükséges a szoftver frissítéséhez"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Szoftvertároló-paraméterek módosítása"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Hitelesítés szükséges a szoftvertároló-paraméterek módosításához"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Rendszertárolók frissítése"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Hitelesítés szükséges a rendszertárolók frissítéséhez"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

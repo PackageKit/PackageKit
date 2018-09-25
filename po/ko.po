@@ -6,14 +6,14 @@
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2013
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017
-# Shinjo Park <kde@peremen.name>, 2012,2015
+# Shinjo Park <kde@peremen.name>, 2012,2015,2018
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Korean (http://www.transifex.com/freedesktop/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -71,11 +71,11 @@ msgstr "실제 이름"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
-msgstr "반영된 꾸러미:"
+msgstr "변경할 패키지:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "반영된 꾸러미: 없음"
+msgstr "변경할 패키지: 없음"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
@@ -120,7 +120,7 @@ msgstr "자세한 업데이트 정보:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "꾸러미"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -153,7 +153,7 @@ msgstr "다시 시작"
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr "텍스트 업데이트"
+msgstr "업데이트 정보"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -186,7 +186,7 @@ msgstr "비활성화됨"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "다음 꾸러미에서 시스템 다시 시작을 요청함:"
+msgstr "다음 패키지에서 시스템 다시 시작을 요청함:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
@@ -195,7 +195,7 @@ msgstr "세션 다시 시작을 요청함:"
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "다음 꾸러미에서 (보안) 시스템 다시 시작을 요청함:"
+msgstr "다음 패키지에서 (보안) 시스템 다시 시작을 요청함:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
@@ -208,7 +208,7 @@ msgstr "프로그램 다시 시작을 요청함:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr "꾸러미 설명"
+msgstr "패키지 설명"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
@@ -216,7 +216,7 @@ msgstr "파일이 없음"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr "꾸러미 파일"
+msgstr "패키지 파일"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
@@ -238,7 +238,7 @@ msgstr "치명적 오류"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr "업데이트할 꾸러미가 없습니다."
+msgstr "업데이트할 패키지가 없습니다."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -276,20 +276,20 @@ msgstr "중요한 보안 업데이트를 완료하려면 로그아웃 후 다시
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "하나 이상의 일치하는 꾸러미:"
+msgstr "하나 이상의 일치하는 패키지:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "올바른 꾸러미를 선택하여 주십시오:"
+msgstr "올바른 패키지를 선택하여 주십시오:"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr "꾸러미가 없습니다"
+msgstr "패키지가 없습니다"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr "꾸러미가 없습니다"
+msgstr "패키지가 없습니다"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -298,29 +298,29 @@ msgstr "꾸러미가 없습니다"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "꾸러미 이름을 예상했으나, 파일을 지정했습니다. 'pkcon install-local %s' 명령을 대신 시도해 보십시오."
+msgstr "패키지 이름을 예상했으나, 파일을 지정했습니다. 'pkcon install-local %s' 명령을 대신 시도해 보십시오."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "사용 가능한 꾸러미를 찾을 수 없음: %s"
+msgstr "사용 가능한 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "설치한 꾸러미를 찾을 수 없음: %s"
+msgstr "설치한 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "꾸러미를 찾을 수 없음: %s"
+msgstr "패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr "새 버전으로 업데이트해야 하는 꾸러미가 없습니다."
+msgstr "새 버전으로 업데이트해야 하는 패키지가 없습니다."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -332,7 +332,7 @@ msgstr "새 버전으로 업데이트해야 하는 꾸러미가 없습니다."
 #. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "모든 꾸러미를 찾을 수 없음: %s"
+msgstr "모든 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -375,18 +375,21 @@ msgstr "필터 설정, 예: 설치됨"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "확인 사항을 묻지 않고 꾸러미를 설치"
+msgstr "확인 사항을 묻지 않고 패키지 설치"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "꾸러미를 다운로드만 하고 트랜잭션 준비"
+msgstr "패키지를 다운로드만 하고 트랜잭션 준비"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "트랜잭션 중 꾸러미 다운그레이드 허용"
+msgstr "트랜잭션 중 패키지 다운그레이드 허용"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "트랜잭션 중 꾸러미 재설치 허용"
+msgstr "트랜잭션 중 패키지 재설치 허용"
+
+msgid "Automatically remove unused dependencies"
+msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -404,7 +407,7 @@ msgstr "최대 메타데이터 캐시 시간입니다. -1을 입력하면 캐시
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "신뢰할 수 없는 꾸러미 설치를 허용합니다."
+msgstr "신뢰할 수 없는 패키지 설치를 허용합니다."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -434,7 +437,7 @@ msgstr "검색 단어가 필요함"
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "설치할 꾸러미 이름이 필요함"
+msgstr "설치할 패키지 이름이 필요함"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
@@ -449,13 +452,13 @@ msgstr "type, key_id, package_id가 필요함"
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr "제거할 꾸러미 이름이 필요함"
+msgstr "제거할 패키지 이름이 필요함"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "대상 디렉터리와 다운로드할 꾸러미 이름이 필요함"
+msgstr "대상 디렉터리와 다운로드할 패키지 이름이 필요함"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -470,7 +473,7 @@ msgstr "라이선스 식별자(eula-id)가 필요함"
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "해석할 꾸러미 이름이 필요함"
+msgstr "해석할 패키지 이름이 필요함"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
@@ -496,14 +499,14 @@ msgstr "올바른 규칙이 필요함"
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "꾸러미 이름이 필요함"
+msgstr "패키지 이름이 필요함"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "꾸러미 제공 문자열이 필요함"
+msgstr "패키지 제공 문자열이 필요함"
 
 msgid "A filename is required"
 msgstr "파일 이름이 필요함"
@@ -571,11 +574,11 @@ msgstr "업데이트 설치 중, 시간이 걸릴 수 있습니다..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "시스템 업그레이드 설치중. 시간이 좀 걸릴 수 있습니다..."
+msgstr "시스템 업그레이드 설치 중. 시간이 좀 걸릴 수 있습니다..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "소프트웨어 저장소 정보를 다운로드하고 있습니다."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -583,11 +586,11 @@ msgstr "파일 목록 다운로드 중(완료되려면 시간이 걸립니다)"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "꾸러미 관리자 잠금 해제를 기다리고 있습니다."
+msgstr "패키지 관리자 잠금 해제를 기다리고 있습니다."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "꾸러미 목록을 불러오고 있습니다."
+msgstr "패키지 목록을 불러오고 있습니다."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -603,7 +606,7 @@ msgstr "실행에 실패했습니다:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "꾸러미 설치에 실패했습니다"
+msgstr "패키지 설치에 실패했습니다"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
@@ -630,7 +633,7 @@ msgstr "실행할 명령을 선택하십시오"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "이 파일을 제공하는 꾸러미:"
+msgstr "이 파일이 포함된 패키지:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
@@ -640,16 +643,16 @@ msgstr "'%s' 명령을 제공하는 '%s' 꾸러미를 설치하시겠습니까?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "이 파일을 제공하는 꾸러미"
+msgstr "이 파일이 포함된 패키지:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr "알맞은 꾸러미:"
+msgstr "알맞은 패키지:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "설치할 꾸러미를 선택하십시오"
+msgstr "설치할 패키지를 선택하십시오"
 
 msgid "User aborted selection"
 msgstr "사용자가 선택을 취소했습니다"
@@ -685,16 +688,16 @@ msgstr "정보 가져오는 중"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "꾸러미 제거 중"
+msgstr "패키지 제거 중"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "꾸러미 다운로드 중"
+msgstr "패키지 다운로드 중"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr "꾸러미 설치 중"
+msgstr "패키지 설치 중"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
@@ -707,11 +710,11 @@ msgstr "갱신 설치 중"
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "꾸러미 정리 중"
+msgstr "패키지 정리 중"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "꾸러미 무효화 중"
+msgstr "패키지 무효화 중"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
@@ -749,7 +752,7 @@ msgstr "저장소 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "꾸러미 목록 다운로드 중"
+msgstr "패키지 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -769,7 +772,7 @@ msgstr "업데이트 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "파일을 꾸러미로 다시 만드는 중"
+msgstr "파일을 패키지로 다시 만드는 중"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
@@ -782,12 +785,12 @@ msgstr "프로그램 조사 중"
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "꾸러미 목록 생성 중"
+msgstr "패키지 목록 생성 중"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "꾸러미 관리자 잠금 해제 대기 중"
+msgstr "패키지 관리자 잠금 해제 대기 중"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
@@ -1008,7 +1011,7 @@ msgstr "서명 설치 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "꾸러미 가져오는 중"
+msgstr "패키지 가져오는 중"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
@@ -1119,32 +1122,32 @@ msgstr "올바른 미디어가 삽입되지 않았습니다."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "다음 꾸러미를 제거해야 합니다:"
+msgstr "다음 패키지를 제거해야 합니다:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "다음 꾸러미를 설치해야 합니다:"
+msgstr "다음 패키지를 설치해야 합니다:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "다음 꾸러미를 갱신해야 합니다:"
+msgstr "다음 패키지를 갱신해야 합니다:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "다음 꾸러미를 다시 설치해야 합니다:"
+msgstr "다음 패키지를 다시 설치해야 합니다:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "다음 꾸러미를 다운그레이드해야 합니다:"
+msgstr "다음 패키지를 다운그레이드해야 합니다:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr "다음 꾸러미는 오래됐습니다:"
+msgstr "다음 패키지는 오래됐습니다:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr "다음 꾸러미를 신뢰할 수 없습니다:"
+msgstr "다음 패키지를 신뢰할 수 없습니다:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
@@ -1163,7 +1166,7 @@ msgstr "외부 작업 취소"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "직접 시작하지 않은 작업을 취소하려면 인증이 필요합니다."
+msgstr "직접 시작하지 않은 작업을 취소하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1171,10 +1174,10 @@ msgstr "직접 시작하지 않은 작업을 취소하려면 인증이 필요합
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr "서명한 꾸러미 설치"
+msgstr "서명된 패키지 설치"
 
 msgid "Authentication is required to install software"
-msgstr "소프트웨어를 설치하려면 인증이 필요합니다"
+msgstr "소프트웨어를 설치하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1185,7 +1188,7 @@ msgid "Install untrusted local file"
 msgstr "신뢰할 수 없는 로컬 파일 설치"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "신뢰할 수 없는 프로그램을 설치하려면 인증이 필요합니다"
+msgstr "신뢰할 수 없는 프로그램을 설치하려면 인증해야 합니다"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1194,10 +1197,10 @@ msgstr "신뢰할 수 없는 프로그램을 설치하려면 인증이 필요합
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr "이미 설치한 꾸러미 다시 설치"
+msgstr "이미 설치한 패키지 다시 설치"
 
 msgid "Authentication is required to reinstall software"
-msgstr "소프트웨어를 다시 설치하려면 인증이 필요합니다"
+msgstr "소프트웨어를 다시 설치하려면 인증해야 합니다"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1206,10 +1209,10 @@ msgstr "소프트웨어를 다시 설치하려면 인증이 필요합니다"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "설치한 꾸러미의 이전 버전 설치"
+msgstr "설치한 패키지의 이전 버전 설치"
 
 msgid "Authentication is required to downgrade software"
-msgstr "소프트웨어를 다운그레이드하려면 인증이 필요합니다"
+msgstr "소프트웨어를 다운그레이드하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1222,7 +1225,7 @@ msgstr "소프트웨어 서명에 사용하는 키 신뢰"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "소프트웨어 서명에 사용하는 키를 신뢰함으로 간주하려면 인증이 필요합니다"
+msgstr "소프트웨어 서명에 사용하는 키를 신뢰함으로 간주하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1233,7 +1236,7 @@ msgid "Accept EULA"
 msgstr "EULA 수락"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "EULA를 수락하려면 인증이 필요합니다"
+msgstr "EULA를 수락하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1248,7 +1251,7 @@ msgid "Remove package"
 msgstr "꾸러미 제거"
 
 msgid "Authentication is required to remove software"
-msgstr "소프트웨어를 제거하려면 인증이 필요합니다"
+msgstr "소프트웨어를 제거하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1260,26 +1263,26 @@ msgid "Update software"
 msgstr "소프트웨어 업데이트"
 
 msgid "Authentication is required to update software"
-msgstr "소프트웨어를 업데이트하려면 인증이 필요합니다"
+msgstr "소프트웨어를 업데이트하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "소프트웨어 저장소 인자 변경"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "소프트웨어 저장소 인자를 변경하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "시스템 저장소 새로 고침"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "시스템 저장소를 새로 고치려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1290,7 +1293,7 @@ msgstr "네트워크 프록시 설정"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "소프트웨어를 다운로드할 때 사용할 네트워크 프록시를 설정하려면 인증이 필요합니다"
+msgstr "소프트웨어를 다운로드할 때 사용할 네트워크 프록시를 설정하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1302,7 +1305,7 @@ msgid "Reload a device"
 msgstr "장치 다시 로드"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "새로운 드라이버로 장치를 다시 로드하려면 인증이 필요합니다"
+msgstr "새로운 드라이버로 장치를 다시 로드하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1312,7 +1315,7 @@ msgid "Upgrade System"
 msgstr "시스템 업그레이드"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr "운영체제를 업그레이드하려면 인증이 필요합니다"
+msgstr "운영체제를 업그레이드하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1322,7 +1325,7 @@ msgid "Repair System"
 msgstr "시스템 복구"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "설치한 소프트웨어를 복구하려면 인증이 필요합니다"
+msgstr "설치한 소프트웨어를 복구하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
@@ -1332,7 +1335,7 @@ msgid "Trigger offline updates"
 msgstr "오프라인 업데이트 실행"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "오프라인 업데이트를 실행하려면 인증이 필요합니다"
+msgstr "오프라인 업데이트를 실행하려면 인증해야 합니다"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -1341,7 +1344,7 @@ msgid "Clear offline update message"
 msgstr "오프라인 업데이트 메시지 지우기"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "오프라인 업데이트 메시지를 지우려면 인증이 필요합니다"
+msgstr "오프라인 업데이트 메시지를 지우려면 인증해야 합니다"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
@@ -1377,7 +1380,7 @@ msgstr "파일로 검색"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr "꾸러미 설치"
+msgstr "패키지 설치"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
@@ -1432,13 +1435,13 @@ msgid "The software is not from a trusted source."
 msgstr "신뢰할 수 있는 원본에서 프로그램을 가져오지 않았습니다"
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "안전하다고 판단하기 전에는 이 꾸러미를 갱신하지 마십시오."
+msgstr "안전하다고 판단하기 전에는 이 패키지를 업데이트하지 마십시오."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "안전하다고 판단하기 전에는 이 꾸러미를 갱신하지 마십시오"
+msgstr "안전하다고 판단하기 전에는 이 패키지를 업데이트하지 마십시오"
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "안전하다고 판단하기 전에는 이 꾸러미를 설치하지 마십시오."
+msgstr "안전하다고 판단하기 전에는 이 패키지를 설치하지 마십시오."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "안전하다고 판단하기 전에는 이 꾸러미를 설치하지 마십시오"
+msgstr "안전하다고 판단하기 전에는 이 패키지를 설치하지 마십시오"

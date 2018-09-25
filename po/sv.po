@@ -5,7 +5,7 @@
 # Translators:
 # Anders Jonsson <transifex@norsjovallen.se>, 2014,2017
 # Daniel Nylander <po@danielnylander.se>, 2008-2011
-# Josef Andersson <josef.andersson@fripost.org>, 2017
+# Josef Andersson <josef.andersson@fripost.org>, 2017-2018
 # Richard Hughes <richard@hughsie.com>, 2011
 # sebras <sebras@gmail.com>, 2015
 # sebras <sebras@gmail.com>, 2015-2016
@@ -13,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Swedish (http://www.transifex.com/freedesktop/packagekit/language/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -122,7 +122,7 @@ msgstr "Detaljer om uppdateringen:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Paket"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -390,6 +390,9 @@ msgstr "Tillåt paket att nedgraderas under transaktionen."
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Tillåt paket att ominstalleras under transaktionen"
 
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Kör kommandot med inaktiv nätverksbandbredd och även med mindre ström"
@@ -577,7 +580,7 @@ msgstr "Installerar systemuppgradering; detta kan ta ett tag…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Hämtar detaljer om programförråden."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1269,19 +1272,19 @@ msgstr "Autentisering krävs för att uppdatera programvara"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Ändrar parametrar för programförråden"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Autentisering krävs för att ändra parametrar för programförråden"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Uppdatera systemprogramförråden"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Autentisering krävs för att uppdatera systemprogramförråden"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

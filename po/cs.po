@@ -4,11 +4,12 @@
 # 
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
-# Daniel Rusek <mail@asciiwolf.com>, 2017
+# Ascii Wolf <mail@asciiwolf.com>, 2017-2018
+# Ascii Wolf <mail@asciiwolf.com>, 2018
 # fri, 2011
 # fri, 2011
 # Jozef Mlích <xmlich02@stud.fit.vutbr.cz>, 2015
-# Marek Černocký <marek@manet.cz>, 2013-2016
+# Marek Černocký <marek@manet.cz>, 2013-2016,2018
 # Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Vojtech Smejkal <smejkalv@gmail.com>, 2008
@@ -16,15 +17,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: cs\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -64,7 +65,7 @@ msgstr "Příkazový řádek"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "Uživatelské ID"
+msgstr "ID uživatele"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
@@ -80,7 +81,7 @@ msgstr "Ovlivněné balíčky:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "Ovlivněné balíčky: Žádné"
+msgstr "Ovlivněné balíčky: žádné"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
@@ -125,7 +126,7 @@ msgstr "Podrobnosti k aktualizaci:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Balíčků"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -153,7 +154,7 @@ msgstr "CVE"
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "Znovuspuštění"
+msgstr "Restart"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
@@ -191,25 +192,25 @@ msgstr "Zakázáno"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "Znovuspuštění systému požaduje:"
+msgstr "Restart systému požaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "Je požadováno znovuspuštění sezení:"
+msgstr "Je požadován restart sezení:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "Znovuspuštění (bezpečnostní) systému požaduje:"
+msgstr "Restart systému (z bezpečnostních důvodů) požaduje:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "Je požadováno znovuspuštění (bezpečnostní) sezení:"
+msgstr "Restart sezení (z bezpečnostních důvodů) požaduje:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "Znovuspuštění programu vyžaduje:"
+msgstr "Restart aplikace požaduje:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -238,7 +239,7 @@ msgstr "Výsledky:"
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr "Vážná chyba"
+msgstr "Závažná chyba"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -253,10 +254,10 @@ msgstr "Transakce se nezdařila"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "V tuto chvíli není dostupná žádná novější verze."
+msgstr "V tuto chvíli není dostupná žádná aktualizace."
 
 msgid "There are no upgrades available at this time."
-msgstr "V tuto chvíli nejsou dostupná žádná povýšení."
+msgstr "V tuto chvíli není dostupné žádné povýšení."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -294,7 +295,7 @@ msgstr "Balíček nebyl nalezen"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr "Balíček nebyl nalezen"
+msgstr "Nebyly nalezeny žádné balíčky"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -303,25 +304,25 @@ msgstr "Balíček nebyl nalezen"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "Očekáván název balíčku, doopravdy však byl obdržen soubor. Místo toho zkuste použít „pkcon install-local %s“."
+msgstr "Byl očekáván název balíčku, ve skutečnosti však byl obdržen soubor. Zkuste místo toho použít „pkcon install-local %s“."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "Tomuto nástroji se nepodařilo nalézt žádný dostupný balíček: %s"
+msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "Tomuto nástroji se nepodařilo nalézt nainstalovaný balíček: %s"
+msgstr "Tomuto nástroji se nepodařilo najít nainstalovaný balíček: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Tomuto nástroji se nepodařilo nalézt balíček: %s"
+msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
@@ -337,16 +338,16 @@ msgstr "Žádné balíčky nevyžadují aktualizaci na novější verzi."
 #. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Tomuto nástroji se nepodařilo nalézt všechny balíčky: %s"
+msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Démon havaroval uprostřed činnosti!"
+msgstr "Démon se zhroutil uprostřed činnosti!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "Konzolové rozhraní k PackageKitu"
+msgstr "Konzolové rozhraní pro PackageKit"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
@@ -355,7 +356,7 @@ msgstr "Dílčí příkazy:"
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato činnost byla naposledy dokončena"
+msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato akce byla naposledy dokončena"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
@@ -376,7 +377,7 @@ msgstr "Zobrazit verzi programu a skončit"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Nastavit filtr, např. nainstalované"
+msgstr "Nastavit filtr, například „nainstalované“"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
@@ -384,7 +385,7 @@ msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "Připravit transakci pouhým stažením balíčků"
+msgstr "Pouze stáhnout balíčky, aby byly připravené pro transakci"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -393,23 +394,26 @@ msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
 
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Spustit příkaz za použití nepoužívané šířky pásma sítě a také za využití menšího množství energie"
+msgstr "Spustit příkaz za použití nevyžívané šířky pásma sítě a rovněž méně energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "Vypisovat na obrazovku strojově čitelný výstup, namísto používání animovaných prvků"
+msgstr "Vypisovat na obrazovku strojově čitelný výstup, namísto animovaných prvků"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Největší stáří mezipaměti metadat. Použijte -1 pro „nikdy“."
+msgstr "Nejvyšší stáří mezipaměti metadat, -1 znamená „nikdy“."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "Povolit instalaci nedůvěryhodných balíčků."
+msgstr "Povolit instalaci nedůvěryhodných balíčků"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -417,7 +421,7 @@ msgstr "Selhalo zpracování příkazového řádku"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "Nepodařilo se spojit se s PackageKitem"
+msgstr "Nepodařilo se kontaktovat PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -434,7 +438,7 @@ msgstr "Je požadován hledaný typ, např. název"
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "Je požadován hledaný pojem"
+msgstr "Je požadován hledaný výraz"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
@@ -449,7 +453,7 @@ msgstr "Je požadován název souboru, který se má instalovat"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Je požadován typ, ID klíče a ID balíčku"
+msgstr "Jsou požadovány typ, ID klíče a ID balíčku"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -460,12 +464,12 @@ msgstr "Je požadován název balíčku, který se má odstranit"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílový adresář a názvy balíčků, které se mají stáhnout"
+msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "Adresář nenalezen"
+msgstr "Složka nebyla nalezena"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -491,7 +495,7 @@ msgstr "Jsou požadovány ID repozitáře a automatické odstranění"
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "Je požadována nějaká činnost, např. „update-package“"
+msgstr "Je požadována nějaká akce, např. „update-package“"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -508,7 +512,7 @@ msgstr "Je požadován název balíčku"
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "Je požadován řetězec k poskytnutí balíčku"
+msgstr "Je požadován řetězec, který poskytne balíček"
 
 msgid "A filename is required"
 msgstr "Je požadováno jméno souboru"
@@ -536,17 +540,17 @@ msgstr "Soubor již existuje: %s"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "Volba „%s“ není podporována "
+msgstr "Volba „%s“ není podporovaná "
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
 msgstr "Příkaz selhal"
 
 msgid "Failed to get daemon state"
-msgstr "Nepodařilo se získat stav démona"
+msgstr "Nezdařilo se zjistit stav démona"
 
 msgid "Failed to get properties"
-msgstr "Nepodařilo se získat vlastnosti"
+msgstr "Netdařilo se zjistit vlastnosti"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
@@ -580,41 +584,41 @@ msgstr "Instaluje se povýšení systému, což může trvat delší chvíli…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Stahují se podrobnosti k repozitářům softwaru"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Stahují se seznamy souborů (dokončení úkolu může chvíli trvat)."
+msgstr "Stahují se seznamy souborů (dokončení úkolu může chvíli trvat)"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Čeká se na zámek správce balíčků."
+msgstr "Čeká se na zámek správce balíčků"
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "Nahrává se seznam balíčků."
+msgstr "Načítá se seznam balíčků"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "Nalezení souboru se nezdařilo"
+msgstr "Selhalo vyhledání souboru"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr "Získání seznamu souborů se nezdařilo"
+msgstr "Selhalo získání seznamu souborů"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "Nepodařilo se spustit:"
+msgstr "Selhalo spuštění:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "Nepodařilo se nainstalovat balíčky"
+msgstr "Selhala instalace balíčků"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "Příkaz nenalezen."
+msgstr "Příkaz nebyl nenalezen"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -631,7 +635,7 @@ msgstr "Podobné příkazy jsou:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "Vyberte, prosím, příkaz ke spuštění"
+msgstr "Vyberte prosím příkaz, který se má spustit"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
@@ -654,14 +658,14 @@ msgstr "Vhodné balíčky jsou:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "Vyberte, prosím, balíček, který se má instalovat"
+msgstr "Vyberte prosím balíček, který se má instalovat"
 
 msgid "User aborted selection"
 msgstr "Uživatel přerušil výběr"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Zadejte, prosím, číslo od 1 do %i: "
+msgstr "Zadejte prosím číslo od 1 do %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
@@ -707,7 +711,7 @@ msgstr "Aktualizuje se seznam balíčků"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr "Instalují se nejnovější aktualizace"
+msgstr "Instalují se aktualizace"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
@@ -734,7 +738,7 @@ msgstr "Testují se změny"
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "Zaznamenávají se změny"
+msgstr "Zařazjí se změny"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
@@ -774,7 +778,7 @@ msgstr "Stahují se informace o aktualizacích"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "Balí se znovu soubory"
+msgstr "Opětovně se balí soubory"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
@@ -782,7 +786,7 @@ msgstr "Načítá se mezipaměť"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "Prohledávají se programy"
+msgstr "Prohledávají se aplikace"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
@@ -800,17 +804,17 @@ msgstr "Čeká se na ověření"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr "Aktualizují se běžící programy"
+msgstr "Aktualizují se běžící aplikace"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr "Ověřují se používané programy"
+msgstr "Kontrolují se používané aplikace"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr "Ověřují se používané knihovny"
+msgstr "Kontrolují se používané knihovny"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
@@ -820,17 +824,17 @@ msgstr "Kopírují se soubory"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Běží háčky"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
 msgstr "Zobrazit ladicí informace pro všechny soubory"
 
 msgid "Debugging Options"
-msgstr "Volby pro ladění"
+msgstr "Volby ladění"
 
 msgid "Show debugging options"
-msgstr "Zobrazit volby pro ladění"
+msgstr "Zobrazit volby ladění"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
@@ -850,7 +854,7 @@ msgstr "Bezpečnostní"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Oprava chyb"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -901,7 +905,7 @@ msgstr "Uklízí se zastaralé"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Instaluje se znovu"
+msgstr "Opětovně se instaluje"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
@@ -921,7 +925,7 @@ msgstr "Zastaralé uklizeno"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "Znovu nainstalováno"
+msgstr "Opětovně nainstalováno"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -985,7 +989,7 @@ msgstr "Získávají se repozitáře"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Upravuje se repozitář"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1005,7 +1009,7 @@ msgstr "Získává se seznam souborů"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Získávají se nabízející"
+msgstr "Získávají se poskytovatelé"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
@@ -1033,12 +1037,12 @@ msgstr "Získávají se transakce"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr "Získává se povýšení systému"
+msgstr "Získávají se povýšení systému"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "Chcete povolit instalování nepodepsaného softwaru?"
+msgstr "Chcete povolit instalace nepodepsaného softwaru?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
@@ -1136,7 +1140,7 @@ msgstr "Následující balíčky musí být aktualizovány:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "Následující balíčky musí být znovu nainstalovány:"
+msgstr "Následující balíčky musí být opětovně nainstalovány:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
@@ -1199,7 +1203,7 @@ msgstr "Pro instalaci nedůvěryhodného softwaru je vyžadováno ověření"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr "Opětovná instalace již nainstalovaného balíčku"
+msgstr "Opětovně nainstalovat již nainstalovaný balíček"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Reinstalace vyžaduje ověření"
@@ -1211,7 +1215,7 @@ msgstr "Reinstalace vyžaduje ověření"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "Nainstalovat starší verzi instalovaného balíčku"
+msgstr "Nainstalovat starší verzi již nainstalovaného balíčku"
 
 msgid "Authentication is required to downgrade software"
 msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
@@ -1262,7 +1266,7 @@ msgstr "Pro odebrání softwaru je vyžadováno ověření"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr "Aktualizace softwaru"
+msgstr "Aktualizovat softwar"
 
 msgid "Authentication is required to update software"
 msgstr "Pro aktualizaci softwaru je vyžadováno ověření"
@@ -1272,30 +1276,30 @@ msgstr "Pro aktualizaci softwaru je vyžadováno ověření"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Změnit parametry repozitáře softwaru"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Pro změnu parametrů repozitáře softwaru je vyžádováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Aktualizovat systémové repozitáře"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Pro aktualizaci systémových repozitářů je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "Nastavit proxy sítě"
+msgstr "Nastavit síťovou proxy"
 
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "Pro nastavení systémové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
+msgstr "Pro nastavení síťové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1334,19 +1338,19 @@ msgstr "Pro opravu nainstalovaného softwaru je vyžadováno ověření"
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr "Spustit off-line aktualizace"
+msgstr "Spustit aktualizace při odpojení"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Pro spuštění aktualizací bez připojení je vyžadováno ověření"
+msgstr "Pro spuštění aktualizací bez připojení k síti je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr "Vymaza zprávu off-line aktualizace"
+msgstr "Vymazat zprávu o aktualizaci při odpojení"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Pro vymazání zprávy o aktualizaci bez připojení je vyžadováno ověření"
+msgstr "Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je vyžadováno ověření"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
@@ -1358,7 +1362,7 @@ msgstr "Příkaz nebyl nalezen, platné příkazy jsou:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Balíčkovací systém, který se má použít, např. dummy"
+msgstr "Výkonná část, která se má použít, např. dummy"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
@@ -1370,7 +1374,7 @@ msgstr "Aktualizovat mezipaměť (vynutit)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr "Hledat podle jmen"
+msgstr "Hledat podle názvů"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
@@ -1386,7 +1390,7 @@ msgstr "Nainstalovat balíček"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr "Nastavit možnosti repozitáře"
+msgstr "Nastavit volby repozitáře"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
@@ -1394,11 +1398,11 @@ msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr "Selhalo zpracování parametrů"
+msgstr "Selhalo zpracování argumentů"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr "Nepodařilo se načíst soubor s nastavením"
+msgstr "Selhalo načtení souboru s nastavením"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
@@ -1418,7 +1422,7 @@ msgstr "Zobrazit verzi a skončit"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "Skončit s krátkým zpožděním"
+msgstr "Skončit po krátké prodlevě"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
@@ -1446,4 +1450,4 @@ msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Tento balíček instalujte, jen když jste přesvědčeni, že je bezpečný."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Tyto balíčky jen, když instalujte jste přesvědčeni, že jsou bezpečné."
+msgstr "Tyto balíčky instalujte jen, když jste přesvědčeni, že jsou bezpečné."

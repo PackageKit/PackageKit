@@ -3,10 +3,10 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Adolfo Jayme-Barrientos, 2014
-# Adolfo Jayme-Barrientos, 2013
-# Adolfo Jayme-Barrientos, 2015
-# Adolfo Jayme-Barrientos, 2014
+# Adolfo Jayme Barrientos, 2014
+# Adolfo Jayme Barrientos, 2013
+# Adolfo Jayme Barrientos, 2015
+# Adolfo Jayme Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
 # Daniel Mustieles <inactive+leo@transifex.com>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
@@ -17,9 +17,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/freedesktop/packagekit/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -126,7 +126,7 @@ msgstr "Detalles acerca de la actualización:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Paquetes"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -393,6 +393,9 @@ msgstr "Permitir desactualizar paquetes durante la operación"
 
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Permitir reinstalar paquetes durante la operación"
+
+msgid "Automatically remove unused dependencies"
+msgstr ""
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"

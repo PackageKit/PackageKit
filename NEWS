@@ -1,3 +1,34 @@
+Version 1.1.11
+~~~~~~~~~~~~~~
+Released: 2018-09-25
+
+Backends:
+ - aptcc: Fix invalid version dereference in AptInf::providesCodec() (Julian Andres Klode)
+ - aptcc: Fix memory leak when GstMatcher has no matches (Daniel Nicoletti)
+ - aptcc: Only autoremove packages that relate to the current transaction (Robert Ancell)
+ - aptcc: Removing duplicate delete call (Julio Faracco)
+ - aptcc: Use installed version to determine garbage (Julian Andres Klode)
+ - dnf: Adapt for DnfAdvisory changes in new libdnf (Kalev Lember)
+ - dnf: Adapt for dnf_package_get_advisories() free func changes (Kalev Lember)
+ - dnf: Allow module filtering (Jaroslav Mracek)
+ - dnf: Avoid using deprecated hy_goal_downgrade_to() (Kalev Lember)
+ - dnf: Increase the BR requirement for the latest API (Richard Hughes)
+ - dnf: Reflect latest changes in libdnf (Jaroslav Mracek, Daniel Mach)
+ - nix: Build with Nix 2.0 correctly (Matthew Bauer)
+
+New Features:
+ - Add --autoremove option to pkcon (Robert Ancell)
+ - Shutdown the daemon on idle by default (Richard Hughes)
+
+Bugfixes:
+ - De-register callbacks on PkClientHelper finalize (Robert Ancell)
+ - Don't complain if command-not-found get uninstalled while running (Adam Jackson)
+ - Fix critical on idle shutdown (Kalev Lember)
+ - Fix issues with debconf helper not working (Robert Ancell)
+ - Never assert when an interactive TTY is not available (Richard Hughes)
+ - Schedule offline update service to run after system-update-pre.target (Kalev Lember)
+ - Shut down services cleanly before rebooting after offline updates (Alan Jenkins)
+
 Version 1.1.10
 ~~~~~~~~~~~~~~
 Released: 2018-04-23

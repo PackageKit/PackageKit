@@ -4,14 +4,14 @@
 # 
 # Translators:
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012
-# gogo <trebelnik2@gmail.com>, 2017
+# gogo <trebelnik2@gmail.com>, 2017-2018
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-19 12:41+0100\n"
-"PO-Revision-Date: 2018-02-19 11:42+0000\n"
-"Last-Translator: kalev <kalevlember@gmail.com>\n"
+"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"PO-Revision-Date: 2018-09-25 08:54+0000\n"
+"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Croatian (http://www.transifex.com/freedesktop/packagekit/language/hr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -118,7 +118,7 @@ msgstr "Pojedinosti nadopune:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "Paket"
+msgstr ""
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -386,6 +386,9 @@ msgstr "Dopusti vraćanje paketa na prijašnju inačicu tijekom prijenosa"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Dopusti ponovnu instalaciju paketa na prijašnju inačicu tijekom prijenosa"
 
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Pokreni naredbu koristeći mrežnu propusnost mirovanja uz manju upotrebu energije"
@@ -573,7 +576,7 @@ msgstr "Instalacija nadogradnje sustava; ovo može potrajati neko vrijeme..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Preuzimanje pojedinosti o repozitorijima softvera."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1265,19 +1268,19 @@ msgstr "Potrebna je ovjera za nadopunu softvera"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Promijeni parametre repozitorija softvera"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Potrebna je ovjera za promjenu parametara repozitorija softvera"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Osvježi repozitorije sustava"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Potrebna je ovjera za osvježavanje repozitorija sustava"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
