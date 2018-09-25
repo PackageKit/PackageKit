@@ -868,10 +868,8 @@ dnf_package_get_advisory (DnfPackage *package)
 
 	advisorylist = dnf_package_get_advisories (package, HY_EQ);
 
-	for (guint i = 0; i < advisorylist->len; i++) {
-		dnf_advisory_free (advisory);
-		advisory = g_ptr_array_index (advisorylist, 0);
-	}
+	if (advisorylist->len > 0)
+		advisory = g_steal_pointer (&g_ptr_array_index (advisorylist, 0));
 	g_ptr_array_unref (advisorylist);
 
 	return advisory;
