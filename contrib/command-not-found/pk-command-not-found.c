@@ -535,6 +535,7 @@ out:
 	return package_ids;
 }
 
+static PkCnfPolicy
 pk_cnf_get_policy_from_string (const gchar *policy_text)
 {
 	if (policy_text == NULL)
