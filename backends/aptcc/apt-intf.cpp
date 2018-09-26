@@ -1368,17 +1368,12 @@ bool AptIntf::isApplication(const pkgCache::VerIterator &ver)
     gchar *fileName;
     string line;
 
-    if (m_isMultiArch) {
-        fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list",
-                                   ver.ParentPkg().Name(),
-                                   ver.Arch());
-        if (!FileExists(fileName)) {
-            g_free(fileName);
-            // if the file was not found try without the arch field
-            fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list",
-                                       ver.ParentPkg().Name());
-        }
-    } else {
+    fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list",
+                               ver.ParentPkg().Name(),
+                               ver.Arch());
+    if (!FileExists(fileName)) {
+        g_free(fileName);
+        // if the file was not found try without the arch field
         fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list",
                                    ver.ParentPkg().Name());
     }
@@ -1413,19 +1408,13 @@ void AptIntf::emitPackageFiles(const gchar *pi)
     parts = pk_package_id_split(pi);
 
     string fName;
-    if (m_isMultiArch) {
-        fName = "/var/lib/dpkg/info/" +
-                string(parts[PK_PACKAGE_ID_NAME]) +
-                ":" +
-                string(parts[PK_PACKAGE_ID_ARCH]) +
-                ".list";
-        if (!FileExists(fName)) {
-            // if the file was not found try without the arch field
-            fName = "/var/lib/dpkg/info/" +
-                    string(parts[PK_PACKAGE_ID_NAME]) +
-                    ".list";
-        }
-    } else {
+    fName = "/var/lib/dpkg/info/" +
+            string(parts[PK_PACKAGE_ID_NAME]) +
+            ":" +
+            string(parts[PK_PACKAGE_ID_ARCH]) +
+            ".list";
+    if (!FileExists(fName)) {
+        // if the file was not found try without the arch field
         fName = "/var/lib/dpkg/info/" +
                 string(parts[PK_PACKAGE_ID_NAME]) +
                 ".list";
