@@ -1523,6 +1523,39 @@ pk_backend_refresh_repo (PkBackendJob *job,
 }
 
 static void
+pk_backend_refresh_subman (PkBackendJob *job)
+{
+	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	DnfRepoLoader *repo_loader = dnf_context_get_repo_loader (job_data->context);
+	const gchar *argv[] = { "/usr/sbin/subscription-manager", "sync", NULL };
+	g_autofree gchar *err = NULL;
+	g_autofree gchar *out = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
+
+	if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
+		return;
+	if (!g_spawn_sync (NULL, (gchar **) argv, NULL, G_SPAWN_DEFAULT,
+			   NULL, NULL,
+			   &out, &err, NULL,
+			   &error_local)) {
+		g_autofree gchar *cmd = g_strjoinv ("  ", (gchar **) argv);
+		g_warning ("failed to run '%s': %s [stdout:%s, stderr:%s]",
+			   cmd, error_local->message, out, err);
+		return;
+	}
+
+	/* ask the context's repo loader for new repos, forcing it to reload them */
+	repos = dnf_repo_loader_get_repos (repo_loader, &error_local);
+	if (repos == NULL)
+		g_warning ("failed to reload repos: %s", error_local->message);
+
+	pk_backend_sack_cache_invalidate (backend, "subscription-manager ran");
+	pk_backend_repo_list_changed (backend);
+}
+
+static void
 pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 GVariant *params,
 				 gpointer user_data)
@@ -1548,6 +1581,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 			     -1);
 
 	g_variant_get (params, "(b)", &force);
+
+	/* kick subscription-manager if it exists */
+	pk_backend_refresh_subman (job);
 
 	/* count the enabled repos */
 	repos = dnf_context_get_repos (job_data->context);
