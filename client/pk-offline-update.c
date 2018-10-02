@@ -19,11 +19,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <glib-unix.h>
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gio/gio.h>
+#include <locale.h>
 #include <packagekit-glib2/packagekit.h>
 #include <packagekit-glib2/packagekit-private.h>
 #include <packagekit-glib2/pk-offline-private.h>
@@ -431,6 +434,11 @@ main (int argc, char *argv[])
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(PkProgressBar) progressbar = NULL;
 	g_autoptr(PkTask) task = NULL;
+
+	setlocale (LC_ALL, "");
+	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+	textdomain (GETTEXT_PACKAGE);
 
 	/* ensure root user */
 	if (getuid () != 0 || geteuid () != 0) {
