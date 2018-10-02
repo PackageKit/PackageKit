@@ -672,10 +672,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
 		if (cache_item != NULL && cache_item->sack != NULL) {
 			if (cache_item->valid) {
-				ret = TRUE;
 				g_debug ("using cached sack %s", cache_key);
-				sack = g_object_ref (cache_item->sack);
-				return g_steal_pointer (&sack);
+				return g_object_ref (cache_item->sack);
 			} else {
 				/* we have to do this now rather than rely on the
 				 * callback of the hash table */
