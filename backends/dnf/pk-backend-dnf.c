@@ -1500,7 +1500,7 @@ pk_backend_refresh_repo (PkBackendJob *job,
 		if (!ret) {
 			if (g_error_matches (error_local,
 					     DNF_ERROR,
-					     PK_ERROR_ENUM_CANNOT_FETCH_SOURCES)) {
+					     DNF_ERROR_CANNOT_FETCH_SOURCE)) {
 				g_warning ("Skipping refresh of %s: %s",
 					   dnf_repo_get_id (repo),
 					   error_local->message);
