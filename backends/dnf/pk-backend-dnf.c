@@ -325,6 +325,26 @@ pk_backend_state_percentage_changed_cb (DnfState *state,
 }
 
 static void
+pk_backend_download_percentage_changed_cb (DnfState *state,
+                                           guint percentage,
+                                           PkBackendJob *job)
+{
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	GPtrArray *remote_pkgs;
+	guint64 download_size;
+	guint64 download_size_remaining;
+
+	remote_pkgs = dnf_transaction_get_remote_pkgs (job_data->transaction);
+	download_size = dnf_package_array_get_download_size (remote_pkgs);
+
+	if (download_size == 0)
+		return;
+
+	download_size_remaining = download_size - (download_size / 100.0f * percentage);
+	pk_backend_job_set_download_size_remaining (job, download_size_remaining);
+}
+
+static void
 pk_backend_state_action_changed_cb (DnfState *state,
 				    DnfStateAction action,
 				    const gchar *action_hint,
@@ -2381,11 +2401,16 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 
 	/* download */
 	state_local = dnf_state_get_child (state);
+	g_signal_connect (state_local, "percentage-changed",
+	                  G_CALLBACK (pk_backend_download_percentage_changed_cb),
+	                  job);
+	pk_backend_download_percentage_changed_cb (state, 0, job);
 	ret = dnf_transaction_download (job_data->transaction,
 					state_local,
 					error);
 	if (!ret)
 		return FALSE;
+	pk_backend_download_percentage_changed_cb (state, 100, job);
 
 	/* done */
 	if (!dnf_state_done (state, error))
