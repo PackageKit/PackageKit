@@ -1889,9 +1889,8 @@ pk_client_create_helper_argv_envp_test (PkClientState *state,
 /*
  * pk_client_create_helper_argv_envp:
  **/
-static gboolean
-pk_client_create_helper_argv_envp (PkClientState *state,
-				   gchar ***argv,
+gboolean
+pk_client_create_helper_argv_envp (gchar ***argv,
 				   gchar ***envp_out)
 {
 	const gchar *dialog = NULL;
@@ -1965,8 +1964,7 @@ pk_client_create_helper_socket (PkClientState *state)
 
 	/* either the self test failed, or we're not in self test */
 	if (!ret) {
-		ret = pk_client_create_helper_argv_envp (state,
-							 &argv,
+		ret = pk_client_create_helper_argv_envp (&argv,
 							 &envp);
 	}
 

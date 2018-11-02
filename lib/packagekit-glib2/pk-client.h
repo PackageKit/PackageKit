@@ -412,6 +412,9 @@ void		 pk_client_get_progress_async 		(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+gboolean	pk_client_create_helper_argv_envp	(gchar 			***argv,
+							 gchar			***envp_out);
+
 /* getters and setters */
 void		 pk_client_set_locale			(PkClient		*client,
 							 const gchar		*locale);
