@@ -1,0 +1,8 @@
+[Unit]
+Description=debconf communication socket
+
+[Socket]
+ListenStream=%t/pk-debconf-socket
+
+[Install]
+WantedBy=sockets.target
