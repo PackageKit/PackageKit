@@ -102,6 +102,51 @@ out:
 	return ret;
 }
 
+static void
+find_files_recursively (const gchar *directory, const gchar *filename_suffix, GPtrArray *array)
+{
+	g_autoptr(GDir) dir = NULL;
+	g_autoptr(GError) error = NULL;
+	const gchar *filename;
+
+	/* open directory */
+	dir = g_dir_open (directory, 0, &error);
+	if (dir == NULL) {
+		g_warning ("failed to open directory %s: %s", directory, error->message);
+		return;
+	}
+
+	/* recursively go through the directories and collect any matching filenames to the array */
+	while ((filename = g_dir_read_name (dir))) {
+		g_autofree gchar *path = g_build_filename (directory, filename, NULL);
+		if (g_file_test (path, G_FILE_TEST_IS_SYMLINK)) {
+			/* skip symlinks */
+		} else if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
+			find_files_recursively (path, filename_suffix, array);
+		} else if (g_str_has_suffix (filename, filename_suffix)) {
+			g_ptr_array_add (array, g_steal_pointer (&path));
+		}
+	}
+}
+
+/**
+ * pk_directory_find_files_with_suffix:
+ * @directory: The directory to search
+ * @filename_suffix: The filename suffix to match
+ *
+ * Search a directory and return any file names that match the suffix.
+ *
+ * Returns: (transfer full) (element-type utf8): an array of file names
+ **/
+GPtrArray *
+pk_directory_find_files_with_suffix (const gchar *directory, const gchar *filename_suffix)
+{
+	g_autoptr(GPtrArray) array = g_ptr_array_new_with_free_func (g_free);
+
+	find_files_recursively (directory, filename_suffix, array);
+	return g_steal_pointer (&array);
+}
+
 GDBusNodeInfo *
 pk_load_introspection (const gchar *filename, GError **error)
 {
