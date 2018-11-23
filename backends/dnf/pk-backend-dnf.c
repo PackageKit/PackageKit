@@ -1214,12 +1214,6 @@ repo_is_supported (DnfRepo *repo)
 }
 
 static gboolean
-repo_is_source (DnfRepo *repo)
-{
-	return g_str_has_suffix (dnf_repo_get_id (repo), "-source");
-}
-
-static gboolean
 pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 {
 	/* devel and ~devel */
@@ -1232,10 +1226,10 @@ pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 
 	/* source and ~source */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) &&
-	    !repo_is_source (repo))
+	    !dnf_repo_is_source (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) &&
-	    repo_is_source (repo))
+	    dnf_repo_is_source (repo))
 		return FALSE;
 
 	/* installed and ~installed == enabled */
