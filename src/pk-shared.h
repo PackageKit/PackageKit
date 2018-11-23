@@ -28,6 +28,8 @@
 G_BEGIN_DECLS
 
 gboolean	 pk_directory_remove_contents		(const gchar	*directory);
+GPtrArray	*pk_directory_find_files_with_suffix	(const gchar	*directory,
+							 const gchar	*filename_suffix);
 guint		 pk_strlen				(const gchar	*text,
 							 guint		 len)
 							 G_GNUC_WARN_UNUSED_RESULT;

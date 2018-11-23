@@ -2431,6 +2431,74 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	return dnf_state_done (state, error);
 }
 
+static void
+pk_backend_clean_cached_rpms (PkBackendJob *job, GPtrArray *keep_rpms)
+{
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	const gchar *cache_dir;
+	g_autoptr(GHashTable) keep_rpms_hash = NULL;
+	g_autoptr(GPtrArray) found_rpms = NULL;
+
+	/* cache cleanup disabled? */
+	if (dnf_context_get_keep_cache (job_data->context)) {
+		g_debug ("KeepCache config option set; skipping cached rpms cleanup");
+		return;
+	}
+
+	/* create a hash table for fast lookup */
+	keep_rpms_hash = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+	for (guint i = 0; i < keep_rpms->len; i++) {
+		g_hash_table_insert (keep_rpms_hash,
+		                     g_ptr_array_index (keep_rpms, i),
+		                     GINT_TO_POINTER (1));
+	}
+
+	cache_dir = dnf_context_get_cache_dir (job_data->context);
+	g_assert (cache_dir != NULL);
+
+	/* find all the rpms in the cache directory */
+	found_rpms = pk_directory_find_files_with_suffix (cache_dir, ".rpm");
+
+	/* remove all cached rpms, except for those in the keep_rpms_hash */
+	for (guint i = 0; i < found_rpms->len; i++) {
+		const gchar *fn = g_ptr_array_index (found_rpms, i);
+		g_autofree gchar *basename = NULL;
+
+		basename = g_path_get_basename (fn);
+		if (g_hash_table_contains (keep_rpms_hash, basename))
+			continue;
+
+		g_debug ("removing cached rpm: %s", fn);
+		g_assert (g_str_has_prefix (fn, cache_dir));
+		if (g_unlink (fn) != 0)
+			g_warning ("failed to remove %s", fn);
+	}
+}
+
+static GPtrArray *
+pk_backend_get_download_rpms (HyGoal goal)
+{
+	g_autoptr(GPtrArray) download_rpms = g_ptr_array_new_with_free_func (g_free);
+	g_autoptr(GPtrArray) packages = NULL;
+
+	packages = dnf_goal_get_packages (goal,
+	                                  DNF_PACKAGE_INFO_INSTALL,
+	                                  DNF_PACKAGE_INFO_REINSTALL,
+	                                  DNF_PACKAGE_INFO_DOWNGRADE,
+	                                  DNF_PACKAGE_INFO_UPDATE,
+	                                  -1);
+
+	for (guint i = 0; i < packages->len; i++) {
+		DnfPackage *pkg = g_ptr_array_index (packages, i);
+		g_autofree gchar *basename = NULL;
+
+		basename = g_path_get_basename (dnf_package_get_location (pkg));
+		g_ptr_array_add (download_rpms, g_steal_pointer (&basename));
+	}
+
+	return g_steal_pointer (&download_rpms);
+}
+
 static gboolean
 pk_backend_transaction_run (PkBackendJob *job,
 			    DnfState *state,
@@ -2493,6 +2561,16 @@ pk_backend_transaction_run (PkBackendJob *job,
 	ret = pk_backend_transaction_download_commit (job, state_local, error);
 	if (!ret)
 		return FALSE;
+
+	if (pk_bitfield_contain (job_data->transaction_flags,
+	                         PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		g_autoptr(GPtrArray) keep_rpms = NULL;
+
+		/* now that an offline update has been fully downloaded, clean up any leftover
+		 * rpms from a previously downloaded (but not installed) offline update */
+		keep_rpms = pk_backend_get_download_rpms (job_data->goal);
+		pk_backend_clean_cached_rpms (job, keep_rpms);
+	}
 
 	/* done */
 	return dnf_state_done (state, error);
