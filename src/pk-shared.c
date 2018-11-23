@@ -118,10 +118,15 @@ find_files_recursively (const gchar *directory, const gchar *filename_suffix, GP
 
 	/* recursively go through the directories and collect any matching filenames to the array */
 	while ((filename = g_dir_read_name (dir))) {
+		GStatBuf s;
 		g_autofree gchar *path = g_build_filename (directory, filename, NULL);
-		if (g_file_test (path, G_FILE_TEST_IS_SYMLINK)) {
+
+		if ((g_lstat (path, &s) != 0))
+			continue;
+
+		if (S_ISLNK (s.st_mode)) {
 			/* skip symlinks */
-		} else if (g_file_test (path, G_FILE_TEST_IS_DIR)) {
+		} else if (S_ISDIR (s.st_mode)) {
 			find_files_recursively (path, filename_suffix, array);
 		} else if (g_str_has_suffix (filename, filename_suffix)) {
 			g_ptr_array_add (array, g_steal_pointer (&path));
