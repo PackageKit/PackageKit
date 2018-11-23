@@ -43,6 +43,7 @@
 #include <libdnf/dnf-sack.h>
 #include <libdnf/hy-util.h>
 #include <librepo/librepo.h>
+#include <rpm/rpmlib.h>
 
 #include "dnf-backend-vendor.h"
 #include "dnf-backend.h"
@@ -179,12 +180,13 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 }
 
 static void
-remove_old_cache_directories (PkBackend *backend, const gchar *release_ver_str)
+remove_old_cache_directories (PkBackend *backend, const gchar *release_ver)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	gboolean keep_cache;
-	guint64 release_ver;
+	const gchar *filename;
 	g_autofree gchar *destdir = NULL;
+	g_autoptr(GDir) cache_dir = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_assert (priv->conf != NULL);
@@ -203,19 +205,22 @@ remove_old_cache_directories (PkBackend *backend, const gchar *release_ver_str)
 		return;
 	}
 
-	/* parse the version, while being careful to not trip over for any
-	 * non-numeric strings that we don't know how to handle, e.g. "7.5" */
-	if (!g_ascii_string_to_unsigned (release_ver_str, 10, 1, 1000, &release_ver, &error)) {
-		g_debug ("failed to parse current release version: %s", error->message);
+	/* open directory */
+	cache_dir = g_dir_open ("/var/cache/PackageKit", 0, &error);
+	if (cache_dir == NULL) {
+		g_warning ("cannot open directory: %s", error->message);
 		return;
 	}
 
-	/* remove any older directories */
-	for (guint i = 0; i < (guint)release_ver; i++) {
-		g_autofree gchar *dir = NULL;
+	/* look at each subdirectory */
+	while ((filename = g_dir_read_name (cache_dir))) {
+		g_autofree gchar *dir = g_build_filename ("/var/cache/PackageKit", filename, NULL);
 
-		dir = g_strdup_printf ("/var/cache/PackageKit/%u", i);
-		if (g_file_test (dir, G_FILE_TEST_IS_DIR)) {
+		if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
+			continue;
+
+		/* is the version older than the current release ver? */
+		if (rpmvercmp (filename, release_ver) < 0) {
 			g_debug ("removing old cache directory %s", dir);
 			pk_directory_remove_contents (dir);
 			if (g_remove (dir) != 0)
