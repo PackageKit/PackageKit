@@ -2445,7 +2445,7 @@ pk_backend_clean_cached_rpms (PkBackendJob *job, GPtrArray *keep_rpms)
 	}
 
 	/* create a hash table for fast lookup */
-	keep_rpms_hash = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+	keep_rpms_hash = g_hash_table_new (g_str_hash, g_str_equal);
 	for (guint i = 0; i < keep_rpms->len; i++) {
 		g_hash_table_insert (keep_rpms_hash,
 		                     g_ptr_array_index (keep_rpms, i),
