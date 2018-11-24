@@ -113,14 +113,6 @@ pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 static void
 pk_backend_yum_repos_changed_cb (DnfRepoLoader *repo_loader, PkBackend *backend)
 {
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GPtrArray) repos = NULL;
-
-	/* ask the context's repo loader for new repos, forcing it to reload them */
-	repos = dnf_repo_loader_get_repos (repo_loader, &error_local);
-	if (repos == NULL)
-		g_warning ("failed to reload repos: %s", error_local->message);
-
 	pk_backend_sack_cache_invalidate (backend, "yum.repos.d changed");
 	pk_backend_repo_list_changed (backend);
 }
@@ -544,7 +536,7 @@ dnf_utils_add_remote (PkBackendJob *job,
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret;
 	DnfState *state_local;
-	GPtrArray *repos;
+	g_autoptr(GPtrArray) repos = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
@@ -554,11 +546,14 @@ dnf_utils_add_remote (PkBackendJob *job,
 	if (!ret)
 		return FALSE;
 
+	/* ask the context's repo loader for new repos, forcing it to reload them */
+	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), error);
+	if (repos == NULL)
+		return FALSE;
+
 	/* done */
 	if (!dnf_state_done (state, error))
 		return FALSE;
-
-	repos = dnf_context_get_repos (job_data->context);
 
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
@@ -1267,19 +1262,20 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	DnfRepo *repo;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBitfield filters;
-	GPtrArray *repos;
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
 
 	g_variant_get (params, "(t)", &filters);
 
 	/* set the list of repos */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-	repos = dnf_context_get_repos (job_data->context);
-	if (repos == NULL || repos->len == 0) {
+	/* ask the context's repo loader for new repos, forcing it to reload them */
+	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
+	if (repos == NULL) {
 		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_REPO_NOT_FOUND,
-					   "failed to find any repos");
+		                           error->code,
+		                           "failed to load repos: %s", error->message);
 		return;
 	}
 
@@ -1545,13 +1541,10 @@ static void
 pk_backend_refresh_subman (PkBackendJob *job)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
-	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
-	DnfRepoLoader *repo_loader = dnf_context_get_repo_loader (job_data->context);
 	const gchar *argv[] = { "/usr/sbin/subscription-manager", "sync", NULL };
 	g_autofree gchar *err = NULL;
 	g_autofree gchar *out = NULL;
 	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GPtrArray) repos = NULL;
 
 	if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
 		return;
@@ -1564,11 +1557,6 @@ pk_backend_refresh_subman (PkBackendJob *job)
 			   cmd, error_local->message, out, err);
 		return;
 	}
-
-	/* ask the context's repo loader for new repos, forcing it to reload them */
-	repos = dnf_repo_loader_get_repos (repo_loader, &error_local);
-	if (repos == NULL)
-		g_warning ("failed to reload repos: %s", error_local->message);
 
 	pk_backend_sack_cache_invalidate (backend, "subscription-manager ran");
 	pk_backend_repo_list_changed (backend);
@@ -1583,7 +1571,6 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	DnfRepo *repo;
 	DnfState *state_local;
 	DnfState *state_loop;
-	GPtrArray *repos;
 	gboolean force;
 	gboolean ret;
 	guint cnt = 0;
@@ -1591,6 +1578,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) refresh_repos = NULL;
+	g_autoptr(GPtrArray) repos = NULL;
 
 	/* set state */
 	dnf_state_set_steps (job_data->state, NULL,
@@ -1604,8 +1592,16 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	/* kick subscription-manager if it exists */
 	pk_backend_refresh_subman (job);
 
+	/* ask the context's repo loader for new repos, forcing it to reload them */
+	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
+	if (repos == NULL) {
+		pk_backend_job_error_code (job,
+		                           error->code,
+		                           "failed to load repos: %s", error->message);
+		return;
+	}
+
 	/* count the enabled repos */
-	repos = dnf_context_get_repos (job_data->context);
 	for (i = 0; i < repos->len; i++) {
 		repo = g_ptr_array_index (repos, i);
 		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
@@ -2636,8 +2632,16 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 		goto out;
 	}
 
-	/* find all the .repo files the repo-release package installed */
+	/* ask the context's repo loader for new repos, forcing it to reload them */
 	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
+	if (repos == NULL) {
+		pk_backend_job_error_code (job,
+		                           error->code,
+		                           "failed to load repos: %s", error->message);
+		goto out;
+	}
+
+	/* find all the .repo files the repo-release package installed */
 	search = g_new0 (gchar *, repos->len + 0);
 	removed_id = g_ptr_array_new_with_free_func (g_free);
 	repo_filename = dnf_repo_get_filename (repo);
