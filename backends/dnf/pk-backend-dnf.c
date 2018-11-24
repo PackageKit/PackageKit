@@ -2625,6 +2625,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 					   "%s", error->message);
 		goto out;
 	}
+	repo_filename = dnf_repo_get_filename (repo);
 
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {
@@ -2644,7 +2645,6 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	/* find all the .repo files the repo-release package installed */
 	search = g_new0 (gchar *, repos->len + 0);
 	removed_id = g_ptr_array_new_with_free_func (g_free);
-	repo_filename = dnf_repo_get_filename (repo);
 	for (i = 0; i < repos->len; i++) {
 		repo = g_ptr_array_index (repos, i);
 		if (g_strcmp0 (dnf_repo_get_filename (repo), repo_filename) != 0)
