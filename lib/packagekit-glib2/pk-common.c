@@ -265,17 +265,26 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 
 	/* get keys */
 	if (id != NULL) {
-		*id = g_key_file_get_string (key_file, "os-release", "ID", error);
+		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "ID", error);
+		if (tmp == NULL)
+			return FALSE;
+		*id = g_shell_unquote (tmp, error);
 		if (*id == NULL)
 			return FALSE;
 	}
 	if (name != NULL) {
-		*name = g_key_file_get_string (key_file, "os-release", "NAME", error);
+		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "NAME", error);
+		if (tmp == NULL)
+			return FALSE;
+		*name = g_shell_unquote (tmp, error);
 		if (*name == NULL)
 			return FALSE;
 	}
 	if (version_id != NULL) {
-		*version_id = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
+		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
+		if (tmp == NULL)
+			return FALSE;
+		*version_id = g_shell_unquote (tmp, error);
 		if (*version_id == NULL)
 			return FALSE;
 	}
