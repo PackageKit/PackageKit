@@ -3,10 +3,10 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Dušan Kazik <prescott66@gmail.com>, 2015-2017
-# helix84 <helix84@centrum.sk>, 2014-2015
-# helix84 <helix84@centrum.sk>, 2011
-# helix84 <helix84@centrum.sk>, 2010, 2011, 2012
+# Dušan Kazik <prescott66@gmail.com>, 2015-2018
+# Ivan Masár <helix84@centrum.sk>, 2014-2015
+# Ivan Masár <helix84@centrum.sk>, 2011
+# Ivan Masár <helix84@centrum.sk>, 2010, 2011, 2012
 # Lubomir Kundrak <lkundrak@redhat.com>, 2008
 # Pavol Šimo <palo.simo@gmail.com>, 2008
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -14,9 +14,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 09:54+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-11-28 08:40+0100\n"
+"PO-Revision-Date: 2018-11-18 20:18+0000\n"
+"Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: Slovak (http://www.transifex.com/freedesktop/packagekit/language/sk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -123,7 +123,7 @@ msgstr "Podrobnosti o aktualizácii:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Balík"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -392,7 +392,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "Povoliť reinštaláciu balíka počas transakcie"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Automaticky odstrániť nepoužité závislosti"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -581,7 +581,7 @@ msgstr "Inštaluje sa systémová aktualizácia. To môže chvíľu trvať..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Preberajú sa podrobnosti o softvérových repozitároch."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -1273,19 +1273,19 @@ msgstr "Aktualizácia softvéru vyžaduje overenie totožnosti"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Zmeniť parametre softvérového repozitára"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Vyžaduje sa overenie totožnosti na zmenu parametrov softvérového repozitára"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Obnoviť systémové repozitáre"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Vyžaduje sa overenie totožnosti na obnovenie systémových repozitárov"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy

@@ -4,7 +4,7 @@
 # 
 # Translators:
 # Balázs Meskó <meskobalazs@gmail.com>, 2018
-# Balázs Úr <urbalazs@gmail.com>, 2014-2015
+# Balázs Úr <ur.balazs@fsf.hu>, 2014-2015
 # Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012
 # kelemeng <kelemeng@ubuntu.com>, 2013-2014
 # kelemeng <kelemeng@ubuntu.com>, 2012
@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"POT-Creation-Date: 2018-11-28 08:40+0100\n"
 "PO-Revision-Date: 2018-09-25 08:54+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/freedesktop/packagekit/language/hu/)\n"

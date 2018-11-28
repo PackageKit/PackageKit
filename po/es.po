@@ -3,10 +3,10 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Adolfo Jayme Barrientos, 2014
-# Adolfo Jayme Barrientos, 2013
-# Adolfo Jayme Barrientos, 2015
-# Adolfo Jayme Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2013
+# Adolfo Jayme-Barrientos, 2015
+# Adolfo Jayme-Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
 # Daniel Mustieles <inactive+leo@transifex.com>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 09:54+0100\n"
+"POT-Creation-Date: 2018-11-28 08:40+0100\n"
 "PO-Revision-Date: 2018-09-25 08:54+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/freedesktop/packagekit/language/es/)\n"

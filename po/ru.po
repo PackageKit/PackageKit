@@ -19,9 +19,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 09:54+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-11-28 08:40+0100\n"
+"PO-Revision-Date: 2018-09-25 17:27+0000\n"
+"Last-Translator: Serge Vylekzhanin <vylekzhanin@mail.ru>\n"
 "Language-Team: Russian (http://www.transifex.com/freedesktop/packagekit/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -128,7 +128,7 @@ msgstr "Подробности об обновлении:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Пакет"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -397,7 +397,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "Разрешить переустановку пакетов во время транзакции"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Автоматически удалять неиспользуемые зависимости"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"

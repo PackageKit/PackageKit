@@ -1,3 +1,22 @@
+Version 1.1.12
+~~~~~~~~~~~~~~
+Released: 2018-11-28
+
+Backends:
+ - aptcc: Always try multi-arch lookups for lists (Julian Andres Klode)
+ - aptcc: Update section mappings (Guillem Jover)
+ - dnf: Avoid offline updates cache growing unchecked (Kalev Lember)
+ - dnf: Emit download-size-remaining signals when downloading packages (Kalev Lember)
+ - dnf: Fix multithreaded race and memory corruption when reloading repos (Kalev Lember)
+ - dnf: Run subscription-manager sync before refreshing metadata (Richard Hughes)
+ - dnf: Use dnf_repo_is_source from libdnf (Kalev Lember)
+ - dnf: Use rpmvercmp for comparing cache directory versions (Kalev Lember)
+ - zypp: Implement GetFilesLocal in zypp backend (xiaoguang wang)
+
+Bugfixes:
+ - common: Handle quoted strings in /etc/os-release (Kalev Lember)
+ - offline update: Fix translations to show up (Kalev Lember)
+
 Version 1.1.11
 ~~~~~~~~~~~~~~
 Released: 2018-09-25

@@ -8,7 +8,7 @@
 # Christian <Christian.Kirbach@googlemail.com>, 2009,2011
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008
 # Daniel Winzen <inactive+DanWin@transifex.com>, 2012-2013
-# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018
 # Fabian Affolter <fab@fedoraproject.org>, 2008-2009
 # hpeters <hpeters@redhat.com>, 2009
 # Holger Wansing <linux@wansing-online.de>, 2006
@@ -24,9 +24,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-25 09:54+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2018-11-28 08:40+0100\n"
+"PO-Revision-Date: 2018-11-18 09:11+0000\n"
+"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language-Team: German (http://www.transifex.com/freedesktop/packagekit/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -133,7 +133,7 @@ msgstr "Details zur Aktualisierung:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Paket"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -402,7 +402,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "Die erneute Installation von Paketen während der Transaktion erlauben"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Nicht verwendete Abhängigkeiten automatisch entfernen"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -591,7 +591,7 @@ msgstr "Systemaktualisierung wird installiert. Dies kann eine Weile dauern …"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Details zu den Software-Repositorien werden heruntergeladen."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -831,14 +831,14 @@ msgstr "Dateien werden kopiert"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Einschubmethoden werden ausgeführt"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
 msgstr "Fehlerdiagnose-Informationen für alle Dateien anzeigen"
 
 msgid "Debugging Options"
-msgstr "Optionen der Fehlerdiagnose"
+msgstr "Fehlerdiagnose-Optionen"
 
 msgid "Show debugging options"
 msgstr "Fehlerdiagnose-Optionen anzeigen"
@@ -861,7 +861,7 @@ msgstr "Sicherheit"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Fehlerbehebung"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -886,33 +886,33 @@ msgstr "Nicht verfügbar"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "Herunterladen ..."
+msgstr "Herunterladen"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "Aktualisieren ..."
+msgstr "Aktualisieren"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "Installieren ..."
+msgstr "Installieren"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "Entfernen ..."
+msgstr "Entfernen"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "Bereinigen ..."
+msgstr "Bereinigen"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "Veraltetes bereinigen ..."
+msgstr "Veraltetes bereinigen"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Neu installieren …"
+msgstr "Neu installieren"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
@@ -996,7 +996,7 @@ msgstr "Repositorien werden abgerufen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Repositorium wird geändert"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1283,19 +1283,19 @@ msgstr "Legitimation ist zum Aktualisieren von Software erforderlich"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Parameter des Software-Repositoriums ändern"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Legitimation ist zur Änderung der Parameter zu den Software-Repositorien erforderlich"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "System-Repositorien aktualisieren"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Legitimation ist zum Aktualisieren der System-Repositorien erforderlich"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
