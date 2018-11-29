@@ -33,6 +33,7 @@
  */
 bool show_errors(PkBackendJob *job,
                  PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN,
-                 bool errModify = false);
+                 bool errModify = false,
+                 bool ignoreWarnings = false);
 
 #endif // AAPT_BACKEND_MESSAGES_H
