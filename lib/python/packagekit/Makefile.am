@@ -1,7 +1,7 @@
 BUILT_SOURCES = enums.py
 
 enums.py: $(top_srcdir)/lib/python/enum-convertor.py $(top_srcdir)/lib/packagekit-glib2/pk-enum.c
-	python $(top_srcdir)/lib/python/enum-convertor.py $(top_srcdir)/lib/packagekit-glib2/pk-enum.c > enums.py
+	$(PYTHON) $(top_srcdir)/lib/python/enum-convertor.py $(top_srcdir)/lib/packagekit-glib2/pk-enum.c > enums.py
 
 if HAVE_PYTHON_BACKEND
 packagekitpythondir = ${PYTHON_PACKAGE_DIR}
