@@ -98,7 +98,7 @@ struct PkEnginePrivate
 	guint			 owner_id;
 	GDBusNodeInfo		*introspection;
 	GDBusConnection		*connection;
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 	GDBusProxy		*logind_proxy;
 	gint			 logind_fd;
 #endif
@@ -256,7 +256,7 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 static void
 pk_engine_inhibit (PkEngine *engine)
 {
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GUnixFDList) out_fd_list = NULL;
 	g_autoptr(GVariant) res = NULL;
@@ -303,7 +303,7 @@ pk_engine_inhibit (PkEngine *engine)
 static void
 pk_engine_uninhibit (PkEngine *engine)
 {
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 	if (engine->priv->logind_fd == 0)
 		return;
 	g_debug ("closed logind fd %i", engine->priv->logind_fd);
@@ -1701,7 +1701,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 	}
 }
 
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 static void
 pk_engine_proxy_logind_cb (GObject *source_object,
 			   GAsyncResult *res,
@@ -1737,7 +1737,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	/* save copy for emitting signals */
 	engine->priv->connection = g_object_ref (connection);
 
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 	/* connect to logind */
 	g_dbus_proxy_new (connection,
 			  G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
@@ -1883,7 +1883,7 @@ pk_engine_finalize (GObject *object)
 	if (engine->priv->connection != NULL)
 		g_object_unref (engine->priv->connection);
 
-#ifdef HAVE_SYSTEMD
+#ifdef HAVE_SYSTEMD_SD_LOGIN_H
 	/* uninhibit */
 	if (engine->priv->logind_fd != 0)
 		close (engine->priv->logind_fd);

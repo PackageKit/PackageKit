@@ -216,7 +216,6 @@ if test x$enable_systemd = xyes; then
 		    AS_HELP_STRING([--with-systemdsystemunitdir=DIR], [Directory for systemd service files]),
 		    [has_systemdsystemunitdir=$with_systemdsystemunitdir],
 		    [has_systemdsystemunitdir=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)])
-	AC_DEFINE(HAVE_SYSTEMD,1,[Build systemd code])
 	AC_SUBST([systemdsystemunitdir], [$has_systemdsystemunitdir])
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$has_systemdsystemunitdir"])
@@ -227,6 +226,24 @@ dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(offline-update, AS_HELP_STRING([--enable-offline-update],[enable offline update via systemd]),
 	      enable_offline_update=$enableval,enable_offline_update=yes)
 AM_CONDITIONAL(ENABLE_OFFLINE_UPDATE, [test x$enable_systemd = xyes -a x$enable_offline_update = xyes])
+
+dnl ---------------------------------------------------------------------------
+dnl - Use elogind instead of systemd-login
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(elogind, AS_HELP_STRING([--enable-elogind],[enable elogind session tracker]),
+	      enable_elogind=$enableval,enable_elogind=no)
+if test x$enable_elogind = xyes; then
+	PKG_CHECK_MODULES(ELOGIND, [libelogind >= 229.4], [have_elogind=yes], [have_elogind=no])
+else
+	have_elogind=no
+fi
+
+dnl ---------------------------------------------------------------------------
+dnl --- Is systemd/sd-login.h, either from systemd or elogind, available?
+dnl ---------------------------------------------------------------------------
+if test -n "$has_systemdsystemunitdir" -o "x$have_elogind" != "xno" ; then
+		AC_DEFINE(HAVE_SYSTEMD_SD_LOGIN_H,1,[Build systemd-login code])
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl - Generate man pages ? (default enabled)
@@ -590,6 +607,7 @@ echo "
         cflags:                    ${CFLAGS}
         cppflags:                  ${CPPFLAGS}
         Able to run locally:       ${enable_local}
+        Use elogind:               ${enable_elogind}
         Use systemd:               ${enable_systemd}
         Enable offline update:     ${enable_offline_update}
         GStreamer plugin:          ${build_gstreamer_plugin}
