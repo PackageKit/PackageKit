@@ -760,6 +760,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 		g_warning ("cannot set %s, as already %s",
 			   pk_transaction_state_to_string (state),
 			   pk_transaction_state_to_string (priv->state));
+		return;
 	}
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
