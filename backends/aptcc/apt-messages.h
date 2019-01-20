@@ -31,7 +31,7 @@
 /**
  * Call the Packagekit error dialog
  */
-bool show_errors(PkBackendJob *job,
+void show_errors(PkBackendJob *job,
                  PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN,
                  bool errModify = false);
 
