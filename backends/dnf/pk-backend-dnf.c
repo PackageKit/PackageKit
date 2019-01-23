@@ -1568,6 +1568,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 gpointer user_data)
 {
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBackend *backend = pk_backend_job_get_backend (job);
 	DnfRepo *repo;
 	DnfState *state_local;
 	DnfState *state_loop;
@@ -1698,6 +1699,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
 	}
+
+	/* invalidate the sack cache after downloading new metadata */
+	pk_backend_sack_cache_invalidate (backend, "downloaded new metadata");
 
 	/* regenerate the libsolv metadata */
 	state_local = dnf_state_get_child (job_data->state);

@@ -760,6 +760,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 		g_warning ("cannot set %s, as already %s",
 			   pk_transaction_state_to_string (state),
 			   pk_transaction_state_to_string (priv->state));
+		return;
 	}
 
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
@@ -2223,6 +2224,7 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 	}
 
 out:
+	g_object_unref (data->transaction);
 	g_ptr_array_unref (data->actions);
 	g_free (data);
 }
@@ -2332,7 +2334,7 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 	}
 
 	data = g_new (struct AuthorizeActionsData, 1);
-	data->transaction = transaction;
+	data->transaction = g_object_ref (transaction);
 	data->role = role;
 	data->actions = g_ptr_array_ref (actions);
 
