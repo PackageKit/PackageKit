@@ -502,7 +502,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	gboolean ret = TRUE;
 	guint i;
 	guint len;
+#if HAVE_SETPRIORITY
 	gint nice_value = 0;
+#endif
 	gint rc;
 	g_autoptr(GError) error_local = NULL;
 
@@ -582,11 +584,11 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 		goto out;
 	}
 
+#if HAVE_SETPRIORITY
 	/* get the nice value and ensure we are in the valid range */
 	if (spawn->priv->background)
 		nice_value = 10;
 
-#if HAVE_SETPRIORITY
 	/* don't completely bog the system down */
 	if (nice_value != 0) {
 		g_debug ("renice to %i", nice_value);

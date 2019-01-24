@@ -19,8 +19,8 @@
             authentication, but a different user id needs the admin password
             to cancel another users task.
      -->
-    <_description>Cancel foreign task</_description>
-    <_message>Authentication is required to cancel a task that was not started by yourself</_message>
+    <description>Cancel foreign task</description>
+    <message>Authentication is required to cancel a task that was not started by yourself</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -36,8 +36,8 @@
           - Paranoid users (or parents!) can change this to 'auth_admin' or
             'auth_admin_keep'.
      -->
-    <_description>Install signed package</_description>
-    <_message>Authentication is required to install software</_message>
+    <description>Install signed package</description>
+    <message>Authentication is required to install software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -53,8 +53,8 @@
             password would be a massive security hole.
           - This is not retained as each package should be authenticated.
      -->
-    <_description>Install untrusted local file</_description>
-    <_message>Authentication is required to install untrusted software</_message>
+    <description>Install untrusted local file</description>
+    <message>Authentication is required to install untrusted software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -72,8 +72,8 @@
           - If a package in question is not trusted, user's permission to install
             untrusted package will be checked as well.
      -->
-    <_description>Install already installed package again</_description>
-    <_message>Authentication is required to reinstall software</_message>
+    <description>Install already installed package again</description>
+    <message>Authentication is required to reinstall software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -90,8 +90,8 @@
           - If a package in question is not trusted, user's permission to install
             untrusted package will be checked as well.
      -->
-    <_description>Install older version of installed package</_description>
-    <_message>Authentication is required to downgrade software</_message>
+    <description>Install older version of installed package</description>
+    <message>Authentication is required to downgrade software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -108,8 +108,8 @@
             without a secure authentication.
           - This is not kept as each package should be authenticated.
      -->
-    <_description>Trust a key used for signing software</_description>
-    <_message>Authentication is required to consider a key used for signing software as trusted</_message>
+    <description>Trust a key used for signing software</description>
+    <message>Authentication is required to consider a key used for signing software as trusted</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -125,8 +125,8 @@
           - Change this to 'auth_admin' for environments where users should not
             be given the option to make legal decisions.
      -->
-    <_description>Accept EULA</_description>
-    <_message>Authentication is required to accept a EULA</_message>
+    <description>Accept EULA</description>
+    <message>Authentication is required to accept a EULA</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -145,8 +145,8 @@
             be removed. If this is not possible, change this authentication to
             'auth_admin'.
      -->
-    <_description>Remove package</_description>
-    <_message>Authentication is required to remove software</_message>
+    <description>Remove package</description>
+    <message>Authentication is required to remove software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -164,8 +164,8 @@
           - Changing this to anything other than 'yes' will break unattended
             updates.
      -->
-    <_description>Update software</_description>
-    <_message>Authentication is required to update software</_message>
+    <description>Update software</description>
+    <message>Authentication is required to update software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -180,8 +180,8 @@
             software repositories as this can be used to enable new updates or
             install different versions of software.
      -->
-    <_description>Change software repository parameters</_description>
-    <_message>Authentication is required to change software repository parameters</_message>
+    <description>Change software repository parameters</description>
+    <message>Authentication is required to change software repository parameters</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -195,8 +195,8 @@
           - Normal users do not require admin authentication to refresh the
             cache, as this doesn't actually install or remove software.
      -->
-    <_description>Refresh system repositories</_description>
-    <_message>Authentication is required to refresh the system repositories</_message>
+    <description>Refresh system repositories</description>
+    <message>Authentication is required to refresh the system repositories</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -210,8 +210,8 @@
           - Normal users do not require admin authentication to set the proxy
             used for downloading packages.
      -->
-    <_description>Set network proxy</_description>
-    <_message>Authentication is required to set the network proxy used for downloading software</_message>
+    <description>Set network proxy</description>
+    <message>Authentication is required to set the network proxy used for downloading software</message>
     <icon_name>preferences-system-network-proxy</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -228,8 +228,8 @@
             try to rebind drivers in use, for instance security authentication
             devices.
      -->
-    <_description>Reload a device</_description>
-    <_message>Authentication is required to reload the device with a new driver</_message>
+    <description>Reload a device</description>
+    <message>Authentication is required to reload the device with a new driver</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -245,8 +245,8 @@
             this can make the system unbootable or stop other applications from
             working.
      -->
-    <_description>Upgrade System</_description>
-    <_message>Authentication is required to upgrade the operating system</_message>
+    <description>Upgrade System</description>
+    <message>Authentication is required to upgrade the operating system</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>no</allow_any>
@@ -261,8 +261,8 @@
             since this can make the system unbootable or stop other
             applications from working.
      -->
-    <_description>Repair System</_description>
-    <_message>Authentication is required to repair the installed software</_message>
+    <description>Repair System</description>
+    <message>Authentication is required to repair the installed software</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -276,8 +276,8 @@
           - Normal users are able to ask updates to be installed at
             early boot time without a password.
      -->
-    <_description>Trigger offline updates</_description>
-    <_message>Authentication is required to trigger offline updates</_message>
+    <description>Trigger offline updates</description>
+    <message>Authentication is required to trigger offline updates</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -292,8 +292,8 @@
             to a new distribution since this can make the system unbootable or
             stop other applications from working.
      -->
-    <_description>Trigger offline updates</_description>
-    <_message>Authentication is required to trigger offline updates</_message>
+    <description>Trigger offline updates</description>
+    <message>Authentication is required to trigger offline updates</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
@@ -307,8 +307,8 @@
           - Normal users are able to clear the updates message that is
             shown after an updates are applied at boot time.
      -->
-    <_description>Clear offline update message</_description>
-    <_message>Authentication is required to clear the offline updates message</_message>
+    <description>Clear offline update message</description>
+    <message>Authentication is required to clear the offline updates message</message>
     <icon_name>package-x-generic</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>

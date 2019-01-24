@@ -645,7 +645,7 @@ pk_test_spawn_func (void)
 	/* run the dispatcher */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager", "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE INTERACTIVE=TRUE", " ", 0);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE INTERACTIVE=TRUE UID=500", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
@@ -826,7 +826,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (!ret);
+	g_assert (ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
@@ -838,7 +838,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (!ret);
+	g_assert (ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
@@ -1407,7 +1407,7 @@ main (int argc, char **argv)
 #endif
 
 #ifndef PK_BUILD_LOCAL
-	g_warning ("you need to compile with --enable-local for make check support");
+	g_warning ("you need to compile with -Dlocal_checkout=true for ninja test support");
 #endif
 
 	/* components */
