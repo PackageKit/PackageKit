@@ -16,4 +16,4 @@ fi
 
 export G_DEBUG=fatal_criticals
 sudo touch /etc/PackageKit/PackageKit.conf
-sudo valgrind --tool=callgrind --collect-systime=yes .libs/lt-packagekitd --backend=$BACKEND --disable-timer
+sudo valgrind --tool=callgrind --collect-systime=yes src/packagekitd --backend=$BACKEND --disable-timer

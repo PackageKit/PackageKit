@@ -22,7 +22,7 @@ BuildRequires: gtk2-devel
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
-BuildRequires: intltool
+BuildRequires: meson
 BuildRequires: gettext
 BuildRequires: vala
 BuildRequires: gstreamer1-devel
@@ -134,31 +134,27 @@ using PackageKit.
 %setup -q
 
 %build
-%configure \
-        --disable-static \
+%meson \
+        -Dgtk_doc=true \
+        -Dpython_backend=false \
 %if 0%{?rhel} == 0
-        --enable-dnf \
-        --enable-introspection \
-        --enable-bash-completion \
+        -Dpackaging_backend=dnf \
+        -Dbash_completion=true \
 %else
-        --disable-bash-completion \
+        -Dbash_completion=false \
 %endif
-        --disable-local \
-        --disable-silent-rules
-
-make %{?_smp_mflags} V=1
+        -Dlocal_checkout=false
+%meson_build
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+%meson_install
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/libpackagekit*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/packagekit-backend/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/mozilla/plugins/packagekit-plugin.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-2.0/modules/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/gtk-3.0/modules/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/polkit-1/extensions/libpackagekit-action-lookup.la
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/downloads
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/metadata
 
-touch $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/groups.sqlite
+mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants
+ln -sf /usr/lib/systemd/system/packagekit-offline-update.service \
+        $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants/packagekit-offline-update.service
 
 # create a link that GStreamer will recognise
 pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
@@ -183,11 +179,9 @@ popd > /dev/null
 %license COPYING
 %doc README AUTHORS NEWS
 %dir %{_datadir}/PackageKit
-%dir %{_datadir}/PackageKit/helpers
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{_localstatedir}/cache/PackageKit
-%ghost %verify(not md5 size mtime) %{_localstatedir}/cache/PackageKit/groups.sqlite
 %dir %{_localstatedir}/cache/PackageKit/downloads
 %dir %{_localstatedir}/cache/PackageKit/metadata
 %if !0%{?rhel}
@@ -197,9 +191,7 @@ popd > /dev/null
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
-%dir %{_datadir}/PackageKit/helpers/test_spawn
 %{_datadir}/PackageKit/icons
-%{_datadir}/PackageKit/helpers/test_spawn/*
 %{_datadir}/man/man1/pkcon.1.gz
 %{_datadir}/man/man1/pkmon.1.gz
 %{_datadir}/polkit-1/actions/*.policy
@@ -254,6 +246,7 @@ popd > /dev/null
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
 %{_datadir}/gtk-doc/html/PackageKit
 %{_datadir}/vala/vapi/packagekit-glib2.vapi
+%{_datadir}/vala/vapi/packagekit-glib2.deps
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

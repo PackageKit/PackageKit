@@ -421,7 +421,7 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 		directory = "test";
 
 	/* prefer the local version */
-	path = g_build_filename ("..", "backends", directory, ".libs", filename, NULL);
+	path = g_build_filename ("backends", directory, filename, NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
 		g_debug ("local backend not found '%s'", path);
 		g_free (path);
