@@ -1,4 +1,4 @@
-#!@PYTHON@
+#!/usr/bin/python3
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,8 +19,8 @@ import time
 from packagekit.backend import *
 
 class PackageKitYumBackend(PackageKitBaseBackend):
-    def __init__(self,args,lock=True):
-        PackageKitBaseBackend.__init__(self,args)
+    def __init__(self, args, lock=True):
+        PackageKitBaseBackend.__init__(self, args)
         PackageKitBaseBackend.doLock(self)
         # simulate doing something
         time.sleep(2)
@@ -30,13 +30,13 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         # simulate doing something
         time.sleep(0.5)
 
-    def search_name(self,filters,key):
+    def search_name(self, filters, key):
         # check we escape spaces properly
         if key == ['power manager']:
-            self.package("polkit;0.0.1;i386;data",INFO_AVAILABLE,"PolicyKit daemon")
+            self.package("polkit;0.0.1;i386;data", INFO_AVAILABLE, "PolicyKit daemon")
 
 def main():
-    backend = PackageKitYumBackend('',lock=True)
+    backend = PackageKitYumBackend('', lock=True)
     backend.dispatcher(sys.argv[1:])
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-#!@PYTHON@
+#!/usr/bin/python3
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,7 +21,7 @@ def process_quit(signum, frame):
 def main():
     signal(SIGQUIT, process_quit)
 
-    for i in [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
+    for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
         stdout.write("percentage\t%i\n" % (i * 10))
         stdout.flush()
         sleep(0.3)

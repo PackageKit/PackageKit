@@ -1,4 +1,4 @@
-#!@PYTHON@
+#!/usr/bin/python3
 # Licensed under the GNU General Public License Version 2
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,19 +23,19 @@ def main():
     while True:
         try:
             line = sys.stdin.readline().strip('\n')
-        except IOError, e:
-            print "could not read from stdin: %s", str(e)
+        except IOError as e:
+            print("could not read from stdin: %s", str(e))
             break
-        except KeyboardInterrupt, e:
-            print "process was killed by ctrl-c", str(e)
-            break;
+        except KeyboardInterrupt as e:
+            print("process was killed by ctrl-c", str(e))
+            break
         if not line or line == 'exit':
             break
         if line == 'ping':
-            sys.stdout.write ('pong\n')
+            sys.stdout.write('pong\n')
             sys.stdout.flush()
         else:
-            sys.stdout.write ("you said to me: %s\n" % line)
+            sys.stdout.write("you said to me: %s\n" % line)
             sys.stdout.flush()
 
 if __name__ == "__main__":
