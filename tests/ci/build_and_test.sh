@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
 
-./autogen.sh $@
+meson build $@
 
 # Build, Test & Install
-make
-make install DEST=/tmp/install_root/
+ninja -C build
+ninja -C build test
+DEST=/tmp/install_root/ ninja -C build install
