@@ -29,7 +29,7 @@
 
 using namespace std;
 
-void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
+void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify, bool ignoreWarnings)
 {
     stringstream errors;
 
