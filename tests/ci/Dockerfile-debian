@@ -4,5 +4,6 @@ RUN echo "deb-src http://deb.debian.org/debian/ buster main" >> /etc/apt/sources
 RUN apt-get update -qq
 RUN apt-get install -yq build-essential
 RUN apt-get build-dep -yq packagekit
+RUN apt-get install -yq meson
 RUN mkdir /build
 WORKDIR /build
