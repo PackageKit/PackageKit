@@ -25,6 +25,22 @@ if not cpp_compiler.compiles(
 	error ('libapt-pkg 1.1 or later is required')
 endif
 
+if not cpp_compiler.compiles(
+	'''
+		#include <apt-pkg/pkgsystem.h>
+		int main () {
+			_system->LockInner();
+			return 0;
+		}
+	''',
+	dependencies: [
+		apt_pkg_dep,
+		apt_inst_dep
+	]
+)
+	error ('libapt-pkg 1.7 or later is required - or backported frontend locking')
+endif
+
 # Check whether apt supports ddtp
 ddtp_flag = []
 if cpp_compiler.compiles(
