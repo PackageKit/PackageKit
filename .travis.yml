@@ -10,5 +10,5 @@ before_script:
   - docker build -t packagekit-fedora -f tests/ci/Dockerfile-fedora .
 
 script:
-  - docker run -t -v `pwd`:/build packagekit-debian ./tests/ci/build_and_test.sh -Dbackend-name=aptcc
-  - docker run -t -v `pwd`:/build packagekit-fedora ./tests/ci/build_and_test.sh -Dbackend-name=dnf
+  - docker run -t -v `pwd`:/build packagekit-debian ./tests/ci/build_and_test.sh -Dpackaging_backend=aptcc
+  - docker run -t -v `pwd`:/build packagekit-fedora ./tests/ci/build_and_test.sh -Dpackaging_backend=dnf
