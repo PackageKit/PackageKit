@@ -41,6 +41,8 @@ packagekit_direct_exec = executable(
 	'pk-shared.h',
 	dependencies: [
 		packagekit_glib2_dep,
+		libsystemd,
+		elogind,
 		gmodule_dep,
 	],
 	c_args: [
@@ -61,6 +63,8 @@ packagekitd_exec = executable(
 	pk_resources,
 	dependencies: [
 		packagekit_glib2_dep,
+		libsystemd,
+		elogind,
 		polkit_dep,
 		gmodule_dep,
 		sqlite3_dep,
@@ -95,6 +99,8 @@ pk_self_test_exec = executable(
 	pk_resources,
 	dependencies: [
 		packagekit_glib2_dep,
+		libsystemd,
+		elogind,
 		polkit_dep,
 		gmodule_dep,
 		sqlite3_dep,

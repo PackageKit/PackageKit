@@ -14,6 +14,7 @@ if polkit_dep.version().version_compare('>=0.114')
 	add_project_arguments ('-DHAVE_POLKIT_0_114=1', language: 'c')
 endif
 
+libsystemd = []
 if get_option('systemd')
 	libsystemd = dependency('libsystemd', version: '>=213')
 	systemd_system_unit_dir = get_option('systemdsystemunitdir')
@@ -21,10 +22,18 @@ if get_option('systemd')
 		systemd = dependency('systemd')
 		systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
 	endif
+
+	add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
 else
 	if get_option('offline_update')
 		error('Offline updates requires Systemd, use -Dsystemd=true to enable it or -Doffline_update=false to disable offline updates')
 	endif
+endif
+
+elogind = []
+if get_option('elogind')
+	elogind = dependency('elogind', version: '>=229.4')
+	add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
 endif
 
 if get_option('local_checkout')
