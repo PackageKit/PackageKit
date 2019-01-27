@@ -16,14 +16,14 @@ endif
 
 if get_option('systemd')
 	libsystemd = dependency('libsystemd', version: '>=213')
-	systemd_system_unit_dir = get_option('systemd-system-unit')
+	systemd_system_unit_dir = get_option('systemdsystemunitdir')
 	if systemd_system_unit_dir == ''
 		systemd = dependency('systemd')
 		systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
 	endif
 else
-	if get_option('offline-update')
-		error('Offline updates requires Systemd, use -Dsystemd=true to enable it or -Doffline-update=false to disable offline updates')
+	if get_option('offline_update')
+		error('Offline updates requires Systemd, use -Dsystemd=true to enable it or -Doffline_update=false to disable offline updates')
 	endif
 endif
 
@@ -99,11 +99,11 @@ Enable offline update:     @5@
 GObject Introspection:     @6@'''.format(
 	get_option('prefix'),
 	get_option('datadir'),
-	get_option('local-checkout'),
+	get_option('local_checkout'),
 	get_option('elogind'),
 	get_option('systemd'),
-	get_option('offline-update'),
-	get_option('gobject-introspection'),
+	get_option('offline_update'),
+	get_option('gobject_introspection'),
 )
 
 subdir('po')

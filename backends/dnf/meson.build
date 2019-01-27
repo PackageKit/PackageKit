@@ -3,11 +3,11 @@ dnf_dep = dependency('libdnf', version: '>=0.22.0')
 rpm_dep = dependency('rpm')
 
 configuration_msg += '''
-DNF Vendor:                @0@'''.format(get_option('dnf-vendor'))
+DNF Vendor:                @0@'''.format(get_option('dnf_vendor'))
 
 shared_module(
 	'pk_backend_dnf',
-	'dnf-backend-vendor-@0@.c'.format(get_option('dnf-vendor')),
+	'dnf-backend-vendor-@0@.c'.format(get_option('dnf_vendor')),
 	'dnf-backend-vendor.h',
 	'dnf-backend.c',
 	'dnf-backend.h',

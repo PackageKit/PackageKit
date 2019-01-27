@@ -1,7 +1,7 @@
 python = import('python')
 python_exec = python.find_installation()
 
-python_package_dir = get_option('python-package-dir')
+python_package_dir = get_option('pythonpackagedir')
 if python_package_dir == ''
 	python_package_dir = python_exec.get_install_dir()
 endif

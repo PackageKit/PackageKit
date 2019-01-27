@@ -25,7 +25,7 @@ executable(
 	]
 )
 
-if get_option('offline-update')
+if get_option('offline_update')
 	executable(
 		'pk-offline-update',
 		'pk-offline-update.c',
@@ -44,7 +44,7 @@ if get_option('offline-update')
 	)
 endif
 
-if get_option('man-pages')
+if get_option('man_pages')
 	xsltproc = find_program('xsltproc')
 	pkcon_man = custom_target(
 		'pkcon.1',

@@ -178,7 +178,7 @@ packagekit_glib2_dep = declare_dependency(
 	],
 )
 
-if get_option('gobject-introspection')
+if get_option('gobject_introspection')
 	packagekit_glib2_gir = gnome.generate_gir(
 		packagekit_glib2_library,
 		sources: packagekit_glib2_sources,
