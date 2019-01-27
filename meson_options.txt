@@ -17,3 +17,4 @@ option('dbus_sys', type : 'string', value : '', description : 'D-BUS system.d di
 option('dbus_services', type : 'string', value : '', description : 'D-BUS system-services directory')
 option('python_backend', type : 'boolean', value : true, description : 'Provide a python backend')
 option('pythonpackagedir', type : 'string', value : '', description : 'Location for python modules')
+option('daemon_tests', type : 'boolean', value : true, description : 'Test the daemon using the dummy backend')

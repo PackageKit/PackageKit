@@ -40,6 +40,10 @@ if get_option('local_checkout')
 	add_project_arguments ('-DPK_BUILD_LOCAL=1', language: 'c')
 endif
 
+if get_option('daemon_tests')
+	add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
+endif
+
 # Avoid g_simple_async_result deprecation warnings in glib 2.46+
 add_project_arguments ('-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44', language: 'c')
 

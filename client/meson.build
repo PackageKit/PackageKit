@@ -5,6 +5,7 @@ executable(
 	install: true,
 	install_dir: get_option('libexecdir'),
 	c_args: [
+		'-DPK_COMPILATION=1',
 		'-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE=1',
 		'-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
 		'-DPACKAGE_LOCALE_DIR="@0@"'.format(package_locale_dir),
@@ -18,6 +19,7 @@ executable(
 	dependencies: packagekit_glib2_dep,
 	install: true,
 	c_args: [
+		'-DPK_COMPILATION=1',
 		'-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE=1',
 		'-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
 		'-DPACKAGE_LOCALE_DIR="@0@"'.format(package_locale_dir),

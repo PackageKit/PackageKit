@@ -1412,7 +1412,7 @@ main (int argc, char **argv)
 #endif
 
 #ifndef PK_BUILD_LOCAL
-	g_warning ("you need to compile with --enable-local for make check support");
+	g_warning ("you need to compile with -Dlocal_checkout=true for ninja test support");
 #endif
 
 	/* components */
