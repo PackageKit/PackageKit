@@ -225,3 +225,65 @@ pkg.generate(
 	],
 	subdirs: 'PackageKit'
 )
+
+executable(
+	'pk-socket-example',
+	'pk-socket-example.c',
+	dependencies: [
+		glib_dep,
+		gobject_dep,
+		gio_dep,
+		gio_unix_dep,
+	],
+	build_by_default: true,
+	install: false,
+)
+
+pk_test_private = executable(
+	'pk-test-private',
+	'pk-test-private.c',
+	dependencies: [
+		packagekit_glib2_dep,
+		glib_dep,
+		gobject_dep,
+		gio_dep,
+		gio_unix_dep,
+		config_dep,
+	],
+	c_args: [
+		'-DPK_COMPILATION=1',
+		'-DPK_OFFLINE_DESTDIR="/tmp/PackageKit-self-test"',
+		'-DTESTDATADIR="@0@"'.format(test_data_dir),
+	],
+	build_by_default: true,
+	install: false,
+)
+
+pk_test_daemon = executable(
+	'pk-test-daemon',
+	'pk-test-daemon.c',
+	dependencies: [
+		packagekit_glib2_dep,
+		glib_dep,
+		gobject_dep,
+		gio_dep,
+		gio_unix_dep,
+		config_dep,
+	],
+	c_args: [
+		'-DPK_COMPILATION=1',
+		'-DTESTDATADIR="@0@"'.format(test_data_dir),
+	],
+	build_by_default: true,
+	install: false,
+)
+
+test(
+	'pk-test-private',
+	pk_test_private
+)
+
+test(
+	'pk-test-daemon',
+	pk_test_daemon
+)
