@@ -43,7 +43,7 @@ else
 	fi
 fi
 
-# this is when seomthing useful was done
+# this is when something useful was done
 if [ $PKCON_RETVAL -ne 5 ]; then
 	# send email
 	if [ -n "$MAILTO" ]; then
