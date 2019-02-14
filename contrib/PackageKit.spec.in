@@ -144,7 +144,7 @@ using PackageKit.
         --Dbash-completion=false \
 %endif
         -Dlocal-checkout=false
-meson_build
+%meson_build
 
 %install
 %meson_install
