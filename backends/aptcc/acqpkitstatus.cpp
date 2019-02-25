@@ -79,6 +79,13 @@ void AcqPackageKitStatus::Fetch(pkgAcquire::ItemDesc &Itm)
 /* We don't display anything... */
 void AcqPackageKitStatus::Done(pkgAcquire::ItemDesc &Itm)
 {
+    PkRoleEnum role = pk_backend_job_get_role(m_job);
+    if (role == PK_ROLE_ENUM_REFRESH_CACHE) {
+        pk_backend_job_repo_detail(m_job,
+                                   "",
+                                   Itm.Description.c_str(),
+                                   true);
+    }
     // Download completed
     updateStatus(Itm, 100);
 }
