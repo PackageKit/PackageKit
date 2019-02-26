@@ -55,7 +55,7 @@ dist_helper_DATA =					\
 	$(NULL)
 
 install-data-hook:
-	chmod +x $(DESTDIR)$(helperdir)/*.py $(DESTDIR)$(helperdir)/pkconffile
+	chmod +x $(DESTDIR)$(helperdir)/pkconffile
 
 clean-local :
 	rm -f *~
