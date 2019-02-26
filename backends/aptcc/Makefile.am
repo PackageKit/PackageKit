@@ -37,6 +37,7 @@ aptconfdir = ${SYSCONFDIR}/apt/apt.conf.d
 aptconf_DATA = 20packagekit
 
 EXTRA_DIST = 20packagekit \
+	     get-distro-upgrade.py \
 	     pkg-list.h \
 	     apt-intf.h \
 	     apt-utils.h \
@@ -49,7 +50,6 @@ EXTRA_DIST = 20packagekit \
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc
 dist_helper_DATA =					\
-	get-distro-upgrade.py				\
 	pkconffile					\
 	pkconffile.nodiff				\
 	$(NULL)
