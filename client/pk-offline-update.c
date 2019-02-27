@@ -188,7 +188,11 @@ pk_offline_update_reboot (void)
 
 	/* reboot using systemd */
 	sd_journal_print (LOG_INFO, "rebooting");
+#ifdef PLYMOUTH_0_9_5
+	pk_offline_update_set_plymouth_mode ("reboot");
+#else
 	pk_offline_update_set_plymouth_mode ("shutdown");
+#endif
 	/* TRANSLATORS: we've finished doing offline updates */
 	pk_offline_update_set_plymouth_msg (_("Rebooting after installing updates…"));
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
@@ -371,6 +375,7 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 		return FALSE;
 	}
 
+	pk_offline_update_set_plymouth_mode ("updates");
 	/* TRANSLATORS: we've started doing offline updates */
 	pk_offline_update_set_plymouth_msg (_("Installing updates; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
@@ -403,6 +408,11 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 	        return FALSE;
 	}
 
+#ifdef PLYMOUTH_0_9_5
+	pk_offline_update_set_plymouth_mode ("system-upgrade");
+#else
+	pk_offline_update_set_plymouth_mode ("updates");
+#endif
 	/* TRANSLATORS: we've started doing offline system upgrade */
 	pk_offline_update_set_plymouth_msg (_("Installing system upgrade; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
@@ -485,7 +495,6 @@ main (int argc, char *argv[])
 
 	task = pk_task_new ();
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
-	pk_offline_update_set_plymouth_mode ("updates");
 
 	if (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0 &&
 	    g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {

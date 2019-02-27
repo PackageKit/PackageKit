@@ -190,6 +190,14 @@ AS_IF([test "$have_polkit_0_114" = "yes"], [
 	          [Define as 1 if you have polkit >= 0.114])
 ])
 
+# 0.9.5 introduced new boot splash modes
+PKG_CHECK_MODULES([PLYMOUTH_0_9_5], [ply-boot-client >= 0.9.5],
+                  [have_plymouth_0_9_5=yes], [have_plymouth_0_9_5=no])
+AS_IF([test "$have_plymouth_0_9_5" = "yes"], [
+	AC_DEFINE([PLYMOUTH_0_9_5],[1],
+	          [Define as 1 if you have plymouth >= 0.9.5])
+])
+
 # Avoid g_simple_async_result deprecation warnings in glib 2.46+
 AC_DEFINE(GLIB_VERSION_MIN_REQUIRED, GLIB_VERSION_2_44, [minimum glib version])
 
