@@ -104,8 +104,7 @@ pk_enum_type = gnome.mkenums(
 	install_dir: join_paths(get_option('includedir'), 'PackageKit', 'packagekit-glib2')
 )
 
-packagekitprivate_library = static_library(
-	'packagekitprivate',
+packagekitprivate_sources = files(
 	'packagekit-private.h',
 	'pk-common-private.h',
 	'pk-console-shared.c',
@@ -117,6 +116,11 @@ packagekitprivate_library = static_library(
 	'pk-task-wrapper.c',
 	'pk-task-wrapper.h',
 	'pk-spawn-polkit-agent.h',
+)
+
+packagekitprivate_library = static_library(
+	'packagekitprivate',
+	packagekitprivate_sources,
 	dependencies: [
 		glib_dep,
 		gobject_dep,
@@ -242,8 +246,11 @@ executable(
 pk_test_private = executable(
 	'pk-test-private',
 	'pk-test-private.c',
+	pk_enum_type,
+	packagekitprivate_sources,
+	packagekit_glib2_sources,
+	include_directories: packagekit_glib2_includes,
 	dependencies: [
-		packagekit_glib2_dep,
 		glib_dep,
 		gobject_dep,
 		gio_dep,
