@@ -189,6 +189,7 @@ struct PkBackendPrivate
 	gchar			*name;
 	gpointer		 file_changed_data;
 	GHashTable		*eulas;
+	GMutex			 eulas_mutex;
 	GModule			*handle;
 	PkBackendDesc		*desc;
 	PkBackendFileChanged	 file_changed_func;
@@ -935,10 +936,12 @@ void
 pk_backend_accept_eula (PkBackend *backend, const gchar *eula_id)
 {
 	gpointer present;
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	locker = g_mutex_locker_new (&backend->priv->eulas_mutex);
 
 	g_return_if_fail (PK_IS_BACKEND (backend));
 	g_return_if_fail (eula_id != NULL);
-	g_return_if_fail (pk_is_thread_default ());
 
 	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
 	if (present != NULL) {
@@ -952,10 +955,12 @@ gboolean
 pk_backend_is_eula_valid (PkBackend *backend, const gchar *eula_id)
 {
 	gpointer present;
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	locker = g_mutex_locker_new (&backend->priv->eulas_mutex);
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (eula_id != NULL, FALSE);
-	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	present = g_hash_table_lookup (backend->priv->eulas, eula_id);
 	if (present != NULL)
@@ -969,9 +974,11 @@ pk_backend_get_accepted_eula_string (PkBackend *backend)
 	GString *string;
 	GList *l;
 	g_autoptr(GList) keys = NULL;
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	locker = g_mutex_locker_new (&backend->priv->eulas_mutex);
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
-	g_return_val_if_fail (pk_is_thread_default (), FALSE);
 
 	/* optimise for the common case */
 	if (g_hash_table_size (backend->priv->eulas) == 0)
@@ -1065,6 +1072,7 @@ pk_backend_finalize (GObject *object)
 	g_key_file_unref (backend->priv->conf);
 	g_hash_table_destroy (backend->priv->eulas);
 
+	g_mutex_clear (&backend->priv->eulas_mutex);
 	g_mutex_clear (&backend->priv->thread_hash_mutex);
 	g_hash_table_unref (backend->priv->thread_hash);
 	g_free (backend->priv->desc);
@@ -1708,6 +1716,7 @@ pk_backend_init (PkBackend *backend)
 							    g_direct_equal,
 							    NULL,
 							    g_free);
+	g_mutex_init (&backend->priv->eulas_mutex);
 	g_mutex_init (&backend->priv->thread_hash_mutex);
 }
 
