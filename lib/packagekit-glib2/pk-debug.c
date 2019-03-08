@@ -81,8 +81,6 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 {
 	gchar str_time[255];
 	time_t the_time;
-	guint len;
-	guint i;
 	static GMutex mutex;
 
 	/* lock */
@@ -112,9 +110,11 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		g_print ("%c[%dm%s%c[%dm", 0x1B, CONSOLE_CYAN, log_domain, 0x1B, CONSOLE_RESET);
 
 	/* pad with spaces */
-	len = strlen (log_domain);
-	for (i=len; i<PK_DEBUG_LOG_DOMAIN_LENGTH; i++)
-		g_print (" ");
+	if (log_domain != NULL) {
+		guint len = strlen (log_domain);
+		for (guint i = len; i < PK_DEBUG_LOG_DOMAIN_LENGTH; i++)
+			g_print (" ");
+	}
 
 	/* critical is also in red */
 	if (log_level == G_LOG_LEVEL_CRITICAL ||
