@@ -252,6 +252,7 @@ pk_test_private = executable(
 	],
 	c_args: [
 		'-DPK_COMPILATION=1',
+		'-DG_LOG_DOMAIN="PackageKit"',
 		'-DPK_OFFLINE_DESTDIR="/tmp/PackageKit-self-test"',
 		'-DTESTDATADIR="@0@"'.format(test_data_dir),
 	],
@@ -272,6 +273,7 @@ pk_test_daemon = executable(
 	],
 	c_args: [
 		'-DPK_COMPILATION=1',
+		'-DG_LOG_DOMAIN="PackageKit"',
 		'-DTESTDATADIR="@0@"'.format(test_data_dir),
 	],
 	build_by_default: true,
