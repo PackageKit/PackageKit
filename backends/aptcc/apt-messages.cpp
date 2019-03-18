@@ -37,6 +37,10 @@ void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify, bool 
     while (_error->empty() == false) {
         bool Type = _error->PopMessage(Err);
 
+        // Log all apt warnings/errors to journal as we may discard them here, but they may
+        // still be useful
+        g_warning("%s", Err.c_str());
+
         // Ugly workaround to demote the "repo not found" error message to a simple message
         if ((errModify) && (Err.find("404  Not Found") != string::npos)) {
             // TODO this should emit the regular
