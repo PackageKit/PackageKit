@@ -245,11 +245,6 @@ void pk_backend_required_by(PkBackend *backend,
     pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, NULL, NULL);
 }
 
-void pk_backend_get_distro_upgrades(PkBackend *backend, PkBackendJob *job)
-{
-    pk_backend_spawn_helper(spawn, job, "get-distro-upgrade.py", "get-distro-upgrades", NULL);
-}
-
 static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **package_ids;

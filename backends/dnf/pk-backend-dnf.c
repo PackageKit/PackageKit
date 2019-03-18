@@ -156,7 +156,6 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 	dnf_context_set_repo_dir (context, repo_dir);
 	lock_dir = g_build_filename (destdir, "/var/run", NULL);
 	dnf_context_set_lock_dir (context, lock_dir);
-	dnf_context_set_release_ver (context, release_ver);
 	dnf_context_set_rpm_verbosity (context, "info");
 
 	/* use this initial data if repos are not present */
@@ -3401,6 +3400,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 		g_autoptr(DnfContext) context = NULL;
 
 		context = dnf_context_new ();
+		dnf_context_set_release_ver (context, release_ver);
 		ret = pk_backend_setup_dnf_context (context, priv->conf, release_ver, &error);
 		if (!ret) {
 			g_debug ("failed to setup context: %s", error->message);
