@@ -1,7 +1,11 @@
 #!/bin/sh
 set -e
 
-meson build $@
+if [ -d "build" ]; then
+  meson configure build $@
+else
+  meson build $@
+fi
 
 # Build, Test & Install
 ninja -C build
