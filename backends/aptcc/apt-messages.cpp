@@ -32,10 +32,13 @@ using namespace std;
 void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
 {
     stringstream errors;
+    int errorCount = 0;
 
     string Err;
     while (_error->empty() == false) {
         bool Type = _error->PopMessage(Err);
+
+        g_warning("%s", Err.c_str());
 
         // Ugly workaround to demote the "repo not found" error message to a simple message
         if ((errModify) && (Err.find("404  Not Found") != string::npos)) {
@@ -43,16 +46,18 @@ void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
             // PK_ERROR_ENUM_CANNOT_FETCH_SOURCES but do not fail the
             // last-time-update
             //! messages << "E: " << Err << endl;
+            continue;
+        }
+
+        if (Type == true) {
+            errors << "E: " << Err << endl;
+            errorCount++;
         } else {
-            if (Type == true) {
-                errors << "E: " << Err << endl;
-            } else {
-                errors << "W: " << Err << endl;
-            }
+            errors << "W: " << Err << endl;
         }
     }
 
-    if (!errors.str().empty()) {
+    if (errorCount > 0) {
         pk_backend_job_error_code(job,
                                   errorCode,
                                   "%s",
