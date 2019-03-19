@@ -2154,11 +2154,8 @@ void AptIntf::refreshCache()
         return;
     }
 
-    // missing repo gpg signature would appear here
-    if (_error->PendingError() == false && _error->empty() == false) {
-        // TODO this shouldn't
-        show_errors(m_job, PK_ERROR_ENUM_GPG_FAILURE);
-    }
+    // TODO check what other errors could remain here and ensure the right error code is emitted for each
+    show_errors(m_job, PK_ERROR_ENUM_GPG_FAILURE, true);
 }
 
 void AptIntf::markAutoInstalled(const PkgList &pkgs)
