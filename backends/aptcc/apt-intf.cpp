@@ -2153,9 +2153,6 @@ void AptIntf::refreshCache()
     if (m_cache->BuildCaches() == false) {
         return;
     }
-
-    // TODO check what other errors could remain here and ensure the right error code is emitted for each
-    show_errors(m_job, PK_ERROR_ENUM_GPG_FAILURE, true);
 }
 
 void AptIntf::markAutoInstalled(const PkgList &pkgs)
