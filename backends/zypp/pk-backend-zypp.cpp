@@ -1470,7 +1470,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 				case INSTALL:
 				case UPDATE:
 					// for updates we only care for updates
-					if (it->status ().isToBeUninstalledDueToUpgrade ())
+					if (it->status ().isToBeUninstalledDueToUpgrade () && !zypp->resolver()->upgradeMode())
 						continue;
 					break;
 				}
@@ -3305,6 +3305,10 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 	}
 
+	if ( zypp->resolver()->upgradeMode() ) {
+		zypp->resolver()->dupSetAllowVendorChange ( ZConfig::instance().solver_dupAllowVendorChange() );
+	}
+
 	PoolStatusSaver saver;
 
 	for (guint i = 0; package_ids[i]; i++) {
@@ -3323,12 +3327,12 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		// patches are special - they are not installed and can't have update candidates
 		if (sel->kind() != ResKind::patch) {
 			MIL << "sel " << sel->kind() << " " << sel->ident() << endl;
-			if (sel->installedEmpty()) {
+			if (sel->installedEmpty() && !zypp->resolver()->upgradeMode()) {
 				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
 				return;
 			}
 			item = sel->updateCandidateObj();
-			if (!item) {
+			if (!item && !zypp->resolver()->upgradeMode()) {
 				 zypp_backend_finished_error(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "There is no update candidate for %s", sel->installedObj().satSolvable().asString().c_str());
 				return;
 			}
