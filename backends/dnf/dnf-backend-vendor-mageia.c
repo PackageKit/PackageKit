@@ -38,8 +38,8 @@ dnf_validate_supported_repo (const gchar *id)
 
 	const gchar *valid_arch[] = { "x86_64",
 				      "i586",
+				      "aarch64",
 				      "armv7hl",
-				      "armv5tl",
 				      NULL };
 
 	const gchar *valid[] = { "mageia",
