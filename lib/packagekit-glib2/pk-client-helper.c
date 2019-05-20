@@ -135,10 +135,12 @@ pk_client_helper_child_free (PkClientHelperChild *child)
 gboolean
 pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 {
-	PkClientHelperPrivate *priv = client_helper->priv;
+	PkClientHelperPrivate *priv = NULL;
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	priv = client_helper->priv;
 
 	/* make sure started */
 	g_return_val_if_fail (priv->socket_file != NULL, FALSE);
@@ -419,7 +421,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	guint i;
 	gboolean use_kde_helper = FALSE;
 	gint fd;
-	PkClientHelperPrivate *priv = client_helper->priv;
+	PkClientHelperPrivate *priv = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
 
@@ -428,6 +430,8 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	g_return_val_if_fail (argv != NULL, FALSE);
 	g_return_val_if_fail (socket_filename != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	priv = client_helper->priv;
 
 	/* make sure not been started before */
 	g_return_val_if_fail (priv->argv == NULL, FALSE);
