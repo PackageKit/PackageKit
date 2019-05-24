@@ -48,7 +48,7 @@ int main(void)
 		return 1;
 	}
 
-	g_timeout_add_seconds(5, exit_loop, NULL);
+	g_timeout_add_seconds(60, exit_loop, NULL);
 
 	g_main_loop_run(main_loop);
 }
