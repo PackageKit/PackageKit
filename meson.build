@@ -44,6 +44,10 @@ if get_option('daemon_tests')
 	add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
 endif
 
+if dependency('ply-boot-client', version: '>=0.9.5', required: false).found()
+	add_project_arguments ('-DPLYMOUTH_0_9_5=1', language: 'c')
+endif
+
 # Avoid g_simple_async_result deprecation warnings in glib 2.46+
 add_project_arguments ('-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44', language: 'c')
 
