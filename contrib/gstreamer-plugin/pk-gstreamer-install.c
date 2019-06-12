@@ -232,7 +232,14 @@ pk_gst_get_arch_suffix (void)
 		goto out;
 	}
 
-	g_warning ("PackageKit: did not recognise machine type: '%s'", buf.machine);
+	/* fall back */
+	if (sizeof (void *) == 8) {
+		suffix = "()(64bit)";
+		g_debug ("PackageKit: assume 64-bit suffix for machine type: '%s'", buf.machine);
+	} else {
+		g_debug ("PackageKit: assume no suffix for machine type: '%s'", buf.machine);
+	}
+
 out:
 	return suffix;
 }
