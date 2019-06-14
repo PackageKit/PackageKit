@@ -16,7 +16,7 @@ libpk_backend_aptcc_la_SOURCES = pkg-list.cpp \
 				 pk-backend-aptcc.cpp
 libpk_backend_aptcc_la_LIBADD = -lcrypt \
 				-lapt-pkg \
-				-lapt-inst \
+				$(APTINST_LIBS) \
 				-lutil \
 				$(PK_PLUGIN_LIBS)
 libpk_backend_aptcc_la_LDFLAGS = -module \
