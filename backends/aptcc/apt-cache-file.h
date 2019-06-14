@@ -23,6 +23,8 @@
 #define APT_CACHE_FILE_H
 
 #include <apt-pkg/cachefile.h>
+#include <apt-pkg/pkgrecords.h>
+#include <apt-pkg/progress.h>
 #include <pk-backend.h>
 
 class pkgProblemResolver;

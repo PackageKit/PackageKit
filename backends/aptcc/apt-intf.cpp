@@ -24,8 +24,13 @@
 
 #include "apt-intf.h"
 
+#include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/init.h>
 #include <apt-pkg/error.h>
+#include <apt-pkg/fileutl.h>
+#include <apt-pkg/install-progress.h>
+#include <apt-pkg/sourcelist.h>
+#include <apt-pkg/update.h>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/pkgsystem.h>
 #include <apt-pkg/version.h>

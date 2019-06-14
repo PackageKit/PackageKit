@@ -22,12 +22,14 @@
 #define ACQ_PKIT_STATUS_H
 
 #include <set>
+#include <string>
 #include <apt-pkg/acquire-item.h>
 #include <pk-backend.h>
 
 #include "pkg-list.h"
 
 using std::set;
+using std::string;
 
 class AptIntf;
 class AcqPackageKitStatus : public pkgAcquireStatus

@@ -24,6 +24,9 @@
 
 #include <glib.h>
 #include <apt-pkg/init.h>
+#include <apt-pkg/configuration.h>
+#include <apt-pkg/fileutl.h>
+#include <iostream>
 
 class GetFilesStream : public pkgDirStream
 {
