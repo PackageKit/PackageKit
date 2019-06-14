@@ -22,6 +22,8 @@
 
 #include <apt-pkg/pkgcache.h>
 
+#include <vector>
+
 using std::vector;
 
 /**

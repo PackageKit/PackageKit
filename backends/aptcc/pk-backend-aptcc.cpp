@@ -28,7 +28,11 @@
 #include <pk-backend.h>
 #include <pk-backend-spawn.h>
 
+#include <apt-pkg/aptconfiguration.h>
+#include <apt-pkg/error.h>
+#include <apt-pkg/fileutl.h>
 #include <apt-pkg/init.h>
+#include <apt-pkg/pkgsystem.h>
 
 #include "apt-intf.h"
 #include "apt-cache-file.h"

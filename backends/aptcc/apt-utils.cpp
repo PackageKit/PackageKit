@@ -21,6 +21,9 @@
 
 #include "apt-utils.h"
 
+#include <apt-pkg/fileutl.h>
+#include <apt-pkg/error.h>
+#include <apt-pkg/pkgsystem.h>
 #include <apt-pkg/version.h>
 #include <apt-pkg/acquire-item.h>
 #include <glib/gstdio.h>
