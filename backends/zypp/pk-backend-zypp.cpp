@@ -2895,6 +2895,7 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 		zypp_get_packages_by_name (search[i], ResKind::pattern, v2);
 		v.insert (v.end (), v2.begin (), v2.end ());
 
+		sat::Solvable installed;
 		sat::Solvable newest;
 		vector<sat::Solvable> pkgs;
 
@@ -2906,7 +2907,11 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			if (zypp_filter_solvable (_filters, *it) ||
 			    zypp_is_no_solvable(*it))
 				continue;
-			
+
+			if (it->isSystem ()) {
+				installed = *it;
+			}
+
 			if (zypp_is_no_solvable(newest)) {
 				newest = *it;
 			} else if (it->edition() > newest.edition() || Arch::compare(it->arch(), newest.arch()) > 0) {
@@ -2915,19 +2920,26 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			MIL << "emit " << *it << endl;
 			pkgs.push_back (*it);
 		}
-		
-		if (!zypp_is_no_solvable(newest)) {
-			
-			/* 'newest' filter support */
-			if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NEWEST)) {
-				pkgs.clear();
-				MIL << "emit just newest " << newest << endl;
+
+		/* The newest filter processes installed and available package
+		 * lists separately. */
+		if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NEWEST)) {
+			pkgs.clear ();
+
+			if (!zypp_is_no_solvable (installed)) {
+				MIL << "emit installed " << installed << endl;
+				pkgs.push_back (installed);
+			}
+			if (!zypp_is_no_solvable (newest)) {
+				MIL << "emit newest " << newest << endl;
 				pkgs.push_back (newest);
-			} else if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_NEWEST)) {
+			}
+		} else if (pk_bitfield_contain (_filters, PK_FILTER_ENUM_NOT_NEWEST)) {
+			if (!zypp_is_no_solvable (newest) && newest != installed) {
 				pkgs.erase (find (pkgs.begin (), pkgs.end(), newest));
 			}
 		}
-		
+
 		zypp_emit_filtered_packages_in_list (job, _filters, pkgs);
 	}
 }
