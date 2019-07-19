@@ -565,13 +565,6 @@ dnf_utils_add_remote (PkBackendJob *job,
 	if (!ret)
 		return FALSE;
 
-	/* update the AppStream copies in /var */
-	for (guint i = 0; i < repos->len; i++) {
-		DnfRepo *repo = g_ptr_array_index (repos, i);
-		if (!dnf_utils_refresh_repo_appstream (repo, error))
-			return FALSE;
-	}
-
 	/* done */
 	if (!dnf_state_done (state, error))
 		return FALSE;
