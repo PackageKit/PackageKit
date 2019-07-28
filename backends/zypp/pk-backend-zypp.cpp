@@ -160,9 +160,8 @@ guint _dl_status = 0;
 static gboolean
 zypp_refresh_repo_appdata (RepoInfo &repo)
 {
-	const gchar *ad_types[] = { "primary", "appdata", "appdata-icons" };
 	Pathname metadataPath = repo.metadataPath();
-	const gchar *metadataPathString = tmp.c_str();
+	std::string metadataPathString = metadataPath.c_str();
 	xml::Reader reader(metadataPathString + "/repomd.xml");
 
 	const gchar *primaryLocation;
@@ -175,49 +174,60 @@ zypp_refresh_repo_appdata (RepoInfo &repo)
 		std::string location = reader->getAttribute("href").c_str();
 		if (location.find("appdata.xml.gz") != std::string::npos)
 		{
-			appdataLocation = metadataPathString + location.erase(0,7).c_str();
+			std::string loc = location.erase(0,7).c_str();
+			std::string append = metadataPathString + loc;
+			appdataLocation = append.c_str();
 		}
 		else if (location.find("appdata-icons.xml.gz") != std::string::npos)
 		{
-			appdataIconsLocation = metadataPathString + location.erase(0,7).c_str();
+			std::string loc = location.erase(0,7).c_str();
+			std::string append = metadataPathString + loc;
+			appdataIconsLocation = append.c_str();
 		}
 		else if (location.find("primary.xml.gz") != std::string::npos)
 		{
-			primaryLocation = metadataPathString + location.erase(0,7).c_str();
+			std::string loc = location.erase(0,7).c_str();
+			std::string append = metadataPathString + loc;
+			primaryLocation = append.c_str();
 		}
 	}
-
-	if (location != NULL) 
-	{
 #if AS_CHECK_VERSION(0,3,4)
-		if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
-									   primaryLocation,
-									   tmp.basename().c_str(),
-									   NULL,
-									   NULL)) 
+		if (primaryLocation != NULL) 
 		{
-			return false;
+			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
+										primaryLocation,
+										metadataPath.basename().c_str(),
+										NULL,
+										NULL)) 
+			{
+				return false;
+			}
 		}
-		if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
-									   appdataLocation,
-									   tmp.basename().c_str(),
-									   NULL,
-									   NULL)) 
+		if (appdataLocation != NULL) 
 		{
-			return false;
+			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
+										appdataLocation,
+										metadataPath.basename().c_str(),
+										NULL,
+										NULL)) 
+			{
+				return false;
+			}
 		}
-		if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
-									   appdataIconsLocation,
-									   tmp.basename().c_str(),
-									   NULL,
-									   NULL)) 
+		if (appdataIconsLocation != NULL)
 		{
-			return false;
+			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
+										appdataIconsLocation,
+										metadataPath.basename().c_str(),
+										NULL,
+										NULL)) 
+			{
+				return false;
+			}
 		}
 #else
 		g_warning ("need to install appstream metadata %s", location)
 #endif
-	}
 	return TRUE;
 }
 
