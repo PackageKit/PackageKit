@@ -36,6 +36,7 @@
 #include <sys/vfs.h>
 #include <unistd.h>
 #include <vector>
+#include <appstream-glib.h>
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -79,6 +80,7 @@
 #include <zypp/parser/IniDict.h>
 #include <zypp/parser/ParseException.h>
 #include <zypp/parser/ProductFileReader.h>
+#include <zypp/parser/xml/Reader.h>
 #include <zypp/repo/PackageProvider.h>
 #include <zypp/repo/RepoException.h>
 #include <zypp/repo/SrcPackageProvider.h>
@@ -154,10 +156,46 @@ guint _dl_count = 0;
 guint _dl_progress = 0;
 guint _dl_status = 0;
 
+
+static gboolean
+zypp_refresh_repo_appdata (RepoInfo &repo)
+{
+	Pathname metadataPath = repo.metadataPath();
+	std::string metadataPathString = metadataPath.c_str();
+	xml::Reader reader(metadataPathString + "/repomd.xml");
+
+	while (!reader.atEnd())
+	{
+		reader.nextNode();
+		std::string location = reader->getAttribute("href").c_str();
+		if (location.find("appdata.xml.gz") != std::string::npos ||
+		    location.find("appdata-icons.xml.gz") != std::string::npos ||
+		    location.find("primary.xml.gz") != std::string::npos)
+		{
+			std::string fileName = location.erase(0,7).c_str();
+			std::string filePath = metadataPathString + fileName;
+#if AS_CHECK_VERSION(0,3,4)
+			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
+			                               filePath.c_str(),
+			                               repo.name().c_str(),
+			                               NULL,
+			                               NULL)) 
+			{
+				return false;
+			}
+#else
+			g_warning ("need to install appstream metadata %s", location)
+#endif
+		}
+	}
+	return TRUE;
+}
+
 /**
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
  */
+
 static gchar *
 zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 {
@@ -1698,6 +1736,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 			g_free (_repoName);
 			_repoName = g_strdup (repo.alias ().c_str ());
 			zypp_refresh_meta_and_cache (manager, repo, force);
+			zypp_refresh_repo_appdata (repo);
 		} catch (const Exception &ex) {
 			if (repo_messages == NULL) {
 				repo_messages = g_strdup_printf ("%s: %s%s", repo.alias ().c_str (), ex.asUserString ().c_str (), "\n");
