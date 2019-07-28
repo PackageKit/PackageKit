@@ -175,7 +175,7 @@ zypp_refresh_repo_appdata (RepoInfo &repo)
 #if AS_CHECK_VERSION(0,3,4)
 			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
 			                               filePath.c_str(),
-			                               repo.name(),
+			                               repo.name().c_str(),
 			                               NULL,
 			                               NULL)) 
 			{
