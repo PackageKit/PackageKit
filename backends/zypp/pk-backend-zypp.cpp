@@ -168,7 +168,9 @@ zypp_refresh_repo_appdata (RepoInfo &repo)
 	{
 		reader.nextNode();
 		std::string location = reader->getAttribute("href").c_str();
-		if (location.find("appdata.xml.gz") != std::string::npos || location.find("appdata-icons.xml.gz") != std::string::npos || location.find("primary.xml.gz") != std::string::npos)
+		if (location.find("appdata.xml.gz") != std::string::npos || 
+			location.find("appdata-icons.xml.gz") != std::string::npos || 
+			location.find("primary.xml.gz") != std::string::npos)
 		{
 			std::string fileName = location.erase(0,7).c_str();
 			std::string filePath = metadataPathString + fileName;
