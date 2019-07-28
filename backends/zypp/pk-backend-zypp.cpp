@@ -171,11 +171,11 @@ zypp_refresh_repo_appdata (RepoInfo &repo)
 		if (location.find("appdata.xml.gz") != std::string::npos || location.find("appdata-icons.xml.gz") != std::string::npos || location.find("primary.xml.gz") != std::string::npos)
 		{
 			std::string fileName = location.erase(0,7).c_str();
-			gchar *filePath = (metadataPathString + fileName).c_str();
+			std::string filePath = metadataPathString + fileName;
 #if AS_CHECK_VERSION(0,3,4)
 			if (!as_utils_install_filename(AS_UTILS_LOCATION_CACHE,
-			                               filePath,
-			                               metadataPath.basename().c_str(),
+			                               filePath.c_str(),
+			                               repo.name(),
 			                               NULL,
 			                               NULL)) 
 			{
