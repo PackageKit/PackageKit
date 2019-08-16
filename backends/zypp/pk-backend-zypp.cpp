@@ -1113,6 +1113,19 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 			return TRUE;
 		if (i == PK_FILTER_ENUM_NOT_DOWNLOADED && zypp_package_is_cached (item))
 			return TRUE;
+		if (i == PK_FILTER_ENUM_NEWEST) {
+			if (item.isSystem ()) {
+				return FALSE;
+			}
+			else {
+				ui::Selectable::Ptr sel = ui::Selectable::get (item);
+				const PoolItem & newest (sel->highestAvailableVersionObj ());
+
+				if (newest && zypp::Edition::compare (newest.edition (), item.edition ()))
+					return TRUE;
+				return FALSE;
+			}
+		}
 
 		// FIXME: add more enums - cf. libzif logic and pk-enum.h
 		// PK_FILTER_ENUM_SUPPORTED,
