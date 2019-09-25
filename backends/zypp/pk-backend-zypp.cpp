@@ -1192,7 +1192,25 @@ zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, cons
 	}
 }
 
+static gboolean
+is_tumbleweed (void)
+{
+	gboolean ret = FALSE;
+	static const Capability cap( "product-update()", Rel::EQ, "dup" );
+	ui::Selectable::Ptr sel (ui::Selectable::get (ResKind::package, "openSUSE-release"));
+	if (sel) {
+		if (!sel->installedEmpty ()) {
+			for_ (it, sel->installedBegin (), sel->installedEnd ()) {
+				if (it->satSolvable ().provides ().matches (cap)) {
+					ret = TRUE;
+					break;
+				}
+			}
+		}
+	}
 
+	return ret;
+}
 
 /**
  * Returns a set of all packages the could be updated
@@ -1201,13 +1219,21 @@ zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, cons
 static void
 zypp_get_package_updates (string repo, set<PoolItem> &pks)
 {
+	ZYpp::Ptr zypp = getZYpp ();
+	zypp::Resolver_Ptr resolver = zypp->resolver ();
 	ResPool pool = ResPool::instance ();
 
 	ResObject::Kind kind = ResTraits<Package>::kind;
 	ResPool::byKind_iterator it = pool.byKindBegin (kind);
 	ResPool::byKind_iterator e = pool.byKindEnd (kind);
 
-	getZYpp()->resolver()->doUpdate();
+	if (is_tumbleweed ()) {
+		resolver->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+		resolver->doUpgrade ();
+	} else {
+		resolver->doUpdate ();
+	}
+
 	for (; it != e; ++it)
 		if (it->status().isToBeInstalled()) {
 			ui::Selectable::constPtr s =
