@@ -1609,6 +1609,7 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
     PkgList removing;
     PkgList updating;
     PkgList downgrading;
+    PkgList obsoleting;
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); ! pkg.end(); ++pkg) {
         if ((*m_cache)[pkg].NewInstall() == true) {
@@ -1628,7 +1629,28 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
             if (!ver.end()) {
                 ret.push_back(ver);
-                removing.push_back(ver);
+
+                bool is_obsoleted = false;
+
+                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D)
+                {
+                    if ((D->Type == pkgCache::Dep::Obsoletes)
+                            && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
+                            && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
+                            && ((pkgCache::Version*)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
+                            && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
+                            && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg()) >= (*m_cache)->GetPolicy().GetPriority(pkg)))
+                    {
+                        is_obsoleted = true;
+                        break;
+                    }
+                }
+
+                if (!is_obsoleted) {
+                    removing.push_back(ver);
+                } else {
+                    obsoleting.push_back(ver);
+                }
 
                 // append to the restart required list
                 if (utilRestartRequired(pkg.Name())) {
@@ -1664,6 +1686,7 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
 
     if (emitChanged) {
         // emit packages that have changes
+        emitPackages(obsoleting,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_OBSOLETING);
         emitPackages(removing,    PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
         emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
         emitPackages(installing,  PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
