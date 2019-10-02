@@ -1269,7 +1269,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
     return output;
 }
 
-PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades)
+PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted)
 {
     PkgList updates;
 
@@ -1303,6 +1303,41 @@ PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades)
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
                 blocked.push_back(ver);
+            }
+        } else if (state.NewInstall()) {
+            const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
+            if (!ver.end()) {
+                installs.push_back(ver);
+            }
+        } else if (state.Delete()) {
+            const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
+            if (!ver.end()) {
+                bool is_obsoleted = false;
+
+                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D)
+                {
+                    if ((D->Type == pkgCache::Dep::Obsoletes)
+                        && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
+                        && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
+                        && ((pkgCache::Version*)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
+                        && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
+                        && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg()) >= (*m_cache)->GetPolicy().GetPriority(pkg)))
+                    {
+                        is_obsoleted = true;
+                        break;
+                    }
+                }
+
+                if( is_obsoleted )
+                {
+                    /* Obsoleted packages */
+                    obsoleted.push_back(ver);
+                }
+                else
+                {
+                    /* Removed packages */
+                    removals.push_back(ver);
+                }
             }
         }
     }

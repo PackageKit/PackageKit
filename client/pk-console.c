@@ -1112,6 +1112,13 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 }
 
 static gboolean
+pk_console_update_system_filter_helper (PkPackage *package, gpointer user_data)
+{
+	PkInfoEnum package_enum = pk_package_get_info (package);
+	return (package_enum != PK_INFO_ENUM_OBSOLETING && package_enum != PK_INFO_ENUM_REMOVING);
+}
+
+static gboolean
 pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 {
 	g_autoptr(PkPackageSack) sack = NULL;
@@ -1130,6 +1137,7 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 
 	/* do the async action */
 	sack = pk_results_get_package_sack (results);
+	pk_package_sack_remove_by_filter (sack, &pk_console_update_system_filter_helper, NULL);
 	package_ids = pk_package_sack_get_ids (sack);
 	if (g_strv_length (package_ids) == 0) {
 		pk_progress_bar_end (ctx->progressbar);
