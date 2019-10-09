@@ -111,7 +111,6 @@ pk_alpm_error_emit (PkBackendJob *job, GError *error)
 	case ALPM_ERR_PKG_INVALID:
 	case ALPM_ERR_PKG_OPEN:
 	case ALPM_ERR_PKG_INVALID_NAME:
-	case ALPM_ERR_DLT_INVALID:
 		code = PK_ERROR_ENUM_INVALID_PACKAGE_FILE;
 		break;
 	case ALPM_ERR_PKG_INVALID_CHECKSUM:
@@ -125,9 +124,6 @@ pk_alpm_error_emit (PkBackendJob *job, GError *error)
 		break;
 	case ALPM_ERR_SIG_MISSING:
 		code = PK_ERROR_ENUM_MISSING_GPG_SIGNATURE;
-		break;
-	case ALPM_ERR_DLT_PATCHFAILED:
-		code = PK_ERROR_ENUM_PACKAGE_FAILED_TO_BUILD;
 		break;
 	case ALPM_ERR_UNSATISFIED_DEPS:
 		code = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED;

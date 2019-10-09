@@ -62,15 +62,6 @@ pk_alpm_pkg_has_basename (PkBackend *backend, alpm_pkg_t *pkg, const gchar *base
 	if (g_strcmp0 (alpm_pkg_get_filename (pkg), basename) == 0)
 		return TRUE;
 
-	if (alpm_option_get_deltaratio (priv->alpm) == 0.0)
-		return FALSE;
-
-	for (i = alpm_pkg_get_deltas (pkg); i != NULL; i = i->next) {
-		alpm_delta_t *delta = (alpm_delta_t *) i->data;
-		if (g_strcmp0 (delta->delta, basename) == 0)
-			return TRUE;
-	}
-
 	return FALSE;
 }
 
@@ -647,7 +638,6 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_RESOLVEDEPS_START:
 		pk_alpm_transaction_dep_resolve (job);
 		break;
-	case ALPM_EVENT_DELTA_INTEGRITY_START:
 	case ALPM_EVENT_DISKSPACE_START:
 	case ALPM_EVENT_FILECONFLICTS_START:
 	case ALPM_EVENT_INTERCONFLICTS_START:
@@ -700,10 +690,6 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 	case ALPM_EVENT_LOAD_START:
 		pk_alpm_transaction_setup (job);
 		break;
-	case ALPM_EVENT_DELTA_PATCHES_START:
-	case ALPM_EVENT_DELTA_PATCH_START:
-		pk_alpm_transaction_repackaging (job);
-		break;
 	case ALPM_EVENT_SCRIPTLET_INFO:
 		pk_alpm_transaction_output (((alpm_event_scriptlet_info_t *) event)->line);
 		break;
@@ -726,10 +712,6 @@ pk_alpm_transaction_event_cb (alpm_event_t *event)
 		break;
 	case ALPM_EVENT_CHECKDEPS_DONE:
 	case ALPM_EVENT_DATABASE_MISSING:
-	case ALPM_EVENT_DELTA_INTEGRITY_DONE:
-	case ALPM_EVENT_DELTA_PATCH_DONE:
-	case ALPM_EVENT_DELTA_PATCHES_DONE:
-	case ALPM_EVENT_DELTA_PATCH_FAILED:
 	case ALPM_EVENT_DISKSPACE_DONE:
 	case ALPM_EVENT_FILECONFLICTS_DONE:
 	case ALPM_EVENT_HOOK_DONE:
@@ -1072,7 +1054,6 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 		alpm_list_free (data);
 		break;
 	case ALPM_ERR_PKG_INVALID:
-	case ALPM_ERR_DLT_INVALID:
 		prefix = pk_alpm_string_build_list (data);
 		alpm_list_free (data);
 		break;
