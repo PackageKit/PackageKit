@@ -40,7 +40,6 @@ typedef struct
 {
 	 gboolean		 checkspace, color, ilovecandy, totaldl,
 				 usesyslog, verbosepkglists;
-	 gdouble		 deltaratio;
 
 	 gchar			*arch, *cleanmethod, *dbpath, *gpgdir, *logfile,
 				*root, *xfercmd;
@@ -65,7 +64,6 @@ pk_alpm_config_new (PkBackend *backend)
 {
 	PkAlpmConfig *config = g_new0 (PkAlpmConfig, 1);
 	config->backend = backend;
-	config->deltaratio = 0.0;
 
 	config->xrepo = g_regex_new ("\\$repo", 0, 0, NULL);
 	config->xarch = g_regex_new ("\\$arch", 0, 0, NULL);
@@ -148,14 +146,6 @@ pk_alpm_config_set_totaldl (PkAlpmConfig *config)
 }
 
 static void
-pk_alpm_config_set_usedelta (PkAlpmConfig *config)
-{
-	g_return_if_fail (config != NULL);
-
-	config->deltaratio = 0.7;
-}
-
-static void
 pk_alpm_config_set_usesyslog (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
@@ -183,7 +173,6 @@ static const PkAlpmConfigBoolean pk_alpm_config_boolean_options[] = {
 	{ "Color", pk_alpm_config_set_color },
 	{ "ILoveCandy", pk_alpm_config_set_ilovecandy },
 	{ "TotalDownload", pk_alpm_config_set_totaldl },
-	{ "UseDelta", pk_alpm_config_set_usedelta },
 	{ "UseSyslog", pk_alpm_config_set_usesyslog },
 	{ "VerbosePkgLists", pk_alpm_config_set_verbosepkglists },
 	{ NULL, NULL }
@@ -293,22 +282,6 @@ pk_alpm_config_set_root (PkAlpmConfig *config, const gchar *path)
 }
 
 static void
-pk_alpm_config_set_deltaratio (PkAlpmConfig *config, const gchar *number)
-{
-	gdouble ratio;
-	gchar *endptr;
-
-	g_return_if_fail (config != NULL);
-	g_return_if_fail (number != NULL);
-
-	ratio = g_ascii_strtod (number, &endptr);
-	/* this ignores invalid values whereas pacman reports an error */
-	if (*endptr == '\0' && 0.0 <= ratio && ratio <= 2.0) {
-		config->deltaratio = ratio;
-	}
-}
-
-static void
 pk_alpm_config_set_xfercmd (PkAlpmConfig *config, const gchar *command)
 {
 	g_return_if_fail (config != NULL);
@@ -333,7 +306,6 @@ static const PkAlpmConfigString pk_alpm_config_string_options[] = {
 	{ "GPGDir", pk_alpm_config_set_gpgdir },
 	{ "LogFile", pk_alpm_config_set_logfile },
 	{ "RootDir", pk_alpm_config_set_root },
-	{ "UseDelta", pk_alpm_config_set_deltaratio },
 	{ "XferCommand", pk_alpm_config_set_xfercmd },
 	{ NULL, NULL }
 };
@@ -947,7 +919,6 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 	alpm_option_set_checkspace (handle, config->checkspace);
 	alpm_option_set_usesyslog (handle, config->usesyslog);
 	alpm_option_set_arch (handle, config->arch);
-	alpm_option_set_deltaratio (handle, config->deltaratio);
 
 	/* backend takes ownership */
 	g_free (xfercmd);
