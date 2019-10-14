@@ -3348,14 +3348,6 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
-	for ( const PoolItem & pi : pool.byKind<Product>() ) {
-		static const Capability indicator( "product-update()", Rel::EQ, "dup" );
-		if ( pi->asKind<Product>()->referencePackage().provides().matches( indicator ) ) {
-			zypp->resolver()->setUpgradeMode(TRUE);
-			break;
-		}
-	}
-
 	if ( zypp->resolver()->upgradeMode() ) {
 		zypp->resolver()->dupSetAllowVendorChange ( ZConfig::instance().solver_dupAllowVendorChange() );
 	}
@@ -3399,6 +3391,8 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
+
+	zypp->resolver()->setUpgradeMode(FALSE);
 }
 
 /**
