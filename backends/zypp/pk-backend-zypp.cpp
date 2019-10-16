@@ -154,6 +154,9 @@ guint _dl_count = 0;
 guint _dl_progress = 0;
 guint _dl_status = 0;
 
+/* Timeout id for resetting upgrade mode. */
+static guint upgrade_mode_id = 0;
+
 /**
  * Build a package_id from the specified resolvable.  The returned
  * gchar * should be freed with g_free ().
@@ -2409,6 +2412,18 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 	return FALSE;
 }*/
 
+static gboolean
+reset_upgrade_mode (gpointer user_data)
+{
+	PkBackendJob *job = PK_BACKEND_JOB (user_data);
+	ZyppJob zjob (job);
+	ZYpp::Ptr zypp = zjob.get_zypp ();
+
+	zypp->resolver ()->setUpgradeMode (FALSE);
+
+	return G_SOURCE_REMOVE;
+}
+
 static void
 backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2476,6 +2491,22 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 
 	pk_backend_job_set_percentage (job, 100);
+
+	/* We only want to set the upgrade mode to TRUE when we're
+	 * getting available updates and updating the system in
+	 * Tumbleweed. And we should reset it to FALSE after it's done
+	 * so that it won't impact other actions which doesn't expect
+	 * upgrade mode to be TRUE.
+	 *
+	 * For get-updates command, we can simply reset upgrade mode
+	 * when it's done. But the issue is "pkcon update" calls
+	 * get-updates to get a list of updates and them update those
+	 * packages(upgrade mode should be kept TRUE in Tumbleweed).
+	 *
+	 * To fix that, we can spawn a timeout function to reset upgrade
+	 * mode. We need cancel the timeout function in
+	 * backend_update_packages_thread(). */
+	upgrade_mode_id = g_timeout_add (1000, reset_upgrade_mode, job);
 }
 
 void
@@ -3348,6 +3379,10 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 
+	if (upgrade_mode_id) {
+		g_source_remove (upgrade_mode_id);
+	}
+
 	if ( zypp->resolver()->upgradeMode() ) {
 		zypp->resolver()->dupSetAllowVendorChange ( ZConfig::instance().solver_dupAllowVendorChange() );
 	}
@@ -3392,7 +3427,11 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
 
-	zypp->resolver()->setUpgradeMode(FALSE);
+	/* Don't reset upgrade mode if we're simulating the changes. Only reset
+	 * it after the real actions has been done. */
+	if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		zypp->resolver()->setUpgradeMode(FALSE);
+	}
 }
 
 /**
