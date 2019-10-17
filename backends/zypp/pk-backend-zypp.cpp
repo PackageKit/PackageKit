@@ -103,6 +103,11 @@ typedef enum {
         UPDATE
 } PerformType;
 
+typedef enum {
+        NEWER_VERSION,
+        OLDER_VERSION,
+        EQUAL_VERSION
+} VersionRelation;
 
 class ZyppJob {
  public:
@@ -2727,7 +2732,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	PkBitfield transaction_flags = 0;
 	gchar **package_ids;
-	
+
 	g_variant_get(params, "(t^a&s)",
 		      &transaction_flags,
 		      &package_ids);
@@ -2745,18 +2750,24 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	
+
 	try
 	{
 		ResPool pool = zypp_build_pool (zypp, TRUE);
 		PoolStatusSaver saver;
 		pk_backend_job_set_percentage (job, 10);
 		vector<PoolItem> items;
-
+		VersionRelation relations[g_strv_length (package_ids)];
 		guint to_install = 0;
+
 		for (guint i = 0; package_ids[i]; i++) {
 			MIL << package_ids[i] << endl;
+			g_auto(GStrv) split = NULL;
+			gint ret;
 			sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
+			sat::Solvable *inst_pkg = NULL;
+			sat::Solvable *latest_pkg = NULL;
+			vector<sat::Solvable> installed;
 
 			if (zypp_is_no_solvable(solvable)) {
 				// Previously stored package_id no longer matches any solvable.
@@ -2764,15 +2775,75 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 							     "couldn't find package");
 				return;
 			}
-			
+
+			split = pk_package_id_split (package_ids[i]);
+			ui::Selectable::Ptr sel (ui::Selectable::get (ResKind::package,
+								      split[PK_PACKAGE_ID_NAME]));
+			if (sel && !sel->installedEmpty ()) {
+				for_ (it, sel->installedBegin (), sel->installedEnd ()) {
+					if (it->satSolvable ().arch ().compare (Arch (split[PK_PACKAGE_ID_ARCH])) == 0) {
+						installed.push_back ((it->satSolvable ()));
+					}
+				}
+			}
+
+			for (guint j = 0; j < installed.size (); j++) {
+				inst_pkg = &installed.at (j);
+				ret = inst_pkg->edition ().compare (Edition (split[PK_PACKAGE_ID_VERSION]));
+
+				if (relations[i] == 0 && ret < 0) {
+					relations[i] = NEWER_VERSION;
+				} else if (relations[i] != EQUAL_VERSION && ret > 0) {
+					relations[i] = OLDER_VERSION;
+					if (!latest_pkg ||
+					    latest_pkg->edition ().compare (inst_pkg->edition ()) < 0) {
+						latest_pkg = inst_pkg;
+					}
+				} else if (ret == 0) {
+					relations[i] = EQUAL_VERSION;
+					break;
+				}
+			}
+
+			if (relations[i] == EQUAL_VERSION &&
+			    !pk_bitfield_contain (transaction_flags,
+						  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
+				g_autofree gchar *printable_tmp = pk_package_id_to_printable (package_ids[i]);
+				pk_backend_job_error_code (job,
+							   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+							   "%s is already installed",
+							   printable_tmp);
+				return;
+			}
+
+			if (relations[i] == OLDER_VERSION &&
+			    !pk_bitfield_contain (transaction_flags,
+						  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
+				pk_backend_job_error_code (job,
+							   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+							   "higher version \"%s\" of package %s.%s is already installed",
+							   latest_pkg->edition ().version ().c_str (),
+							   split[PK_PACKAGE_ID_NAME],
+							   split[PK_PACKAGE_ID_ARCH]);
+				return;
+			}
+
+			if (relations[i] && relations[i] != EQUAL_VERSION &&
+			    pk_bitfield_contain (transaction_flags,
+						 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
+				pk_backend_job_error_code (job,
+							   PK_ERROR_ENUM_NOT_AUTHORIZED,
+							   "missing authorization to update or downgrade software");
+				return;
+			}
+
 			to_install++;
 			PoolItem item(solvable);
 			// set status to ToBeInstalled
 			item.status ().setToBeInstalled (ResStatus::USER);
 			items.push_back (item);
-		
 		}
-			
+
 		pk_backend_job_set_percentage (job, 40);
 
 		if (!to_install) {
