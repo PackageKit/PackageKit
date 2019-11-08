@@ -3351,7 +3351,7 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	for (uint i = 0; package_ids[i]; i++) {
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
-		
+
 		if (zypp_is_no_solvable(solvable)) {
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
@@ -3359,15 +3359,18 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			return;
 		}
 
-		string temp;
+		g_auto(GStrv) strv = NULL;
+		g_autoptr(GPtrArray) pkg_files = NULL;
+
+		pkg_files = g_ptr_array_new ();
+
 		if (solvable.isSystem ()){
 			try {
 				target::rpm::RpmHeader::constPtr rpmHeader = zypp_get_rpmHeader (solvable.name (), solvable.edition ());
 				list<string> files = rpmHeader->tag_filenames ();
 
 				for (list<string>::iterator it = files.begin (); it != files.end (); ++it) {
-					temp.append (*it);
-					temp.append (";");
+					g_ptr_array_add (pkg_files, g_strdup (it->c_str ()));
 				}
 
 			} catch (const target::rpm::RpmException &ex) {
@@ -3376,12 +3379,14 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 				return;
 			}
 		} else {
-			temp = "Only available for installed packages";
+			g_ptr_array_add (pkg_files,
+					 g_strdup ("Only available for installed packages"));
 		}
 
-		const gchar *to_strv[] = { NULL, NULL };
-		to_strv[0] = temp.c_str ();
-		pk_backend_job_files (job, package_ids[i], (gchar **) to_strv);	// file_list
+		/* Convert to GStrv. */
+		g_ptr_array_add (pkg_files, NULL);
+		strv = g_strdupv ((gchar **) pkg_files->pdata);
+		pk_backend_job_files (job, package_ids[i], strv);
 	}
 }
 
