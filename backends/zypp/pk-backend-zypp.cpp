@@ -1520,7 +1520,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 				case INSTALL:
 				case UPDATE:
 					// for updates we only care for updates
-					if (it->status ().isToBeUninstalledDueToUpgrade () && !zypp->resolver()->upgradeMode())
+					if (it->status ().isToBeUninstalledDueToUpgrade ())
 						continue;
 					break;
 				case UPGRADE_SYSTEM:
@@ -3418,19 +3418,23 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	g_variant_get(params, "(t^a&s)",
 		      &transaction_flags,
 		      &package_ids);
-	
+
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
 		return;
 	}
+
+	if (is_tumbleweed ()) {
+		zypp_backend_finished_error (job,
+					     PK_ERROR_ENUM_NOT_SUPPORTED,
+					     "This product requires to be updated by calling 'pkcon upgrade-system'");
+		return;
+	}
+
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-
-	if ( zypp->resolver()->upgradeMode() ) {
-		zypp->resolver()->dupSetAllowVendorChange ( ZConfig::instance().solver_dupAllowVendorChange() );
-	}
 
 	PoolStatusSaver saver;
 
@@ -3445,17 +3449,17 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 
 		ui::Selectable::Ptr sel( ui::Selectable::get( solvable ));
-		
+
 		PoolItem item(solvable);
 		// patches are special - they are not installed and can't have update candidates
 		if (sel->kind() != ResKind::patch) {
 			MIL << "sel " << sel->kind() << " " << sel->ident() << endl;
-			if (sel->installedEmpty() && !zypp->resolver()->upgradeMode()) {
+			if (sel->installedEmpty()) {
 				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
 				return;
 			}
 			item = sel->updateCandidateObj();
-			if (!item && !zypp->resolver()->upgradeMode()) {
+			if (!item) {
 				 zypp_backend_finished_error(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "There is no update candidate for %s", sel->installedObj().satSolvable().asString().c_str());
 				return;
 			}
