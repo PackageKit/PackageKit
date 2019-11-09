@@ -2343,6 +2343,60 @@ pk_control_class_init (PkControlClass *klass)
 }
 
 /*
+ * pk_control_construct_proxy_finish:
+ **/
+static void
+pk_control_construct_proxy_finish (PkControlState *state)
+{
+	g_object_unref (state->control);
+	if (state->proxy != NULL)
+		g_object_unref (state->proxy);
+	g_slice_free (PkControlState, state);
+}
+
+/*
+ * pk_control_construct_proxy:
+ **/
+static void
+pk_control_construct_proxy (PkControl *control)
+{
+	PkControlState *state;
+
+	/* already got a proxy, don't need to continue */
+	if (control->priv->proxy != NULL) {
+		return;
+	}
+
+	state = g_slice_new0 (PkControlState);
+	state->control = g_object_ref (control);
+
+	/* get a connection to the main interface */
+	state->proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+						      G_DBUS_PROXY_FLAGS_NONE,
+						      NULL,
+						      PK_DBUS_SERVICE,
+						      PK_DBUS_PATH,
+						      PK_DBUS_INTERFACE,
+						      control->priv->cancellable,
+						      NULL);
+
+	if (state->proxy == NULL) {
+		pk_control_construct_proxy_finish (state);
+		return;
+	}
+
+	/* connect up proxy */
+	pk_control_proxy_connect (state);
+
+	control->priv->connected = TRUE;
+	g_debug ("notify::connected");
+	g_object_notify (G_OBJECT(control), "connected");
+
+	/* we're done */
+	pk_control_construct_proxy_finish (state);
+}
+
+/*
  * pk_control_name_appeared_cb:
  **/
 static void
@@ -2352,9 +2406,7 @@ pk_control_name_appeared_cb (GDBusConnection *connection,
 			     gpointer user_data)
 {
 	PkControl *control = PK_CONTROL (user_data);
-	control->priv->connected = TRUE;
-	g_debug ("notify::connected");
-	g_object_notify (G_OBJECT(control), "connected");
+	pk_control_construct_proxy (control);
 }
 
 /*
@@ -2415,6 +2467,14 @@ pk_control_init (PkControl *control)
 						    pk_control_name_vanished_cb,
 						    control,
 						    NULL);
+
+
+	/* Try getting a connection to the main interface at construct time
+	 * so that signals can be conveyed ASAP. Also avoids the issue where signals
+	 * aren't received from the proxy due to PkClient using public methods on this
+	 * object from a temporary thread context, which causes the GDBusProxy to be
+	 * created in the wrong thread context. */
+	pk_control_construct_proxy (control);
 }
 
 /*
