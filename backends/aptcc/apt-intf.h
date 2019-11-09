@@ -35,7 +35,6 @@
 #include "pkg-list.h"
 #include "apt-sourceslist.h"
 
-#define PREUPGRADE_BINARY    "/usr/bin/do-release-upgrade"
 #define REBOOT_REQUIRED      "/var/run/reboot-required"
 
 class pkgProblemResolver;

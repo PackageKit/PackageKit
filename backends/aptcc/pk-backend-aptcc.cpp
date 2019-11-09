@@ -1092,10 +1092,5 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
                 PK_ROLE_ENUM_INSTALL_FILES,
                 -1);
 
-    // only add GetDistroUpgrades if the binary is present
-    if (g_file_test(PREUPGRADE_BINARY, G_FILE_TEST_EXISTS)) {
-        pk_bitfield_add(roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-    }
-
     return roles;
 }

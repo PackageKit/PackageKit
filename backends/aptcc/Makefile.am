@@ -82,7 +82,6 @@ systemduserservice_DATA = pk-debconf-helper.socket \
 endif
 
 EXTRA_DIST = 20packagekit \
-	     get-distro-upgrade.py \
 	     pkg-list.h \
 	     apt-intf.h \
 	     apt-utils.h \
@@ -104,6 +103,5 @@ install-data-hook:
 
 clean-local :
 	rm -f *~
-	rm -f *.pyc
 
 -include $(top_srcdir)/git.mk
