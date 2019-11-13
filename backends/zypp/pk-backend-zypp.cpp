@@ -100,7 +100,8 @@ using zypp::filesystem::PathInfo;
 typedef enum {
         INSTALL,
         REMOVE,
-        UPDATE
+        UPDATE,
+        UPGRADE_SYSTEM
 } PerformType;
 
 typedef enum {
@@ -158,9 +159,6 @@ gchar * _repoName;
 guint _dl_count = 0;
 guint _dl_progress = 0;
 guint _dl_status = 0;
-
-/* Timeout id for resetting upgrade mode. */
-static guint upgrade_mode_id = 0;
 
 /**
  * Build a package_id from the specified resolvable.  The returned
@@ -1249,6 +1247,10 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 			if (s->hasInstalledObj())
 				pks.insert(*it);
 		}
+
+	if (is_tumbleweed ()) {
+		resolver->setUpgradeMode (FALSE);
+	}
 }
 
 /**
@@ -1494,6 +1496,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			_dl_progress = 0;
 			break;
 		case UPDATE:
+		case UPGRADE_SYSTEM:
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
 			pk_backend_job_set_percentage(job, 0);
 			_dl_progress = 0;
@@ -1517,8 +1520,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 				case INSTALL:
 				case UPDATE:
 					// for updates we only care for updates
-					if (it->status ().isToBeUninstalledDueToUpgrade () && !zypp->resolver()->upgradeMode())
+					if (it->status ().isToBeUninstalledDueToUpgrade ())
 						continue;
+					break;
+				case UPGRADE_SYSTEM:
+				default:
 					break;
 				}
 				
@@ -2417,18 +2423,6 @@ check_for_self_update (PkBackend *backend, set<PoolItem> *candidates)
 	return FALSE;
 }*/
 
-static gboolean
-reset_upgrade_mode (gpointer user_data)
-{
-	PkBackendJob *job = PK_BACKEND_JOB (user_data);
-	ZyppJob zjob (job);
-	ZYpp::Ptr zypp = zjob.get_zypp ();
-
-	zypp->resolver ()->setUpgradeMode (FALSE);
-
-	return G_SOURCE_REMOVE;
-}
-
 static void
 backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -2496,22 +2490,6 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 
 	pk_backend_job_set_percentage (job, 100);
-
-	/* We only want to set the upgrade mode to TRUE when we're
-	 * getting available updates and updating the system in
-	 * Tumbleweed. And we should reset it to FALSE after it's done
-	 * so that it won't impact other actions which doesn't expect
-	 * upgrade mode to be TRUE.
-	 *
-	 * For get-updates command, we can simply reset upgrade mode
-	 * when it's done. But the issue is "pkcon update" calls
-	 * get-updates to get a list of updates and them update those
-	 * packages(upgrade mode should be kept TRUE in Tumbleweed).
-	 *
-	 * To fix that, we can spawn a timeout function to reset upgrade
-	 * mode. We need cancel the timeout function in
-	 * backend_update_packages_thread(). */
-	upgrade_mode_id = g_timeout_add (1000, reset_upgrade_mode, job);
 }
 
 void
@@ -3445,23 +3423,23 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	g_variant_get(params, "(t^a&s)",
 		      &transaction_flags,
 		      &package_ids);
-	
+
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 
 	if (zypp == NULL){
 		return;
 	}
+
+	if (is_tumbleweed ()) {
+		zypp_backend_finished_error (job,
+					     PK_ERROR_ENUM_NOT_SUPPORTED,
+					     "This product requires to be updated by calling 'pkcon upgrade-system'");
+		return;
+	}
+
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-
-	if (upgrade_mode_id) {
-		g_source_remove (upgrade_mode_id);
-	}
-
-	if ( zypp->resolver()->upgradeMode() ) {
-		zypp->resolver()->dupSetAllowVendorChange ( ZConfig::instance().solver_dupAllowVendorChange() );
-	}
 
 	PoolStatusSaver saver;
 
@@ -3476,17 +3454,17 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 
 		ui::Selectable::Ptr sel( ui::Selectable::get( solvable ));
-		
+
 		PoolItem item(solvable);
 		// patches are special - they are not installed and can't have update candidates
 		if (sel->kind() != ResKind::patch) {
 			MIL << "sel " << sel->kind() << " " << sel->ident() << endl;
-			if (sel->installedEmpty() && !zypp->resolver()->upgradeMode()) {
+			if (sel->installedEmpty()) {
 				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
 				return;
 			}
 			item = sel->updateCandidateObj();
-			if (!item && !zypp->resolver()->upgradeMode()) {
+			if (!item) {
 				 zypp_backend_finished_error(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "There is no update candidate for %s", sel->installedObj().satSolvable().asString().c_str());
 				return;
 			}
@@ -3517,6 +3495,61 @@ void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
 	pk_backend_job_thread_create (job, backend_update_packages_thread, NULL, NULL);
+}
+
+static void
+backend_upgrade_system_thread (PkBackendJob *job,
+			       GVariant *params,
+			       gpointer user_data)
+{
+	PkBitfield transaction_flags = 0;
+	ZyppJob zjob (job);
+	set<PoolItem> candidates;
+
+	g_variant_get (params, "(t&su)",
+		       &transaction_flags,
+		       NULL,
+		       NULL);
+
+	ZYpp::Ptr zypp = zjob.get_zypp ();
+	if (zypp == NULL) {
+		return;
+	}
+
+	/* refresh the repos before checking for updates. */
+	if (!zypp_refresh_cache (job, zypp, FALSE)) {
+		return;
+	}
+	zypp_build_pool (zypp, TRUE);
+	zypp_get_updates (job, zypp, candidates);
+	if (candidates.empty ()) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+					   "No Distribution Upgrade Available.");
+
+		return;
+	}
+
+	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+	zypp->resolver ()->doUpgrade ();
+
+	PoolStatusSaver saver;
+
+	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
+
+	zypp->resolver ()->setUpgradeMode (FALSE);
+}
+
+/**
+  * pk_backend_upgrade_system
+  */
+void
+pk_backend_upgrade_system (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   const gchar *distro_id,
+			   PkUpgradeKindEnum upgrade_kind)
+{
+   pk_backend_job_thread_create (job, backend_upgrade_system_thread, NULL, NULL);
 }
 
 static void
