@@ -3104,7 +3104,7 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	PoolQuery q;
 	q.addString( search ); // may be called multiple times (OR'ed)
-	q.setCaseSensitive( true );
+	q.setCaseSensitive( false ); // [<>] We want to be case insensitive for the name and description searches...
 	q.setMatchSubstring();
 
 	switch (role) {
@@ -3127,6 +3127,8 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 		// did not search in srcpackages.
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE: {
+		q.setCaseSensitive( true ); // [<>] But we probably want case sensitive search for the file searches.
+
 		zypp_build_pool (zypp, TRUE);
 		q.addKind( ResKind::package );
 		q.addAttribute( sat::SolvAttr::name );
