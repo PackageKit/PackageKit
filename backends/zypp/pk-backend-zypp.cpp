@@ -3416,6 +3416,36 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 }
 
 static void
+upgrade_system (PkBackendJob *job,
+		ZYpp::Ptr zypp,
+		PkBitfield transaction_flags)
+{
+	set<PoolItem> candidates;
+
+	/* refresh the repos before checking for updates. */
+	if (!zypp_refresh_cache (job, zypp, FALSE)) {
+		return;
+	}
+	zypp_build_pool (zypp, TRUE);
+	zypp_get_updates (job, zypp, candidates);
+	if (candidates.empty ()) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+					   "No Distribution Upgrade Available.");
+
+		return;
+	}
+
+	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+	zypp->resolver ()->doUpgrade ();
+
+	PoolStatusSaver saver;
+
+	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
+
+	zypp->resolver ()->setUpgradeMode (FALSE);
+}
+
+static void
 backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
@@ -3433,9 +3463,7 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	if (is_tumbleweed ()) {
-		zypp_backend_finished_error (job,
-					     PK_ERROR_ENUM_NOT_SUPPORTED,
-					     "This product requires to be updated by calling 'pkcon upgrade-system'");
+		upgrade_system (job, zypp, transaction_flags);
 		return;
 	}
 
@@ -3481,12 +3509,6 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	}
 
 	zypp_perform_execution (job, zypp, UPDATE, FALSE, transaction_flags);
-
-	/* Don't reset upgrade mode if we're simulating the changes. Only reset
-	 * it after the real actions has been done. */
-	if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-		zypp->resolver()->setUpgradeMode(FALSE);
-	}
 }
 
 /**
