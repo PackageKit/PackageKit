@@ -11,7 +11,7 @@ command_not_found_handle () {
 	local retval=127
 
 	# only search for the command if we're interactive
-	[[ $- =~ i ]] || runcnf=0
+	[[ $- == *"i"* ]] || runcnf=0
 
 	# don't run if DBus isn't running
 	[[ ! -S /run/dbus/system_bus_socket ]] && runcnf=0
