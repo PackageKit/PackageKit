@@ -639,7 +639,7 @@ msgstr "이 파일이 포함된 패키지:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%s' 명령을 제공하는 '%s' 꾸러미를 설치하시겠습니까?"
+msgstr "'%2$s' 명령을 제공하는 '%1$s' 꾸러미를 설치하시겠습니까?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
