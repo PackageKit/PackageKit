@@ -775,7 +775,7 @@ main (int argc, char *argv[])
 	/* TRANSLATORS: the prefix of all the output telling the user
 	 * why it's not executing. NOTE: this is lowercase to mimic
 	 * the style of bash itself -- apologies */
-	g_printerr ("%s: %s: %s...\n", shell, argv[1], _("command not found"));
+	g_printerr ("%s: %s: %s\n", shell, argv[1], _("command not found"));
 
 	/* ignore one char mistakes */
 	if (len < 2)
