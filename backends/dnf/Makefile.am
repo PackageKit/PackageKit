@@ -3,7 +3,8 @@ plugin_LTLIBRARIES = libpk_backend_dnf.la
 EXTRA_DIST =								\
 	dnf-backend-vendor-fedora.c					\
 	dnf-backend-vendor-mageia.c					\
-	dnf-backend-vendor-openmandriva.c
+	dnf-backend-vendor-openmandriva.c				\
+	dnf-backend-vendor-rosa.c
 libpk_backend_dnf_la_SOURCES =						\
 	dnf-backend-vendor.h						\
 	dnf-backend.c							\
