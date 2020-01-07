@@ -3435,6 +3435,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	/* set the installonly limit one higher than usual to avoid removing any kernels during system upgrades */
 	dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context) + 1);
 
+	#if defined(__dnf_vendor_fedora__)
 	/* reset libgit2 module when upgrading to F31: https://bugzilla.redhat.com/show_bug.cgi?id=1762751 */
 	if (g_strcmp0 (release_ver, "31") == 0) {
 		const gchar *reset_modules[] = { "libgit2", NULL };
@@ -3445,6 +3446,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 			g_warning ("failed to reset libgit2 module: %s", error_local->message);
 		}
 	}
+	#endif
 
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {

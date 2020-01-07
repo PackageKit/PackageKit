@@ -433,6 +433,7 @@ if test x$enable_dnf = xyes; then
 		with_dnf_vendor="fedora"
 	fi
 	AC_SUBST(DNF_VENDOR, [$with_dnf_vendor])
+	AC_DEFINE([__dnf_vendor_$with_dnf_vendor__], 1, [define the vendor configuration set])
 fi
 
 have_python_backend="no"
