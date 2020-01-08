@@ -7,15 +7,15 @@
 # Claude Paroz <claude@2xlibre.net>, 2011
 # troubi51 <corentin.perard@gmail.com>, 2009
 # dominique bribanick <chepioq@gmail.com>, 2013-2014
-# mrtomlinux <thomas.canniot@laposte.net>, 2009
+# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
-# mrtomlinux <thomas.canniot@laposte.net>, 2009
+# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
 # troubi51 <corentin.perard@gmail.com>, 2009
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
 "PO-Revision-Date: 2018-09-25 08:54+0000\n"
 "Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: French (http://www.transifex.com/freedesktop/packagekit/language/fr/)\n"

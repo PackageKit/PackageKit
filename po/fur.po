@@ -3,299 +3,290 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Boyuan Yang <073plan@gmail.com>, 2015,2019
-# Christopher M <i@cicku.me>, 2013
-# Dingzhong Chen <wsxy162@gmail.com>, 2017
-# Leah Liu <lliu@redhat.com>, 2009
-# Tommy He <lovenemesis@gmail.com>, 2011, 2012
-# Michael Jay Tong <michaeljayt@gmail.com>, 2014
-# Mingcong Bai <jeffbai@aosc.xyz>, 2017-2018
-# Richard Hughes <richard@hughsie.com>, 2011
-# Wylmer Wang, 2014
-# Mingcong Bai <jeffbai@aosc.xyz>, 2016
+# Fabio Tomat <f.t.public@gmail.com>, 2019
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2019-01-13 16:17+0000\n"
-"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
-"Language-Team: Chinese (China) (http://www.transifex.com/freedesktop/packagekit/language/zh_CN/)\n"
+"PO-Revision-Date: 2019-08-15 14:12+0000\n"
+"Last-Translator: Fabio Tomat <f.t.public@gmail.com>\n"
+"Language-Team: Friulian (http://www.transifex.com/freedesktop/packagekit/language/fur/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_CN\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: fur\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr "事务"
+msgstr "Transazion"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
 msgid "System time"
-msgstr "系统时间"
+msgstr "Ore di sisteme"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "结果"
+msgstr "Lade a bon fin"
 
 msgid "True"
-msgstr "正确"
+msgstr "Vêr"
 
 msgid "False"
-msgstr "错误"
+msgstr "Fals"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
-msgstr "角色"
+msgstr "Azion"
 
 #. TRANSLATORS: this is The duration of the transaction
 msgid "Duration"
-msgstr "持续时间"
+msgstr "Durade"
 
 msgid "(seconds)"
-msgstr "（秒）"
+msgstr "(seconts)"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
-msgstr "命令行"
+msgstr "Rie di comant"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "用户标识"
+msgstr "ID utent"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
-msgstr "用户名"
+msgstr "Non utent"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
-msgstr "真实姓名"
+msgstr "Non reâl"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
-msgstr "受影响的软件包："
+msgstr "Pachets interessâts:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "受影响的软件包：无"
+msgstr "Pachets interessâts: nissun"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
-msgstr "发行版"
+msgstr "Distribuzion"
 
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
-msgstr "类型"
+msgstr "Gjenar"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 msgid "Summary"
-msgstr "摘要"
+msgstr "Somari"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
-msgstr "类别"
+msgstr "Categorie"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "标识"
+msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "父组"
+msgstr "Grup superiôr"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
 msgid "Name"
-msgstr "名称"
+msgstr "Non"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "图标"
+msgstr "Icone"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "更新细节："
+msgstr "Detais sul inzornament:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "软件包"
+msgstr "Pachet"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 msgid "Updates"
-msgstr "更新"
+msgstr "Al inzorne"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "废弃"
+msgstr "Al sostituìs"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 msgid "Vendor"
-msgstr "厂商"
+msgstr "Vendidôr"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr "Bugzilla（缺陷终结者）"
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
-msgstr "公共漏洞和暴露（CVE）"
+msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "重启"
+msgstr "Tornâ a inviâ"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr "更新描述"
+msgstr "Test dal inzornament"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
-msgstr "更改"
+msgstr "Modifichis"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
 msgid "State"
-msgstr "状态"
+msgstr "Stât"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 msgid "Issued"
-msgstr "签发"
+msgstr "Publicât"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Updated"
-msgstr "更新"
+msgstr "Inzornât"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "已启用"
+msgstr "Abilitât"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "已禁用"
+msgstr "Disabilitât"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "要求系统重新启动的软件包："
+msgstr "Tornâ a inviâ il sisteme, necessari par:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "要求重新启动会话的软件包："
+msgstr "Tornâ a iniziâ la session, necessari par:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "要求系统重新启动的（安全更新）软件包："
+msgstr "Tornâ a inviâ il sisteme (pe sigurece), necessari par:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "要求会话重新启动的（安全更新）软件包："
+msgstr "Tornâ a iniziâ la session (pe sigurece), necessari par:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "要求应用程序重新启动的软件包："
+msgstr "Tornâ a inviâ la aplicazion, necessari par:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr "软件包描述"
+msgstr "Descrizion pachet"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
-msgstr "不含文件"
+msgstr "Nissun file"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr "软件包所含文件"
+msgstr "File dal pachet"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
-msgstr "百分比"
+msgstr "Percentuâl"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr "状态"
+msgstr "Stât"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr "结果："
+msgstr "Risultâts:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr "致命错误"
+msgstr "Erôr fatâl"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr "没有可以更新的软件包。"
+msgstr "No son pachets di inzornâ"
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "事务失败"
+msgstr "La transazion e je falide"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "目前没有可用的更新。"
+msgstr "Pal moment no son inzornaments disponibii."
 
 msgid "There are no upgrades available at this time."
-msgstr "目前没有可用的升级。"
+msgstr "Pal moment no son avanzaments di version disponibii."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "请重新启动计算机以完成更新。"
+msgstr "Par plasê, torne invie il computer par completâ l'inzornament."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "请注销并登录以完成更新。"
+msgstr "Par plasê, jes e torne jentre par completâ l'inzornament."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
 "Please restart the computer to complete the update as important security "
 "updates have been installed."
-msgstr "由于安装了重要安全更新，请重新启动计算机以完成更新。"
+msgstr "Par plasê, torne invie il computer par completâ l'inzornament, viodût che impuartants inzornaments di sigurece a son stâts instalâts."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid ""
 "Please logout and login to complete the update as important security updates"
 " have been installed."
-msgstr "由于安装了重要安全更新，请注销并登录以完成更新。"
+msgstr "Par plasê, jes e torne jentre par completâ l'inzornament, viodût che impuartants inzornaments di sigurece a son stâts instalâts."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "超过一个软件包匹配："
+msgstr "Plui di un pachet al corispuint:"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "请选择正确的软件包："
+msgstr "Par plasê, sielç il pachet just:"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr "未找到软件包"
+msgstr "Pachet no cjatât"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr "找不到软件包"
+msgstr "Nol è stât cjatât nissun pachet"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -304,29 +295,29 @@ msgstr "找不到软件包"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "预期的软件包名，实际上文件有了。试一下改用“pkcon install-local %s”安装。"
+msgstr "Si spietave un non di pachet, ma si à vût un file. Prove doprant 'pkcon install-local %s'."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "此工具未能找到任何可用的软件包：%s"
+msgstr "Chest strument nol à podût cjatâ cualsisei pachet disponibil: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "此工具未能找到已安装的软件包：%s"
+msgstr "Chest strument nol à podût cjatâ il pachet instalât: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "此工具未能找到软件包：%s"
+msgstr "Chest strument nol à podût cjatâ il pachet: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr "没有需要更新的软件包。"
+msgstr "Nissun pachet al à bisugne di inzornâsi ae gnove version."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -338,841 +329,841 @@ msgstr "没有需要更新的软件包。"
 #. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "此工具未能找到所有软件包：%s"
+msgstr "Chest strument nol à podût cjatâ ducj i pachets: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "守护进程在事务中崩溃"
+msgstr "Il demoni al è colassât tal mieç de transazion!"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "PackageKit（软件包工具包）控制台界面"
+msgstr "Interface par Console di PackageKit"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr "子命令："
+msgstr "Sot-comants:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "获取此动作最后一次完成之后的时间失败。"
+msgstr "No si è rivâts a otignî la ore di cuant che cheste azion e je stade completade la ultime volte."
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr "历时"
+msgstr "Timp passât"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr "准备更新："
+msgstr "Inzornaments preparâts:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr "代理未能设置"
+msgstr "Nol è stât pussibil stabilî il proxy"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "显示程序版本并退出"
+msgstr "Mostre la version dal program e jes"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "设置过滤器，如：已安装"
+msgstr "Stabilìs il filtri, p.e. instalât"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "不经询问确认就安装软件包"
+msgstr "Instale il pachet cence domandâ confermis"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "仅下载软件包以为事务做准备"
+msgstr "Prepare la transazion dome discjariant i pachets"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "允许事务进行中降级软件包"
+msgstr "Permet di regredî i pachets vie pe transazion"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "允许事务进行中重新安装软件包"
+msgstr "Permet di tornâ a instalâ i pachets vie pe transazion"
 
 msgid "Automatically remove unused dependencies"
-msgstr "自动卸载未使用的依赖"
+msgstr "Gjave in automatic lis dipendencis no dopradis"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "用空闲网络带宽和更少能源运行命令"
+msgstr "Eseguìs il comant doprant la largjece di bande inative e ancje doprant mancul energjie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "只在屏幕上显示机器可读的输出，而不是用动画小工具"
+msgstr "Stampe a schermi une jessude che e pues jessi elaborade de machine, pitost che doprâ widget animâts"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "最长元数据缓存过期时间。使用 -1 为 ‘永不’。 "
+msgstr "La etât massime de cache dai metadâts. Dopre -1 par 'mai'."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "允许安装不受信任的包。"
+msgstr "Permet instalazion di pachets no fidâts."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr "传递命令行失败"
+msgstr "No si è rivâts a analizâ la rie di comant"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "联系 PackageKit 失败"
+msgstr "No si è rivâts a contatâ PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "指定过滤器无效"
+msgstr "Il filtri specificât nol jere valit"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "需要指定搜索类型，例如名称"
+msgstr "Al covente un gjenar di ricercje, p.e. non"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "需要指定搜索词"
+msgstr "Al covente un tiermin di ricercje"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "需要指定要安装的软件包名"
+msgstr "Al covente un non di pachet di instalâ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "需要指定要安装的文件名"
+msgstr "Al covente un non di file di instalâ"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "需要指定类型、密钥标识（key_id）和软件包标识（package_id）"
+msgstr "A coventin un gjenar key_id e package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr "需要指定要删除的软件包名"
+msgstr "Al covente un non di pachet di gjavâ"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "需要指定目标目录和要下载的软件包名"
+msgstr "A coventin une cartele di destinazion e i nons dai pachets di discjariâ"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "目录未找到"
+msgstr "Cartele no cjatade"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "需要指定许可标识（eula-id）"
+msgstr "Al covente un identificadôr di licence (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "需要指定要解析的软件包名"
+msgstr "Al covente un non di pachet di risolvi"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "需要指定软件仓库名"
+msgstr "Al covente un non di dipuesit"
 
 msgid "A repo name, parameter and value are required"
-msgstr "需要指定软件仓库名、参数和值"
+msgstr "A coventin non di dipuesit, parametri e valôr"
 
 msgid "A repo id and autoremove required"
-msgstr "需要指定软件仓库 id 和 autoremove 参数"
+msgstr "Al covente un id di dipuesit e un autoremove"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "需要指定动作，例如“update-packages（更新软件包）”"
+msgstr "E covente une azion, p.e. 'update-packages'"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr "需要指定正确的角色"
+msgstr "E covente une azion juste"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "需要指定软件包名"
+msgstr "Al covente un non di pachet"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "需要指定软件包提供描述"
+msgstr "Al covente specificâ la stringhe dai pachets furnîts"
 
 msgid "A filename is required"
-msgstr "需要指定文件名"
+msgstr "Al covente un non di file"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr "描述"
+msgstr "Descrizion"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr "作者"
+msgstr "Autôr"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr "您必须指定一个要创建的列表文件"
+msgstr "Tu scugnis specificâ un file liste di creâ"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr "文件已存在：%s"
+msgstr "Il file al esist za: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "选项“%s”未支持"
+msgstr "Opzion '%s' no supuartade"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "命令失败"
+msgstr "Comant falît"
 
 msgid "Failed to get daemon state"
-msgstr "获取守护进程状态失败"
+msgstr "No si è rivâts a otignî il stât dal demoni"
 
 msgid "Failed to get properties"
-msgstr "获取属性失败"
+msgstr "No si è rivâts a otignî lis proprietâts"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "PackageKit 监视器"
+msgstr "Monitor di PackageKit"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr "正在安装系统更新"
+msgstr "Instalazion avanzament di sisteme"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
-msgstr "正在安装更新"
+msgstr "Instalazion inzornaments"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "安装更新后重新启动计算机..."
+msgstr "Si torne a inviâ daspò la instalazion dai inzornaments…"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr "安装更新后关机..."
+msgstr "Si distude daspò la instalazion dai inzornaments…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr "正在安装更新；这可能需要一段时间……"
+msgstr "Instalazion dai inzornaments; al podarès tirâle a dilunc..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "正在安装系统升级；这需要一段时间……"
+msgstr "Instalazion avanzament di sisteme; al podarès tirâle a dilunc..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr "正在下载软件源详情。"
+msgstr "Si discjarie i detais sui dipuesits software."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "正在下载文件列表（这可能要花些时间完成）。"
+msgstr "Si discjarie la liste dai file (al podarès tirâle a dilunc prime di finî)."
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "正在等待软件包管理器锁。"
+msgstr "Si spiete il bloc dal gjestôr dai pachets."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "装入软件包列表"
+msgstr "Si cjarie la liste dai pachets."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "文件搜索失败"
+msgstr "No si è rivâts a cirî file"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr "获取文件列表失败"
+msgstr "No si è rivâts a otignî la liste dai file"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "启动失败："
+msgstr "No si è rivâts a inviâ:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "安装软件包失败"
+msgstr "No si è rivâts a instalâ i pachets"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "未找到命令"
+msgstr "comant no cjatât"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr "相似命令是："
+msgstr "Un comant simil al è:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "运行相似命令："
+msgstr "Eseguî un comant simil:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr "相似命令是："
+msgstr "I comants simii a son:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "请选择要运行的命令"
+msgstr "Sielç un comant di eseguî"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "提供此文件的软件包是："
+msgstr "Il pachet che al furnìs chest file al è:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "安装软件包“%s”以提供命令“%s”？"
+msgstr "Instalâ il pachet '%s' che al furnìs il comant '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "提供此文件的软件包是："
+msgstr "I pachets che a furnissin chest file a son:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr "合适的软件包是："
+msgstr "I pachets adats a son:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "请选择要安装的软件包"
+msgstr "Sielç un pachet di instalâ"
 
 msgid "User aborted selection"
-msgstr "用户已终止选择"
+msgstr "L'utent al à anulât la selezion"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "请输入一个从 1 到 %i 之间的数："
+msgstr "Inserìs un numar di 1 a %i:"
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
-msgstr "未知状态"
+msgstr "Stât no cognossût"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "正在启动"
+msgstr "Si scomence"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "正在队列中等待"
+msgstr "In spiete in code"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr "正在运行"
+msgstr "In esecuzion"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr "正在查询"
+msgstr "Interogazion"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr "正在获取信息"
+msgstr "Daûr a otignî informazions"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "正在删除软件包"
+msgstr "Daûr a gjavâ i pachets"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "正在下载软件包"
+msgstr "Daûr a discjariâ i pachets"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr "正在安装软件包"
+msgstr "Instalazion pachets"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "正在刷新软件列表"
+msgstr "Inzornament de liste software"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr "正在安装更新"
+msgstr "Instalazion inzornaments"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "正在清理软件包"
+msgstr "Netisie dai pachets"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "正在废弃软件包"
+msgstr "Daûr a rindi sorpassâts i pachets"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr "正在解析依赖"
+msgstr "Risoluzion des dipendencis"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr "正在检查签名"
+msgstr "Control des firmis"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr "正在测试更改"
+msgstr "Verifiche des modifichis"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "正在记下更改"
+msgstr "Daûr a inviâ lis modifichis"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr "正在请求数据"
+msgstr "Richieste dâts"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr "已完成"
+msgstr "Finît"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr "正在取消"
+msgstr "Daûr a anulâ"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "正在下载软件仓库信息"
+msgstr "Daûr a discjariâ lis informazions dal dipuesit"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "正在下载软件包列表"
+msgstr "Daûr a discjariâ la liste dai pachets"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr "正在下载文件列表"
+msgstr "Daûr a discjariâ lis listis dai file"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "正在下载更改列表"
+msgstr "Daûr a discjariâ lis listis des modifichis"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr "正在下载组"
+msgstr "Daûr a discjariâ i grups"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "正在下载更新信息"
+msgstr "Daûr a discjariâ lis informazions sul inzornament"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "正在重新打包文件"
+msgstr "Daûr a tornâ a impachetâ i file"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "正在装入缓存"
+msgstr "Daûr a cjariâ la cache"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "正在扫描应用程序"
+msgstr "Analisi des aplicazions"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "正在生成软件包列表"
+msgstr "Daûr a gjenerâ lis listis dai pachets"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "正在等待软件包管理器锁"
+msgstr "In spiete pal bloc dal gjestôr dai pachets"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "正在等待认证"
+msgstr "In spiete pe autenticazion"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr "正在更新运行中的应用程序"
+msgstr "Daûr a inzornâ lis aplicazions in esecuzion"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr "正在检查使用中的应用程序"
+msgstr "Daûr a control lis aplicazions in ûs"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr "正在检查使用中的库"
+msgstr "Daûr a controlâ lis librariis in ûs"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr "正在复制文件"
+msgstr "Daûr a copiâ i file"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr "正在运行关联操作"
+msgstr ""
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "显示所有文件的调试信息"
+msgstr "Mostre lis informazions di debug par ducj i file"
 
 msgid "Debugging Options"
-msgstr "调试选项"
+msgstr "Opzions di debug"
 
 msgid "Show debugging options"
-msgstr "显示调试选项"
+msgstr "Mostre opzions di debug"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr "琐碎"
+msgstr "Triviâl"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "普通"
+msgstr "Normâl"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr "重要"
+msgstr "Impuartant"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr "安全"
+msgstr "Sigurece"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "缺陷修复"
+msgstr "Corezion erôr"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr "增强"
+msgstr "Miorament"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "屏蔽"
+msgstr "Blocât"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "已安装"
+msgstr "Instalât"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "可用"
+msgstr "Disponibil"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr "不可用"
+msgstr "No disponibil"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "正在下载"
+msgstr "Discjariament"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "正在更新"
+msgstr "Inzornament"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "正在安装"
+msgstr "Instalazion"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "正在删除"
+msgstr "Rimozion"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "正在清理"
+msgstr "Netisie"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "正在废弃"
+msgstr "Si rint sorpassât"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "正在重新安装"
+msgstr "Si torne a instalâ"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "已下载"
+msgstr "Discjariât"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "已移除"
+msgstr "Gjavât"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "已清理"
+msgstr "Netât"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "已废弃"
+msgstr "Deventât sorpassât"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "已重新安装"
+msgstr "Tornât a instalâ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr "未知角色类型"
+msgstr "Gjenar di azion no cognossût"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr "获取依赖关系"
+msgstr "Recupar des dipendencis"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "获取更新细节"
+msgstr "Recupar dai detais di inzornament"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "获取细节"
+msgstr "Recupar dai detais"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "获取依赖描述"
+msgstr "Recupar dai pachets necessaris"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr "获取更新"
+msgstr "Recupar dai inzornaments"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "按细节搜索"
+msgstr "Ricercje par detais"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "按文件搜索"
+msgstr "Ricercje par file"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "搜索组"
+msgstr "Ricercje par grups"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "按名称搜索"
+msgstr "Ricercje par non"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "安装文件"
+msgstr "Instalazion dai file"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "刷新缓存"
+msgstr "Inzornament de cache"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "更新软件包"
+msgstr "Inzornament dai pachets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
-msgstr "取消"
+msgstr "Anulament"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "获取软件仓库"
+msgstr "Recupar dai dipuesits"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr "正在修改软件仓库"
+msgstr "Modifiche dipuesit"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "设置数据"
+msgstr "Impostazion dai dâts"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr "移除软件仓库"
+msgstr "Rimozion dal dipuesit"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr "解析"
+msgstr "Risoluzion"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "获取文件列表"
+msgstr "Recupar liste dai file"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "获取提供描述"
+msgstr "Recupar dai pachets furnîts"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr "安装签名"
+msgstr "Instalazion firme"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "获取软件包"
+msgstr "Recupar dai pachets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr "接受最终用户许可协议（EULA）"
+msgstr "Acetazion EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "获取升级"
+msgstr "Recupar dai inzornaments"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "获取类别"
+msgstr "Recupar des categoriis"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "获取事务"
+msgstr "Recupar des transazions"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr "正在获取系统升级"
+msgstr "Recupar avanzaments di sisteme"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "您要同意未签名软件的安装吗？"
+msgstr "Permeti la instalazion di software cence firme?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "未签名软件将不被安装。"
+msgstr "Il software cence firme nol vignarà instalât."
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "需要指定软件源签名"
+msgstr "Firme dal sorzint software necessarie"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "软件源名"
+msgstr "Non de sorzint dal software"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr "密钥网址"
+msgstr "URL de clâf"
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
-msgstr "密钥用户"
+msgstr "Utent de clâf"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr "密钥标识"
+msgstr "ID de clâf"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr "密钥指纹"
+msgstr "Impronte digjitâl de clâf"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
-msgstr "密钥时间戳"
+msgstr "Date/ore de clâf"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr "您接受此签名吗？"
+msgstr "Acetâ cheste firme?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
-msgstr "签名未被接受。"
+msgstr "La firme no je stade acetade."
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "需要接受最终用户许可协议"
+msgstr "Acuardi de licence pal utent finâl necessari"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr "协议"
+msgstr "Acuardi"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "您是否接受此协议？"
+msgstr "Acetâ chest acuardi?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
-msgstr "此协议未被接受。"
+msgstr "L'acuardi nol è stât acetât."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr "需要介质更改"
+msgstr "Al covente cambiâ il supuart multimediâl"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr "介质类型"
+msgstr "Gjenar di supuart"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr "介质标签"
+msgstr "Etichete dal supuart multimediâl"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
-msgstr "描述"
+msgstr "Test"
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "请插入正确介质"
+msgstr "Par plasê inserìs il supuart just"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr "正确介质未插入。"
+msgstr "Nol è stât inserît il just supuart multimediâl."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "下列软件包必须删除："
+msgstr "I pachets chi sot a son stâts gjavâts:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "下列软件包必须安装："
+msgstr "I pachets chi sot a son stâts instalâts:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "下列软件包必须更新："
+msgstr "I pachets chi sot a son stâts inzornâts:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "下列软件包必须重新安装："
+msgstr "I pachets chi sot a son stât instalâts di gnûf:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "下列软件包必须降级："
+msgstr "I pachets chi sot a son stâts regredîts:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr "如下软件包已弃用："
+msgstr "I pachets chi sot a àn di jessi fats deventâ sorpassâts:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr "以下是未信任软件包："
+msgstr "I pachets chi daurman no son fidâts:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "继续更改？"
+msgstr "Procedi cu lis modifichis?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "事务未继续。"
+msgstr "La transazion no je stade eseguide."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr "取消其他用户的任务"
+msgstr "Anule ativitât di altris"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "取消一项不是由您启动的任务需要认证"
+msgstr "La autenticazion e je necessarie par anulâ une ativitât inviade di altris"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1180,10 +1171,10 @@ msgstr "取消一项不是由您启动的任务需要认证"
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr "安装已签名软件包"
+msgstr "Instale pachet firmât"
 
 msgid "Authentication is required to install software"
-msgstr "安装软件需要认证"
+msgstr "La autenticazion e je necessarie par instalâ software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1191,10 +1182,10 @@ msgstr "安装软件需要认证"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "安装非受信任本地文件"
+msgstr "Instale il file locâl no fidât"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "安装不受信任的软件需要认证"
+msgstr "La autenticazion e je necessarie par instalâ software no fidât"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1203,10 +1194,10 @@ msgstr "安装不受信任的软件需要认证"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr "重新安装已安装的软件包"
+msgstr "Torne instale il pachet za instalât"
 
 msgid "Authentication is required to reinstall software"
-msgstr "重新安装软件需要认证"
+msgstr "La autenticazion e je necessarie par tornâ a instalâ software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1215,10 +1206,10 @@ msgstr "重新安装软件需要认证"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "安装已安装软件包的较旧版本"
+msgstr "Instale une version plui vecje dal pachet instalât"
 
 msgid "Authentication is required to downgrade software"
-msgstr "降级软件需要认证"
+msgstr "La autenticazion e je necessarie par regredî software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1226,12 +1217,12 @@ msgstr "降级软件需要认证"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr "信任签名软件所用密钥"
+msgstr "Fidâsi di une clâf doprade par firmâ il software"
 
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "信任软件包签名所用密钥需要认证"
+msgstr "La autenticazion e je necessarie par considerâ fidade une clâf doprade par firmâ software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1239,10 +1230,10 @@ msgstr "信任软件包签名所用密钥需要认证"
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "接受最终用户许可协议（EULA）"
+msgstr "Acete EULA"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "接受最终用户许可协议（EULA）需要认证"
+msgstr "La autenticazion e je necessarie par acetâ une EULA"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1254,10 +1245,10 @@ msgstr "接受最终用户许可协议（EULA）需要认证"
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "删除软件包"
+msgstr "Gjave pachet"
 
 msgid "Authentication is required to remove software"
-msgstr "删除软件需要认证"
+msgstr "La autenticazion e je necessarie par gjavâ software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1266,40 +1257,40 @@ msgstr "删除软件需要认证"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr "更新软件"
+msgstr "Inzorne software"
 
 msgid "Authentication is required to update software"
-msgstr "更新软件需要认证"
+msgstr "La autenticazion e je necessarie par inzornâ software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr "更改软件源参数"
+msgstr "Cambie i parametris dal dipuesit software"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr "更改软件源参数需要认证"
+msgstr "La autenticazion e je necessarie par cambiâ i parametris di un dipuesit software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr "刷新系统软件源"
+msgstr "Inzorne i dipuesits di sisteme"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr "刷新系统软件源需要认证"
+msgstr "La autenticazion e je necessarie par inzornâ i dipuesits di sisteme"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "设置网络代理"
+msgstr "Stabilìs proxy di rêt"
 
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "设置下载软件所用的代理服务器需要认证"
+msgstr "La autenticazion e je necessarie par stabilî il proxy di rêt doprât par discjariâ software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1308,89 +1299,89 @@ msgstr "设置下载软件所用的代理服务器需要认证"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr "重新装入设备"
+msgstr "Torne cjarie un dispositîf"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "使用新驱动重新装入设备需要认证"
+msgstr "La autenticazion e je necessarie par tornâ a cjariâ il dispositîf cuntun gnûf driver"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr "升级系统"
+msgstr "Avanze di version il sisteme"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr "升级操作系统需要验证"
+msgstr "La autenticazion e je necessarie par avanzâ di version il sisteme operatîf"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr "修复系统"
+msgstr "Comede il sisteme"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "修复已安装软件需要认证"
+msgstr "La autenticazion e je necessarie par comedâ il software instalât"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr "触发离线更新"
+msgstr "Fâs tacâ i inzornaments fûr rêt"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "触发离线更新需要认证"
+msgstr "La autenticazion e je necessarie par fâ partî i inzornaments fûr rêt"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr "清除离线更新通知"
+msgstr "Nete il messaç di inzornament fûr rêt"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "清除离线更新通知需要认证"
+msgstr "La autenticazion e je necessarie par netâ il messaç di inzornament fûr rêt"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr "%s 的别名"
+msgstr "Alias a %s"
 
 msgid "Command not found, valid commands are:"
-msgstr "未找到命令，可用的命令为："
+msgstr "Comant no cjatât, i comants valits a son:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "要使用的打包后端，例如 dummy"
+msgstr "Motôr di gjestion dai pachets di doprâ, p.e. dnf"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr "刷新缓存"
+msgstr "Inzorne la cache"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr "刷新缓存(强制)"
+msgstr "Inzorne la cache (sfuarçât)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr "按名称搜索"
+msgstr "Cîr par nons"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr "按详细信息搜索"
+msgstr "Cîr par detais"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr "按文件搜索"
+msgstr "Cîr par file"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr "安装软件包"
+msgstr "Instale pachet"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr "设置仓库选项"
+msgstr "Stabilìs opzions dal dipuesit"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
@@ -1398,56 +1389,56 @@ msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr "参数解析失败"
+msgstr "No si è rivâts a analizâ i argoments"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr "配置文件加载失败"
+msgstr "No si è rivâts a cjariâ il file di configurazion"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr "后端加载失败"
+msgstr "No si è rivâts a cjariâ il motôr di gjestion"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr "后端移除失败"
+msgstr "No si è rivâts a molâ vie il motôr di gjestion"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "禁用空闲计时器"
+msgstr "Disabilite il contadôr di inativitât"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "显示版本并退出"
+msgstr "Mostre la version e jes"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "短暂延迟后退出"
+msgstr "Jes daspò un piçul ritart"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "引擎装入后退出"
+msgstr "Jes daspò che il motôr al è stât cjariât"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr "在启动时不要清除环境"
+msgstr "No sta netâ l'ambient al inviament"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr "PackageKit 服务"
+msgstr "Servizi PackageKit"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "此软件不是来自受信任源。"
+msgstr "Il software al rive di une sorzint no fidade"
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "不要更新这个软件包，除非您确信这么做是安全的。"
+msgstr "No sta inzornâ chest pachet, gjavât che tu sedis sigûr/sigure che al sedi afidabil."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "不要更新这些软件包，除非您确信这么做是安全的。"
+msgstr "No sta inzornâ chescj pachets, gjavât che tu sedis sigûr/sigure che a sedin afidabii."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "不要安装这些软件包，除非您确信这么做是安全的。"
+msgstr "No sta instalâ chest pachet, gjavât che tu sedis sigûr/sigure che al sedi afidabil."
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "不要安装这些软件包，除非您确信这么做是安全的。"
+msgstr "No sta instalâ chescj pachets, gjavât che tu sedis sigûr/sigure che a sedin afidabii."

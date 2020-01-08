@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2018
+# Kimmo Kujansuu <mrkujansuu@gmail.com>, 2019
 # Richard Hughes <richard@hughsie.com>, 2011
 # Ville-Pekka Vainio <vpvainio@iki.fi>, 2011
 # Ville Skyttä <ville.skytta@iki.fi>, 2011
@@ -11,9 +12,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2019-02-16 21:47+0000\n"
+"Last-Translator: Kimmo Kujansuu <mrkujansuu@gmail.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/freedesktop/packagekit/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -120,7 +121,7 @@ msgstr "Tietoja päivityksestä:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Paketti"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -354,7 +355,7 @@ msgstr "Tämän toiminnon edellisen suorittamisen aikaa ei saatu"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr ""
+msgstr "Aika viimeisin"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -383,13 +384,13 @@ msgstr "Valmistele transaktio vain lataamalla paketit"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
+msgstr "Salli pakettien aiempi versio tapahtuman aikana"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
+msgstr "Salli pakettien asentaminen uudelleen tapahtuman aikana"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Poista käyttämättömät riippuvuudet automaattisesti"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -411,7 +412,7 @@ msgstr "Salli ei-luotetut paketit asennettavaksi."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr ""
+msgstr "Komentorivin jäsentäminen epäonnistui"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
@@ -484,7 +485,7 @@ msgid "A repo name, parameter and value are required"
 msgstr "Asennuslähteen nimi, parametri ja arvo on annettava"
 
 msgid "A repo id and autoremove required"
-msgstr ""
+msgstr "Repo-id tarvitaan ja automaattinen poisto vaaditaan"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -521,7 +522,7 @@ msgstr "Tekijä"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Sinun pitää nimetä luotava tiedosto"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -578,7 +579,7 @@ msgstr "Asennetaan järjestelmäpäivitystä, tässä saattaa kestää hetki..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Tietojen lataaminen repo-ohjelmistoarkistosta."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -655,7 +656,7 @@ msgid "Please choose a package to install"
 msgstr "Valitse asennettava paketti"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "Käyttäjä keskeytetti valinnat"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
@@ -818,7 +819,7 @@ msgstr "Kopioidaan tiedostoja"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Ajettavat koukut"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -848,7 +849,7 @@ msgstr "Turvallisuus"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Virheenkorjaus"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -983,7 +984,7 @@ msgstr "Haetaan asennuslähteitä"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Repo-arkiston muokkaaminen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1031,7 +1032,7 @@ msgstr "Haetaan transaktioita"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Järjestelmän päivitysten saaminen"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
@@ -1142,7 +1143,7 @@ msgstr "Seuraavat paketit on vaihdettava vanhempaan versioon:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "Seuraavat paketit on poistettava käytöstä:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1212,7 +1213,7 @@ msgid "Install older version of installed package"
 msgstr "Asenna vanhempi versio asennetusta paketista"
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Todennus vaaditaan aiemman version asentamiseksi"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1270,19 +1271,19 @@ msgstr "Ohjelmistojen päivittäminen vaatii tunnistautumisen"
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Muuta ohjelmistolähteen parametrit"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Todennus vaaditaan muuttaaksesi ohjelmiston parametreja"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Päivitä järjestelmän ohjelmistolähteet"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Ohjelmistolähteiden päivittäminen vaatii tunnistautumisen"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1332,7 +1333,7 @@ msgstr "Asennettujen ohjelmistojen korjaus vaatii tunnistautumisen"
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Käynnistä offline-päivitykset"
 
 msgid "Authentication is required to trigger offline updates"
 msgstr "Tunnistautuminen vaaditaan päivitysten käynnistämiseksi yhteydettömässä tilassa"
@@ -1341,15 +1342,15 @@ msgstr "Tunnistautuminen vaaditaan päivitysten käynnistämiseksi yhteydettöm�
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Poista offline-päivitysviesti"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
+msgstr "Todennus vaaditaan offline-päivitysten poistamiseksi"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Peitenimi%s"
 
 msgid "Command not found, valid commands are:"
 msgstr "Komentoa ei löytynyt. Kelvolliset komennot ovat:"
@@ -1368,15 +1369,15 @@ msgstr "Päivitä välimuisti (pakotettu)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Hae nimen mukaan"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Etsi tietojen perusteella"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Etsi tiedostoista"
 
 #. TRANSLATORS: command description
 msgid "Install package"
@@ -1384,7 +1385,7 @@ msgstr "Asenna paketti"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Aseta ohjelmistolähteen asetukset"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
@@ -1392,7 +1393,7 @@ msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Argumenttien jäsentäminen epäonnistui"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -1404,7 +1405,7 @@ msgstr "Taustaosan lataaminen epäonnistui"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr ""
+msgstr "Taustajärjestelmän purkaminen epäonnistui"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
@@ -1424,7 +1425,7 @@ msgstr "Sulje sen jälkeen, kun moottori on ladattu"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Älä tyhjennä ympäristöä käynnistyksen yhteydessä"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"

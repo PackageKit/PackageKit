@@ -3,15 +3,17 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Carmen Bianca Bakker <carmen@carmenbianca.eu>, 2019
 # kristjan <kristjan.schmidt@googlemail.com>, 2013
-# Kristjan SCHMIDT <kristjan.schmidt@googlemail.com>, 2011
+# kristjan <kristjan.schmidt@googlemail.com>, 2013
+# kristjan <kristjan.schmidt@googlemail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2019-03-31 22:36+0000\n"
+"Last-Translator: Carmen Bianca Bakker <carmen@carmenbianca.eu>\n"
 "Language-Team: Esperanto (http://www.transifex.com/freedesktop/packagekit/language/eo/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,11 +40,11 @@ msgid "True"
 msgstr "Vera"
 
 msgid "False"
-msgstr "Falsa"
+msgstr "Malvera"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
-msgstr "rolo"
+msgstr "Rolo"
 
 #. TRANSLATORS: this is The duration of the transaction
 msgid "Duration"
@@ -107,7 +109,7 @@ msgstr "Nomo"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "Piktogramo"
+msgstr "Bildsimbolo"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
@@ -118,7 +120,7 @@ msgstr "Detaloj pri la ĝisdatigo:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Pako"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -137,21 +139,21 @@ msgstr "Vendisto"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr ""
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
-msgstr ""
+msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "Restarti"
+msgstr "Restartigo"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr ""
+msgstr "Ĝisdatig-teksto"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -166,29 +168,29 @@ msgstr "Stato"
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 msgid "Issued"
-msgstr ""
+msgstr "Eldonita"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Updated"
-msgstr "Ĝisdatigite"
+msgstr "Ĝisdatigita"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "Enŝaltite"
+msgstr "Ŝaltita"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "Elŝaltite"
+msgstr "Malŝaltita"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr ""
+msgstr "Bezonas sistem-restartigon:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr ""
+msgstr "Bezonas seanco-restartigon:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
@@ -202,19 +204,19 @@ msgstr ""
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Bezonas restartigon de aplikaĵo:"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr ""
+msgstr "Pako-priskribo"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
-msgstr "neniu dosiero"
+msgstr "Neniu dosiero"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr ""
+msgstr "Pako-dosieroj"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
@@ -236,28 +238,28 @@ msgstr "Gravega eraro"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr "Neniu pakaĵo nun estas ĝisdatigebla."
+msgstr "Neniu pako nun estas ĝisdatigebla."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr ""
+msgstr "La transakcio malsukcesis"
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
 msgstr "Neniu ĝisdatigo nun estas disponebla."
 
 msgid "There are no upgrades available at this time."
-msgstr "Neniu promocio nun estas disponebla."
+msgstr "Neniu altgradigo nun estas disponebla."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "Bonvole restarti la komputilon por kompletigi la ĝisdatigon."
+msgstr "Bonvolu restartigi la komputilon por plenumi la ĝisdatigon."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "Bonvole elsaluti kaj ensaluti por kompletigi la ĝisdatigon."
+msgstr "Bonvolu adiaŭi kaj saluti por plenumi la ĝisdatigon."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid ""
@@ -283,11 +285,11 @@ msgstr ""
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr ""
+msgstr "Ne trovis pakon"
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr ""
+msgstr "Trovis neniun pakon"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -314,7 +316,7 @@ msgstr ""
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Tiu ilo ne povis trovi la pakaĵon: %s"
+msgstr "Tiu ilo ne povis trovi la pakon: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
@@ -343,7 +345,7 @@ msgstr ""
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr ""
+msgstr "Subkomandoj:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -511,11 +513,11 @@ msgstr ""
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr ""
+msgstr "Priskribo"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr ""
+msgstr "Aŭtoro"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
@@ -536,7 +538,7 @@ msgstr ""
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr ""
+msgstr "Komando malsukcesis"
 
 msgid "Failed to get daemon state"
 msgstr ""
@@ -551,7 +553,7 @@ msgstr ""
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Instalante sisteman ĝisdatigon"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -564,15 +566,15 @@ msgstr ""
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Malŝaltante post instalado de ĝisdatigoj…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instalante ĝisdatigojn; ĉi tio povus esti longdaŭra..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Instalante sisteman altgradigon; ĉi tio povus esti longdaŭra..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
@@ -588,11 +590,11 @@ msgstr ""
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr ""
+msgstr "Ŝargante liston de pakoj."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr ""
+msgstr "Malsukcesis trovi dosieron"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
@@ -600,64 +602,64 @@ msgstr ""
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr ""
+msgstr "Malsukcesis lanĉi:"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr ""
+msgstr "Malsukcesis instali pakojn"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr ""
+msgstr "komando ne trovita"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr ""
+msgstr "Simila komando estas:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr ""
+msgstr "Ruli similan komandon:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr ""
+msgstr "Similaj komandoj estas:"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "Bonvolu elekti rulendan komandon"
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr ""
+msgstr "La pako, kiu provizas ĉi tiun dosieron, estas:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
+msgstr "Ĉu instali pakon '%s' por provizi komandon '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr ""
+msgstr "Pakoj, kiuj provizas ĉi tiun dosieron, estas:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr ""
+msgstr "Taŭgaj pakoj estas:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr ""
+msgstr "Bonvolu elekti instalendan pakon"
 
 msgid "User aborted selection"
-msgstr ""
+msgstr "Uzanto ĉesigis elekton"
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr ""
+msgstr "Bonvolu enigi numeron inter 1 kaj %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
@@ -665,41 +667,41 @@ msgstr "Nekonata stato"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "Startante"
+msgstr "Komencante"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr ""
+msgstr "Atendante en atendovico"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr "Ruliĝante"
+msgstr "Rulante"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr ""
+msgstr "Informpetante"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr ""
+msgstr "Akirante informojn"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "Forigante pakaĵojn"
+msgstr "Forigante pakojn"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "Elŝutante pakaĵojn"
+msgstr "Elŝutante pakojn"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr "Instalaante pakaĵojn"
+msgstr "Instalante pakojn"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr ""
+msgstr "Aktualigante programarliston"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -708,37 +710,37 @@ msgstr "Instalante ĝisdatigojn"
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "Purigante pakojn"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr ""
+msgstr "Arĥaikigante pakojn"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr ""
+msgstr "Solvante dependecojn"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr ""
+msgstr "Kontrolante subskribojn"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr ""
+msgstr "Testante ŝanĝojn"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr ""
+msgstr "Enmetante ŝanĝojn"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr ""
+msgstr "Petante datumojn"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr ""
+msgstr "Finita"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
@@ -746,31 +748,31 @@ msgstr "Nuligante"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr ""
+msgstr "Elŝutante deponej-informojn"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr ""
+msgstr "Elŝutante liston de pakoj"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr ""
+msgstr "Elŝutante listojn de dosieroj"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr ""
+msgstr "Elŝutante listojn de ŝanĝoj"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr ""
+msgstr "Elŝutante grupojn"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr ""
+msgstr "Elŝutante ĝisdatig-informojn"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr ""
+msgstr "Repakante dosierojn"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
@@ -778,35 +780,35 @@ msgstr "Ŝargante kaŝmemoron"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr ""
+msgstr "Skanante aplikaĵojn"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr ""
+msgstr "Generante paklistojn"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr ""
+msgstr "Atendante por pako-administrila ŝloso"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "Atendas aŭtentigon"
+msgstr "Atendante por aŭtentigo"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr ""
+msgstr "Ĝisdatigante rulantajn aplikaĵojn"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr ""
+msgstr "Kontrolante uzantajn aplikaĵojn"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr ""
+msgstr "Kontrolante uzantajn bibliotekojn"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
@@ -830,15 +832,15 @@ msgstr "Montri sencimigajn agordojn"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr ""
+msgstr "Bagatela"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "Normale"
+msgstr "Normala"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr "Grave"
+msgstr "Grava"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
@@ -846,28 +848,28 @@ msgstr "Sekureco"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Cimoriparo"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr ""
+msgstr "Plibonigo"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "Blokite"
+msgstr "Blokita"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "Instalite"
+msgstr "Instalita"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "Disponeble"
+msgstr "Disponebla"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr ""
+msgstr "Nedisponebla"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
@@ -889,51 +891,51 @@ msgstr "Forigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "Vakigante"
+msgstr "Purigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr ""
+msgstr "Arĥaikigante"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr ""
+msgstr "Reinstalante"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "Elŝutite"
+msgstr "Elŝutita"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "Forigite"
+msgstr "Forigita"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr ""
+msgstr "Purigita"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr ""
+msgstr "Arĥaikigita"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr ""
+msgstr "Reinstalita"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr ""
+msgstr "Nekonata roltipo"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr ""
+msgstr "Akirante dependecojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr ""
+msgstr "Akirante ĝisdatig-detalojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr ""
+msgstr "Akirante detalojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
@@ -957,7 +959,7 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "Serĉo laŭ nomo"
+msgstr "Serĉante laŭ nomo"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
@@ -965,11 +967,11 @@ msgstr "Instalante dosierojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr ""
+msgstr "Aktualigante kaŝmemoron"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "Ĝisdatigante pakaĵojn"
+msgstr "Ĝisdatigante pakojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
@@ -977,27 +979,27 @@ msgstr "Nuligante"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr ""
+msgstr "Akirante deponejojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Aliigante deponejon"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr ""
+msgstr "Agordante datumojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr ""
+msgstr "Forigante deponejon"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr ""
+msgstr "Solvante"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "Ricevante la dosierliston"
+msgstr "Ricevante dosierliston"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
@@ -1005,19 +1007,19 @@ msgstr ""
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr ""
+msgstr "Instalante subskribon"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr ""
+msgstr "Akirante pakojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr ""
+msgstr "Konsentante EULA-on"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr ""
+msgstr "Akirante altgradigojn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
@@ -1071,7 +1073,7 @@ msgstr ""
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr ""
+msgstr "Ĉu vi akceptas ĉi tiun subskribon?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
@@ -1088,7 +1090,7 @@ msgstr "Permesilo"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr ""
+msgstr "Ĉu vi konsentas ĉi tiun permesilon?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
@@ -1120,27 +1122,27 @@ msgstr ""
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti forigitaj:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti instalitaj:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti ĝisdatigitaj:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti reinstalitaj:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti malaltgradigitaj:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "La sekvaj pakoj devas esti arĥaikigitaj:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1149,7 +1151,7 @@ msgstr ""
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr ""
+msgstr "Ĉu daŭrigi?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
@@ -1172,10 +1174,10 @@ msgstr ""
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr ""
+msgstr "Instali subskribitan pakon"
 
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Necesas aŭtentigo por instali programaron"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1186,7 +1188,7 @@ msgid "Install untrusted local file"
 msgstr ""
 
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Necesas aŭtentigo por instali programaron"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1198,7 +1200,7 @@ msgid "Install already installed package again"
 msgstr ""
 
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Necesas aŭtentigo por reinstali programaron"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1210,7 +1212,7 @@ msgid "Install older version of installed package"
 msgstr ""
 
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Necesas aŭtentigo por malaltgradigi programaron"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1231,10 +1233,10 @@ msgstr ""
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr ""
+msgstr "Konsenti EULA-on"
 
 msgid "Authentication is required to accept a EULA"
-msgstr ""
+msgstr "Necesas aŭtentigo por konsenti EULA-on"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1246,10 +1248,10 @@ msgstr ""
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "Forigi pakaĵon"
+msgstr "Forigi pakon"
 
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Necesas aŭtentigo por forigi programaron"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1258,10 +1260,10 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr ""
+msgstr "Ĝisdatigi programaron"
 
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Necesas aŭtentigo por ĝisdatigi programaron"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1277,10 +1279,10 @@ msgstr ""
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Aktualigi sistem-deponejojn"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Necesas aŭtentigo por aktualigi la sistem-deponejojn"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1300,7 +1302,7 @@ msgstr ""
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr ""
+msgstr "Reŝargi aparaton"
 
 msgid "Authentication is required to reload the device with a new driver"
 msgstr ""
@@ -1310,7 +1312,7 @@ msgstr ""
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Altgradigi sistemon"
 
 msgid "Authentication is required to upgrade the operating system"
 msgstr ""
@@ -1358,43 +1360,43 @@ msgstr ""
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr ""
+msgstr "Aktualigi la kaŝmemoron"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr ""
+msgstr "Aktualigi la kaŝmemoron (devige)"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr ""
+msgstr "Serĉi laŭ nomoj"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr ""
+msgstr "Serĉi laŭ detaloj"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr ""
+msgstr "Serĉi laŭ dosieroj"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr ""
+msgstr "Instali pakon"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr ""
+msgstr "Agordi deponej-opciojn"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr ""
+msgstr "Malsukcesis analizi argumentojn"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr ""
+msgstr "Malsukcesis ŝargi la agordodosieron"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
@@ -1410,11 +1412,11 @@ msgstr ""
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "Montri la version kaj eliri"
+msgstr "Montri la version kaj ĉesi"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr ""
+msgstr "Ĉesi post eta malfruo"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
@@ -1426,7 +1428,7 @@ msgstr ""
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr ""
+msgstr "PackageKit-servo"
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."

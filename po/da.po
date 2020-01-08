@@ -6,13 +6,15 @@
 # Joe Hansen <joedalton2@yahoo.dk>, 2013-2016
 # Kris Thomsen <lakristho@gmail.com>, 2009-2013
 # Richard Hughes <richard@hughsie.com>, 2011
+# scootergrisen, 2019
+# scootergrisen, 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2020-01-06 17:55+0000\n"
+"Last-Translator: scootergrisen\n"
 "Language-Team: Danish (http://www.transifex.com/freedesktop/packagekit/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -119,7 +121,7 @@ msgstr "Detaljer om opdateringen:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Pakke"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -388,7 +390,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "Tillad at pakker geninstalleres under transaktion"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Fjern ubrugte afhængigheder automatisk"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -398,7 +400,7 @@ msgstr "Kør kommandoen ved at bruge lav netværksbåndbredde, hvilket bruger mi
 msgid ""
 "Print to screen a machine readable output, rather than using animated "
 "widgets"
-msgstr "Udskriv for at vise maskinlæsbart output, istedet for at bruge animerede widgets"
+msgstr "Udskriv for at vise maskinlæsbart output, i stedet for at bruge animerede widgets"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
@@ -406,7 +408,7 @@ msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for »aldrig«."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "Tillad at upålidelige pakker installeres"
+msgstr "Tillad at upålidelige pakker installeres."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
@@ -483,7 +485,7 @@ msgid "A repo name, parameter and value are required"
 msgstr "Et pakkearkivnavn, parameter og værdi kræves"
 
 msgid "A repo id and autoremove required"
-msgstr "Et pakkearkiv-id og automatisk fjernelse krævet"
+msgstr "Et pakkearkiv-id og automatisk fjernelse er krævet"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -537,7 +539,7 @@ msgstr "Tilvalget »%s« er ikke understøttet"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "Kommando fejlede"
+msgstr "Kommandoen fejlede"
 
 msgid "Failed to get daemon state"
 msgstr "Kunne ikke hente status for dæmon"
@@ -552,7 +554,7 @@ msgstr "PackageKit overvåger"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Installerer systemopgradering"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -569,23 +571,23 @@ msgstr "Lukker ned efter installation af opdateringer ..."
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr "Installerer opdateringer,;det kan tage et stykke tid ..."
+msgstr "Installerer opdateringer – det kan tage et stykke tid ..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "Installerer opdateringer; det kan tage et stykke tid ..."
+msgstr "Installerer systemopgradering – det kan tage et stykke tid ..."
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Downloader detaljer om softwarepakkearkiverne."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Henter fillister (dette kan tage noget tid at udføre)."
+msgstr "Henter fillister (det kan tage noget tid at udføre)."
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Venter på at pakkehåndteringsprogrammet låser."
+msgstr "Venter på at pakkehåndteringen låser."
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
@@ -611,7 +613,7 @@ msgstr "Kunne ikke installere pakker"
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "kommando ikke fundet"
+msgstr "kommandoen blev ikke fundet"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -638,7 +640,7 @@ msgstr "Pakken der udbyder denne fil er:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installer pakke »%s« for at udbyde kommando »%s«?"
+msgstr "Installer pakke »%s« for at udbyde kommandoen »%s«?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
@@ -700,7 +702,7 @@ msgstr "Installerer pakker"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "Genopfrisker liste over pakkearkiver"
+msgstr "Opdaterer liste over pakkearkiver"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -775,7 +777,7 @@ msgstr "Genpakker filer"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "Indlæser cache"
+msgstr "Indlæser mellemlager"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -817,7 +819,7 @@ msgstr "Kopierer filer"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Kørende hooks"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -847,7 +849,7 @@ msgstr "Sikkerhed"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Fejlrettelse"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -966,7 +968,7 @@ msgstr "Installerer filer"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Genopfrisker cache"
+msgstr "Opdaterer mellemlager"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
@@ -982,7 +984,7 @@ msgstr "Henter pakkearkiver"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Redigerer pakkearkiv"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1176,7 +1178,7 @@ msgid "Install signed package"
 msgstr "Installer signeret pakke"
 
 msgid "Authentication is required to install software"
-msgstr "Godkendelse er krævet for at installere programmer"
+msgstr "Godkendelse kræves for at installere programmer"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1187,7 +1189,7 @@ msgid "Install untrusted local file"
 msgstr "Installer upålidelig lokal fil"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "Godkendelse er krævet for at installere upålidelige pakker"
+msgstr "Godkendelse kræves for at installere upålidelige programmer"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1199,7 +1201,7 @@ msgid "Install already installed package again"
 msgstr "Installer allerede installeret pakke igen"
 
 msgid "Authentication is required to reinstall software"
-msgstr "Godkendelse er krævet for at geninstallere programmer"
+msgstr "Godkendelse kræves for at geninstallere programmer"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1211,7 +1213,7 @@ msgid "Install older version of installed package"
 msgstr "Installer ældre version af installeret pakke"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Godkendelse er krævet for at nedgradere programmer"
+msgstr "Godkendelse kræves for at nedgradere programmer"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1224,7 +1226,7 @@ msgstr "Betro en nøgle brugt til signering af programmer"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "Godkendelse er krævet for at overveje en nøgle brugt for signering af programmer som pålidelig"
+msgstr "Godkendelse kræves for at overveje en nøgle brugt for signering af programmer som pålidelig"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1250,7 +1252,7 @@ msgid "Remove package"
 msgstr "Fjern pakke"
 
 msgid "Authentication is required to remove software"
-msgstr "Godkendelse er krævet for at fjerne programmer"
+msgstr "Godkendelse kræves for at fjerne programmer"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1262,26 +1264,26 @@ msgid "Update software"
 msgstr "Opdater programmer"
 
 msgid "Authentication is required to update software"
-msgstr "Godkendelse er krævet for at opdatere programmer"
+msgstr "Godkendelse kræves for at opdatere programmer"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Skift parametre for programpakkearkiv"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Godkendelse kræves for at skifte parametre for programpakkearkiv"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Opdater systempakkearkiver"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Godkendelse kræves for at opdatere systempakkearkiverne"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1292,7 +1294,7 @@ msgstr "Sæt netværksproxy"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "Godkendelse er krævet for at angive netværksproxy anvendt for overførsel af programmer"
+msgstr "Godkendelse kræves for at angive netværksproxy anvendt for overførsel af programmer"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1314,7 +1316,7 @@ msgid "Upgrade System"
 msgstr "Opgrader system"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Godkendelse er krævet for at opgradere operativsystemet"
+msgstr "Godkendelse kræves for at opgradere operativsystemet"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1324,7 +1326,7 @@ msgid "Repair System"
 msgstr "Reparer system"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Godkendelse er krævet for at reparere det installerede software"
+msgstr "Godkendelse kræves for at reparere det installerede software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
@@ -1334,7 +1336,7 @@ msgid "Trigger offline updates"
 msgstr "Udløs offline-opdateringer"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Godkendelse er krævet for at udløse offline-opdateringer"
+msgstr "Godkendelse kræves for at udløse offline-opdateringer"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -1343,7 +1345,7 @@ msgid "Clear offline update message"
 msgstr "Ryd offline-opdateringsbesked"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Godkendelse er krævet for at rydde den offline-opdateringsbesked"
+msgstr "Godkendelse kræves for at rydde den offline-opdateringsbesked"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
@@ -1351,7 +1353,7 @@ msgid "Alias to %s"
 msgstr "Alias til %s"
 
 msgid "Command not found, valid commands are:"
-msgstr "Kommando blev ikke fundet, gyldige kommandoer er:"
+msgstr "Kommandoen blev ikke fundet, gyldige kommandoer er:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1407,7 +1409,7 @@ msgstr "Kunne ikke indlæse motoren"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "Deaktiver tomgangstimeren"
+msgstr "Deaktiver inaktivitetstimeren"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
@@ -1415,7 +1417,7 @@ msgstr "Vis version og afslut"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "Afslut efter kort pause"
+msgstr "Afslut efter en lille forsinkelse"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"

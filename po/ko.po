@@ -6,14 +6,14 @@
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2013
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017
-# Shinjo Park <kde@peremen.name>, 2012,2015,2018
+# Shinjo Park <kde@peremen.name>, 2012,2015,2018-2019
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2019-03-26 22:21+0000\n"
+"Last-Translator: Shinjo Park <kde@peremen.name>\n"
 "Language-Team: Korean (http://www.transifex.com/freedesktop/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -120,7 +120,7 @@ msgstr "자세한 업데이트 정보:"
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "패키지"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -389,7 +389,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "트랜잭션 중 패키지 재설치 허용"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "사용되지 않는 의존성 자동으로 삭제"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -639,7 +639,7 @@ msgstr "이 파일이 포함된 패키지:"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%2$s' 명령을 제공하는 '%1$s' 꾸러미를 설치하시겠습니까?"
+msgstr "'%s' 명령을 제공하는 '%s' 꾸러미를 설치하시겠습니까?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"

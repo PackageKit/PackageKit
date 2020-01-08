@@ -5,6 +5,7 @@
 # Translators:
 # Adolfo Jayme-Barrientos, 2014
 # Adolfo Jayme-Barrientos, 2013
+# Adolfo Jayme-Barrientos, 2019
 # Adolfo Jayme-Barrientos, 2015
 # Adolfo Jayme-Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
@@ -17,9 +18,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2019-09-29 04:05+0000\n"
+"Last-Translator: Adolfo Jayme-Barrientos\n"
 "Language-Team: Spanish (http://www.transifex.com/freedesktop/packagekit/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -119,14 +120,14 @@ msgstr "Icono"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "Detalles acerca de la actualización:"
+msgstr "Detalles sobre la actualización:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr ""
+msgstr "Paquete"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -257,7 +258,7 @@ msgid "There are no updates available at this time."
 msgstr "En este momento no hay actualizaciones disponibles."
 
 msgid "There are no upgrades available at this time."
-msgstr "En este momento no hay actualizaciones disponibles."
+msgstr "En este momento no hay versiones nuevas disponibles."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
@@ -385,7 +386,7 @@ msgstr "Instalar los paquetes sin confirmación"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Preparar la transacción descargando paquetes únicamente"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
@@ -395,7 +396,7 @@ msgid "Allow packages to be reinstalled during transaction"
 msgstr "Permitir reinstalar paquetes durante la operación"
 
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Desinstalar automáticamente dependencias no utilizadas"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -559,7 +560,7 @@ msgstr "Monitor de PackageKit"
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Instalando versión nueva del sistema"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -576,15 +577,15 @@ msgstr "Apagando tras la instalación de actualizaciones…"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instalando actualizaciones; esto puede demorar algún tiempo…"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Instalando versión nueva del sistema; esto puede demorar algún tiempo…"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Descargando detalles sobre los repositorios de software."
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -824,7 +825,7 @@ msgstr "Copiando archivos"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr ""
+msgstr "Ejecutando actuadores"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -854,7 +855,7 @@ msgstr "Seguridad"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr ""
+msgstr "Corrección de defecto"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -945,7 +946,7 @@ msgstr "Obteniendo detalles"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "Obteniendo lo que requiere"
+msgstr "Obteniendo requisitos"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
@@ -973,7 +974,7 @@ msgstr "Instalando archivos"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Actualizando el caché"
+msgstr "Actualizando antememoria"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
@@ -989,7 +990,7 @@ msgstr "Obteniendo repositorios"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr ""
+msgstr "Modificando repositorio"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1025,7 +1026,7 @@ msgstr "Aceptando el Contrato de licencia para el usuario final (CLUF)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "Obteniendo actualizaciones"
+msgstr "Obteniendo versiones nuevas"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
@@ -1037,16 +1038,16 @@ msgstr "Obteniendo operaciones"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Obteniendo versiones nuevas del sistema"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "¿Desea permitir la instalación de software que no esté identificado?"
+msgstr "¿Quiere permitir la instalación de software no firmado?"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "El software no identificado no será instalado."
+msgstr "No se instalará el software no firmado."
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
@@ -1128,27 +1129,27 @@ msgstr "No se insertó el medio correcto."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "Los siguientes paquetes deben eliminarse:"
+msgstr "Los paquetes siguientes deben desinstalarse:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "Los siguientes paquetes deben instalarse:"
+msgstr "Los paquetes siguientes deben instalarse:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "Los siguientes paquetes deben actualizarse:"
+msgstr "Los paquetes siguientes deben actualizarse:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "Los siguientes paquetes deben reinstalarse:"
+msgstr "Los paquetes siguientes deben reinstalarse:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "Los siguientes paquetes deben desactualizarse:"
+msgstr "Los paquetes siguientes deben desactualizarse:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr ""
+msgstr "Los paquetes siguientes deben marcarse como obsoletos:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1172,7 +1173,7 @@ msgstr "Cancelar tarea externa"
 
 msgid ""
 "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Se necesita autenticación para cancelar una tarea que no ha iniciado"
+msgstr "Necesita autenticarse para cancelar una tarea que no ha iniciado"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -1183,7 +1184,7 @@ msgid "Install signed package"
 msgstr "Instalar paquete firmado"
 
 msgid "Authentication is required to install software"
-msgstr "Se necesita autenticación para instalar software"
+msgstr "Necesita autenticarse para instalar software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1194,7 +1195,7 @@ msgid "Install untrusted local file"
 msgstr "Instalar archivo local no confiable"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "Se necesita autenticación para instalar software no confiable"
+msgstr "Necesita autenticarse para instalar software no confiable"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1206,7 +1207,7 @@ msgid "Install already installed package again"
 msgstr "Instalar otra vez un paquete ya instalado"
 
 msgid "Authentication is required to reinstall software"
-msgstr "Se necesita autenticación para reinstalar software"
+msgstr "Necesita autenticarse para reinstalar software"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1218,7 +1219,7 @@ msgid "Install older version of installed package"
 msgstr "Instalar una versión anterior de un paquete instalado"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Se necesita autenticación para desactualizar software"
+msgstr "Necesita autenticarse para desactualizar software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1231,7 +1232,7 @@ msgstr "Confiar en una clave de firma de software"
 msgid ""
 "Authentication is required to consider a key used for signing software as "
 "trusted"
-msgstr "Se necesita autenticación para considerar que una clave de firma de software es confiable"
+msgstr "Necesita autenticarse para considerar que una clave de firma de software es confiable"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1242,7 +1243,7 @@ msgid "Accept EULA"
 msgstr "Aceptar CLUF"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Se necesita autenticación para aceptar un CLUF"
+msgstr "Necesita autenticarse para aceptar un CLUF"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1257,7 +1258,7 @@ msgid "Remove package"
 msgstr "Eliminar paquete"
 
 msgid "Authentication is required to remove software"
-msgstr "Se necesita autenticación para desinstalar software"
+msgstr "Necesita autenticarse para desinstalar software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1269,26 +1270,26 @@ msgid "Update software"
 msgstr "Actualizar software"
 
 msgid "Authentication is required to update software"
-msgstr "Se necesita autenticación para actualizar software"
+msgstr "Necesita autenticarse para actualizar software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Cambiar parámetros de repositorio de software"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Necesita autenticarse para cambiar los parámetros del repositorio de software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Actualizar repositorios del sistema"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Necesita autenticarse para actualizar los repositorios del sistema"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1299,7 +1300,7 @@ msgstr "Establecer el proxy de la red"
 msgid ""
 "Authentication is required to set the network proxy used for downloading "
 "software"
-msgstr "Se necesita autenticación para definir el proxy de red usado para descargar software"
+msgstr "Necesita autenticarse para definir el proxy de red usado para descargar software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to rebind a driver
@@ -1311,17 +1312,17 @@ msgid "Reload a device"
 msgstr "Recargar un dispositivo"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Se necesita autenticación para recargar el dispositivo con un controlador nuevo"
+msgstr "Necesita autenticarse para recargar el dispositivo con un controlador nuevo"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr ""
+msgstr "Actualizar versión del sistema"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Necesita autenticarse para actualizar el sistema operativo"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1331,7 +1332,7 @@ msgid "Repair System"
 msgstr "Reparar el sistema"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Se necesita autenticación para reparar el software instalado"
+msgstr "Necesita autenticarse para reparar el software instalado"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
@@ -1341,7 +1342,7 @@ msgid "Trigger offline updates"
 msgstr "Iniciar actualizaciones en modo desconectado"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Se necesita autenticación para iniciar actualizaciones en modo desconectado"
+msgstr "Necesita autenticarse para iniciar actualizaciones en modo sin conexión"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -1350,7 +1351,7 @@ msgid "Clear offline update message"
 msgstr "Limpiar el mensaje de actualización en modo desconectado"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Se necesita autenticación para limpiar el mensaje de actualizaciones en modo desconectado"
+msgstr "Necesita autenticarse para vaciar el mensaje de actualizaciones en modo sin conexión"
 
 #. TRANSLATORS: this is a command alias
 #, c-format

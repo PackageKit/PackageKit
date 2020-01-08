@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Antoni Bella Pérez <antonibella5@yahoo.com>, 2019
 # Pau Iranzo <pau@somgnu.cat>, 2009
 # Pere Argelich <bakidok@gmail.com>, 2008
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -12,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-28 08:40+0100\n"
-"PO-Revision-Date: 2018-09-25 12:03+0000\n"
-"Last-Translator: Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>\n"
+"POT-Creation-Date: 2020-01-08 14:29+0000\n"
+"PO-Revision-Date: 2019-09-29 17:13+0000\n"
+"Last-Translator: Antoni Bella Pérez <antonibella5@yahoo.com>\n"
 "Language-Team: Catalan (http://www.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -299,7 +300,7 @@ msgstr "No s'han trobat els paquets"
 msgid ""
 "Expected package name, actually got file. Try using 'pkcon install-local %s'"
 " instead."
-msgstr "S'esverava el nom d'un paquet i es va obtenir el nom d'un fitxer. En lloc seu, proveu 'pkcon install-local %s'."
+msgstr "S'esperava el nom d'un paquet i es va obtenir el nom d'un fitxer. En lloc seu, proveu «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -404,7 +405,7 @@ msgstr "Imprimeix per pantalla una sortida que pugui llegir la màquina, en lloc
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "L'antiguitat màxima de la memòria cau de les metadades. Utilitzeu -1 per «mai»."
+msgstr "L'antiguitat màxima de la memòria cau de les metadades. Utilitzeu -1 per a «mai»."
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -1425,7 +1426,7 @@ msgstr "Surt després que el motor s'hagi carregat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr "No netegis l'entorn en l'inici"
+msgstr "No netegis l'entorn durant l'inici"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"

@@ -1,3 +1,65 @@
+Version 1.1.13
+~~~~~~~~~~~~~~
+Released: 2020-01-08
+
+Libraries:
+ - packagekit-glib2: Add pk_client_helper_is_active() (Julian Andres Klode)
+ - packagekit-glib2: Export pk_client_create_helper_argv_envp() (Julian Andres Klode)
+ - packagekit-glib2: Extract pk_client_helper_start_with_socket() (Julian Andres Klode)
+ - packagekit-glib2: Use $XDG_RUNTIME_DIR/debconf-socket if it exists (Julian Andres Klode)
+
+Backends:
+ - alpm: update for 5.2 API change (Christian Hesse)
+ - aptcc: also generate a repo detail when a download happened (and finished) (Harald Sitter)
+ - aptcc: apt-inst folded into apt-pkg in apt 1.9, make it optional (Julian Andres Klode)
+ - aptcc: Completely remove distro-upgrade support for now (Matthias Klumpp)
+ - aptcc: Disable distro-upgrade functionality (for now) (Matthias Klumpp)
+ - aptcc: Implement frontend-locking (Julian Andres Klode)
+ - aptcc: Introduce socket-activated pk-debconf-helper (Julian Andres Klode)
+ - aptcc: pk-debconf-helper: raise timeout to 60 seconds (Julian Andres Klode)
+ - aptcc: Port to apt 1.9 (Julian Andres Klode)
+ - dnf: Add vendor configuration for ROSA Linux (Neal Gompa)
+ - dnf: Do not trigger an event when the AppStream XML data is unchanged (Richard Hughes)
+ - dnf: Don't override DnfContext's release_ver for the running system (Kalev Lember)
+ - dnf: Fix OpenMandriva vendor for rolling variant and new architectures (Neal Gompa)
+ - dnf: Invalidate the sack cache after downloading new metadata (Kalev Lember)
+ - dnf: Move libgit2 module reset downstream (Neal Gompa)
+ - dnf: Replace armv5tl with aarch64 for Mageia repo configuration vendor (Neal Gompa)
+ - dnf: Reset libgit2 module when upgrading to F31 (Kalev Lember)
+ - zypp: Add support for newest filter in what-provides (Jonathan Kang)
+ - zypp: Don't set upgrade mode in update-packages (Jonathan Kang)
+ - zypp: Emit installed package for newest filter (Jonathan Kang)
+ - zypp: Fix get-updates in Tumbleweed (Jonathan Kang)
+ - zypp: Implement upgrade-system (Jonathan Kang)
+ - zypp: Make name/description search case insensitive (Carson Black)
+ - zypp: pass an array of strings to pk_backend_job_files() (Jonathan Kang)
+ - zypp: Perform actions disallowed by update in upgrade mode (Stasiek Michalski)
+ - zypp: Promt users to use upgrade-system in Tumbleweed (Jonathan Kang)
+ - zypp: Promt users when installing already installed packages (Jonathan Kang)
+ - zypp: Reset upgrade mode to FALSE when not needed (Jonathan Kang)
+ - zypp: Switch to doUpgrade solver when required by distribution (Stasiek Michalski)
+
+New Features:
+ - Add elogind support (Sven Eden)
+ - Add support for user services (Julian Andres Klode)
+ - Use new plymouth "system-upgrade" and "reboot" modes (Kalev Lember)
+
+Bugfixes:
+ - Add mutex lock to protect EULAs array (Jonathan Kang)
+ - Correct bug tracker links on website (David Hewitt)
+ - Do not dereference pk-client-helper argument before checking it (Julian Andres Klode)
+ - Improve the 'using' documentation with a link to API (#277) (Damien Cassou)
+ - Keep a ref on transaction while doing async polkit call (Kalev Lember)
+ - List installed, removed and obsoleted packages in pkcon get-updates (Aleksei Nikiforov)
+ - Properly mark obsoleted packages when simulating upgrade (Aleksei Nikiforov)
+ - Provide information about obsoleted packages (Aleksei Nikiforov)
+ - Return directly when its state is going backwards (Jonathan Kang)
+ - Shrink the progress bar to fit when run in small spaces (Deftdawg)
+ - Support non-x86 arches in gstreamer helper (Dan Horák)
+ - Use the detected PYTHON version (Javier Jardón)
+ - zsh command not found should return the same as its bash equivalent (Tim Speetjens)
+ - Don't use a bash regex to fix command not found on other shells (Richard Hughes)
+
 Version 1.1.12
 ~~~~~~~~~~~~~~
 Released: 2018-11-28
