@@ -1975,7 +1975,8 @@ pk_client_create_helper_socket (PkClientState *state)
 	/* This is not a specially handled debian frontend (current terminal or
 	 * the debconf-kde stuff, use a systemd-activated helper if available)
 	 */
-	if (!g_strv_contains ((const gchar * const *) envp, "DEBIAN_FRONTEND=kde") &&
+	if (envp != NULL &&
+	    !g_strv_contains ((const gchar * const *) envp, "DEBIAN_FRONTEND=kde") &&
 	    !g_strv_contains ((const gchar * const *) envp, "DEBIAN_FRONTEND=dialog")) {
 		g_autofree gchar *existing_socket_filename = g_build_filename (g_get_user_runtime_dir (), "pk-debconf-socket", NULL);
 		if (g_file_test (existing_socket_filename, G_FILE_TEST_EXISTS))
