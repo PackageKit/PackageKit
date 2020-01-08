@@ -194,7 +194,7 @@ pk_test_client_helper_output_cb (GSocket *socket, GIOCondition condition, gpoint
 
 	/* the helper process exited */
 	if ((condition & G_IO_HUP) > 0) {
-		g_warning ("socket was disconnected");
+		g_debug ("socket was disconnected");
 		ret = FALSE;
 		goto out;
 	}
