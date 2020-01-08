@@ -73,7 +73,7 @@ pk_debconf_helper_CPPFLAGS =						\
 	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lib
 systemdservice_in_files =				\
-	pk-debconf-helper.service.in				\
+	pk-debconf-helper.service.in			\
 	pk-debconf-helper.socket.in
 
 systemduserservicedir   = $(systemduserunitdir)
@@ -90,7 +90,9 @@ EXTRA_DIST = 20packagekit \
 	     apt-cache-file.h \
 	     gst-matcher.h \
 	     deb-file.h \
-	     acqpkitstatus.h
+	     acqpkitstatus.h \
+	     pk-debconf-helper.socket.in \
+	     pk-debconf-helper.service.in
 
 helperdir = $(datadir)/PackageKit/helpers/aptcc
 dist_helper_DATA =					\
