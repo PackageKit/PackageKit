@@ -282,8 +282,10 @@ pk_dbus_finalize (GObject *object)
 	g_return_if_fail (PK_IS_DBUS (object));
 	dbus = PK_DBUS (object);
 
-	g_object_unref (dbus->priv->proxy_pid);
-	g_object_unref (dbus->priv->proxy_uid);
+	if (dbus->priv->proxy_pid != NULL)
+		g_object_unref (dbus->priv->proxy_pid);
+	if (dbus->priv->proxy_uid != NULL)
+		g_object_unref (dbus->priv->proxy_uid);
 	if (dbus->priv->proxy_session != NULL)
 		g_object_unref (dbus->priv->proxy_session);
 
@@ -299,25 +301,18 @@ pk_dbus_class_init (PkDbusClass *klass)
 	g_type_class_add_private (klass, sizeof (PkDbusPrivate));
 }
 
-/**
- * pk_dbus_init:
- *
- * initializes the dbus class. NOTE: We expect dbus objects
- * to *NOT* be removed or added during the session.
- * We only control the first dbus object if there are more than one.
- **/
-static void
-pk_dbus_init (PkDbus *dbus)
+gboolean
+pk_dbus_connect (PkDbus *dbus, GError **error)
 {
-	g_autoptr(GError) error = NULL;
-	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
+	if (dbus->priv->connection != NULL)
+		return TRUE;
 
 	/* use the bus to get the uid */
 	dbus->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
-						 NULL, &error);
+						 NULL, error);
 	if (dbus->priv->connection == NULL) {
-		g_warning ("cannot connect to the system bus: %s", error->message);
-		return;
+		g_prefix_error (error, "cannot connect to the system bus: ");
+		return FALSE;
 	}
 
 	/* connect to DBus so we can get the pid */
@@ -330,10 +325,10 @@ pk_dbus_init (PkDbus *dbus)
 				       "/org/freedesktop/DBus/Bus",
 				       "org.freedesktop.DBus",
 				       NULL,
-				       &error);
+				       error);
 	if (dbus->priv->proxy_pid == NULL) {
-		g_warning ("cannot connect to DBus: %s", error->message);
-		return;
+		g_prefix_error (error, "cannot connect to DBus: ");
+		return FALSE;
 	}
 
 	/* connect to DBus so we can get the uid */
@@ -346,10 +341,10 @@ pk_dbus_init (PkDbus *dbus)
 				       "/org/freedesktop/DBus",
 				       "org.freedesktop.DBus",
 				       NULL,
-				       &error);
+				       error);
 	if (dbus->priv->proxy_uid == NULL) {
-		g_warning ("cannot connect to DBus: %s", error->message);
-		return;
+		g_prefix_error (error, "cannot connect to DBus: ");
+		return FALSE;
 	}
 
 	/* use ConsoleKit to get the session */
@@ -362,11 +357,27 @@ pk_dbus_init (PkDbus *dbus)
 				       "/org/freedesktop/ConsoleKit/Manager",
 				       "org.freedesktop.ConsoleKit.Manager",
 				       NULL,
-				       &error);
+				       error);
 	if (dbus->priv->proxy_session == NULL) {
-		g_warning ("cannot connect to DBus: %s", error->message);
-		return;
+		g_prefix_error (error, "cannot connect to DBus: ");
+		return FALSE;
 	}
+
+	/* success */
+	return TRUE;
+}
+
+/**
+ * pk_dbus_init:
+ *
+ * initializes the dbus class. NOTE: We expect dbus objects
+ * to *NOT* be removed or added during the session.
+ * We only control the first dbus object if there are more than one.
+ **/
+static void
+pk_dbus_init (PkDbus *dbus)
+{
+	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 }
 
 PkDbus *
