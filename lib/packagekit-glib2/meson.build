@@ -196,7 +196,6 @@ if get_option('gobject_introspection')
     symbol_prefix: 'pk',
     extra_args: [
       '-DPK_COMPILATION=1',
-      '-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE',
     ],
     dependencies: [
       glib_dep,

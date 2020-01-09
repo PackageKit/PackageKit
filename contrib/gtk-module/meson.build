@@ -14,7 +14,6 @@ shared_module(
   install: true,
   install_dir: join_paths(get_option('libdir'), 'gtk-3.0', 'modules'),
   c_args: [
-    '-DI_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE=1',
     '-DVERSION="@0@"'.format(meson.project_version()),
   ]
 )

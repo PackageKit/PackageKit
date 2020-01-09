@@ -22,10 +22,6 @@
 #ifndef __PACKAGEKIT_H__
 #define __PACKAGEKIT_H__
 
-#ifndef I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
-#error You have to define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
-#endif
-
 #define __PACKAGEKIT_H_INSIDE__
 
 #include <packagekit-glib2/pk-category.h>
