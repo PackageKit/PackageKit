@@ -1,7 +1,3 @@
-if get_option('packaging_backend') == 'yum'
-  subdir('yum-packagekit')
-endif
-
 if get_option('gstreamer_plugin')
   subdir('gstreamer-plugin')
 endif
