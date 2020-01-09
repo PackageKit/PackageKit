@@ -2345,6 +2345,16 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 	data->role = role;
 	data->actions = g_ptr_array_ref (actions);
 
+	/* create if required */
+	if (priv->authority == NULL) {
+		g_autoptr(GError) error = NULL;
+		priv->authority = polkit_authority_get_sync (NULL, &error);
+		if (priv->authority == NULL) {
+			g_warning ("failed to get polkit authority: %s", error->message);
+			return FALSE;
+		}
+	}
+
 	g_debug ("authorizing action %s", action_id);
 	/* do authorization async */
 	polkit_authority_check_authorization (priv->authority,
@@ -5166,9 +5176,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->dbus = pk_dbus_new ();
 	transaction->priv->results = pk_results_new ();
 	transaction->priv->supported_content_types = g_ptr_array_new_with_free_func (g_free);
-	transaction->priv->authority = polkit_authority_get_sync (NULL, &error);
-	if (transaction->priv->authority == NULL)
-		g_error ("failed to get pokit authority: %s", error->message);
 	transaction->priv->cancellable = g_cancellable_new ();
 
 	transaction->priv->transaction_db = pk_transaction_db_new ();
@@ -5255,7 +5262,8 @@ pk_transaction_finalize (GObject *object)
 	g_object_unref (transaction->priv->job);
 	g_object_unref (transaction->priv->transaction_db);
 	g_object_unref (transaction->priv->results);
-	g_object_unref (transaction->priv->authority);
+	if (transaction->priv->authority != NULL)
+		g_object_unref (transaction->priv->authority);
 	g_object_unref (transaction->priv->cancellable);
 
 	G_OBJECT_CLASS (pk_transaction_parent_class)->finalize (object);
