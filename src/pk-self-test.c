@@ -175,6 +175,9 @@ pk_test_backend_func (void)
 	ret = g_unlink (filename);
 	g_assert (!ret);
 
+	/* wait for config file change */
+	_g_test_loop_run_with_timeout (5000);
+
 	/* connect */
 	job = pk_backend_job_new (conf);
 	pk_backend_job_set_backend (job, backend);
