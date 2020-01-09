@@ -242,6 +242,7 @@ public:
     AptCacheFile* aptCacheFile() const;
 
 private:
+    void setEnvLocaleFromJob();
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
     bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
     bool isApplication(const pkgCache::VerIterator &verIter);
