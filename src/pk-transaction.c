@@ -1548,6 +1548,8 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	PkTransactionPrivate *priv = transaction->priv;
 
 	/* get session */
+	if (!pk_dbus_connect (priv->dbus, error))
+		return FALSE;
 	session = pk_dbus_get_session (priv->dbus, priv->sender);
 	if (session == NULL) {
 		g_set_error_literal (error, 1, 0, "failed to get the session");
@@ -1997,6 +1999,7 @@ gboolean
 pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 {
 	PkTransactionPrivate *priv = transaction->priv;
+	g_autoptr(GError) error = NULL;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
 	g_return_val_if_fail (sender != NULL, FALSE);
@@ -2016,6 +2019,10 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 
 	/* we get the UID for all callers as we need to know when to cancel */
 	priv->subject = polkit_system_bus_name_new (sender);
+	if (!pk_dbus_connect (priv->dbus, &error)) {
+		g_warning ("cannot get UID: %s", error->message);
+		return FALSE;
+	}
 	priv->uid = pk_dbus_get_uid (priv->dbus, sender);
 
 	/* only get when it's going to be saved into the database */
@@ -2690,6 +2697,8 @@ pk_transaction_cancel (PkTransaction *transaction,
 	}
 
 	/* get the UID of the caller */
+	if (!pk_dbus_connect (transaction->priv->dbus, &error))
+		goto out;
 	uid = pk_dbus_get_uid (transaction->priv->dbus, sender);
 	if (uid == PK_TRANSACTION_UID_INVALID) {
 		g_set_error (&error,
