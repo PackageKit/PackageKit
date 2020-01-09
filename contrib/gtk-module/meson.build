@@ -23,5 +23,3 @@ install_data(
   'pk-gtk-module.desktop',
   install_dir: join_paths(get_option('libdir'), 'gnome-settings-daemon-3.0', 'gtk-modules')
 )
-
-subdir('gtk2')

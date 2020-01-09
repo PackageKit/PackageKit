@@ -18,7 +18,6 @@ BuildRequires: gtk-doc
 BuildRequires: sqlite-devel
 BuildRequires: polkit-devel >= 0.92
 BuildRequires: libtool
-BuildRequires: gtk2-devel
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
 BuildRequires: gnome-doc-utils
@@ -228,7 +227,6 @@ popd > /dev/null
 %{_libexecdir}/gst-install-plugins-helper
 
 %files gtk3-module
-%{_libdir}/gtk-2.0/modules/*.so
 %{_libdir}/gtk-3.0/modules/*.so
 %{_libdir}/gnome-settings-daemon-3.0/gtk-modules/*.desktop
 
