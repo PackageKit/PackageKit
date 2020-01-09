@@ -477,6 +477,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 
 	/* the "hawkey" and "hif" backends are superseded by "dnf" */
 	if (g_strcmp0 (backend_name, "hawkey") == 0 ||
+	    g_strcmp0 (backend_name, "yum") == 0 ||
 	    g_strcmp0 (backend_name, "hif") == 0) {
 		g_free (backend_name);
 		backend_name = g_strdup ("dnf");
