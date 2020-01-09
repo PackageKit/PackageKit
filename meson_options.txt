@@ -1,4 +1,4 @@
-option('packaging_backend', type : 'combo', choices : ['alpm', 'aptcc', 'dnf', 'dummy', 'entropy', 'pisi', 'poldek', 'portage', 'ports', 'slack', 'urpmi', 'yum', 'zypp', 'nix'], value : 'dummy', description : 'The name of the backend to use')
+option('packaging_backend', type : 'combo', choices : ['alpm', 'aptcc', 'dnf', 'dummy', 'entropy', 'poldek', 'portage', 'ports', 'slack', 'urpmi', 'yum', 'zypp', 'nix'], value : 'dummy', description : 'The name of the backend to use')
 option('dnf_vendor', type : 'combo', choices : ['fedora', 'mageia', 'openmandriva', 'rosa'], value : 'fedora', description : 'Vendor configuration when using the dnf backend')
 option('systemd', type : 'boolean', value : true, description : 'Use systemd and logind')
 option('systemdsystemunitdir', type : 'string', value : '', description : 'Directory for systemd service files')
