@@ -310,10 +310,10 @@ pk_test_backend_spawn_func (void)
 	const gchar *text;
 	gboolean ret;
 	gchar *uri;
-	GError *error = NULL;
 	g_autoptr(GKeyFile) conf = NULL;
 	g_autoptr(PkBackend) backend = NULL;
 	g_autoptr(PkBackendJob) job = NULL;
+	g_autoptr(GError) error = NULL;
 
 	/* get an backend_spawn */
 	conf = g_key_file_new ();
@@ -338,13 +338,9 @@ pk_test_backend_spawn_func (void)
 	text = pk_backend_spawn_get_name (backend_spawn);
 	g_assert_cmpstr (text, ==, "test_spawn");
 
-	/* needed to avoid an error */
-	ret = pk_backend_load (backend, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-
 	/* test pk_backend_spawn_inject_data Percentage1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t0", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t0", &error);
+	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage2 */
@@ -440,10 +436,6 @@ pk_test_backend_spawn_func (void)
 				  PK_BACKEND_SIGNAL_PACKAGE,
 				  (PkBackendJobVFunc) pk_test_backend_spawn_package_cb,
 				  backend_spawn);
-
-	/* needed to avoid an error */
-	ret = pk_backend_load (backend, NULL);
-	g_assert (ret);
 
 	/* test search-name.sh running */
 	ret = pk_backend_spawn_helper (backend_spawn, job, "search-name.sh", "none", "bar", NULL);
