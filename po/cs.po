@@ -618,7 +618,7 @@ msgstr "Selhala instalace balíčků"
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "Příkaz nebyl nenalezen"
+msgstr "Příkaz nebyl nalezen"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
