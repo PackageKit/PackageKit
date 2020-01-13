@@ -50,6 +50,8 @@ pk_version_header = configure_file(
   input: 'pk-version.h.in',
   output: 'pk-version.h',
   configuration: version_configuration,
+  install_header: true,
+  install_dir: join_paths(get_option('includedir'), 'PackageKit', 'packagekit-glib2'),
 )
 
 packagekit_glib2_sources = files(
