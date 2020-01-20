@@ -188,7 +188,12 @@ packagekit_glib2_dep = declare_dependency(
 if get_option('gobject_introspection')
   packagekit_glib2_gir = gnome.generate_gir(
     packagekit_glib2_library,
-    sources: packagekit_glib2_sources,
+    sources: [
+      packagekit_glib2_sources,
+      packagekit_glib2_headers,
+      pk_enum_type,
+      pk_version_header,
+    ],
     namespace: 'PackageKitGlib',
     nsversion: '1.0',
     include_directories: packagekit_glib2_includes,
@@ -196,6 +201,7 @@ if get_option('gobject_introspection')
     header: 'packagekit-glib2/packagekit.h',
     identifier_prefix: 'Pk',
     symbol_prefix: 'pk',
+    export_packages: 'packagekit-glib2',
     extra_args: [
       '-DPK_COMPILATION=1',
     ],
