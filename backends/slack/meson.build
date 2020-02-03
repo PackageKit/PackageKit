@@ -1,10 +1,8 @@
 add_languages('cpp')
 
-subdir('test')
-
 curl_dep = meson.get_compiler('c').find_library('curl')
 
-shared_module(
+packagekit_backend_slack_module = shared_module(
   'pk_backend_slack',
   'pk-backend-slack.cc',
   'utils.cc',
@@ -29,6 +27,8 @@ shared_module(
   install: true,
   install_dir: pk_plugin_dir,
 )
+
+subdir('tests')
 
 slackware_config_data = configuration_data()
 if (target_machine.cpu_family() == 'x86_64')
