@@ -38,8 +38,8 @@ static gchar *xfercmd = NULL;
 
 typedef struct
 {
-	 gboolean		 checkspace, color, ilovecandy, totaldl,
-				 usesyslog, verbosepkglists;
+	 gboolean		 checkspace, color, disabledownloadtimeout, ilovecandy,
+				totaldl, usesyslog, verbosepkglists;
 
 	 gchar			*arch, *cleanmethod, *dbpath, *gpgdir, *logfile,
 				*root, *xfercmd;
@@ -130,6 +130,14 @@ pk_alpm_config_set_color (PkAlpmConfig *config)
 }
 
 static void
+pk_alpm_config_set_disabledownloadtimeout (PkAlpmConfig *config)
+{
+	g_return_if_fail (config != NULL);
+
+	config->disabledownloadtimeout = TRUE;
+}
+
+static void
 pk_alpm_config_set_ilovecandy (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
@@ -171,6 +179,7 @@ typedef struct
 static const PkAlpmConfigBoolean pk_alpm_config_boolean_options[] = {
 	{ "CheckSpace", pk_alpm_config_set_checkspace },
 	{ "Color", pk_alpm_config_set_color },
+	{ "DisableDownloadTimeout", pk_alpm_config_set_disabledownloadtimeout },
 	{ "ILoveCandy", pk_alpm_config_set_ilovecandy },
 	{ "TotalDownload", pk_alpm_config_set_totaldl },
 	{ "UseSyslog", pk_alpm_config_set_usesyslog },
