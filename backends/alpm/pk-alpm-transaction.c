@@ -152,6 +152,9 @@ pk_alpm_transaction_dlcb (const gchar *basename, off_t complete, off_t total)
 	g_assert (pkalpm_current_job);
 	job = pkalpm_current_job;
 
+	/* download start signal */
+	if (total == -1) return;
+
 	g_return_if_fail (basename != NULL);
 	g_return_if_fail (complete <= total);
 
