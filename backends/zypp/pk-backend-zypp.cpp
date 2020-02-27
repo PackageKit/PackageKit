@@ -3521,61 +3521,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 static void
-backend_upgrade_system_thread (PkBackendJob *job,
-			       GVariant *params,
-			       gpointer user_data)
-{
-	PkBitfield transaction_flags = 0;
-	ZyppJob zjob (job);
-	set<PoolItem> candidates;
-
-	g_variant_get (params, "(t&su)",
-		       &transaction_flags,
-		       NULL,
-		       NULL);
-
-	ZYpp::Ptr zypp = zjob.get_zypp ();
-	if (zypp == NULL) {
-		return;
-	}
-
-	/* refresh the repos before checking for updates. */
-	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		return;
-	}
-	zypp_build_pool (zypp, TRUE);
-	zypp_get_updates (job, zypp, candidates);
-	if (candidates.empty ()) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
-					   "No Distribution Upgrade Available.");
-
-		return;
-	}
-
-	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
-	zypp->resolver ()->doUpgrade ();
-
-	PoolStatusSaver saver;
-
-	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
-
-	zypp->resolver ()->setUpgradeMode (FALSE);
-}
-
-/**
-  * pk_backend_upgrade_system
-  */
-void
-pk_backend_upgrade_system (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield transaction_flags,
-			   const gchar *distro_id,
-			   PkUpgradeKindEnum upgrade_kind)
-{
-   pk_backend_job_thread_create (job, backend_upgrade_system_thread, NULL, NULL);
-}
-
-static void
 backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
