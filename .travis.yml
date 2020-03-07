@@ -1,14 +1,15 @@
-language: c
-sudo: required
-dist: trusty
+language: minimal
 
 services:
   - docker
 
+env:
+  - DIST=fedora PKGMGR=dnf
+  - DIST=debian PKGMGR=aptcc
+
 before_script:
-  - docker build -t packagekit-debian -f tests/ci/Dockerfile-debian .
-  - docker build -t packagekit-fedora -f tests/ci/Dockerfile-fedora .
+  - docker build -t packagekit-${DIST} -f tests/ci/Dockerfile-${DIST} .
 
 script:
-  - docker run -t -v `pwd`:/build packagekit-debian ./tests/ci/build_and_test.sh -Dpackaging_backend=aptcc
-  - docker run -t -v `pwd`:/build packagekit-fedora ./tests/ci/build_and_test.sh -Dpackaging_backend=dnf
+  - docker build -t packagekit-${DIST} -f tests/ci/Dockerfile-${DIST} .
+  - docker run -t -v `pwd`:/build packagekit-${DIST} ./tests/ci/build_and_test.sh -Dpackaging_backend=${PKGMGR}
