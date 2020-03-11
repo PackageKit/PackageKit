@@ -31,7 +31,7 @@ shared_module(
     gmodule_dep,
   ],
   c_args: [
-    '-DPK_LOG_PREFIX="PACKAGEKIT"'
+    '-DPK_LOG_PREFIX="PACKAGEKIT"',
     '-DG_LOG_DOMAIN="PackageKit-alpm"',
     '-DPK_BACKEND_CONFIG_FILE="@0@"'.format(join_paths(get_option('confdir'), 'pacman.conf')),
     '-DPK_BACKEND_GROUP_FILE="@0@"'.format(join_paths(get_option('confdir'), 'groups.list')),
