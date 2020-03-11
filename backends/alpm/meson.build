@@ -33,9 +33,9 @@ shared_module(
   c_args: [
     '-DPK_LOG_PREFIX="PACKAGEKIT"',
     '-DG_LOG_DOMAIN="PackageKit-alpm"',
-    '-DPK_BACKEND_CONFIG_FILE="@0@"'.format(join_paths(get_option('confdir'), 'pacman.conf')),
-    '-DPK_BACKEND_GROUP_FILE="@0@"'.format(join_paths(get_option('confdir'), 'groups.list')),
-    '-DPK_BACKEND_REPO_FILE="@0@"'.format(join_paths(get_option('confdir'), 'repos.list')),
+    '-DPK_BACKEND_CONFIG_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'pacman.conf')),
+    '-DPK_BACKEND_GROUP_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'groups.list')),
+    '-DPK_BACKEND_REPO_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'repos.list')),
     '-DPK_BACKEND_DEFAULT_PATH="/bin:/usr/bin:/sbin:/usr/sbin"',
   ],
   install: true,
