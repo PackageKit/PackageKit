@@ -40,8 +40,8 @@ pk_alpm_environment_initialize (PkBackendJob *job)
 	g_setenv ("PATH", PK_BACKEND_DEFAULT_PATH, FALSE);
 
 	uname (&un);
-	value = g_strdup_printf ("%s/%s (%s %s) libalpm/%s", PACKAGE_TARNAME,
-				 PACKAGE_VERSION, un.sysname, un.machine,
+	value = g_strdup_printf ("%s/%s (%s %s) libalpm/%s", PROJECT_NAME,
+				 PROJECT_VERSION, un.sysname, un.machine,
 				 alpm_version ());
 	g_setenv ("HTTP_USER_AGENT", value, FALSE);
 	g_free (value);
