@@ -4,7 +4,7 @@ zypp_dep = dependency('libzypp', version: '>=6.16.0')
 
 # define if libzypp returns package size in bytes
 zypp_args = []
-if zypp_dep.version().compare_version('>=11.4.0')
+if zypp_dep.version().version_compare('>=11.4.0')
   zypp_args = ['-DZYPP_RETURN_BYTES=1']
 endif
 
@@ -27,7 +27,7 @@ shared_module(
   c_args: [
     '-Wno-deprecated',
     '-D_FILE_OFFSET_BITS=64',
-  ]
+  ],
   install: true,
   install_dir: pk_plugin_dir,
 )
