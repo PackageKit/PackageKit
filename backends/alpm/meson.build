@@ -43,8 +43,8 @@ shared_module(
 )
 
 install_data(
-  'groups.list'
-  'pacman.conf'
+  'groups.list',
+  'pacman.conf',
   'repos.list',
   install_dir: join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d')
 )
