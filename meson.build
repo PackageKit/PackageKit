@@ -65,6 +65,9 @@ conf.set_quoted('DATADIR', join_paths(get_option('prefix'), get_option('datadir'
 conf.set_quoted('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 conf.set_quoted('SYSCONFDIR', get_option('sysconfdir'))
 
+conf.set_quoted('PROJECT_NAME', meson.project_name())
+conf.set_quoted('PROJECT_VERSION', meson.project_version())
+
 cc = meson.get_compiler('c')
 if cc.has_function('setpriority')
   conf.set('HAVE_SETPRIORITY', '1')
