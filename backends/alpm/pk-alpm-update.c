@@ -271,6 +271,9 @@ pk_alpm_update_database (PkBackendJob *job, gint force, alpm_db_t *db, GError **
 	if (pk_alpm_update_is_db_fresh (job, db))
 		return TRUE;
 
+	if (!force)
+		return TRUE;
+
 	result = alpm_db_update (force, db);
 	if (result > 0) {
 		dlcb ("", 1, 1);
