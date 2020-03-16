@@ -29,6 +29,8 @@
 #include <sys/types.h>
 #include <utime.h>
 #include <errno.h>
+#include <stdio.h>
+#include <syslog.h>
 
 #include "pk-backend-alpm.h"
 #include "pk-alpm-error.h"
@@ -420,9 +422,12 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	int update_count = 0;
 	const alpm_list_t *i, *syncdbs;
 	g_autoptr(GError) error = NULL;
 	PkBitfield filters = 0;
+	FILE *file;
+	int stored_count;
 
 	if (!pk_alpm_update_databases (job, 0, &error)) {
 		return pk_alpm_error_emit (job, error);
@@ -455,7 +460,33 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) && pk_alpm_update_is_pkg_downloaded (upgrade))
 			continue;
 
+		update_count++;
 		pk_alpm_pkg_emit (job, upgrade, info);
+	}
+
+	if (g_file_test("/tmp/packagekit-alpm-updates", G_FILE_TEST_EXISTS)) {
+		file = fopen("/tmp/packagekit-alpm-updates", "r");
+
+		if (file != NULL) {
+			fscanf(file, "%d", &stored_count);
+			if (stored_count != update_count) {
+				g_signal_emit_by_name(backend, "updates-changed");
+			}
+			fclose(file);
+		} else {
+			syslog( LOG_DAEMON | LOG_WARNING, "Failed to open file /tmp/packagekit-alpm-updates for reading");
+			g_signal_emit_by_name(backend, "updates-changed");
+		}
+	} else {
+		g_signal_emit_by_name(backend, "updates-changed");
+	}
+
+	file = fopen("/tmp/packagekit-alpm-updates", "w");
+	if (file != NULL) {
+		fprintf(file, "%d", update_count);
+		fclose(file);
+	} else {
+		syslog( LOG_DAEMON | LOG_WARNING, "Failed to open file /tmp/packagekit-alpm-updates for writing");
 	}
 }
 
