@@ -80,7 +80,7 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 
-	priv->alpm = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, error);
+	priv->alpm = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, FALSE, error);
 	if (priv->alpm == NULL) {
 		g_prefix_error (error, "using %s: ", PK_BACKEND_CONFIG_FILE);
 		return FALSE;

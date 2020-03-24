@@ -24,6 +24,7 @@
 #include <alpm.h>
 #include <glob.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <sys/utsname.h>
 #include <glib/gstdio.h>
 #include <syslog.h>
@@ -39,7 +40,7 @@ static gchar *xfercmd = NULL;
 typedef struct
 {
 	 gboolean		 checkspace, color, disabledownloadtimeout, ilovecandy,
-				totaldl, usesyslog, verbosepkglists;
+				totaldl, usesyslog, verbosepkglists, is_check;
 
 	 gchar			*arch, *cleanmethod, *dbpath, *gpgdir, *logfile,
 				*root, *xfercmd;
@@ -633,7 +634,16 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 					      NULL);
 	}
 
-	g_debug ("initializing alpm");
+	if (config->is_check) {
+		g_free(config->dbpath);
+		gchar* path = g_strconcat (config->root,
+						 "/var/lib/PackageKit/alpm" + dir,
+						 NULL);
+		g_mkdir_with_parents(path, 0755);
+		config->dbpath = path;
+	}
+
+
 	handle = alpm_initialize (config->root, config->dbpath, &errno);
 	if (handle == NULL) {
 		g_set_error_literal (error, PK_ALPM_ERROR, errno,
@@ -658,6 +668,13 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 		config->logfile = g_strconcat (config->root,
 					       "/var/log/pacman.log" + dir,
 					       NULL);
+	}
+
+	if (config->is_check) {
+		g_free(config->logfile);
+		config->logfile = g_strconcat (config->root,
+						  "/var/log/pacman.PackageKit.log" + dir,
+						  NULL);
 	}
 
 	if (alpm_option_set_logfile (handle, config->logfile) < 0) {
@@ -812,7 +829,14 @@ pk_alpm_config_configure_repos (PkBackend *backend, PkAlpmConfig *config,
 		if (repo_level == ALPM_SIG_USE_DEFAULT)
 			 return FALSE;
 
-		pk_alpm_add_database (backend, repo->name, repo->servers, repo_level);
+		if (!config->is_check) {
+			pk_alpm_add_database (backend, repo->name, repo->servers, repo_level);
+		} else {
+			alpm_db_t *db;
+
+			db = alpm_register_syncdb (handle, repo->name, repo_level);
+			alpm_db_set_servers (db, alpm_list_strdup (repo->servers));
+		}
 	}
 
 	return TRUE;
@@ -967,7 +991,7 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 }
 
 alpm_handle_t *
-pk_alpm_configure (PkBackend *backend, const gchar *filename, GError **error)
+pk_alpm_configure (PkBackend *backend, const gchar *filename, gboolean is_check, GError **error)
 {
 	PkAlpmConfig *config;
 	alpm_handle_t *handle = NULL;
@@ -979,8 +1003,11 @@ pk_alpm_configure (PkBackend *backend, const gchar *filename, GError **error)
 	config = pk_alpm_config_new (backend);
 	pk_alpm_config_enter_section (config, "options");
 
-	if (pk_alpm_config_parse (config, filename, NULL, &e))
+
+	if (pk_alpm_config_parse (config, filename, NULL, &e)) {
+		config->is_check = is_check;
 		handle = pk_alpm_config_configure_alpm (backend, config, &e);
+	}
 
 	pk_alpm_config_free (config);
 	if (e != NULL) {

@@ -33,6 +33,7 @@
 #include <syslog.h>
 
 #include "pk-backend-alpm.h"
+#include "pk-alpm-config.h"
 #include "pk-alpm-error.h"
 #include "pk-alpm-packages.h"
 #include "pk-alpm-transaction.h"
@@ -428,9 +429,26 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	PkBitfield filters = 0;
 	FILE *file;
 	int stored_count;
+	alpm_cb_totaldl totaldlcb;
+	gboolean ret;
+	alpm_handle_t* handle = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, TRUE, error);
 
-	if (!pk_alpm_update_databases (job, 0, &error)) {
-		return pk_alpm_error_emit (job, error);
+	alpm_logaction (handle, PK_LOG_PREFIX, "synchronizing package lists\n");
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
+
+	/* set total size to minus the number of databases */
+	i = alpm_get_syncdbs (handle);
+
+	for (; i != NULL; i = i->next) {
+		if (pk_backend_job_is_cancelled (job)) {
+			/* pretend to be finished */
+			i = NULL;
+			break;
+		}
+
+		ret = pk_alpm_update_database (job, TRUE, i->data, error);
+		if (!ret)
+			break;
 	}
 
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
@@ -438,7 +456,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	}
 
 	/* find outdated and replacement packages */
-	syncdbs = alpm_get_syncdbs (priv->alpm);
+	syncdbs = alpm_get_syncdbs (handle);
 	for (i = alpm_db_get_pkgcache (priv->localdb); i != NULL; i = i->next) {
 		PkInfoEnum info = PK_INFO_ENUM_NORMAL;
 		alpm_pkg_t *upgrade = pk_alpm_pkg_find_update (i->data, syncdbs);
