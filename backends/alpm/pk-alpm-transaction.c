@@ -194,6 +194,34 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	g_assert (pkalpm_current_job);
 	job = pkalpm_current_job;
 
+	if (g_strcmp0(target, "") == 0) {
+		switch (type) {
+			case ALPM_PROGRESS_KEYRING_START:
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_SIG_CHECK);
+				pk_backend_job_set_percentage(job, percent);
+				break;
+			case ALPM_PROGRESS_INTEGRITY_START:
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_SIG_CHECK);
+				pk_backend_job_set_percentage(job, percent);
+				break;
+			case ALPM_PROGRESS_LOAD_START:
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_LOADING_CACHE);
+				pk_backend_job_set_percentage(job, percent);
+				break;
+			case ALPM_PROGRESS_DISKSPACE_START:
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_TEST_COMMIT);
+				pk_backend_job_set_percentage(job, percent);
+				break;
+			case ALPM_PROGRESS_CONFLICTS_START:
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_TEST_COMMIT);
+				pk_backend_job_set_percentage(job, percent);
+				break;
+			default:
+				syslog (LOG_DAEMON | LOG_WARNING, "unhandled progress type for transaction %d", type);
+				break;
+		}
+	}
+
 	/* TODO: remove block if/when this is made consistent upstream */
 	if (type == ALPM_PROGRESS_CONFLICTS_START ||
 	    type == ALPM_PROGRESS_DISKSPACE_START ||
@@ -220,11 +248,6 @@ pk_alpm_transaction_progress_cb (alpm_progress_t type, const gchar *target,
 	case ALPM_PROGRESS_DOWNGRADE_START:
 	case ALPM_PROGRESS_REINSTALL_START:
 	case ALPM_PROGRESS_REMOVE_START:
-	case ALPM_PROGRESS_CONFLICTS_START:
-	case ALPM_PROGRESS_DISKSPACE_START:
-	case ALPM_PROGRESS_INTEGRITY_START:
-	case ALPM_PROGRESS_LOAD_START:
-	case ALPM_PROGRESS_KEYRING_START:
 		if (percent == recent)
 			break;
 
