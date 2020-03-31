@@ -31,7 +31,7 @@
 #include "pk-alpm-transaction.h"
 
 static gboolean
-pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GError **error)
+pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gboolean update, GError **error)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -59,12 +59,30 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, GEr
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
+
+		if (update) { // libalpm only checks for ignorepkgs on an update
+			const alpm_list_t *ignorepkgs, *ignoregroups, *group_iter;
+
+			ignorepkgs = alpm_option_get_ignorepkgs (priv->alpm);
+			if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL)
+				goto cont;
+
+			ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
+			for (group_iter = alpm_pkg_get_groups (pkg); group_iter != NULL; group_iter = group_iter->next) {
+				if (alpm_list_find_str (ignoregroups, i->data) != NULL)
+					pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_BLOCKED); goto cont;
+			}
+		}
+
 		if (pkg == NULL || alpm_add_pkg (priv->alpm, pkg) < 0) {
 			alpm_errno_t errno = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, errno, "%s/%s: %s",
 				     repo, name, alpm_strerror (errno));
 			return FALSE;
 		}
+
+cont:
+		continue;
 	}
 
 	return TRUE;
@@ -100,7 +118,7 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 	flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
 	if (pk_alpm_transaction_initialize (job, flags, directory, &error) &&
-	    pk_alpm_transaction_sync_targets (job, package_ids, &error) &&
+	    pk_alpm_transaction_sync_targets (job, package_ids, FALSE, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
 		pk_alpm_transaction_commit (job, &error);
 	}
@@ -174,7 +192,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
 	if (pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error) &&
-	    pk_alpm_transaction_sync_targets (job, package_ids, &error) &&
+	    pk_alpm_transaction_sync_targets (job, package_ids, (gboolean)p, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
 
 		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
@@ -237,7 +255,7 @@ pk_backend_update_packages (PkBackend *self,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids)
 {
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, TRUE);
 }
 
 void
@@ -246,5 +264,5 @@ pk_backend_install_packages (PkBackend  *self,
 			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, NULL);
+	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, FALSE);
 }
