@@ -98,6 +98,9 @@ shared_module(
     '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
     ddtp_flag,
   ],
+  link_args: [
+    '-lutil',
+  ],
   override_options: ['c_std=c11', 'cpp_std=c++11'],
   install: true,
   install_dir: pk_plugin_dir,
