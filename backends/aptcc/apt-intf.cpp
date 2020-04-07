@@ -81,13 +81,17 @@ bool AptIntf::init(gchar **localDebs)
 
     // set http proxy
     http_proxy = pk_backend_job_get_proxy_http(m_job);
-    if (http_proxy != NULL)
-        g_setenv("http_proxy", http_proxy, TRUE);
+    if (http_proxy != NULL) {
+        g_autofree gchar *uri = pk_backend_convert_uri(http_proxy);
+        g_setenv("http_proxy", uri, TRUE);
+    }
 
     // set ftp proxy
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
-    if (ftp_proxy != NULL)
-        g_setenv("ftp_proxy", ftp_proxy, TRUE);
+    if (ftp_proxy != NULL) {
+        g_autofree gchar *uri = pk_backend_convert_uri(ftp_proxy);
+        g_setenv("ftp_proxy", uri, TRUE);
+    }
 
     // Check if we should open the Cache with lock
     bool withLock;
