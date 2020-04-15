@@ -54,6 +54,9 @@ if dependency('ply-boot-client', version: '>=0.9.5', required: false).found()
   add_project_arguments ('-DPLYMOUTH_0_9_5=1', language: 'c')
 endif
 
+# Ensure functions like realpath(3) and other "default" functions are available
+add_project_arguments ('-D_DEFAULT_SOURCE', language: 'c')
+
 # Avoid g_simple_async_result deprecation warnings in glib 2.46+
 add_project_arguments ('-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44', language: 'c')
 
