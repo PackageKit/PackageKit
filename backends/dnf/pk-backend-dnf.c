@@ -135,11 +135,12 @@ pk_backend_context_invalidate_cb (DnfContext *context,
 static gboolean
 pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *release_ver, GError **error)
 {
+	const gchar * const *repo_dirs;
+	const gchar * const *var_dirs;
 	gboolean keep_cache;
 	g_autofree gchar *cache_dir = NULL;
 	g_autofree gchar *destdir = NULL;
 	g_autofree gchar *lock_dir = NULL;
-	g_autofree gchar *repo_dir = NULL;
 	g_autofree gchar *solv_dir = NULL;
 
 	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
@@ -150,11 +151,31 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 	dnf_context_set_cache_dir (context, cache_dir);
 	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
 	dnf_context_set_solv_dir (context, solv_dir);
-	repo_dir = g_build_filename (destdir, "/etc/yum.repos.d", NULL);
-	dnf_context_set_repo_dir (context, repo_dir);
 	lock_dir = g_build_filename (destdir, "/var/run", NULL);
 	dnf_context_set_lock_dir (context, lock_dir);
 	dnf_context_set_rpm_verbosity (context, "info");
+
+	/* Add prefix to repo directories */
+	repo_dirs = dnf_context_get_repos_dir (context);
+	if (repo_dirs != NULL && repo_dirs[0] != NULL) {
+		g_auto(GStrv) full_repo_dirs = NULL;
+		guint len = g_strv_length ((gchar **)repo_dirs);
+		full_repo_dirs = g_new0 (gchar*, len + 1);
+		for (guint i = 0; i < len; i++)
+			full_repo_dirs[i] = g_build_filename (destdir, repo_dirs[i], NULL);
+		dnf_context_set_repos_dir (context, (const gchar * const*)full_repo_dirs);
+	}
+
+	/* Add prefix to var directories */
+	var_dirs = dnf_context_get_vars_dir (context);
+	if (var_dirs != NULL && var_dirs[0] != NULL) {
+		g_auto(GStrv) full_var_dirs = NULL;
+		guint len = g_strv_length ((gchar **)var_dirs);
+		full_var_dirs = g_new0 (gchar*, len + 1);
+		for (guint i = 0; i < len; i++)
+			full_var_dirs[i] = g_build_filename (destdir, var_dirs[i], NULL);
+		dnf_context_set_vars_dir (context, (const gchar * const*)full_var_dirs);
+	}
 
 	/* use this initial data if repos are not present */
 	dnf_context_set_vendor_cache_dir (context, "/usr/share/PackageKit/metadata");
