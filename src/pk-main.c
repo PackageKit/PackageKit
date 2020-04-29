@@ -178,8 +178,6 @@ main (int argc, char *argv[])
 
 	/* after how long do we timeout? */
 	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", NULL);
-	if (exit_idle_time == 0)
-		exit_idle_time = 300;
 	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	/* override the backend name */
