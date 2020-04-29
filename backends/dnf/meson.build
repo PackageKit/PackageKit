@@ -1,5 +1,5 @@
 appstream_dep = dependency('appstream-glib')
-dnf_dep = dependency('libdnf', version: '>=0.22.0')
+dnf_dep = dependency('libdnf', version: '>=0.43.1')
 rpm_dep = dependency('rpm')
 
 shared_module(
