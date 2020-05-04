@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Krishnababu Krothapalli <kkrothap@redhat.com>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -9,9 +9,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Telugu (http://www.transifex.com/freedesktop/packagekit/language/te/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,53 +16,93 @@ msgstr ""
 "Language: te\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "వ్యవహారము"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "సిస్టమ్ సమయం"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "సఫలమైంది"
-
-msgid "True"
-msgstr "సత్యము"
-
-msgid "False"
-msgstr "అసత్యము"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "పాత్ర"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "నిడివి"
-
 msgid "(seconds)"
 msgstr "(సెకనులు)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "ఆదేశ వరుస"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "ఒక సరైన పాత్ర అవసరము"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "వినియోగదారి ID"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "డౌనులోడు చేయుటకు గమ్య డైరెక్టరీ మరియు సంకలనము నామములు అవసరము"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "వినియోగదారినామము"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "సంస్థాపించుటకు వొక దస్త్రమునామము అవసరమైంది"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "వాస్తవ నామము"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "ఒక లైసెన్సు గుర్తింపుదారి (eula-id) అవసరమైంది"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "సంకలనము నామము అవసరమైంది"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "సంస్థాపించుటకు వొక ప్యాకేజీ నామము అవసరమైంది"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "తొలగించుటకు సంకలనము నామము అవసరమైంది"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "పరిష్కరించుటకు ఒక ప్యాకేజీ నామము అవసరము"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "సంకలనము అందించు పదబందము(స్ట్రింగు) అవసరమైంది"
+
+msgid "A repo name, parameter and value are required"
+msgstr "ఒక రెపో నామము, పారామితి మరియు విలువ అవసరమైంది"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "ఒక రిపోజిటరీ నామము అవసరమైంది"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "ఒక శోధన పదము అవసరమైంది"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "ఒక శోధన రకము అవసరమైంది, ఉ.దా. నామము"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "ఒక రకము, key_id మరియు package_id అవసరమైంది"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "EULA ఆమోదించుము"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "EULA ఆమోదించుచున్నది"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -75,65 +112,30 @@ msgstr "ప్రభావిత సంకలనాలు:"
 msgid "Affected packages: None"
 msgstr "ప్రభావిత సంకలనాలు: ఏదీకాదు"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "పంపిణి"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "ఒప్పందము"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "రకము"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "అనువర్తనము పునఃప్రారంభము అవసరమైంది:"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "సంక్షిప్త సమాచారము"
+msgid "Authentication is required to accept a EULA"
+msgstr "EULA ఆమోదించుటకు దృవీకరణము అవసరమైంది"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "వర్గము"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "మీ ద్వారా ప్రారంభించని కార్యము రద్దుచేయుటకు దృవీకరణము అవసరము"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "కొత్త డ్రైవర్‌తో పరికరమును తిరిగిలోడు చేయుటకు దృవీకరణ అవసరమైంది"
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "మాత్రుక"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "అందుబాటులోవుంది"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "నామము"
-
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "ప్రతిమ"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "నవీకరణ గురించి సమాచారము:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr ""
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "నవీకరణలు"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "తొలగించినవి"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "అమ్మకందారు"
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "బ్లాక్‌డ్"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -143,100 +145,799 @@ msgstr "బగ్‌జిల్లా"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "పునఃప్రారంభము"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "పరాయి కర్తవ్యమును రద్దుచేయి"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "పాఠము నవీకరించుము"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "రద్దుచేయుచున్నది"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "రద్దుచేయుచున్నది"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "వర్గము"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "మార్పులు"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "స్థితి"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "ఉపయోగంలోవున్న అనువర్తనములను పరిశీలించుచున్నది"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "విడుదలైన"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "ఉపయోగంలో వున్న లైబ్రరీలను పరిశీలించుచున్నది"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "సంతకాలను పరిశీలించుచున్నది"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "నవీకరించిన"
+msgid "Cleaned up"
+msgstr "శుభ్రపరచిన"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "చేతనపరచిన"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "శుభ్రపరచుచున్నది"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "సంకలనాలను శుభ్రపరచుచున్నది చేయుచున్నది"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "ఆదేశము విఫలమైంది"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "ఆదేశ వరుస"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "మార్పులను అప్పగించుతోంది"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "దస్త్రములను నకలుతీయుచున్నది"
+
+msgid "Debugging Options"
+msgstr "డీబగ్గింగ్ ఐచ్చికాలు"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "నవీకరణ గురించి సమాచారము:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "డైరెక్టరీ కనబడలేదు"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "వృధాగావున్న సమయగణనిని అచేతనముచేయి"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "అచేతనపరచిన"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "సిస్టమ్ పునఃప్రారంభము అవసరమైంది:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "పంపిణి"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "విభాగము(సెషన్) పునఃప్రారంభము అవసరమైంది:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "మీకు ఈ సంకలనములను సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "సిస్టమ్ పునఃప్రారంభము (రక్షణ) అవసరమైంది:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "మీకు ఈ సంకలనమును సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "విభాగము(సెషన్) పునఃప్రారంభము (రక్షణ) అవసరమైంది:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "మీకు ఈ సంకలనములను నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "అనువర్తనము పునఃప్రారంభము అవసరమైంది:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "మీకు ఈ సంకలనమును నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "సంకలనము వివరణ"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "మీరు ఈ వొప్పందమును ఆమోదిస్తారా?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "దస్త్రములు లేవు"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "మీరు ఈ సంతకమును ఆమోదిస్తారా?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "సంకలనము దస్త్రములు"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "సంతకముచేయని సాఫ్టువేరు సంస్థాపనను మీరు అనుమతించాలని అనుకొనుచున్నారా?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "శాతము"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "డౌనులోడు చేసిన"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "స్థితి"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "డౌనులోడు చేయుచున్నది"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "ఫలితాలు:"
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "దస్త్రముల జాబితాను డౌనులోడుచేయుచున్నది"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "దస్త్రములజాబితాను డౌనులోడుచేస్తున్నది (పూర్తిచేయుటకు యిది కొంత సమయం తీసుకొనవచ్చు)"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "సమూహాలను డౌనులోడు చేయుచున్నది"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "సంకలనాల జాబితాను డౌనులోడుచేస్తోంది"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "మార్పుల జాబితాను డౌనులోడుచేయుచున్నది"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "సంకలనాలను డౌనులోడు చేయుచున్నది"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "రిపోజిటరీ సమాచారమును డౌనులోడుచేయుచున్నది"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "నవీకరణ సమాచారమును డౌనులోడుచేస్తున్నది"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "నిడివి"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "చేతనపరచిన"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "అంతిమ వినియోగదారి లైసెన్సు వొప్పందము అవసరమైంది"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "వృద్దిఅవుతు"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "ఒక చిన్న విరామం తర్వాత నిష్క్రమించుము"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "ఇంజన్ లోడైన తర్వాత నిష్క్రమించుము"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "ప్యాకేజీకిట్‌ను సంప్రదించుటకు విఫలమైంది"
+
+msgid "Failed to get daemon state"
+msgstr "డెమోన్ స్థితిని పొందుటకు విఫలమైంది"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "ఈ చర్య ఆఖరున పూర్తైన కారణముగా సమయమును పొందుటలో విఫలమైంది"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "సంకలనములను సంస్థాపించుటలో విఫలమైంది"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "ఆరంభించుటలో విఫలమైంది:"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "దస్త్రమును శోధించుటలో విఫలమైంది"
+
+msgid "False"
+msgstr "అసత్యము"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "ప్రమాదకరమైన దోషము"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr ""
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "పూర్తైనది"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "సంకలన జాబితాలను జనియింపచేయుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "వర్గములను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "ఆధారాలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "వివరాలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "దస్త్రము జాబితాను పొందుచున్నది"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "సమాచారమును పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "సంకలనాలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "ఉత్పాదకాలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "రీపోజిటరీలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "కావలిసినవి పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "బదిలీకరణలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "నవీకరణ వివరములను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "నవీకరణలను పొందుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "నవీకరణలు పొందుచున్నది"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "ప్రతిమ"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "ముఖ్యమైన"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "సంకలనము '%s'ను ఆదేశము '%s' అందివ్వుటకు సంస్థాపించాలా?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "సంతకముచేసిన సంకలనములను సంస్థాపించుము"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "నిర్ధారణ కొరకు అడుగకుండా ప్యాకేజీలను సంస్థాపించుము"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "నమ్మదగని స్థానిక దస్త్రమును సంస్థాపించుము"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "సంస్థాపించిన"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "సంస్థాపించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "దస్త్రములను సంస్థాపించుచున్నది"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "సంకలనాలను సంస్థాపించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "సంతకమును సంస్థాపించుచున్నది"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "నవీకరణలను సంస్థాపించుచున్నది"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "విడుదలైన"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "కీ ID"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "కీ టైమ్‌స్టాంప్"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "కీ URL"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "కీ వేలిముద్ర"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "కీ వినియోగదారి"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "క్యాచీను లోడుచేయుచున్నది"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "సంకలనాల జాబితాను లోడుచేస్తోంది."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "మాధ్యమం మార్పు అవసరమైంది"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "మాధ్యమం లేబుల్"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "మాధ్యమం రకము"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "ఒకటికన్నా యెక్కువ సంకలనము సరితూగినది:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "నామము"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "దస్త్రములు లేవు"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "సాధారణ"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "తొలగించిన"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "తొలగించినవి"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "తొలగించుచున్నది"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "సంకలనాలను తీసివేయుచున్నది"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "ఐచ్చికము '%s' మద్దతీయబడదు"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "సంకలనము వివరణ"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "సంకలనము దస్త్రములు"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "ప్యాకేజీకిట్ కన్సోల్ ఇంటర్ఫేస్"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit పర్యవేక్షకి"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "PackageKit సేవ"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "ఈ దస్త్రమును అందించు సంకలనములు:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "ఉపయోగించుటకు సంకలనీకరణ బ్యాకెండ్, ఉ.దా. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "మాత్రుక"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "శాతము"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "నడుపుటకు దయచేసి ఆదేశమును యెంచుకొనుము"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "సంస్థాపించుటకు దయచేసి సంకలనమును యెంచుకొనుము"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "దయచేసి సరైన సంకలనమును యెంచుకొనుము: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "దయచేసి సంఖ్యను 1 నుండి %iకు ప్రవేశపెట్టుము: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "దయచేసి సరైన మాధ్యమాన్ని చేర్చుము"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "ముఖ్యమైన రక్షణ నవీకరణలు సంస్థాపించబడినవి కావున నవీకరణ పూర్తగుటకు దయచేసి లాగవుటై మరియు లాగిన్ అవ్వండి."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి లాగ్అవుటై మరియు లాగిన్అవ్వుము"
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "ముఖ్యమైన నవీకరణలు సంస్థాపించబడినవి కావున దయచేసి నవీకరణ పూర్తిచేయుటకు కంప్యూటర్ పునఃప్రారంభించుము."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి కంప్యూటర్ పునఃప్రారంభించుము."
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "ఏనిమేట్ చేయబడిన విడ్జట్‌లను వుపయోగించుట కన్నా, మిషన్ చదువగల అవుట్పుట్‌ను తెరకు ముద్రించుము"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "మార్పులతో ముందుకుపోవాలా?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "క్వరీచేస్తున్నది"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "వాస్తవ నామము"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "క్యాచీను తాజాపరుస్తోంది"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "సాఫ్టువేరు జాబితాను తాజాపర్చుచున్నది"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "తిరిగిసంస్థాపించిన"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "తిరిగిసంస్థాపించుచున్నది"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "పరికరమును తిరిగిలోడు చేయుము"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "ప్యాకేజీని తీసివేయుము"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "తొలగించిన"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "తీసివేయుచున్నది"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "ప్యాకేజీలను తీసివేయుచున్నది"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "దస్త్రములు పునఃసంకలనము చేయుచున్నది"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "డాటాను అభ్యర్ధించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "పరిష్కరించుచున్నది"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "ఆధారాలను పరిష్కరించుచున్నది"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "పునఃప్రారంభము"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "ఫలితాలు:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "పాత్ర"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "అటువంటి ఆదేశమును నడుపుము:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "స్థిరమైన నెట్వర్కు బ్యాండ్‌విడ్తును మరియు తక్కువ శక్తిని వుపయోగించి ఆదేశమును నడుపుము"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "నడుస్తున్నది"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "అనువర్తనములను స్కానుచేయుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "వివరముల ప్రకారం శోధించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "దస్త్రము ప్రకారం శోధించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "నామము ప్రకారం శోధించుచున్నది"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "సమూహాల ప్రాకరం శోధించుచున్నది"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "రక్షణ"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "విభాగము(సెషన్) పునఃప్రారంభము (రక్షణ) అవసరమైంది:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "విభాగము(సెషన్) పునఃప్రారంభము అవసరమైంది:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "నెట్వర్కు ప్రోక్సీను అమర్చుము"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "వడపోత(ఫిల్టర్) అమర్చుము, ఉ.దా. సంస్థాపించిన"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "డాటాను అమర్చుచున్నది"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "అన్ని ఫైళ్ళ కొరకు డీబగ్గింగ్ సమాచారమును చూపుము"
+
+msgid "Show debugging options"
+msgstr "డీబగ్గింగ్ ఐచ్చికాలను చూపుము"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "ప్రోగ్రామ్ వర్షన్‌ను చూపుము మరియు నిష్క్రమించుము"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "వర్షన్ చూపుము మరియు నిష్క్రమించుము"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "అటువంటి ఆదేశము:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "ఓకేతీరు ఆదేశములు:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "సాఫ్టువేరు మూలపు నామము"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "సాఫ్టువేరు మూలముయొక్క సంతకము అవసరము"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "ప్రారంభించుచున్నది"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "స్థితి"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "స్థితి"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "ఉపఆదేశములు:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "సఫలమైంది"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "సరితూగు సంకలనములు:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "సంక్షిప్త సమాచారము"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "సిస్టమ్ పునఃప్రారంభము (రక్షణ) అవసరమైంది:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "సిస్టమ్ పునఃప్రారంభము అవసరమైంది:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "సిస్టమ్ సమయం"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "మార్పులను పరిశీలించుచున్నది"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "పాఠ్యము"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "ఒప్పందము ఆమోదించబడదు."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "సరైన మాధ్యమం చేర్చబడలేదు."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "వ్యవహారము-మద్యలో డెమోన్ కుప్పకూలినది!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "తెలుపబడిన వడపోత(ఫిల్టర్) చెల్లనిది"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "ఈ క్రింది సంకలనములు డౌన్‌గ్రేడ్ చేయవలసివుంది:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "ఈ క్రింది ప్యాకేజీలు సంస్థాపించబడినవి:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "ఈ క్రింది సంకలనములు తిరిగిసంస్థాపించవలసి వుంది:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "ఈ క్రింది సంకలనములు తీసివేయబడాలి:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "ఈ క్రింది సంకలనములు నవీకరించవలసివుంది:"
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "సంకలనము అందించుచున్న ఈ దస్త్రము:"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "సంతకము ఆమోదించబడలేదు."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "సాఫ్టువేరు నమ్మదగిన మూలమునుండి కాదు."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "బదిలీకరణ ముందుకుసాగలేదు."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -244,59 +945,25 @@ msgstr ""
 msgid "The transaction failed"
 msgstr "బదిలీకరణ విఫలమైంది"
 
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "సంతకము చేయని సాఫ్టువేరు సంస్థాపించబడదు."
+
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
 msgstr "ఈ సమయం వద్ద అక్కడ యెటువంటి నవీకరణలు అందుబాటులో లేవు."
 
-msgid "There are no upgrades available at this time."
-msgstr ""
-
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి కంప్యూటర్ పునఃప్రారంభించుము."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "ఈ నవీకరణ పూర్తగుటకు దయచేసి లాగ్అవుటై మరియు లాగిన్అవ్వుము"
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "ముఖ్యమైన నవీకరణలు సంస్థాపించబడినవి కావున దయచేసి నవీకరణ పూర్తిచేయుటకు కంప్యూటర్ పునఃప్రారంభించుము."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "ముఖ్యమైన రక్షణ నవీకరణలు సంస్థాపించబడినవి కావున నవీకరణ పూర్తగుటకు దయచేసి లాగవుటై మరియు లాగిన్ అవ్వండి."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "ఒకటికన్నా యెక్కువ సంకలనము సరితూగినది:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "దయచేసి సరైన సంకలనమును యెంచుకొనుము: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr ""
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr ""
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr ""
+msgid "This tool could not find all the packages: %s"
+msgstr "ఈ సాధనము అన్ని సంకలనములను కనుగొనలేక పోయింది: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -316,1130 +983,86 @@ msgstr "ఈ సాధనము సంస్థాపిత సంకలనము
 msgid "This tool could not find the package: %s"
 msgstr "ఈ సాధనము ప్యాకేజీను కనుగొనలేక పోయింది: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr ""
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "ఈ సాధనము అన్ని సంకలనములను కనుగొనలేక పోయింది: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "వ్యవహారము-మద్యలో డెమోన్ కుప్పకూలినది!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "ప్యాకేజీకిట్ కన్సోల్ ఇంటర్ఫేస్"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "ఉపఆదేశములు:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "ఈ చర్య ఆఖరున పూర్తైన కారణముగా సమయమును పొందుటలో విఫలమైంది"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr ""
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr ""
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr ""
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "ప్రోగ్రామ్ వర్షన్‌ను చూపుము మరియు నిష్క్రమించుము"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "వడపోత(ఫిల్టర్) అమర్చుము, ఉ.దా. సంస్థాపించిన"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "నిర్ధారణ కొరకు అడుగకుండా ప్యాకేజీలను సంస్థాపించుము"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr ""
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
-
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "స్థిరమైన నెట్వర్కు బ్యాండ్‌విడ్తును మరియు తక్కువ శక్తిని వుపయోగించి ఆదేశమును నడుపుము"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "ఏనిమేట్ చేయబడిన విడ్జట్‌లను వుపయోగించుట కన్నా, మిషన్ చదువగల అవుట్పుట్‌ను తెరకు ముద్రించుము"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr ""
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr ""
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "ప్యాకేజీకిట్‌ను సంప్రదించుటకు విఫలమైంది"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "తెలుపబడిన వడపోత(ఫిల్టర్) చెల్లనిది"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "ఒక శోధన రకము అవసరమైంది, ఉ.దా. నామము"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "ఒక శోధన పదము అవసరమైంది"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "సంస్థాపించుటకు వొక ప్యాకేజీ నామము అవసరమైంది"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "సంస్థాపించుటకు వొక దస్త్రమునామము అవసరమైంది"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "ఒక రకము, key_id మరియు package_id అవసరమైంది"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "తొలగించుటకు సంకలనము నామము అవసరమైంది"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "డౌనులోడు చేయుటకు గమ్య డైరెక్టరీ మరియు సంకలనము నామములు అవసరము"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "డైరెక్టరీ కనబడలేదు"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "ఒక లైసెన్సు గుర్తింపుదారి (eula-id) అవసరమైంది"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "పరిష్కరించుటకు ఒక ప్యాకేజీ నామము అవసరము"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "ఒక రిపోజిటరీ నామము అవసరమైంది"
-
-msgid "A repo name, parameter and value are required"
-msgstr "ఒక రెపో నామము, పారామితి మరియు విలువ అవసరమైంది"
-
-msgid "A repo id and autoremove required"
-msgstr ""
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "ఒక సరైన పాత్ర అవసరము"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "సంకలనము నామము అవసరమైంది"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "సంకలనము అందించు పదబందము(స్ట్రింగు) అవసరమైంది"
-
-msgid "A filename is required"
-msgstr ""
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr ""
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr ""
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr ""
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr ""
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "ఐచ్చికము '%s' మద్దతీయబడదు"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "ఆదేశము విఫలమైంది"
-
-msgid "Failed to get daemon state"
-msgstr "డెమోన్ స్థితిని పొందుటకు విఫలమైంది"
-
-msgid "Failed to get properties"
-msgstr ""
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit పర్యవేక్షకి"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr ""
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr ""
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "దస్త్రములజాబితాను డౌనులోడుచేస్తున్నది (పూర్తిచేయుటకు యిది కొంత సమయం తీసుకొనవచ్చు)"
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "సంకలనము నిర్వాహిక లాక్ కొరకు వేచివుంది."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "సంకలనాల జాబితాను లోడుచేస్తోంది."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "దస్త్రమును శోధించుటలో విఫలమైంది"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr ""
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "ఆరంభించుటలో విఫలమైంది:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "సంకలనములను సంస్థాపించుటలో విఫలమైంది"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr ""
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "అటువంటి ఆదేశము:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "అటువంటి ఆదేశమును నడుపుము:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "ఓకేతీరు ఆదేశములు:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "నడుపుటకు దయచేసి ఆదేశమును యెంచుకొనుము"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "సంకలనము అందించుచున్న ఈ దస్త్రము:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "సంకలనము '%s'ను ఆదేశము '%s' అందివ్వుటకు సంస్థాపించాలా?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "ఈ దస్త్రమును అందించు సంకలనములు:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "సరితూగు సంకలనములు:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "సంస్థాపించుటకు దయచేసి సంకలనమును యెంచుకొనుము"
-
-msgid "User aborted selection"
-msgstr ""
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "దయచేసి సంఖ్యను 1 నుండి %iకు ప్రవేశపెట్టుము: "
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "వ్యవహారము"
+
+#. TRANSLATORS: The type of update
+msgid "Trivial"
+msgstr "క్లిష్టమైన"
+
+msgid "True"
+msgstr "సత్యము"
+
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "రకము"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "తెలియని పాత్రరకము"
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
 msgstr "తెలియని స్థితి"
 
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "ప్రారంభించుచున్నది"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "పాఠము నవీకరించుము"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "క్యూనందు వేచివుంది"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "నవీకరించిన"
 
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "నడుస్తున్నది"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "నవీకరణలు"
 
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "క్వరీచేస్తున్నది"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "నవీకరించుచున్నది"
 
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "సమాచారమును పొందుచున్నది"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "ప్యాకేజీలను తీసివేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "సంకలనాలను డౌనులోడు చేయుచున్నది"
+msgid "Updating packages"
+msgstr "సంకలనాలను నవీకరిస్తోంది"
 
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "సంకలనాలను సంస్థాపించుచున్నది"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "నడుస్తున్న అనువర్తనములను నవీకరించుచున్నది"
 
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "సాఫ్టువేరు జాబితాను తాజాపర్చుచున్నది"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "వినియోగదారి ID"
 
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "నవీకరణలను సంస్థాపించుచున్నది"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "వినియోగదారినామము"
 
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "సంకలనాలను శుభ్రపరచుచున్నది చేయుచున్నది"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "అమ్మకందారు"
 
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "సంకలనాలను తీసివేయుచున్నది"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "ఆధారాలను పరిష్కరించుచున్నది"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "సంతకాలను పరిశీలించుచున్నది"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "మార్పులను పరిశీలించుచున్నది"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "మార్పులను అప్పగించుతోంది"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "డాటాను అభ్యర్ధించుచున్నది"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "పూర్తైనది"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "రద్దుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "రిపోజిటరీ సమాచారమును డౌనులోడుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "సంకలనాల జాబితాను డౌనులోడుచేస్తోంది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "దస్త్రముల జాబితాను డౌనులోడుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "మార్పుల జాబితాను డౌనులోడుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "సమూహాలను డౌనులోడు చేయుచున్నది"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "నవీకరణ సమాచారమును డౌనులోడుచేస్తున్నది"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "దస్త్రములు పునఃసంకలనము చేయుచున్నది"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "క్యాచీను లోడుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "అనువర్తనములను స్కానుచేయుచున్నది"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "సంకలన జాబితాలను జనియింపచేయుచున్నది"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "దృవీకరణము కొరకు వేచివుంది"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
 msgstr "సంకలన నిర్వాహిక లాక్ కొరకు వేచివుంది"
 
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "దృవీకరణము కొరకు వేచివుంది"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "నడుస్తున్న అనువర్తనములను నవీకరించుచున్నది"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "ఉపయోగంలోవున్న అనువర్తనములను పరిశీలించుచున్నది"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "ఉపయోగంలో వున్న లైబ్రరీలను పరిశీలించుచున్నది"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "దస్త్రములను నకలుతీయుచున్నది"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr ""
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "అన్ని ఫైళ్ళ కొరకు డీబగ్గింగ్ సమాచారమును చూపుము"
-
-msgid "Debugging Options"
-msgstr "డీబగ్గింగ్ ఐచ్చికాలు"
-
-msgid "Show debugging options"
-msgstr "డీబగ్గింగ్ ఐచ్చికాలను చూపుము"
-
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "క్లిష్టమైన"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "సాధారణ"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "ముఖ్యమైన"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "రక్షణ"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr ""
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "వృద్దిఅవుతు"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "బ్లాక్‌డ్"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "సంస్థాపించిన"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "అందుబాటులోవుంది"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr ""
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "డౌనులోడు చేయుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "నవీకరించుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "సంస్థాపించుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "తీసివేయుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "శుభ్రపరచుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "తొలగించుచున్నది"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "తిరిగిసంస్థాపించుచున్నది"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "డౌనులోడు చేసిన"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "తొలగించిన"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "శుభ్రపరచిన"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "తొలగించిన"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "తిరిగిసంస్థాపించిన"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "తెలియని పాత్రరకము"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "ఆధారాలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "నవీకరణ వివరములను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "వివరాలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "కావలిసినవి పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "నవీకరణలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "వివరముల ప్రకారం శోధించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "దస్త్రము ప్రకారం శోధించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "సమూహాల ప్రాకరం శోధించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "నామము ప్రకారం శోధించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "దస్త్రములను సంస్థాపించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "క్యాచీను తాజాపరుస్తోంది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "సంకలనాలను నవీకరిస్తోంది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "రద్దుచేయుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "రీపోజిటరీలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "డాటాను అమర్చుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "పరిష్కరించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "దస్త్రము జాబితాను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "ఉత్పాదకాలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "సంతకమును సంస్థాపించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "సంకలనాలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "EULA ఆమోదించుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "నవీకరణలు పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "వర్గములను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "బదిలీకరణలను పొందుచున్నది"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr ""
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "సంతకముచేయని సాఫ్టువేరు సంస్థాపనను మీరు అనుమతించాలని అనుకొనుచున్నారా?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "సంతకము చేయని సాఫ్టువేరు సంస్థాపించబడదు."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "సాఫ్టువేరు మూలముయొక్క సంతకము అవసరము"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "సాఫ్టువేరు మూలపు నామము"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "కీ URL"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "కీ వినియోగదారి"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "కీ ID"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "కీ వేలిముద్ర"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "కీ టైమ్‌స్టాంప్"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "మీరు ఈ సంతకమును ఆమోదిస్తారా?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "సంతకము ఆమోదించబడలేదు."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "అంతిమ వినియోగదారి లైసెన్సు వొప్పందము అవసరమైంది"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "ఒప్పందము"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "మీరు ఈ వొప్పందమును ఆమోదిస్తారా?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "ఒప్పందము ఆమోదించబడదు."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "మాధ్యమం మార్పు అవసరమైంది"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "మాధ్యమం రకము"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "మాధ్యమం లేబుల్"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "పాఠ్యము"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "దయచేసి సరైన మాధ్యమాన్ని చేర్చుము"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "సరైన మాధ్యమం చేర్చబడలేదు."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "ఈ క్రింది సంకలనములు తీసివేయబడాలి:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "ఈ క్రింది ప్యాకేజీలు సంస్థాపించబడినవి:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "ఈ క్రింది సంకలనములు నవీకరించవలసివుంది:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "ఈ క్రింది సంకలనములు తిరిగిసంస్థాపించవలసి వుంది:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "ఈ క్రింది సంకలనములు డౌన్‌గ్రేడ్ చేయవలసివుంది:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr ""
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr ""
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "మార్పులతో ముందుకుపోవాలా?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "బదిలీకరణ ముందుకుసాగలేదు."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "పరాయి కర్తవ్యమును రద్దుచేయి"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "మీ ద్వారా ప్రారంభించని కార్యము రద్దుచేయుటకు దృవీకరణము అవసరము"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "సంతకముచేసిన సంకలనములను సంస్థాపించుము"
-
-msgid "Authentication is required to install software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "నమ్మదగని స్థానిక దస్త్రమును సంస్థాపించుము"
-
-msgid "Authentication is required to install untrusted software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr ""
-
-msgid "Authentication is required to reinstall software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr ""
-
-msgid "Authentication is required to downgrade software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr ""
-
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "EULA ఆమోదించుము"
-
-msgid "Authentication is required to accept a EULA"
-msgstr "EULA ఆమోదించుటకు దృవీకరణము అవసరమైంది"
-
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "ప్యాకేజీని తీసివేయుము"
-
-msgid "Authentication is required to remove software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr ""
-
-msgid "Authentication is required to update software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr ""
-
-msgid "Authentication is required to change software repository parameters"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr ""
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "నెట్వర్కు ప్రోక్సీను అమర్చుము"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "పరికరమును తిరిగిలోడు చేయుము"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "కొత్త డ్రైవర్‌తో పరికరమును తిరిగిలోడు చేయుటకు దృవీకరణ అవసరమైంది"
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr ""
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr ""
-
-msgid "Authentication is required to repair the installed software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr ""
-
-msgid "Authentication is required to trigger offline updates"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr ""
-
-msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr ""
-
-msgid "Command not found, valid commands are:"
-msgstr ""
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "ఉపయోగించుటకు సంకలనీకరణ బ్యాకెండ్, ఉ.దా. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr ""
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr ""
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr ""
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr ""
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr ""
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr ""
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "వృధాగావున్న సమయగణనిని అచేతనముచేయి"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "వర్షన్ చూపుము మరియు నిష్క్రమించుము"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "ఒక చిన్న విరామం తర్వాత నిష్క్రమించుము"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "ఇంజన్ లోడైన తర్వాత నిష్క్రమించుము"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr ""
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit సేవ"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "సాఫ్టువేరు నమ్మదగిన మూలమునుండి కాదు."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "మీకు ఈ సంకలనమును నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "మీకు ఈ సంకలనములను నవీకరించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "మీకు ఈ సంకలనమును సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "మీకు ఈ సంకలనములను సంస్థాపించుట క్షేమమేనని తెలిస్తే తప్ప నవీకరించవద్దు."
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "సంకలనము నిర్వాహిక లాక్ కొరకు వేచివుంది."
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "క్యూనందు వేచివుంది"

@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Andika Triwidada <andika@gmail.com>, 2011-2018
 # Dichi Al Faridi <dichi@alfaridi.info>, 2010
@@ -11,9 +11,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-10-13 16:14+0000\n"
-"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/freedesktop/packagekit/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,53 +18,99 @@ msgstr ""
 "Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Transaksi"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Waktu sistem"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Berhasil"
-
-msgid "True"
-msgstr "Benar"
-
-msgid "False"
-msgstr "Salah"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Peran"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Durasi"
-
 msgid "(seconds)"
 msgstr "(detik)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Command line"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Peran yang benar diperlukan"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "User ID"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Username"
+msgid "A filename is required"
+msgstr "Memerlukan nama berkas"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Nama Sebenarnya"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Sebuah nama file untuk menginstal diperlukan"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Sebuah pengenal lisensi (EULA-id) diperlukan"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Sebuah nama paket yang dibutuhkan"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Sebuah nama paket diperlukan untuk menginstal"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Diperlukan nama sebuah paket yang akan dihapus"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Sebuah nama paket yang dibutuhkan untuk menyelesaikan"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "Sebuah paket memberikan string itu dibutuhkan"
+
+msgid "A repo id and autoremove required"
+msgstr "Sebuah id repo dan hapus otomatis (autoremove) diperlukan"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Nama repo, parameter dan nilai yang diperlukan"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Sebuah nama repositori diperlukan"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Sebuah istilah pencarian diperlukan"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Sebuah jenis pencarian diperlukan, misalnya nama"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Tipe A, key_id dan package_id diperlukan"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Setujui EULA"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Sedang menyetujui EULA"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -77,65 +120,104 @@ msgstr "Paket yang berkaitan:"
 msgid "Affected packages: None"
 msgstr "Terpengaruh paket: Tidak ada"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distribusi"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Persetujuan"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Jenis"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Alias untuk %s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Ringkasan"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Izinkan paket dituruntingkatkan selama transaksi "
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategori"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Izinkan paket dipasang ulang selama transaksi"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Izinkan paket tak terpercaya untuk dipasang."
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Induk"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Suatu aksi, mis. 'update-packages' diperlukan"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Nama"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Restart aplikasi yang diperlukan oleh:"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikon"
+msgid "Authentication is required to accept a EULA"
+msgstr "Otentikasi diperlukan untuk menyetujui suatu EULA"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Rincian tentang update:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Otentikasi diperlukan untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Paket"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Otentikasi diperlukan untuk mengubah parameter repositori perangkat lunak"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Update"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Otentikasi diperlukan untuk membersihkan pesan pemutakhiran luring"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Non-aktif"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Otentikasi diperlukan untuk menganggap suatu kunci yang dipakai untuk menandatangani perangkat lunak sebagai terpercaya"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Vendor"
+msgid "Authentication is required to downgrade software"
+msgstr "Otentikasi diperlukan untuk menuruntingkatkan perangkat lunak"
+
+msgid "Authentication is required to install software"
+msgstr "Otentikasi diperlukan untuk memasang perangkat lunak"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Otentikasi diperlukan untuk menyegarkan repositori sistem"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Otentikasi diperlukan untuk memasang ulang perangkat lunak"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Otentikasi diperlukan untuk memuat ulang perangkat dengan penggerak baru"
+
+msgid "Authentication is required to remove software"
+msgstr "Otentikasi diperlukan untuk menghapus perangkat lunak"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Otentikasi diperlukan untuk memperbaiki perangkat lunak yang telah terpasang"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Otentikasi diperlukan untuk menata proksi jaringan yang dipakai untuk mengunduh perangkat lunak"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Otentikasi diperlukan untuk memicu pemutakhiran luring"
+
+msgid "Authentication is required to update software"
+msgstr "Otentikasi diperlukan untuk memutakhirkan perangkat lunak"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Otentikasi diperlukan untuk meningkatkan sistem operasi"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Penulis"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Secara otomatis hapus dependensi yang tidak dipakai"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Tersedia"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Diblok"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Perbaikan kutu"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -145,106 +227,1035 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Restart"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Batalkan tugas asing"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Teks update"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Sedang membatalkan"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Membatalkan"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Kategori"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Ubah parameter repositori perangkat lunak"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Perubahan"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Menyatakan"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Memeriksa aplikasi yang dipakai"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Diterbitkan"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Memeriksa pustaka yang dipakai"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Sedang memeriksa tanda tangan"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Diperbarui"
+msgid "Cleaned up"
+msgstr "Dibersihkan"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Diaktifkan"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Membersihkan"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Sedang membersihkan paket"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Bersihkan pesan pemutakhiran luring"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Perintah gagal"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Command line"
+
+msgid "Command not found, valid commands are:"
+msgstr "Perintah tak ditemukan, perintah yang valid adalah:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Menerapkan perubahan"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Menyalin berkas"
+
+msgid "Debugging Options"
+msgstr "Opsi Pengawakutuan"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Deskripsi"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Rincian tentang update:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Direktori tidak ditemukan"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Matikan pewaktu menganggur"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Dinonaktifkan"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Restart sistem yang diperlukan oleh:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distribusi"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Sesi restart diperlukan:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Jangan pasang paket-paket ini kecuali Anda yakin aman untuk melakukannya."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Sistem restart (keamanan) yang diperlukan oleh:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Jangan pasang paket ini kecuali Anda yakin aman untuk dilakukan."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Session restart (keamanan) yang diperlukan:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk melakukannya."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Restart aplikasi yang diperlukan oleh:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Jangan mutakhirkan paket ini kecuali Anda yakin aman untuk dilakukan."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Deskripsi paket"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Anda menerima kesepakatan ini?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Tidak ada file"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Apakah Anda menyetujui tanda tangan ini?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Berkas paket"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Anda ingin mengijinkan pemasangan perangkat lunak tanpa tanda tangan?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Persentase"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Jangan bersihkan lingkungan saat awal mula"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Status"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Terunduh"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Hasil:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Mengunduh"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Sedang mengunduh rincian tentang repositori perangkat lunak."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Mengunduh senarai berkas"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Mengunduh filelist (mungkin ini makan waktu)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Mengunduh grup"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Mengunduh senarai paket"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Mengunduh senarai dari perubahan"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Sedang mengunduh paket"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Mengunduh informasi repositori"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Mengunduh informasi pemutakhiran"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Durasi"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Diaktifkan"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Perlu persetujuan lisensi pengguna akhir"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Enhancement"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Keluar setelah suatu jeda singkat"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Keluar setelah mesin dimuat"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon install-lokal %s' sebagai gantinya."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Gagal untuk menghubungi PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Gagal mendapat keadaan daemon"
+
+msgid "Failed to get properties"
+msgstr "Gagal memperoleh properti"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Gagal mendapatkan waktu sejak tindakan ini terakhir selesai"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Gagal memasang paket"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Gagal meluncurkan:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Gagal memuat backend"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Gagal memuat berkas konfig"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Gagal mengurai argumen"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Gagal mengurai baris perintah"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Gagal mencari berkas"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Gagal membongkar backend"
+
+msgid "False"
+msgstr "Salah"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Kesalahan fatal"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Tak ada paket untuk dimutakhirkan."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Berkas telah ada: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Selesai"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Sedang membuat daftar paket"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Sedang mengambil katagori"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Sedang mengambil ketergantungan"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Sedang mengambil rincian"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Sedang mengambil daftar berkas"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Sedang mengambil informasi"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Sedang mengambil paket"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Sedang mengambil penyedia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Sedang mengambil repositori"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Sedang mengambil kebutuhan"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Mengambil peningkatan sistem"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Gagal mendapat daftar berkas"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Sedang mengambil transaksi"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Sedang mengambil rincian pemutakhiran"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Sedang mengambil pemutakhiran"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Sedang mengambil peningkatan"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Ikon"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Penting"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Pasang lagi paket yang telah terpasang"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Pasang versi yang lebih lama dari paket yang terpasang"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Pasang paket"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Pasang paket '%s' untuk menyediakan perintah '%s'?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Pasang paket bertanda tangan"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Instal paket tanpa meminta konfirmasi"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Pasang berkas lokal yang tak terpercaya"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Terpasang"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Memasang"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Sedang Memasang Peningkatan Sistem"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Sedang Memasang Pemutakhiran"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Sedang memasang berkas"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Sedang memasang paket"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Sedang memasang tanda tangan"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Memasang peningkatan sistem, ini bisa makan waktu..."
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Sedang memasang pemutakhiran"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Memasang pemutakhiran, ini bisa makan waktu..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Diterbitkan"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "ID Kunci"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Penanda Waktu Kunci"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "URL kunci"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Tanda tangan kunci"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Pengguna kunci"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Memuat singgahan"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Memuat daftar paket."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Perlu ganti media"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Label media"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Jenis media"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Mengubah repositori"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Lebih dari satu paket cocok:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Nama"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Tidak ada file"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Tak ada paket yang memerlukan pemutakhiran ke versi yang lebih baru."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Tak ada paket yang ditemukan"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Normal"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Telah dikadaluarsakan"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Non-aktif"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Mengadaluarsakan"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Sedang mengusangkan paket"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Opsi '%s' tidak didukung"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paket"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Deskripsi paket"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Berkas paket"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Paket tak ditemukan"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "Antarmuka Konsol PackageKit"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit Monitor"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "Layanan PackageKit"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Paket-paket yang menyediakan berkas ini adalah:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Backend pemaketan yang dipakai, mis. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Induk"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Persentase"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Silakan pilih suatu perintah untuk dijalankan"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Silakan pilih suatu paket untuk dipasang"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Silakan pilih paket yang benar:"
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Silakan masukkan suatu angka dari 1 sampai %i:"
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Silakan sisipkan media yang benar"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Silakan logout dan login untuk menyelesaikan pembaruan."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Silakan restart komputer untuk menyelesaikan pembaruan."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Persiapkan transaksi dengan hanya mengunduh paket-paket"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Pemutakhiran yang disiapkan:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget animasi"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Lanjut terapkan perubahan?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Sedang query"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Nama Sebenarnya"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Sedang boot ulang setelah memasang pemutakhiran..."
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Segarkan repositori sistem"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Segarkan singgahan"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Segarkan singgahan (dipaksa)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Sedang menyegarkan singgahan"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Sedang menyegarkan daftar perangkat lunak"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Telah dipasang ulang"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Memasang ulang"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Muat ulang suatu perangkat"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Hapus paket"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Dibuang"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Menghapus"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Sedang menghapus paket"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Menghapus repositori"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Mengepak ulang berkas"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Perbaiki Sistem"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Meminta data"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Sedang memecahkan"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Sedang mengurai ketergantungan"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Restart"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Hasil:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Peran"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Jalankan perintah serupa:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga menggunakan daya yang lebih kecil"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Berjalan"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Kait yang berjalan"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Memindai aplikasi"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Cari menurut rincian"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Cari menurut berkas"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Cari menurut nama"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Sedang mencari berdasar rincian"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Sedang mencari berdasar berkas"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Sedang mencari berdasar nama"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Sedang mencari grup"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Keamanan"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Session restart (keamanan) yang diperlukan:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Sesi restart diperlukan:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Tata proksi jaringan"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Tata opsi repositori"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Set filter, misalnya diinstal"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Sedang menata data"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Tampilkan informasi pengawakutuan bagi semua berkas"
+
+msgid "Show debugging options"
+msgstr "Tampilkan opsi pengawakutuan"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Tampilkan versi program dan keluar"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Tampilkan versi dan keluar"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Mematikan sistem usai pemutakhiran..."
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Perintah serupa adalah:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Perintah serupa adalah:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Nama sumber perangkat lunak"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Perlu tanda tangan sumber perangkat lunak"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Memulai"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Menyatakan"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Status"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Sub perintah:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Berhasil"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Paket-paket yang cocok adalah:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Ringkasan"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Sistem restart (keamanan) yang diperlukan oleh:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Restart sistem yang diperlukan oleh:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Waktu sistem"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Sedang menguji perubahan"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Teks"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Persetujuan tak diterima."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Media yang benar tak disisipkan."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Daemon crash pada pertengahan transaksi!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Filter ditentukan tidak valid"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Paket berikut tak terpercaya:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Paket berikut mesti diturunkan versinya:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Paket berikut mesti dipasang:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Paket-paket berikut menjadi usang:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Paket berikut mesti dipasang ulang:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Paket berikut mesti dihapus:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Paket berikut mesti dimutakhirkan:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Umur maksimum singgahan metadata. Gunakan -1 untuk 'tak pernah'."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Paket yang menyediakan berkas ini adalah:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Proksi tak dapat ditata"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Tanda tangan tak diterima."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Perangkat lunak bukan dari sumber yang terpercaya."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Transaksi tak dilanjutkan."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Transaksi gagal"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Perangkat lunak tanpa tanda tangan tak akan dipasang."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Tak ada paket untuk dimutakhirkan."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -253,52 +1264,17 @@ msgstr "Tidak ada pembaruan tersedia saat ini."
 msgid "There are no upgrades available at this time."
 msgstr "Tidak ada peningkatan tersedia saat ini."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Silakan restart komputer untuk menyelesaikan pembaruan."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Silakan logout dan login untuk menyelesaikan pembaruan."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Lebih dari satu paket cocok:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Silakan pilih paket yang benar:"
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Paket tak ditemukan"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Tak ada paket yang ditemukan"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon install-lokal %s' sebagai gantinya."
+msgid "This tool could not find all the packages: %s"
+msgstr "Alat ini tidak bisa menemukan semua paket: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -318,901 +1294,32 @@ msgstr "Alat ini tidak dapat menemukan paket yang tersedia: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Alat ini tidak bisa menemukan paket: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Tak ada paket yang memerlukan pemutakhiran ke versi yang lebih baru."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Alat ini tidak bisa menemukan semua paket: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Daemon crash pada pertengahan transaksi!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "Antarmuka Konsol PackageKit"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Sub perintah:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Gagal mendapatkan waktu sejak tindakan ini terakhir selesai"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Waktu sejak"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Pemutakhiran yang disiapkan:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Proksi tak dapat ditata"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Tampilkan versi program dan keluar"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Set filter, misalnya diinstal"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Instal paket tanpa meminta konfirmasi"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Persiapkan transaksi dengan hanya mengunduh paket-paket"
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Izinkan paket dituruntingkatkan selama transaksi "
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Izinkan paket dipasang ulang selama transaksi"
-
-msgid "Automatically remove unused dependencies"
-msgstr "Secara otomatis hapus dependensi yang tidak dipakai"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga menggunakan daya yang lebih kecil"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget animasi"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Umur maksimum singgahan metadata. Gunakan -1 untuk 'tak pernah'."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Izinkan paket tak terpercaya untuk dipasang."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Gagal mengurai baris perintah"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Gagal untuk menghubungi PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Filter ditentukan tidak valid"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Sebuah jenis pencarian diperlukan, misalnya nama"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Sebuah istilah pencarian diperlukan"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Sebuah nama paket diperlukan untuk menginstal"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Sebuah nama file untuk menginstal diperlukan"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Tipe A, key_id dan package_id diperlukan"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Diperlukan nama sebuah paket yang akan dihapus"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Direktori tidak ditemukan"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Sebuah pengenal lisensi (EULA-id) diperlukan"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Sebuah nama paket yang dibutuhkan untuk menyelesaikan"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Sebuah nama repositori diperlukan"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Nama repo, parameter dan nilai yang diperlukan"
-
-msgid "A repo id and autoremove required"
-msgstr "Sebuah id repo dan hapus otomatis (autoremove) diperlukan"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Suatu aksi, mis. 'update-packages' diperlukan"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Peran yang benar diperlukan"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Sebuah nama paket yang dibutuhkan"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Sebuah paket memberikan string itu dibutuhkan"
-
-msgid "A filename is required"
-msgstr "Memerlukan nama berkas"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Deskripsi"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Penulis"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Anda perlu menyatakan suatu daftar berkas yang akan dibuat"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Berkas telah ada: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Opsi '%s' tidak didukung"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Perintah gagal"
-
-msgid "Failed to get daemon state"
-msgstr "Gagal mendapat keadaan daemon"
-
-msgid "Failed to get properties"
-msgstr "Gagal memperoleh properti"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit Monitor"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Sedang Memasang Peningkatan Sistem"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Sedang Memasang Pemutakhiran"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Sedang boot ulang setelah memasang pemutakhiran..."
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Mematikan sistem usai pemutakhiran..."
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Memasang pemutakhiran, ini bisa makan waktu..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Memasang peningkatan sistem, ini bisa makan waktu..."
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Sedang mengunduh rincian tentang repositori perangkat lunak."
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Mengunduh filelist (mungkin ini makan waktu)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Menunggu kunci manajer paket."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Memuat daftar paket."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Gagal mencari berkas"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Gagal mendapat daftar berkas"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Gagal meluncurkan:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Gagal memasang paket"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "perintah tak ditemukan"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Perintah serupa adalah:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Jalankan perintah serupa:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Perintah serupa adalah:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Silakan pilih suatu perintah untuk dijalankan"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Paket yang menyediakan berkas ini adalah:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Pasang paket '%s' untuk menyediakan perintah '%s'?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Paket-paket yang menyediakan berkas ini adalah:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Paket-paket yang cocok adalah:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Silakan pilih suatu paket untuk dipasang"
-
-msgid "User aborted selection"
-msgstr "Pengguna menggugurkan pilihan"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Silakan masukkan suatu angka dari 1 sampai %i:"
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Keadaan tak dikenal"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Memulai"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Menunggu dalam antrian"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Berjalan"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Sedang query"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Sedang mengambil informasi"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Sedang menghapus paket"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Sedang mengunduh paket"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Sedang memasang paket"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Sedang menyegarkan daftar perangkat lunak"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Sedang memasang pemutakhiran"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Sedang membersihkan paket"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Sedang mengusangkan paket"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Sedang mengurai ketergantungan"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Sedang memeriksa tanda tangan"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Sedang menguji perubahan"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Menerapkan perubahan"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Meminta data"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Selesai"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Membatalkan"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Mengunduh informasi repositori"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Mengunduh senarai paket"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Mengunduh senarai berkas"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Mengunduh senarai dari perubahan"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Mengunduh grup"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Mengunduh informasi pemutakhiran"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Mengepak ulang berkas"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Memuat singgahan"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Memindai aplikasi"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Sedang membuat daftar paket"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Menunggu kunci manajer paket"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Menunggu otentikasi"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Memutakhirkan aplikasi yang sedang berjalan"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Memeriksa aplikasi yang dipakai"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Memeriksa pustaka yang dipakai"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Menyalin berkas"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Kait yang berjalan"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Tampilkan informasi pengawakutuan bagi semua berkas"
-
-msgid "Debugging Options"
-msgstr "Opsi Pengawakutuan"
-
-msgid "Show debugging options"
-msgstr "Tampilkan opsi pengawakutuan"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Transaksi"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Memicu pemutakhiran luring"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Trivial"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normal"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Penting"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Keamanan"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Perbaikan kutu"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Enhancement"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Diblok"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Terpasang"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Tersedia"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Tak Tersedia"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Mengunduh"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Memperbarui"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Memasang"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Menghapus"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Membersihkan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Mengadaluarsakan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Memasang ulang"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Terunduh"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Dibuang"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Dibersihkan"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Telah dikadaluarsakan"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Telah dipasang ulang"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Tipe peran tak dikenal"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Sedang mengambil ketergantungan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Sedang mengambil rincian pemutakhiran"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Sedang mengambil rincian"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Sedang mengambil kebutuhan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Sedang mengambil pemutakhiran"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Sedang mencari berdasar rincian"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Sedang mencari berdasar berkas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Sedang mencari grup"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Sedang mencari berdasar nama"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Sedang memasang berkas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Sedang menyegarkan singgahan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Memutakhirkan paket"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Sedang membatalkan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Sedang mengambil repositori"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Mengubah repositori"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Sedang menata data"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Menghapus repositori"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Sedang memecahkan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Sedang mengambil daftar berkas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Sedang mengambil penyedia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Sedang memasang tanda tangan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Sedang mengambil paket"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Sedang menyetujui EULA"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Sedang mengambil peningkatan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Sedang mengambil katagori"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Sedang mengambil transaksi"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Mengambil peningkatan sistem"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Anda ingin mengijinkan pemasangan perangkat lunak tanpa tanda tangan?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Perangkat lunak tanpa tanda tangan tak akan dipasang."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Perlu tanda tangan sumber perangkat lunak"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Nama sumber perangkat lunak"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "URL kunci"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Pengguna kunci"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "ID Kunci"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Tanda tangan kunci"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Penanda Waktu Kunci"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Apakah Anda menyetujui tanda tangan ini?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Tanda tangan tak diterima."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Perlu persetujuan lisensi pengguna akhir"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Persetujuan"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Anda menerima kesepakatan ini?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Persetujuan tak diterima."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Perlu ganti media"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Jenis media"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Label media"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Teks"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Silakan sisipkan media yang benar"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Media yang benar tak disisipkan."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Paket berikut mesti dihapus:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Paket berikut mesti dipasang:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Paket berikut mesti dimutakhirkan:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Paket berikut mesti dipasang ulang:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Paket berikut mesti diturunkan versinya:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Paket-paket berikut menjadi usang:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Paket berikut tak terpercaya:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Lanjut terapkan perubahan?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Transaksi tak dilanjutkan."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Batalkan tugas asing"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Otentikasi diperlukan untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Pasang paket bertanda tangan"
-
-msgid "Authentication is required to install software"
-msgstr "Otentikasi diperlukan untuk memasang perangkat lunak"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Pasang berkas lokal yang tak terpercaya"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Pasang lagi paket yang telah terpasang"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Otentikasi diperlukan untuk memasang ulang perangkat lunak"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Pasang versi yang lebih lama dari paket yang terpasang"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Otentikasi diperlukan untuk menuruntingkatkan perangkat lunak"
+msgid "True"
+msgstr "Benar"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1222,36 +1329,21 @@ msgstr "Otentikasi diperlukan untuk menuruntingkatkan perangkat lunak"
 msgid "Trust a key used for signing software"
 msgstr "Percayai suatu kunci yang dipakai untuk menandatangani perangkat lunka"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Otentikasi diperlukan untuk menganggap suatu kunci yang dipakai untuk menandatangani perangkat lunak sebagai terpercaya"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Jenis"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Setujui EULA"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Tak Tersedia"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Otentikasi diperlukan untuk menyetujui suatu EULA"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Tipe peran tak dikenal"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Hapus paket"
-
-msgid "Authentication is required to remove software"
-msgstr "Otentikasi diperlukan untuk menghapus perangkat lunak"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Keadaan tak dikenal"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1262,50 +1354,33 @@ msgstr "Otentikasi diperlukan untuk menghapus perangkat lunak"
 msgid "Update software"
 msgstr "Memutakhirkan perangkat lunak"
 
-msgid "Authentication is required to update software"
-msgstr "Otentikasi diperlukan untuk memutakhirkan perangkat lunak"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Teks update"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Ubah parameter repositori perangkat lunak"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Diperbarui"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Otentikasi diperlukan untuk mengubah parameter repositori perangkat lunak"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Update"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Segarkan repositori sistem"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Memperbarui"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Otentikasi diperlukan untuk menyegarkan repositori sistem"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Memutakhirkan paket"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Tata proksi jaringan"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Otentikasi diperlukan untuk menata proksi jaringan yang dipakai untuk mengunduh perangkat lunak"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Muat ulang suatu perangkat"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Otentikasi diperlukan untuk memuat ulang perangkat dengan penggerak baru"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Memutakhirkan aplikasi yang sedang berjalan"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1314,134 +1389,46 @@ msgstr "Otentikasi diperlukan untuk memuat ulang perangkat dengan penggerak baru
 msgid "Upgrade System"
 msgstr "Tingkatkan Sistem"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Otentikasi diperlukan untuk meningkatkan sistem operasi"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "User ID"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Perbaiki Sistem"
+msgid "User aborted selection"
+msgstr "Pengguna menggugurkan pilihan"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Otentikasi diperlukan untuk memperbaiki perangkat lunak yang telah terpasang"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Username"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Memicu pemutakhiran luring"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Vendor"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Otentikasi diperlukan untuk memicu pemutakhiran luring"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Menunggu otentikasi"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Bersihkan pesan pemutakhiran luring"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Menunggu kunci manajer paket"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Otentikasi diperlukan untuk membersihkan pesan pemutakhiran luring"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Menunggu kunci manajer paket."
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Alias untuk %s"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Menunggu dalam antrian"
 
-msgid "Command not found, valid commands are:"
-msgstr "Perintah tak ditemukan, perintah yang valid adalah:"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Anda perlu menyatakan suatu daftar berkas yang akan dibuat"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Backend pemaketan yang dipakai, mis. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Segarkan singgahan"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Segarkan singgahan (dipaksa)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Cari menurut nama"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Cari menurut rincian"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Cari menurut berkas"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Pasang paket"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Tata opsi repositori"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Gagal mengurai argumen"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Gagal memuat berkas konfig"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Gagal memuat backend"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Gagal membongkar backend"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Matikan pewaktu menganggur"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Tampilkan versi dan keluar"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Keluar setelah suatu jeda singkat"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Keluar setelah mesin dimuat"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Jangan bersihkan lingkungan saat awal mula"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "Layanan PackageKit"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Perangkat lunak bukan dari sumber yang terpercaya."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Jangan mutakhirkan paket ini kecuali Anda yakin aman untuk dilakukan."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk melakukannya."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Jangan pasang paket ini kecuali Anda yakin aman untuk dilakukan."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Jangan pasang paket-paket ini kecuali Anda yakin aman untuk melakukannya."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "perintah tak ditemukan"

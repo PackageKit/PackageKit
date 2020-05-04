@@ -5,8 +5,8 @@ PackageKit Release Notes
 git shortlog PACKAGEKIT_1_1_13.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.1.14
-~~~~~~~~~~~~~~
+Version 1.2.0
+~~~~~~~~~~~~~
 Released: 2020-xx-xx
 
 Notes:
@@ -24,11 +24,10 @@ Bugfixes:
 
 2.5. Update translations and commit them with sign-off:
 
-cd po
-make PackageKit.pot
-INTLTOOL_EXTRACT="/usr/bin/intltool-extract" XGETTEXT="/usr/bin/xgettext --no-location" srcdir=. /usr/bin/intltool-update --gettext-package PackageKit --pot
+ninja PackageKit-pot
 tx push --source
 tx pull --all --force --minimum-perc=5
+ninja-build fix-translations
 git add *.po
 
 3. Update library version if new ABI or API in configure.ac
@@ -36,12 +35,11 @@ git add *.po
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.1.14"
-export release_tag="PACKAGEKIT_1_1_14"
+export release_version="1.2.0"
+export release_tag="PACKAGEKIT_1_2_0"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
-<gpg password>
 git push --tags
 git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit

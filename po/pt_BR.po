@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Igor Pires Soares <igor@projetofedora.org>, 2008-2010
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2012-2014
@@ -14,9 +14,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 12:09+0000\n"
-"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/freedesktop/packagekit/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,53 +21,99 @@ msgstr ""
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Transação"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Horário do sistema"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Concluído"
-
-msgid "True"
-msgstr "Verdadeiro"
-
-msgid "False"
-msgstr "Falso"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Modo"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Duração"
-
 msgid "(seconds)"
 msgstr "(segundos)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Linha de comando"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Um modo correto é requerido"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "ID do usuário"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Nome de usuário"
+msgid "A filename is required"
+msgstr "Um nome de arquivo é requerido"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Nome real"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "O nome do arquivo a ser instalado é requerido"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Um identificador de licença (eula-id) é requerido"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "O nome do pacote é requerido"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "O nome do pacote a ser instalado é requerido"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "O nome do pacote para remoção é requerido"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "O nome de pacote a ser analisado é requerido"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "É necessário especificar o que o pacote fornece"
+
+msgid "A repo id and autoremove required"
+msgstr "Um autoremove e um repo id são necessários"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Um nome de repositório, parâmetro e um valor são requeridos"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "O nome do repositório é requerido"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Um termo de pesquisa é requerido"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Um tipo de pesquisa é requerido, ex.: nome"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Um tipo, key_id e package_id são requeridos"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Aceitar a licença EULA"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Aceitando a licença EULA"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -80,65 +123,104 @@ msgstr "Pacotes afetados:"
 msgid "Affected packages: None"
 msgstr "Pacotes afetados: nenhum"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distribuição"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Contrato"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Tipo"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Alias para %s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Sumário"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Permite que pacotes sejam desatualizados durante a transação"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Categoria"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Permite que pacotes sejam reinstalados durante a transação"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Permite que pacotes não confiáveis sejam instalado."
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Pai"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Uma ação, ex.: \"update-packages\", é requerida"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Nome"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "O reinício do aplicativo é necessário para:"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ícone"
+msgid "Authentication is required to accept a EULA"
+msgstr "Autenticação é necessária para aceitar uma licença EULA"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Detalhes sobre a atualização:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por você"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Pacote"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Autenticação é necessária para alterar os parâmetros de repositório de software"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Atualiza"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Autenticação é necessária para limpar mensagens de atualização offline"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Obsoletos"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Autenticação é necessária para considerar como confiável uma chave usada para assinar softwares"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Fornecedor"
+msgid "Authentication is required to downgrade software"
+msgstr "Autenticação é necessária para desatualizar o software"
+
+msgid "Authentication is required to install software"
+msgstr "Autenticação é necessária para instalar softwares"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Autenticação é necessária para instalar softwares não confiáveis"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Autenticação é necessária para atualizar os repositórios de sistema"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Autenticação é necessária para reinstalar software"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Autenticação é necessária para recarregar o dispositivo com o novo driver"
+
+msgid "Authentication is required to remove software"
+msgstr "Autenticação é necessária para remover softwares"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Autenticação é necessária para reparar o software instalado"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Autenticação é necessária para definir um proxy de rede para baixar softwares"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Autenticação é necessária para acionar pacotes offline"
+
+msgid "Authentication is required to update software"
+msgstr "Autenticação é necessária para atualizar softwares"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Autenticação é necessária para atualizar o sistema operacional"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Autor"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Remove automaticamente dependências não usada"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Disponível"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Bloqueado"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Correção de erro"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -148,106 +230,1035 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Reinício"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Cancelar tarefa externa"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Descrição da atualização"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Cancelando"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Cancelando"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Categoria"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Alterar parâmetros de repositório de software"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Alterações"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Estado"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Verificando aplicativos em uso"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Emissão"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Verificando bibliotecas em uso"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Verificando assinaturas"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Atualizado em"
+msgid "Cleaned up"
+msgstr "Limpo"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Habilitado"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Limpando"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Limpando pacotes"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Limpar mensagens de atualização offline"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "O comando falhou"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Linha de comando"
+
+msgid "Command not found, valid commands are:"
+msgstr "Comando não encontrado, comandos válidos são:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Submetendo alterações"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Copiando arquivos"
+
+msgid "Debugging Options"
+msgstr "Opções de depuração"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Descrição"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Detalhes sobre a atualização:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Diretório não encontrado"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Desabilitar o tempo de ociosidade"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Desabilitado"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "O reinício do sistema é necessário para:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distribuição"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "É necessário reiniciar a sessão:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "O reinício do sistema (por segurança) é necessário por:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "É necessário reiniciar a sessão (por segurança):"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "O reinício do aplicativo é necessário para:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Não atualize este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Descrição do pacote"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Você aceita este contrato?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Nenhum arquivo"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Você aceita essa assinatura?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Arquivos do pacote"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Você deseja permitir a instalação de softwares não assinados?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Porcentagem"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Não limpe o ambiente no início"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Status"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Baixado"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Resultados:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Baixando"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Baixando detalhes sobre os repositórios de software."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Baixando listas de arquivos"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Baixando grupos"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Baixando lista de pacotes"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Baixando lista de alterações"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Baixando pacotes"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Baixando informações do repositório"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Baixando informações de atualização"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Duração"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Habilitado"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "É necessário um contrato de licença para o usuário final"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Melhoria"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Sair após um pequeno atraso"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Sair após o carregamento do mecanismo"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar \"pkcon install-local %s\"."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Falha ao contatar o PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Falha ao obter o estado do daemon"
+
+msgid "Failed to get properties"
+msgstr "Falha ao obter as propriedades"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Falha ao obter o tempo em que essa ação foi completada pela última vez"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Falha ao instalar pacotes"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Falha ao executar:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Falha ao carregar o backend"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Falha ao carregar o arquivo de configuração"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Falha ao analisar argumentos"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Falha ao processar a linha de comando"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Falha ao pesquisar pelo arquivo"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Falha ao descarregar o backend"
+
+msgid "False"
+msgstr "Falso"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Erro fatal"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Não há pacotes a serem atualizados."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Arquivo já existe: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Finalizado"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Gerando listas de pacotes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Obtendo categorias"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Obtendo dependências"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Obtendo detalhes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Obtendo lista de arquivos"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Obtendo informações"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Obtendo pacotes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Obtendo o que é fornecido"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Obtendo repositórios"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Obtendo requerimentos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Obtendo atualizações do sistema"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Falha ao obter a lista de arquivos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Obtendo transações"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Obtendo detalhes da atualização"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Obtendo atualizações"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Obtendo atualizações"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Ícone"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Importante"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Instalar pacote já instalado novamente"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Instalar a versão mais antiga do pacote instalado"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Instalar pacote"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Instalar pacote \"%s\" para fornecer o comando \"%s\"?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Instalar pacote assinado"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Instala os pacotes sem pedir confirmação"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Instalar arquivo local não confiável"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Instalado"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Instalando"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Instalando atualização de sistema"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Instalando atualizações"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Instalando arquivos"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Instalando pacotes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Instalando assinatura"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Instalando atualização do sistema; isto pode levar um tempo…"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Instalando atualizações"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Instalando atualizações; isto pode levar um tempo…"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Emissão"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "ID da chave"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Carimbo de hora da chave"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "URL da chave"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Impressão digital da chave"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Usuário da chave"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Carregando cache"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Baixando lista de pacotes."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "É necessário trocar a mídia"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Rótulo da mídia"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Tipo da mídia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Modificação de repositório"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Há mais de um pacote correspondente:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Nome"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Nenhum arquivo"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Nenhum pacote requer atualização para versão mais nova."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Nenhuma pacote foi encontrado"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Normal"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Obsoleto"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Obsoletos"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Definindo como obsoleto"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Tornando pacotes obsoletos"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Não há suporte à opção \"%s\""
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Pacote"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Descrição do pacote"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Arquivos do pacote"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Pacote não encontrado"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "Interface em console do PackageKit"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "Monitor do PackageKit"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "Serviço do PackageKit"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Os pacotes que fornecem esse arquivo são:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "O backend de empacotamento a ser utilizado, p. ex.: dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Pai"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Porcentagem"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Por favor, escolha um comando a ser executado"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Por favor, escolha um pacote a ser instalado"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Por favor, escolha o pacote correto: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Por favor, insira um número entre 1 e %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Por favor, insira a mídia correta"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização pois importantes atualizações de segurança foram instaladas."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Por favor, reinicie o computador para completar a atualização, pois importantes atualizações de segurança foram instaladas."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Por favor, reinicie o computador para completar a atualização."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Prepara a transação baixando pacotes apenas"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Atualizações preparadas:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Continuar com as alterações?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Consultando"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Nome real"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Reiniciando após instalar atualizações…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Atualizar repositórios de sistema"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Renovar o cache"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Renovar o cache (forçado)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Recarregando cache"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Recarregando lista de softwares"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Reinstalado"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Reinstalando"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Recarregar um dispositivo"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Remover pacote"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Removido"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Removendo"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Removendo pacotes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Removendo repositório"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Reempacotando arquivos"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Reparar o sistema"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Requisitando dados"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Resolvendo"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Resolvendo dependências"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Reinício"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Resultados:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Modo"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Executar comando similar:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Executa o comando usando a banda de rede ociosa e usando também menos energia"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Executando"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Executando hooks"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Analisando aplicativos"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Pesquisar por detalhes"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Pesquisar por arquivos"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Pesquisar por nomes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Pesquisando pelos detalhes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Pesquisando pelo arquivo"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Pesquisando pelo nome"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Pesquisando grupos"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Segurança"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "É necessário reiniciar a sessão (por segurança):"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "É necessário reiniciar a sessão:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Definir um proxy de rede"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Definir opções do repositório"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Define o filtro, p. ex.: instalados"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Configurando dados"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Mostra informações de depuração para todos os arquivos"
+
+msgid "Show debugging options"
+msgstr "Mostra as opções de depuração"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Mostra a versão do programa e sai"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Mostrar a versão e sair"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Desligando após instalar atualizações…"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "O comando similar é:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Os comandos similares são:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Nome da fontes de softwares"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "A assinatura da fonte de softwares é necessária"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Iniciando"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Estado"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Status"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Subcomandos:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Concluído"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Os pacotes apropriados são:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Sumário"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "O reinício do sistema (por segurança) é necessário por:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "O reinício do sistema é necessário para:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Horário do sistema"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Testando alterações"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Texto"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "O contrato não foi aceito."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "A mídia correta não foi inserida."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "O daemon travou no meio da transação!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "O filtro especificado era inválido"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Os seguintes pacotes não são confiáveis:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Os seguintes pacotes têm que ser desatualizados:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Os seguintes pacotes têm que ser instalados:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Os seguintes pacotes têm se tornar obsoletos:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Os seguintes pacotes têm que ser reinstalados:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Os seguintes pacotes têm que ser removidos:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Os seguintes pacotes têm que ser atualizados:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Período máximo do cache de metadados. Use -1 para \"nunca\"."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "O pacote que fornece esse arquivo é:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "O proxy não pode ser configurado"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "A assinatura não foi aceita."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "O software não vem de uma fonte confiável."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "A transação não procedeu."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "A transação falhou"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "O pacote não assinado não será instalado."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Não há pacotes a serem atualizados."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -256,52 +1267,17 @@ msgstr "Não há atualizações disponíveis neste momento."
 msgid "There are no upgrades available at this time."
 msgstr "Não há atualizações disponíveis no momento."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Por favor, reinicie o computador para completar a atualização."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Por favor, reinicie o computador para completar a atualização, pois importantes atualizações de segurança foram instaladas."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização pois importantes atualizações de segurança foram instaladas."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Há mais de um pacote correspondente:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Por favor, escolha o pacote correto: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Pacote não encontrado"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Nenhuma pacote foi encontrado"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar \"pkcon install-local %s\"."
+msgid "This tool could not find all the packages: %s"
+msgstr "Esta ferramenta não pôde localizar todos os pacotes: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -321,901 +1297,32 @@ msgstr "Esta ferramenta não pôde localizar o pacote instalado: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Esta ferramenta não pôde localizar o pacote: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Nenhum pacote requer atualização para versão mais nova."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Esta ferramenta não pôde localizar todos os pacotes: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "O daemon travou no meio da transação!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "Interface em console do PackageKit"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Subcomandos:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Falha ao obter o tempo em que essa ação foi completada pela última vez"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Tempo desde"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Atualizações preparadas:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "O proxy não pode ser configurado"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Mostra a versão do programa e sai"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Define o filtro, p. ex.: instalados"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Instala os pacotes sem pedir confirmação"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Prepara a transação baixando pacotes apenas"
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Permite que pacotes sejam desatualizados durante a transação"
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Permite que pacotes sejam reinstalados durante a transação"
-
-msgid "Automatically remove unused dependencies"
-msgstr "Remove automaticamente dependências não usada"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Executa o comando usando a banda de rede ociosa e usando também menos energia"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Período máximo do cache de metadados. Use -1 para \"nunca\"."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Permite que pacotes não confiáveis sejam instalado."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Falha ao processar a linha de comando"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Falha ao contatar o PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "O filtro especificado era inválido"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Um tipo de pesquisa é requerido, ex.: nome"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Um termo de pesquisa é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "O nome do pacote a ser instalado é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "O nome do arquivo a ser instalado é requerido"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Um tipo, key_id e package_id são requeridos"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "O nome do pacote para remoção é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Diretório não encontrado"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Um identificador de licença (eula-id) é requerido"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "O nome de pacote a ser analisado é requerido"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "O nome do repositório é requerido"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Um nome de repositório, parâmetro e um valor são requeridos"
-
-msgid "A repo id and autoremove required"
-msgstr "Um autoremove e um repo id são necessários"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Uma ação, ex.: \"update-packages\", é requerida"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Um modo correto é requerido"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "O nome do pacote é requerido"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "É necessário especificar o que o pacote fornece"
-
-msgid "A filename is required"
-msgstr "Um nome de arquivo é requerido"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Descrição"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Autor"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Você precisa especificar um arquivo de lista para criar"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Arquivo já existe: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Não há suporte à opção \"%s\""
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "O comando falhou"
-
-msgid "Failed to get daemon state"
-msgstr "Falha ao obter o estado do daemon"
-
-msgid "Failed to get properties"
-msgstr "Falha ao obter as propriedades"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "Monitor do PackageKit"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Instalando atualização de sistema"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Instalando atualizações"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Reiniciando após instalar atualizações…"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Desligando após instalar atualizações…"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Instalando atualizações; isto pode levar um tempo…"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Instalando atualização do sistema; isto pode levar um tempo…"
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Baixando detalhes sobre os repositórios de software."
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Esperando pelo bloqueio do gerenciador de pacotes."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Baixando lista de pacotes."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Falha ao pesquisar pelo arquivo"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Falha ao obter a lista de arquivos"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Falha ao executar:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Falha ao instalar pacotes"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "comando não encontrado"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "O comando similar é:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Executar comando similar:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Os comandos similares são:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Por favor, escolha um comando a ser executado"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "O pacote que fornece esse arquivo é:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Instalar pacote \"%s\" para fornecer o comando \"%s\"?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Os pacotes que fornecem esse arquivo são:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Os pacotes apropriados são:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Por favor, escolha um pacote a ser instalado"
-
-msgid "User aborted selection"
-msgstr "Usuário abortou a seleção"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Por favor, insira um número entre 1 e %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Estado desconhecido"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Iniciando"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Esperando na fila"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Executando"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Consultando"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Obtendo informações"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Removendo pacotes"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Baixando pacotes"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Instalando pacotes"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Recarregando lista de softwares"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Instalando atualizações"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Limpando pacotes"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Tornando pacotes obsoletos"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Resolvendo dependências"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Verificando assinaturas"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Testando alterações"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Submetendo alterações"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Requisitando dados"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Finalizado"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Cancelando"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Baixando informações do repositório"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Baixando lista de pacotes"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Baixando listas de arquivos"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Baixando lista de alterações"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Baixando grupos"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Baixando informações de atualização"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Reempacotando arquivos"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Carregando cache"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Analisando aplicativos"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Gerando listas de pacotes"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Esperando pelo bloqueio do gerenciador de pacotes"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Esperando pela autenticação"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Atualizando aplicativos em execução"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Verificando aplicativos em uso"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Verificando bibliotecas em uso"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Copiando arquivos"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Executando hooks"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Mostra informações de depuração para todos os arquivos"
-
-msgid "Debugging Options"
-msgstr "Opções de depuração"
-
-msgid "Show debugging options"
-msgstr "Mostra as opções de depuração"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Transação"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Acionar atualizações offline"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Trivial"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normal"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Importante"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Segurança"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Correção de erro"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Melhoria"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Bloqueado"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Instalado"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Disponível"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Indisponível"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Baixando"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Atualizando"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Instalando"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Removendo"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Limpando"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Definindo como obsoleto"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Reinstalando"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Baixado"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Removido"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Limpo"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Obsoleto"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Reinstalado"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Tipo de papel desconhecido"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Obtendo dependências"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Obtendo detalhes da atualização"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Obtendo detalhes"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Obtendo requerimentos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Obtendo atualizações"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Pesquisando pelos detalhes"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Pesquisando pelo arquivo"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Pesquisando grupos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Pesquisando pelo nome"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Instalando arquivos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Recarregando cache"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Atualizando pacotes"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Cancelando"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Obtendo repositórios"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Modificação de repositório"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Configurando dados"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Removendo repositório"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Resolvendo"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Obtendo lista de arquivos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Obtendo o que é fornecido"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Instalando assinatura"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Obtendo pacotes"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Aceitando a licença EULA"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Obtendo atualizações"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Obtendo categorias"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Obtendo transações"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Obtendo atualizações do sistema"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Você deseja permitir a instalação de softwares não assinados?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "O pacote não assinado não será instalado."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "A assinatura da fonte de softwares é necessária"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Nome da fontes de softwares"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "URL da chave"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Usuário da chave"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "ID da chave"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Impressão digital da chave"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Carimbo de hora da chave"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Você aceita essa assinatura?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "A assinatura não foi aceita."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "É necessário um contrato de licença para o usuário final"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Contrato"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Você aceita este contrato?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "O contrato não foi aceito."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "É necessário trocar a mídia"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Tipo da mídia"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Rótulo da mídia"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Texto"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Por favor, insira a mídia correta"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "A mídia correta não foi inserida."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Os seguintes pacotes têm que ser removidos:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Os seguintes pacotes têm que ser instalados:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Os seguintes pacotes têm que ser atualizados:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Os seguintes pacotes têm que ser reinstalados:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Os seguintes pacotes têm que ser desatualizados:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Os seguintes pacotes têm se tornar obsoletos:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Os seguintes pacotes não são confiáveis:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Continuar com as alterações?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "A transação não procedeu."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Cancelar tarefa externa"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por você"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Instalar pacote assinado"
-
-msgid "Authentication is required to install software"
-msgstr "Autenticação é necessária para instalar softwares"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Instalar arquivo local não confiável"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Autenticação é necessária para instalar softwares não confiáveis"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Instalar pacote já instalado novamente"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Autenticação é necessária para reinstalar software"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Instalar a versão mais antiga do pacote instalado"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Autenticação é necessária para desatualizar o software"
+msgid "True"
+msgstr "Verdadeiro"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1225,36 +1332,21 @@ msgstr "Autenticação é necessária para desatualizar o software"
 msgid "Trust a key used for signing software"
 msgstr "Confiar em uma chave para assinar softwares"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Autenticação é necessária para considerar como confiável uma chave usada para assinar softwares"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Tipo"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Aceitar a licença EULA"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Indisponível"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Autenticação é necessária para aceitar uma licença EULA"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Tipo de papel desconhecido"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Remover pacote"
-
-msgid "Authentication is required to remove software"
-msgstr "Autenticação é necessária para remover softwares"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Estado desconhecido"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1265,50 +1357,33 @@ msgstr "Autenticação é necessária para remover softwares"
 msgid "Update software"
 msgstr "Atualizar softwares"
 
-msgid "Authentication is required to update software"
-msgstr "Autenticação é necessária para atualizar softwares"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Descrição da atualização"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Alterar parâmetros de repositório de software"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Atualizado em"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Autenticação é necessária para alterar os parâmetros de repositório de software"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Atualiza"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Atualizar repositórios de sistema"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Atualizando"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Autenticação é necessária para atualizar os repositórios de sistema"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Atualizando pacotes"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Definir um proxy de rede"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Autenticação é necessária para definir um proxy de rede para baixar softwares"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Recarregar um dispositivo"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Autenticação é necessária para recarregar o dispositivo com o novo driver"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Atualizando aplicativos em execução"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1317,134 +1392,46 @@ msgstr "Autenticação é necessária para recarregar o dispositivo com o novo d
 msgid "Upgrade System"
 msgstr "Atualizar o sistema"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Autenticação é necessária para atualizar o sistema operacional"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "ID do usuário"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Reparar o sistema"
+msgid "User aborted selection"
+msgstr "Usuário abortou a seleção"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Autenticação é necessária para reparar o software instalado"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Nome de usuário"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Acionar atualizações offline"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Fornecedor"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Autenticação é necessária para acionar pacotes offline"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Esperando pela autenticação"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Limpar mensagens de atualização offline"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Esperando pelo bloqueio do gerenciador de pacotes"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Autenticação é necessária para limpar mensagens de atualização offline"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Esperando pelo bloqueio do gerenciador de pacotes."
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Alias para %s"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Esperando na fila"
 
-msgid "Command not found, valid commands are:"
-msgstr "Comando não encontrado, comandos válidos são:"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Você precisa especificar um arquivo de lista para criar"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "O backend de empacotamento a ser utilizado, p. ex.: dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Renovar o cache"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Renovar o cache (forçado)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Pesquisar por nomes"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Pesquisar por detalhes"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Pesquisar por arquivos"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Instalar pacote"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Definir opções do repositório"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Falha ao analisar argumentos"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Falha ao carregar o arquivo de configuração"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Falha ao carregar o backend"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Falha ao descarregar o backend"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Desabilitar o tempo de ociosidade"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Mostrar a versão e sair"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Sair após um pequeno atraso"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Sair após o carregamento do mecanismo"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Não limpe o ambiente no início"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "Serviço do PackageKit"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "O software não vem de uma fonte confiável."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Não atualize este pacote a não ser que você esteja certo de que é seguro fazer isso."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "comando não encontrado"

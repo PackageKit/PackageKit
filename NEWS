@@ -1,3 +1,40 @@
+Version 1.2.0
+~~~~~~~~~~~~~
+Released: 2020-05-04
+
+Backends:
+ - alpm: Fix assertion failures for download start signals (Felix Yan)
+ - alpm: Fix config parsing for DisableDownloadTimeout (Felix Yan)
+ - alpm: Handle blank target name for progress cb (Carson Black)
+ - alpm: Improve dlcb handling (Carson Black)
+ - alpm: Respect ignored packages on update (#390) (jan Pontaoski)
+ - alpm: Sync with the latest libalpm (Dominik Opyd)
+ - alpm: Updates-changed implementation (Carson Black)
+ - alpm: Use separate alpm_handle_t for updates (Carson Black)
+ - aptcc: Add libutil to linker args (David Hewitt)
+ - aptcc: Do not emit PK_ERROR_ENUM_GPG_FAILURE (Julian Andres Klode)
+ - aptcc: Include helper socket/service when making release tarball (Matthias Klumpp)
+ - aptcc: Only report errors if there are errors (Julian Andres Klode)
+ - aptcc: Set locale env vars properly according to frontend request (Matthias Klumpp)
+ - aptcc: Use pk_backend_convert_uri on proxy settings (David Hewitt)
+ - dnf: Load all the repos and vars directories (Neal Gompa)
+ - Make pk_alpm_update_database a nullop without force (Carson Black)
+ - pisi: Remove unmaintained backend (Richard Hughes)
+ - ports: Remove unmaintained backend (Richard Hughes)
+ - urpmi: Remove unmaintained backend (Richard Hughes)
+ - yum: Remove unmaintained backend (Richard Hughes)
+ - zypp: Ignore already installed package when installing (Jonathan Kang)
+ - zypp: Remove upgrade-system implementation (Jonathan Kang)
+
+New Features:
+ - Port to the meson build system (Corentin Noël and many others)
+ - Remove the GTK2 gtk-module support (Richard Hughes)
+
+Bugfixes:
+ - Do not do failable actions in the PkDbus constructor (Richard Hughes)
+ - Do not do failable actions in the PkTransaction constructor (Richard Hughes)
+ - Revert "Shutdown the daemon on idle by default" (Michael Catanzaro)
+
 Version 1.1.13
 ~~~~~~~~~~~~~~
 Released: 2020-01-08

@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # aurisc4 <aurisc4@gmail.com>, 2013
 # aurisc4 <aurisc4@gmail.com>, 2013
@@ -12,9 +12,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Lithuanian (http://www.transifex.com/freedesktop/packagekit/language/lt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,53 +19,93 @@ msgstr ""
 "Language: lt\n"
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Operacija"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Sistemos laikas"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Sėkminga"
-
-msgid "True"
-msgstr "Teigiama"
-
-msgid "False"
-msgstr "Neigiama"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Vaidmuo"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Trukmė"
-
 msgid "(seconds)"
 msgstr "(sekundės)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Komandų eilutė"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Reikia nurodyti teisingą vaidmenį"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Naudotojo ID"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Reikia nurodyti paskirties katalogą ir atsiųstinų paketų pavadinimus"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Naudotojo vardas"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Reikia nurodyti diegtino failo pavadinimą"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Tikrasis vardas"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Reikia nurodyti licencijos identifikatorių (eula-id)"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Reikia nurodyti paketo pavadinimą"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Reikia nurodyti diegtino paketo pavadinimą"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Reikia nurodyti šalintino paketo pavadinimą"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Reikia nurodyti ieškomo paketo pavadinimą"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "Reikia nurodyti paketo suteikiamą eilutę"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Reikia nurodyti saugyklos pavadinimą, parametrą ir reikšmę"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Reikia nurodyti saugyklos pavadinimą"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Reikia nurodyti ieškomą terminą"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Reikia nurodyti paieškos tipą, pvz., pavadinimas"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Reikia nurodyti tipą, key_id ir package_id"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Sutikti su licencija"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Sutinkama su licencija"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -78,65 +115,44 @@ msgstr "Paveikti paketai:"
 msgid "Affected packages: None"
 msgstr "Paveikti paketai: nėra"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distributyvas"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Sutikimas"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Tipas"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Būtinas veiksmas, pvz. „update-packages“"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Santrauka"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Paleisti programą iš naujo reikalauja:"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategorija"
+msgid "Authentication is required to accept a EULA"
+msgstr "Reikia patvirtinti tapatybę, norint sutikti su licencija"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Reikia patvirtinti tapatybę, norint atšaukti veiksmą, kurį pradėjote ne jūs"
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Pirminė"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Atnaujinimo atsijungus pranešimui išvalyti būtina patvirtinti tapatybę"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Pavadinimas"
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Reikia patvirtinti tapatybę, norint iš naujo įkelti įrenginį su nauja tvarkykle"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Piktograma"
+msgid "Authentication is required to repair the installed software"
+msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Informacija apie atnaujinimą:"
+msgid "Authentication is required to trigger offline updates"
+msgstr "Atnaujinimams atsijungus sukelti būtina patvirtinti tapatybę"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr ""
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Prieinamas"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Atnaujinimai"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Pasenę"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Tiekėjas"
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Blokuotas"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -146,106 +162,882 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Paleisti iš naujo"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Atšaukti kito naudotojo paleistą užduotį"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Atnaujinimo tekstas"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Atšaukiama"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Atšaukiama"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Kategorija"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Pakeitimai"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Būsena"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Tikrinamos naudojamos programos"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Išleistas"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Tikrinamos naudojamos bibliotekos"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Tikrinami parašai"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Atnaujintas"
+msgid "Cleaned up"
+msgstr "Išvalytas"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Įjungta"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Išvalomas"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Išvalomi paketai"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Išvalyti atnaujinimo atsijungus pranešimą"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Komandos įvykdyti nepavyko"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Komandų eilutė"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Išsaugomi pakeitimai"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Kopijuojami failai"
+
+msgid "Debugging Options"
+msgstr "Derinimo parametrai"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Informacija apie atnaujinimą:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Katalogas nerastas"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Išjungti laisvo laiko matuoklį"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Išjungta"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Paleisti sistemą iš naujo reikalauja:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distributyvas"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Paleisti seansą iš naujo reikalauja:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Neįdiekite šių paketų, nebent esate tikri, kad tai saugu."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Paleisti sistemą iš naujo (saugumo sumetimais) reikalauja:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Neįdiekite šio paketo, nebent esate tikri, kad tai saugu."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Paleisti seansą iš naujo (saugumo sumetimais) reikalauja:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Neatnaujinkite šių paketo, nebent esate tikri, kad tai saugu."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Paleisti programą iš naujo reikalauja:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Neatnaujinkite šio paketo, nebent esate tikri, kad tai saugu."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Paketo aprašymas"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Ar sutinkate su sąlygomis?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Nėra failų"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Ar priimate šį parašą?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Paketų failai"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Ar norite leisti įdiegti nepasirašytą programinę įrangą?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Procentai"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Neišvalyti aplinkos paleidžiant"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Būsena"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Atsiųstas"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Rezultatai:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Atsiunčiamas"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Atsiunčiami failų sąrašai"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Atsiunčiami failų sąrašai (tai gali šiek tiek užtrukti)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Atsiunčiamos grupės"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Atsiunčiamas paketų sąrašas"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Atsiunčiami pakeitimų sąrašai"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Atsiunčiami paketai"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Atsiunčiama saugyklų informacija"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Atsiunčiama atnaujinimo informacija"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Trukmė"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Įjungta"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Būtina sutikti su licencijos sąlygomis"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Patobulinimas"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Išeiti šiek tiek palaukus"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Išeiti įkėlus modulį"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Tikėtasi paketo pavadinimo, bet gautas failas. Mėginkite „pkcon install-local %s“."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Nepavyko susisiekti su PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Nepavyko gauti tarnybos būsenos"
+
+msgid "Failed to get properties"
+msgstr "Nepavyko gauti savybių"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Nepavyko gauti laiko, kada šis veiksmas paskutinį kartą baigtas"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Nepavyko įdiegti paketų"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Nepavyko paleisti:"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Nepavyko perskaityti komandų eilutės"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Nepavyko rasti failo"
+
+msgid "False"
+msgstr "Neigiama"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Lemtinga klaida"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Nėra atnaujinamų paketų."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Failas jau yra: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Baigta"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Kuriami paketų sąrašai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Gaunamos kategorijos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Gaunamos priklausomybės"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Gaunama informacija"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Gaunamas failų sąrašas"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Gaunama informacija"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Gaunami paketai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Gaunami suteikiami paketai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Gaunamos saugyklos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Gaunami reikalavimai"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Nepavyko gauti failų sąrašo"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Gaunamos operacijos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Gaunama atnaujinimo informacija"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Gaunami atnaujinimai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Gaunami atnaujinimai"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Piktograma"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Svarbus"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Įdiegti paketą „%s“, suteikiantį komandą „%s“?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Įdiegti pasirašytą paketą"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Įdiegti paketus neklausiant patvirtinimo"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Įdiegti nepatikimą vietinį failą"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Įdiegtas"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Diegiamas"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Diegiami atnaujinimai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Diegiami failai"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Diegiami paketai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Diegiamas parašas"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Diegiami atnaujinimai"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Išleistas"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "Rakto ID"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Rakto data ir laikas"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "Rakto URL"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Rakto kontrolinis kodas"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Rakto naudotojas"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Įkeliamas podėlis"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Įkeliamas paketų sąrašas."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Reikia pakeisti laikmeną"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Laikmenos etiketė"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Laikmenos tipas"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Atitinka daugiau nei vienas paketas:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Pavadinimas"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Nėra failų"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Jokio paketo nereikia atnaujinti į naujesnę versiją."
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Normalus"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Pasenęs"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Pasenę"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Žymimas pasenusiu"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Žymimo pasenę paketai"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Parametras „%s“ nepalaikomas"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Paketo aprašymas"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Paketų failai"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "PackageKit pulto sąsaja"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit stebyklė"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "PackageKit tarnyba"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Paketai, suteikiantys šį failą yra:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Naudotina pakavimo posistemė, pvz., fiktyvi"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Pirminė"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Procentai"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Pasirinkite paleistiną komandą"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Pasirinkite diegtiną paketą"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Pasirinkite teisingą paketą: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Įveskite numerį nuo 1 iki %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Įdėkite tinkamą laikmeną"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite - buvo įdiegta svarbių saugumo atnaujinimų."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo - buvo įdiegta svarbių saugumo atnaujinimų."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo."
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Parodyti ekrane kompiuterio skaitomą išvestį, užuot rodžius animuotus valdymo elementus"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Atlikti pakeitimus?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Užklausiama"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Tikrasis vardas"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Perleidžiama po atnaujinimų diegimo…"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Atnaujinamas podėlis"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Atnaujinamas programinės įrangos sąrašas"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Įdiegtas iš naujo"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Diegiamas iš naujo"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Iš naujo įkelti įrenginį"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Pašalinti paketą"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Pašalintas"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Šalinamas"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Šalinami paketai"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Perpakuojami failai"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Taisyti sistemą"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Užklausiama duomenų"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Nustatoma"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Tikrinamos priklausomybės"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Paleisti iš naujo"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Rezultatai:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Vaidmuo"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Paleisti panašią komanda:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Paleisti komandą naudojant laisvą tinklo ryšį ir naudojant mažiau energijos"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Vykdoma"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Apžvelgiamos programos"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Ieškoma pagal informaciją"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Ieškoma pagal failą"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Ieškoma pagal pavadinimą"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Ieškoma grupių"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Saugumo"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Paleisti seansą iš naujo (saugumo sumetimais) reikalauja:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Paleisti seansą iš naujo reikalauja:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Nustatyti įgaliotąjį tinklo serverį"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Nustatyti filtrą, pvz., įdiegta"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Nustatomi duomenys"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Rodyti visų failų derinimo informaciją"
+
+msgid "Show debugging options"
+msgstr "Rodyti derinimo parametrus"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Parodyti programos versiją ir išeiti"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Parodyti versiją ir išeiti"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Panaši komanda yra:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Panašios komandos yra:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Programinės įrangos saugyklos pavadinimas"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Reikia programinės įrangos saugyklos parašo"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Paleidžiama"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Būsena"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Būsena"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Pakomandės:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Sėkminga"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Tinkami paketai yra:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Santrauka"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Paleisti sistemą iš naujo (saugumo sumetimais) reikalauja:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Paleisti sistemą iš naujo reikalauja:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Sistemos laikas"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Tikrinami pakeitimai"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Tekstas"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Su sąlygomis nesutikta."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Tinkama laikmena nebuvo įdėta."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Tarnyba nulūžo atliekant operaciją!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Nurodytas filtras buvo netinkamas"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Šie paketai nėra patikimi:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Šie paketai turi būti pasendinti į senesnes versijas:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Šie paketai turi būti įdiegti:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Šie paketai turi būti įdiegti iš naujo:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Šie paketai turi būti pašalinti:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Šie paketai turi būti atnaujinti:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Maksimalus podėlyje esančių metaduomenų senumas. Naudokite -1 neribotam."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Paketas, suteikiantis šį failą yra:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Nepavyko nustatyti įgaliotosios programos"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Parašas nepriimtas."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Ši programinė įranga nėra iš patikimos saugyklos."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Operacija neprasidėjo."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Operacija nepavyko"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Nepasirašyta programinė įranga nebus diegiama."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Nėra atnaujinamų paketų."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -254,52 +1046,17 @@ msgstr "Šiuo metu nėra atnaujinimų."
 msgid "There are no upgrades available at this time."
 msgstr "Šiuo metu nėra atnaujinimų."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo - buvo įdiegta svarbių saugumo atnaujinimų."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite - buvo įdiegta svarbių saugumo atnaujinimų."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Atitinka daugiau nei vienas paketas:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Pasirinkite teisingą paketą: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr ""
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr ""
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Tikėtasi paketo pavadinimo, bet gautas failas. Mėginkite „pkcon install-local %s“."
+msgid "This tool could not find all the packages: %s"
+msgstr "Šiai priemonei nepavyko rasti visų paketų: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -319,1015 +1076,15 @@ msgstr "Šiai priemonei nepavyko rasti įdiegto paketo: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Šiai priemonei nepavyko rasti paketo: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Jokio paketo nereikia atnaujinti į naujesnę versiją."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Šiai priemonei nepavyko rasti visų paketų: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Tarnyba nulūžo atliekant operaciją!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKit pulto sąsaja"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Pakomandės:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Nepavyko gauti laiko, kada šis veiksmas paskutinį kartą baigtas"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr ""
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr ""
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Nepavyko nustatyti įgaliotosios programos"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Parodyti programos versiją ir išeiti"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Nustatyti filtrą, pvz., įdiegta"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Įdiegti paketus neklausiant patvirtinimo"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr ""
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
-
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Paleisti komandą naudojant laisvą tinklo ryšį ir naudojant mažiau energijos"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Parodyti ekrane kompiuterio skaitomą išvestį, užuot rodžius animuotus valdymo elementus"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maksimalus podėlyje esančių metaduomenų senumas. Naudokite -1 neribotam."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr ""
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Nepavyko perskaityti komandų eilutės"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Nepavyko susisiekti su PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Nurodytas filtras buvo netinkamas"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Reikia nurodyti paieškos tipą, pvz., pavadinimas"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Reikia nurodyti ieškomą terminą"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Reikia nurodyti diegtino paketo pavadinimą"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Reikia nurodyti diegtino failo pavadinimą"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Reikia nurodyti tipą, key_id ir package_id"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Reikia nurodyti šalintino paketo pavadinimą"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Reikia nurodyti paskirties katalogą ir atsiųstinų paketų pavadinimus"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Katalogas nerastas"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Reikia nurodyti licencijos identifikatorių (eula-id)"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Reikia nurodyti ieškomo paketo pavadinimą"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Reikia nurodyti saugyklos pavadinimą"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Reikia nurodyti saugyklos pavadinimą, parametrą ir reikšmę"
-
-msgid "A repo id and autoremove required"
-msgstr ""
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Būtinas veiksmas, pvz. „update-packages“"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Reikia nurodyti teisingą vaidmenį"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Reikia nurodyti paketo pavadinimą"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Reikia nurodyti paketo suteikiamą eilutę"
-
-msgid "A filename is required"
-msgstr ""
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr ""
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr ""
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Reikia nurodyti sąrašo failą sukūrimui"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Failas jau yra: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Parametras „%s“ nepalaikomas"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Komandos įvykdyti nepavyko"
-
-msgid "Failed to get daemon state"
-msgstr "Nepavyko gauti tarnybos būsenos"
-
-msgid "Failed to get properties"
-msgstr "Nepavyko gauti savybių"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit stebyklė"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr ""
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Diegiami atnaujinimai"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Perleidžiama po atnaujinimų diegimo…"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr ""
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Atsiunčiami failų sąrašai (tai gali šiek tiek užtrukti)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Laukiama paketų tvarkytuvės užrakto."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Įkeliamas paketų sąrašas."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Nepavyko rasti failo"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Nepavyko gauti failų sąrašo"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Nepavyko paleisti:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Nepavyko įdiegti paketų"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "komanda nerasta"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Panaši komanda yra:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Paleisti panašią komanda:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Panašios komandos yra:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Pasirinkite paleistiną komandą"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Paketas, suteikiantis šį failą yra:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Įdiegti paketą „%s“, suteikiantį komandą „%s“?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Paketai, suteikiantys šį failą yra:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Tinkami paketai yra:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Pasirinkite diegtiną paketą"
-
-msgid "User aborted selection"
-msgstr "Naudotojas nutraukė pasirinkimą"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Įveskite numerį nuo 1 iki %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Nežinoma būsena"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Paleidžiama"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Laukiama eilėje"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Vykdoma"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Užklausiama"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Gaunama informacija"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Šalinami paketai"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Atsiunčiami paketai"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Diegiami paketai"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Atnaujinamas programinės įrangos sąrašas"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Diegiami atnaujinimai"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Išvalomi paketai"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Žymimo pasenę paketai"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Tikrinamos priklausomybės"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Tikrinami parašai"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Tikrinami pakeitimai"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Išsaugomi pakeitimai"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Užklausiama duomenų"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Baigta"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Atšaukiama"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Atsiunčiama saugyklų informacija"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Atsiunčiamas paketų sąrašas"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Atsiunčiami failų sąrašai"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Atsiunčiami pakeitimų sąrašai"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Atsiunčiamos grupės"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Atsiunčiama atnaujinimo informacija"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Perpakuojami failai"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Įkeliamas podėlis"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Apžvelgiamos programos"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Kuriami paketų sąrašai"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Laukiama paketų tvarkytuvės užrakto"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Laukiama tapatybės patvirtinimo"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Atnaujinamos veikiančios programos"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Tikrinamos naudojamos programos"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Tikrinamos naudojamos bibliotekos"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Kopijuojami failai"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr ""
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Rodyti visų failų derinimo informaciją"
-
-msgid "Debugging Options"
-msgstr "Derinimo parametrai"
-
-msgid "Show debugging options"
-msgstr "Rodyti derinimo parametrus"
-
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "Kasdienis"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normalus"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Svarbus"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Saugumo"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr ""
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Patobulinimas"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokuotas"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Įdiegtas"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Prieinamas"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr ""
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Atsiunčiamas"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Atnaujinamas"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Diegiamas"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Šalinamas"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Išvalomas"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Žymimas pasenusiu"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Diegiamas iš naujo"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Atsiųstas"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Pašalintas"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Išvalytas"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Pasenęs"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Įdiegtas iš naujo"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Nežinomas vaidmens tipas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Gaunamos priklausomybės"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Gaunama atnaujinimo informacija"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Gaunama informacija"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Gaunami reikalavimai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Gaunami atnaujinimai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Ieškoma pagal informaciją"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Ieškoma pagal failą"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Ieškoma grupių"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Ieškoma pagal pavadinimą"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Diegiami failai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Atnaujinamas podėlis"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Atnaujinami paketai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Atšaukiama"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Gaunamos saugyklos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Nustatomi duomenys"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Nustatoma"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Gaunamas failų sąrašas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Gaunami suteikiami paketai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Diegiamas parašas"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Gaunami paketai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Sutinkama su licencija"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Gaunami atnaujinimai"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Gaunamos kategorijos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Gaunamos operacijos"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr ""
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Ar norite leisti įdiegti nepasirašytą programinę įrangą?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Nepasirašyta programinė įranga nebus diegiama."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Reikia programinės įrangos saugyklos parašo"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Programinės įrangos saugyklos pavadinimas"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Rakto URL"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Rakto naudotojas"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Rakto ID"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Rakto kontrolinis kodas"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Rakto data ir laikas"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Ar priimate šį parašą?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Parašas nepriimtas."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Būtina sutikti su licencijos sąlygomis"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Sutikimas"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Ar sutinkate su sąlygomis?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Su sąlygomis nesutikta."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Reikia pakeisti laikmeną"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Laikmenos tipas"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Laikmenos etiketė"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Tekstas"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Įdėkite tinkamą laikmeną"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Tinkama laikmena nebuvo įdėta."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Šie paketai turi būti pašalinti:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Šie paketai turi būti įdiegti:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Šie paketai turi būti atnaujinti:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Šie paketai turi būti įdiegti iš naujo:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Šie paketai turi būti pasendinti į senesnes versijas:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr ""
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Šie paketai nėra patikimi:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Atlikti pakeitimus?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Operacija neprasidėjo."
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Operacija"
 
 #. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Atšaukti kito naudotojo paleistą užduotį"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Reikia patvirtinti tapatybę, norint atšaukti veiksmą, kurį pradėjote ne jūs"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Įdiegti pasirašytą paketą"
-
-msgid "Authentication is required to install software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Įdiegti nepatikimą vietinį failą"
-
-msgid "Authentication is required to install untrusted software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr ""
-
-msgid "Authentication is required to reinstall software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr ""
-
-msgid "Authentication is required to downgrade software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr ""
-
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Sutikti su licencija"
-
-msgid "Authentication is required to accept a EULA"
-msgstr "Reikia patvirtinti tapatybę, norint sutikti su licencija"
-
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Pašalinti paketą"
-
-msgid "Authentication is required to remove software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr ""
-
-msgid "Authentication is required to update software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr ""
-
-msgid "Authentication is required to change software repository parameters"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr ""
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Nustatyti įgaliotąjį tinklo serverį"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Iš naujo įkelti įrenginį"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Reikia patvirtinti tapatybę, norint iš naujo įkelti įrenginį su nauja tvarkykle"
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr ""
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Taisyti sistemą"
-
-msgid "Authentication is required to repair the installed software"
-msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
-
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
@@ -1335,114 +1092,93 @@ msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
 msgid "Trigger offline updates"
 msgstr "Sukelti atnaujinimus atsijungus"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Atnaujinimams atsijungus sukelti būtina patvirtinti tapatybę"
+#. TRANSLATORS: The type of update
+msgid "Trivial"
+msgstr "Kasdienis"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Išvalyti atnaujinimo atsijungus pranešimą"
+msgid "True"
+msgstr "Teigiama"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Atnaujinimo atsijungus pranešimui išvalyti būtina patvirtinti tapatybę"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Tipas"
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr ""
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Nežinomas vaidmens tipas"
 
-msgid "Command not found, valid commands are:"
-msgstr ""
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Nežinoma būsena"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Naudotina pakavimo posistemė, pvz., fiktyvi"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Atnaujinimo tekstas"
 
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr ""
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Atnaujintas"
 
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr ""
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Atnaujinimai"
 
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr ""
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Atnaujinamas"
 
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr ""
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Atnaujinami paketai"
 
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr ""
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Atnaujinamos veikiančios programos"
 
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr ""
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "Naudotojo ID"
 
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr ""
+msgid "User aborted selection"
+msgstr "Naudotojas nutraukė pasirinkimą"
 
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr ""
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Naudotojo vardas"
 
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr ""
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Tiekėjas"
 
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr ""
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Laukiama tapatybės patvirtinimo"
 
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr ""
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Laukiama paketų tvarkytuvės užrakto"
 
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr ""
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Laukiama paketų tvarkytuvės užrakto."
 
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Išjungti laisvo laiko matuoklį"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Laukiama eilėje"
 
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Parodyti versiją ir išeiti"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Reikia nurodyti sąrašo failą sukūrimui"
 
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Išeiti šiek tiek palaukus"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Išeiti įkėlus modulį"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Neišvalyti aplinkos paleidžiant"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit tarnyba"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Ši programinė įranga nėra iš patikimos saugyklos."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Neatnaujinkite šio paketo, nebent esate tikri, kad tai saugu."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Neatnaujinkite šių paketo, nebent esate tikri, kad tai saugu."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Neįdiekite šio paketo, nebent esate tikri, kad tai saugu."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Neįdiekite šių paketų, nebent esate tikri, kad tai saugu."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "komanda nerasta"

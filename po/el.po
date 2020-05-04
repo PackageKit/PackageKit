@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Dimitris Glezos <dimitris@glezos.com>, 2008-2009
 # Jennie Petoumenou <epetoumenou@gmail.com>, 2009
@@ -12,9 +12,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Greek (http://www.transifex.com/freedesktop/packagekit/language/el/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,53 +19,99 @@ msgstr ""
 "Language: el\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Εργασία"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Ώρα συστήματος"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Επιτυχής"
-
-msgid "True"
-msgstr "Αληθές"
-
-msgid "False"
-msgstr "Ψευδές"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Ρόλος"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Διάρκεια"
-
 msgid "(seconds)"
 msgstr "(δευτερόλεπτα)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Γραμμή εντολών"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Πρέπει να οριστεί έγκυρη ενέργεια"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Ταυτότητα χρήστη"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα ληφθούν"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Όνομα χρήστη"
+msgid "A filename is required"
+msgstr "Πρέπει να οριστεί ένα όνομα αρχείου"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Πραγματικό όνομα"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Πρέπει να οριστεί όνομα αρχείου προς εγκατάσταση"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Πρέπει να οριστεί αναγνωριστικό EULA (eula-id)"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Πρέπει να οριστεί όνομα πακέτου"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Πρέπει να οριστεί όνομα πακέτου προς εγκατάσταση"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Πρέπει να οριστεί όνομα πακέτου προς αφαίρεση"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Πρέπει να οριστεί όνομα πακέτου για τον καθορισμό"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "Πρέπει να οριστεί συμβολοσειρά με το τι παρέχει αυτό το πακέτο"
+
+msgid "A repo id and autoremove required"
+msgstr "Πρέπει να οριστούν αναγνωριστικό και αυτόματη αφαίρεση αποθετηρίου"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Πρέπει να οριστούν όνομα, παράμετρος και τιμή αποθετηρίου"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Πρέπει να οριστεί όνομα αποθετηρίου"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Πρέπει να οριστεί όρος προς αναζήτηση"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Πρέπει να οριστεί ο τύπος της αναζήτησης, π.χ. όνομα"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου (package_id)"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Αποδοχή άδειας χρήσης (EULA)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Αποδοχή άδειας χρήσης (EULA)"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -78,65 +121,88 @@ msgstr "Επηρεαζόμενα πακέτα:"
 msgid "Affected packages: None"
 msgstr "Επηρεαζόμενα πακέτα: Κανένα"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Διανομή"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Άδεια χρήσης"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Τύπος"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Ψευδώνυμο στο %s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Περίληψη"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Επέτρεψε στα πακέτα να ληφθούν κατά την εργασία"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Κατηγορία"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Επέτρεψε στα πακέτα να επανεγκατασταθούν κατά την εργασία"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "Αναγνωριστικό"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Να επιτρέπονται μη έμπιστα πακέτα να εγκατασταθούν."
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Γονική"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Πρέπει να οριστεί μια ενέργεια, π.χ. 'ενημέρωση-πακέτων'"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Όνομα"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Απαιτείται επανεκκίνηση της εφαρμογής από το:"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Εικονίδιο"
+msgid "Authentication is required to accept a EULA"
+msgstr "Απαιτείται πιστοποίηση για την αποδοχή της άδειας χρήσης (EULA)"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Λεπτομέρειες ενημέρωσης:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει εσείς"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr ""
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Απαιτείται πιστοποίηση για την εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Ενημερώνει"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Απαιτείται πιστοποίηση για να θεωρήσετε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού ως έμπιστο"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Αντικαθιστά"
+msgid "Authentication is required to downgrade software"
+msgstr "Απαιτείται πιστοποίηση για την υποβάθμιση του λογισμικού"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Κατασκευαστής"
+msgid "Authentication is required to install software"
+msgstr "Απαιτείται πιστοποίηση για την εγκατάσταση του λογισμικού"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Απαιτείται πιστοποίηση για την εγκατάσταση αναξιόπιστου λογισμικού"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Απαιτείται πιστοποίηση για την επανεγκατάσταση του λογισμικού"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Απαιτείται πιστοποίηση για την επαναφόρτωση της συσκευής με έναν νέο οδηγό"
+
+msgid "Authentication is required to remove software"
+msgstr "Απαιτείται πιστοποίηση για την αφαίρεση του λογισμικού"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Απαιτείται πιστοποίηση για τον ορισμό του διαμεσολαβητή δικτύου που χρησιμοποιείται για τη λήψη λογισμικού"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Απαιτείται πιστοποίηση για την ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+
+msgid "Authentication is required to update software"
+msgstr "Απαιτείται πιστοποίηση για την ενημέρωση του λογισμικού"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Δημιουργός"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Διαθέσιμο"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Φραγμένη "
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -146,106 +212,985 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Επανεκκίνηση"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Ακύρωση ενέργειας άλλου χρήστη"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Περιγραφή ενημέρωσης"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Ακύρωση"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Ακύρωση"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Κατηγορία"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Αλλαγές"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Κατάσταση"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Έλεγχος εφαρμογών σε χρήση"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Εκδόθηκε"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Έλεγχος βιβλιοθηκών σε χρήση"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Έλεγχος υπογραφών"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Ενημερώθηκε"
+msgid "Cleaned up"
+msgstr "Εκκαθαρίστηκε"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Ενεργοποιημένο"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Γίνεται εκκαθάριση"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Εκκαθάριση πακέτων"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Η εντολή απέτυχε"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Γραμμή εντολών"
+
+msgid "Command not found, valid commands are:"
+msgstr "Δε βρέθηκε η εντολή, έγκυρες εντολές είναι:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Υποβολή αλλαγών"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Αντιγραφή αρχείων"
+
+msgid "Debugging Options"
+msgstr "Επιλογές αποσφαλμάτωσης"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Περιγραφή"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Λεπτομέρειες ενημέρωσης:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Δε βρέθηκε ο κατάλογος"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Απενεργοποίηση του χρονομέτρου αδράνειας"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Απενεργοποιημένο"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Απαιτείται επανεκκίνηση του συστήματος από το:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Διανομή"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Απαιτείται επανεκκίνηση της συνεδρίας από το:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Απαιτείται επανεκκίνηση του συστήματος (για λόγους ασφαλείας) από το:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Απαιτείται επανεκκίνηση της συνεδρίας (για λόγους ασφαλείας) από το:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Απαιτείται επανεκκίνηση της εφαρμογής από το:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Περιγραφή πακέτου"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Αποδοχή αυτής της άδειας χρήσης;"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Χωρίς αρχεία"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Αποδέχεστε την υπογραφή;"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Αρχεία πακέτου"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Θέλετε να επιτρέπεται η εγκατάσταση μη ασφαλών πακέτων?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Ποσοστό"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Να μην γίνεται εκκαθάριση περιβάλλοντος κατά την εκκίνηση"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Κατάσταση"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Λήφθηκε"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Αποτελέσματα:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Γίνεται λήψη"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Γίνεται λήψη των λιστών αρχείων"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Λήψη λιστών αρχείων (θα πάρει κάποιο χρόνο να ολοκληρωθεί)"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Γίνεται λήψη των ομάδων"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Γίνεται λήψη της λίστας πακέτων..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Γίνεται λήψη των λιστών με τις αλλαγές"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Γίνεται λήψη των πληροφοριών αποθετηρίου"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Γίνεται λήψη των πληροφοριών ενημερώσεων"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Διάρκεια"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Ενεργοποιημένο"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Απαιτείται άδεια χρήσης τελικού χρήστη"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Βελτίωσης"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Έξοδος μετά από μικρή καθυστέρηση"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Έξοδος μετά τη φόρτωση της μηχανής"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Αναμενόταν όνομα πακέτου, στην πραγματικότητα λήφθηκε αρχείο. Δοκιμάστε να χρησιμοποιήσετε το 'pkcon install-local %s' αντ' αυτού."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Αποτυχία επικοινωνίας με το PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Αποτυχία λήψης κατάστασης υπηρεσίας"
+
+msgid "Failed to get properties"
+msgstr "Αποτυχία λήψης ιδιοτήτων"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Αποτυχία λήψης του χρόνου που είχε ολοκληρωθεί για τελευταία φορά αυτή η ενέργεια"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Απέτυχε η εγκατάσταση των πακέτων"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Δεν ήταν δυνατή η εκκίνηση:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Αποτυχία φόρτωσης συστήματος υποστήριξης"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Αποτυχία φόρτωσης του αρχείου ρύθμισης"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Αποτυχία ανάλυσης ορισμάτων"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Αποτυχία ανάλυσης γραμμής εντολών"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Δεν ήταν δυνατή η αναζήτηση για το αρχείο"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Αποτυχία αποφόρτωσης του συστήματος υποστήριξης"
+
+msgid "False"
+msgstr "Ψευδές"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Εσωτερικό σφάλμα"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Δεν υπάρχουν πακέτα για ενημέρωση."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Το αρχείο υπάρχει ήδη: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Ολοκληρώθηκε"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Δημιουργία λιστών πακέτων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Λήψη κατηγοριών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Λήψη εξαρτήσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Λήψη λεπτομερειών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Λήψη λίστας αρχείων"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Λήψη πληροφοριών..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Λήψη πακέτων..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Λήψη πακέτων που παρέχουν αρχεία"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Λήψη αποθετηρίων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Λήψη απαιτούμενων"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Αποτυχία λήψης της λίστας αρχείων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Λήψη εργασιών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Λήψη λεπτομερειών ενημέρωσης"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Λήψη ενημερώσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Λήψη αναβαθμίσεων"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "Αναγνωριστικό"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Εικονίδιο"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Σημαντικό"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Εγκαταστάση ξανά ενός εγκατεστημένου πακέτου"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Εγκατάσταση παλιότερης έκδοσης του εγκατεστημένου πακέτου"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Εγκατάσταση πακέτου"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Εγκατάσταση του πακέτου '%s' που παρέχει την εντολή '%s';"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Εγκατάσταση υπογεγραμμένου πακέτου"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Εγκαταστείστε τα πακέτα χωρίς να ζητήσετε επιβεβαίωση"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Εγκατάσταση μη έμπιστου τοπικού αρχείου"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Εγκατεστημένο"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Γίνεται εγκατάσταση"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Εγκατάσταση ενημερώσεων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Εγκατάσταση αρχείων"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Εγκατάσταση πακέτων..."
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Εγκατάσταση υπογραφής"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Εγκατάσταση ενημερώσεων..."
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Εγκατάσταση ενημερώσεων, αυτό θα μπορούσε να πάρει λίγο χρόνο..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Εκδόθηκε"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "Αναγνωριστικό κλειδιού"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Χρονική σήμανση κλειδιού"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "Διεύθυνση κλειδιού"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Αποτύπωμα κλειδιού"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Χρήστης κλειδιού "
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Γίνεται φόρτωση της λανθάνουσας μνήμης"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Φόρτωση λίστας πακέτων."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Απαιτείται αλλαγή μέσου"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Ετικέτα πολυμέσου"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Τύπος πολυμέσου"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Βρέθηκαν πολλαπλά πακέτα:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Όνομα"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Χωρίς αρχεία"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Κανένα πακέτο δεν χρειάζεται ενημέρωση για νεότερες εκδόσεις."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Δεν βρέθηκε κανένα πακέτο"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Κανονική"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Αντικαταστάθηκε"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Αντικαθιστά"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Σημείωση παρωχημένων"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Σημείωση πακέτων ως παρωχημένα"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Η επιλογή '%s' δεν υποστηρίζεται"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Περιγραφή πακέτου"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Αρχεία πακέτου"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Δεν βρέθηκε το πακέτο"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "Διεπαφή κονσόλας Packagekit"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "Παρακολούθηση PackageKit"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "Υπηρεσία PackageKit"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Πακέτα που παρέχουν αυτό το αρχείο:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Σύστημα υποστήριξης που θα χρησιμοποιηθεί, π.χ. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Γονική"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Ποσοστό"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Παρακαλούμε, επιλέξτε εντολή προς εκτέλεση"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Παρακαλούμε, επιλέξτε ένα πακέτο προς εγκατάσταση"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Παρακαλούμε, επιλέξτε το σωστό πακέτο: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Παρακαλούμε, εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Παρακαλούμε εισάγετε το σωστό μέσο"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Ετοιμασία της εργασίας κάνοντας μόνο λήψη των πακέτων "
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Έτοιμες ενημερώσεις:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Εκτύπωση στην οθόνη μιας εξόδου αναγνώσιμης από μηχάνημα, αντί της χρήσης γραφικών στοιχείων κινούμενων εικόνων"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Να προχωρήσουν οι αλλαγές;"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Γίνεται αναζήτηση"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Πραγματικό όνομα"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Επανεκκίνηση μετά την εγκατάσταση ενημερώσεων…"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Ανανέωση λανθάνουσας μνήμης"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Ανανέωση λανθάνουσας μνήμης (εξαναγκασμός)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Ανανέωση λανθάνουσας μνήμης"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Ανανέωση λίστας λογισμικού"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Επανεγκατεστημένο"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Γίνεται επανεγκατάσταση"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Επαναφόρτωση μιας συσκευής"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Αφαίρεση πακέτου"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Έχει αφαιρεθεί"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Αφαίρεση"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Αφαίρεση πακέτων"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Αφαίρεση αποθετηρίου"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Επαναδημιουργία πακέτων"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Επιδιόρθωση συστήματος "
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Αίτηση για δεδομένα"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Καθορισμός"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Καθορισμός εξαρτήσεων"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Επανεκκίνηση"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Αποτελέσματα:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Ρόλος"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Εκτέλεση της παρόμοιας εντολής;"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Εκτέλεση της εντολής χρησιμοποιώντας αδρανές εύρος ζώνης δικτύου και επίσης χρησιμοποιώντας λιγότερη ενέργεια"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Εκτελείται"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Γίνεται σάρωση των εφαρμογών"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Αναζήτηση κατά λεπτομέρειες"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Αναζήτηση κατά αρχεία"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Αναζήτηση κατά ονόματα"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Αναζήτηση βάσει λεπτομερειών"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Αναζήτηση κατά αρχείο"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Αναζήτηση κατά όνομα"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Αναζήτηση ομάδων"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Ασφαλείας"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Απαιτείται επανεκκίνηση της συνεδρίας (για λόγους ασφαλείας) από το:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Απαιτείται επανεκκίνηση της συνεδρίας από το:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Ορισμός διαμεσολαβητή δικτύου"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Ορισμός επιλογών αποθετηρίου"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Ορισμός του φίλτρου, π.χ. εγκατεστημένα"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Ρύθμιση δεδομένων"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Προβολή πληροφοριών αποσφαλμάτωσης για όλα τα αρχεία"
+
+msgid "Show debugging options"
+msgstr "Προβολή επιλογών αποσφαλμάτωσης"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Εμφάνιση της έκδοσης του προγράμματος και έξοδος"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Εμφάνιση έκδοσης και έξοδος"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Τερματισμός λειτουργίας μετά την εγκατάσταση ενημερώσεων…"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Παρόμοια εντολή:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Παρόμοιες εντολές:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Όνομα πηγής λογισμικού"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Απαιτείται η υπογραφή του αποθετηρίου"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Γίνεται εκκίνηση"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Κατάσταση"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Κατάσταση"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Υποεντολές:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Επιτυχής"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Κατάλληλα πακέτα:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Περίληψη"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Απαιτείται επανεκκίνηση του συστήματος (για λόγους ασφαλείας) από το:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Απαιτείται επανεκκίνηση του συστήματος από το:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Ώρα συστήματος"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Έλεγχος αλλαγών..."
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Κείμενο"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Η άδεια χρήσης δεν έγινε αποδεκτή."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Δεν εισήχθη το σωστό πολυμέσο."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Η υπηρεσία κατέρρευσε κατά τη διάρκεια της εργασίας!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Το φίλτρο που ορίστηκε δεν ήταν έγκυρο"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Τα παρακάτω πακέτα είναι αναξιόπιστα:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Τα ακόλουθα πακέτα θα πρέπει να υποβαθμιστούν:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν ξανά:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Τα παρακάτω πακέτα πρέπει να ενημερωθούν:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Η μέγιστη ηλικία μνήμης μεταδεδομένων. Χρησιμοποιήστε -1 για 'ποτέ'."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Το πακέτο που παρέχει αυτό το αρχείο είναι το:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Αδυναμία ορισμού διαμεσολαβητή"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Η υπογραφή δεν έγινε δεκτή."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Το λογισμικό δεν προέρχεται από έμπιστη πηγή."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Η εργασία δεν προχώρησε."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Η εργασία απέτυχε"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Το ανυπόγραφο λογισμικό δεν θα εγκατασταθεί."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Δεν υπάρχουν πακέτα για ενημέρωση."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -254,52 +1199,17 @@ msgstr "Δεν υπάρχουν διαθέσιμες ενημερώσεις αυ
 msgid "There are no upgrades available at this time."
 msgstr "Δεν υπάρχουν διαθέσιμες αναβαθμίσεις αυτή τη στιγμή."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Βρέθηκαν πολλαπλά πακέτα:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Παρακαλούμε, επιλέξτε το σωστό πακέτο: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Δεν βρέθηκε το πακέτο"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Δεν βρέθηκε κανένα πακέτο"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Αναμενόταν όνομα πακέτου, στην πραγματικότητα λήφθηκε αρχείο. Δοκιμάστε να χρησιμοποιήσετε το 'pkcon install-local %s' αντ' αυτού."
+msgid "This tool could not find all the packages: %s"
+msgstr "Το εργαλείο δεν μπόρεσε να βρει όλα τα πακέτα: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -319,901 +1229,32 @@ msgstr "Το εργαλείο δεν μπόρεσε να βρει το εγκα�
 msgid "This tool could not find the package: %s"
 msgstr "Το εργαλείο δεν μπόρεσε να βρει το πακέτο: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Κανένα πακέτο δεν χρειάζεται ενημέρωση για νεότερες εκδόσεις."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Το εργαλείο δεν μπόρεσε να βρει όλα τα πακέτα: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Η υπηρεσία κατέρρευσε κατά τη διάρκεια της εργασίας!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "Διεπαφή κονσόλας Packagekit"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Υποεντολές:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Αποτυχία λήψης του χρόνου που είχε ολοκληρωθεί για τελευταία φορά αυτή η ενέργεια"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Χρόνος τελευταίας χρήσης"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Έτοιμες ενημερώσεις:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Αδυναμία ορισμού διαμεσολαβητή"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Εμφάνιση της έκδοσης του προγράμματος και έξοδος"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Ορισμός του φίλτρου, π.χ. εγκατεστημένα"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Εγκαταστείστε τα πακέτα χωρίς να ζητήσετε επιβεβαίωση"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Ετοιμασία της εργασίας κάνοντας μόνο λήψη των πακέτων "
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Επέτρεψε στα πακέτα να ληφθούν κατά την εργασία"
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Επέτρεψε στα πακέτα να επανεγκατασταθούν κατά την εργασία"
-
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Εκτέλεση της εντολής χρησιμοποιώντας αδρανές εύρος ζώνης δικτύου και επίσης χρησιμοποιώντας λιγότερη ενέργεια"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Εκτύπωση στην οθόνη μιας εξόδου αναγνώσιμης από μηχάνημα, αντί της χρήσης γραφικών στοιχείων κινούμενων εικόνων"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Η μέγιστη ηλικία μνήμης μεταδεδομένων. Χρησιμοποιήστε -1 για 'ποτέ'."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Να επιτρέπονται μη έμπιστα πακέτα να εγκατασταθούν."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Αποτυχία ανάλυσης γραμμής εντολών"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Αποτυχία επικοινωνίας με το PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Το φίλτρο που ορίστηκε δεν ήταν έγκυρο"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Πρέπει να οριστεί ο τύπος της αναζήτησης, π.χ. όνομα"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Πρέπει να οριστεί όρος προς αναζήτηση"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Πρέπει να οριστεί όνομα πακέτου προς εγκατάσταση"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Πρέπει να οριστεί όνομα αρχείου προς εγκατάσταση"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου (package_id)"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Πρέπει να οριστεί όνομα πακέτου προς αφαίρεση"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα ληφθούν"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Δε βρέθηκε ο κατάλογος"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Πρέπει να οριστεί αναγνωριστικό EULA (eula-id)"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Πρέπει να οριστεί όνομα πακέτου για τον καθορισμό"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Πρέπει να οριστεί όνομα αποθετηρίου"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Πρέπει να οριστούν όνομα, παράμετρος και τιμή αποθετηρίου"
-
-msgid "A repo id and autoremove required"
-msgstr "Πρέπει να οριστούν αναγνωριστικό και αυτόματη αφαίρεση αποθετηρίου"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Πρέπει να οριστεί μια ενέργεια, π.χ. 'ενημέρωση-πακέτων'"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Πρέπει να οριστεί έγκυρη ενέργεια"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Πρέπει να οριστεί όνομα πακέτου"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Πρέπει να οριστεί συμβολοσειρά με το τι παρέχει αυτό το πακέτο"
-
-msgid "A filename is required"
-msgstr "Πρέπει να οριστεί ένα όνομα αρχείου"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Περιγραφή"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Δημιουργός"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Θα πρέπει να ορίσετε ένα αρχείο λίστας για δημιουργία"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Το αρχείο υπάρχει ήδη: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Η επιλογή '%s' δεν υποστηρίζεται"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Η εντολή απέτυχε"
-
-msgid "Failed to get daemon state"
-msgstr "Αποτυχία λήψης κατάστασης υπηρεσίας"
-
-msgid "Failed to get properties"
-msgstr "Αποτυχία λήψης ιδιοτήτων"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "Παρακολούθηση PackageKit"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr ""
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Εγκατάσταση ενημερώσεων"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Επανεκκίνηση μετά την εγκατάσταση ενημερώσεων…"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Τερματισμός λειτουργίας μετά την εγκατάσταση ενημερώσεων…"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Εγκατάσταση ενημερώσεων, αυτό θα μπορούσε να πάρει λίγο χρόνο..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr ""
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Λήψη λιστών αρχείων (θα πάρει κάποιο χρόνο να ολοκληρωθεί)"
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Αναμονή για κλείδωμα του διαχειριστή πακέτων."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Φόρτωση λίστας πακέτων."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Δεν ήταν δυνατή η αναζήτηση για το αρχείο"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Αποτυχία λήψης της λίστας αρχείων"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Δεν ήταν δυνατή η εκκίνηση:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Απέτυχε η εγκατάσταση των πακέτων"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "δε βρέθηκε η εντολή"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Παρόμοια εντολή:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Εκτέλεση της παρόμοιας εντολής;"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Παρόμοιες εντολές:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Παρακαλούμε, επιλέξτε εντολή προς εκτέλεση"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Το πακέτο που παρέχει αυτό το αρχείο είναι το:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Εγκατάσταση του πακέτου '%s' που παρέχει την εντολή '%s';"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Πακέτα που παρέχουν αυτό το αρχείο:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Κατάλληλα πακέτα:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Παρακαλούμε, επιλέξτε ένα πακέτο προς εγκατάσταση"
-
-msgid "User aborted selection"
-msgstr "Ο χρήστης ματαίωσε την επιλογή"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Παρακαλούμε, εισάγετε έναν αριθμό από το 1 μέχρι το %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Άγνωστη κατάσταση"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Γίνεται εκκίνηση"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Αναμονή στην ουρά"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Εκτελείται"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Γίνεται αναζήτηση"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Λήψη πληροφοριών..."
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Αφαίρεση πακέτων"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Λήψη πακέτων..."
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Εγκατάσταση πακέτων..."
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Ανανέωση λίστας λογισμικού"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Εγκατάσταση ενημερώσεων..."
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Εκκαθάριση πακέτων"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Σημείωση πακέτων ως παρωχημένα"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Καθορισμός εξαρτήσεων"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Έλεγχος υπογραφών"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Έλεγχος αλλαγών..."
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Υποβολή αλλαγών"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Αίτηση για δεδομένα"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Ολοκληρώθηκε"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Ακύρωση"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Γίνεται λήψη των πληροφοριών αποθετηρίου"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Γίνεται λήψη της λίστας πακέτων..."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Γίνεται λήψη των λιστών αρχείων"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Γίνεται λήψη των λιστών με τις αλλαγές"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Γίνεται λήψη των ομάδων"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Γίνεται λήψη των πληροφοριών ενημερώσεων"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Επαναδημιουργία πακέτων"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Γίνεται φόρτωση της λανθάνουσας μνήμης"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Γίνεται σάρωση των εφαρμογών"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Δημιουργία λιστών πακέτων"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Αναμονή για κλείδωμα του διαχειριστή πακέτων"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Αναμονή για πιστοποίηση"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Γίνεται ενημέρωση εκτελούμενων εφαρμογών"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Έλεγχος εφαρμογών σε χρήση"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Έλεγχος βιβλιοθηκών σε χρήση"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Αντιγραφή αρχείων"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr ""
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Προβολή πληροφοριών αποσφαλμάτωσης για όλα τα αρχεία"
-
-msgid "Debugging Options"
-msgstr "Επιλογές αποσφαλμάτωσης"
-
-msgid "Show debugging options"
-msgstr "Προβολή επιλογών αποσφαλμάτωσης"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Εργασία"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Ασήμαντο"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Κανονική"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Σημαντικό"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Ασφαλείας"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr ""
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Βελτίωσης"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Φραγμένη "
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Εγκατεστημένο"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Διαθέσιμο"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Μη διαθέσιμο"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Γίνεται λήψη"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Γίνεται ενημέρωση"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Γίνεται εγκατάσταση"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Αφαίρεση"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Γίνεται εκκαθάριση"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Σημείωση παρωχημένων"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Γίνεται επανεγκατάσταση"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Λήφθηκε"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Έχει αφαιρεθεί"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Εκκαθαρίστηκε"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Αντικαταστάθηκε"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Επανεγκατεστημένο"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Άγνωστος τύπος ρόλου"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Λήψη εξαρτήσεων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Λήψη λεπτομερειών ενημέρωσης"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Λήψη λεπτομερειών"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Λήψη απαιτούμενων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Λήψη ενημερώσεων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Αναζήτηση βάσει λεπτομερειών"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Αναζήτηση κατά αρχείο"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Αναζήτηση ομάδων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Αναζήτηση κατά όνομα"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Εγκατάσταση αρχείων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Ανανέωση λανθάνουσας μνήμης"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Ενημέρωση πακέτων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Ακύρωση"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Λήψη αποθετηρίων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Ρύθμιση δεδομένων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Αφαίρεση αποθετηρίου"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Καθορισμός"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Λήψη λίστας αρχείων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Λήψη πακέτων που παρέχουν αρχεία"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Εγκατάσταση υπογραφής"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Λήψη πακέτων..."
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Αποδοχή άδειας χρήσης (EULA)"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Λήψη αναβαθμίσεων"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Λήψη κατηγοριών"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Λήψη εργασιών"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr ""
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Θέλετε να επιτρέπεται η εγκατάσταση μη ασφαλών πακέτων?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Το ανυπόγραφο λογισμικό δεν θα εγκατασταθεί."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Απαιτείται η υπογραφή του αποθετηρίου"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Όνομα πηγής λογισμικού"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Διεύθυνση κλειδιού"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Χρήστης κλειδιού "
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Αναγνωριστικό κλειδιού"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Αποτύπωμα κλειδιού"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Χρονική σήμανση κλειδιού"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Αποδέχεστε την υπογραφή;"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Η υπογραφή δεν έγινε δεκτή."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Απαιτείται άδεια χρήσης τελικού χρήστη"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Άδεια χρήσης"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Αποδοχή αυτής της άδειας χρήσης;"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Η άδεια χρήσης δεν έγινε αποδεκτή."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Απαιτείται αλλαγή μέσου"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Τύπος πολυμέσου"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Ετικέτα πολυμέσου"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Κείμενο"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Παρακαλούμε εισάγετε το σωστό μέσο"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Δεν εισήχθη το σωστό πολυμέσο."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Τα παρακάτω πακέτα πρέπει να αφαιρεθούν:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Τα παρακάτω πακέτα πρέπει να ενημερωθούν:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Τα παρακάτω πακέτα πρέπει να εγκατασταθούν ξανά:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Τα ακόλουθα πακέτα θα πρέπει να υποβαθμιστούν:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr ""
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Τα παρακάτω πακέτα είναι αναξιόπιστα:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Να προχωρήσουν οι αλλαγές;"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Η εργασία δεν προχώρησε."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Ακύρωση ενέργειας άλλου χρήστη"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει εσείς"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Εγκατάσταση υπογεγραμμένου πακέτου"
-
-msgid "Authentication is required to install software"
-msgstr "Απαιτείται πιστοποίηση για την εγκατάσταση του λογισμικού"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Εγκατάσταση μη έμπιστου τοπικού αρχείου"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Απαιτείται πιστοποίηση για την εγκατάσταση αναξιόπιστου λογισμικού"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Εγκαταστάση ξανά ενός εγκατεστημένου πακέτου"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Απαιτείται πιστοποίηση για την επανεγκατάσταση του λογισμικού"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Εγκατάσταση παλιότερης έκδοσης του εγκατεστημένου πακέτου"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Απαιτείται πιστοποίηση για την υποβάθμιση του λογισμικού"
+msgid "True"
+msgstr "Αληθές"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1223,36 +1264,21 @@ msgstr "Απαιτείται πιστοποίηση για την υποβάθμ
 msgid "Trust a key used for signing software"
 msgstr "Εμπιστευθείτε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Απαιτείται πιστοποίηση για να θεωρήσετε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού ως έμπιστο"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Τύπος"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Αποδοχή άδειας χρήσης (EULA)"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Μη διαθέσιμο"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Απαιτείται πιστοποίηση για την αποδοχή της άδειας χρήσης (EULA)"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Άγνωστος τύπος ρόλου"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Αφαίρεση πακέτου"
-
-msgid "Authentication is required to remove software"
-msgstr "Απαιτείται πιστοποίηση για την αφαίρεση του λογισμικού"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Άγνωστη κατάσταση"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1263,186 +1289,74 @@ msgstr "Απαιτείται πιστοποίηση για την αφαίρεσ
 msgid "Update software"
 msgstr "Ενημέρωση λογισμικού"
 
-msgid "Authentication is required to update software"
-msgstr "Απαιτείται πιστοποίηση για την ενημέρωση του λογισμικού"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Περιγραφή ενημέρωσης"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr ""
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Ενημερώθηκε"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr ""
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Ενημερώνει"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr ""
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Γίνεται ενημέρωση"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Ενημέρωση πακέτων"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Ορισμός διαμεσολαβητή δικτύου"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Γίνεται ενημέρωση εκτελούμενων εφαρμογών"
 
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Απαιτείται πιστοποίηση για τον ορισμό του διαμεσολαβητή δικτύου που χρησιμοποιείται για τη λήψη λογισμικού"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "Ταυτότητα χρήστη"
 
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Επαναφόρτωση μιας συσκευής"
+msgid "User aborted selection"
+msgstr "Ο χρήστης ματαίωσε την επιλογή"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Απαιτείται πιστοποίηση για την επαναφόρτωση της συσκευής με έναν νέο οδηγό"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Όνομα χρήστη"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr ""
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Κατασκευαστής"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Αναμονή για πιστοποίηση"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Επιδιόρθωση συστήματος "
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Αναμονή για κλείδωμα του διαχειριστή πακέτων"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Αναμονή για κλείδωμα του διαχειριστή πακέτων."
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Αναμονή στην ουρά"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Απαιτείται πιστοποίηση για την ενεργοποίηση ενημερώσεων εκτός σύνδεσης"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Θα πρέπει να ορίσετε ένα αρχείο λίστας για δημιουργία"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
-
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Απαιτείται πιστοποίηση για την εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
-
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Ψευδώνυμο στο %s"
-
-msgid "Command not found, valid commands are:"
-msgstr "Δε βρέθηκε η εντολή, έγκυρες εντολές είναι:"
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Σύστημα υποστήριξης που θα χρησιμοποιηθεί, π.χ. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Ανανέωση λανθάνουσας μνήμης"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Ανανέωση λανθάνουσας μνήμης (εξαναγκασμός)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Αναζήτηση κατά ονόματα"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Αναζήτηση κατά λεπτομέρειες"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Αναζήτηση κατά αρχεία"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Εγκατάσταση πακέτου"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Ορισμός επιλογών αποθετηρίου"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Αποτυχία ανάλυσης ορισμάτων"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Αποτυχία φόρτωσης του αρχείου ρύθμισης"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Αποτυχία φόρτωσης συστήματος υποστήριξης"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Αποτυχία αποφόρτωσης του συστήματος υποστήριξης"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Απενεργοποίηση του χρονομέτρου αδράνειας"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Εμφάνιση έκδοσης και έξοδος"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Έξοδος μετά από μικρή καθυστέρηση"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Έξοδος μετά τη φόρτωση της μηχανής"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Να μην γίνεται εκκαθάριση περιβάλλοντος κατά την εκκίνηση"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "Υπηρεσία PackageKit"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Το λογισμικό δεν προέρχεται από έμπιστη πηγή."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Ενημερώστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Εγκαταστήστε αυτό το πακέτο μόνο αν είστε βέβαιοι ότι είναι ασφαλές."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "δε βρέθηκε η εντολή"

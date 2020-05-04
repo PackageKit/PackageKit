@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Jiri Grönroos <jiri.gronroos@iki.fi>, 2012-2013,2015-2018
 # Kimmo Kujansuu <mrkujansuu@gmail.com>, 2019
@@ -12,9 +12,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2019-02-16 21:47+0000\n"
-"Last-Translator: Kimmo Kujansuu <mrkujansuu@gmail.com>\n"
 "Language-Team: Finnish (http://www.transifex.com/freedesktop/packagekit/language/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,53 +19,99 @@ msgstr ""
 "Language: fi\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Transaktio"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Järjestelmän aika"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Onnistui"
-
-msgid "True"
-msgstr "Tosi"
-
-msgid "False"
-msgstr "Epätosi"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Rooli"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Kesto"
-
 msgid "(seconds)"
 msgstr "(sekuntia)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Komentorivi"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Sopiva rooli on annettava"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Käyttäjän tunniste"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Kohdehakemisto ja ladattavien pakettien nimet paketit on annettava"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Käyttäjätunnus"
+msgid "A filename is required"
+msgstr "Tiedostonimi vaaditaan"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Oikea nimi"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Asennettavan tiedoston nimi on annettava"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Lisenssin tunniste (eula-id) on annettava"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Paketin nimi on annettava"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Asennettavan paketin nimi on annettava"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Poistettavan paketin nimi on annettava"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Ratkaistavan paketin nimi on annettava"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "Paketin tarjoaja-merkkijono on annettava"
+
+msgid "A repo id and autoremove required"
+msgstr "Repo-id tarvitaan ja automaattinen poisto vaaditaan"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Asennuslähteen nimi, parametri ja arvo on annettava"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Asennuslähteen nimi on annettava"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Hakutermi on annettava"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Haun tyyppi tarvitaan, esim. nimi"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Tyyppi, key_id ja package_id on annettava"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Hyväksytään käyttöoikeussopimusta"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Hyväksytään käyttöoikeussopimusta"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -78,65 +121,104 @@ msgstr "Käsiteltävät paketit:"
 msgid "Affected packages: None"
 msgstr "Käsiteltävät paketit: Ei yhtään"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Jakeluversio"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Sopimus"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Tyyppi"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Peitenimi%s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Yhteenveto"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Salli pakettien aiempi versio tapahtuman aikana"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Luokka"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Salli pakettien asentaminen uudelleen tapahtuman aikana"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "Tunniste"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Salli ei-luotetut paketit asennettavaksi."
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Pääluokka"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Toiminto, esim. 'update-packages' vaaditaan"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Nimi"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Sovelluksen uudelleenkäynnistyksen tarvitsee"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Kuvake"
+msgid "Authentication is required to accept a EULA"
+msgstr "Käyttöoikeussopimuksen hyväksyminen vaatii tunnistautumisen"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Tietoja päivityksestä:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Tunnistautuminen vaaditaan, jotta voit perua tehtävän, jota et aloittanut"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Paketti"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Todennus vaaditaan muuttaaksesi ohjelmiston parametreja"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Päivitykset"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Todennus vaaditaan offline-päivitysten poistamiseksi"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Vanhentaa"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Ohjelmistojen allekirjoittamiseen tarkoitetun avaimen mieltäminen luotetuksi vaatii tunnistautumisen"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Toimittaja"
+msgid "Authentication is required to downgrade software"
+msgstr "Todennus vaaditaan aiemman version asentamiseksi"
+
+msgid "Authentication is required to install software"
+msgstr "Ohjelmistojen asennus vaatii tunnistautumisen"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Tunnistautuminen vaaditaan ei-luotettavan ohjelmiston asentamiseksi"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Ohjelmistolähteiden päivittäminen vaatii tunnistautumisen"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Ohjelmistojen asennus uudelleen vaatii tunnistautumisen"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
+
+msgid "Authentication is required to remove software"
+msgstr "Ohjelmistojen poistaminen vaatii tunnistautumisen"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Asennettujen ohjelmistojen korjaus vaatii tunnistautumisen"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Verkon välityspalvelimen asettaminen ohjelmistojen latausta varten vaatii tunnistautumisen"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Tunnistautuminen vaaditaan päivitysten käynnistämiseksi yhteydettömässä tilassa"
+
+msgid "Authentication is required to update software"
+msgstr "Ohjelmistojen päivittäminen vaatii tunnistautumisen"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Käyttöjärjestelmäpäivityksen tekeminen vaatii tunnistautumisen"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Tekijä"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Poista käyttämättömät riippuvuudet automaattisesti"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Saatavilla"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Estetty"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Virheenkorjaus"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -146,106 +228,1035 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Uudelleenkäynnistys"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Peru tuntematon tehtävä"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Päivityksen kuvaus"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Perutaan"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Perutaan"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Luokka"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Muuta ohjelmistolähteen parametrit"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Muutokset"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Tila"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Etsitään käytössä olevia ohjelmia"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Julkaistu"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Etsitään käytössä olevia kirjastoja"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Tarkistetaan allekirjoituksia"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Päivitetty"
+msgid "Cleaned up"
+msgstr "Siivottu"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Käytössä"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Siivotaan"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Siivotaan paketteja"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Poista offline-päivitysviesti"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Komento epäonnistui"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Komentorivi"
+
+msgid "Command not found, valid commands are:"
+msgstr "Komentoa ei löytynyt. Kelvolliset komennot ovat:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Toteutetaan muutoksia"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Kopioidaan tiedostoja"
+
+msgid "Debugging Options"
+msgstr "Virheenjäljitysvalitsimet"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Kuvaus"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Tietoja päivityksestä:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Hakemistoa ei löytynyt"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Poista toimettomuusajastin käytöstä"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Poissa käytöstä"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Järjestelmän uudelleenkäynnistyksen tarvitsee:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Jakeluversio"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Istunnon uudelleenkäynnistyksen tarvitsee"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Älä asenna näitä paketteja ellet ole varma, että se on turvallista."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Järjestelmän uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Älä asenna tätä pakettia ellet ole varma, että se on turvallista."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Istunnon uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Älä päivitä näitä paketteja ellet ole varma, että se on turvallista."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Sovelluksen uudelleenkäynnistyksen tarvitsee"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Älä päivitä tätä pakettia ellet ole varma, että se on turvallista."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Paketin kuvaus"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Hyväksytkö tämän sopimuksen?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Ei tiedostoja"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Hyväksytkö tämän allekirjoituksen?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Paketin tiedostot"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Sallitaanko allekirjoittamattomien ohjelmistojen asentaminen?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Prosentti"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Älä tyhjennä ympäristöä käynnistyksen yhteydessä"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Tila"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Ladattu"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Tulokset:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Ladataan"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Tietojen lataaminen repo-ohjelmistoarkistosta."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Ladataan tiedostoluetteloita"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Ladataan tiedostoluetteloja (tämä voi viedä jonkin aikaa)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Ladataan ryhmiä"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Ladataan pakettiluetteloa"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Ladataan muutosluetteloja"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Ladataan paketteja"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Ladataan asennuslähdetietoja"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Ladataan päivitystietoja"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Kesto"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Käytössä"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Käyttöoikeussopimus vaaditaan"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Kehittävä"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Sulje pienen viiveen jälkeen"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Sulje sen jälkeen, kun moottori on ladattu"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Odotettiin paketin nimeä, mutta saatiin tiedosto. Kokeile komennon ”pkcon install-local %s” käyttämistä."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "PackageKitiin ei saatu yhteyttä"
+
+msgid "Failed to get daemon state"
+msgstr "Taustaprosessin tilaa ei saatu"
+
+msgid "Failed to get properties"
+msgstr "Ominaisuuksia ei saatu"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Tämän toiminnon edellisen suorittamisen aikaa ei saatu"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Pakettien asennus epäonnistui"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Käynnistys epäonnistui:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Taustaosan lataaminen epäonnistui"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Asetustiedoston lataaminen epäonnistui"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Argumenttien jäsentäminen epäonnistui"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Komentorivin jäsentäminen epäonnistui"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Tiedoston etsiminen epäonnistui"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Taustajärjestelmän purkaminen epäonnistui"
+
+msgid "False"
+msgstr "Epätosi"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Vakava virhe"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Yhtään päivitystä ei ole saatavilla."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Tiedosto on jo olemassa: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Valmis"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Luodaan pakettiluetteloita"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Haetaan kategorioita"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Haetaan riippuvuuksia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Haetaan tietoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Haetaan tiedostoluetteloa"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Haetaan tietoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Haetaan paketteja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Haetaan tarjoajia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Haetaan asennuslähteitä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Haetaan vaatimuksia"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Järjestelmän päivitysten saaminen"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Tiedostoluettelon hakeminen epäonnistui"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Haetaan transaktioita"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Haetaan päivitystietoja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Haetaan päivityksiä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Haetaan päivityksiä"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "Tunniste"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Kuvake"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Tärkeä"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Asenna aiemmin asennettu paketti uudelleen"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Asenna vanhempi versio asennetusta paketista"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Asenna paketti"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Asennetaanko paketti ”%s”, joka tarjoaa komennon ”%s”"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Asenna allekirjoitettu paketti"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Asenna paketit kysymättä vahvistusta"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Asenna paikallinen tiedosto, johon ei luoteta"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Asennettu"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Asennetaan"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Asennetaan järjestelmäpäivitystä"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Asennetaan päivityksiä"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Asennetaan tiedostoja"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Asennetaan paketteja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Asennetaan allekirjoitusta"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Asennetaan järjestelmäpäivitystä, tässä saattaa kestää hetki..."
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Asennetaan päivityksiä"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Asennetaan päivityksiä, tämä saattaa kestää hetken..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Julkaistu"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "Avaimen tunniste"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Avaimen aikaleima"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "Avaimen osoite"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Avaimen sormenjälki"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Avaimen käyttäjä"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Ladataan välimuistia"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Ladataan pakettiluetteloja."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Tallennusvälinettä on vaihdettava"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Tallennusvälineen nimiö"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Tallennusvälineen tyyppi"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Repo-arkiston muokkaaminen"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Useita vastaavia paketteja saatavilla:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Nimi"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Ei tiedostoja"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Yksikään paketti ei vaadi päivittämistä uudempaan versioon."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Paketteja ei löytynyt"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Tavallinen"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Vanhennettu"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Vanhentaa"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Vanhennetaan"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Vanhennetaan paketteja"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Valitsinta ”%s” ei tueta"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paketti"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Paketin kuvaus"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Paketin tiedostot"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Pakettia ei löytynyt"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "PackageKitin konsolikäyttöliittymä"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit-tarkkailija"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "PackageKit-palvelu"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Tämän tiedoston tarjoavat paketit ovat:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Pääluokka"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Prosentti"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Valitse suoritettava komento"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Valitse asennettava paketti"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Valitse oikea paketti:"
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Anna numero väliltä 1-%i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Syötä oikea tallennusväline"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Valmistele transaktio vain lataamalla paketit"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Valmistellut päivitykset:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Tulosta näytölle koneellisesti luettava tuloste animoitujen elementtien käyttämisen sijaan"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Tehdäänkö muutokset?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Kysellään"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Oikea nimi"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Käynnistetään uudelleen päivitysten asennuksen jälkeen…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Päivitä järjestelmän ohjelmistolähteet"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Päivitä välimuisti"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Päivitä välimuisti (pakotettu)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Virkistetään välimuistia"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Virkistetään ohjelmaluetteloa"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Asennettu uudelleen"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Asennetaan uudelleen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Lataa laite uudelleen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Poista paketti"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Poistettu"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Poistetaan"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Poistetaan paketteja"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Poistetaan asennuslähde"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Paketoidaan tiedostoja uudelleen"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Korjaa järjestelmä"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Pyydetään dataa"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Ratkaistaan"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Ratkaistaan riippuvuuksia"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Uudelleenkäynnistys"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Tulokset:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Rooli"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Suorita samankaltainen komento:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Suorita komento käyttäen ylimääräistä verkon kaistanleveyttä ja tavallista vähemmän virtaa"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Suoritetaan"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Ajettavat koukut"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Etsitään ohjelmia"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Etsi tietojen perusteella"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Etsi tiedostoista"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Hae nimen mukaan"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Etsitään tietojen perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Etsitään tiedoston perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Etsitään nimen perusteella"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Etsitään ryhmiä"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Turvallisuus"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Istunnon uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Istunnon uudelleenkäynnistyksen tarvitsee"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Aseta välipalvelin"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Aseta ohjelmistolähteen asetukset"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Aseta suodin, esim. asennettu"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Asetetaan dataa"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Näytä virheenjäljitystietoja kaikista tiedostoista"
+
+msgid "Show debugging options"
+msgstr "Näytä virheenjäljitysvalitsimet"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Näytä ohjelman versio ja lopeta"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Näytä versio ja lopeta"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Sammutetaan päivitysten asennuksen jälkeen…"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Samankaltainen komento on:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Samankaltaisia komentoja ovat:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Ohjelmistolähteen nimi"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Ohjelmistolähteen allekirjoitus vaaditaan"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Käynnistetään"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Tila"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Tila"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Alikomennot:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Onnistui"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Sopivat paketit ovat:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Yhteenveto"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Järjestelmän uudelleenkäynnistyksen (turvallisuussyistä) tarvitsee:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Järjestelmän uudelleenkäynnistyksen tarvitsee:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Järjestelmän aika"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Testataan muutoksia"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Teksti"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Sopimusta ei hyväksytty."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Oikeaa tallennusvälinettä ei syötetty."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Taustaprosessi kaatui kesken toimenpiteen"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Annettu suodin oli virheellinen"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Seuraaviin paketteihin ei luoteta:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Seuraavat paketit on vaihdettava vanhempaan versioon:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Seuraavat paketit on asennettava:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Seuraavat paketit on poistettava käytöstä:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Seuraavat paketit on asennettava uudelleen:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Seuraavat paketit on poistettava:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Seuraavat paketit on päivitettävä:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Suurin metatietojen välimuistin ikä. Arvo -1 tarkoittaa ”ei koskaan”."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Tämän tiedoston tarjoava paketti on:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Välityspalvelinta ei voitu asettaa"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Allekirjoitusta ei hyväksytty."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Tämä ohjelmisto ei tule luotetusta lähteestä."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Transaktiota ei jatkettu."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Transaktio epäonnistui"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Allekirjoittamatonta ohjelmistoa ei asenneta."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Yhtään päivitystä ei ole saatavilla."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -254,52 +1265,17 @@ msgstr "Päivityksiä ei ole saatavilla tällä hetkellä."
 msgid "There are no upgrades available at this time."
 msgstr "Päivityksiä ei ole saatavilla tällä hetkellä."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Käynnistä tietokone uudelleen päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Kirjaudu ulos ja takaisin sisään päivityksen viimeistelemiseksi, tärkeitä turvallisuuspäivityksiä on asennettu."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Useita vastaavia paketteja saatavilla:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Valitse oikea paketti:"
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Pakettia ei löytynyt"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Paketteja ei löytynyt"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Odotettiin paketin nimeä, mutta saatiin tiedosto. Kokeile komennon ”pkcon install-local %s” käyttämistä."
+msgid "This tool could not find all the packages: %s"
+msgstr "Tämä työkalu ei löytänyt paketteja: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -319,901 +1295,32 @@ msgstr "Tämä työkalu ei löytänyt asennettua pakettia: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Tämä työkalu ei löytänyt pakettia: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Yksikään paketti ei vaadi päivittämistä uudempaan versioon."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Tämä työkalu ei löytänyt paketteja: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Taustaprosessi kaatui kesken toimenpiteen"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKitin konsolikäyttöliittymä"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Alikomennot:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Tämän toiminnon edellisen suorittamisen aikaa ei saatu"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Aika viimeisin"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Valmistellut päivitykset:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Välityspalvelinta ei voitu asettaa"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Näytä ohjelman versio ja lopeta"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Aseta suodin, esim. asennettu"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Asenna paketit kysymättä vahvistusta"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Valmistele transaktio vain lataamalla paketit"
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Salli pakettien aiempi versio tapahtuman aikana"
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Salli pakettien asentaminen uudelleen tapahtuman aikana"
-
-msgid "Automatically remove unused dependencies"
-msgstr "Poista käyttämättömät riippuvuudet automaattisesti"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Suorita komento käyttäen ylimääräistä verkon kaistanleveyttä ja tavallista vähemmän virtaa"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Tulosta näytölle koneellisesti luettava tuloste animoitujen elementtien käyttämisen sijaan"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Suurin metatietojen välimuistin ikä. Arvo -1 tarkoittaa ”ei koskaan”."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Salli ei-luotetut paketit asennettavaksi."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Komentorivin jäsentäminen epäonnistui"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "PackageKitiin ei saatu yhteyttä"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Annettu suodin oli virheellinen"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Haun tyyppi tarvitaan, esim. nimi"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Hakutermi on annettava"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Asennettavan paketin nimi on annettava"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Asennettavan tiedoston nimi on annettava"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Tyyppi, key_id ja package_id on annettava"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Poistettavan paketin nimi on annettava"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Kohdehakemisto ja ladattavien pakettien nimet paketit on annettava"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Hakemistoa ei löytynyt"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Lisenssin tunniste (eula-id) on annettava"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Ratkaistavan paketin nimi on annettava"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Asennuslähteen nimi on annettava"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Asennuslähteen nimi, parametri ja arvo on annettava"
-
-msgid "A repo id and autoremove required"
-msgstr "Repo-id tarvitaan ja automaattinen poisto vaaditaan"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Toiminto, esim. 'update-packages' vaaditaan"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Sopiva rooli on annettava"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Paketin nimi on annettava"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Paketin tarjoaja-merkkijono on annettava"
-
-msgid "A filename is required"
-msgstr "Tiedostonimi vaaditaan"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Kuvaus"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Tekijä"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Sinun pitää nimetä luotava tiedosto"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Tiedosto on jo olemassa: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Valitsinta ”%s” ei tueta"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Komento epäonnistui"
-
-msgid "Failed to get daemon state"
-msgstr "Taustaprosessin tilaa ei saatu"
-
-msgid "Failed to get properties"
-msgstr "Ominaisuuksia ei saatu"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit-tarkkailija"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Asennetaan järjestelmäpäivitystä"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Asennetaan päivityksiä"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Käynnistetään uudelleen päivitysten asennuksen jälkeen…"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Sammutetaan päivitysten asennuksen jälkeen…"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Asennetaan päivityksiä, tämä saattaa kestää hetken..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Asennetaan järjestelmäpäivitystä, tässä saattaa kestää hetki..."
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Tietojen lataaminen repo-ohjelmistoarkistosta."
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Ladataan tiedostoluetteloja (tämä voi viedä jonkin aikaa)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Odotetaan paketinhallinnan lukkoa."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Ladataan pakettiluetteloja."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Tiedoston etsiminen epäonnistui"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Tiedostoluettelon hakeminen epäonnistui"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Käynnistys epäonnistui:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Pakettien asennus epäonnistui"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "komentoa ei löytynyt"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Samankaltainen komento on:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Suorita samankaltainen komento:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Samankaltaisia komentoja ovat:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Valitse suoritettava komento"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Tämän tiedoston tarjoava paketti on:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Asennetaanko paketti ”%s”, joka tarjoaa komennon ”%s”"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Tämän tiedoston tarjoavat paketit ovat:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Sopivat paketit ovat:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Valitse asennettava paketti"
-
-msgid "User aborted selection"
-msgstr "Käyttäjä keskeytetti valinnat"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Anna numero väliltä 1-%i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Tuntematon tila"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Käynnistetään"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Jonotetaan"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Suoritetaan"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Kysellään"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Haetaan tietoja"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Poistetaan paketteja"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Ladataan paketteja"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Asennetaan paketteja"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Virkistetään ohjelmaluetteloa"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Asennetaan päivityksiä"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Siivotaan paketteja"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Vanhennetaan paketteja"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Ratkaistaan riippuvuuksia"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Tarkistetaan allekirjoituksia"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Testataan muutoksia"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Toteutetaan muutoksia"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Pyydetään dataa"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Valmis"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Perutaan"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Ladataan asennuslähdetietoja"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Ladataan pakettiluetteloa"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Ladataan tiedostoluetteloita"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Ladataan muutosluetteloja"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Ladataan ryhmiä"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Ladataan päivitystietoja"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Paketoidaan tiedostoja uudelleen"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Ladataan välimuistia"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Etsitään ohjelmia"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Luodaan pakettiluetteloita"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Odotetaan paketinhallinnan lukkoa"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Odotetaan tunnistautumista"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Päivitetään suoritettavia ohjelmia"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Etsitään käytössä olevia ohjelmia"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Etsitään käytössä olevia kirjastoja"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Kopioidaan tiedostoja"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Ajettavat koukut"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Näytä virheenjäljitystietoja kaikista tiedostoista"
-
-msgid "Debugging Options"
-msgstr "Virheenjäljitysvalitsimet"
-
-msgid "Show debugging options"
-msgstr "Näytä virheenjäljitysvalitsimet"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Transaktio"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Käynnistä offline-päivitykset"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Vähäpätöinen"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Tavallinen"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Tärkeä"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Turvallisuus"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Virheenkorjaus"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Kehittävä"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Estetty"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Asennettu"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Saatavilla"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Ei saatavilla"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Ladataan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Päivitetään"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Asennetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Poistetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Siivotaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Vanhennetaan"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Asennetaan uudelleen"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Ladattu"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Poistettu"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Siivottu"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Vanhennettu"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Asennettu uudelleen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Tuntematon roolityyppi"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Haetaan riippuvuuksia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Haetaan päivitystietoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Haetaan tietoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Haetaan vaatimuksia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Haetaan päivityksiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Etsitään tietojen perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Etsitään tiedoston perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Etsitään ryhmiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Etsitään nimen perusteella"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Asennetaan tiedostoja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Virkistetään välimuistia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Päivitetään paketteja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Perutaan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Haetaan asennuslähteitä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Repo-arkiston muokkaaminen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Asetetaan dataa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Poistetaan asennuslähde"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Ratkaistaan"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Haetaan tiedostoluetteloa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Haetaan tarjoajia"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Asennetaan allekirjoitusta"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Haetaan paketteja"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Hyväksytään käyttöoikeussopimusta"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Haetaan päivityksiä"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Haetaan kategorioita"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Haetaan transaktioita"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Järjestelmän päivitysten saaminen"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Sallitaanko allekirjoittamattomien ohjelmistojen asentaminen?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Allekirjoittamatonta ohjelmistoa ei asenneta."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Ohjelmistolähteen allekirjoitus vaaditaan"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Ohjelmistolähteen nimi"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Avaimen osoite"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Avaimen käyttäjä"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Avaimen tunniste"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Avaimen sormenjälki"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Avaimen aikaleima"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Hyväksytkö tämän allekirjoituksen?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Allekirjoitusta ei hyväksytty."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Käyttöoikeussopimus vaaditaan"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Sopimus"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Hyväksytkö tämän sopimuksen?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Sopimusta ei hyväksytty."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Tallennusvälinettä on vaihdettava"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Tallennusvälineen tyyppi"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Tallennusvälineen nimiö"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Teksti"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Syötä oikea tallennusväline"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Oikeaa tallennusvälinettä ei syötetty."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Seuraavat paketit on poistettava:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Seuraavat paketit on asennettava:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Seuraavat paketit on päivitettävä:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Seuraavat paketit on asennettava uudelleen:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Seuraavat paketit on vaihdettava vanhempaan versioon:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Seuraavat paketit on poistettava käytöstä:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Seuraaviin paketteihin ei luoteta:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Tehdäänkö muutokset?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Transaktiota ei jatkettu."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Peru tuntematon tehtävä"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Tunnistautuminen vaaditaan, jotta voit perua tehtävän, jota et aloittanut"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Asenna allekirjoitettu paketti"
-
-msgid "Authentication is required to install software"
-msgstr "Ohjelmistojen asennus vaatii tunnistautumisen"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Asenna paikallinen tiedosto, johon ei luoteta"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Tunnistautuminen vaaditaan ei-luotettavan ohjelmiston asentamiseksi"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Asenna aiemmin asennettu paketti uudelleen"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Ohjelmistojen asennus uudelleen vaatii tunnistautumisen"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Asenna vanhempi versio asennetusta paketista"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Todennus vaaditaan aiemman version asentamiseksi"
+msgid "True"
+msgstr "Tosi"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1223,36 +1330,21 @@ msgstr "Todennus vaaditaan aiemman version asentamiseksi"
 msgid "Trust a key used for signing software"
 msgstr "Luota ohjelmiston allekirjoittamiseen käytettyyn avaimeen"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Ohjelmistojen allekirjoittamiseen tarkoitetun avaimen mieltäminen luotetuksi vaatii tunnistautumisen"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Tyyppi"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Hyväksytään käyttöoikeussopimusta"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Ei saatavilla"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Käyttöoikeussopimuksen hyväksyminen vaatii tunnistautumisen"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Tuntematon roolityyppi"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Poista paketti"
-
-msgid "Authentication is required to remove software"
-msgstr "Ohjelmistojen poistaminen vaatii tunnistautumisen"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Tuntematon tila"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1263,50 +1355,33 @@ msgstr "Ohjelmistojen poistaminen vaatii tunnistautumisen"
 msgid "Update software"
 msgstr "Päivitä ohjelmisto"
 
-msgid "Authentication is required to update software"
-msgstr "Ohjelmistojen päivittäminen vaatii tunnistautumisen"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Päivityksen kuvaus"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Muuta ohjelmistolähteen parametrit"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Päivitetty"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Todennus vaaditaan muuttaaksesi ohjelmiston parametreja"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Päivitykset"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Päivitä järjestelmän ohjelmistolähteet"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Päivitetään"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Ohjelmistolähteiden päivittäminen vaatii tunnistautumisen"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Päivitetään paketteja"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Aseta välipalvelin"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Verkon välityspalvelimen asettaminen ohjelmistojen latausta varten vaatii tunnistautumisen"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Lataa laite uudelleen"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Päivitetään suoritettavia ohjelmia"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1315,134 +1390,46 @@ msgstr "Laitteen liittäminen uudelleen uudella ajurilla vaatii tunnistautumisen
 msgid "Upgrade System"
 msgstr "Tee käyttöjärjestelmäpäivitys"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Käyttöjärjestelmäpäivityksen tekeminen vaatii tunnistautumisen"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "Käyttäjän tunniste"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Korjaa järjestelmä"
+msgid "User aborted selection"
+msgstr "Käyttäjä keskeytetti valinnat"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Asennettujen ohjelmistojen korjaus vaatii tunnistautumisen"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Käyttäjätunnus"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Käynnistä offline-päivitykset"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Toimittaja"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Tunnistautuminen vaaditaan päivitysten käynnistämiseksi yhteydettömässä tilassa"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Odotetaan tunnistautumista"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Poista offline-päivitysviesti"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Odotetaan paketinhallinnan lukkoa"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Todennus vaaditaan offline-päivitysten poistamiseksi"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Odotetaan paketinhallinnan lukkoa."
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Peitenimi%s"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Jonotetaan"
 
-msgid "Command not found, valid commands are:"
-msgstr "Komentoa ei löytynyt. Kelvolliset komennot ovat:"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Sinun pitää nimetä luotava tiedosto"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Käytettävä paketinhallintajärjestelmä-taustaosa, esim. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Päivitä välimuisti"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Päivitä välimuisti (pakotettu)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Hae nimen mukaan"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Etsi tietojen perusteella"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Etsi tiedostoista"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Asenna paketti"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Aseta ohjelmistolähteen asetukset"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Argumenttien jäsentäminen epäonnistui"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Asetustiedoston lataaminen epäonnistui"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Taustaosan lataaminen epäonnistui"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Taustajärjestelmän purkaminen epäonnistui"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Poista toimettomuusajastin käytöstä"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Näytä versio ja lopeta"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Sulje pienen viiveen jälkeen"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Sulje sen jälkeen, kun moottori on ladattu"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Älä tyhjennä ympäristöä käynnistyksen yhteydessä"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit-palvelu"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Tämä ohjelmisto ei tule luotetusta lähteestä."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Älä päivitä tätä pakettia ellet ole varma, että se on turvallista."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Älä päivitä näitä paketteja ellet ole varma, että se on turvallista."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Älä asenna tätä pakettia ellet ole varma, että se on turvallista."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Älä asenna näitä paketteja ellet ole varma, että se on turvallista."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "komentoa ei löytynyt"

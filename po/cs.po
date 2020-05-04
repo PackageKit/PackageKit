@@ -1,10 +1,10 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
-# Ascii Wolf <mail@asciiwolf.com>, 2017-2018
+# Ascii Wolf <mail@asciiwolf.com>, 2017-2018,2020
 # Ascii Wolf <mail@asciiwolf.com>, 2018
 # fri, 2011
 # fri, 2011
@@ -17,9 +17,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 19:58+0000\n"
-"Last-Translator: Ascii Wolf <mail@asciiwolf.com>\n"
 "Language-Team: Czech (http://www.transifex.com/freedesktop/packagekit/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,53 +24,99 @@ msgstr ""
 "Language: cs\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Transakce"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Systémový čas"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Úspěšné"
-
-msgid "True"
-msgstr "Pravda"
-
-msgid "False"
-msgstr "Nepravda"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Úloha"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Doba trvání"
-
 msgid "(seconds)"
 msgstr "(sekund)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Příkazový řádek"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Je požadována správná role"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "ID uživatele"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Uživatelské jméno"
+msgid "A filename is required"
+msgstr "Je požadováno jméno souboru"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Skutečné jméno"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Je požadován název souboru, který se má instalovat"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "Je požadován identifikátor licence (eula-id)"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Je požadován název balíčku"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Je požadován název balíčku, který se má instalovat"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Je požadován název balíčku, který se má odstranit"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Je požadován název balíčku, pro který se má najít řešení"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "Je požadován řetězec, který poskytne balíček"
+
+msgid "A repo id and autoremove required"
+msgstr "Jsou požadovány ID repozitáře a automatické odstranění"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Jsou požadovány název, parametr a hodnota"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Je třeba určit název repozitáře"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Je požadován hledaný výraz"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Je požadován hledaný typ, např. název"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Jsou požadovány typ, ID klíče a ID balíčku"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Přijmout licenční smlouvu (EULA)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Přijímá se EULA"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -83,65 +126,104 @@ msgstr "Ovlivněné balíčky:"
 msgid "Affected packages: None"
 msgstr "Ovlivněné balíčky: žádné"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distribuce"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Ujednání"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Typ"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Alias pro %s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Přehled"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Skupina"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Povolit instalaci nedůvěryhodných balíčků"
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Nadřazený"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Je požadována nějaká akce, např. „update-package“"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Název"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Restart aplikace požaduje:"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikona"
+msgid "Authentication is required to accept a EULA"
+msgstr "Pro přijetí licenční smlouvy (EULA) je vyžadováno ověření"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Podrobnosti k aktualizaci:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno ověření"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Balíček"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Pro změnu parametrů repozitáře softwaru je vyžádováno ověření"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Nejnovější balíčky"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je vyžadováno ověření"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Zastaralé balíčky"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Pro zvážení důvěryhodnosti klíče použitého k podepsání softwaru je vyžadováno ověření"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Výrobce"
+msgid "Authentication is required to downgrade software"
+msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
+
+msgid "Authentication is required to install software"
+msgstr "Pro instalaci softwaru je vyžadováno ověření"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Pro instalaci nedůvěryhodného softwaru je vyžadováno ověření"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Pro aktualizaci systémových repozitářů je vyžadováno ověření"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Reinstalace vyžaduje ověření"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Pro opětovné zavedení zařízení s novým ovladačem je vyžadováno ověření"
+
+msgid "Authentication is required to remove software"
+msgstr "Pro odebrání softwaru je vyžadováno ověření"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Pro opravu nainstalovaného softwaru je vyžadováno ověření"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Pro nastavení síťové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Pro spuštění aktualizací bez připojení k síti je vyžadováno ověření"
+
+msgid "Authentication is required to update software"
+msgstr "Pro aktualizaci softwaru je vyžadováno ověření"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Pro povýšení operačního systému je vyžadováno ověření"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Autor"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Automaticky odstranit nepoužívané závislosti"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Dostupné"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Blokováno"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Oprava chyb"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -151,106 +233,1035 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Restart"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Zrušit cizí úlohu"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Text aktualizace"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Ruší se"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Ruší se"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Skupina"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Změnit parametry repozitáře softwaru"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Změny"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Stav"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Kontrolují se používané aplikace"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Vydán"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Kontrolují se používané knihovny"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Ověřují se podpisy"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Aktualizován"
+msgid "Cleaned up"
+msgstr "Uklizeno"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Povoleno"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Uklízí se"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Uklízí se balíčky"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Vymazat zprávu o aktualizaci při odpojení"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Příkaz selhal"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Příkazový řádek"
+
+msgid "Command not found, valid commands are:"
+msgstr "Příkaz nebyl nalezen, platné příkazy jsou:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Zařazjí se změny"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Kopírují se soubory"
+
+msgid "Debugging Options"
+msgstr "Volby ladění"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Popis"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Podrobnosti k aktualizaci:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Složka nebyla nalezena"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Vypnout nevyužitý časovač"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Zakázáno"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Restart systému požaduje:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distribuce"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Je požadován restart sezení:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Tyto balíčky instalujte jen, když jste přesvědčeni, že jsou bezpečné."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Restart systému (z bezpečnostních důvodů) požaduje:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Tento balíček instalujte, jen když jste přesvědčeni, že je bezpečný."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Restart sezení (z bezpečnostních důvodů) požaduje:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Tyto balíčky aktualizujte, jen když jste přesvědčeni, že jsou bezpečné."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Restart aplikace požaduje:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Tento balíček aktualizujte, jen když jste přesvědčeni, že je bezpečný."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Popis balíčku"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Příjímáte toto ujednání?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Žádné soubory"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Příjímáte tento podpis?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Soubory v balíčku"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Chcete povolit instalace nepodepsaného softwaru?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Procentuální"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Při spuštění nemazat prostředí proměnných"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Stav"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Staženo"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Výsledky:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Stahuje se"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Stahují se podrobnosti k repozitářům softwaru"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Stahuje se seznam souborů"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Stahují se seznamy souborů (dokončení úkolu může chvíli trvat)"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Stahují se skupiny"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Stahuje se seznam balíčků"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Stahuje se seznam změn"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Stahují se balíčky"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Stahují se informace o repozitáři"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Stahují se informace o aktualizacích"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Doba trvání"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Povoleno"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Je vyžadován souhlas s licencí pro koncového uživatele"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Vylepšení"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Skončit po krátké prodlevě"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Skončit až poté, co se načte výkonná část"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Byl očekáván název balíčku, ve skutečnosti však byl obdržen soubor. Zkuste místo toho použít „pkcon install-local %s“."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Nepodařilo se kontaktovat PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Nezdařilo se zjistit stav démona"
+
+msgid "Failed to get properties"
+msgstr "Netdařilo se zjistit vlastnosti"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato akce byla naposledy dokončena"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Selhala instalace balíčků"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Selhalo spuštění:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Selhalo načtení výkonné části"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Selhalo načtení souboru s nastavením"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Selhalo zpracování argumentů"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Selhalo zpracování příkazového řádku"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Selhalo vyhledání souboru"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Selhalo ukončení výkonné části"
+
+msgid "False"
+msgstr "Nepravda"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Závažná chyba"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Nejsou žádné balíčky k aktualizaci."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Soubor již existuje: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Hotovo"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Vytváří se seznamy balíčků"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Získávají se kategorie"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Získávají se závislosti"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Získávají se podrobnosti"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Získává se seznam souborů"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Získavají se informace"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Získávají se balíčky"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Získávají se poskytovatelé"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Získávají se repozitáře"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Získávají se požadavky"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Získávají se povýšení systému"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Selhalo získání seznamu souborů"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Získávají se transakce"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Získávají se podrobnosti k aktualizacím"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Získávají se aktualizace"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Získávají se povýšení"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Ikona"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Důležitá"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Opětovně nainstalovat již nainstalovaný balíček"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Nainstalovat starší verzi již nainstalovaného balíčku"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Nainstalovat balíček"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Nainstalovat balíček „%s“, který poskytuje příkaz „%s“?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Nainstalovat podepsaný balíček"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Nainstalovat místní nedůvěryhodný soubor"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Nainstalováno"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Instaluje se"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Instaluje se povýšení systému"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Instalují se aktualizace"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Instalují se soubory"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Instalují se balíčky"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Instaluje se podpis"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Instaluje se povýšení systému, což může trvat delší chvíli…"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Instalují se aktualizace"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Instalují se aktualizace, což může chvíli trvat…"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Vydán"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "ID klíče"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Časové razítko klíče"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "Adresa URL klíče"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Otisk klíče"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Uživatel klíče"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Načítá se mezipaměť"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Načítá se seznam balíčků"
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Je vyžadována změna nosiče"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Označení nosiče"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Typ nosiče"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Upravuje se repozitář"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Odpovídá více než jeden balíček:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Název"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Žádné soubory"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Žádné balíčky nevyžadují aktualizaci na novější verzi."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Nebyly nalezeny žádné balíčky"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Běžná"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Zastaralé uklizeno"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Zastaralé balíčky"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Uklízí se zastaralé"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Uklízí se zastaralé balíčky"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Volba „%s“ není podporovaná "
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Balíček"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Popis balíčku"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Soubory v balíčku"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Balíček nebyl nalezen"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "Konzolové rozhraní pro PackageKit"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "Sledování PackageKit"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "Služba PackageKit"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Balíčky poskytující tento soubor jsou:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Výkonná část, která se má použít, např. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Nadřazený"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Procentuální"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Vyberte prosím příkaz, který se má spustit"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Vyberte prosím balíček, který se má instalovat"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Vyberte, prosím, správný balíček: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Zadejte prosím číslo od 1 do %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Vložte, prosím, správný nosič"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Pouze stáhnout balíčky, aby byly připravené pro transakci"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Připravené aktualizace:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Vypisovat na obrazovku strojově čitelný výstup, namísto animovaných prvků"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Pokračovat ve změnách?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Dotazuje se"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Skutečné jméno"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Restartuje se po instalaci aktualizací…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Aktualizovat systémové repozitáře"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Aktualizovat mezipaměť"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Aktualizovat mezipaměť (vynutit)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Aktualizuje se mezipaměť"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Aktualizuje se seznam balíčků"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Opětovně nainstalováno"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Opětovně se instaluje"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Znovu zavést zařízení"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Odebrat balíček"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Odebráno"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Odebírá se"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Odebírají se balíčky"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Odebírá se repozitář"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Opětovně se balí soubory"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Opravit systém"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Požadují se data"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Hledá se řešení"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Řeší se závislosti"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Restart"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Výsledky:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Úloha"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Spustit podobný příkaz:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Spustit příkaz za použití nevyžívané šířky pásma sítě a rovněž méně energie"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Provádí se"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Běží háčky"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Prohledávají se aplikace"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Hledat podle podrobností"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Hledat podle souborů"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Hledat podle názvů"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Vyhledává se podle podrobností"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Vyhledává se podle souboru"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Vyhledává se podle názvu"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Vyhledává se podle skupiny"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Bezpečnostní"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Restart sezení (z bezpečnostních důvodů) požaduje:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Je požadován restart sezení:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Nastavit síťovou proxy"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Nastavit volby repozitáře"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Nastavit filtr, například „nainstalované“"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Nastavují se data"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Zobrazit ladicí informace pro všechny soubory"
+
+msgid "Show debugging options"
+msgstr "Zobrazit volby ladění"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Zobrazit verzi programu a skončit"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Zobrazit verzi a skončit"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Vypíná se po instalaci aktualizací…"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Podobný příkaz je:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Podobné příkazy jsou:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Název zdroje softwaru"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Vyžadován podpis zdroje softwaru"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Spouští se"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Stav"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Stav"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Dílčí příkazy:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Úspěšné"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Vhodné balíčky jsou:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Přehled"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Restart systému (z bezpečnostních důvodů) požaduje:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Restart systému požaduje:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Systémový čas"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Testují se změny"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Text"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Ujednání nebylo přijato."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Nebyl vložen správný nosič."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Démon se zhroutil uprostřed činnosti!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Určený filtr byl neplatný"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Následující balíčky nejsou důvěryhodné:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Následující balíčky musí být vráceny na předchozí verzi:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Následující balíčky musí být nainstalovány:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Následující balíčky musí být označené jako zastaralé:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Následující balíčky musí být opětovně nainstalovány:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Následující balíčky musí být odebrány:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Následující balíčky musí být aktualizovány:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Nejvyšší stáří mezipaměti metadat, -1 znamená „nikdy“."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Balíček poskytující tento soubor je:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Proxy se nepodařilo nastavit"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Podpis nebyl přijat."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Software není z důvěryhodného zdroje."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Transakce nemohla dále pokračovat."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Transakce se nezdařila"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Nepodepsaný software nebude instalován."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Nejsou žádné balíčky k aktualizaci."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -259,52 +1270,17 @@ msgstr "V tuto chvíli není dostupná žádná aktualizace."
 msgid "There are no upgrades available at this time."
 msgstr "V tuto chvíli není dostupné žádné povýšení."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Odpovídá více než jeden balíček:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Vyberte, prosím, správný balíček: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Balíček nebyl nalezen"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Nebyly nalezeny žádné balíčky"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Byl očekáván název balíčku, ve skutečnosti však byl obdržen soubor. Zkuste místo toho použít „pkcon install-local %s“."
+msgid "This tool could not find all the packages: %s"
+msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -324,901 +1300,32 @@ msgstr "Tomuto nástroji se nepodařilo najít nainstalovaný balíček: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Žádné balíčky nevyžadují aktualizaci na novější verzi."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Démon se zhroutil uprostřed činnosti!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "Konzolové rozhraní pro PackageKit"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Dílčí příkazy:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato akce byla naposledy dokončena"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Od doby"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Připravené aktualizace:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Proxy se nepodařilo nastavit"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Zobrazit verzi programu a skončit"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Nastavit filtr, například „nainstalované“"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Pouze stáhnout balíčky, aby byly připravené pro transakci"
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
-
-msgid "Automatically remove unused dependencies"
-msgstr "Automaticky odstranit nepoužívané závislosti"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Spustit příkaz za použití nevyžívané šířky pásma sítě a rovněž méně energie"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Vypisovat na obrazovku strojově čitelný výstup, namísto animovaných prvků"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Nejvyšší stáří mezipaměti metadat, -1 znamená „nikdy“."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Povolit instalaci nedůvěryhodných balíčků"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Selhalo zpracování příkazového řádku"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Nepodařilo se kontaktovat PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Určený filtr byl neplatný"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Je požadován hledaný typ, např. název"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "Je požadován hledaný výraz"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Je požadován název balíčku, který se má instalovat"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Je požadován název souboru, který se má instalovat"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "Jsou požadovány typ, ID klíče a ID balíčku"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Je požadován název balíčku, který se má odstranit"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají stáhnout"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Složka nebyla nalezena"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Je požadován identifikátor licence (eula-id)"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Je požadován název balíčku, pro který se má najít řešení"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Je třeba určit název repozitáře"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Jsou požadovány název, parametr a hodnota"
-
-msgid "A repo id and autoremove required"
-msgstr "Jsou požadovány ID repozitáře a automatické odstranění"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Je požadována nějaká akce, např. „update-package“"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Je požadována správná role"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Je požadován název balíčku"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Je požadován řetězec, který poskytne balíček"
-
-msgid "A filename is required"
-msgstr "Je požadováno jméno souboru"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Popis"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Autor"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Musíte určit soubor se seznamem, který se má vytvořit"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Soubor již existuje: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Volba „%s“ není podporovaná "
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Příkaz selhal"
-
-msgid "Failed to get daemon state"
-msgstr "Nezdařilo se zjistit stav démona"
-
-msgid "Failed to get properties"
-msgstr "Netdařilo se zjistit vlastnosti"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "Sledování PackageKit"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Instaluje se povýšení systému"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Instalují se aktualizace"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Restartuje se po instalaci aktualizací…"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Vypíná se po instalaci aktualizací…"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Instalují se aktualizace, což může chvíli trvat…"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Instaluje se povýšení systému, což může trvat delší chvíli…"
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Stahují se podrobnosti k repozitářům softwaru"
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Stahují se seznamy souborů (dokončení úkolu může chvíli trvat)"
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Čeká se na zámek správce balíčků"
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Načítá se seznam balíčků"
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Selhalo vyhledání souboru"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Selhalo získání seznamu souborů"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Selhalo spuštění:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Selhala instalace balíčků"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "Příkaz nebyl nalezen"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Podobný příkaz je:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Spustit podobný příkaz:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Podobné příkazy jsou:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Vyberte prosím příkaz, který se má spustit"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Balíček poskytující tento soubor je:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Nainstalovat balíček „%s“, který poskytuje příkaz „%s“?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Balíčky poskytující tento soubor jsou:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Vhodné balíčky jsou:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Vyberte prosím balíček, který se má instalovat"
-
-msgid "User aborted selection"
-msgstr "Uživatel přerušil výběr"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Zadejte prosím číslo od 1 do %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Neznámý stav"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Spouští se"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Čeká ve frontě"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Provádí se"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Dotazuje se"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Získavají se informace"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Odebírají se balíčky"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Stahují se balíčky"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Instalují se balíčky"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Aktualizuje se seznam balíčků"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Instalují se aktualizace"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Uklízí se balíčky"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Uklízí se zastaralé balíčky"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Řeší se závislosti"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Ověřují se podpisy"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Testují se změny"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Zařazjí se změny"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Požadují se data"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Hotovo"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Ruší se"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Stahují se informace o repozitáři"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Stahuje se seznam balíčků"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Stahuje se seznam souborů"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Stahuje se seznam změn"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Stahují se skupiny"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Stahují se informace o aktualizacích"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Opětovně se balí soubory"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Načítá se mezipaměť"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Prohledávají se aplikace"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Vytváří se seznamy balíčků"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Čeká se na zámek správce balíčků"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Čeká se na ověření"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Aktualizují se běžící aplikace"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Kontrolují se používané aplikace"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Kontrolují se používané knihovny"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Kopírují se soubory"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Běží háčky"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Zobrazit ladicí informace pro všechny soubory"
-
-msgid "Debugging Options"
-msgstr "Volby ladění"
-
-msgid "Show debugging options"
-msgstr "Zobrazit volby ladění"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Transakce"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Spustit aktualizace při odpojení"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Nepodstatná"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Běžná"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Důležitá"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Bezpečnostní"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Oprava chyb"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Vylepšení"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokováno"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Nainstalováno"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Dostupné"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Není k dispozici"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Stahuje se"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Aktualizuje se"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Instaluje se"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Odebírá se"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Uklízí se"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Uklízí se zastaralé"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Opětovně se instaluje"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Staženo"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Odebráno"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Uklizeno"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Zastaralé uklizeno"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Opětovně nainstalováno"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Neznámý typ role"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Získávají se závislosti"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Získávají se podrobnosti k aktualizacím"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Získávají se podrobnosti"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Získávají se požadavky"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Získávají se aktualizace"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Vyhledává se podle podrobností"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Vyhledává se podle souboru"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Vyhledává se podle skupiny"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Vyhledává se podle názvu"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Instalují se soubory"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Aktualizuje se mezipaměť"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Aktualizují se balíčky"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Ruší se"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Získávají se repozitáře"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Upravuje se repozitář"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Nastavují se data"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Odebírá se repozitář"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Hledá se řešení"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Získává se seznam souborů"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Získávají se poskytovatelé"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Instaluje se podpis"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Získávají se balíčky"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Přijímá se EULA"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Získávají se povýšení"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Získávají se kategorie"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Získávají se transakce"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Získávají se povýšení systému"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Chcete povolit instalace nepodepsaného softwaru?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Nepodepsaný software nebude instalován."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Vyžadován podpis zdroje softwaru"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Název zdroje softwaru"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Adresa URL klíče"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Uživatel klíče"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "ID klíče"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Otisk klíče"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Časové razítko klíče"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Příjímáte tento podpis?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Podpis nebyl přijat."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Je vyžadován souhlas s licencí pro koncového uživatele"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Ujednání"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Příjímáte toto ujednání?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Ujednání nebylo přijato."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Je vyžadována změna nosiče"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Typ nosiče"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Označení nosiče"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Text"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Vložte, prosím, správný nosič"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Nebyl vložen správný nosič."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Následující balíčky musí být odebrány:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Následující balíčky musí být nainstalovány:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Následující balíčky musí být aktualizovány:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Následující balíčky musí být opětovně nainstalovány:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Následující balíčky musí být vráceny na předchozí verzi:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Následující balíčky musí být označené jako zastaralé:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Následující balíčky nejsou důvěryhodné:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Pokračovat ve změnách?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Transakce nemohla dále pokračovat."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Zrušit cizí úlohu"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno ověření"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Nainstalovat podepsaný balíček"
-
-msgid "Authentication is required to install software"
-msgstr "Pro instalaci softwaru je vyžadováno ověření"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Nainstalovat místní nedůvěryhodný soubor"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Pro instalaci nedůvěryhodného softwaru je vyžadováno ověření"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Opětovně nainstalovat již nainstalovaný balíček"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Reinstalace vyžaduje ověření"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Nainstalovat starší verzi již nainstalovaného balíčku"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
+msgid "True"
+msgstr "Pravda"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1228,36 +1335,21 @@ msgstr "Pro přechod softwaru na nižší verzi je vyžadováno ověření"
 msgid "Trust a key used for signing software"
 msgstr "Důvěřovat klíči použitému pro podepsání softwaru"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Pro zvážení důvěryhodnosti klíče použitého k podepsání softwaru je vyžadováno ověření"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Typ"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Přijmout licenční smlouvu (EULA)"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Není k dispozici"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Pro přijetí licenční smlouvy (EULA) je vyžadováno ověření"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Neznámý typ role"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Odebrat balíček"
-
-msgid "Authentication is required to remove software"
-msgstr "Pro odebrání softwaru je vyžadováno ověření"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Neznámý stav"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1268,50 +1360,33 @@ msgstr "Pro odebrání softwaru je vyžadováno ověření"
 msgid "Update software"
 msgstr "Aktualizovat softwar"
 
-msgid "Authentication is required to update software"
-msgstr "Pro aktualizaci softwaru je vyžadováno ověření"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Text aktualizace"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Změnit parametry repozitáře softwaru"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Aktualizován"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Pro změnu parametrů repozitáře softwaru je vyžádováno ověření"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Nejnovější balíčky"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Aktualizovat systémové repozitáře"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Aktualizuje se"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Pro aktualizaci systémových repozitářů je vyžadováno ověření"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Aktualizují se balíčky"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Nastavit síťovou proxy"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Pro nastavení síťové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Znovu zavést zařízení"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Pro opětovné zavedení zařízení s novým ovladačem je vyžadováno ověření"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Aktualizují se běžící aplikace"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1320,134 +1395,46 @@ msgstr "Pro opětovné zavedení zařízení s novým ovladačem je vyžadováno
 msgid "Upgrade System"
 msgstr "Povýšení systému"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Pro povýšení operačního systému je vyžadováno ověření"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "ID uživatele"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Opravit systém"
+msgid "User aborted selection"
+msgstr "Uživatel přerušil výběr"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Pro opravu nainstalovaného softwaru je vyžadováno ověření"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Uživatelské jméno"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Spustit aktualizace při odpojení"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Výrobce"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Pro spuštění aktualizací bez připojení k síti je vyžadováno ověření"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Čeká se na ověření"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Čeká se na zámek správce balíčků"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je vyžadováno ověření"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Čeká se na zámek správce balíčků"
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Alias pro %s"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Čeká ve frontě"
 
-msgid "Command not found, valid commands are:"
-msgstr "Příkaz nebyl nalezen, platné příkazy jsou:"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Musíte určit soubor se seznamem, který se má vytvořit"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Výkonná část, která se má použít, např. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Aktualizovat mezipaměť"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Aktualizovat mezipaměť (vynutit)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Hledat podle názvů"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Hledat podle podrobností"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Hledat podle souborů"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Nainstalovat balíček"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Nastavit volby repozitáře"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Selhalo zpracování argumentů"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Selhalo načtení souboru s nastavením"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Selhalo načtení výkonné části"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Selhalo ukončení výkonné části"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Vypnout nevyužitý časovač"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Zobrazit verzi a skončit"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Skončit po krátké prodlevě"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Skončit až poté, co se načte výkonná část"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Při spuštění nemazat prostředí proměnných"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "Služba PackageKit"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Software není z důvěryhodného zdroje."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Tento balíček aktualizujte, jen když jste přesvědčeni, že je bezpečný."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Tyto balíčky aktualizujte, jen když jste přesvědčeni, že jsou bezpečné."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Tento balíček instalujte, jen když jste přesvědčeni, že je bezpečný."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Tyto balíčky instalujte jen, když jste přesvědčeni, že jsou bezpečné."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "Příkaz nebyl nalezen"

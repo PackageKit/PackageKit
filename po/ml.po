@@ -1,16 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2018-09-25 08:54+0000\n"
-"Last-Translator: Richard Hughes <richard@hughsie.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/freedesktop/packagekit/language/ml/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,53 +15,93 @@ msgstr ""
 "Language: ml\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "ഇടപാടു്"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "സിസ്റ്റം സമയം"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "ഇടപാടു് പൂര്‍ത്തിയായി"
-
-msgid "True"
-msgstr "True"
-
-msgid "False"
-msgstr "False"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "റോള്‍"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "സമയം"
-
 msgid "(seconds)"
 msgstr "(സെക്കന്‍ഡുകള്‍)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "കമാന്‍ഡ് ലൈന്‍"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "ശരിയായ റോള്‍ ആവശ്യമുണ്ടു്"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "ഉപയോക്താവിനുള്ള ID"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "ഏതു് ഡയറക്ടറി എന്നും ഡൌണ്‍ലോട് ചെയ്യുവാനുള്ള പാക്കേജുകളും ആവശ്യമുണ്ടു്"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "ഉപയോക്തൃനാമം"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "യഥാര്‍ത്ഥ പേരു്"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "ലൈസന്‍സ് ഐഡന്റിഫയര്‍ (eula-id) ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "പാക്കേജിന്റ് പേരു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "നീക്കം ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "റിസോള്‍വ് ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "പാക്കേജ് ലഭ്യമാക്കുന്ന സ്ട്രിങ് ആവശ്യമുണ്ടു്"
+
+msgid "A repo name, parameter and value are required"
+msgstr "ഒരു റിപ്പോയുടെ പേരും പരാമീറ്റരും മൂല്ല്യവും ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "സംഭരണിയ്ക്കുള്ള പേരു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "തെരയുന്നതിനുള്ള വാചകം ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "തെരയുന്നതിനുള്ള തരം ആവശ്യമുണ്ടു്, ഉദാ. പേരു്"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "ഏത് തരം, key_id, package_id എന്നിവ ആവശ്യമുണ്ടു്"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "EULA സ്വീകരിക്കുക"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "EULA സ്വീകരിക്കുന്നു"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -74,65 +111,30 @@ msgstr "ബാധിച്ച പാക്കേജുകള്‍:"
 msgid "Affected packages: None"
 msgstr "ബാധിച്ച പാക്കേജുകള്‍: ഒന്നുമില്ല"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "വിതരണം"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "സമ്മതപ്പത്രം"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "തരം"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "പ്രയോഗം വീണ്ടും ആരംഭിക്കേണ്ടതു് ആവശ്യമുള്ളതു്:"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "സമ്മറി"
+msgid "Authentication is required to accept a EULA"
+msgstr "ഒരു EULA സ്വീകരിക്കുന്നതിനായി ആവശ്യമുള്ള ആധികാരികത"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "വിഭാഗം"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "ഒരു പുതിയ ഡ്രൈവറുപയോഗിച്ചു് ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുന്നതിനു് ആധികാരികത ആവശ്യമുണ്ടു്"
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "പേരന്റ്"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "ലഭ്യം"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "പേരു്"
-
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "ചിഹ്നം"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്ചുള്ള വിശദാംശങ്ങള്‍:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr ""
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "പരിഷ്കരണങ്ങള്‍"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "വേണ്ടെന്നു് വച്ചവ"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "കച്ചവടക്കാരന്‍"
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "തടസ്സപ്പെട്ടതു്"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -142,100 +144,799 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "വീണ്ടും ആരംഭിക്കുക"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "പുറമേ നിന്നുള്ള ജോലി റദ്ദാക്കുക"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "പരിഷ്കരിച്ച വാചകം"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "റദ്ദാക്കുന്നു"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "റദ്ദാക്കുന്നു"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "വിഭാഗം"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "മാറ്റങ്ങള്‍"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "അവസ്ഥ"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "ഉപയോഗിത്തിലുള്ള പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "നല്‍കിയതു്"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "ഉപയോഗത്തിലുള്ള ലൈബ്രറികള്‍ പരിശോധിക്കുന്നു"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "ഒപ്പുകള്‍ പരിശോധിക്കുന്നു"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "പരിഷ്കരിച്ചിരിക്കുന്നു"
+msgid "Cleaned up"
+msgstr "വെടിപ്പാക്കിരിക്കുന്നു"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "പ്രവര്‍ത്തന സജ്ജം"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "വെടിപ്പാക്കുന്നു"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "പാക്കേജുകള്‍ വെടിപ്പാക്കുന്നു"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "നിര്‍ദ്ദേശം പരാജയപ്പെട്ടു"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "കമാന്‍ഡ് ലൈന്‍"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "മാറ്റങ്ങള്‍ സമര്‍പ്പിക്കുന്നു"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "ഫയലുകള്‍ പകര്‍ത്തുന്നു"
+
+msgid "Debugging Options"
+msgstr "ഡീബഗ്ഗിങിനുള്ള ഉപാധികള്‍"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "പരിഷ്കരണങ്ങള്‍ സംബന്ധിച്ചുള്ള വിശദാംശങ്ങള്‍:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "ഡയറക്ടറി ലഭ്യമല്ല"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "ഐഡില്‍ ടൈമര്‍ പ്രവര്‍ത്തന രഹിതമാക്കുക"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "പ്രവര്‍ത്തന രഹിതം"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് ആവശ്യമുള്ളതു്:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "വിതരണം"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കേണ്ടതുണ്ടു്:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "പ്രയോഗം വീണ്ടും ആരംഭിക്കേണ്ടതു് ആവശ്യമുള്ളതു്:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "പാക്കേജ് വിശദാംശങ്ങള്‍"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "ഈ സമ്മതപ്പത്രം നിങ്ങള്‍ അംഗീകരിക്കുന്നുവോ?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "ഫയലുകള്‍ ലഭ്യമല്ല"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "ഈ ഓപ്പ് നിങ്ങള്‍ അംഗീകരിക്കുന്നുവോ?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "പാക്കേജിലുള്ള ഫയലുകള്‍"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "ഒപ്പില്ലാത്ത സോഫ്റ്റ്‌വെയര്‍ നിങ്ങള്‍ക്കു് ഇന്‍സ്റ്റോള്‍ ചെയ്യണമോ?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "ശതമാനം"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "ഡൌണ്‍ലോട് ചെയ്തിരിക്കുന്നു"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "അവസ്ഥ"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "ഫലങ്ങള്‍:"
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "ഫയല്‍ പട്ടികകള്‍‌ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "ഫയല്‍ലിസ്റ്റുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു (ഇതല്‍പം സമയമെടുക്കുന്നു)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "ഗ്രൂപ്പുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "പാക്കേജുകളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "മാറ്റങ്ങളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "പാക്കേജുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "റിപ്പോസിറ്ററി വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "പരിഷ്കരണ വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "സമയം"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "പ്രവര്‍ത്തന സജ്ജം"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "ഉപയോക്താവിനുള്ള ലൈസന്‍സ് സമ്മതപ്പത്രം ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "പുരോഗമിച്ചതു്"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "ഒരു ചെറിയ താമസത്തിനു് ശേഷം പുറത്ത് കടക്കുക"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "എഞ്ചിന്‍ ലഭ്യമാക്കിയ ശേഷം പുറത്ത് കടക്കുക"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "PackageKit-മായി ബന്ധപ്പെടുവാന്‍ സാധിച്ചില്ല"
+
+msgid "Failed to get daemon state"
+msgstr "ഡെമണ്‍ അവസ്ഥ ലഭ്യമാക്കുന്നതില്‍ പരാജയം"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "ഈ പ്രവര്‍ത്തി അവസാനമായി പൂര്‍ത്തിയാക്കിയ സമയം ലഭ്യമായില്ല"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതില്‍ പരാജയം"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "ലഭ്യമാക്കുന്നതില്‍ പരാജയം:"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "ഫയല്‍ കണ്ടുപിടിക്കുന്നതില്‍ പരാജയപ്പെട്ടു"
+
+msgid "False"
+msgstr "False"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "ഗുരുതര പിശക്"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr ""
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "പൂര്‍ത്തിയാക്കി"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "പാക്കേജ് പട്ടികകള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "വിഭാഗങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "ഡിപെന്‍ഡന്‍സികള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "വിശദാംശങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "ഫയലുകളുടെ പട്ടിക ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "വിവരം ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "പാക്കേജുകള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "ലഭ്യമാകുന്നവ നല്‍കുന്നതു്"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "റിപ്പോസിറ്ററികള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "ലഭ്യമാകുന്നതിനു് ആവശ്യമുള്ളതു്"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "ഇടപാടുകള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "പരിഷ്കരണങ്ങളുടെ വിശദാംശം ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "പരിഷ്കാരങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "പരിഷ്കരണങ്ങള്‍ ലഭ്യമാകുന്നു"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "ചിഹ്നം"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "പ്രധാനം"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "ഒപ്പിട്ട പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "രണ്ടാമതുറപ്പിക്കാതെ പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "അവിശ്വസനീയമായ ലോക്കല്‍ ഫയല്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്ന"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "ഫയലുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "ഒപ്പു് ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "പരിഷ്കാരങ്ങള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "നല്‍കിയതു്"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "കീ ID"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "കീ ടൈംസ്ടാമ്പ്"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "കീ യുആര്‍എല്‍"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "കീ വിരലടയാളം"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "കീ ഉപയോക്താവു്"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "കാഷ് ലഭ്യമാക്കുന്നു"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "പാക്കേജുകളുടെ പട്ടിക ലഭ്യമാക്കുന്നു."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "മീഡിയാ മാറ്റേണ്ടതുണ്ടു്"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "മീഡിയാ ലേബല്‍"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "മീഡിയാ തരം"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "ഒന്നില്‍ കൂടുതല്‍ ചേരുന്ന പാക്കേജുകള്‍:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "പേരു്"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "ഫയലുകള്‍ ലഭ്യമല്ല"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "സാധാരണ"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "വേണ്ടെന്നുവച്ചിരിക്കുന്നു"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "വേണ്ടെന്നു് വച്ചവ"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "വേണ്ടെന്നുവയ്ക്കുന്നു"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "പാക്കേജുകള്‍ ഇല്ലാതാക്കുന്നു"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "'%s' എന്ന ഐച്ഛികത്തിനുള്ള പിന്തുണ ലഭ്യമല്ല"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "പാക്കേജ് വിശദാംശങ്ങള്‍"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "പാക്കേജിലുള്ള ഫയലുകള്‍"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "പാക്കേജ്കിറ്റ് കണ്‍സോള്‍ ഇന്റര്‍ഫെയിസ്"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "പാക്കേജ്കിറ്റ് നിരീക്ഷകന്‍"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "പാക്കേജ്കിറ്റ് സര്‍വീസ്"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജുകള്‍:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "ഉപയോഗിക്കുന്നതിനായി ബാക്കെന്‍ഡ് പാക്കേജ് ചെയ്യുന്നു, ഉദാ. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "പേരന്റ്"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "ശതമാനം"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "പ്രവര്‍ത്തിപ്പിക്കുന്നതിനുള്ള കമാന്‍ഡ് ദയവായി തെരഞ്ഞെടുക്കുക"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "ദയവായി ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനായി ഒരു പാക്കേജ് തെരഞ്ഞെടുക്കുക"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "ദയവായി ശരിയായ പാക്കേജ് തെരഞ്ഞെടുക്കുക: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "ദയവായി 1 മുതല്‍ %i വരെയുള്ള ഒരു അക്കം നല്‍കുക: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "ദയവായി ശരിയായ മീഡിയാ തെരഞ്ഞെടുക്കുക"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "ആനിമേറ്റഡ് വിഡ്ജറ്റുകള്‍ ഉപയോഗിക്കുന്നതിനേക്കാള്‍ മഷീന്‍ മനസ്സിലാക്കുന്ന ഔട്ട്പുട്ട് സ്ക്രീനിലേക്ക് പ്രിന്റ് ചെയ്യുക"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "മാറ്റങ്ങളുമായി മുമ്പോട്ട് പോകണമോ?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "ക്വറി ചെയ്യുന്നു"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "യഥാര്‍ത്ഥ പേരു്"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "കാഷ് പുതുക്കുന്നു"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "സോഫ്റ്റ്‌വെയര്‍ പട്ടി പുതുക്കുന്നുു"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "ഒരു ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുക"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "പാക്കേജ് നീക്കം ചെയ്യുക"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "നീക്കം ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "നീക്കം ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "പാക്കേജുകള്‍ നീക്കം ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "ഫയലുകള്‍ വീണ്ടും പാക്കേജ് ചെയ്യുന്നു"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "ഡേറ്റാ ആവശ്യപ്പെടുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "പരിഹരിക്കുന്നു"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "ഡിപെന്‍ഡന്‍സികള്‍ റിസോള്‍വ് ചെയ്യുന്നു"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "വീണ്ടും ആരംഭിക്കുക"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "ഫലങ്ങള്‍:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "റോള്‍"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "ഇതുപോലുള്ള കമാന്‍ഡ് പ്രവര്‍ത്തിക്കുക:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "സ്ഥിരമായ നെറ്റ്‌വര്‍ക്ക് ബാന്‍ഡ്‌വിഡ്തും കുറഞ്ഞ പവറും ഉപയോഗിച്ചു് കമാന്‍ഡ് പ്രവര്‍ത്തിപ്പുക്കുക"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "പ്രവര്‍ത്തിക്കുന്നു"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "വിശദാംശങ്ങള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "ഫയലുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "പേരനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "ഗ്രൂപ്പുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "സുരക്ഷാ"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "സെഷന്‍ വീണ്ടും ആരംഭിക്കേണ്ടതുണ്ടു്:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "നെറ്റ്‌വര്‍ക്ക് പ്രോക്സി സജ്ജമാക്കുക"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "ഫില്‍‌റ്റര്‍ ക്രമികരിക്കുക, e.g. ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "ഡേറ്റാ സജ്ജമാക്കുന്നു"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "എല്ലാ ഫയലുകള്‍ക്കുമുള്ള ഡീബഗ്ഗിങ് വിവരം കാണിക്കുക"
+
+msgid "Show debugging options"
+msgstr "ഡീബഗ്ഗിങിനുള്ള ഉപാധികള്‍ കാണിക്കുക"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "പ്രോഗ്രാമിന്റെ പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "ഇതു് പോലുള്ള കമാന്‍ഡ്:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "ഇതു് പോലുള്ള കമാന്‍ഡുകള്‍:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സിന്റെ പേരു്"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സ് ഒപ്പു് ആവശ്യമുണ്ടു്"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "ആരംഭിക്കുന്നു"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "അവസ്ഥ"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "അവസ്ഥ"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "സബ്കമാന്‍ഡുകള്‍:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "ഇടപാടു് പൂര്‍ത്തിയായി"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "ഉചിതമായ പാക്കേജുകള്‍:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "സമ്മറി"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് (സുരക്ഷാ പരിഷ്കരണം) ആവശ്യമുള്ളതു്:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "സിസ്റ്റം വീണ്ടും ആരംഭിക്കുന്നതു് ആവശ്യമുള്ളതു്:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "സിസ്റ്റം സമയം"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "മാറ്റങ്ങള്‍ പരീക്ഷിക്കുന്നു"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "വാക്യം"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "സമ്മതപ്പത്രം സ്വീകരിക്കുന്നില്ല."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "ശരിയായ മീഡിയാ നല്‍കിയിട്ടില്ല."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "ഡെമണ്‍ തകര്‍ന്നിരിക്കുന്നു!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "നല്‍കിയ ഫില്‍‌റ്റര്‍ തെറ്റാണു്"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ ഡൌണ്‍ഗ്രേഡ് ചെയ്യേണ്ടതുണ്ടു്:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ടതാണു്:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ടതുണ്ടു്:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ നീക്കം ചെയ്യേണ്ടതുണ്ടു്."
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ പരിഷ്കരിക്കേണ്ടതുണ്ടു്:"
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജ്:"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "ഒപ്പ് സ്വീകരിക്കുന്നില്ല."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "സോഫ്റ്റ്‌വെയര്‍ ഒരു ട്രസ്റ്റഡ് സോഴ്സില്‍ നിന്നുമല്ല."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "ഇടപാടു് തുടര്‍ന്നില്ല."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -243,59 +944,25 @@ msgstr ""
 msgid "The transaction failed"
 msgstr "ഇടപാടു് പരാജയപ്പെട്ടു"
 
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "ഒപ്പിട്ടിട്ടില്ലാത്ത സോഫ്റ്റ്‌വെയര്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതല്ല."
+
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
 msgstr "ഒരു പരിഷ്കരണങ്ങളും ഇപ്പോള്‍ ലഭ്യമല്ല."
 
-msgid "There are no upgrades available at this time."
-msgstr ""
-
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "ഒന്നില്‍ കൂടുതല്‍ ചേരുന്ന പാക്കേജുകള്‍:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "ദയവായി ശരിയായ പാക്കേജ് തെരഞ്ഞെടുക്കുക: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr ""
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr ""
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr ""
+msgid "This tool could not find all the packages: %s"
+msgstr "എല്ലാ പാക്കേജുകളും കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -315,1130 +982,86 @@ msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്ത പാക്ക�
 msgid "This tool could not find the package: %s"
 msgstr "പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr ""
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "എല്ലാ പാക്കേജുകളും കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "ഡെമണ്‍ തകര്‍ന്നിരിക്കുന്നു!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "പാക്കേജ്കിറ്റ് കണ്‍സോള്‍ ഇന്റര്‍ഫെയിസ്"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "സബ്കമാന്‍ഡുകള്‍:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "ഈ പ്രവര്‍ത്തി അവസാനമായി പൂര്‍ത്തിയാക്കിയ സമയം ലഭ്യമായില്ല"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr ""
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr ""
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr ""
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "പ്രോഗ്രാമിന്റെ പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "ഫില്‍‌റ്റര്‍ ക്രമികരിക്കുക, e.g. ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "രണ്ടാമതുറപ്പിക്കാതെ പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr ""
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
-
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "സ്ഥിരമായ നെറ്റ്‌വര്‍ക്ക് ബാന്‍ഡ്‌വിഡ്തും കുറഞ്ഞ പവറും ഉപയോഗിച്ചു് കമാന്‍ഡ് പ്രവര്‍ത്തിപ്പുക്കുക"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "ആനിമേറ്റഡ് വിഡ്ജറ്റുകള്‍ ഉപയോഗിക്കുന്നതിനേക്കാള്‍ മഷീന്‍ മനസ്സിലാക്കുന്ന ഔട്ട്പുട്ട് സ്ക്രീനിലേക്ക് പ്രിന്റ് ചെയ്യുക"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr ""
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr ""
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr ""
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "PackageKit-മായി ബന്ധപ്പെടുവാന്‍ സാധിച്ചില്ല"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "നല്‍കിയ ഫില്‍‌റ്റര്‍ തെറ്റാണു്"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "തെരയുന്നതിനുള്ള തരം ആവശ്യമുണ്ടു്, ഉദാ. പേരു്"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "തെരയുന്നതിനുള്ള വാചകം ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുവാനുള്ള ഫയലിന്റെ പേരു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "ഏത് തരം, key_id, package_id എന്നിവ ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "നീക്കം ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "ഏതു് ഡയറക്ടറി എന്നും ഡൌണ്‍ലോട് ചെയ്യുവാനുള്ള പാക്കേജുകളും ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "ഡയറക്ടറി ലഭ്യമല്ല"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "ലൈസന്‍സ് ഐഡന്റിഫയര്‍ (eula-id) ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "റിസോള്‍വ് ചെയ്യുവാനുള്ള പാക്കേജിന്റെ പേരു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "സംഭരണിയ്ക്കുള്ള പേരു് ആവശ്യമുണ്ടു്"
-
-msgid "A repo name, parameter and value are required"
-msgstr "ഒരു റിപ്പോയുടെ പേരും പരാമീറ്റരും മൂല്ല്യവും ആവശ്യമുണ്ടു്"
-
-msgid "A repo id and autoremove required"
-msgstr ""
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "ശരിയായ റോള്‍ ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "പാക്കേജിന്റ് പേരു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "പാക്കേജ് ലഭ്യമാക്കുന്ന സ്ട്രിങ് ആവശ്യമുണ്ടു്"
-
-msgid "A filename is required"
-msgstr ""
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr ""
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr ""
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr ""
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr ""
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "'%s' എന്ന ഐച്ഛികത്തിനുള്ള പിന്തുണ ലഭ്യമല്ല"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "നിര്‍ദ്ദേശം പരാജയപ്പെട്ടു"
-
-msgid "Failed to get daemon state"
-msgstr "ഡെമണ്‍ അവസ്ഥ ലഭ്യമാക്കുന്നതില്‍ പരാജയം"
-
-msgid "Failed to get properties"
-msgstr ""
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "പാക്കേജ്കിറ്റ് നിരീക്ഷകന്‍"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr ""
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr ""
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "ഫയല്‍ലിസ്റ്റുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു (ഇതല്‍പം സമയമെടുക്കുന്നു)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "പാക്കേജുകളുടെ പട്ടിക ലഭ്യമാക്കുന്നു."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "ഫയല്‍ കണ്ടുപിടിക്കുന്നതില്‍ പരാജയപ്പെട്ടു"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr ""
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "ലഭ്യമാക്കുന്നതില്‍ പരാജയം:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതില്‍ പരാജയം"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr ""
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "ഇതു് പോലുള്ള കമാന്‍ഡ്:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "ഇതുപോലുള്ള കമാന്‍ഡ് പ്രവര്‍ത്തിക്കുക:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "ഇതു് പോലുള്ള കമാന്‍ഡുകള്‍:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "പ്രവര്‍ത്തിപ്പിക്കുന്നതിനുള്ള കമാന്‍ഡ് ദയവായി തെരഞ്ഞെടുക്കുക"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജ്:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജുകള്‍:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "ഉചിതമായ പാക്കേജുകള്‍:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "ദയവായി ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനായി ഒരു പാക്കേജ് തെരഞ്ഞെടുക്കുക"
-
-msgid "User aborted selection"
-msgstr ""
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "ദയവായി 1 മുതല്‍ %i വരെയുള്ള ഒരു അക്കം നല്‍കുക: "
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "ഇടപാടു്"
+
+#. TRANSLATORS: The type of update
+msgid "Trivial"
+msgstr "ഏറ്റവും പ്രധാനപ്പെട്ട"
+
+msgid "True"
+msgstr "True"
+
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "തരം"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "അപരിചിതമായ റോള്‍ രീതി"
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
 msgstr "അപരിചിതമായ അവസ്ഥ"
 
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "ആരംഭിക്കുന്നു"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "പരിഷ്കരിച്ച വാചകം"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "ക്യൂവില്‍ കാത്തിരിക്കുന്നു"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "പരിഷ്കരിച്ചിരിക്കുന്നു"
 
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "പ്രവര്‍ത്തിക്കുന്നു"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "പരിഷ്കരണങ്ങള്‍"
 
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "ക്വറി ചെയ്യുന്നു"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "പരിഷ്കരിക്കുന്നു"
 
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "വിവരം ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "പാക്കേജുകള്‍ നീക്കം ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "പാക്കേജുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
+msgid "Updating packages"
+msgstr "പാക്കേജുകള്‍ പരിഷ്കരിക്കുന്നു"
 
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "പ്രവര്‍ത്തിക്കുന്ന പ്രയോഗങ്ങള്‍ പരിഷ്കരിക്കുന്നു"
 
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "സോഫ്റ്റ്‌വെയര്‍ പട്ടി പുതുക്കുന്നുു"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "ഉപയോക്താവിനുള്ള ID"
 
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "പരിഷ്കാരങ്ങള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "ഉപയോക്തൃനാമം"
 
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "പാക്കേജുകള്‍ വെടിപ്പാക്കുന്നു"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "കച്ചവടക്കാരന്‍"
 
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "പാക്കേജുകള്‍ ഇല്ലാതാക്കുന്നു"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "ഡിപെന്‍ഡന്‍സികള്‍ റിസോള്‍വ് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "ഒപ്പുകള്‍ പരിശോധിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "മാറ്റങ്ങള്‍ പരീക്ഷിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "മാറ്റങ്ങള്‍ സമര്‍പ്പിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "ഡേറ്റാ ആവശ്യപ്പെടുന്നു"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "പൂര്‍ത്തിയാക്കി"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "റദ്ദാക്കുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "റിപ്പോസിറ്ററി വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "പാക്കേജുകളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "ഫയല്‍ പട്ടികകള്‍‌ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "മാറ്റങ്ങളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "ഗ്രൂപ്പുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "പരിഷ്കരണ വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "ഫയലുകള്‍ വീണ്ടും പാക്കേജ് ചെയ്യുന്നു"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "കാഷ് ലഭ്യമാക്കുന്നു"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "പാക്കേജ് പട്ടികകള്‍ ലഭ്യമാകുന്നു"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "ആധികാരികതയ്ക്കായി കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
 msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു"
 
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "ആധികാരികതയ്ക്കായി കാത്തിരിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "പ്രവര്‍ത്തിക്കുന്ന പ്രയോഗങ്ങള്‍ പരിഷ്കരിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "ഉപയോഗിത്തിലുള്ള പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "ഉപയോഗത്തിലുള്ള ലൈബ്രറികള്‍ പരിശോധിക്കുന്നു"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "ഫയലുകള്‍ പകര്‍ത്തുന്നു"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr ""
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "എല്ലാ ഫയലുകള്‍ക്കുമുള്ള ഡീബഗ്ഗിങ് വിവരം കാണിക്കുക"
-
-msgid "Debugging Options"
-msgstr "ഡീബഗ്ഗിങിനുള്ള ഉപാധികള്‍"
-
-msgid "Show debugging options"
-msgstr "ഡീബഗ്ഗിങിനുള്ള ഉപാധികള്‍ കാണിക്കുക"
-
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "ഏറ്റവും പ്രധാനപ്പെട്ട"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "സാധാരണ"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "പ്രധാനം"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "സുരക്ഷാ"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr ""
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "പുരോഗമിച്ചതു്"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "തടസ്സപ്പെട്ടതു്"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്ന"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "ലഭ്യം"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr ""
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "ഡൌണ്‍ലോട് ചെയ്യുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "പരിഷ്കരിക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "നീക്കം ചെയ്യുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "വെടിപ്പാക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "വേണ്ടെന്നുവയ്ക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "ഡൌണ്‍ലോട് ചെയ്തിരിക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "നീക്കം ചെയ്തിരിക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "വെടിപ്പാക്കിരിക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "വേണ്ടെന്നുവച്ചിരിക്കുന്നു"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്തിരിക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "അപരിചിതമായ റോള്‍ രീതി"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "ഡിപെന്‍ഡന്‍സികള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "പരിഷ്കരണങ്ങളുടെ വിശദാംശം ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "വിശദാംശങ്ങള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "ലഭ്യമാകുന്നതിനു് ആവശ്യമുള്ളതു്"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "പരിഷ്കാരങ്ങള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "വിശദാംശങ്ങള്‍ അനുസരിച്ചു് തെരയുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "ഫയലുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "ഗ്രൂപ്പുകള്‍ അനുസരിച്ചു് തെരയുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "പേരനുസരിച്ചു് തെരയുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "ഫയലുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "കാഷ് പുതുക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "പാക്കേജുകള്‍ പരിഷ്കരിക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "റദ്ദാക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "റിപ്പോസിറ്ററികള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "ഡേറ്റാ സജ്ജമാക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr ""
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "പരിഹരിക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "ഫയലുകളുടെ പട്ടിക ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "ലഭ്യമാകുന്നവ നല്‍കുന്നതു്"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "ഒപ്പു് ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "പാക്കേജുകള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "EULA സ്വീകരിക്കുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "പരിഷ്കരണങ്ങള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "വിഭാഗങ്ങള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "ഇടപാടുകള്‍ ലഭ്യമാകുന്നു"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr ""
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "ഒപ്പില്ലാത്ത സോഫ്റ്റ്‌വെയര്‍ നിങ്ങള്‍ക്കു് ഇന്‍സ്റ്റോള്‍ ചെയ്യണമോ?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "ഒപ്പിട്ടിട്ടില്ലാത്ത സോഫ്റ്റ്‌വെയര്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതല്ല."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സ് ഒപ്പു് ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "സോഫ്റ്റ്‌വെയര്‍ സോഴ്സിന്റെ പേരു്"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "കീ യുആര്‍എല്‍"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "കീ ഉപയോക്താവു്"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "കീ ID"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "കീ വിരലടയാളം"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "കീ ടൈംസ്ടാമ്പ്"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "ഈ ഓപ്പ് നിങ്ങള്‍ അംഗീകരിക്കുന്നുവോ?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "ഒപ്പ് സ്വീകരിക്കുന്നില്ല."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "ഉപയോക്താവിനുള്ള ലൈസന്‍സ് സമ്മതപ്പത്രം ആവശ്യമുണ്ടു്"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "സമ്മതപ്പത്രം"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "ഈ സമ്മതപ്പത്രം നിങ്ങള്‍ അംഗീകരിക്കുന്നുവോ?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "സമ്മതപ്പത്രം സ്വീകരിക്കുന്നില്ല."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "മീഡിയാ മാറ്റേണ്ടതുണ്ടു്"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "മീഡിയാ തരം"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "മീഡിയാ ലേബല്‍"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "വാക്യം"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "ദയവായി ശരിയായ മീഡിയാ തെരഞ്ഞെടുക്കുക"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "ശരിയായ മീഡിയാ നല്‍കിയിട്ടില്ല."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ നീക്കം ചെയ്യേണ്ടതുണ്ടു്."
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ടതാണു്:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ പരിഷ്കരിക്കേണ്ടതുണ്ടു്:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യേണ്ടതുണ്ടു്:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ ഡൌണ്‍ഗ്രേഡ് ചെയ്യേണ്ടതുണ്ടു്:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr ""
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr ""
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "മാറ്റങ്ങളുമായി മുമ്പോട്ട് പോകണമോ?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "ഇടപാടു് തുടര്‍ന്നില്ല."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "പുറമേ നിന്നുള്ള ജോലി റദ്ദാക്കുക"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "ഒപ്പിട്ട പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
-
-msgid "Authentication is required to install software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "അവിശ്വസനീയമായ ലോക്കല്‍ ഫയല്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
-
-msgid "Authentication is required to install untrusted software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr ""
-
-msgid "Authentication is required to reinstall software"
-msgstr ""
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr ""
-
-msgid "Authentication is required to downgrade software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr ""
-
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "EULA സ്വീകരിക്കുക"
-
-msgid "Authentication is required to accept a EULA"
-msgstr "ഒരു EULA സ്വീകരിക്കുന്നതിനായി ആവശ്യമുള്ള ആധികാരികത"
-
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "പാക്കേജ് നീക്കം ചെയ്യുക"
-
-msgid "Authentication is required to remove software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr ""
-
-msgid "Authentication is required to update software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr ""
-
-msgid "Authentication is required to change software repository parameters"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr ""
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "നെറ്റ്‌വര്‍ക്ക് പ്രോക്സി സജ്ജമാക്കുക"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "ഒരു ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുക"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "ഒരു പുതിയ ഡ്രൈവറുപയോഗിച്ചു് ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുന്നതിനു് ആധികാരികത ആവശ്യമുണ്ടു്"
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr ""
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr ""
-
-msgid "Authentication is required to repair the installed software"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr ""
-
-msgid "Authentication is required to trigger offline updates"
-msgstr ""
-
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr ""
-
-msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr ""
-
-msgid "Command not found, valid commands are:"
-msgstr ""
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "ഉപയോഗിക്കുന്നതിനായി ബാക്കെന്‍ഡ് പാക്കേജ് ചെയ്യുന്നു, ഉദാ. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr ""
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr ""
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr ""
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr ""
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr ""
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr ""
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr ""
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "ഐഡില്‍ ടൈമര്‍ പ്രവര്‍ത്തന രഹിതമാക്കുക"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "പതിപ്പ് കാണിച്ചശേഷം പുറത്ത് കടക്കുക"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "ഒരു ചെറിയ താമസത്തിനു് ശേഷം പുറത്ത് കടക്കുക"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "എഞ്ചിന്‍ ലഭ്യമാക്കിയ ശേഷം പുറത്ത് കടക്കുക"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr ""
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "പാക്കേജ്കിറ്റ് സര്‍വീസ്"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "സോഫ്റ്റ്‌വെയര്‍ ഒരു ട്രസ്റ്റഡ് സോഴ്സില്‍ നിന്നുമല്ല."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് പരിഷ്കരിക്കരുത്."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "ഈ പാക്കേജ് സുരക്ഷിതമാണു് എന്നുറപ്പു് വരുത്താതെ ഇതു് ഇന്‍സ്റ്റോള്‍ ചെയ്യരുതു്."
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു."
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "ക്യൂവില്‍ കാത്തിരിക്കുന്നു"

@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# This file is distributed under the same license as the PackageKit package.
+#
 # Translators:
 # Joe Hansen <joedalton2@yahoo.dk>, 2013-2016
 # Kris Thomsen <lakristho@gmail.com>, 2009-2013
@@ -12,9 +12,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-08 14:29+0000\n"
-"PO-Revision-Date: 2020-01-06 17:55+0000\n"
-"Last-Translator: scootergrisen\n"
 "Language-Team: Danish (http://www.transifex.com/freedesktop/packagekit/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,53 +19,99 @@ msgstr ""
 "Language: da\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Overførsel"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Systemtid"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Gennemført"
-
-msgid "True"
-msgstr "Sandt"
-
-msgid "False"
-msgstr "Falskt"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Rolle"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Varighed"
-
 msgid "(seconds)"
 msgstr "(sekunder)"
 
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Kommandolinje"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "En korrekt rolle kræves"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Bruger-id"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "En destinationsmappe og pakkenavnene kræves for at blive hentet"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Brugernavn"
+msgid "A filename is required"
+msgstr "Et filnavn er krævet"
 
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Rigtige navn"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A filename to install is required"
+msgstr "Et filnavn til installation er påkrævet"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A licence identifier (eula-id) is required"
+msgstr "En licensgenkender (eula-id) kræves"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+msgid "A package name is required"
+msgstr "Et pakkenavn kræves"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Et pakkenavn til installation er påkrævet"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Et pakkenavn til fjernelse kræves"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Et pakkenavn til at løse kræves"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+msgid "A package provide string is required"
+msgstr "En pakke udbydningsstreng kræves"
+
+msgid "A repo id and autoremove required"
+msgstr "Et pakkearkiv-id og automatisk fjernelse er krævet"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Et pakkearkivnavn, parameter og værdi kræves"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Et pakkearkivnavn kræves"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "En søgeterm kræves"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "En søgetype kræves, f.eks. navn"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "En type, nøgle_id og pakke_id kræves"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Accepter EULA"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Accepting EULA"
+msgstr "Accepterer EULA"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
@@ -78,65 +121,104 @@ msgstr "Berørte pakker:"
 msgid "Affected packages: None"
 msgstr "Berørte pakker: Ingen"
 
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distribution"
+#. TRANSLATORS: the EULA text itself (long and boring)
+msgid "Agreement"
+msgstr "Aftale"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Type"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Alias til %s"
 
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Resumé"
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Tillad at pakker nedgraderes under transaktion"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategori"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Tillad at pakker geninstalleres under transaktion"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "Id"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Tillad at upålidelige pakker installeres."
 
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Overliggende"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "En handling, f.eks. »update-packages« er krævet"
 
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Navn"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Programgenstart kræves af:"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikon"
+msgid "Authentication is required to accept a EULA"
+msgstr "Godkendelse kræves for at acceptere en EULA"
 
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Detaljer om opdateringen:"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Godkendelse kræves for at annullere en opgave, der ikke er startet af dig selv"
 
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Pakke"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Godkendelse kræves for at skifte parametre for programpakkearkiv"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Opdateringer"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Godkendelse kræves for at rydde den offline-opdateringsbesked"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Forældede"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Godkendelse kræves for at overveje en nøgle brugt for signering af programmer som pålidelig"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Leverandør"
+msgid "Authentication is required to downgrade software"
+msgstr "Godkendelse kræves for at nedgradere programmer"
+
+msgid "Authentication is required to install software"
+msgstr "Godkendelse kræves for at installere programmer"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "Godkendelse kræves for at installere upålidelige programmer"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Godkendelse kræves for at opdatere systempakkearkiverne"
+
+msgid "Authentication is required to reinstall software"
+msgstr "Godkendelse kræves for at geninstallere programmer"
+
+msgid "Authentication is required to reload the device with a new driver"
+msgstr "Godkendelse kræves for at genindlæse enheden med en ny driver"
+
+msgid "Authentication is required to remove software"
+msgstr "Godkendelse kræves for at fjerne programmer"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Godkendelse kræves for at reparere det installerede software"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Godkendelse kræves for at angive netværksproxy anvendt for overførsel af programmer"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Godkendelse kræves for at udløse offline-opdateringer"
+
+msgid "Authentication is required to update software"
+msgstr "Godkendelse kræves for at opdatere programmer"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Godkendelse kræves for at opgradere operativsystemet"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Forfatter"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Fjern ubrugte afhængigheder automatisk"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Tilgængelig"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Blokeret"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Fejlrettelse"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -146,106 +228,1035 @@ msgstr "Bugzilla"
 msgid "CVE"
 msgstr "CVE"
 
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Genstart"
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+msgid "Cancel foreign task"
+msgstr "Annuller fremmed opgave"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Opdateringstekst"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Annullerer"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Annullerer"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Kategori"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Skift parametre for programpakkearkiv"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
 msgstr "Ændringer"
 
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Status"
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Kontrollerer programmer som er i brug"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Udgivet"
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Kontrollerer biblioteker som er i brug"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Kontrollerer signaturer"
+
 #. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Opdateret"
+msgid "Cleaned up"
+msgstr "Ryddede op"
 
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Aktiveret"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Rydder op"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Rydder op i pakker"
+
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Ryd offline-opdateringsbesked"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Kommandoen fejlede"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Kommandolinje"
+
+msgid "Command not found, valid commands are:"
+msgstr "Kommandoen blev ikke fundet, gyldige kommandoer er:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Indsender ændringer"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Kopierer filer"
+
+msgid "Debugging Options"
+msgstr "Fejlsøgningsindstillinger"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Beskrivelse"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Detaljer om opdateringen:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Mappe ikke fundet"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Deaktiver inaktivitetstimeren"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
 msgstr "Deaktiveret"
 
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Systemgenstart kræves af:"
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distribution"
 
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Sessionsgenstart kræves:"
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Installer ikke disse pakker medmindre du er sikker på, at det er sikkert."
 
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Systemgenstart (sikkerhed) kræves af:"
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Installer ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Sessionsgenstart (sikkerhed) kræves:"
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Opdater ikke disse pakker medmindre du er sikker på, at det er sikkert."
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Programgenstart kræves af:"
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Opdater ikke denne pakke medmindre du er sikker på, at det er sikkert."
 
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Pakkebeskrivelse"
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Accepterer du denne aftale?"
 
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Ingen filer"
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Accepterer du denne signatur?"
 
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Pakkefiler"
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Vil du give lov til at installere usigneret software?"
 
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Procent"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Ryd ikke miljø under opstart"
 
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Status"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Hentede"
 
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Resultater:"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Hentning"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Downloader detaljer om softwarepakkearkiverne."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Henter fillister"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Henter fillister (det kan tage noget tid at udføre)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Henter grupper"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Henter liste over pakker"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Henter liste over ændringer"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Henter pakker"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Henter information om pakkearkiv"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Henter opdateringsinformation"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Varighed"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Aktiveret"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Godkendelse af licensaftale for slutbruger er påkrævet"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Forbedring"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Afslut efter en lille forsinkelse"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Afslut efter motoren er indlæst"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Forventet pakkenavn fik faktisk fil. Prøv at bruge »pkcon install-local %s« i stedet."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Kunne ikke kontakte PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Kunne ikke hente status for dæmon"
+
+msgid "Failed to get properties"
+msgstr "Kunne ikke hente indstillinger"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "Kunne ikke hente tid siden denne handling sidst blev gennemført"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Kunne ikke installere pakker"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Kunne ikke starte:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Kunne ikke indlæse motoren"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Kunne ikke indlæse konfigurationsfilen"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Kunne ikke fortolke parametre"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Kunne ikke fortolke kommandolinje"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Kunne ikke søge efter fil"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Kunne ikke indlæse motoren"
+
+msgid "False"
+msgstr "Falskt"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "Fatal fejl"
 
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Der er ingen pakker at opdatere."
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Filen findes allerede: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Afsluttet"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Genererer pakkelister"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Henter kategorier"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Henter afhængigheder"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Henter detaljer"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Henter filliste"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Henter information"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Henter pakker"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Henter udbydere"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Henter pakkearkiver"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Henter afhængigheder"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Henter systemopgraderinger"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Hentning af liste over filer mislykkedes"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Henter overførsler"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Henter opdateringsdetaljer"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Henter opdateringer"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Henter opgraderinger"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "Id"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Ikon"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Vigtig"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Installer allerede installeret pakke igen"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Installer ældre version af installeret pakke"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Installer pakke"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Installer pakke »%s« for at udbyde kommandoen »%s«?"
+
+#. SECURITY:
+#. - Normal users do not need authentication to install signed packages
+#. from signed repositories, as this cannot exploit a system.
+#. - Paranoid users (or parents!) can change this to 'auth_admin' or
+#. 'auth_admin_keep'.
+msgid "Install signed package"
+msgstr "Installer signeret pakke"
+
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Installer pakkerne uden at spørge efter bekræftelse"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Installer upålidelig lokal fil"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Installeret"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Installerer"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Installerer systemopgradering"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Installerer opdateringer"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Installerer filer"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Installerer pakker"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Installerer signatur"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Installerer systemopgradering – det kan tage et stykke tid ..."
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Installerer opdateringer"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Installerer opdateringer – det kan tage et stykke tid ..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Udgivet"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "Nøgle-id"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Nøgle-tidsstempel"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "Nøgle-URL"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Nøgle-fingeraftryk"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Nøglebruger"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Indlæser mellemlager"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Indlæser liste over pakker."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Skift af medie er påkrævet"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Medieetiket"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Medietype"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Redigerer pakkearkiv"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Mere end én pakke passede:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Navn"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Ingen filer"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Ingen pakker kræver opdatering til nyere versioner."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Ingen pakker blev fundet"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Normal"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Forældede"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Forældede"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Forælder"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Overflødigører pakker"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Tilvalget »%s« er ikke understøttet"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Pakke"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Pakkebeskrivelse"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Pakkefiler"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Pakke blev ikke fundet"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "PackageKit konsolgrænseflade"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit overvåger"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "PackageKit-tjeneste"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Pakker der udbyder denne fil er:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Pakkemotor som bruges, f.eks. dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Overliggende"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Procent"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Vælg venligst en kommando at køre"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Vælg venligst en pakke at installere"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Vælg venligst den rigtige pakke: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Indtast et nummer fra 1 til %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Indsæt venligst det korrekte medie"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Log venligst ud og ind igen for at fuldføre opdateringen, eftersom vigtige sikkerhedsopdateringer er blevet installeret."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Log venligst ud og ind igen for at fuldføre opdateringen."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Genstart venligst computeren for at fuldføre opdateringen, eftersom vigtige sikkerhedsopdateringer er blevet installeret."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Genstart venligst computeren for at fuldføre opdateringen."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Forbered overførslen ved kun at hente pakker"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Forberedte opdateringer:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Udskriv for at vise maskinlæsbart output, i stedet for at bruge animerede widgets"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Fortsæt med ændringer?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Forespørger"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Rigtige navn"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Genstarter efter installation af opdateringer ..."
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Opdater systempakkearkiver"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Opdater mellemlageret"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Opdater mellemlageret (tvunget)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Opdaterer mellemlager"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Opdaterer liste over pakkearkiver"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Geninstallerede"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Geninstallerer"
+
+#. SECURITY:
+#. - Normal users require admin authentication to rebind a driver
+#. so that it works after we install firmware.
+#. - This should not be set to 'yes' as unprivileged users could then
+#. try to rebind drivers in use, for instance security authentication
+#. devices.
+msgid "Reload a device"
+msgstr "Genindlæs en enhed"
+
+#. SECURITY:
+#. - Normal users require admin authentication to remove packages as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#. - Be sure to close the tool used to remove the packages after the
+#. admin authentication has been obtained, otherwise packages can still
+#. be removed. If this is not possible, change this authentication to
+#. 'auth_admin'.
+#. TRANSLATORS: command description
+msgid "Remove package"
+msgstr "Fjern pakke"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Fjernede"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Fjerner"
+
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Fjerner pakker"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Fjerner pakkearkiv"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Genpakker filer"
+
+#. SECURITY:
+#. - Normal users require admin authentication to repair the system
+#. since this can make the system unbootable or stop other
+#. applications from working.
+msgid "Repair System"
+msgstr "Reparer system"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Forespørger data"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Løser"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Løser afhængigheder"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Genstart"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Resultater:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Rolle"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Kør lignende kommando:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Kør kommandoen ved at bruge lav netværksbåndbredde, hvilket bruger mindre strøm"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Kører"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Kørende hooks"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Skanner programmer"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Søg efter detaljer"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Søg efter filer"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Søg efter navne"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Søger efter detaljer"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Søger efter fil"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Søger efter navn"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Søger efter grupper"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Sikkerhed"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Sessionsgenstart (sikkerhed) kræves:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Sessionsgenstart kræves:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Sæt netværksproxy"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Angiv indstillinger pakkearkiv"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Sæt filteret, f.eks. installeret"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Indstiller data"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Vis fejlsøgningsinformation for alle filer"
+
+msgid "Show debugging options"
+msgstr "Vis fejlsøgningsindstillinger"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Vis programversionen og afslut"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Vis version og afslut"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Lukker ned efter installation af opdateringer ..."
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Lignende kommando er:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Lignende kommandoer er:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Navn på softwarekilde"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Signatur til softwarekilde er påkrævet"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Starter"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Status"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Status"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Underkommandoer:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Gennemført"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Passende pakker er:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Resumé"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Systemgenstart (sikkerhed) kræves af:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Systemgenstart kræves af:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Systemtid"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Tester ændringer"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Tekst"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Aftalen blev ikke accepteret."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Det korrekte medie blev ikke indsat."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Dæmonen brød sammen under overførslen!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Filteret det blev angivet er ugyldigt"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Følgende pakker er ikke troværdige:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Følgende pakker er nødt til at blive nedgraderet:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Følgende pakker er nødt til at blive installeret:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "De følgende pakker skal gøres forældede:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Følgende pakker er nødt til at blive geninstalleret:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Følgende pakker er nødt til at blive fjernet:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Følgende pakker er nødt til at blive opdateret:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for »aldrig«."
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Pakken der udbyder denne fil er:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Denne proxy kunne ikke blive sat"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Signaturen blev ikke accepteret."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Softwaren er ikke fra en betroet kilde."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Overførslen fortsatte ikke."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
 msgstr "Overførslen kunne ikke gennemføres"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Usigneret software vil ikke blive installeret."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Der er ingen pakker at opdatere."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
@@ -254,52 +1265,17 @@ msgstr "Der er ingen tilgængelige opdateringer i øjeblikket."
 msgid "There are no upgrades available at this time."
 msgstr "Der er ingen tilgængelige opgraderinger i øjeblikket."
 
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Genstart venligst computeren for at fuldføre opdateringen."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Log venligst ud og ind igen for at fuldføre opdateringen."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Genstart venligst computeren for at fuldføre opdateringen, eftersom vigtige sikkerhedsopdateringer er blevet installeret."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Log venligst ud og ind igen for at fuldføre opdateringen, eftersom vigtige sikkerhedsopdateringer er blevet installeret."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Mere end én pakke passede:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Vælg venligst den rigtige pakke: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Pakke blev ikke fundet"
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Ingen pakker blev fundet"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Forventet pakkenavn fik faktisk fil. Prøv at bruge »pkcon install-local %s« i stedet."
+msgid "This tool could not find all the packages: %s"
+msgstr "Dette værktøj kunne ikke finde alle pakkerne: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -319,901 +1295,32 @@ msgstr "Dette værktøj kunne ikke finde den installerede pakke: %s"
 msgid "This tool could not find the package: %s"
 msgstr "Dette værktøj kunne ikke finde pakken: %s"
 
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Ingen pakker kræver opdatering til nyere versioner."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Dette værktøj kunne ikke finde alle pakkerne: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Dæmonen brød sammen under overførslen!"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKit konsolgrænseflade"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Underkommandoer:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Kunne ikke hente tid siden denne handling sidst blev gennemført"
-
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
 msgstr "Tid siden"
 
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Forberedte opdateringer:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Denne proxy kunne ikke blive sat"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Vis programversionen og afslut"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Sæt filteret, f.eks. installeret"
-
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Installer pakkerne uden at spørge efter bekræftelse"
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Forbered overførslen ved kun at hente pakker"
-
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Tillad at pakker nedgraderes under transaktion"
-
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Tillad at pakker geninstalleres under transaktion"
-
-msgid "Automatically remove unused dependencies"
-msgstr "Fjern ubrugte afhængigheder automatisk"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Kør kommandoen ved at bruge lav netværksbåndbredde, hvilket bruger mindre strøm"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "Udskriv for at vise maskinlæsbart output, i stedet for at bruge animerede widgets"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for »aldrig«."
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Tillad at upålidelige pakker installeres."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Kunne ikke fortolke kommandolinje"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Kunne ikke kontakte PackageKit"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Filteret det blev angivet er ugyldigt"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "En søgetype kræves, f.eks. navn"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-msgid "A search term is required"
-msgstr "En søgeterm kræves"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Et pakkenavn til installation er påkrævet"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Et filnavn til installation er påkrævet"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A type, key_id and package_id are required"
-msgstr "En type, nøgle_id og pakke_id kræves"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Et pakkenavn til fjernelse kræves"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "En destinationsmappe og pakkenavnene kræves for at blive hentet"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Mappe ikke fundet"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "En licensgenkender (eula-id) kræves"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Et pakkenavn til at løse kræves"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Et pakkearkivnavn kræves"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Et pakkearkivnavn, parameter og værdi kræves"
-
-msgid "A repo id and autoremove required"
-msgstr "Et pakkearkiv-id og automatisk fjernelse er krævet"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "En handling, f.eks. »update-packages« er krævet"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "En korrekt rolle kræves"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Et pakkenavn kræves"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "En pakke udbydningsstreng kræves"
-
-msgid "A filename is required"
-msgstr "Et filnavn er krævet"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Beskrivelse"
-
-#. TRANSLATORS: this is the author of the backend
-msgid "Author"
-msgstr "Forfatter"
-
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Du skal angive en listefil til oprettelse"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Filen findes allerede: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Tilvalget »%s« er ikke understøttet"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Kommandoen fejlede"
-
-msgid "Failed to get daemon state"
-msgstr "Kunne ikke hente status for dæmon"
-
-msgid "Failed to get properties"
-msgstr "Kunne ikke hente indstillinger"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit overvåger"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Installerer systemopgradering"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Installerer opdateringer"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Genstarter efter installation af opdateringer ..."
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Lukker ned efter installation af opdateringer ..."
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Installerer opdateringer – det kan tage et stykke tid ..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Installerer systemopgradering – det kan tage et stykke tid ..."
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Downloader detaljer om softwarepakkearkiverne."
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Henter fillister (det kan tage noget tid at udføre)."
-
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Venter på at pakkehåndteringen låser."
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Indlæser liste over pakker."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Kunne ikke søge efter fil"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Hentning af liste over filer mislykkedes"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Kunne ikke starte:"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Kunne ikke installere pakker"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "kommandoen blev ikke fundet"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Lignende kommando er:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Kør lignende kommando:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Lignende kommandoer er:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Vælg venligst en kommando at køre"
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Pakken der udbyder denne fil er:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installer pakke »%s« for at udbyde kommandoen »%s«?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Pakker der udbyder denne fil er:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Passende pakker er:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Vælg venligst en pakke at installere"
-
-msgid "User aborted selection"
-msgstr "Bruger-afbrudt valg"
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Indtast et nummer fra 1 til %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Ukendt status"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Starter"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Venter i kø"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Kører"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Forespørger"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Henter information"
-
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Fjerner pakker"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Henter pakker"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Installerer pakker"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Opdaterer liste over pakkearkiver"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Installerer opdateringer"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Rydder op i pakker"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Overflødigører pakker"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Løser afhængigheder"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Kontrollerer signaturer"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Tester ændringer"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Indsender ændringer"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Forespørger data"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Afsluttet"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Annullerer"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Henter information om pakkearkiv"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Henter liste over pakker"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Henter fillister"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Henter liste over ændringer"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Henter grupper"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Henter opdateringsinformation"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Genpakker filer"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Indlæser mellemlager"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Skanner programmer"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Genererer pakkelister"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Venter på at pakkehåndteringen låser"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Venter på godkendelse"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Opdaterer kørende programmer"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Kontrollerer programmer som er i brug"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Kontrollerer biblioteker som er i brug"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Kopierer filer"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Kørende hooks"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Vis fejlsøgningsinformation for alle filer"
-
-msgid "Debugging Options"
-msgstr "Fejlsøgningsindstillinger"
-
-msgid "Show debugging options"
-msgstr "Vis fejlsøgningsindstillinger"
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Overførsel"
+
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "Udløs offline-opdateringer"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "Triviel"
 
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normal"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Vigtig"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Sikkerhed"
-
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Fejlrettelse"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Forbedring"
-
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokeret"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Installeret"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Tilgængelig"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Utilgængelig"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Hentning"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Opdaterer"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Installerer"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Fjerner"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Rydder op"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Forælder"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Geninstallerer"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Hentede"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Fjernede"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Ryddede op"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Forældede"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Geninstallerede"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Ukendt rolletype"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Henter afhængigheder"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Henter opdateringsdetaljer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Henter detaljer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Henter afhængigheder"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Henter opdateringer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Søger efter detaljer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Søger efter fil"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Søger efter grupper"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Søger efter navn"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Installerer filer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Opdaterer mellemlager"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Opdaterer pakker"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Annullerer"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Henter pakkearkiver"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Redigerer pakkearkiv"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Indstiller data"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Fjerner pakkearkiv"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Løser"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Henter filliste"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Henter udbydere"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Installerer signatur"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Henter pakker"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Accepterer EULA"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Henter opgraderinger"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Henter kategorier"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Henter overførsler"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Henter systemopgraderinger"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Vil du give lov til at installere usigneret software?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Usigneret software vil ikke blive installeret."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Signatur til softwarekilde er påkrævet"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Navn på softwarekilde"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Nøgle-URL"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Nøglebruger"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Nøgle-id"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Nøgle-fingeraftryk"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Nøgle-tidsstempel"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Accepterer du denne signatur?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Signaturen blev ikke accepteret."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Godkendelse af licensaftale for slutbruger er påkrævet"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Aftale"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Accepterer du denne aftale?"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Aftalen blev ikke accepteret."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Skift af medie er påkrævet"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Medietype"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Medieetiket"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Tekst"
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Indsæt venligst det korrekte medie"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Det korrekte medie blev ikke indsat."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Følgende pakker er nødt til at blive fjernet:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Følgende pakker er nødt til at blive installeret:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Følgende pakker er nødt til at blive opdateret:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Følgende pakker er nødt til at blive geninstalleret:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Følgende pakker er nødt til at blive nedgraderet:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "De følgende pakker skal gøres forældede:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Følgende pakker er ikke troværdige:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Fortsæt med ændringer?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Overførslen fortsatte ikke."
-
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Annuller fremmed opgave"
-
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Godkendelse kræves for at annullere en opgave, der ikke er startet af dig selv"
-
-#. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Installer signeret pakke"
-
-msgid "Authentication is required to install software"
-msgstr "Godkendelse kræves for at installere programmer"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Installer upålidelig lokal fil"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Godkendelse kræves for at installere upålidelige programmer"
-
-#. SECURITY
-#. - Normal users require admin authentication to reinstall packages.
-#. - Authorization to install packages does not imply permissions to
-#. reinstall them and vice versa.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install already installed package again"
-msgstr "Installer allerede installeret pakke igen"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Godkendelse kræves for at geninstallere programmer"
-
-#. SECURITY
-#. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
-#. them as well.
-#. - If a package in question is not trusted, user's permission to install
-#. untrusted package will be checked as well.
-msgid "Install older version of installed package"
-msgstr "Installer ældre version af installeret pakke"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Godkendelse kræves for at nedgradere programmer"
+msgid "True"
+msgstr "Sandt"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1223,36 +1330,21 @@ msgstr "Godkendelse kræves for at nedgradere programmer"
 msgid "Trust a key used for signing software"
 msgstr "Betro en nøgle brugt til signering af programmer"
 
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Godkendelse kræves for at overveje en nøgle brugt for signering af programmer som pålidelig"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Type"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Accepter EULA"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Utilgængelig"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Godkendelse kræves for at acceptere en EULA"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Ukendt rolletype"
 
-#. SECURITY:
-#. - Normal users require admin authentication to remove packages as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#. - Be sure to close the tool used to remove the packages after the
-#. admin authentication has been obtained, otherwise packages can still
-#. be removed. If this is not possible, change this authentication to
-#. 'auth_admin'.
-#. TRANSLATORS: command description
-msgid "Remove package"
-msgstr "Fjern pakke"
-
-msgid "Authentication is required to remove software"
-msgstr "Godkendelse kræves for at fjerne programmer"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Ukendt status"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1263,50 +1355,33 @@ msgstr "Godkendelse kræves for at fjerne programmer"
 msgid "Update software"
 msgstr "Opdater programmer"
 
-msgid "Authentication is required to update software"
-msgstr "Godkendelse kræves for at opdatere programmer"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Opdateringstekst"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Skift parametre for programpakkearkiv"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Opdateret"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Godkendelse kræves for at skifte parametre for programpakkearkiv"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Opdateringer"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Opdater systempakkearkiver"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Opdaterer"
 
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Godkendelse kræves for at opdatere systempakkearkiverne"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Opdaterer pakker"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Sæt netværksproxy"
-
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Godkendelse kræves for at angive netværksproxy anvendt for overførsel af programmer"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Genindlæs en enhed"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Godkendelse kræves for at genindlæse enheden med en ny driver"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Opdaterer kørende programmer"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1315,134 +1390,46 @@ msgstr "Godkendelse kræves for at genindlæse enheden med en ny driver"
 msgid "Upgrade System"
 msgstr "Opgrader system"
 
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Godkendelse kræves for at opgradere operativsystemet"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "Bruger-id"
 
-#. SECURITY:
-#. - Normal users require admin authentication to repair the system
-#. since this can make the system unbootable or stop other
-#. applications from working.
-msgid "Repair System"
-msgstr "Reparer system"
+msgid "User aborted selection"
+msgstr "Bruger-afbrudt valg"
 
-msgid "Authentication is required to repair the installed software"
-msgstr "Godkendelse kræves for at reparere det installerede software"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Brugernavn"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the system
-#. to a new distribution since this can make the system unbootable or
-#. stop other applications from working.
-msgid "Trigger offline updates"
-msgstr "Udløs offline-opdateringer"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Leverandør"
 
-msgid "Authentication is required to trigger offline updates"
-msgstr "Godkendelse kræves for at udløse offline-opdateringer"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Venter på godkendelse"
 
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Ryd offline-opdateringsbesked"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Venter på at pakkehåndteringen låser"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Godkendelse kræves for at rydde den offline-opdateringsbesked"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Venter på at pakkehåndteringen låser."
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Alias til %s"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Venter i kø"
 
-msgid "Command not found, valid commands are:"
-msgstr "Kommandoen blev ikke fundet, gyldige kommandoer er:"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Du skal angive en listefil til oprettelse"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Pakkemotor som bruges, f.eks. dummy"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Opdater mellemlageret"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Opdater mellemlageret (tvunget)"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Søg efter navne"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Søg efter detaljer"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Søg efter filer"
-
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Installer pakke"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Angiv indstillinger pakkearkiv"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Kunne ikke fortolke parametre"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Kunne ikke indlæse konfigurationsfilen"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Kunne ikke indlæse motoren"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Kunne ikke indlæse motoren"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Deaktiver inaktivitetstimeren"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Vis version og afslut"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Afslut efter en lille forsinkelse"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Afslut efter motoren er indlæst"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Ryd ikke miljø under opstart"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit-tjeneste"
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Softwaren er ikke fra en betroet kilde."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Opdater ikke denne pakke medmindre du er sikker på, at det er sikkert."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Opdater ikke disse pakker medmindre du er sikker på, at det er sikkert."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Installer ikke denne pakke medmindre du er sikker på, at det er sikkert."
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Installer ikke disse pakker medmindre du er sikker på, at det er sikkert."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "kommandoen blev ikke fundet"

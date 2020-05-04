@@ -3,3 +3,10 @@ i18n.gettext(
   preset: 'glib',
   args: [ '--keyword=Description' ]
 )
+
+run_target('fix-translations',
+  command: [
+    join_paths(meson.source_root(), 'contrib/fix_translations.py'),
+    join_paths(meson.source_root(), 'po')
+  ]
+)
