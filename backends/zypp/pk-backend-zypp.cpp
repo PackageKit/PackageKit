@@ -3421,7 +3421,6 @@ upgrade_system (PkBackendJob *job,
 	if (!zypp_refresh_cache (job, zypp, FALSE)) {
 		return;
 	}
-	zypp_build_pool (zypp, TRUE);
 	zypp_get_updates (job, zypp, candidates);
 	if (candidates.empty ()) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
@@ -3432,8 +3431,6 @@ upgrade_system (PkBackendJob *job,
 
 	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
 	zypp->resolver ()->doUpgrade ();
-
-	PoolStatusSaver saver;
 
 	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
 
@@ -3457,15 +3454,14 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		return;
 	}
 
+	ResPool pool = zypp_build_pool (zypp, TRUE);
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+	PoolStatusSaver saver;
+
 	if (is_tumbleweed ()) {
 		upgrade_system (job, zypp, transaction_flags);
 		return;
 	}
-
-	ResPool pool = zypp_build_pool (zypp, TRUE);
-	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-
-	PoolStatusSaver saver;
 
 	for (guint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
