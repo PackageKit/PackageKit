@@ -24,6 +24,7 @@ shared_module(
   'pk-alpm-transaction.c',
   'pk-alpm-transaction.h',
   'pk-alpm-update.c',
+  'pk-alpm-update.h',
   include_directories: packagekit_src_include,
   dependencies: [
     packagekit_glib2_dep,

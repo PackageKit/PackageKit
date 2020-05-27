@@ -37,6 +37,7 @@
 #include "pk-alpm-error.h"
 #include "pk-alpm-packages.h"
 #include "pk-alpm-transaction.h"
+#include "pk-alpm-update.h"
 
 static gchar *
 pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
@@ -261,7 +262,7 @@ pk_alpm_update_set_db_timestamp (alpm_db_t *db, GError **error)
 	return TRUE;
 }
 
-static gboolean
+gboolean
 pk_alpm_update_database (PkBackendJob *job, gint force, alpm_db_t *db, GError **error)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
