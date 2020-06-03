@@ -1,5 +1,6 @@
 polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.packagekit.package-install" &&
+    if ((action.id == "org.freedesktop.packagekit.package-install" ||
+         action.id == "org.freedesktop.packagekit.package-remove") &&
         subject.active == true && subject.local == true &&
         subject.isInGroup("wheel")) {
             return polkit.Result.YES;
