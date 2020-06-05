@@ -48,6 +48,8 @@ static void     pk_transaction_db_finalize	(GObject        *object);
 
 #define PK_TRANSACTION_DB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbPrivate))
 
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (sqlite3_stmt, sqlite3_finalize);
+
 struct PkTransactionDbPrivate
 {
 	gboolean		 loaded;
@@ -288,83 +290,165 @@ out:
 	return list;
 }
 
+static gboolean
+pk_transaction_db_prepare (PkTransactionDb *tdb, const gchar *sql, sqlite3_stmt **statement)
+{
+	gint rc = 0;
+	*statement = NULL;
+
+	if ((rc = sqlite3_prepare_v2 (tdb->priv->db,
+				      sql,
+				      -1,
+				      statement,
+				      NULL) != SQLITE_OK)) {
+		g_warning ("(%s) prepare error: %d: %s", sql, rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+pk_transaction_db_step (sqlite3 *db, sqlite3_stmt *statement)
+{
+	gint rc = 0;
+
+	rc = sqlite3_step (statement);
+
+	if (rc != SQLITE_OK && rc != SQLITE_DONE) {
+		g_warning ("SQL error: %d: %s", rc, sqlite3_errmsg (db));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+pk_transaction_db_set_strings (PkTransactionDb *tdb, const gchar *sql, const gchar *first, const gchar *second)
+{
+	g_autoptr (sqlite3_stmt) statement = NULL;
+	gint rc = 0;
+
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
+	g_return_val_if_fail (sql != NULL, FALSE);
+	g_return_val_if_fail (first != NULL, FALSE);
+	g_return_val_if_fail (second != NULL, FALSE);
+
+	if (!pk_transaction_db_prepare (tdb, sql, &statement))
+		return FALSE;
+
+	if ((rc = sqlite3_bind_text (statement, 1, first, -1, SQLITE_STATIC)) != SQLITE_OK) {
+		g_warning ("bind text1 error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	if ((rc = sqlite3_bind_text (statement, 2, second, -1, SQLITE_STATIC)) != SQLITE_OK) {
+		g_warning ("bind text2 error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	return pk_transaction_db_step (tdb->priv->db, statement);
+}
+
 gboolean
 pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 {
 	g_autofree gchar *timespec = NULL;
-	g_autofree gchar *statement = NULL;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-
 	timespec = pk_iso8601_present ();
-	statement = g_strdup_printf ("INSERT INTO transactions (transaction_id, timespec) VALUES ('%s', '%s')", tid, timespec);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+
+	return pk_transaction_db_set_strings (tdb,
+					      "INSERT INTO transactions (transaction_id, timespec) VALUES (?1, ?2)",
+					      tid,
+					      timespec);
 }
 
 gboolean
 pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum role)
 {
 	const gchar *role_text;
-	g_autofree gchar *statement = NULL;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-
 	role_text = pk_role_enum_to_string (role);
-	statement = g_strdup_printf ("UPDATE transactions SET role = '%s' WHERE transaction_id = '%s'", role_text, tid);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+
+	return pk_transaction_db_set_strings (tdb,
+					      "UPDATE transactions SET role=?1 WHERE transaction_id=?2",
+					      role_text,
+					      tid);
 }
 
 gboolean
 pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
 {
-	g_autofree gchar *statement = NULL;
+	g_autoptr (sqlite3_stmt) statement = NULL;
+	gint rc = 0;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
-	statement = g_strdup_printf ("UPDATE transactions SET uid = '%i' WHERE transaction_id = '%s'", uid, tid);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+	if (!pk_transaction_db_prepare (tdb, "UPDATE transactions SET uid=?1 WHERE transaction_id=?2", &statement))
+		return FALSE;
+
+	if ((rc = sqlite3_bind_int (statement, 1, uid)) != SQLITE_OK) {
+		g_warning ("bind int error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	if ((rc = sqlite3_bind_text (statement, 2, tid, -1, SQLITE_STATIC)) != SQLITE_OK) {
+		g_warning ("bind text error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	return pk_transaction_db_step (tdb->priv->db, statement);
 }
 
 gboolean
 pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gchar *cmdline)
 {
-	g_autofree gchar *statement = NULL;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-
-	statement = g_strdup_printf ("UPDATE transactions SET cmdline = '%s' WHERE transaction_id = '%s'", cmdline, tid);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+	return pk_transaction_db_set_strings (tdb,
+					      "UPDATE transactions SET cmdline=?1 WHERE transaction_id=?2",
+					      cmdline,
+					      tid);
 }
 
 gboolean
 pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar *data)
 {
-	g_autofree gchar *statement = NULL;
-
-	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
-
-	/* TODO: we have to be careful of SQL injection attacks */
-	statement = g_strdup_printf ("UPDATE transactions SET data = \"%s\" WHERE transaction_id = '%s'",
-				     data, tid);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+	return pk_transaction_db_set_strings (tdb,
+					      "UPDATE transactions SET data=?1 WHERE transaction_id=?2",
+					      data,
+					      tid);
 }
 
 gboolean
 pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean success, guint runtime)
 {
-	g_autofree gchar *statement = NULL;
+	g_autoptr (sqlite3_stmt) statement = NULL;
+	gint rc = 0;
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), FALSE);
+	g_return_val_if_fail (tdb->priv->db != NULL, FALSE);
+	g_return_val_if_fail (tid != NULL, FALSE);
 
-	statement = g_strdup_printf ("UPDATE transactions SET succeeded = %i, duration = %i WHERE transaction_id = '%s'",
-				     success, runtime, tid);
-	pk_transaction_db_sql_statement (tdb, statement);
-	return TRUE;
+	if (!pk_transaction_db_prepare (tdb, "UPDATE transactions SET succeeded=?1, duration=?2 WHERE transaction_id=?3",
+					&statement))
+		return FALSE;
+
+	if ((rc = sqlite3_bind_int (statement, 1, success)) != SQLITE_OK) {
+		g_warning ("bind int1 error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	if ((rc = sqlite3_bind_int (statement, 2, runtime)) != SQLITE_OK) {
+		g_warning ("bind int2 error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	if ((rc = sqlite3_bind_text (statement, 3, tid, -1, SQLITE_STATIC)) != SQLITE_OK) {
+		g_warning ("bind text error: %d: %s", rc, sqlite3_errmsg (tdb->priv->db));
+		return FALSE;
+	}
+
+	return pk_transaction_db_step (tdb->priv->db, statement);
 }
 
 gboolean
