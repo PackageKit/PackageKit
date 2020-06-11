@@ -666,6 +666,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		 * fatal in my book */
 		g_print ("%s: %s\n", _("Fatal error"), error->message);
 		switch (error->code - 0xff) {
+		case PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED:
 		case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
 			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
 			break;
