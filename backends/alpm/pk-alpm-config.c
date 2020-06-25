@@ -598,6 +598,11 @@ pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
 			/* Ignore "Usage" key instead of crashing */
 			continue;
 		}
+		
+		if (g_strcmp0 (key, "HookDir") == 0 && str != NULL) {
+			/* Ignore "HookDir" key instead of crashing */
+			continue;
+		}
 
 		/* report errors from above */
 		g_set_error (&e, PK_ALPM_ERROR, PK_ALPM_ERR_CONFIG_INVALID,
