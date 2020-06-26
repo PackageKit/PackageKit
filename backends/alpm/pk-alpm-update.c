@@ -263,32 +263,34 @@ pk_alpm_update_set_db_timestamp (alpm_db_t *db, GError **error)
 }
 
 gboolean
-pk_alpm_update_database (PkBackendJob *job, gint force, alpm_db_t *db, GError **error)
+pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GError **error)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_cb_download dlcb;
+	alpm_list_t *i;
 	gint result;
 
 	dlcb = alpm_option_get_dlcb (priv->alpm);
 
-	if (pk_alpm_update_is_db_fresh (job, db))
-		return TRUE;
-
 	if (!force)
 		return TRUE;
 
-	result = alpm_db_update (force, db);
+	result = alpm_db_update (priv->alpm, dbs, force);
 	if (result > 0) {
-		dlcb ("", 1, 1);
+		dlcb ("", ALPM_DOWNLOAD_COMPLETED, 1);
 	} else if (result < 0) {
-		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "[%s]: %s",
-				alpm_db_get_name (db),
+		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "failed to update databases: %s",
 				alpm_strerror (errno));
 		return FALSE;
 	}
 
-	return pk_alpm_update_set_db_timestamp (db, error);
+	for (i = dbs; i != NULL; i = alpm_list_next(i)) {
+		if (!pk_alpm_update_set_db_timestamp (i->data, error)) {
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 static gboolean
@@ -311,19 +313,7 @@ pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
 	/* set total size to minus the number of databases */
 	i = alpm_get_syncdbs (priv->alpm);
 	totaldlcb (-alpm_list_count (i));
-
-	for (; i != NULL; i = i->next) {
-		if (pk_backend_job_is_cancelled (job)) {
-			/* pretend to be finished */
-			i = NULL;
-			break;
-		}
-
-		ret = pk_alpm_update_database (job, force, i->data, error);
-		if (!ret) {
-			break;
-		}
-	}
+	pk_alpm_refresh_databases(job, force, i, error);
 
 	totaldlcb (0);
 
@@ -439,18 +429,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 
 	/* set total size to minus the number of databases */
 	i = alpm_get_syncdbs (handle);
-
-	for (; i != NULL; i = i->next) {
-		if (pk_backend_job_is_cancelled (job)) {
-			/* pretend to be finished */
-			i = NULL;
-			break;
-		}
-
-		ret = pk_alpm_update_database (job, TRUE, i->data, error);
-		if (!ret)
-			break;
-	}
+	pk_alpm_refresh_databases(job, TRUE, i, error);
 
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		g_variant_get (params, "(t)", &filters);

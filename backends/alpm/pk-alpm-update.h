@@ -23,4 +23,4 @@
 #include <alpm.h>
 #include <pk-backend.h>
 
-gboolean pk_alpm_update_database(PkBackendJob *job, gint force, alpm_db_t *db, GError **error);
+gboolean pk_alpm_refresh_databases(PkBackendJob *job, gint force, alpm_list_t *dbs, GError **error);
