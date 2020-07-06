@@ -2589,6 +2589,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	// remove tmp-dir and the tmp-repo
 	try {
 		manager.removeRepository (tmpRepo);
+		repo.eraseFromPool();
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
