@@ -1,8 +1,8 @@
 add_languages('cpp')
 
-nix_expr_dep = dependency('nix-expr', version: '>=2.4')
-nix_main_dep = dependency('nix-main', version: '>=2.4')
-nix_store_dep = dependency('nix-store', version: '>=2.4')
+nix_expr_dep = dependency('nix-expr', version: '>=3.0')
+nix_main_dep = dependency('nix-main', version: '>=3.0')
+nix_store_dep = dependency('nix-store', version: '>=3.0')
 
 shared_module(
   'pk_backend_nix',
