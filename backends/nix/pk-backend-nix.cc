@@ -399,11 +399,10 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				}
 			}
 
-			else if (attrPath.size() == 0
-				|| (attrPath[0] == "legacyPackages" && attrPath.size() <= 2))
+			else if (attrPath.size() <= 1)
 				recurse();
 
-			else if (attrPath[0] == "legacyPackages" && attrPath.size() > 2) {
+			else if (attrPath.size() > 1) {
 				auto attr = cursor.maybeGetAttr(priv->state->sRecurseForDerivations);
 				if (attr && attr->getBool())
 					recurse();
