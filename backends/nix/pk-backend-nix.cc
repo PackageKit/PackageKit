@@ -399,10 +399,10 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				}
 			}
 
-			else if (attrPath.size() <= 1)
+			else if (attrPath.size() == 0)
 				recurse();
 
-			else if (attrPath.size() > 1) {
+			else if (attrPath.size() >= 1) {
 				auto attr = cursor.maybeGetAttr(priv->state->sRecurseForDerivations);
 				if (attr && attr->getBool())
 					recurse();
