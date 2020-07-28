@@ -542,7 +542,7 @@ nix_install_thread (PkBackendJob* job, GVariant* params, gpointer p)
 			bool found = false;
 
 			for (auto & j : newElems) {
-				if (j.queryDrvPath () == i.queryDrvPath ()) {
+				if (DrvName(i.queryName ()).name == DrvName (j.queryName ()).name) {
 					found = true;
 					break;
 				}
@@ -645,7 +645,7 @@ nix_remove_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 
 			for (auto & j : elemsToDelete) {
-				if (j.queryDrvPath() == i.queryDrvPath()) {
+				if (DrvName (i.queryName ()).name == DrvName (j.queryName ()).name) {
 					found = true;
 					break;
 				}
