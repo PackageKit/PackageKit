@@ -29,6 +29,7 @@
 #include "pk-alpm-databases.h"
 #include "pk-alpm-error.h"
 #include "pk-alpm-transaction.h"
+#include "pk-alpm-update.h"
 
 static gboolean
 pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gboolean update, GError **error)
@@ -186,6 +187,13 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
+
+	if ((gboolean)p) {
+		i = alpm_get_syncdbs(priv->alpm);
+		for (; i != NULL; i = i->next) {
+			pk_alpm_update_database(job, TRUE, i->data, &error);
+		}
+	}
 
 	/* download only */
 	if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
