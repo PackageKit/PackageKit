@@ -24,6 +24,9 @@
 
 #include "config.h"
 
+#include <bonsole_client.h>
+#include <dbus/dbus.h>
+
 #include <iterator>
 #include <list>
 #include <map>
@@ -281,7 +284,8 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level) {
 		pk_backend_job_error_code (_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "%s", description.c_str ());
-		return ABORT;
+		
+                return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level) {
@@ -551,6 +555,7 @@ class PkBackendZYppPrivate {
 	std::vector<std::string> signatures;
 	EventDirector eventDirector;
 	PkBackendJob *currentJob;
+        bool isBonsoleInit;
 	
 	pthread_mutex_t zypp_mutex;
 };
@@ -1434,6 +1439,269 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 /**
   * simulate, or perform changes in pool to the system
   */
+/* LIBXML/LIBXSLT includes - remove unnecessary in future */
+#include <libxml/xmlmemory.h>
+#include <libxml/debugXML.h>
+#include <libxml/HTMLtree.h>
+#include <libxml/xmlIO.h>
+#include <libxml/DOCBparser.h>
+#include <libxml/xinclude.h>
+#include <libxml/catalog.h>
+#include <libxslt/xslt.h>
+#include <libxslt/xsltInternals.h>
+#include <libxslt/transform.h>
+#include <libxslt/xsltutils.h>
+
+struct msg_proc_helper {
+  
+  ResolverProblemList::iterator it;
+  ResolverProblemList problems;
+  Resolver_Ptr resolver;
+};
+
+static void show_solutions(const char *msg_, intptr_t usr_p)
+{
+  char *buffer, *prev, *curr, *prev2;
+  int length, length2;
+  int problem, solution;
+  xmlNodePtr root, text, anchor, message, form, checkbox;
+  struct msg_proc_helper *helper = (struct msg_proc_helper *) usr_p;
+  
+  ResolverProblemList::iterator it;
+  ProblemSolutionList::const_iterator sol_it;
+  
+
+  xmlDocPtr a = bonsole_window(nullptr);
+  root = xmlDocGetRootElement(a);
+  
+  form = xmlNewNode(NULL, BAD_CAST "form");
+  xmlSetProp(form, BAD_CAST "action",BAD_CAST "app:update");
+  xmlAddChild(root, form);
+  
+  problem = 0;
+  solution = 0;
+  for (it = helper->problems.begin(); it != helper->problems.end(); ++it) {
+    
+    text = xmlNewText(BAD_CAST (*it)->description ().c_str ());
+    xmlAddChild(form, text);   
+    for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
+      
+      checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
+      text = xmlNewText(BAD_CAST (*sol_it)->description ().c_str ());
+      xmlAddChild(checkbox, text);
+      
+      xmlAddChild(form, checkbox);
+      //text = xmlNewCDataBlock(a, BAD_CAST (*sol_it)->details ().c_str (), strlen((*sol_it)->details ().c_str ()));
+      char *string= strdup((*sol_it)->details ().c_str ());
+      
+      char *prev = string;
+      char *curr = string;
+      
+      while ('\0' != *curr) {
+      
+        if ('\n' == *curr) {
+        
+          *curr = '\0';
+          text = xmlNewText(BAD_CAST prev);
+          xmlAddChild(form, text);
+          text = xmlNewNode(NULL, BAD_CAST "br");
+          xmlAddChild(form, text);
+          prev = curr + 1;
+        }
+        
+        ++curr;
+      }
+      
+      text = xmlNewText(BAD_CAST prev);
+      xmlAddChild(checkbox, text);
+      free(string);
+      
+      
+      length = snprintf(NULL, 0, "%d_%d", problem, solution) + 1;
+      buffer = (char*) malloc(length);
+      snprintf(buffer, length, "%d_%d", problem, solution);
+      
+      xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
+     
+      
+      free(buffer);
+      
+      ++solution;
+    }
+    ++problem;
+  }
+
+bonsole_window_release(nullptr);
+bonsole_flush_changes(nullptr);
+}
+
+static void message_proc(const char *msg__, intptr_t usr_p)
+{
+  ProblemSolutionList *solution_list;
+  char *buffer, *prev, *curr, *prev2;
+  int length, length2;
+  int problem, solution;
+  xmlNodePtr root, text, anchor, message, form, checkbox;
+  struct msg_proc_helper *helper = (struct msg_proc_helper *) usr_p;
+  
+  char *msg_ = strdup(msg__);
+  
+  if (0 == strncmp("update?", msg_, sizeof("update?") - 1)) {
+  
+    solution_list = new ProblemSolutionList();
+    bonsole_reset_document(nullptr);
+    xmlDocPtr a = bonsole_window(nullptr);
+    root = xmlDocGetRootElement(a);
+    buffer = msg_;
+    length = 0;
+    while ('\0' != *buffer) {
+    
+      if ('&' == *buffer) {
+      
+        ++length;
+        *buffer = '\0';
+      }
+      ++buffer;
+    }
+    ++length;
+    buffer = &msg_[sizeof("update?") - 1];
+    
+    while (0 < length) {
+    
+      prev = buffer;
+      do {
+        
+        ++buffer;
+      } while ('_' != *buffer);
+      
+      *buffer = '\0';
+      ++buffer;
+      do {
+        ++buffer;
+      } while ('=' != *buffer);
+    
+      
+      ++buffer;
+      if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
+      
+        --length;
+        do {
+          ++buffer;
+        } while ('\0' != *buffer);
+        
+        continue;
+      }
+      
+      while ('\0' != *buffer) {
+        ++buffer;
+      }
+      
+      ++buffer;
+      curr = prev;
+      prev = buffer;
+      
+      length2 = length - 1;
+      while (0 < length2) {
+        prev2 = buffer;
+        
+        
+        
+        do {
+          
+          ++buffer;
+        } while ('_' != *buffer);
+        
+        *buffer = '\0';
+        ++buffer;
+        
+        
+        if (0 != strcmp(curr, prev2)) {
+          
+          --length2;
+          do {
+            ++buffer;
+          } while ('\0' != *buffer);
+          
+          continue;
+        }
+        
+        do {
+          ++buffer;
+        } while ('=' != *buffer);
+        
+        
+        ++buffer;
+        if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
+          
+          --length2;
+          do {
+            ++buffer;
+          } while ('\0' != *buffer);
+          
+          ++buffer;
+          if ('\0' != *buffer) {
+          
+            ++buffer;
+          }
+          continue;
+        }
+        message = xmlNewNode(NULL, BAD_CAST "message");
+        text = xmlNewText(BAD_CAST "You checked two different solutions for one problem");
+        xmlAddChild(message, text);   
+        xmlAddChild(root, message);   
+  
+        bonsole_window_release(nullptr);
+        show_solutions(msg_, usr_p);
+        
+        return;
+        
+        do {
+          ++buffer;
+        } while ('\0' != *buffer);
+        
+        --length2;
+      }
+      
+      // Apply this solution
+      char *prev3;
+      int problem_number, solution_number;
+      
+      //curr = prev;
+      problem_number = atoi(curr);
+      while ('\0' != *curr) ++curr;
+      prev3 = ++curr;
+      while ('\0' != *curr && '=' != *curr) ++curr;
+      *curr = '\0';
+      solution_number = atoi(prev3);
+      
+      ProblemSolutionList::const_iterator it2;
+      ResolverProblemList::iterator it = helper->problems.begin();
+      std::advance(
+        it, 
+        problem_number);
+      ResolverProblem problem = **it;
+      it2 = problem.solutions().begin();
+      std::advance(
+        it2,
+        solution_number);
+      ProblemSolution solution = **it2;
+      //solution.apply(helper->resolver);
+      
+      solution_list->push_back(&solution);
+      --length;
+    }
+    
+    
+    helper->resolver->applySolutions(*solution_list);
+    bonsole_window_release(nullptr);
+    bonsole_flush_changes(nullptr);
+    
+    bonsole_quit_loop(nullptr);
+  }
+  
+  free(msg_);
+}
+
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
@@ -1451,36 +1719,148 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		pk_backend_job_set_percentage(job, 100);
-		if (!zypp->resolver ()->resolvePool ()) {
+		while (!zypp->resolver ()->resolvePool ()) {
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
 
 			ResolverProblemList problems = zypp->resolver ()->problems ();
 			gchar * emsg = NULL, * tempmsg = NULL;
+                        ResolverProblemList::iterator it = problems.begin ();
 
-			for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
+                        
+                        // TODO: Add support for passing request could be handled interactively
+                        if (force) {
+			
+                          for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
 				if (emsg == NULL) {
 					emsg = g_strdup ((*it)->description ().c_str ());
+                                        
 				}
 				else {
 					tempmsg = emsg;
 					emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
 					g_free (tempmsg);
 				}
-			}
+			  }
 
-			// reset the status of all touched PoolItems
-			ResPool pool = ResPool::instance ();
-			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
-				if (it->status ().isToBeInstalled ())
+			  // reset the status of all touched PoolItems
+			  ResPool pool = ResPool::instance ();
+			  for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
+			 	if (it->status ().isToBeInstalled ())
 					it->statusReset ();
-			}
-
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
-			g_free (emsg);
-
-			goto exit;
+			  }
+			  pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
+                          
+                          g_free (emsg);
+                          
+			  goto exit;
+                        }
+                        if (! priv->isBonsoleInit ) {
+                        
+                          DBusConnection *bus_connection;
+                          DBusError error;
+                          
+                          dbus_error_init(&error);
+                          bus_connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
+                          if (bus_connection == NULL) {
+                            if (dbus_error_is_set(&error)) {
+                              printf("Error occurred, while trying to connect: %s\n", error.message);
+                            }
+                            else {
+                              printf("Error occurred, while trying to connect\n");
+                            }
+                            dbus_error_free(&error);
+                            exit(1);
+                          }
+                          
+                          
+                          char *sender = backend->sender;
+                          char *server, *cookie;
+                          DBusPendingCall* pending;
+                          DBusMessage* reply;
+                          DBusMessageIter args;
+                          
+                          
+                          DBusMessage* msg = dbus_message_new_method_call("pl.art.lach.slawek.apps.DaemonUI","/pl/art/lach/slawek/apps/DaemonUI", "pl.art.lach.slawek.apps.DaemonUI.client", "getListenerNameForClient");
+                          
+                          if (msg == NULL) {
+                            
+                            goto exit;
+                          }
+                          
+                          
+                          dbus_message_iter_init_append(msg, &args);
+                          
+                          if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sender)) { 
+                            
+                            fprintf(stderr, "Out Of Memory!\n"); 
+                            exit(1);
+                          }
+                          
+                          if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
+                          {
+                            dbus_message_unref(msg);
+                            goto exit;
+                          }
+                          dbus_connection_flush(bus_connection);
+                          dbus_message_unref(msg);
+                          
+                          dbus_pending_call_block(pending);
+                          reply = dbus_pending_call_steal_reply(pending);
+                          dbus_pending_call_unref(pending);
+                          
+                          if (NULL == reply) {
+                          
+                            puts("Error: No reply");
+                            goto exit;
+                          }
+                          
+                          if(dbus_message_get_type(reply) ==  DBUS_MESSAGE_TYPE_ERROR)    {
+                            
+                            puts("Error");
+                            char *emsg;
+                            if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
+                            
+                              puts("No error message provided");
+                              goto  exit;
+                            }
+                            
+                            puts(emsg);
+                            goto exit;
+                          }
+                          
+                          dbus_error_init(&error);
+                          dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &server, DBUS_TYPE_STRING, &cookie, DBUS_TYPE_INVALID);
+                          if (dbus_error_is_set(&error)) {
+                            
+                            puts(error.message);
+                            goto exit;
+                          }
+                          
+                          setenv("HOME", "/root", 0);
+                          setenv("LANG", "EN_US", 0);
+                          
+                          setenv("BONSOLE_DBUS_SCOPE", "SYSTEM_BUS", 1);
+                          setenv("BONSOLE_RUN_MODE", "ALWAYS_TRY_TO_LOGIN", 1);
+                          setenv("BONSOLE_DBUS_NAME", server, 1);
+                          setenv("BONSOLE_COOKIE", cookie, 1);
+                          
+                          int argc = 1;
+                          char *argv[2] = {(char*)"packagekitd", (char*)NULL};
+                          
+                          if (0 != bonsole_client_init(&argc, argv)) exit(1);
+                          
+                          priv->isBonsoleInit = true;
+                        }
+                        struct msg_proc_helper transaction_problems;
+                        transaction_problems.problems = problems;
+                        transaction_problems.it = problems.begin();
+                        transaction_problems.resolver = zypp->resolver ();
+                        
+                        bonsole_reset_document(nullptr);
+                        show_solutions("", (intptr_t)(void*) &transaction_problems);
+                        bonsole_main_loop(0, message_proc, (intptr_t)(void*)&transaction_problems);
 		}
 
 		switch (type) {
@@ -1825,6 +2205,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	/* create private area */
 	priv = new PkBackendZYppPrivate;
+        priv->isBonsoleInit = false;
 	priv->currentJob = 0;
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();

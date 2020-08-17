@@ -16,6 +16,8 @@ shared_module(
     packagekit_glib2_dep,
     zypp_dep,
     gmodule_dep,
+    dependency('libbonsole'),
+    dependency('dbus-1'),
   ],
   cpp_args: [
     '-DPK_COMPILATION=1',

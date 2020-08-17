@@ -177,6 +177,13 @@ static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
+PkBackend *
+pk_transaction_get_backend(PkTransaction *transaction)
+{
+  g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
+  return transaction->priv->backend;
+}
+
 GQuark
 pk_transaction_error_quark (void)
 {
@@ -862,6 +869,8 @@ pk_transaction_get_backend_job (PkTransaction *transaction)
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
 	return transaction->priv->job;
 }
+
+
 
 /**
  * pk_transaction_is_finished_with_lock_required:

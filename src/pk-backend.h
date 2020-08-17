@@ -34,7 +34,7 @@
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-bitfield.h>
 
-#include "pk-backend.h"
+
 #include "pk-backend-job.h"
 
 G_BEGIN_DECLS
@@ -52,6 +52,7 @@ typedef struct
 {
 	 GObject		 parent;
 	 PkBackendPrivate	*priv;
+         char                    *sender;
 } PkBackend;
 
 typedef struct

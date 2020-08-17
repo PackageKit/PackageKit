@@ -684,6 +684,9 @@ pk_scheduler_create (PkScheduler *scheduler,
 		pk_scheduler_item_free (item);
 		return FALSE;
 	}
+	
+	/* Set the sender id */
+        pk_transaction_get_backend(item->transaction)->sender = strdup(sender);
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
 	item->commit_id = g_timeout_add_seconds (PK_SCHEDULER_CREATE_COMMIT_TIMEOUT,
