@@ -13,7 +13,7 @@ executable(
 )
 
 bashprofile_config_data = configuration_data()
-bashprofile_config_data.set('LIBEXECDIR', get_option('libexecdir'))
+bashprofile_config_data.set('LIBEXECDIR', join_paths(get_option('prefix'), get_option('libexecdir')))
 configure_file(
   input: 'PackageKit.sh.in',
   output: 'PackageKit.sh',
