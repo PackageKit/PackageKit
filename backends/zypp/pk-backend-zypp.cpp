@@ -1544,7 +1544,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
   xmlNodePtr root, text, anchor, message, form, checkbox;
   struct msg_proc_helper *helper = (struct msg_proc_helper *) usr_p;
   
-  char *msg_ = strdup(msg__);
+  char *msg_ = bonsole_message_unescape_string(msg__, 0);
   
   if (0 == strncmp("update?", msg_, sizeof("update?") - 1)) {
   
