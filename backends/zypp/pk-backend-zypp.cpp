@@ -1705,6 +1705,9 @@ static void message_proc(const char *msg__, intptr_t usr_p)
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
+        int fd = -1;
+        int dup_0, dup_1, dup_2;
+  
 	MIL << force << " " << pk_filter_bitfield_to_string(transaction_flags) << endl;
 	gboolean ret = FALSE;
 	
@@ -1838,6 +1841,76 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             goto exit;
                           }
                           
+                          
+                          msg = dbus_message_new_method_call("pl.art.lach.slawek.apps.DaemonUI","/pl/art/lach/slawek/apps/DaemonUI", "pl.art.lach.slawek.apps.DaemonUI.client", "getRealTTYForClient");
+                          
+                          if (msg == NULL) {
+                            
+                            goto exit;
+                          }
+                          
+                          
+                          dbus_message_iter_init_append(msg, &args);
+                          
+                          if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sender)) { 
+                            
+                            fprintf(stderr, "Out Of Memory!\n"); 
+                            exit(1);
+                          }
+                          
+                          if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
+                          {
+                            dbus_message_unref(msg);
+                            goto exit;
+                          }
+                          dbus_connection_flush(bus_connection);
+                          dbus_message_unref(msg);
+                          
+                          dbus_pending_call_block(pending);
+                          reply = dbus_pending_call_steal_reply(pending);
+                          dbus_pending_call_unref(pending);
+                          
+                          if (NULL == reply) {
+                            
+                            puts("Error: No reply");
+                            goto exit;
+                          }
+                          
+                          if(dbus_message_get_type(reply) ==  DBUS_MESSAGE_TYPE_ERROR)    {
+                            
+                            puts("Error");
+                            char *emsg;
+                            if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
+                              
+                              puts("No error message provided");
+                              goto  exit;
+                            }
+                            
+                            puts(emsg);
+                            goto exit;
+                          }
+                          
+                          dbus_bool_t error_1;
+                          
+                          dup_0 = dup_1 = dup_2 = -1;
+                          dbus_error_init(&error);
+                          dbus_message_get_args(reply, &error, DBUS_TYPE_BOOLEAN, &error_1, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+                          if (dbus_error_is_set(&error)) {
+                            
+                            puts(error.message);
+                            goto exit;
+                          }
+                          
+                          if (!error_1 && -1 != fd) {
+                          
+                            dup_0 = dup(0);
+                            dup_1 = dup(1);
+                            dup_2 = dup(2);
+                            
+                            dup2(fd, 0);
+                            dup2(fd, 1);
+                            dup2(fd, 2);
+                          }
                           setenv("HOME", "/root", 0);
                           setenv("LANG", "EN_US", 0);
                           
@@ -1996,6 +2069,14 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	}
 
  exit:
+ 
+        if (-1 != fd) {
+        
+          
+          dup2(dup_0, 0);
+          dup2(dup_1, 1);
+          dup2(dup_2, 2);
+        }
 	/* reset the various options */
 	try {
 		zypp->resolver ()->setForceResolve (FALSE);
