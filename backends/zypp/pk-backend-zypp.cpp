@@ -95,6 +95,8 @@
 using namespace std;
 using namespace zypp;
 using zypp::filesystem::PathInfo;
+using zypp::sat::detail::SolvableIterator;
+using zypp::sat::Solvable;
 
 #undef ZYPP_BASE_LOGGER_LOGGROUP
 #define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
@@ -556,6 +558,13 @@ class PkBackendZYppPrivate {
 	EventDirector eventDirector;
 	PkBackendJob *currentJob;
         bool isBonsoleInit;
+        ResolverProblemList::iterator it;
+        ProblemSolutionList* sol_it;
+        
+        
+        std::list<Solvable> to_install;
+        std::list<Solvable> to_remove;
+        
 	
 	pthread_mutex_t zypp_mutex;
 };
@@ -1457,6 +1466,7 @@ struct msg_proc_helper {
   ResolverProblemList::iterator it;
   ResolverProblemList problems;
   Resolver_Ptr resolver;
+  ProblemSolutionList *solution_list; 
 };
 
 static void show_solutions(const char *msg_, intptr_t usr_p)
@@ -1537,7 +1547,6 @@ bonsole_flush_changes(nullptr);
 
 static void message_proc(const char *msg__, intptr_t usr_p)
 {
-  ProblemSolutionList *solution_list;
   char *buffer, *prev, *curr, *prev2;
   int length, length2;
   int problem, solution;
@@ -1548,7 +1557,10 @@ static void message_proc(const char *msg__, intptr_t usr_p)
   
   if (0 == strncmp("update?", msg_, sizeof("update?") - 1)) {
   
-    solution_list = new ProblemSolutionList();
+    if (NULL == helper->solution_list) {
+    
+      helper->solution_list = new ProblemSolutionList();
+    }
     bonsole_reset_document(nullptr);
     xmlDocPtr a = bonsole_window(nullptr);
     root = xmlDocGetRootElement(a);
@@ -1687,12 +1699,12 @@ static void message_proc(const char *msg__, intptr_t usr_p)
       ProblemSolution solution = **it2;
       //solution.apply(helper->resolver);
       
-      solution_list->push_back(&solution);
+      helper->solution_list->push_back(&solution);
       --length;
     }
     
     
-    helper->resolver->applySolutions(*solution_list);
+    helper->resolver->applySolutions(*helper->solution_list);
     bonsole_window_release(nullptr);
     bonsole_flush_changes(nullptr);
     
@@ -1717,11 +1729,52 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
+                
+                struct msg_proc_helper transaction_problems;
 		// Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		pk_backend_job_set_percentage(job, 100);
+                
+                
+                ResPool pool = ResPool::instance ();
+                
+                ResObject::Kind kind = ResTraits<Package>::kind;
+                ResPool::byKind_iterator itb = pool.byKindBegin (kind);
+                ResPool::byKind_iterator ite = pool.byKindEnd (kind);
+                
+                std::list<Solvable> to_remove;
+                std::list<Solvable> to_install;
+                
+                std::list<Solvable>::iterator it;
+                
+                for (; itb != ite; ++itb) {
+                  
+                  if (itb->status().isToBeInstalled())
+                    to_install.push_back(itb->satSolvable());
+                }
+                
+                itb = pool.byKindBegin (kind);
+                
+                for (; itb != ite;  ++itb) {
+                  
+                  if (itb->status().isToBeUninstalled())
+                    to_remove.push_back(itb->satSolvable());
+                }
+                
+                if (to_remove != priv->to_remove || to_install != priv->to_install) {
+                  
+                  if (priv->sol_it) {
+                  
+                    free(priv->sol_it);
+                  }
+                  
+                  priv->sol_it = new ProblemSolutionList();
+                  priv->to_install = to_install;
+                  priv->to_remove = to_remove;
+                }
+                
 		while (!zypp->resolver ()->resolvePool ()) {
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
@@ -1855,7 +1908,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sender)) { 
                             
                             fprintf(stderr, "Out Of Memory!\n"); 
-                            exit(1);
+                            exit(1);  
                           }
                           
                           if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
@@ -1926,10 +1979,19 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
                           priv->isBonsoleInit = true;
                         }
-                        struct msg_proc_helper transaction_problems;
+                        
+                        
+                        
+                        if (!priv->sol_it->empty()) {
+                        
+                          zypp->resolver()->applySolutions(*priv->sol_it);
+                          continue;
+                        }
+                        
                         transaction_problems.problems = problems;
                         transaction_problems.it = problems.begin();
                         transaction_problems.resolver = zypp->resolver ();
+                        transaction_problems.solution_list = NULL;
                         
                         bonsole_reset_document(nullptr);
                         show_solutions("", (intptr_t)(void*) &transaction_problems);
@@ -1955,7 +2017,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			break;
 		}
 
-		ResPool pool = ResPool::instance ();
 		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 			ret = TRUE;
 
