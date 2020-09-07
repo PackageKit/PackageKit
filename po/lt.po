@@ -5,8 +5,8 @@
 # Translators:
 # aurisc4 <aurisc4@gmail.com>, 2013
 # aurisc4 <aurisc4@gmail.com>, 2013
-# Mantas Kriaučiūnas <mantas@akl.lt>, 2011,2014
-# Mantas Kriaučiūnas <mantas@akl.lt>, 2011,2014
+# Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
+# Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""

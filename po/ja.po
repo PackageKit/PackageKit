@@ -7,7 +7,7 @@
 # Kiyoto Hashida <khashida@redhat.com>, 2009
 # Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
-# Tomoyuki KATO <inactive+katomo@transifex.com>, 2011-2013
+# e93ed3aa97dec2eb31063731872555fc_1460a05 <71305a0095156d8e18373a5b7cfeb79e_8587>, 2011-2013
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"

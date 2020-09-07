@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Balázs Meskó <mesko.balazs@fsf.hu>, 2018
+# Balázs Meskó <meskobalazs@mailbox.org>, 2018
 # Balázs Úr, 2014-2015
 # Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012
 # kelemeng <kelemeng@ubuntu.com>, 2013-2014

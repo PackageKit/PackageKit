@@ -11,7 +11,7 @@
 # Michael Jay Tong <michaeljayt@gmail.com>, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2017-2018
 # Richard Hughes <richard@hughsie.com>, 2011
-# Wylmer Wang, 2014
+# e0c668032ced196bd60f2b6a070d982d_8f72ae0, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2016
 msgid ""
 msgstr ""
