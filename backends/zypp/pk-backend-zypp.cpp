@@ -101,6 +101,15 @@ using zypp::sat::Solvable;
 #undef ZYPP_BASE_LOGGER_LOGGROUP
 #define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
 
+
+
+struct problem {
+  
+  string kind;
+  std::list<string> solutions;
+  string selected;
+};
+
 typedef enum {
         INSTALL,
         REMOVE,
@@ -562,8 +571,10 @@ class PkBackendZYppPrivate {
         ProblemSolutionList* sol_it;
         
         
-        std::list<Solvable> to_install;
-        std::list<Solvable> to_remove;
+        std::list<std::string> to_install;
+        std::list<std::string> to_remove;
+        
+        std::list<struct problem> problems;
         
 	
 	pthread_mutex_t zypp_mutex;
@@ -1464,14 +1475,66 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 struct msg_proc_helper {
   
   ResolverProblemList::iterator it;
-  ResolverProblemList problems;
   Resolver_Ptr resolver;
+  ResolverProblemList problems;
   ProblemSolutionList *solution_list; 
+  std::list<struct problem> problems2;
 };
+
+static void add_resolution_to_zypp(struct msg_proc_helper *helper)
+{
+  // Apply this solution
+  
+  
+  std::list<struct problem>::iterator it = helper->problems2.begin();
+  
+  for (; it != helper->problems2.end(); ++it) {
+  
+    ResolverProblemList::iterator it2 = helper->problems.begin();
+    
+    for (; it2 != helper->problems.end(); ++it2) {
+    
+      if ((*it2)->description() == (*it).kind) {
+      
+        break;
+      }
+    }
+    
+    if (it2 == helper->problems.end()) {
+      
+      continue;
+    }
+      
+    ProblemSolutionList::const_iterator it3;
+    ResolverProblem problem = **it2;
+    it3 = problem.solutions().begin();
+    
+    for (; it3 != problem.solutions().end(); ++it3) {
+    
+      if ((*it3)->description() == (*it).selected) {
+        
+        ProblemSolution solution = **it3;
+        helper->solution_list->push_back(&solution);
+      }
+    }
+  }
+    /*
+    ResolverProbl *prob;
+    ProblemSolutionList::const_iterator it2;
+    ResolverProblem problem = **it;
+    it2 = problem.solutions().begin();
+    std::advance(
+      it2,
+      prob->selected);
+    ProblemSolution solution = **it2;
+    
+    helper->solution_list->push_back(&solution);
+    */
+}
 
 static void show_solutions(const char *msg_, intptr_t usr_p)
 {
-  char *buffer, *prev, *curr, *prev2;
+  char *buffer, *prev, *curr, *prev2, *prev3;
   int length, length2;
   int problem, solution;
   xmlNodePtr root, text, anchor, message, form, checkbox;
@@ -1532,11 +1595,36 @@ static void show_solutions(const char *msg_, intptr_t usr_p)
       snprintf(buffer, length, "%d_%d", problem, solution);
       
       xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
-     
+   
+      int problem_number, solution_number;
+      
+      problem_number = atoi(curr);
+      while ('\0' != *curr) ++curr;
+      prev3 = ++curr;
+      while ('\0' != *curr && '=' != *curr) ++curr;
+      *curr = '\0';
+      solution_number = atoi(prev3);
+      
+      ProblemSolutionList::const_iterator it2;
+      ResolverProblemList::iterator it = helper->problems.begin();
+      std::advance(
+          it, 
+          problem_number);
+      ResolverProblem problem = **it;
+      it2 = problem.solutions().begin();
+      std::advance(
+          it2,
+          solution_number);
+        ProblemSolution solution = **it2;
+      
+      struct problem prob;
+      prob.kind = problem.description();
+      //prob.solutions = 
+      prob.selected = solution.description();
       
       free(buffer);
       
-      ++solution;
+      //++solution;
     }
     ++problem;
   }
@@ -1674,32 +1762,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         --length2;
       }
       
-      // Apply this solution
-      char *prev3;
-      int problem_number, solution_number;
       
-      //curr = prev;
-      problem_number = atoi(curr);
-      while ('\0' != *curr) ++curr;
-      prev3 = ++curr;
-      while ('\0' != *curr && '=' != *curr) ++curr;
-      *curr = '\0';
-      solution_number = atoi(prev3);
-      
-      ProblemSolutionList::const_iterator it2;
-      ResolverProblemList::iterator it = helper->problems.begin();
-      std::advance(
-        it, 
-        problem_number);
-      ResolverProblem problem = **it;
-      it2 = problem.solutions().begin();
-      std::advance(
-        it2,
-        solution_number);
-      ProblemSolution solution = **it2;
-      //solution.apply(helper->resolver);
-      
-      helper->solution_list->push_back(&solution);
       --length;
     }
     
@@ -1714,9 +1777,132 @@ static void message_proc(const char *msg__, intptr_t usr_p)
   free(msg_);
 }
 
+
+static char *get_line(int fd, char *buffer)
+{
+  int count;
+  char *curr;
+  int buff_len = 0;
+  int loaded = 0;
+  
+  
+  buffer = (char*) realloc(buffer, buff_len);
+  curr = buffer;
+  
+  do {
+    
+    buff_len += 512;
+    buffer = (char*)realloc(buffer, buff_len);
+    curr = &buffer[loaded];
+    if ((count = read(fd, buffer, buff_len - 1 - loaded)) < 0) {
+      
+      close(fd);
+      return NULL;
+    }
+    
+    buffer[loaded + count] = '\0';
+    loaded += count;
+    
+    while ('\0' != *curr && '\n' != *curr) {
+      
+      ++curr;
+    }
+    
+    if ((curr - buffer) < loaded) {
+      
+      return buffer;
+    }
+    
+    
+  } while (true);
+  
+  return NULL;
+}
+
+static gboolean 
+load_transaction_from_history(const char *type, const char *file)
+{
+  char *buffer = NULL;
+  int fd = open(file, O_RDONLY);
+  
+  if (-1 == fd) {
+  
+    return FALSE;
+  }
+  
+  
+  buffer = get_line(fd, buffer);
+  
+  if (0 != strcmp("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", buffer)) {
+  
+    close(fd);
+    return FALSE;
+  }
+  
+  free(buffer);
+  buffer = NULL;
+  buffer = get_line(fd, buffer);
+  
+  if (0 != strcmp("Check Dependencies", buffer)) {
+    
+    close(fd);
+    return FALSE;
+  }
+  
+  // priv
+  
+  free(buffer);
+  buffer = NULL;
+  
+  priv->to_install.clear();
+  priv->to_remove.clear();
+  
+  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+  
+    priv->to_install.push_back(buffer);
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if (NULL != buffer) {
+  
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+    
+    priv->to_remove.push_back(buffer);
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  
+  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+    
+     
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  
+  return TRUE;
+}
+
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
+        bool changed_fds = false;
         int fd = -1;
         int dup_0, dup_1, dup_2;
   
@@ -1744,30 +1930,94 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                 ResPool::byKind_iterator ite = pool.byKindEnd (kind);
                 
-                std::list<Solvable> to_remove;
-                std::list<Solvable> to_install;
+                std::list<std::string> to_remove;
+                std::list<std::string> to_install;
                 
-                std::list<Solvable>::iterator it;
+                std::list<std::string>::iterator it;
+                
                 
                 for (; itb != ite; ++itb) {
                   
-                  if (itb->status().isToBeInstalled())
-                    to_install.push_back(itb->satSolvable());
+                  if (itb->status().isToBeInstalled()) {
+                    printf("ADDING %s TO INSTALLED\n", itb->satSolvable().asString().c_str());
+                    to_install.push_back(itb->satSolvable().asString());
+                  }
                 }
                 
                 itb = pool.byKindBegin (kind);
                 
                 for (; itb != ite;  ++itb) {
                   
-                  if (itb->status().isToBeUninstalled())
-                    to_remove.push_back(itb->satSolvable());
+                  if (itb->status().isToBeUninstalled()) {
+                    printf("ADDING %s TO Removed\n", itb->satSolvable().asString().c_str());
+                    to_remove.push_back(itb->satSolvable().asString());
+                  }
                 }
                 
-                if (to_remove != priv->to_remove || to_install != priv->to_install) {
+                bool changed = false;
+                
+                for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
+                
+                  std::list<string>::iterator it2;
+                  puts("ITERATING 1");
+                  for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
+                  
+                    printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
+                    if (*it2 == *it) {
+                    
+                      break;
+                    }
+                  }
+                  
+                  if (it2 == to_remove.end()) {
+                  
+                    puts("Not found");
+                    changed = true;
+                    break;
+                  }
+                }
+                
+                if (it == priv->to_remove.end()) {
+                  
+                  puts("Not found");
+                  changed = true;
+                }
+                
+                if (!changed) 
+                  for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
+                    
+                    std::list<string>::iterator it2;
+                  
+                    puts("ITERATING 2");
+                    for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
+                    
+                      printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
+                      if (*it2 == *it) {
+                        
+                        break;
+                      }
+                    }
+                    
+                    if (it2 == to_install.end()) {
+                      
+                      puts("Not found");
+                      changed = true;
+                      break;
+                    }
+                  }
+                  
+                if (!changed)  
+                  if (it == priv->to_install.end()) {
+                    
+                    puts("Not found");
+                    changed = true;
+                  }
+                
+                if (changed) {
                   
                   if (priv->sol_it) {
                   
-                    free(priv->sol_it);
+                    delete priv->sol_it;
                   }
                   
                   priv->sol_it = new ProblemSolutionList();
@@ -1954,11 +2204,17 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             goto exit;
                           }
                           
+                          dup_0 = dup(0);
+                          dup_1 = dup(1);
+                          dup_2 = dup(2);
+                          close(0);
+                          close(1);
+                          close(2);
+                          changed_fds = true;
+                          
                           if (!error_1 && -1 != fd) {
                           
-                            dup_0 = dup(0);
-                            dup_1 = dup(1);
-                            dup_2 = dup(2);
+
                             
                             dup2(fd, 0);
                             dup2(fd, 1);
@@ -2131,7 +2387,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
  exit:
  
-        if (-1 != fd) {
+        if (changed_fds) {
         
           
           dup2(dup_0, 0);
@@ -2348,6 +2604,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	/* create private area */
 	priv = new PkBackendZYppPrivate;
         priv->isBonsoleInit = false;
+        priv->sol_it = NULL;
 	priv->currentJob = 0;
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
