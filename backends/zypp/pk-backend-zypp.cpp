@@ -575,6 +575,7 @@ class PkBackendZYppPrivate {
         std::list<std::string> to_remove;
         
         std::list<struct problem> problems;
+        bool first_run;
         
 	
 	pthread_mutex_t zypp_mutex;
@@ -1481,11 +1482,11 @@ struct msg_proc_helper {
   std::list<struct problem> problems2;
 };
 
+
+// Popracować nad tym
 static void add_resolution_to_zypp(struct msg_proc_helper *helper)
 {
-  // Apply this solution
-  
-  
+   
   std::list<struct problem>::iterator it = helper->problems2.begin();
   
   for (; it != helper->problems2.end(); ++it) {
@@ -1518,18 +1519,6 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
       }
     }
   }
-    /*
-    ResolverProbl *prob;
-    ProblemSolutionList::const_iterator it2;
-    ResolverProblem problem = **it;
-    it2 = problem.solutions().begin();
-    std::advance(
-      it2,
-      prob->selected);
-    ProblemSolution solution = **it2;
-    
-    helper->solution_list->push_back(&solution);
-    */
 }
 
 static void show_solutions(const char *msg_, intptr_t usr_p)
@@ -1596,33 +1585,7 @@ static void show_solutions(const char *msg_, intptr_t usr_p)
       
       xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
    
-      int problem_number, solution_number;
       
-      problem_number = atoi(curr);
-      while ('\0' != *curr) ++curr;
-      prev3 = ++curr;
-      while ('\0' != *curr && '=' != *curr) ++curr;
-      *curr = '\0';
-      solution_number = atoi(prev3);
-      
-      ProblemSolutionList::const_iterator it2;
-      ResolverProblemList::iterator it = helper->problems.begin();
-      std::advance(
-          it, 
-          problem_number);
-      ResolverProblem problem = **it;
-      it2 = problem.solutions().begin();
-      std::advance(
-          it2,
-          solution_number);
-        ProblemSolution solution = **it2;
-      
-      struct problem prob;
-      prob.kind = problem.description();
-      //prob.solutions = 
-      prob.selected = solution.description();
-      
-      free(buffer);
       
       //++solution;
     }
@@ -1635,7 +1598,7 @@ bonsole_flush_changes(nullptr);
 
 static void message_proc(const char *msg__, intptr_t usr_p)
 {
-  char *buffer, *prev, *curr, *prev2;
+  char *buffer, *prev, *curr, *prev2, *prev3;
   int length, length2;
   int problem, solution;
   xmlNodePtr root, text, anchor, message, form, checkbox;
@@ -1758,7 +1721,42 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         do {
           ++buffer;
         } while ('\0' != *buffer);
+        int problem_number, solution_number;
         
+        problem_number = atoi(curr);
+        while ('\0' != *curr) ++curr;
+        prev3 = ++curr;
+        while ('\0' != *curr && '=' != *curr) ++curr;
+        *curr = '\0';
+        solution_number = atoi(prev3);
+        
+        ProblemSolutionList::const_iterator it2;
+        ResolverProblemList::iterator it = helper->problems.begin();
+        std::advance(
+          it, 
+          problem_number);
+        ResolverProblem problem = **it;
+        it2 = problem.solutions().begin();
+        std::advance(
+          it2,
+          solution_number);
+        ProblemSolution solution = **it2;
+        
+        struct problem prob;
+        prob.kind = problem.description();
+        //prob.solutions = 
+        prob.selected = solution.description();
+        
+        it2 = problem.solutions().begin();
+        
+        for (; it2 != problem.solutions().end(); ++it2) {
+          
+          prob.solutions.push_back((*it2)->description());
+        }
+        
+        helper->problems2.push_back(prob);
+        
+        free(buffer);
         --length2;
       }
       
@@ -1842,7 +1840,7 @@ load_transaction_from_history(const char *type, const char *file)
   free(buffer);
   buffer = NULL;
   buffer = get_line(fd, buffer);
-  
+  // TODO: Powinno być "Simulate"X, gdzie X jest sufiksem - zastosować strncmp
   if (0 != strcmp("Check Dependencies", buffer)) {
     
     close(fd);
@@ -1883,10 +1881,24 @@ load_transaction_from_history(const char *type, const char *file)
     buffer = NULL;
   }
   
+  struct problem problem;
   
   while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
     
+     problem.kind = buffer; 
      
+     while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+     
+       string a(buffer);
+       
+       problem.solutions.push_back(a);
+    }
+    
+    buffer = get_line(fd, buffer);
+    
+    problem.selected = std::string(buffer);
+    
+    priv->problems.push_back(problem);
   }
   
   if (NULL != buffer) {
@@ -1897,6 +1909,105 @@ load_transaction_from_history(const char *type, const char *file)
   
   
   return TRUE;
+}
+
+static void save_package_list(int fd, std::list<std::string>::iterator curr_pkg, std::list<std::string>::iterator end_pkg_list)
+{
+  while (curr_pkg != end_pkg_list) {
+  
+    if (strlen((*curr_pkg).c_str()) >
+      write(fd, (*curr_pkg).c_str(), strlen((*curr_pkg).c_str()) + 1)) {
+      
+      close(fd);
+      return;
+    }
+    ++curr_pkg;
+  }
+  
+  /* Writes null character */
+  if (strlen("") >
+    write(fd, "", 1)) {
+    
+    close(fd);
+    return;
+  }
+}
+
+static void save_transaction_to_history(const char *type, const char *file, struct message_proc *helper, std::list<std::string> to_remove,
+std::list<std::string> to_install) {
+
+  std::list<std::string>::iterator curr_pkg, end_pkg_list;
+  int fd = open(file, O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
+  
+  if (-1 == fd) {
+  
+    return;
+  }
+  
+  if (sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0") - 1 >
+    write(fd, "PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0"))) {
+  
+      close(fd);
+      return;
+  }
+    
+  if (strlen(type) >
+    write(fd, type, strlen(type) + 1)) {
+  
+    close(fd);
+    return;
+  }
+    
+  curr_pkg = to_install.begin();
+  end_pkg_list = to_install.end();
+  
+  save_package_list(fd, curr_pkg, end_pkg_list);
+  
+  curr_pkg = to_remove.begin();
+  end_pkg_list = to_remove.end();
+  
+  save_package_list(fd, curr_pkg, end_pkg_list);
+  
+  
+  std::list<struct problem>::iterator curr_problem, end_of_problems;
+  std::list<string>::iterator curr_sol, end_of_sol;
+  
+  
+  curr_problem = priv->problems.begin();
+  end_of_problems = priv->problems.end();
+  
+  while (curr_problem != end_of_problems) {
+  
+    curr_sol = (*curr_problem).solutions.begin();
+    end_of_sol = (*curr_problem).solutions.end();
+    
+    if (strlen((*curr_problem).kind.c_str()) >
+      write(fd, (*curr_problem).kind.c_str(), strlen((*curr_problem).kind.c_str()) + 1)) {
+      
+      close(fd);
+      return;
+    }
+    
+    while (curr_sol != end_of_sol) {
+    
+      if (strlen((*curr_sol).c_str()) >
+        write(fd, (*curr_sol).c_str(), strlen((*curr_sol).c_str()) + 1)) {
+        
+        close(fd);
+        return;
+      }
+      ++curr_sol;
+    }
+    
+    if (strlen((*curr_problem).selected.c_str()) >
+      write(fd, (*curr_problem).selected.c_str(), strlen((*curr_problem).selected.c_str()) + 1)) {
+      
+      close(fd);
+      return;
+    }
+    ++curr_problem;
+  }
+  
 }
 
 static gboolean
@@ -1927,105 +2038,121 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 ResPool pool = ResPool::instance ();
                 
                 ResObject::Kind kind = ResTraits<Package>::kind;
-                ResPool::byKind_iterator itb = pool.byKindBegin (kind);
-                ResPool::byKind_iterator ite = pool.byKindEnd (kind);
-                
-                std::list<std::string> to_remove;
-                std::list<std::string> to_install;
-                
-                std::list<std::string>::iterator it;
                 
                 
-                for (; itb != ite; ++itb) {
-                  
-                  if (itb->status().isToBeInstalled()) {
-                    printf("ADDING %s TO INSTALLED\n", itb->satSolvable().asString().c_str());
-                    to_install.push_back(itb->satSolvable().asString());
-                  }
-                }
-                
-                itb = pool.byKindBegin (kind);
-                
-                for (; itb != ite;  ++itb) {
-                  
-                  if (itb->status().isToBeUninstalled()) {
-                    printf("ADDING %s TO Removed\n", itb->satSolvable().asString().c_str());
-                    to_remove.push_back(itb->satSolvable().asString());
-                  }
-                }
-                
-                bool changed = false;
-                
-                for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
-                
-                  std::list<string>::iterator it2;
-                  puts("ITERATING 1");
-                  for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
-                  
-                    printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
-                    if (*it2 == *it) {
-                    
-                      break;
-                    }
-                  }
-                  
-                  if (it2 == to_remove.end()) {
-                  
-                    puts("Not found");
-                    changed = true;
-                    break;
-                  }
-                }
-                
-                if (it == priv->to_remove.end()) {
-                  
-                  puts("Not found");
-                  changed = true;
-                }
-                
-                if (!changed) 
-                  for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
-                    
-                    std::list<string>::iterator it2;
-                  
-                    puts("ITERATING 2");
-                    for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
-                    
-                      printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
-                      if (*it2 == *it) {
-                        
-                        break;
-                      }
-                    }
-                    
-                    if (it2 == to_install.end()) {
-                      
-                      puts("Not found");
-                      changed = true;
-                      break;
-                    }
-                  }
-                  
-                if (!changed)  
-                  if (it == priv->to_install.end()) {
-                    
-                    puts("Not found");
-                    changed = true;
-                  }
-                
-                if (changed) {
-                  
-                  if (priv->sol_it) {
-                  
-                    delete priv->sol_it;
-                  }
-                  
-                  priv->sol_it = new ProblemSolutionList();
-                  priv->to_install = to_install;
-                  priv->to_remove = to_remove;
-                }
-                
+                // Adding packages selected by user
 		while (!zypp->resolver ()->resolvePool ()) {
+                        // Adding additional packages (selected by zypper) to separated field
+                  
+                       if (priv->first_run) {
+                       
+                         // TODO: SL. S.L. Fill me
+                         //load_transaction_from_history();
+                         priv->first_run = false; 
+                         
+                         add_resolution_to_zypp(&transaction_problems);
+                       }
+                      else {
+                         
+                         ResPool::byKind_iterator itb = pool.byKindBegin (kind);
+                         ResPool::byKind_iterator ite = pool.byKindEnd (kind);
+                         
+                         std::list<std::string> to_remove;
+                         std::list<std::string> to_install;
+                         
+                         std::list<std::string>::iterator it;
+                         
+                         
+                         for (; itb != ite; ++itb) {
+                           
+                           if (itb->status().isToBeInstalled()) {
+                             //printf("ADDING %s TO INSTALLED\n", itb->satSolvable().asString().c_str());
+                             to_install.push_back(itb->satSolvable().asString());
+                           }
+                         }
+                         
+                         itb = pool.byKindBegin (kind);
+                         
+                         for (; itb != ite;  ++itb) {
+                           
+                           if (itb->status().isToBeUninstalled()) {
+                             //printf("ADDING %s TO Removed\n", itb->satSolvable().asString().c_str());
+                             to_remove.push_back(itb->satSolvable().asString());
+                           }
+                         }
+                         
+                         bool changed = false;
+                         
+                         for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
+                           
+                           std::list<string>::iterator it2;
+                           puts("ITERATING 1");
+                           for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
+                             
+                             printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
+                             if (*it2 == *it) {
+                               
+                               break;
+                             }
+                           }
+                           
+                           if (it2 == to_remove.end()) {
+                             
+                             puts("Not found");
+                             changed = true;
+                             break;
+                           }
+                         }
+                         
+                         if (it == priv->to_remove.end()) {
+                           
+                           puts("Not found");
+                           changed = true;
+                         }
+                         
+                         if (!changed) 
+                           for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
+                             
+                             std::list<string>::iterator it2;
+                             
+                             puts("ITERATING 2");
+                             for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
+                               
+                               printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
+                               if (*it2 == *it) {
+                                 
+                                 break;
+                               }
+                             }
+                             
+                             if (it2 == to_install.end()) {
+                               
+                               puts("Not found");
+                               changed = true;
+                               break;
+                             }
+                           }
+                           
+                           if (!changed)  
+                             if (it == priv->to_install.end()) {
+                               
+                               puts("Not found");
+                               changed = true;
+                             }
+                             
+                             if (changed) {
+                               
+                               if (priv->sol_it) {
+                                 
+                                 delete priv->sol_it;
+                               }
+                               
+                               priv->sol_it = new ProblemSolutionList();
+                               priv->to_install = to_install;
+                               priv->to_remove = to_remove;
+                             }
+                       }
+                  
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
@@ -2252,6 +2379,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         bonsole_reset_document(nullptr);
                         show_solutions("", (intptr_t)(void*) &transaction_problems);
                         bonsole_main_loop(0, message_proc, (intptr_t)(void*)&transaction_problems);
+                        
+                        add_resolution_to_zypp(&transaction_problems);
+                        
+                        // Save resolution to file
+                        
+                        continue;
 		}
 
 		switch (type) {
@@ -2606,6 +2739,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
         priv->isBonsoleInit = false;
         priv->sol_it = NULL;
 	priv->currentJob = 0;
+        priv->first_run = true;
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
