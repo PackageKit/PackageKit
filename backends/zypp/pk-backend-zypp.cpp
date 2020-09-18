@@ -569,6 +569,7 @@ class PkBackendZYppPrivate {
         bool isBonsoleInit;
         ResolverProblemList::iterator it;
         ProblemSolutionList* sol_it;
+        char *sender;
         
         
         std::list<std::string> to_install;
@@ -1482,10 +1483,16 @@ struct msg_proc_helper {
   std::list<struct problem> problems2;
 };
 
+static std::string get_full_resolution_text(zypp::ProblemSolution& item)
+{
+  return item.description() + item.details();
+}
+
 
 // Popracować nad tym
 static void add_resolution_to_zypp(struct msg_proc_helper *helper)
 {
+  bool apply = false;
    
   std::list<struct problem>::iterator it = helper->problems2.begin();
   
@@ -1512,13 +1519,18 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
     
     for (; it3 != problem.solutions().end(); ++it3) {
     
-      if ((*it3)->description() == (*it).selected) {
-        
+      if (get_full_resolution_text(**it3) == (*it).selected) {
+   
+        apply = true;
         ProblemSolution solution = **it3;
         helper->solution_list->push_back(&solution);
       }
     }
   }
+  
+  if (apply)
+  
+    helper->resolver->applySolutions(*helper->solution_list);
 }
 
 static void show_solutions(const char *msg_, intptr_t usr_p)
@@ -1598,7 +1610,7 @@ bonsole_flush_changes(nullptr);
 
 static void message_proc(const char *msg__, intptr_t usr_p)
 {
-  char *buffer, *prev, *curr, *prev2, *prev3;
+  char *buffer, *prev, *curr, *prev2, *prev3, *spec;
   int length, length2;
   int problem, solution;
   xmlNodePtr root, text, anchor, message, form, checkbox;
@@ -1615,7 +1627,8 @@ static void message_proc(const char *msg__, intptr_t usr_p)
     bonsole_reset_document(nullptr);
     xmlDocPtr a = bonsole_window(nullptr);
     root = xmlDocGetRootElement(a);
-    buffer = msg_;
+    spec = msg_;
+    buffer = spec;
     length = 0;
     while ('\0' != *buffer) {
     
@@ -1627,7 +1640,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
       ++buffer;
     }
     ++length;
-    buffer = &msg_[sizeof("update?") - 1];
+    buffer = &spec[sizeof("update?") - 1];
     
     while (0 < length) {
     
@@ -1718,6 +1731,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         
         return;
         
+      }
         do {
           ++buffer;
         } while ('\0' != *buffer);
@@ -1729,6 +1743,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         while ('\0' != *curr && '=' != *curr) ++curr;
         *curr = '\0';
         solution_number = atoi(prev3);
+        ++solution_number;
         
         ProblemSolutionList::const_iterator it2;
         ResolverProblemList::iterator it = helper->problems.begin();
@@ -1736,6 +1751,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
           it, 
           problem_number);
         ResolverProblem problem = **it;
+        
         it2 = problem.solutions().begin();
         std::advance(
           it2,
@@ -1745,27 +1761,25 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         struct problem prob;
         prob.kind = problem.description();
         //prob.solutions = 
-        prob.selected = solution.description();
+        prob.selected = get_full_resolution_text(solution);
         
         it2 = problem.solutions().begin();
         
         for (; it2 != problem.solutions().end(); ++it2) {
           
-          prob.solutions.push_back((*it2)->description());
+          prob.solutions.push_back(get_full_resolution_text(**it2));
         }
         
         helper->problems2.push_back(prob);
         
-        free(buffer);
-        --length2;
-      }
+        free(spec);
       
       
       --length;
     }
     
     
-    helper->resolver->applySolutions(*helper->solution_list);
+
     bonsole_window_release(nullptr);
     bonsole_flush_changes(nullptr);
     
@@ -1779,41 +1793,50 @@ static void message_proc(const char *msg__, intptr_t usr_p)
 static char *get_line(int fd, char *buffer)
 {
   int count;
-  char *curr;
+  int curr = 0;
   int buff_len = 0;
   int loaded = 0;
-  
-  
-  buffer = (char*) realloc(buffer, buff_len);
-  curr = buffer;
+  bool done = false;
   
   do {
     
     buff_len += 512;
     buffer = (char*)realloc(buffer, buff_len);
-    curr = &buffer[loaded];
-    if ((count = read(fd, buffer, buff_len - 1 - loaded)) < 0) {
-      
-      close(fd);
+    
+    if (NULL == buffer) {
+    
       return NULL;
     }
     
-    buffer[loaded + count] = '\0';
-    loaded += count;
+    if (done || (count = read(fd, buffer, buff_len - 1 - loaded)) < 1) {
+      
+      if (!done && 0 > count) {
+        
+        close(fd);
+        return NULL;
+      }
+      
+      buffer[loaded] = '\0';
+      
+      lseek(fd, - (loaded - curr) + 1, SEEK_CUR);
+      return buffer;
+    }
     
-    while ('\0' != *curr && '\n' != *curr) {
+    curr = loaded;
+    loaded += count;
+    while ('\0' != buffer[curr] && curr < loaded) {
       
       ++curr;
     }
     
-    if ((curr - buffer) < loaded) {
-      
-      return buffer;
+    if (curr < loaded && '\0' == buffer[curr]) {
+    
+      done = true;
     }
     
-    
-  } while (true);
+  } while (0 < count);
   
+  free(buffer);
   return NULL;
 }
 
@@ -1831,6 +1854,12 @@ load_transaction_from_history(const char *type, const char *file)
   
   buffer = get_line(fd, buffer);
   
+  if (NULL == buffer) {
+    
+    close(fd);
+    return FALSE;
+  }
+  
   if (0 != strcmp("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", buffer)) {
   
     close(fd);
@@ -1840,14 +1869,19 @@ load_transaction_from_history(const char *type, const char *file)
   free(buffer);
   buffer = NULL;
   buffer = get_line(fd, buffer);
-  // TODO: Powinno być "Simulate"X, gdzie X jest sufiksem - zastosować strncmp
-  if (0 != strcmp("Check Dependencies", buffer)) {
+  
+  if (NULL == buffer) {
     
     close(fd);
     return FALSE;
   }
   
-  // priv
+  // TODO: It should be "Simulate"X, where X is a suffix - we should use strncmp
+  if (0 != strcmp("Install", buffer)) {
+    
+    close(fd);
+    return FALSE;
+  }
   
   free(buffer);
   buffer = NULL;
@@ -1857,6 +1891,11 @@ load_transaction_from_history(const char *type, const char *file)
   
   while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
   
+    if (NULL == buffer) {
+      
+      close(fd);
+      return FALSE;
+    }
     priv->to_install.push_back(buffer);
     free(buffer);
     buffer = NULL;
@@ -1870,6 +1909,11 @@ load_transaction_from_history(const char *type, const char *file)
   
   while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
     
+    if (NULL == buffer) {
+      
+      close(fd);
+      return FALSE;
+    }
     priv->to_remove.push_back(buffer);
     free(buffer);
     buffer = NULL;
@@ -1885,18 +1929,47 @@ load_transaction_from_history(const char *type, const char *file)
   
   while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
     
-     problem.kind = buffer; 
+    if (NULL == buffer) {
+      
+      close(fd);
+      return FALSE;
+    }
+    
+     problem.kind = strdup(buffer); 
+     
+     free(buffer);
+     buffer = NULL;
      
      while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
      
+       
+       if (NULL == buffer) {
+         
+         close(fd);
+         return FALSE;
+       }
        string a(buffer);
        
+       
        problem.solutions.push_back(a);
+       
+       
+       free(buffer);
+       buffer = NULL;
     }
     
     buffer = get_line(fd, buffer);
     
+    if (NULL == buffer) {
+      
+      close(fd);
+      return FALSE;
+    }
+    
     problem.selected = std::string(buffer);
+    
+    free(buffer);
+    buffer = NULL;
     
     priv->problems.push_back(problem);
   }
@@ -1933,7 +2006,7 @@ static void save_package_list(int fd, std::list<std::string>::iterator curr_pkg,
   }
 }
 
-static void save_transaction_to_history(const char *type, const char *file, struct message_proc *helper, std::list<std::string> to_remove,
+static void save_transaction_to_cache(const char *type, const char *file, struct msg_proc_helper *helper, std::list<std::string> to_remove,
 std::list<std::string> to_install) {
 
   std::list<std::string>::iterator curr_pkg, end_pkg_list;
@@ -1973,8 +2046,8 @@ std::list<std::string> to_install) {
   std::list<string>::iterator curr_sol, end_of_sol;
   
   
-  curr_problem = priv->problems.begin();
-  end_of_problems = priv->problems.end();
+  curr_problem = helper->problems2.begin();
+  end_of_problems = helper->problems2.end();
   
   while (curr_problem != end_of_problems) {
   
@@ -1999,6 +2072,13 @@ std::list<std::string> to_install) {
       ++curr_sol;
     }
     
+    if (strlen("") >
+      write(fd, "", 1)) {
+      
+      close(fd);
+      return;
+    }
+    
     if (strlen((*curr_problem).selected.c_str()) >
       write(fd, (*curr_problem).selected.c_str(), strlen((*curr_problem).selected.c_str()) + 1)) {
       
@@ -2016,12 +2096,19 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
         bool changed_fds = false;
         int fd = -1;
         int dup_0, dup_1, dup_2;
+        char *path_to_cache = NULL;
   
 	MIL << force << " " << pk_filter_bitfield_to_string(transaction_flags) << endl;
 	gboolean ret = FALSE;
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	
+        int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", backend->sender) + 1;
+        
+        path_to_cache = (char*) malloc(len);
+        
+        snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", backend->sender);
+        
 	try {
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
@@ -2038,21 +2125,40 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 ResPool pool = ResPool::instance ();
                 
                 ResObject::Kind kind = ResTraits<Package>::kind;
-                
+                priv->first_run = true;
                 
                 // Adding packages selected by user
 		while (!zypp->resolver ()->resolvePool ()) {
+                      ResolverProblemList problems = zypp->resolver ()->problems ();
+                      gchar * emsg = NULL, * tempmsg = NULL;
+                      ResolverProblemList::iterator it = problems.begin ();
                         // Adding additional packages (selected by zypper) to separated field
                   
                        if (priv->first_run) {
                        
+                         // if (Test if simulation) {
                          // TODO: SL. S.L. Fill me
-                         //load_transaction_from_history();
+                         load_transaction_from_history("Install", path_to_cache);
+                         
+                         transaction_problems.problems = problems;
+                         transaction_problems.it = problems.begin();
+                         transaction_problems.resolver = zypp->resolver ();
+                         transaction_problems.solution_list = new ProblemSolutionList();
+                         transaction_problems.problems2 = priv->problems;
                          priv->first_run = false; 
                          
                          add_resolution_to_zypp(&transaction_problems);
-                       }
+                         
+                         if (zypp->resolver ()->resolvePool ()) {
+                         
+                           break;
+                        }
+                         // }
+#if 0
+                         
+                      }
                       else {
+#endif
                          
                          ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                          ResPool::byKind_iterator ite = pool.byKindEnd (kind);
@@ -2066,7 +2172,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          for (; itb != ite; ++itb) {
                            
                            if (itb->status().isToBeInstalled()) {
-                             //printf("ADDING %s TO INSTALLED\n", itb->satSolvable().asString().c_str());
                              to_install.push_back(itb->satSolvable().asString());
                            }
                          }
@@ -2076,20 +2181,23 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          for (; itb != ite;  ++itb) {
                            
                            if (itb->status().isToBeUninstalled()) {
-                             //printf("ADDING %s TO Removed\n", itb->satSolvable().asString().c_str());
                              to_remove.push_back(itb->satSolvable().asString());
                            }
                          }
                          
                          bool changed = false;
                          
+                         if (priv->to_remove.size() != to_remove.size()) {
+                         
+                           changed = true;
+                        }
+                         
+                         if (!changed)
                          for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
                            
                            std::list<string>::iterator it2;
-                           puts("ITERATING 1");
                            for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
                              
-                             printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
                              if (*it2 == *it) {
                                
                                break;
@@ -2098,27 +2206,28 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            
                            if (it2 == to_remove.end()) {
                              
-                             puts("Not found");
                              changed = true;
                              break;
                            }
                          }
                          
-                         if (it == priv->to_remove.end()) {
+                         if (it != priv->to_remove.end()) {
                            
-                           puts("Not found");
                            changed = true;
                          }
                          
-                         if (!changed) 
+                         if (priv->to_install.size() != to_install.size()) {
+                           changed = true;
+                         }
+                         
+                         if (!changed) {
+                           
                            for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
                              
                              std::list<string>::iterator it2;
                              
-                             puts("ITERATING 2");
                              for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
                                
-                               printf("%s ? %s\n", (*it2).c_str(), (*it).c_str());
                                if (*it2 == *it) {
                                  
                                  break;
@@ -2127,16 +2236,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                              
                              if (it2 == to_install.end()) {
                                
-                               puts("Not found");
                                changed = true;
                                break;
                              }
                            }
+                         }
                            
                            if (!changed)  
-                             if (it == priv->to_install.end()) {
+                             if (it != priv->to_install.end()) {
                                
-                               puts("Not found");
                                changed = true;
                              }
                              
@@ -2151,15 +2259,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                                priv->to_install = to_install;
                                priv->to_remove = to_remove;
                              }
+                             else continue;
+                             
                        }
                   
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
 
-			ResolverProblemList problems = zypp->resolver ()->problems ();
-			gchar * emsg = NULL, * tempmsg = NULL;
-                        ResolverProblemList::iterator it = problems.begin ();
+			
 
                         
                         // TODO: Add support for passing request could be handled interactively
@@ -2191,6 +2299,17 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         }
                         if (! priv->isBonsoleInit ) {
                         
+                          // I don't known it doesn't mess up - we shouldn't write to the same socket as parent?
+                          // Should we share dbus name with parent?
+                          // And also... What if we modify system during questions answer?
+                          // So I exclude code bellow
+                          // But it solves one big problem - locking PK during dependency resolving
+#if 0                          
+                          if (0 < fork()) {
+                          
+                            goto exit;
+                          }
+#endif
                           DBusConnection *bus_connection;
                           DBusError error;
                           
@@ -2364,13 +2483,13 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         }
                         
                         
-                        
+#if 0
                         if (!priv->sol_it->empty()) {
                         
                           zypp->resolver()->applySolutions(*priv->sol_it);
                           continue;
                         }
-                        
+#endif
                         transaction_problems.problems = problems;
                         transaction_problems.it = problems.begin();
                         transaction_problems.resolver = zypp->resolver ();
@@ -2380,11 +2499,13 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         show_solutions("", (intptr_t)(void*) &transaction_problems);
                         bonsole_main_loop(0, message_proc, (intptr_t)(void*)&transaction_problems);
                         
-                        add_resolution_to_zypp(&transaction_problems);
+                        //add_resolution_to_zypp(&transaction_problems);
                         
                         // Save resolution to file
+                        save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
+                                                  priv->to_install, priv->to_remove);
                         
-                        continue;
+                        add_resolution_to_zypp(&transaction_problems);
 		}
 
 		switch (type) {
@@ -2527,11 +2648,13 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
           dup2(dup_1, 1);
           dup2(dup_2, 2);
         }
+        
+        if (path_to_cache) free(path_to_cache);
+        
 	/* reset the various options */
 	try {
 		zypp->resolver ()->setForceResolve (FALSE);
 	} catch (const Exception &ex) { /* we tried */ }
-
 	return ret;
 }
 
