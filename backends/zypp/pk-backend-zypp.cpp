@@ -1829,6 +1829,9 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
+	/* Set PATH variable to avoid problems when installing packges(bsc#1175315). */
+	g_setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", TRUE);
+
 	g_debug ("zypp_backend_initialize");
 }
 
