@@ -1790,7 +1790,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
 }
 
 
-static char *get_line(int fd, char *buffer)
+static char *get_record(int fd, char *buffer)
 {
   int count;
   int curr = 0;
@@ -1798,29 +1798,18 @@ static char *get_line(int fd, char *buffer)
   int loaded = 0;
   bool done = false;
   
-  do {
+  
+  
+  buff_len += 512;
+  buffer = (char*)realloc(buffer, buff_len);
+  
+  if (NULL == buffer) {
     
-    buff_len += 512;
-    buffer = (char*)realloc(buffer, buff_len);
+    return NULL;
+  }
+  
+  while ((count = read(fd, buffer, buff_len - 1 - loaded)) > 0)  {
     
-    if (NULL == buffer) {
-    
-      return NULL;
-    }
-    
-    if (done || (count = read(fd, buffer, buff_len - 1 - loaded)) < 1) {
-      
-      if (!done && 0 > count) {
-        
-        close(fd);
-        return NULL;
-      }
-      
-      buffer[loaded] = '\0';
-      
-      lseek(fd, - (loaded - curr) + 1, SEEK_CUR);
-      return buffer;
-    }
     
     curr = loaded;
     loaded += count;
@@ -1832,12 +1821,31 @@ static char *get_line(int fd, char *buffer)
     if (curr < loaded && '\0' == buffer[curr]) {
     
       done = true;
+      break;
     }
+
+    buff_len += 512;
+    buffer = (char*)realloc(buffer, buff_len);
     
-  } while (0 < count);
+    if (NULL == buffer) {
+      
+      count = 0;
+      break;
+    }
+  };
   
-  free(buffer);
-  return NULL;
+  if (!done && 0 > count) {
+    
+    free(buffer);
+    close(fd);
+    return NULL;
+  }
+  
+  buffer[loaded] = '\0';
+  
+  lseek(fd, - (loaded - curr) + 1, SEEK_CUR);
+  
+  return buffer;
 }
 
 static gboolean 
@@ -1852,7 +1860,7 @@ load_transaction_from_history(const char *type, const char *file)
   }
   
   
-  buffer = get_line(fd, buffer);
+  buffer = get_record(fd, buffer);
   
   if (NULL == buffer) {
     
@@ -1868,7 +1876,7 @@ load_transaction_from_history(const char *type, const char *file)
   
   free(buffer);
   buffer = NULL;
-  buffer = get_line(fd, buffer);
+  buffer = get_record(fd, buffer);
   
   if (NULL == buffer) {
     
@@ -1889,7 +1897,7 @@ load_transaction_from_history(const char *type, const char *file)
   priv->to_install.clear();
   priv->to_remove.clear();
   
-  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
   
     if (NULL == buffer) {
       
@@ -1907,7 +1915,7 @@ load_transaction_from_history(const char *type, const char *file)
     buffer = NULL;
   }
   
-  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
     
     if (NULL == buffer) {
       
@@ -1927,7 +1935,7 @@ load_transaction_from_history(const char *type, const char *file)
   
   struct problem problem;
   
-  while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
     
     if (NULL == buffer) {
       
@@ -1940,7 +1948,7 @@ load_transaction_from_history(const char *type, const char *file)
      free(buffer);
      buffer = NULL;
      
-     while ((buffer = get_line(fd, buffer)) && ('\0' != buffer[0])) {
+     while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
      
        
        if (NULL == buffer) {
@@ -1958,7 +1966,7 @@ load_transaction_from_history(const char *type, const char *file)
        buffer = NULL;
     }
     
-    buffer = get_line(fd, buffer);
+    buffer = get_record(fd, buffer);
     
     if (NULL == buffer) {
       
