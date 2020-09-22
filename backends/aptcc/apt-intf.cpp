@@ -124,6 +124,16 @@ bool AptIntf::init(gchar **localDebs)
     // Create the AptCacheFile class to search for packages
     m_cache = new AptCacheFile(m_job);
     if (localDebs) {
+        PkBitfield flags = pk_backend_job_get_transaction_flags(m_job);
+        if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+            // We are NOT simulating and have untrusted packages
+            // fail the transaction.
+            pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+                                  "Local packages cannot be authenticated");
+            return false;
+        }
+
         for (int i = 0; i < g_strv_length(localDebs); ++i) {
             markFileForInstall(localDebs[i]);
         }
