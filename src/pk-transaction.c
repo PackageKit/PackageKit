@@ -3059,7 +3059,7 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "No such file %s", full_paths[i]);
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3070,9 +3070,8 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 		if (content_type == NULL) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-				     "Failed to get content type for file %s",
-				     full_paths[i]);
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3082,9 +3081,8 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 		if (!ret) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-				     "MIME type '%s' not supported %s",
-				     content_type, full_paths[i]);
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3160,7 +3158,7 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "No such file %s", full_paths[i]);
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3171,9 +3169,8 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 		if (content_type == NULL) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-				     "Failed to get content type for file %s",
-				     full_paths[i]);
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3183,9 +3180,8 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 		if (!ret) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-				     "MIME type '%s' not supported %s",
-				     content_type, full_paths[i]);
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 			goto out;
 		}
@@ -3688,7 +3684,7 @@ pk_transaction_install_files (PkTransaction *transaction,
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-				     "No such file %s", full_paths[i]);
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
@@ -3698,9 +3694,8 @@ pk_transaction_install_files (PkTransaction *transaction,
 		if (content_type == NULL) {
 			g_set_error (&error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-				     "Failed to get content type for file %s",
-				     full_paths[i]);
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
@@ -3708,19 +3703,10 @@ pk_transaction_install_files (PkTransaction *transaction,
 		/* supported content type? */
 		ret = pk_transaction_is_supported_content_type (transaction, content_type);
 		if (!ret) {
-			if (g_strcmp0 ("application/x-app-package", content_type) == 0 ||
-			    g_str_has_suffix (full_paths[i], ".ipk") == TRUE) {
-				g_set_error (&error,
-					      PK_TRANSACTION_ERROR,
-					      PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					      "Listaller is required to install %s", full_paths[i]);
-			} else {
-				g_set_error (&error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					     "MIME type '%s' not supported %s",
-					     content_type, full_paths[i]);
-			}
+			g_set_error (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+				     "File %s is not found or unsupported", full_paths[i]);
 			pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 				goto out;
 		}
