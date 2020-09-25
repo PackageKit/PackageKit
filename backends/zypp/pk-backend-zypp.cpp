@@ -2014,8 +2014,8 @@ static void save_package_list(int fd, std::list<std::string>::iterator curr_pkg,
   }
 }
 
-static void save_transaction_to_cache(const char *type, const char *file, struct msg_proc_helper *helper, std::list<std::string> to_remove,
-std::list<std::string> to_install) {
+static void save_transaction_to_cache(const char *type, const char *file, struct msg_proc_helper *helper,
+                                      std::list<std::string> to_install, std::list<std::string> to_remove) {
 
   std::list<std::string>::iterator curr_pkg, end_pkg_list;
   int fd = open(file, O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
@@ -2024,6 +2024,8 @@ std::list<std::string> to_install) {
   
     return;
   }
+  
+  ftruncate(fd, 0);
   
   if (sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0") - 1 >
     write(fd, "PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0"))) {
@@ -2095,7 +2097,7 @@ std::list<std::string> to_install) {
     }
     ++curr_problem;
   }
-  
+  close(fd);
 }
 
 static gboolean
@@ -2123,6 +2125,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
                 
                 struct msg_proc_helper transaction_problems;
+                transaction_problems.problems2 = std::list<struct problem> {};
 		// Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
@@ -2131,6 +2134,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                 
                 ResPool pool = ResPool::instance ();
+                
+                
+                priv->to_install = std::list<std::string>();
+                priv->to_remove = std::list<std::string>();
+                priv->problems = std::list<struct problem> ();
                 
                 ResObject::Kind kind = ResTraits<Package>::kind;
                 priv->first_run = true;
@@ -2152,21 +2160,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          transaction_problems.it = problems.begin();
                          transaction_problems.resolver = zypp->resolver ();
                          transaction_problems.solution_list = new ProblemSolutionList();
-                         transaction_problems.problems2 = priv->problems;
+                         transaction_problems.problems2 = priv->problems;//std::list<struct problem> {};//priv->problems;
                          priv->first_run = false; 
-                         
-                         add_resolution_to_zypp(&transaction_problems);
-                         
-                         if (zypp->resolver ()->resolvePool ()) {
-                         
-                           break;
-                        }
-                         // }
-#if 0
-                         
-                      }
-                      else {
-#endif
                          
                          ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                          ResPool::byKind_iterator ite = pool.byKindEnd (kind);
@@ -2200,14 +2195,14 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            changed = true;
                         }
                          
-                         if (!changed)
+                         if (!changed && priv->to_remove.size() > 0) {
                          for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
                            
                            std::list<string>::iterator it2;
                            for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
                              
                              if (*it2 == *it) {
-                               
+                             
                                break;
                              }
                            }
@@ -2223,19 +2218,21 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            
                            changed = true;
                          }
+                         }
                          
                          if (priv->to_install.size() != to_install.size()) {
+                           
                            changed = true;
                          }
                          
-                         if (!changed) {
+                         if (!changed && priv->to_install.size() > 0) {
                            
                            for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
                              
                              std::list<string>::iterator it2;
                              
                              for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
-                               
+                             
                                if (*it2 == *it) {
                                  
                                  break;
@@ -2250,25 +2247,34 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            }
                          }
                            
-                           if (!changed)  
-                             if (it != priv->to_install.end()) {
-                               
-                               changed = true;
-                             }
+                         if (!changed
+                           && it != priv->to_install.end()
+                            )  {
                              
-                             if (changed) {
-                               
-                               if (priv->sol_it) {
-                                 
-                                 delete priv->sol_it;
-                               }
-                               
-                               priv->sol_it = new ProblemSolutionList();
-                               priv->to_install = to_install;
-                               priv->to_remove = to_remove;
-                             }
-                             else continue;
+                            changed = true;
+                         }
+                           
+                         if (changed) {
+                           if (priv->sol_it) {
                              
+                             delete priv->sol_it;
+                           }
+                           
+                           priv->problems = std::list<struct problem> ();
+                                                         
+                           priv->sol_it = new ProblemSolutionList();
+                           priv->to_install = to_install;
+                           priv->to_remove = to_remove;
+                         }
+                         else {
+                           add_resolution_to_zypp(&transaction_problems);
+                           /* Save resolution to file */
+                           save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
+                                                     priv->to_install, priv->to_remove);
+                           
+                         }
+                         continue;
+                           
                        }
                   
 			// Manual intervention required to resolve dependencies
@@ -2325,10 +2331,10 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           bus_connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
                           if (bus_connection == NULL) {
                             if (dbus_error_is_set(&error)) {
-                              printf("Error occurred, while trying to connect: %s\n", error.message);
+                              fprintf(stderr,"Error occurred, while trying to connect: %s\n", error.message);
                             }
                             else {
-                              printf("Error occurred, while trying to connect\n");
+                              fprintf(stderr,"Error occurred, while trying to connect\n");
                             }
                             dbus_error_free(&error);
                             exit(1);
@@ -2507,13 +2513,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         show_solutions("", (intptr_t)(void*) &transaction_problems);
                         bonsole_main_loop(0, message_proc, (intptr_t)(void*)&transaction_problems);
                         
-                        //add_resolution_to_zypp(&transaction_problems);
+                        add_resolution_to_zypp(&transaction_problems);
                         
                         // Save resolution to file
                         save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
                                                   priv->to_install, priv->to_remove);
-                        
-                        add_resolution_to_zypp(&transaction_problems);
 		}
 
 		switch (type) {
