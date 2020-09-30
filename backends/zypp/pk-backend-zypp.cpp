@@ -1743,7 +1743,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         while ('\0' != *curr && '=' != *curr) ++curr;
         *curr = '\0';
         solution_number = atoi(prev3);
-        ++solution_number;
+        //++solution_number;
         
         ProblemSolutionList::const_iterator it2;
         ResolverProblemList::iterator it = helper->problems.begin();
