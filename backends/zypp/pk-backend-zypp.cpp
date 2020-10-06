@@ -2429,18 +2429,14 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             for (it = transaction_problems.problems.begin(); it != transaction_problems.problems.end(); ++it) {
                               
                               string = (*it)->description ().c_str ();
-                              puts(string);
                               write(output, string, strlen(string)+1);
                               for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
                                 
                                 
                                 string = (*sol_it)->description ().c_str ();
-                                puts(string);
                                 write(output, string, strlen(string)+1);
                                 string = (*sol_it)->details ().c_str ();
-                                puts(string);
                                 write(output, string, strlen(string)+1);
-                                write(output, "", sizeof(""));
                                 
                               }
                               write(output, "", sizeof(""));

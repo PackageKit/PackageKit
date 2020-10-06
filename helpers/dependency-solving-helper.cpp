@@ -8,23 +8,26 @@
 static char *get_record(int fd)
 {
   static char *buffer = NULL;
-  static int curr = 0;
+  static int curr_old = 0;
   static int loaded = 0;
+  static int buff_len = 0;
   int count = 0;
-  int buff_len = 0;
   bool done = false;
-  int curr2 = curr;
+  int curr = 0;
+  int curr2 = curr_old;
+  
   
   while (loaded >= curr2 + 1) {
     
-    ++curr2;
     
     if ('\0' == buffer[curr2]) {
     
-      curr = curr2;
-      return &buffer[curr2+1];
+      curr = curr_old ; 
+      curr_old = curr2 + 1;
+      return &buffer[curr];
     }
     
+    ++curr2;
   }
   
   buff_len += 512;
@@ -35,7 +38,7 @@ static char *get_record(int fd)
     return NULL;
   }
   
-  while ((count = read(fd, buffer, buff_len - 1 - loaded)) > 0)  {
+  while ((count = read(fd, &buffer[loaded], buff_len - 1 - loaded)) > 0)  {
     
     
     curr = loaded;
@@ -69,9 +72,11 @@ static char *get_record(int fd)
     return NULL;
   }
   
-  //buffer[loaded] = '\0';
+  buffer[loaded] = '\0';
   
-  return buffer;
+  curr2 = curr_old;
+  curr_old = curr + 1;
+  return &buffer[curr2];
   
 }
 
@@ -97,17 +102,22 @@ static bool show_solutions(int fd)
   while ((buffer = get_record(fd)) && ('\0' != buffer[0])) {
     
     
-    puts(buffer);
     text = xmlNewText(BAD_CAST buffer);
     
     xmlAddChild(form, text);
     
+    
+    text = xmlNewNode(NULL, BAD_CAST "br");
+    xmlAddChild(form, text);
+    
     while ((buffer = get_record(fd)) && ('\0' != buffer[0])) {
     
-      puts("A");
-      puts(buffer);
       checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
-      text = xmlNewText(BAD_CAST buffer);
+      
+      char *prev = buffer;
+      char *curr = buffer;
+      
+      text = xmlNewText(BAD_CAST prev);
       xmlAddChild(checkbox, text);
       
       xmlAddChild(form, checkbox);
@@ -122,10 +132,11 @@ static bool show_solutions(int fd)
           if ('\n' == *curr) {
             
             *curr = '\0';
+            
             text = xmlNewText(BAD_CAST prev);
-            xmlAddChild(form, text);
+            xmlAddChild(checkbox, text);
             text = xmlNewNode(NULL, BAD_CAST "br");
-            xmlAddChild(form, text);
+            xmlAddChild(checkbox, text);
             prev = curr + 1;
           }
           
@@ -135,6 +146,7 @@ static bool show_solutions(int fd)
         text = xmlNewText(BAD_CAST prev);
         xmlAddChild(checkbox, text);
         
+      }
         length = snprintf(NULL, 0, "%d_%d", problem, solution) + 1;
         buffer = (char*) malloc(length);
         snprintf(buffer, length, "%d_%d", problem, solution);
@@ -142,11 +154,14 @@ static bool show_solutions(int fd)
         xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
         
         buffer = NULL;
-      }
       
       ++solution;
-      
-      }
+
+      text = xmlNewNode(NULL, BAD_CAST "br");
+      xmlAddChild(form, text);
+    }
+    text = xmlNewNode(NULL, BAD_CAST "br");
+    xmlAddChild(form, text);
     ++problem;
   }
   
@@ -490,8 +505,7 @@ int main(int argc, char **argv)
     puts(error.message);
     goto exit;
   }
-  
-#if 1  
+#if 1
   dup_0 = dup(0);
   dup_1 = dup(1);
   dup_2 = dup(2);
