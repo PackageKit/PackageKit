@@ -1562,6 +1562,16 @@ pk_backend_job_get_allow_cancel (PkBackendJob *job)
 	return job->priv->allow_cancel;
 }
 
+void *pk_backend_job_get_priv_data (PkBackendJob *job)
+{
+  return job->private_data;
+}
+
+
+void pk_backend_job_set_priv_data (PkBackendJob *job, void *a)
+{
+  job->private_data = a;
+}
 /**
  * pk_backend_job_set_exit_code:
  *
@@ -1696,6 +1706,8 @@ pk_backend_job_init (PkBackendJob *job)
 	job->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	job->priv->emitted = g_hash_table_new_full (g_str_hash, g_str_equal,
 	                                            g_free, (GDestroyNotify) g_object_unref);
+        
+        job->private_data = NULL;
 }
 
 /**

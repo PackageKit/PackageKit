@@ -67,6 +67,9 @@ typedef struct
 {
 	GObject			 parent;
 	PkBackendJobPrivate	*priv;
+        
+        char                    *sender;
+        void                    *private_data;   
 } PkBackendJob;
 
 typedef struct
@@ -251,6 +254,9 @@ void		 pk_backend_job_set_download_size_remaining (PkBackendJob	*job,
 void		 pk_backend_job_set_started		(PkBackendJob *job,
 							 gboolean started);
 gboolean	 pk_backend_job_get_started		(PkBackendJob *job);
+
+void            *pk_backend_job_get_priv_data           (PkBackendJob *job);
+void             pk_backend_job_set_priv_data           (PkBackendJob *job, void *a);
 
 G_END_DECLS
 

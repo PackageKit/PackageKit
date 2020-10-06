@@ -52,7 +52,6 @@ typedef struct
 {
 	 GObject		 parent;
 	 PkBackendPrivate	*priv;
-         char                    *sender;
 } PkBackend;
 
 typedef struct
