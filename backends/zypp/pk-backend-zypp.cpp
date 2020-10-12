@@ -3423,16 +3423,19 @@ upgrade_system (PkBackendJob *job,
 {
 	set<PoolItem> candidates;
 
-	/* refresh the repos before checking for updates. */
-	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		return;
-	}
-	zypp_get_updates (job, zypp, candidates);
-	if (candidates.empty ()) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
-					   "No Distribution Upgrade Available.");
+	/* Only refresh repos when it's simulating. */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		/* refresh the repos before checking for updates. */
+		if (!zypp_refresh_cache (job, zypp, FALSE)) {
+			return;
+		}
+		zypp_get_updates (job, zypp, candidates);
+		if (candidates.empty ()) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+						   "No Distribution Upgrade Available.");
 
-		return;
+			return;
+		}
 	}
 
 	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
