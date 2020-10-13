@@ -2,62 +2,91 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <bonsole_client.h>
 #include <dbus/dbus.h>
-static char *get_record(int fd)
+
+
+struct reader_info {
+  char *buffer;
+  int   curr_old;
+  int   loaded;
+  int   buff_len;
+};
+
+struct window {
+  
+  xmlNodePtr message;
+};
+
+struct application {
+
+  struct window window;
+  int output;
+  int error_output, messages_output;
+};
+
+static void reader_info_init(struct reader_info *str)
 {
-  static char *buffer = NULL;
-  static int curr_old = 0;
-  static int loaded = 0;
-  static int buff_len = 0;
+  str->buffer = NULL;
+  str->curr_old = 0;
+  str->loaded = 0;
+  str->buff_len = 0;
+}
+
+static char *get_record(int fd, struct reader_info *info)
+{
   int count = 0;
   bool done = false;
   int curr = 0;
-  int curr2 = curr_old;
+  int curr2 = info->curr_old;
   
   
-  while (loaded >= curr2 + 1) {
+  while (info->loaded >= curr2 + 1) {
     
     
-    if ('\0' == buffer[curr2]) {
+    if ('\0' == info->buffer[curr2]) {
     
-      curr = curr_old ; 
-      curr_old = curr2 + 1;
-      return &buffer[curr];
+      curr = info->curr_old ; 
+      info->curr_old = curr2 + 1;
+      return &info->buffer[curr];
     }
     
     ++curr2;
   }
   
-  buff_len += 512;
-  buffer = (char*)realloc(buffer, buff_len);
+  info->buff_len += 512;
+  info->buffer = (char*)realloc(info->buffer, info->buff_len);
   
-  if (NULL == buffer) {
+  if (NULL == info->buffer) {
     
     return NULL;
   }
   
-  while ((count = read(fd, &buffer[loaded], buff_len - 1 - loaded)) > 0)  {
+  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0)  {
     
     
-    curr = loaded;
-    loaded += count;
-    while ('\0' != buffer[curr] && curr < loaded) {
+    curr = info->loaded;
+    info->loaded += count;
+    while ('\0' != info->buffer[curr] && curr < info->loaded) {
       
       ++curr;
     }
     
-    if (curr < loaded && '\0' == buffer[curr]) {
+    if (curr < info->loaded && '\0' == info->buffer[curr]) {
       
       done = true;
       break;
     }
     
-    buff_len += 512;
-    buffer = (char*)realloc(buffer, buff_len);
+    info->buff_len += 512;
+    info->buffer = (char*)realloc(info->buffer, info->buff_len);
     
-    if (NULL == buffer) {
+    if (NULL == info->buffer) {
       
       count = 0;
       break;
@@ -67,20 +96,20 @@ static char *get_record(int fd)
   if (!done && 0 > count) {
     
     perror("Error while read from pipe");
-    free(buffer);
+    free(info->buffer);
     close(fd);
     return NULL;
   }
   
-  buffer[loaded] = '\0';
+  info->buffer[info->loaded] = '\0';
   
-  curr2 = curr_old;
-  curr_old = curr + 1;
-  return &buffer[curr2];
+  curr2 = info->curr_old;
+  info->curr_old = curr + 1;
+  return &info->buffer[curr2];
   
 }
 
-static bool show_solutions(int fd)
+static bool show_solutions(int fd, struct reader_info *in_ch_reader)
 {
   char *buffer, *prev, *curr, *prev2, *prev3;
   int length, length2;
@@ -99,7 +128,7 @@ static bool show_solutions(int fd)
   solution = 0;
   buffer = NULL;
   
-  while ((buffer = get_record(fd)) && ('\0' != buffer[0])) {
+  while ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
     
     
     text = xmlNewText(BAD_CAST buffer);
@@ -110,7 +139,7 @@ static bool show_solutions(int fd)
     text = xmlNewNode(NULL, BAD_CAST "br");
     xmlAddChild(form, text);
     
-    while ((buffer = get_record(fd)) && ('\0' != buffer[0])) {
+    while ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
     
       checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
       
@@ -122,7 +151,7 @@ static bool show_solutions(int fd)
       
       xmlAddChild(form, checkbox);
       
-      if ((buffer = get_record(fd)) && ('\0' != buffer[0])) {
+      if ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
         
         char *prev = buffer;
         char *curr = buffer;
@@ -181,48 +210,70 @@ static void message_proc(const char *msg__, intptr_t usr_p)
   int problem, solution;
   xmlNodePtr root, text, anchor, message, form, checkbox;
   
+  struct application *app = (struct application *) usr_p;
   char *msg_ = bonsole_message_unescape_string(msg__, 0);
+  
   
   if (0 == strncmp("update?", msg_, sizeof("update?") - 1)) {
     
-    bonsole_reset_document(nullptr);
+    //bonsole_reset_document(nullptr);
     xmlDocPtr a = bonsole_window(nullptr);
+    
     root = xmlDocGetRootElement(a);
+    
     spec = msg_;
+    
     buffer = spec;
+    
     length = 0;
+    
     while ('\0' != *buffer) {
+      
       
       if ('&' == *buffer) {
         
+        
         ++length;
+        
         *buffer = '\0';
+        
       }
       ++buffer;
+      
     }
     ++length;
+    
     buffer = &spec[sizeof("update?") - 1];
+    
     
     while (0 < length) {
       
+      
       prev = buffer;
       do {
+        
         
         ++buffer;
       } while ('_' != *buffer);
       
       *buffer = '\0';
+      
       ++buffer;
+      
       do {
+        
         ++buffer;
       } while ('=' != *buffer);
       
       
       ++buffer;
+      
       if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
+        
         
         --length;
         do {
+          
           ++buffer;
         } while ('\0' != *buffer);
         
@@ -230,14 +281,19 @@ static void message_proc(const char *msg__, intptr_t usr_p)
       }
       
       while ('\0' != *buffer) {
+        
         ++buffer;
       }
       
+      
       ++buffer;
+      
       curr = prev;
+      
       prev = buffer;
       
       length2 = length - 1;
+      
       while (0 < length2) {
         prev2 = buffer;
         
@@ -246,80 +302,119 @@ static void message_proc(const char *msg__, intptr_t usr_p)
         do {
           
           ++buffer;
+          
         } while ('_' != *buffer);
         
+        
         *buffer = '\0';
+        
         ++buffer;
         
         
         if (0 != strcmp(curr, prev2)) {
           
+          
           --length2;
           do {
+            
             ++buffer;
           } while ('\0' != *buffer);
           
           continue;
         }
         
+        
         do {
           ++buffer;
+          
         } while ('=' != *buffer);
         
         
         ++buffer;
+        
         if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
           
           --length2;
+          
           do {
             ++buffer;
+            
           } while ('\0' != *buffer);
           
           ++buffer;
+          
           if ('\0' != *buffer) {
             
             ++buffer;
+            
           }
           continue;
         }
-        message = xmlNewNode(NULL, BAD_CAST "message");
-        text = xmlNewText(BAD_CAST "You checked two different solutions for one problem");
-        xmlAddChild(message, text);   
-        xmlAddChild(root, message);   
+        //message = xmlNewNode(NULL, BAD_CAST "message");
+        
+        
+        xmlChar *ent = xmlEncodeEntitiesReentrant(a, BAD_CAST "You checked two different solutions for one problem");
+        
+        xmlNodeSetContent(app->window.message, ent);
+        
+        free(ent);
         
         bonsole_window_release(nullptr);
-        show_solutions(usr_p);
+        
+        bonsole_flush_changes(nullptr);
+        
+       // show_solutions(usr_p);
+        
+        
+        write(app->output, "STOP", sizeof("STOP"));
         
         return;
         
       }
+      
       do {
         ++buffer;
+        
       } while ('\0' != *buffer);
       int problem_number, solution_number;
       
-      problem_number = atoi(curr);
-      while ('\0' != *curr) ++curr;
-      prev3 = ++curr;
-      while ('\0' != *curr && '=' != *curr) ++curr;
-      *curr = '\0';
-      solution_number = atoi(prev3);
-      //++solution_number;
       
+      problem_number = atoi(curr);
+      
+      while ('\0' != *curr) ++curr;
+      
+      prev3 = ++curr;
+      
+      while ('\0' != *curr && '=' != *curr) ++curr;
+      
+      *curr = '\0';
+      
+      solution_number = atoi(prev3);
       
       
       free(spec);
       
+      int length = (int) (snprintf(NULL, 0, "SELECTION:%d:%d", problem_number, solution_number)) + 1; 
+      char *buffer = (char*) malloc(length);
+      snprintf(buffer, length, "SELECTION:%c%d:%d", '\0',problem_number, solution_number);
+      if (1 > write(app->output, buffer, length)) {
       
+        
+      }
+      
+      free(buffer);
       --length;
     }
     
-    
-    
+    if (1 > write(app->output, "DONE!", sizeof("DONE!"))) {
+      
+      
+    }
+   
     bonsole_window_release(nullptr);
-    bonsole_flush_changes(nullptr);
-    
+    bonsole_flush_changes(nullptr);  
     bonsole_quit_loop(nullptr);
+    
   }
   
   free(msg_);
@@ -328,6 +423,8 @@ static void message_proc(const char *msg__, intptr_t usr_p)
 
 int main(int argc, char **argv)
 {
+  struct application app;
+  struct reader_info i_ch_reader;
   int curr;
   int input, output, fd;
   int dup_0, dup_1, dup_2;
@@ -361,8 +458,17 @@ int main(int argc, char **argv)
       exit(1);
     }
   }
+  printf("COMM_CH_OUTPUT: %d COMM_CH_INPUT: %d\n", output, input);
+
+  reader_info_init(&i_ch_reader);
   
-  char *sender = get_record(input);
+  if (-1 != output) {
+  
+    int flags = fcntl(output, F_GETFL, 0);
+    fcntl(output, F_SETFL, flags | O_NONBLOCK);
+  }
+  
+  char *sender = get_record(input, &i_ch_reader);
   
   dup_0 = dup(0);
   dup_1 = dup(1);
@@ -537,6 +643,8 @@ int main(int argc, char **argv)
   if (0 != bonsole_client_init(&argc, argv)) exit(1);
   }
 
+  app.error_output = dup_2;
+  app.messages_output = dup_1;
 #if 0
 transaction_problems.problems = problems;
 transaction_problems.it = problems.begin();
@@ -545,11 +653,31 @@ transaction_problems.solution_list = NULL;
 #endif
 do {
 bonsole_reset_document(nullptr);
-if (!show_solutions( input)) {
+if (!show_solutions( input, &i_ch_reader)) {
 
   break;
 }
-bonsole_main_loop(0, message_proc, output);
+
+xmlNodePtr root, text, message;
+
+xmlDocPtr a = bonsole_window(nullptr);
+root = xmlDocGetRootElement(a);
+
+
+message = xmlNewNode(NULL, BAD_CAST "message");
+
+xmlNodeSetContent(message, BAD_CAST " ");
+
+xmlAddChild(root, message);
+
+app.window.message = message;
+app.output = output;
+
+bonsole_main_loop(0, message_proc, (intptr_t)(void*) &app);
+
+if (i_ch_reader.buffer) free(i_ch_reader.buffer);
+
+reader_info_init(&i_ch_reader);
 } while (true);
 #if 0
 add_resolution_to_zypp(&transaction_problems);

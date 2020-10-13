@@ -714,15 +714,19 @@ typedef struct {
 	GDestroyNotify		 destroy_func;
 } PkBackendJobThreadHelper;
 
-static gpointer
+gpointer
 pk_backend_job_thread_setup (gpointer thread_data)
 {
 	PkBackendJobThreadHelper *helper = (PkBackendJobThreadHelper *) thread_data;
 
+        helper->job->done = 1;
 	/* run original function with automatic locking */
 	pk_backend_thread_start (helper->backend, helper->job, helper->func);
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
-	pk_backend_job_finished (helper->job);
+        
+        // TODO: S.L SL Jeżeli pewne pole wskazuje, że zadanie nie jest zakończone, to nie wykonujemy poniższego wywołania
+        if (helper->job->done)
+          pk_backend_job_finished (helper->job);
 	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* set idle IO priority */
@@ -734,10 +738,15 @@ pk_backend_job_thread_setup (gpointer thread_data)
 #endif
 
 	/* destroy helper */
-	g_object_unref (helper->job);
-	if (helper->destroy_func != NULL)
-		helper->destroy_func (helper->user_data);
-	g_free (helper);
+        
+        // TODO: S.L SL Jeżeli pewne pole wskazuje, że zadanie nie jest zakończone, to nie wykonujemy poniższego wywołania
+        // Podobnie poniższe 4 linijki
+        if (helper->job->done) {
+          g_object_unref (helper->job);
+          if (helper->destroy_func != NULL)
+                  helper->destroy_func (helper->user_data);
+          g_free (helper);
+        }
 
 	/* no return value */
 	return NULL;
@@ -765,6 +774,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	helper->backend = job->priv->backend;
 	helper->func = func;
 	helper->user_data = user_data;
+        job->helper = (void*) helper;
 
 	/* create a thread and unref it immediately as we do not need to join()
 	 * this at any stage */
@@ -1708,6 +1718,7 @@ pk_backend_job_init (PkBackendJob *job)
 	                                            g_free, (GDestroyNotify) g_object_unref);
         
         job->private_data = NULL;
+        job->done = 0;
 }
 
 /**

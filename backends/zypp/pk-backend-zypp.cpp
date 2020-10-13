@@ -117,6 +117,15 @@ struct backend_job_private {
   
   std::list<struct problem> problems;
   
+  struct msg_proc_helper *msg_proc_helper;
+  
+  PkBackendJob *job;
+  gint input_id;
+  int input;
+  int ouput;
+  
+  int output;
+  
 };
 
 typedef enum {
@@ -1483,7 +1492,12 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 #include <libxslt/xsltInternals.h>
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
-
+struct reader_info {
+  char *buffer;
+  int   curr_old;
+  int   loaded;
+  int   buff_len;
+} ;
 struct msg_proc_helper {
   
   ResolverProblemList::iterator it;
@@ -1491,6 +1505,10 @@ struct msg_proc_helper {
   ResolverProblemList problems;
   ProblemSolutionList *solution_list; 
   std::list<struct problem> problems2;
+  char *path_to_cache;
+  
+  struct reader_info reader_info;
+
 };
 
 static std::string get_full_resolution_text(zypp::ProblemSolution& item)
@@ -2110,40 +2128,159 @@ static void save_transaction_to_cache(const char *type, const char *file, struct
   }
   close(fd);
 }
-gboolean  
+
+static char 
+*get_record2(int fd, struct reader_info *info)
+{
+  int count = 0;
+  bool done = false;
+  int curr = 0;
+  int curr2 = info->curr_old;
+  
+  
+  while (info->loaded >= curr2 + 1) {
+    
+    
+    if ('\0' == info->buffer[curr2]) {
+      
+      curr = info->curr_old ; 
+      info->curr_old = curr2 + 1;
+      return &info->buffer[curr];
+    }
+    
+    ++curr2;
+  }
+  
+  info->buff_len += 512;
+  info->buffer = (char*)realloc(info->buffer, info->buff_len);
+  
+  if (NULL == info->buffer) {
+    
+    puts("HERE - BAD");
+    return NULL;
+  }
+  
+  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (errno == EAGAIN && info->loaded < info->curr_old))  {
+    
+    puts("BAD");
+    curr = info->loaded;
+    info->loaded += count;
+    while ('\0' != info->buffer[curr] && curr < info->loaded) {
+      
+      ++curr;
+    }
+    
+    if (curr < info->loaded && '\0' == info->buffer[curr]) {
+      
+      done = true;
+      break;
+    }
+    
+    info->buff_len += 512;
+    info->buffer = (char*)realloc(info->buffer, info->buff_len);
+    
+    if (NULL == info->buffer) {
+      
+      count = 0;
+      break;
+    }
+  };
+  
+  if (!done && 0 > count && info->loaded >= info->curr_old) {
+    
+    perror("Error while read from pipe");
+    free(info->buffer);
+    close(fd);
+    return NULL;
+  }
+  
+  info->buffer[info->loaded] = '\0';
+  
+  curr2 = info->curr_old;
+  info->curr_old = curr + 1;
+  return &info->buffer[curr2];
+  
+}
+
+static gboolean  
 dependency_handle_selection(GIOChannel *source,
                             GIOCondition condition,
                             gpointer data)
 {
   #if 0
-  ProblemSolutionList::const_iterator it2;
-  ResolverProblemList::iterator it = helper->problems.begin();
-  std::advance(
-    it, 
-    problem_number);
-    ResolverProblem problem = **it;
-    
-    it2 = problem.solutions().begin();
-    std::advance(
-      it2,
-      solution_number);
-      ProblemSolution solution = **it2;
-      
-      struct problem prob;
-      prob.kind = problem.description();
-      //prob.solutions = 
-      prob.selected = get_full_resolution_text(solution);
-      
-      it2 = problem.solutions().begin();
-      
-      for (; it2 != problem.solutions().end(); ++it2) {
-        
-        prob.solutions.push_back(get_full_resolution_text(**it2));
-}
-
 helper->problems2.push_back(prob);
 #endif
+struct backend_job_private *msg_proc = (struct backend_job_private*) data;
+  int fd = g_io_channel_unix_get_fd (source);
   
+  //fcntl(fd, F_SETFL, O_NONBLOCK);
+  int flags = fcntl(fd, F_GETFL, 0);
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+  char *buffer ;
+  puts("YES");
+  while (buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info)) {
+  
+    puts(buffer);
+    puts("\n");
+    if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
+    
+      
+    }
+    else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:") - 1)) {
+      
+      puts("OKI");
+      buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
+      
+      puts(buffer);
+      char *problem_str = strchr(buffer, ':');
+      if (NULL == problem_str) {
+        
+        puts("BAD222");
+        return FALSE;
+      }
+      
+      char *solution_str = strchr(problem_str, ':');
+      
+      if (NULL == solution_str) {
+      
+        puts("BAD333");
+        return FALSE;
+      }
+      
+      int solution_number = atoi(solution_str);
+      int problem_number = atoi(problem_str);
+      
+      
+      ProblemSolutionList::const_iterator it2;
+      ResolverProblemList::iterator it = msg_proc->msg_proc_helper->problems.begin();
+      std::advance(
+        it, 
+        problem_number);
+      ResolverProblem problem = **it;
+      
+      it2 = problem.solutions().begin();
+      std::advance(
+        it2,
+        solution_number);
+      ProblemSolution solution = **it2;
+      msg_proc->msg_proc_helper->solution_list->push_back(*it2);
+      puts("OKI2");
+    }
+    else if (0 == strncmp("STOP", buffer, sizeof("STOP") - 1)) {
+      
+      
+    }
+    else if (0 == strncmp("DONE!", buffer, sizeof("DONE!") - 1)) {
+      add_resolution_to_zypp(msg_proc->msg_proc_helper);
+      /* Save resolution to file */
+      save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
+                                msg_proc->to_install, msg_proc->to_remove);
+      
+      puts("END");
+      pk_backend_job_thread_setup(msg_proc->job->helper);
+      
+    }
+  }
   
   return TRUE;
 }
@@ -2163,14 +2300,13 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
         
         snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
         
+        
 	try {
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
                 
-                struct msg_proc_helper transaction_problems;
-                transaction_problems.problems2 = std::list<struct problem> {};
-		// Gather up any dependencies
+                // Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
@@ -2178,14 +2314,24 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                 
                 ResPool pool = ResPool::instance ();
+                test:
                 if (!zypp->resolver ()->resolvePool ()) {
                 struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                struct msg_proc_helper *transaction_problems;
+                
                 
                 if (NULL == rjob) {
                   
                   rjob = new (struct backend_job_private)();
                   pk_backend_job_set_priv_data(job, rjob);
+                  transaction_problems = new struct msg_proc_helper;
+                  transaction_problems->path_to_cache = strdup(path_to_cache);
+                  rjob->job = job;
                   
+                }
+                else if (rjob->msg_proc_helper){
+                
+                  transaction_problems = rjob->msg_proc_helper;
                 }
                 rjob->to_install = std::list<std::string>();
                 rjob->to_remove = std::list<std::string>();
@@ -2209,11 +2355,24 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          // TODO: SL. S.L. Fill me
                          load_transaction_from_history("Install", path_to_cache, rjob);
                          
-                         transaction_problems.problems = problems;
-                         transaction_problems.it = problems.begin();
-                         transaction_problems.resolver = zypp->resolver ();
-                         transaction_problems.solution_list = new ProblemSolutionList();
-                         transaction_problems.problems2 = rjob->problems;//std::list<struct problem> {};//priv->problems;
+#if 0
+                         struct reader_info {
+                           char *buffer;
+                           int   curr_old;
+                           int   loaded;
+                           int   buff_len;
+                         };
+#endif
+                         transaction_problems->reader_info.buffer = NULL;
+                         transaction_problems->reader_info.curr_old = 0;
+                         transaction_problems->reader_info.loaded = 0;
+                         transaction_problems->reader_info.buff_len = 0;
+                         
+                         transaction_problems->problems = problems;
+                         transaction_problems->it = problems.begin();
+                         transaction_problems->resolver = zypp->resolver ();
+                         transaction_problems->solution_list = new ProblemSolutionList();
+                         transaction_problems->problems2 = rjob->problems;//std::list<struct problem> {};//priv->problems;
                          
                          ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                          ResPool::byKind_iterator ite = pool.byKindEnd (kind);
@@ -2309,9 +2468,28 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
-
-			
-			
+#if 0
+			if (changed && NULL == rjob->msg_proc_helper) {
+                        
+                          if (rjob->sol_it) {
+                            
+                            //                             delete job->sol_it;
+                          }
+                          rjob->problems = std::list<struct problem> ();
+                          
+                          // rjob->sol_it = new ProblemSolutionList();
+                          rjob->to_install = to_install;
+                          rjob->to_remove = to_remove;
+                          
+                          
+                          add_resolution_to_zypp(transaction_problems);
+                          /* Save resolution to file */
+                          save_transaction_to_cache("Install", path_to_cache, transaction_problems, 
+                                                    rjob->to_install, rjob->to_remove);
+                          
+                          goto test;
+                        }
+#endif
                         
                         // TODO: Add support for passing request could be handled interactively
                         if (force) {
@@ -2343,17 +2521,20 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         
                         
                         if (changed) {
+                          
+                          
                           if (rjob->sol_it) {
                             
                             //                             delete job->sol_it;
                           }
-                          
                           rjob->problems = std::list<struct problem> ();
                           
                           // rjob->sol_it = new ProblemSolutionList();
                           rjob->to_install = to_install;
                           rjob->to_remove = to_remove;
-                          
+                          job->done = 0;
+                          if (! rjob->msg_proc_helper) {
+                            rjob->msg_proc_helper = transaction_problems;
                           pid_t child_pid;
                           
                           
@@ -2391,9 +2572,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             comm_ch_input = (char*) malloc(length);
                             snprintf(comm_ch_input, length, "%d", fds2[0]);
                             
+                            printf("COMM_CH_OUTPUT: %d COMM_CH_INPUT: %d\n", fds[1], fds2[0]);
+                            
                             execlp(LIBEXECDIR "/dependency-solving-helper", LIBEXECDIR "/dependency-solving-helper", "--comm-channel-input", comm_ch_input,"--comm-channel-output", comm_ch_output, NULL);
                             
-                            write(STDOUT_FILENO, "ERR: Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
+                            write(STDOUT_FILENO, "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
                             exit(1);
                             
                           }
@@ -2413,46 +2596,46 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             
                             close(fds[1]);
                             close(fds2[0]);
+                            GError *error;
                             GIOChannel *chann = g_io_channel_unix_new (fds[0]);
-                            g_io_add_watch(chann, G_IO_IN, dependency_handle_selection, &transaction_problems);
+                            g_io_channel_set_encoding(chann, NULL, &error);
+                            g_io_channel_set_buffered(chann, false);
+                            rjob->input_id = g_io_add_watch(chann, G_IO_IN, dependency_handle_selection, (void*)rjob);
                             
-                            output = fds2[1];
+                            rjob->input = fds[0];
+                            rjob->output = fds2[1];
                             input = fds[0];
                             
+                            write(rjob->output, job->sender, strlen(job->sender) + 1);
+                            
+                          }
                           }
                           {
                             ResolverProblemList::iterator it;
                             ProblemSolutionList::const_iterator sol_it;
                             const char *string;
-                            write(output, job->sender, strlen(job->sender) + 1);
                             
-                            for (it = transaction_problems.problems.begin(); it != transaction_problems.problems.end(); ++it) {
+                            for (it = transaction_problems->problems.begin(); it != transaction_problems->problems.end(); ++it) {
                               
                               string = (*it)->description ().c_str ();
-                              write(output, string, strlen(string)+1);
+                              write(rjob->output, string, strlen(string)+1);
                               for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
                                 
                                 
                                 string = (*sol_it)->description ().c_str ();
-                                write(output, string, strlen(string)+1);
+                                write(rjob->output, string, strlen(string)+1);
                                 string = (*sol_it)->details ().c_str ();
-                                write(output, string, strlen(string)+1);
+                                write(rjob->output, string, strlen(string)+1);
                                 
                               }
-                              write(output, "", sizeof(""));
+                              write(rjob->output, "", sizeof(""));
                             }
                             
-                            write(output, "", sizeof(""));
+                            write(rjob->output, "", sizeof(""));
+                            ret = TRUE;
                             goto exit;
                             
                         }
-                        }
-                        else {
-                          add_resolution_to_zypp(&transaction_problems);
-                          /* Save resolution to file */
-                          save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
-                                                    rjob->to_install, rjob->to_remove);
-                          
                         }
                         
 #if 0
@@ -2462,7 +2645,20 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
                                                   priv->to_install, priv->to_remove);
 #endif
+
                         }
+                        struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                        
+                        if (NULL != rjob) {
+                        
+                          //cleaning up
+                          
+                          write(rjob->output, "", sizeof(""));
+                          g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
+                          close(rjob->input);
+                          close(rjob->output);
+                        }
+                job->done = 1;
 		switch (type) {
 		case INSTALL:
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
