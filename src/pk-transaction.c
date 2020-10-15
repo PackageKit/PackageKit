@@ -1936,6 +1936,11 @@ pk_transaction_run (PkTransaction *transaction)
 					  priv->job,
 					  priv->cached_transaction_flags);
 		break;
+	case PK_ROLE_ENUM_IMPORT_PUBKEY:
+		pk_backend_import_pubkey (priv->backend,
+					  priv->job,
+					  priv->cached_value);
+		break;
 	/* handled in the engine without a transaction */
 	case PK_ROLE_ENUM_CANCEL:
 	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
@@ -4863,6 +4868,62 @@ out:
 	pk_transaction_dbus_return (context, error);
 }
 
+static void
+pk_transaction_import_pubkey (PkTransaction *transaction,
+			      GVariant *params,
+			      GDBusMethodInvocation *context)
+{
+	gboolean ret;
+	const gchar *key_path = NULL;
+	g_autoptr(GError) error = NULL;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	g_variant_get (params, "(&s)",
+			 &key_path);
+
+	g_debug ("ImportPubkey method called: %s",
+	   key_path);
+
+	/* not implemented yet */
+	if (!pk_backend_is_implemented (transaction->priv->backend,
+			    	PK_ROLE_ENUM_IMPORT_PUBKEY)) {
+		g_set_error (&error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+			     "ImportPubkey not supported by backend");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
+	/* check the files exists */
+	ret = g_file_test (key_path, G_FILE_TEST_EXISTS);
+	if (!ret) {
+		g_set_error (&error,
+			        PK_TRANSACTION_ERROR,
+			        PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+			        "No such file %s", key_path);
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+			goto out;
+	}
+
+	/* save so we can run later */
+	transaction->priv->cached_value = g_strdup (key_path);
+	pk_transaction_set_role (transaction, PK_ROLE_ENUM_IMPORT_PUBKEY);
+
+	/* try to get authorization */
+	ret = pk_transaction_obtain_authorization (transaction,
+			               PK_ROLE_ENUM_IMPORT_PUBKEY,
+			               &error);
+	if (!ret) {
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+out:
+	pk_transaction_dbus_return (context, error);
+}
+
 static GVariant *
 _g_variant_new_maybe_string (const gchar *value)
 {
@@ -5059,6 +5120,10 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 	if (g_strcmp0 (method_name, "RepairSystem") == 0) {
 		pk_transaction_repair_system (transaction, parameters, invocation);
+		return;
+	}
+	if (g_strcmp0 (method_name, "ImportPubkey") == 0) {
+		pk_transaction_import_pubkey (transaction, parameters, invocation);
 		return;
 	}
 

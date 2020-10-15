@@ -2440,6 +2440,28 @@
       </doc:doc>
     </signal>
 
+    <!--*********************************************************************-->
+    <method name="ImportPubkey">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method import local GPG pubkey file into the local system.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.packagekit.import-pubkey</doc:permission>
+      </doc:doc>
+      <arg type="s" name="key_file" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A full path to GPG pubkey file.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
   </interface>
 </node>
 
