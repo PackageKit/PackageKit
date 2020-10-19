@@ -438,6 +438,31 @@ out:
 	return item;
 }
 
+static gboolean
+pk_scheduler_dependency_solving_exist(PkScheduler *scheduler)
+{
+  PkSchedulerItem *item = NULL;
+  guint i;
+  g_autoptr(GPtrArray) array = NULL;
+  PkTransactionState state;
+  
+  g_return_val_if_fail (PK_IS_SCHEDULER (scheduler), FALSE);
+  
+  /* anything running? */
+  array = pk_scheduler_get_active_transactions (scheduler);
+  if (array->len == 0)
+    return FALSE;
+  
+  /* check if we have any running background transaction */
+  for (i = 0; i < array->len; i++) {
+    item = (PkSchedulerItem *) g_ptr_array_index (array, i);
+    state = pk_transaction_get_state (item->transaction);
+    if (! pk_transaction_get_backend_job(item->transaction)->done && state == PK_TRANSACTION_STATE_RUNNING)
+      return TRUE;
+  }
+  return FALSE;
+}
+
 static void
 pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 {
@@ -453,6 +478,7 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 	}
 
 	/* treat all transactions as exclusive if backend does not support parallelization */
+        
 	if (!pk_backend_supports_parallelization (scheduler->priv->backend))
 		pk_transaction_make_exclusive (item->transaction);
 
@@ -467,8 +493,9 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 
 	/* is one of the current running transactions background, and this new
 	 * transaction foreground? */
+        
 	if (!pk_transaction_get_background (item->transaction) &&
-	    pk_scheduler_get_background_running (scheduler)) {
+	    pk_scheduler_get_background_running (scheduler) && !pk_scheduler_dependency_solving_exist(scheduler)) {
 		g_debug ("cancelling running background transactions and instead running %s",
 			item->tid);
 		pk_scheduler_cancel_background (scheduler);
@@ -686,7 +713,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 	}
 	
 	/* Set the sender id */
-        pk_transaction_get_backend(item->transaction)->sender = strdup(sender);
+        pk_transaction_get_backend_job(item->transaction)->sender = strdup(sender);
 
 	/* the client only has a finite amount of time to use the object, else it's destroyed */
 	item->commit_id = g_timeout_add_seconds (PK_SCHEDULER_CREATE_COMMIT_TIMEOUT,

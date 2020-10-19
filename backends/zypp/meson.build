@@ -15,13 +15,12 @@ shared_module(
   dependencies: [
     packagekit_glib2_dep,
     zypp_dep,
-    gmodule_dep,
-    dependency('libbonsole'),
-    dependency('dbus-1'),
+    gmodule_dep
   ],
   cpp_args: [
     '-DPK_COMPILATION=1',
     '-DG_LOG_DOMAIN="PackageKit-Zypp"',
+    '-DLIBEXECDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libexecdir'))),
     '-Wall',
     '-Woverloaded-virtual',
     '-Wnon-virtual-dtor'
@@ -29,6 +28,7 @@ shared_module(
   c_args: [
     '-Wno-deprecated',
     '-D_FILE_OFFSET_BITS=64',
+    '-DLIBEXECDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libexecdir'))),
   ],
   install: true,
   install_dir: pk_plugin_dir,

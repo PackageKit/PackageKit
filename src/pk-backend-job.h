@@ -67,6 +67,11 @@ typedef struct
 {
 	GObject			 parent;
 	PkBackendJobPrivate	*priv;
+        
+        char                    *sender;
+        void                    *private_data;
+        char                     done;
+        void                    *helper;
 } PkBackendJob;
 
 typedef struct
@@ -252,6 +257,10 @@ void		 pk_backend_job_set_started		(PkBackendJob *job,
 							 gboolean started);
 gboolean	 pk_backend_job_get_started		(PkBackendJob *job);
 
+void            *pk_backend_job_get_priv_data           (PkBackendJob *job);
+void             pk_backend_job_set_priv_data           (PkBackendJob *job, void *a);
+gpointer
+pk_backend_job_thread_setup (gpointer thread_data);
 G_END_DECLS
 
 #endif /* __PK_BACKEND_JOB_H */

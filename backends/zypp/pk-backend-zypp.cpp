@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#include <bonsole_client.h>
-#include <dbus/dbus.h>
 
 #include <iterator>
 #include <list>
@@ -108,6 +106,26 @@ struct problem {
   string kind;
   std::list<string> solutions;
   string selected;
+};
+
+struct backend_job_private {
+
+  ResolverProblemList::iterator it;
+  ProblemSolutionList* sol_it;
+  std::list<std::string> to_install;
+  std::list<std::string> to_remove;
+  
+  std::list<struct problem> problems;
+  
+  struct msg_proc_helper *msg_proc_helper;
+  
+  PkBackendJob *job;
+  gint input_id;
+  int input;
+  int ouput;
+  
+  int output;
+  
 };
 
 typedef enum {
@@ -566,6 +584,7 @@ class PkBackendZYppPrivate {
 	std::vector<std::string> signatures;
 	EventDirector eventDirector;
 	PkBackendJob *currentJob;
+#if 0
         bool isBonsoleInit;
         ResolverProblemList::iterator it;
         ProblemSolutionList* sol_it;
@@ -578,7 +597,7 @@ class PkBackendZYppPrivate {
         std::list<struct problem> problems;
         bool first_run;
         
-	
+#endif
 	pthread_mutex_t zypp_mutex;
 };
 
@@ -1473,7 +1492,12 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 #include <libxslt/xsltInternals.h>
 #include <libxslt/transform.h>
 #include <libxslt/xsltutils.h>
-
+struct reader_info {
+  char *buffer;
+  int   curr_old;
+  int   loaded;
+  int   buff_len;
+} ;
 struct msg_proc_helper {
   
   ResolverProblemList::iterator it;
@@ -1481,6 +1505,10 @@ struct msg_proc_helper {
   ResolverProblemList problems;
   ProblemSolutionList *solution_list; 
   std::list<struct problem> problems2;
+  char *path_to_cache;
+  
+  struct reader_info reader_info;
+
 };
 
 static std::string get_full_resolution_text(zypp::ProblemSolution& item)
@@ -1532,7 +1560,7 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
   
     helper->resolver->applySolutions(*helper->solution_list);
 }
-
+#if 0
 static void show_solutions(const char *msg_, intptr_t usr_p)
 {
   char *buffer, *prev, *curr, *prev2, *prev3;
@@ -1789,7 +1817,7 @@ static void message_proc(const char *msg__, intptr_t usr_p)
   free(msg_);
 }
 
-
+#endif
 static char *get_record(int fd, char *buffer)
 {
   int count;
@@ -1849,8 +1877,9 @@ static char *get_record(int fd, char *buffer)
 }
 
 static gboolean 
-load_transaction_from_history(const char *type, const char *file)
+load_transaction_from_history(const char *type, const char *file, struct backend_job_private *priv_)
 {
+  
   char *buffer = NULL;
   int fd = open(file, O_RDONLY);
   
@@ -1894,8 +1923,8 @@ load_transaction_from_history(const char *type, const char *file)
   free(buffer);
   buffer = NULL;
   
-  priv->to_install.clear();
-  priv->to_remove.clear();
+  priv_->to_install.clear();
+  priv_->to_remove.clear();
   
   while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
   
@@ -1904,7 +1933,7 @@ load_transaction_from_history(const char *type, const char *file)
       close(fd);
       return FALSE;
     }
-    priv->to_install.push_back(buffer);
+    priv_->to_install.push_back(buffer);
     free(buffer);
     buffer = NULL;
   }
@@ -1922,7 +1951,7 @@ load_transaction_from_history(const char *type, const char *file)
       close(fd);
       return FALSE;
     }
-    priv->to_remove.push_back(buffer);
+    priv_->to_remove.push_back(buffer);
     free(buffer);
     buffer = NULL;
   }
@@ -1979,7 +2008,7 @@ load_transaction_from_history(const char *type, const char *file)
     free(buffer);
     buffer = NULL;
     
-    priv->problems.push_back(problem);
+    priv_->problems.push_back(problem);
   }
   
   if (NULL != buffer) {
@@ -2100,12 +2129,164 @@ static void save_transaction_to_cache(const char *type, const char *file, struct
   close(fd);
 }
 
+static char 
+*get_record2(int fd, struct reader_info *info)
+{
+  int count = 0;
+  bool done = false;
+  int curr = 0;
+  int curr2 = info->curr_old;
+  
+  
+  while (info->loaded >= curr2 + 1) {
+    
+    
+    if ('\0' == info->buffer[curr2]) {
+      
+      curr = info->curr_old ; 
+      info->curr_old = curr2 + 1;
+      return &info->buffer[curr];
+    }
+    
+    ++curr2;
+  }
+  
+  info->buff_len += 512;
+  info->buffer = (char*)realloc(info->buffer, info->buff_len);
+  
+  if (NULL == info->buffer) {
+    
+    puts("HERE - BAD");
+    return NULL;
+  }
+  
+  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (errno == EAGAIN && info->loaded < info->curr_old))  {
+    
+    puts("BAD");
+    curr = info->loaded;
+    info->loaded += count;
+    while ('\0' != info->buffer[curr] && curr < info->loaded) {
+      
+      ++curr;
+    }
+    
+    if (curr < info->loaded && '\0' == info->buffer[curr]) {
+      
+      done = true;
+      break;
+    }
+    
+    info->buff_len += 512;
+    info->buffer = (char*)realloc(info->buffer, info->buff_len);
+    
+    if (NULL == info->buffer) {
+      
+      count = 0;
+      break;
+    }
+  };
+  
+  if (!done && 0 > count && info->loaded >= info->curr_old) {
+    
+    perror("Error while read from pipe");
+    free(info->buffer);
+    close(fd);
+    return NULL;
+  }
+  
+  info->buffer[info->loaded] = '\0';
+  
+  curr2 = info->curr_old;
+  info->curr_old = curr + 1;
+  return &info->buffer[curr2];
+  
+}
+
+static gboolean  
+dependency_handle_selection(GIOChannel *source,
+                            GIOCondition condition,
+                            gpointer data)
+{
+  #if 0
+helper->problems2.push_back(prob);
+#endif
+struct backend_job_private *msg_proc = (struct backend_job_private*) data;
+  int fd = g_io_channel_unix_get_fd (source);
+  
+  //fcntl(fd, F_SETFL, O_NONBLOCK);
+  int flags = fcntl(fd, F_GETFL, 0);
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+  char *buffer ;
+  puts("YES");
+  while (buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info)) {
+  
+    puts(buffer);
+    puts("\n");
+    if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
+    
+      
+    }
+    else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:") - 1)) {
+      
+      puts("OKI");
+      buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
+      
+      puts(buffer);
+      char *problem_str = strchr(buffer, ':');
+      if (NULL == problem_str) {
+        
+        puts("BAD222");
+        return FALSE;
+      }
+      
+      char *solution_str = strchr(problem_str, ':');
+      
+      if (NULL == solution_str) {
+      
+        puts("BAD333");
+        return FALSE;
+      }
+      
+      int solution_number = atoi(solution_str);
+      int problem_number = atoi(problem_str);
+      
+      
+      ProblemSolutionList::const_iterator it2;
+      ResolverProblemList::iterator it = msg_proc->msg_proc_helper->problems.begin();
+      std::advance(
+        it, 
+        problem_number);
+      ResolverProblem problem = **it;
+      
+      it2 = problem.solutions().begin();
+      std::advance(
+        it2,
+        solution_number);
+      ProblemSolution solution = **it2;
+      msg_proc->msg_proc_helper->solution_list->push_back(*it2);
+      puts("OKI2");
+    }
+    else if (0 == strncmp("STOP", buffer, sizeof("STOP") - 1)) {
+      
+      
+    }
+    else if (0 == strncmp("DONE!", buffer, sizeof("DONE!") - 1)) {
+      add_resolution_to_zypp(msg_proc->msg_proc_helper);
+      /* Save resolution to file */
+      save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
+                                msg_proc->to_install, msg_proc->to_remove);
+      
+      puts("END");
+      pk_backend_job_thread_setup(msg_proc->job->helper);
+      
+    }
+  }
+  
+  return TRUE;
+}
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
-        bool changed_fds = false;
-        int fd = -1;
-        int dup_0, dup_1, dup_2;
         char *path_to_cache = NULL;
   
 	MIL << force << " " << pk_filter_bitfield_to_string(transaction_flags) << endl;
@@ -2113,20 +2294,19 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	
-        int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", backend->sender) + 1;
+        int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender) + 1;
         
         path_to_cache = (char*) malloc(len);
         
-        snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", backend->sender);
+        snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
+        
         
 	try {
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
                 
-                struct msg_proc_helper transaction_problems;
-                transaction_problems.problems2 = std::list<struct problem> {};
-		// Gather up any dependencies
+                // Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
@@ -2134,40 +2314,70 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                 
                 ResPool pool = ResPool::instance ();
+                test:
+                if (!zypp->resolver ()->resolvePool ()) {
+                struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                struct msg_proc_helper *transaction_problems;
                 
                 
-                priv->to_install = std::list<std::string>();
-                priv->to_remove = std::list<std::string>();
-                priv->problems = std::list<struct problem> ();
+                if (NULL == rjob) {
+                  
+                  rjob = new (struct backend_job_private)();
+                  pk_backend_job_set_priv_data(job, rjob);
+                  transaction_problems = new struct msg_proc_helper;
+                  transaction_problems->path_to_cache = strdup(path_to_cache);
+                  rjob->job = job;
+                  
+                }
+                else if (rjob->msg_proc_helper){
+                
+                  transaction_problems = rjob->msg_proc_helper;
+                }
+                rjob->to_install = std::list<std::string>();
+                rjob->to_remove = std::list<std::string>();
+                rjob->problems = std::list<struct problem> ();
                 
                 ResObject::Kind kind = ResTraits<Package>::kind;
-                priv->first_run = true;
                 
                 // Adding packages selected by user
-		while (!zypp->resolver ()->resolvePool ()) {
                       ResolverProblemList problems = zypp->resolver ()->problems ();
                       gchar * emsg = NULL, * tempmsg = NULL;
                       ResolverProblemList::iterator it = problems.begin ();
+                      std::list<std::string> to_remove;
+                      std::list<std::string> to_install;
+                      
+                      
+                      bool changed = false;
                         // Adding additional packages (selected by zypper) to separated field
-                  
-                       if (priv->first_run) {
-                       
+                      {
+                        
                          // if (Test if simulation) {
                          // TODO: SL. S.L. Fill me
-                         load_transaction_from_history("Install", path_to_cache);
+                         load_transaction_from_history("Install", path_to_cache, rjob);
                          
-                         transaction_problems.problems = problems;
-                         transaction_problems.it = problems.begin();
-                         transaction_problems.resolver = zypp->resolver ();
-                         transaction_problems.solution_list = new ProblemSolutionList();
-                         transaction_problems.problems2 = priv->problems;//std::list<struct problem> {};//priv->problems;
-                         priv->first_run = false; 
+#if 0
+                         struct reader_info {
+                           char *buffer;
+                           int   curr_old;
+                           int   loaded;
+                           int   buff_len;
+                         };
+#endif
+                         transaction_problems->reader_info.buffer = NULL;
+                         transaction_problems->reader_info.curr_old = 0;
+                         transaction_problems->reader_info.loaded = 0;
+                         transaction_problems->reader_info.buff_len = 0;
+                         
+                         transaction_problems->problems = problems;
+                         transaction_problems->it = problems.begin();
+                         transaction_problems->resolver = zypp->resolver ();
+                         transaction_problems->solution_list = new ProblemSolutionList();
+                         transaction_problems->problems2 = rjob->problems;//std::list<struct problem> {};//priv->problems;
                          
                          ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                          ResPool::byKind_iterator ite = pool.byKindEnd (kind);
                          
-                         std::list<std::string> to_remove;
-                         std::list<std::string> to_install;
+                       
                          
                          std::list<std::string>::iterator it;
                          
@@ -2188,15 +2398,13 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            }
                          }
                          
-                         bool changed = false;
-                         
-                         if (priv->to_remove.size() != to_remove.size()) {
+                         if (rjob->to_remove.size() != to_remove.size()) {
                          
                            changed = true;
                         }
                          
-                         if (!changed && priv->to_remove.size() > 0) {
-                         for (it = priv->to_remove.begin(); it != priv->to_remove.end(); ++it) {
+                         if (!changed && rjob->to_remove.size() > 0) {
+                           for (it = rjob->to_remove.begin(); it != rjob->to_remove.end(); ++it) {
                            
                            std::list<string>::iterator it2;
                            for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
@@ -2214,20 +2422,20 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            }
                          }
                          
-                         if (it != priv->to_remove.end()) {
+                         if (it != rjob->to_remove.end()) {
                            
                            changed = true;
                          }
                          }
                          
-                         if (priv->to_install.size() != to_install.size()) {
+                         if (rjob->to_install.size() != to_install.size()) {
                            
                            changed = true;
                          }
                          
-                         if (!changed && priv->to_install.size() > 0) {
+                         if (!changed && rjob->to_install.size() > 0) {
                            
-                           for (it = priv->to_install.begin(); it != priv->to_install.end(); ++it) {
+                           for (it = rjob->to_install.begin(); it != rjob->to_install.end(); ++it) {
                              
                              std::list<string>::iterator it2;
                              
@@ -2248,41 +2456,40 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          }
                            
                          if (!changed
-                           && it != priv->to_install.end()
+                           && it != rjob->to_install.end()
                             )  {
                              
                             changed = true;
                          }
                            
-                         if (changed) {
-                           if (priv->sol_it) {
-                             
-                             delete priv->sol_it;
-                           }
+                         
                            
-                           priv->problems = std::list<struct problem> ();
-                                                         
-                           priv->sol_it = new ProblemSolutionList();
-                           priv->to_install = to_install;
-                           priv->to_remove = to_remove;
-                         }
-                         else {
-                           add_resolution_to_zypp(&transaction_problems);
-                           /* Save resolution to file */
-                           save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
-                                                     priv->to_install, priv->to_remove);
-                           
-                         }
-                         continue;
-                           
-                       }
-                  
+                      }
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
-
-			
-
+#if 0
+			if (changed && NULL == rjob->msg_proc_helper) {
+                        
+                          if (rjob->sol_it) {
+                            
+                            //                             delete job->sol_it;
+                          }
+                          rjob->problems = std::list<struct problem> ();
+                          
+                          // rjob->sol_it = new ProblemSolutionList();
+                          rjob->to_install = to_install;
+                          rjob->to_remove = to_remove;
+                          
+                          
+                          add_resolution_to_zypp(transaction_problems);
+                          /* Save resolution to file */
+                          save_transaction_to_cache("Install", path_to_cache, transaction_problems, 
+                                                    rjob->to_install, rjob->to_remove);
+                          
+                          goto test;
+                        }
+#endif
                         
                         // TODO: Add support for passing request could be handled interactively
                         if (force) {
@@ -2311,215 +2518,147 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
 			  goto exit;
                         }
-                        if (! priv->isBonsoleInit ) {
                         
-                          // I don't known it doesn't mess up - we shouldn't write to the same socket as parent?
-                          // Should we share dbus name with parent?
-                          // And also... What if we modify system during questions answer?
-                          // So I exclude code bellow
-                          // But it solves one big problem - locking PK during dependency resolving
-#if 0                          
-                          if (0 < fork()) {
+                        
+                        if (changed) {
                           
-                            goto exit;
+                          
+                          if (rjob->sol_it) {
+                            
+                            //                             delete job->sol_it;
                           }
-#endif
-                          DBusConnection *bus_connection;
-                          DBusError error;
+                          rjob->problems = std::list<struct problem> ();
                           
-                          dbus_error_init(&error);
-                          bus_connection = dbus_bus_get(DBUS_BUS_SYSTEM, &error);
-                          if (bus_connection == NULL) {
-                            if (dbus_error_is_set(&error)) {
-                              fprintf(stderr,"Error occurred, while trying to connect: %s\n", error.message);
-                            }
-                            else {
-                              fprintf(stderr,"Error occurred, while trying to connect\n");
-                            }
-                            dbus_error_free(&error);
+                          // rjob->sol_it = new ProblemSolutionList();
+                          rjob->to_install = to_install;
+                          rjob->to_remove = to_remove;
+                          job->done = 0;
+                          if (! rjob->msg_proc_helper) {
+                            rjob->msg_proc_helper = transaction_problems;
+                          pid_t child_pid;
+                          
+                          
+                          int fds[2];
+                          int fds2[2];
+                          
+                          int input, output;
+                          
+                          if (pipe(fds) < 0) {
+                            
+                            perror("Error while pipe creating");
+                          }
+                          else if (pipe(fds2) < 0) {
+                            
+                            perror("Error while pipe creating");
+                          }
+                          
+                          child_pid = fork();
+ 
+                          
+                          if (0 == child_pid) {
+                            
+                            close(fds[0]);
+                            close(fds2[1]);
+                            
+                            int length;
+                            char *comm_ch_output;
+                            char *comm_ch_input;
+                            
+                            length = snprintf(NULL, 0, "%d", fds[1]) + 1;
+                            comm_ch_output = (char*) malloc(length);
+                            snprintf(comm_ch_output, length, "%d", fds[1]); 
+                            
+                            length = snprintf(NULL, 0, "%d", fds2[0]) + 1;
+                            comm_ch_input = (char*) malloc(length);
+                            snprintf(comm_ch_input, length, "%d", fds2[0]);
+                            
+                            printf("COMM_CH_OUTPUT: %d COMM_CH_INPUT: %d\n", fds[1], fds2[0]);
+                            
+                            execlp(LIBEXECDIR "/dependency-solving-helper", LIBEXECDIR "/dependency-solving-helper", "--comm-channel-input", comm_ch_input,"--comm-channel-output", comm_ch_output, NULL);
+                            
+                            write(STDOUT_FILENO, "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
                             exit(1);
-                          }
-                          
-                          
-                          char *sender = backend->sender;
-                          char *server, *cookie;
-                          DBusPendingCall* pending;
-                          DBusMessage* reply;
-                          DBusMessageIter args;
-                          
-                          
-                          DBusMessage* msg = dbus_message_new_method_call("pl.art.lach.slawek.apps.DaemonUI","/pl/art/lach/slawek/apps/DaemonUI", "pl.art.lach.slawek.apps.DaemonUI.client", "getListenerNameForClient");
-                          
-                          if (msg == NULL) {
                             
-                            goto exit;
                           }
-                          
-                          
-                          dbus_message_iter_init_append(msg, &args);
-                          
-                          if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sender)) { 
-                            
-                            fprintf(stderr, "Out Of Memory!\n"); 
-                            exit(1);
-                          }
-                          
-                          if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
+                          // TODO: SL S.L. READ DOCUMENTATION
+                          else if (-1 == child_pid)
                           {
-                            dbus_message_unref(msg);
-                            goto exit;
-                          }
-                          dbus_connection_flush(bus_connection);
-                          dbus_message_unref(msg);
-                          
-                          dbus_pending_call_block(pending);
-                          reply = dbus_pending_call_steal_reply(pending);
-                          dbus_pending_call_unref(pending);
-                          
-                          if (NULL == reply) {
-                          
-                            puts("Error: No reply");
-                            goto exit;
-                          }
-                          
-                          if(dbus_message_get_type(reply) ==  DBUS_MESSAGE_TYPE_ERROR)    {
+                            perror("Cannot spawn interactive dependency solver");
                             
-                            puts("Error");
-                            char *emsg;
-                            if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
+                            close(fds[0]);
+                            close(fds2[1]);
+                            close(fds[1]);
+                            close(fds2[0]);
                             
-                              puts("No error message provided");
-                              goto  exit;
-                            }
-                            
-                            puts(emsg);
-                            goto exit;
+                            pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot spawn interactive dependency solver");
                           }
-                          
-                          dbus_error_init(&error);
-                          dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &server, DBUS_TYPE_STRING, &cookie, DBUS_TYPE_INVALID);
-                          if (dbus_error_is_set(&error)) {
+                          else {
                             
-                            puts(error.message);
-                            goto exit;
-                          }
-                          
-                          
-                          msg = dbus_message_new_method_call("pl.art.lach.slawek.apps.DaemonUI","/pl/art/lach/slawek/apps/DaemonUI", "pl.art.lach.slawek.apps.DaemonUI.client", "getRealTTYForClient");
-                          
-                          if (msg == NULL) {
+                            close(fds[1]);
+                            close(fds2[0]);
+                            GError *error;
+                            GIOChannel *chann = g_io_channel_unix_new (fds[0]);
+                            g_io_channel_set_encoding(chann, NULL, &error);
+                            g_io_channel_set_buffered(chann, false);
+                            rjob->input_id = g_io_add_watch(chann, G_IO_IN, dependency_handle_selection, (void*)rjob);
                             
-                            goto exit;
-                          }
-                          
-                          
-                          dbus_message_iter_init_append(msg, &args);
-                          
-                          if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &sender)) { 
+                            rjob->input = fds[0];
+                            rjob->output = fds2[1];
+                            input = fds[0];
                             
-                            fprintf(stderr, "Out Of Memory!\n"); 
-                            exit(1);  
+                            write(rjob->output, job->sender, strlen(job->sender) + 1);
+                            
                           }
-                          
-                          if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
+                          }
                           {
-                            dbus_message_unref(msg);
-                            goto exit;
-                          }
-                          dbus_connection_flush(bus_connection);
-                          dbus_message_unref(msg);
-                          
-                          dbus_pending_call_block(pending);
-                          reply = dbus_pending_call_steal_reply(pending);
-                          dbus_pending_call_unref(pending);
-                          
-                          if (NULL == reply) {
+                            ResolverProblemList::iterator it;
+                            ProblemSolutionList::const_iterator sol_it;
+                            const char *string;
                             
-                            puts("Error: No reply");
-                            goto exit;
-                          }
-                          
-                          if(dbus_message_get_type(reply) ==  DBUS_MESSAGE_TYPE_ERROR)    {
-                            
-                            puts("Error");
-                            char *emsg;
-                            if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
+                            for (it = transaction_problems->problems.begin(); it != transaction_problems->problems.end(); ++it) {
                               
-                              puts("No error message provided");
-                              goto  exit;
+                              string = (*it)->description ().c_str ();
+                              write(rjob->output, string, strlen(string)+1);
+                              for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
+                                
+                                
+                                string = (*sol_it)->description ().c_str ();
+                                write(rjob->output, string, strlen(string)+1);
+                                string = (*sol_it)->details ().c_str ();
+                                write(rjob->output, string, strlen(string)+1);
+                                
+                              }
+                              write(rjob->output, "", sizeof(""));
                             }
                             
-                            puts(emsg);
+                            write(rjob->output, "", sizeof(""));
+                            ret = TRUE;
                             goto exit;
-                          }
-                          
-                          dbus_bool_t error_1;
-                          
-                          dup_0 = dup_1 = dup_2 = -1;
-                          dbus_error_init(&error);
-                          dbus_message_get_args(reply, &error, DBUS_TYPE_BOOLEAN, &error_1, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
-                          if (dbus_error_is_set(&error)) {
                             
-                            puts(error.message);
-                            goto exit;
-                          }
-                          
-                          dup_0 = dup(0);
-                          dup_1 = dup(1);
-                          dup_2 = dup(2);
-                          close(0);
-                          close(1);
-                          close(2);
-                          changed_fds = true;
-                          
-                          if (!error_1 && -1 != fd) {
-                          
-
-                            
-                            dup2(fd, 0);
-                            dup2(fd, 1);
-                            dup2(fd, 2);
-                          }
-                          setenv("HOME", "/root", 0);
-                          setenv("LANG", "EN_US", 0);
-                          
-                          setenv("BONSOLE_DBUS_SCOPE", "SYSTEM_BUS", 1);
-                          setenv("BONSOLE_RUN_MODE", "ALWAYS_TRY_TO_LOGIN", 1);
-                          setenv("BONSOLE_DBUS_NAME", server, 1);
-                          setenv("BONSOLE_COOKIE", cookie, 1);
-                          
-                          int argc = 1;
-                          char *argv[2] = {(char*)"packagekitd", (char*)NULL};
-                          
-                          if (0 != bonsole_client_init(&argc, argv)) exit(1);
-                          
-                          priv->isBonsoleInit = true;
                         }
-                        
+                        }
                         
 #if 0
-                        if (!priv->sol_it->empty()) {
-                        
-                          zypp->resolver()->applySolutions(*priv->sol_it);
-                          continue;
-                        }
-#endif
-                        transaction_problems.problems = problems;
-                        transaction_problems.it = problems.begin();
-                        transaction_problems.resolver = zypp->resolver ();
-                        transaction_problems.solution_list = NULL;
-                        
-                        bonsole_reset_document(nullptr);
-                        show_solutions("", (intptr_t)(void*) &transaction_problems);
-                        bonsole_main_loop(0, message_proc, (intptr_t)(void*)&transaction_problems);
-                        
                         add_resolution_to_zypp(&transaction_problems);
                         
                         // Save resolution to file
                         save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
                                                   priv->to_install, priv->to_remove);
-		}
+#endif
 
+                        }
+                        struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                        
+                        if (NULL != rjob) {
+                        
+                          //cleaning up
+                          
+                          write(rjob->output, "", sizeof(""));
+                          g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
+                          close(rjob->input);
+                          close(rjob->output);
+                        }
+                job->done = 1;
 		switch (type) {
 		case INSTALL:
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
@@ -2640,6 +2779,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 			goto exit;
 		}
+                
 
 		pk_backend_job_set_percentage(job, 100);
 		ret = TRUE;
@@ -2653,13 +2793,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
  exit:
  
-        if (changed_fds) {
-        
-          
-          dup2(dup_0, 0);
-          dup2(dup_1, 1);
-          dup2(dup_2, 2);
-        }
         
         if (path_to_cache) free(path_to_cache);
         
@@ -2871,10 +3004,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
 	/* create private area */
 	priv = new PkBackendZYppPrivate;
-        priv->isBonsoleInit = false;
-        priv->sol_it = NULL;
 	priv->currentJob = 0;
-        priv->first_run = true;
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
