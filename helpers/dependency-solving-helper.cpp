@@ -146,6 +146,23 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
       char *prev = buffer;
       char *curr = buffer;
       
+      
+      while ('\0' != *curr) {
+        
+        if ('\n' == *curr) {
+          
+          *curr = '\0';
+          
+          text = xmlNewText(BAD_CAST prev);
+          xmlAddChild(checkbox, text);
+          text = xmlNewNode(NULL, BAD_CAST "br");
+          xmlAddChild(checkbox, text);
+          prev = curr + 1;
+        }
+        
+        ++curr;
+      }
+      
       text = xmlNewText(BAD_CAST prev);
       xmlAddChild(checkbox, text);
       
@@ -195,8 +212,21 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   }
   
   
-  if (0 == problem)
+  if (0 == problem) {
+    
+    bonsole_reset_document(nullptr);
+    
+    a = bonsole_window(nullptr);
+    root = xmlDocGetRootElement(a);
+    
+    text = xmlNewText(BAD_CAST "Done. You can now close this page");
+    message = xmlNewNode(NULL, BAD_CAST "message");
+    xmlAddChild(message, text);
+    xmlAddChild(root, message);
+    bonsole_window_release(nullptr);
+    bonsole_flush_changes(nullptr);
     return false;
+  }
   bonsole_window_release(nullptr);
   bonsole_flush_changes(nullptr);
   
@@ -645,12 +675,6 @@ int main(int argc, char **argv)
 
   app.error_output = dup_2;
   app.messages_output = dup_1;
-#if 0
-transaction_problems.problems = problems;
-transaction_problems.it = problems.begin();
-transaction_problems.resolver = zypp->resolver ();
-transaction_problems.solution_list = NULL;
-#endif
 do {
 bonsole_reset_document(nullptr);
 if (!show_solutions( input, &i_ch_reader)) {
@@ -679,13 +703,6 @@ if (i_ch_reader.buffer) free(i_ch_reader.buffer);
 
 reader_info_init(&i_ch_reader);
 } while (true);
-#if 0
-add_resolution_to_zypp(&transaction_problems);
-
-// Save resolution to file
-save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
-                          priv->to_install, priv->to_remove);
-#endif
 exit:
   dup2(dup_0, 0);
   dup2(dup_1, 1);
