@@ -1,9 +1,18 @@
-FROM debian:buster
+FROM debian:bullseye
 
+# allow fetching source packages
 RUN echo "deb-src http://deb.debian.org/debian/ buster main" >> /etc/apt/sources.list
+
+# prepare
 RUN apt-get update -qq
+
+# install build essentials
 RUN apt-get install -yq build-essential
+
+# install PackageKit dependencies
 RUN apt-get build-dep -yq packagekit
 RUN apt-get install -yq meson
+
+# finish
 RUN mkdir /build
 WORKDIR /build
