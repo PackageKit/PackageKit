@@ -1,7 +1,7 @@
 FROM debian:bullseye
 
 # allow fetching source packages
-RUN echo "deb-src http://deb.debian.org/debian/ buster main" >> /etc/apt/sources.list
+RUN echo "deb-src http://deb.debian.org/debian/ bullseye main" >> /etc/apt/sources.list
 
 # prepare
 RUN apt-get update -qq
