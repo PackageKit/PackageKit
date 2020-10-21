@@ -3008,6 +3008,9 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
+	/* Set PATH variable to avoid problems when installing packges(bsc#1175315). */
+	g_setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", TRUE);
+
 	g_debug ("zypp_backend_initialize");
 }
 
@@ -3770,6 +3773,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	// remove tmp-dir and the tmp-repo
 	try {
 		manager.removeRepository (tmpRepo);
+		repo.eraseFromPool();
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
@@ -4598,16 +4602,19 @@ upgrade_system (PkBackendJob *job,
 {
 	set<PoolItem> candidates;
 
-	/* refresh the repos before checking for updates. */
-	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		return;
-	}
-	zypp_get_updates (job, zypp, candidates);
-	if (candidates.empty ()) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
-					   "No Distribution Upgrade Available.");
+	/* Only refresh repos when it's simulating. */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		/* refresh the repos before checking for updates. */
+		if (!zypp_refresh_cache (job, zypp, FALSE)) {
+			return;
+		}
+		zypp_get_updates (job, zypp, candidates);
+		if (candidates.empty ()) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+						   "No Distribution Upgrade Available.");
 
-		return;
+			return;
+		}
 	}
 
 	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());

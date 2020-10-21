@@ -1,3 +1,22 @@
+Version 1.2.1
+~~~~~~~~~~~~~
+Released: 2020-09-07
+
+Backends:
+ - alpm: Fix paths for configuration files (Christian Hesse)
+ - alpm: Pass correct type to pk_alpm_transaction_initialize() (Christian Hesse)
+ - alpm: Synchronise syncdbs on update (#400) (jan Pontaoski)
+ - dnf: Add vendor configuration for openSUSE (Neal Gompa)
+ - zypp: Clean up temporary files when PK quits (Jonathan Kang)
+ - zypp: Ensure ResPool is built before is_tumbleweed() (Jonathan Kang)
+
+Bugfixes:
+ - Actually merge in the PolicyKit translation (Richard Hughes)
+ - Fix setting libexecdir for command-not-found helper (Elliott Sales de Andrade)
+ - Fix command-not-found handling arguments with spaces (Fernando Herrera)
+ - Use SQL statements for queries with input (Juho Hämäläinen)
+ - Exit pkcon with retval 5 if no packages needed be installed (Dominique Leuenberger)
+
 Version 1.2.0
 ~~~~~~~~~~~~~
 Released: 2020-05-04

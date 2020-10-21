@@ -1,3 +1,5 @@
+subdir('helpers')
+
 shared_module(
   'pk_backend_test_fail',
   'pk-backend-test-fail.c',
