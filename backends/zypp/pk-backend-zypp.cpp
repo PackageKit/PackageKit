@@ -2138,7 +2138,7 @@ static char
   int curr2 = info->curr_old;
   
   
-  while (info->loaded >= curr2 + 1) {
+  while (info->loaded > curr2) {
     
     
     if ('\0' == info->buffer[curr2]) {
@@ -2190,6 +2190,10 @@ static char
     
     perror("Error while read from pipe");
     free(info->buffer);
+    info->buffer = 0;
+    info->buff_len = 0;
+    info->loaded = 0;
+    info->curr_old = 0;
     close(fd);
     return NULL;
   }
@@ -2294,11 +2298,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	
-        int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender) + 1;
         
-        path_to_cache = (char*) malloc(len);
-        
-        snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
         
         
 	try {
@@ -2322,16 +2322,23 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                 if (NULL == rjob) {
                   
+                  int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender) + 1;
+                  
+                  path_to_cache = (char*) malloc(len);
+                  
+                  snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
+                  
                   rjob = new (struct backend_job_private)();
                   pk_backend_job_set_priv_data(job, rjob);
                   transaction_problems = new struct msg_proc_helper;
-                  transaction_problems->path_to_cache = strdup(path_to_cache);
+                  transaction_problems->path_to_cache = path_to_cache;
                   rjob->job = job;
                   
                 }
                 else if (rjob->msg_proc_helper){
                 
                   transaction_problems = rjob->msg_proc_helper;
+                  path_to_cache = transaction_problems->path_to_cache;
                 }
                 rjob->to_install = std::list<std::string>();
                 rjob->to_remove = std::list<std::string>();
@@ -2355,14 +2362,14 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          // TODO: SL. S.L. Fill me
                          load_transaction_from_history("Install", path_to_cache, rjob);
                          
-#if 0
+/*
                          struct reader_info {
                            char *buffer;
                            int   curr_old;
                            int   loaded;
                            int   buff_len;
                          };
-#endif
+*/
                          transaction_problems->reader_info.buffer = NULL;
                          transaction_problems->reader_info.curr_old = 0;
                          transaction_problems->reader_info.loaded = 0;
@@ -2655,6 +2662,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
                           write(rjob->output, "", sizeof(""));
                           g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
+                          if (rjob->msg_proc_helper) 
+                            free(rjob->msg_proc_helper->path_to_cache);
                           close(rjob->input);
                           close(rjob->output);
                         }
@@ -2792,9 +2801,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	}
 
  exit:
- 
-        
-        if (path_to_cache) free(path_to_cache);
         
 	/* reset the various options */
 	try {
