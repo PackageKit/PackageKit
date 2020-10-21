@@ -24,9 +24,15 @@ libsystemd = []
 if get_option('systemd')
   libsystemd = dependency('libsystemd', version: '>=213')
   systemd_system_unit_dir = get_option('systemdsystemunitdir')
-  if systemd_system_unit_dir == ''
+  systemd_user_unit_dir = get_option('systemduserunitdir')
+  if systemd_system_unit_dir == '' or systemd_user_unit_dir == ''
     systemd = dependency('systemd')
+  endif
+  if systemd_system_unit_dir == ''
     systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
+  endif
+  if systemd_user_unit_dir == ''
+    systemd_user_unit_dir = systemd.get_pkgconfig_variable('systemduserunitdir')
   endif
 
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
