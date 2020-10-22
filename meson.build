@@ -35,6 +35,7 @@ if get_option('systemd')
     systemd_user_unit_dir = systemd.get_pkgconfig_variable('systemduserunitdir')
   endif
 
+  add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
 else
   if get_option('offline_update')
