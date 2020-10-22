@@ -32,6 +32,9 @@
 #include <glib-unix.h>
 #include <glib/gi18n.h>
 #include <packagekit-glib2/pk-debug.h>
+#ifdef HAVE_SYSTEMD_SD_DAEMON_H
+#include <systemd/sd-daemon.h>
+#endif
 
 #include "pk-engine.h"
 #include "pk-shared.h"
@@ -244,6 +247,10 @@ out:
 	/* log the shutdown */
 	syslog (LOG_DAEMON | LOG_DEBUG, "daemon quit");
 	closelog ();
+
+#ifdef HAVE_SYSTEMD_SD_DAEMON_H
+	sd_notify (0, "STOPPING=1");
+#endif
 
 	if (helper.timer_id > 0)
 		g_source_remove (helper.timer_id);
