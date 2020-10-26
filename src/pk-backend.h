@@ -262,6 +262,9 @@ void		 pk_backend_set_user_data		(PkBackend	*backend,
 void		 pk_backend_import_pubkey		(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 const gchar	*key_path);
+void		 pk_backend_remove_pubkey		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*key_id);
 
 G_END_DECLS
 

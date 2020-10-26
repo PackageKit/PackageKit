@@ -1854,6 +1854,15 @@ pk_client_set_hints_cb (GObject *source_object,
 				   state->cancellable,
 				   pk_client_method_cb,
 				   state);
+	} else if (state->role == PK_ROLE_ENUM_REMOVE_PUBKEY) {
+		g_dbus_proxy_call (state->proxy, "RemovePubkey",
+				   g_variant_new ("(s)",
+						  state->key_id),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
 	} else {
 		g_assert_not_reached ();
 	}

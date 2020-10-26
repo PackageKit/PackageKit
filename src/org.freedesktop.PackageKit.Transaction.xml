@@ -2462,6 +2462,28 @@
       </arg>
     </method>
 
+    <!--*********************************************************************-->
+    <method name="RemovePubkey">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method remove pubkey from the local system.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.packagekit.remove-pubkey</doc:permission>
+      </doc:doc>
+      <arg type="s" name="key_id" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A unique identifier for the key.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
   </interface>
 </node>
 

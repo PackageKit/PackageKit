@@ -180,7 +180,10 @@ typedef struct {
 							 PkBitfield	 transaction_flags);
 	void		(*import_pubkey)		(PkBackend	*backend,
 							 PkBackendJob	*job,
-							 const gchar	*key_file);							 
+							 const gchar	*key_file);
+	void		(*remove_pubkey)		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*key_id);
 } PkBackendDesc;
 
 struct PkBackendPrivate
@@ -388,6 +391,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	if (desc->import_pubkey != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_IMPORT_PUBKEY);
+	if (desc->remove_pubkey != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_REMOVE_PUBKEY);
 	pk_bitfield_add (roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	backend->priv->roles = roles;
 
@@ -545,6 +550,7 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *)&desc->upgrade_system);
 		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *)&desc->repair_system);
 		g_module_symbol (handle, "pk_backend_import_pubkey", (gpointer *)&desc->import_pubkey);
+		g_module_symbol (handle, "pk_backend_remove_pubkey", (gpointer *)&desc->remove_pubkey);
 
 		/* get old static string data */
 		ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *)&backend_vfunc);
@@ -1728,6 +1734,24 @@ pk_backend_import_pubkey (PkBackend	*backend,
 	pk_backend_job_set_parameters (job, g_variant_new ("(s)",
 							   key_path));
 	backend->priv->desc->import_pubkey (backend, job, key_path);
+}
+
+void
+pk_backend_remove_pubkey (PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*key_id)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+	g_return_if_fail (backend->priv->desc->remove_pubkey != NULL);
+	g_return_if_fail (pk_is_thread_default ());
+
+	/* final pre-flight checks */
+	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_REMOVE_PUBKEY);
+	pk_backend_job_set_parameters (job, g_variant_new ("(s)",
+							   key_id));
+	backend->priv->desc->remove_pubkey (backend, job, key_id);
 }
 
 static void
