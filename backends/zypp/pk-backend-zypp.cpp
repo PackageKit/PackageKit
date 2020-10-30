@@ -1840,8 +1840,6 @@ pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("zypp_backend_destroy");
 
-	filesystem::recursive_rmdir (zypp::myTmpDir ());
-
 	g_free (_repoName);
 	delete priv;
 }
