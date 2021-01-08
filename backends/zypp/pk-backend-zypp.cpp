@@ -2746,7 +2746,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 		PoolStatusSaver saver;
 		pk_backend_job_set_percentage (job, 10);
 		vector<PoolItem> items;
-		VersionRelation relations[g_strv_length (package_ids)];
 		guint to_install = 0;
 
 		for (guint i = 0; package_ids[i]; i++) {
@@ -2776,43 +2775,45 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 				}
 			}
 
+			VersionRelation relation = NEWER_VERSION;
+
 			for (guint j = 0; j < installed.size (); j++) {
 				inst_pkg = &installed.at (j);
 				ret = inst_pkg->edition ().compare (Edition (split[PK_PACKAGE_ID_VERSION]));
 
-				if (relations[i] == 0 && ret < 0) {
-					relations[i] = NEWER_VERSION;
-				} else if (relations[i] != EQUAL_VERSION && ret > 0) {
-					relations[i] = OLDER_VERSION;
+				if (ret < 0) {
+					relation = NEWER_VERSION;
+				} else if (relation != EQUAL_VERSION && ret > 0) {
+					relation = OLDER_VERSION;
 					if (!latest_pkg ||
 					    latest_pkg->edition ().compare (inst_pkg->edition ()) < 0) {
 						latest_pkg = inst_pkg;
 					}
 				} else if (ret == 0) {
-					relations[i] = EQUAL_VERSION;
+					relation = EQUAL_VERSION;
 					break;
 				}
 			}
 
-			if (relations[i] == EQUAL_VERSION &&
+			if (relation == EQUAL_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
 						  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
 				continue;
 			}
 
-			if (relations[i] == OLDER_VERSION &&
+			if (relation == OLDER_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
 						  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
 				pk_backend_job_error_code (job,
 							   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 							   "higher version \"%s\" of package %s.%s is already installed",
-							   latest_pkg->edition ().version ().c_str (),
+							   latest_pkg ? latest_pkg->edition ().version ().c_str () : "<NULL>",
 							   split[PK_PACKAGE_ID_NAME],
 							   split[PK_PACKAGE_ID_ARCH]);
 				return;
 			}
 
-			if (relations[i] && relations[i] != EQUAL_VERSION &&
+			if (relation != EQUAL_VERSION && installed.size() > 0 &&
 			    pk_bitfield_contain (transaction_flags,
 						 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
 				pk_backend_job_error_code (job,
