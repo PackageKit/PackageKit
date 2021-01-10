@@ -5,8 +5,3 @@ PackageKit is a DBUS abstraction layer that allows the session user to manage
 packages in a secure way using a cross-distro, cross-architecture API.
 
 For more information, please see http://www.packagekit.org
-
-
-Youtube movies, which demonstrates how it works: https://www.youtube.com/channel/UCFj5lquaGagB43sSEgzRkdw .
-
-You can donate: https://www.patreon.com/easylinux?fan_landing=true .
