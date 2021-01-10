@@ -90,11 +90,15 @@
 #include <zypp/target/rpm/librpmDb.h>
 #include <zypp/ui/Selectable.h>
 
+#include <zypp/Capabilities.h>
+#include <zypp/base/Logger.h>
+
 using namespace std;
 using namespace zypp;
 using zypp::filesystem::PathInfo;
 using zypp::sat::detail::SolvableIterator;
 using zypp::sat::Solvable;
+using zypp::solver::detail::SolutionAction;
 
 #undef ZYPP_BASE_LOGGER_LOGGROUP
 #define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
@@ -1504,7 +1508,7 @@ struct msg_proc_helper {
   Resolver_Ptr resolver;
   ResolverProblemList problems;
   ProblemSolutionList *solution_list; 
-  std::list<struct problem> problems2;
+  std::list<struct problem> *problems2;
   char *path_to_cache;
   
   struct reader_info reader_info;
@@ -1522,9 +1526,9 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
 {
   bool apply = false;
    
-  std::list<struct problem>::iterator it = helper->problems2.begin();
+  std::list<struct problem>::iterator it = helper->problems2->begin();
   
-  for (; it != helper->problems2.end(); ++it) {
+  for (; it != helper->problems2->end(); ++it) {
   
     ResolverProblemList::iterator it2 = helper->problems.begin();
     
@@ -1550,15 +1554,18 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
       if (get_full_resolution_text(**it3) == (*it).selected) {
    
         apply = true;
-        ProblemSolution solution = **it3;
-        helper->solution_list->push_back(&solution);
+        ProblemSolution *solution = &(**it3);
+        helper->solution_list->push_back(solution);
+        
       }
     }
   }
-  
-  if (apply)
+#if 1
+  if (apply) {
   
     helper->resolver->applySolutions(*helper->solution_list);
+  }
+#endif
 }
 #if 0
 static void show_solutions(const char *msg_, intptr_t usr_p)
@@ -2085,8 +2092,8 @@ static void save_transaction_to_cache(const char *type, const char *file, struct
   std::list<string>::iterator curr_sol, end_of_sol;
   
   
-  curr_problem = helper->problems2.begin();
-  end_of_problems = helper->problems2.end();
+  curr_problem = helper->problems2->begin();
+  end_of_problems = helper->problems2->end();
   
   while (curr_problem != end_of_problems) {
   
@@ -2156,13 +2163,11 @@ static char
   
   if (NULL == info->buffer) {
     
-    puts("HERE - BAD");
     return NULL;
   }
   
   while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (errno == EAGAIN && info->loaded < info->curr_old))  {
     
-    puts("BAD");
     curr = info->loaded;
     info->loaded += count;
     while ('\0' != info->buffer[curr] && curr < info->loaded) {
@@ -2221,25 +2226,19 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
   int flags = fcntl(fd, F_GETFL, 0);
   fcntl(fd, F_SETFL, flags | O_NONBLOCK);
   char *buffer ;
-  puts("YES");
   while (buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info)) {
   
-    puts(buffer);
-    puts("\n");
     if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
     
       
     }
     else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:") - 1)) {
       
-      puts("OKI");
       buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
       
-      puts(buffer);
       char *problem_str = strchr(buffer, ':');
       if (NULL == problem_str) {
-        
-        puts("BAD222");
+
         return FALSE;
       }
       
@@ -2247,7 +2246,6 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
       
       if (NULL == solution_str) {
       
-        puts("BAD333");
         return FALSE;
       }
       
@@ -2255,32 +2253,46 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
       int problem_number = atoi(problem_str);
       
       
+
       ProblemSolutionList::const_iterator it2;
       ResolverProblemList::iterator it = msg_proc->msg_proc_helper->problems.begin();
       std::advance(
         it, 
         problem_number);
-      ResolverProblem problem = **it;
+      ResolverProblem *problem = &(**it);
       
-      it2 = problem.solutions().begin();
+      it2 = problem->solutions().begin();
       std::advance(
         it2,
         solution_number);
       ProblemSolution solution = **it2;
-      msg_proc->msg_proc_helper->solution_list->push_back(*it2);
-      puts("OKI2");
+     // msg_proc->msg_proc_helper->solution_list->push_back(*it2);
+      
+      struct problem rproblem;
+      
+      rproblem.kind = problem->description();
+      rproblem.selected = get_full_resolution_text(solution);
+      
+      it2 = problem->solutions().begin();
+      
+      for (; it2 != problem->solutions().end(); ++it2) {
+        
+        rproblem.solutions.push_back(get_full_resolution_text(**it2));
+      }
+      
+      msg_proc->problems.push_back(rproblem);
+      
     }
     else if (0 == strncmp("STOP", buffer, sizeof("STOP") - 1)) {
       
       
     }
     else if (0 == strncmp("DONE!", buffer, sizeof("DONE!") - 1)) {
-      add_resolution_to_zypp(msg_proc->msg_proc_helper);
       /* Save resolution to file */
+      add_resolution_to_zypp(msg_proc->msg_proc_helper);
       save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
                                 msg_proc->to_install, msg_proc->to_remove);
       
-      puts("END");
       pk_backend_job_thread_setup(msg_proc->job->helper);
       
     }
@@ -2302,6 +2314,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
         
         
 	try {
+          try {
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
@@ -2311,14 +2324,17 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		pk_backend_job_set_percentage(job, 100);
-                
+                bool second_time = false;
                 
                 ResPool pool = ResPool::instance ();
                 test:
                 if (!zypp->resolver ()->resolvePool ()) {
+                  
+                  
                 struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
                 struct msg_proc_helper *transaction_problems;
                 
+                ResolverProblemList problems = zypp->resolver ()->problems ();
                 
                 if (NULL == rjob) {
                   
@@ -2332,6 +2348,17 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   pk_backend_job_set_priv_data(job, rjob);
                   transaction_problems = new struct msg_proc_helper;
                   transaction_problems->path_to_cache = path_to_cache;
+                  transaction_problems->reader_info.buffer = NULL;
+                  transaction_problems->reader_info.curr_old = 0;
+                  transaction_problems->reader_info.loaded = 0;
+                  transaction_problems->reader_info.buff_len = 0;
+                  
+                  
+                  transaction_problems->it = problems.begin();
+                  transaction_problems->resolver = zypp->resolver ();
+                  transaction_problems->solution_list = new ProblemSolutionList();
+                  transaction_problems->problems2 = &rjob->problems;//std::list<struct problem> {};//priv->problems;
+                  
                   rjob->job = job;
                   
                 }
@@ -2340,6 +2367,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   transaction_problems = rjob->msg_proc_helper;
                   path_to_cache = transaction_problems->path_to_cache;
                 }
+                
+                transaction_problems->problems = problems;
                 rjob->to_install = std::list<std::string>();
                 rjob->to_remove = std::list<std::string>();
                 rjob->problems = std::list<struct problem> ();
@@ -2347,7 +2376,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 ResObject::Kind kind = ResTraits<Package>::kind;
                 
                 // Adding packages selected by user
-                      ResolverProblemList problems = zypp->resolver ()->problems ();
                       gchar * emsg = NULL, * tempmsg = NULL;
                       ResolverProblemList::iterator it = problems.begin ();
                       std::list<std::string> to_remove;
@@ -2370,16 +2398,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                            int   buff_len;
                          };
 */
-                         transaction_problems->reader_info.buffer = NULL;
-                         transaction_problems->reader_info.curr_old = 0;
-                         transaction_problems->reader_info.loaded = 0;
-                         transaction_problems->reader_info.buff_len = 0;
-                         
-                         transaction_problems->problems = problems;
-                         transaction_problems->it = problems.begin();
-                         transaction_problems->resolver = zypp->resolver ();
-                         transaction_problems->solution_list = new ProblemSolutionList();
-                         transaction_problems->problems2 = rjob->problems;//std::list<struct problem> {};//priv->problems;
                          
                          ResPool::byKind_iterator itb = pool.byKindBegin (kind);
                          ResPool::byKind_iterator ite = pool.byKindEnd (kind);
@@ -2469,8 +2487,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             changed = true;
                          }
                            
-                         
-                           
+                       
                       }
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
@@ -2497,7 +2514,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           goto test;
                         }
 #endif
-                        
+#if 0
                         // TODO: Add support for passing request could be handled interactively
                         if (force) {
 			
@@ -2525,11 +2542,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
 			  goto exit;
                         }
+#endif
                         
                         
                         if (changed) {
                           
-                          
+                          add_resolution_to_zypp(transaction_problems);
                           if (rjob->sol_it) {
                             
                             //                             delete job->sol_it;
@@ -2542,6 +2560,9 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           job->done = 0;
                           if (! rjob->msg_proc_helper) {
                             rjob->msg_proc_helper = transaction_problems;
+                            
+                            
+                            
                           pid_t child_pid;
                           
                           
@@ -2579,15 +2600,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             comm_ch_input = (char*) malloc(length);
                             snprintf(comm_ch_input, length, "%d", fds2[0]);
                             
-                            printf("COMM_CH_OUTPUT: %d COMM_CH_INPUT: %d\n", fds[1], fds2[0]);
-                            
                             execlp(LIBEXECDIR "/dependency-solving-helper", LIBEXECDIR "/dependency-solving-helper", "--comm-channel-input", comm_ch_input,"--comm-channel-output", comm_ch_output, NULL);
                             
                             write(STDOUT_FILENO, "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
                             exit(1);
                             
                           }
-                          // TODO: SL S.L. READ DOCUMENTATION
                           else if (-1 == child_pid)
                           {
                             perror("Cannot spawn interactive dependency solver");
@@ -2644,6 +2662,21 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             
                         }
                         }
+                        else if (!second_time) {
+                          
+#if 0
+                          if (! rjob->msg_proc_helper) {
+                            rjob->msg_proc_helper = transaction_problems;
+                          }
+                          second_time = true;
+                          add_resolution_to_zypp(rjob->msg_proc_helper);
+                          goto test;
+#else
+                          second_time = true;
+                          add_resolution_to_zypp(transaction_problems);
+                          goto test;
+#endif
+                        }
                         
 #if 0
                         add_resolution_to_zypp(&transaction_problems);
@@ -2667,6 +2700,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           close(rjob->input);
                           close(rjob->output);
                         }
+                      
+                        
                 job->done = 1;
 		switch (type) {
 		case INSTALL:
@@ -2725,7 +2760,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
 			if (it->status ().isToBeInstalled ())
 				_dl_count++;
-			if (it->status ().isToBeInstalled () && !(it->resolvable()->licenseToConfirm().empty ())) {
+			if (NULL == rjob && it->status ().isToBeInstalled () && !(it->resolvable()->licenseToConfirm().empty ())) {
 				gchar *eula_id = g_strdup ((*it)->name ().c_str ());
 				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
 				if (!has_eula) {
@@ -2792,12 +2827,88 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 		pk_backend_job_set_percentage(job, 100);
 		ret = TRUE;
+          }
+          catch (std::bad_alloc &ex) {
+
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_cast &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_typeid &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_alloc &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_exception &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::domain_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::invalid_argument &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::length_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::out_of_range &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::logic_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::overflow_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::range_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::underflow_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::runtime_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::exception &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	} catch (const target::rpm::RpmException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "%s", ex.asUserString().c_str () );
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
+                pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
 	}
 
  exit:
