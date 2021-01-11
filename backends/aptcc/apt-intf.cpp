@@ -60,11 +60,11 @@ using namespace APT;
 #define RAMFS_MAGIC     0x858458f6
 
 AptIntf::AptIntf(PkBackendJob *job) :
+    m_cache(0),
     m_job(job),
     m_cancel(false),
-    m_terminalTimeout(120),
     m_lastSubProgress(0),
-    m_cache(0)
+    m_terminalTimeout(120)
 {
     m_cancel = false;
 }
@@ -134,9 +134,8 @@ bool AptIntf::init(gchar **localDebs)
             return false;
         }
 
-        for (int i = 0; i < g_strv_length(localDebs); ++i) {
+        for (guint i = 0; i < g_strv_length(localDebs); ++i)
             markFileForInstall(localDebs[i]);
-        }
     }
 
     int timeout = 10;
@@ -603,7 +602,7 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
 
             string strvalue = string(value);
             ssize_t pos = strvalue.find (".so.");
-            if ((pos != string::npos) && (pos > 0)) {
+            if ((pos > 0) && ((size_t) pos != string::npos)) {
                 // If last char is a number, add a "-" (to be policy-compliant)
                 if (g_ascii_isdigit (libPkgName.at (libPkgName.length () - 1))) {
                     libPkgName.append ("-");
@@ -1065,7 +1064,7 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
     PkgList output;
     vector<PkGroupEnum> groups;
 
-    int len = g_strv_length(values);
+    uint len = g_strv_length(values);
     for (uint i = 0; i < len; i++) {
         if (values[i] == NULL) {
             pk_backend_job_error_code(m_job,
@@ -1799,8 +1798,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
                                           str);
             } else if (strstr(status, "pmconffile") != NULL) {
                 // conffile-request from dpkg, needs to be parsed different
-                int i=0;
-                int count=0;
+                int i = 0;
                 string orig_file, new_file;
 
                 // go to first ' and read until the end
@@ -2192,7 +2190,7 @@ bool AptIntf::markFileForInstall(std::string const &file)
 PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
 {
     PkgList ret;
-    for (int i = 0; i < g_strv_length(localDebs); ++i) {
+    for (guint i = 0; i < g_strv_length(localDebs); ++i) {
         pkgCache::PkgIterator const P = (*m_cache)->FindPkg(localDebs[i]);
         if (P.end()) {
             continue;
@@ -2213,11 +2211,7 @@ PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
 bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, const PkgList &update,
                              bool fixBroken, PkBitfield flags, bool autoremove)
 {
-    //cout << "runTransaction" << simulate << remove << endl;
-
     pk_backend_job_set_status (m_job, PK_STATUS_ENUM_RUNNING);
-
-    bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
 
     // Enter the special broken fixing mode if the user specified arguments
     // THIS mode will run if fixBroken is false and the cache has broken packages

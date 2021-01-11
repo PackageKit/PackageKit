@@ -358,9 +358,8 @@ static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, 
 
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
-    for (int i = 0; i < g_strv_length(files); ++i) {
+    for (guint i = 0; i < g_strv_length(files); ++i)
         apt->emitPackageFilesLocal(files[i]);
-    }
 }
 
 void pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job, gchar **files)
@@ -407,9 +406,7 @@ void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield fi
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkBitfield filters;
-    const gchar *provides_text;
     gchar **values;
-    bool error = false;
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
     g_variant_get(params, "(t^a&s)",
@@ -741,7 +738,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     PkBitfield transaction_flags = 0;
     gboolean allow_deps = false;
     gboolean autoremove = false;
-    bool fileInstall = false;
     gchar **full_paths = NULL;
     gchar **package_ids = NULL;
 
@@ -751,7 +747,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         g_variant_get(params, "(t^a&s)",
                       &transaction_flags,
                       &full_paths);
-        fileInstall = true;
     } else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
         g_variant_get(params, "(t^a&sbb)",
                       &transaction_flags,
@@ -767,14 +762,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
                       &transaction_flags,
                       &package_ids);
     }
-
-    // Check if we should only simulate the install (calculate dependencies)
-    bool simulate;
-    simulate = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
-
-    // Check if we should only download all the required packages for this transaction
-    bool downloadOnly;
-    downloadOnly = pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 
     // Check if we should fix broken packages
     bool fixBroken = false;
@@ -884,7 +871,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     bool found = false;
     // generic
     PkRoleEnum role;
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
     role = pk_backend_job_get_role(job);
     if (role == PK_ROLE_ENUM_GET_REPO_LIST) {

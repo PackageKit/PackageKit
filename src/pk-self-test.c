@@ -183,11 +183,11 @@ pk_test_backend_func (void)
 	pk_backend_job_set_backend (job, backend);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
-				  (PkBackendJobVFunc) pk_test_backend_package_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_package_cb),
 				  NULL);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_FINISHED,
-				  (PkBackendJobVFunc) pk_test_backend_finished_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_finished_cb),
 				  NULL);
 
 	/* get eula that does not exist */
@@ -428,13 +428,13 @@ pk_test_backend_spawn_func (void)
 	/* so we can spin until we finish */
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_FINISHED,
-				  (PkBackendJobVFunc) pk_test_backend_spawn_finished_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_finished_cb),
 				  backend_spawn);
 
 	/* so we can count the returned packages */
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
-				  (PkBackendJobVFunc) pk_test_backend_spawn_package_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_package_cb),
 				  backend_spawn);
 
 	/* test search-name.sh running */

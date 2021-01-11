@@ -1288,7 +1288,7 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 
 		/* socket has data */
 		source = g_socket_create_source (job_data->socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
-		g_source_set_callback (source, (GSourceFunc) pk_backend_socket_has_data_cb, job, NULL);
+		g_source_set_callback (source, G_SOURCE_FUNC (pk_backend_socket_has_data_cb), job, NULL);
 		job_data->socket_listen_id = g_source_attach (source, NULL);
 
 		/* send some data */

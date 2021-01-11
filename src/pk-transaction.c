@@ -682,7 +682,7 @@ pk_transaction_distro_upgrade_cb (PkBackendJob *job,
 
 	/* emit */
 	g_debug ("emitting distro-upgrade %s, %s, %s",
-		 pk_distro_upgrade_enum_to_string (state),
+		 pk_update_state_enum_to_string (state),
 		 name, summary);
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
@@ -1681,83 +1681,83 @@ pk_transaction_run (PkTransaction *transaction)
 	/* connect signal to receive backend lock changes */
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_LOCKED_CHANGED,
-				  (PkBackendJobVFunc) pk_transaction_locked_changed_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_locked_changed_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_ALLOW_CANCEL,
-				  (PkBackendJobVFunc) pk_transaction_allow_cancel_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_allow_cancel_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_DETAILS,
-				  (PkBackendJobVFunc) pk_transaction_details_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_details_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_ERROR_CODE,
-				  (PkBackendJobVFunc) pk_transaction_error_code_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_error_code_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_FILES,
-				  (PkBackendJobVFunc) pk_transaction_files_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_files_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_DISTRO_UPGRADE,
-				  (PkBackendJobVFunc) pk_transaction_distro_upgrade_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_distro_upgrade_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_FINISHED,
-				  (PkBackendJobVFunc) pk_transaction_finished_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_finished_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
-				  (PkBackendJobVFunc) pk_transaction_package_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_package_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-				  (PkBackendJobVFunc) pk_transaction_item_progress_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_item_progress_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_PERCENTAGE,
-				  (PkBackendJobVFunc) pk_transaction_percentage_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_percentage_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_SPEED,
-				  (PkBackendJobVFunc) pk_transaction_speed_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_speed_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_DOWNLOAD_SIZE_REMAINING,
-				  (PkBackendJobVFunc) pk_transaction_download_size_remaining_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_download_size_remaining_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_REPO_DETAIL,
-				  (PkBackendJobVFunc) pk_transaction_repo_detail_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_repo_detail_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
-				  (PkBackendJobVFunc) pk_transaction_repo_signature_required_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_repo_signature_required_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_EULA_REQUIRED,
-				  (PkBackendJobVFunc) pk_transaction_eula_required_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_eula_required_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-				  (PkBackendJobVFunc) pk_transaction_media_change_required_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_media_change_required_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_REQUIRE_RESTART,
-				  (PkBackendJobVFunc) pk_transaction_require_restart_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_require_restart_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_STATUS_CHANGED,
-				  (PkBackendJobVFunc) pk_transaction_status_changed_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_status_changed_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-				  (PkBackendJobVFunc) pk_transaction_update_detail_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_update_detail_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_CATEGORY,
-				  (PkBackendJobVFunc) pk_transaction_category_cb,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_category_cb),
 				  transaction);
 
 	/* do the correct action with the cached parameters */
@@ -5074,9 +5074,9 @@ gboolean
 pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 {
 	static const GDBusInterfaceVTable interface_vtable = {
-		pk_transaction_method_call,
-		pk_transaction_get_property,
-		NULL
+		.method_call = pk_transaction_method_call,
+		.get_property = pk_transaction_get_property,
+		.set_property = NULL
 	};
 
 	g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
