@@ -156,6 +156,9 @@ bool AptIntf::init(gchar **localDebs)
         m_cache->Close();
     }
 
+    // default settings
+    _config->CndSet("APT::Get::AutomaticRemove::Kernels", _config->FindB("APT::Get::AutomaticRemove", true));
+
     m_interactive = pk_backend_job_get_interactive(m_job);
     if (!m_interactive) {
         // Do not ask about config updates if we are not interactive
