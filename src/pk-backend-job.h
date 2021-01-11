@@ -149,6 +149,8 @@ guint		 pk_backend_job_get_cache_age		(PkBackendJob	*job);
 typedef void	 (*PkBackendJobVFunc)			(PkBackendJob	*job,
 							 gpointer	 object,
 							 gpointer	 user_data);
+#define 	PK_BACKEND_JOB_VFUNC(f) ((PkBackendJobVFunc) (void (*)(void)) (f))
+
 void		 pk_backend_job_set_vfunc		(PkBackendJob	*job,
 							 PkBackendJobSignal signal_kind,
 							 PkBackendJobVFunc vfunc,

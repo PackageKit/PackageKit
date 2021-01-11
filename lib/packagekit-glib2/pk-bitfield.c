@@ -368,7 +368,7 @@ pk_transaction_flag_bitfield_from_string (const gchar *transaction_flags)
 	PkBitfield transaction_flags_enum = 0;
 	guint length;
 	guint i;
-	PkFilterEnum transaction_flag;
+	PkTransactionFlagEnum transaction_flag;
 	g_auto(GStrv) split = NULL;
 
 	split = g_strsplit (transaction_flags, ";", 0);

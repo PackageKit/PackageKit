@@ -229,7 +229,7 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
 	g_print ("%s: %s\n", _("Distribution"), name);
 	/* TRANSLATORS: this is type of update, stable or testing */
-	g_print (" %s: %s\n", _("Type"), pk_update_state_enum_to_string (state));
+	g_print (" %s: %s\n", _("Type"), pk_distro_upgrade_enum_to_string (state));
 	/* TRANSLATORS: this is any summary text describing the upgrade */
 	g_print (" %s: %s\n", _("Summary"), summary);
 }

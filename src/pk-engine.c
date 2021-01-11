@@ -1724,14 +1724,14 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	PkEngine *engine = PK_ENGINE (user_data);
 	guint registration_id;
 	static const GDBusInterfaceVTable iface_daemon_vtable = {
-		pk_engine_daemon_method_call,
-		pk_engine_daemon_get_property,
-		NULL
+		.method_call = pk_engine_daemon_method_call,
+		.get_property = pk_engine_daemon_get_property,
+		.set_property = NULL
 	};
 	static const GDBusInterfaceVTable iface_offline_vtable = {
-		pk_engine_offline_method_call,
-		pk_engine_offline_get_property,
-		NULL
+		.method_call = pk_engine_offline_method_call,
+		.get_property = pk_engine_offline_get_property,
+		.set_property = NULL
 	};
 
 	/* save copy for emitting signals */
