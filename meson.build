@@ -1,7 +1,7 @@
 project('PackageKit', 'c',
-  version : '1.2.2',
+  version : '1.2.3',
   license : 'LGPL-2.1+',
-  meson_version : '>=0.47.0',
+  meson_version : '>=0.50',
   default_options : ['warning_level=2', 'c_std=c99'],
 )
 
@@ -24,11 +24,18 @@ libsystemd = []
 if get_option('systemd')
   libsystemd = dependency('libsystemd', version: '>=213')
   systemd_system_unit_dir = get_option('systemdsystemunitdir')
-  if systemd_system_unit_dir == ''
+  systemd_user_unit_dir = get_option('systemduserunitdir')
+  if systemd_system_unit_dir == '' or systemd_user_unit_dir == ''
     systemd = dependency('systemd')
+  endif
+  if systemd_system_unit_dir == ''
     systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
   endif
+  if systemd_user_unit_dir == ''
+    systemd_user_unit_dir = systemd.get_pkgconfig_variable('systemduserunitdir')
+  endif
 
+  add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
 else
   if get_option('offline_update')

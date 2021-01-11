@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_1_2_1.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_1_2_2.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.2.2
+Version 1.2.3
 ~~~~~~~~~~~~~
 Released: 2020-xx-xx
 
@@ -26,15 +26,15 @@ ninja PackageKit-pot
 tx push --source
 tx pull --all --force --minimum-perc=5
 ninja-build fix-translations
-git add *.po
+git add ../po/*.po
 
 3. Update library version if new ABI or API in meson.build
 
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.2.2"
-export release_tag="PACKAGEKIT_1_2_2"
+export release_version="1.2.3"
+export release_tag="PACKAGEKIT_1_2_3"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
@@ -65,7 +65,7 @@ git push
 9. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.2.2 released!
+PackageKit 1.2.3 released!
 
 Tarballs available here: http://www.freedesktop.org/software/PackageKit/releases/
 
