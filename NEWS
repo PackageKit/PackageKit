@@ -1,3 +1,23 @@
+Version 1.2.2
+~~~~~~~~~~~~~
+Released: 2020-11-02
+
+Backends:
+ - aptcc: Build socket-activated debconf helper again (Matthias Klumpp)
+ - aptcc: Do not trust local debs (CVE-2020-16122) (Julian Andres Klode)
+ - aptcc: Drop apt-inst, use apt-pkg pkg-config file for dependency detection (Matthias Klumpp)
+ - zypp: Don’t refresh repos again when actually updating packages (Jonathan Kang)
+ - zypp: Erase tmp repo from pool after local installation (#409) (Rinat Dobrokhotov)
+ - zypp: Set PATH variable (Jonathan Kang)
+
+New Features:
+ - Notify the service manager when it's beginning to shutdown (Jonathan Kang)
+
+Bugfixes:
+ - Fix possible information disclosure [CVE-2020-16121] (Julian Andres Klode)
+ - Install required test helper files (Neal Gompa)
+ - Silence meson warning by bumping minimum version (Matthias Klumpp)
+
 Version 1.2.1
 ~~~~~~~~~~~~~
 Released: 2020-09-07

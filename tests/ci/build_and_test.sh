@@ -8,5 +8,5 @@ meson build -Dlocal_checkout=true -Ddaemon_tests=false $@
 
 # Build, Test & Install
 ninja -C build
-ninja -C build test
+meson test -C build --print-errorlogs
 DEST=/tmp/install_root/ ninja -C build install

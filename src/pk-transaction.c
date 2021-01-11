@@ -77,7 +77,7 @@ static gboolean pk_transaction_is_supported_content_type (PkTransaction *transac
 #define PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE	10000
 
 /* maximum number of packages that can be processed in one go */
-#define PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS	5200
+#define PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS	10000
 
 struct PkTransactionPrivate
 {

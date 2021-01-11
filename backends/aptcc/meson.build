@@ -5,42 +5,8 @@ cpp_compiler = meson.get_compiler('cpp')
 gstreamer_dep = dependency('gstreamer-1.0')
 gstreamer_base_dep = dependency('gstreamer-base-1.0')
 gstreamer_plugins_base_dep = dependency('gstreamer-plugins-base-1.0')
-appstream_dep = dependency('appstream', version: '>=0.11')
-
-apt_pkg_dep = cpp_compiler.find_library('apt-pkg')
-apt_inst_dep = cpp_compiler.find_library('apt-inst')
-
-if not cpp_compiler.compiles(
-  '''
-    #include <apt-pkg/pkgsystem.h>
-    int main () {
-      _system->ArchitecturesSupported();
-      return 0;
-    }
-  ''',
-  dependencies: [
-    apt_pkg_dep,
-    apt_inst_dep
-  ]
-)
-  error ('libapt-pkg 1.1 or later is required')
-endif
-
-if not cpp_compiler.compiles(
-  '''
-    #include <apt-pkg/pkgsystem.h>
-    int main () {
-      _system->LockInner();
-      return 0;
-    }
-  ''',
-  dependencies: [
-    apt_pkg_dep,
-    apt_inst_dep
-  ]
-)
-  error ('libapt-pkg 1.7 or later is required - or backported frontend locking')
-endif
+appstream_dep = dependency('appstream', version: '>=0.12')
+apt_pkg_dep = dependency('apt-pkg', version: '>=1.9.2')
 
 # Check whether apt supports ddtp
 ddtp_flag = []
@@ -53,8 +19,7 @@ if cpp_compiler.compiles(
     }
   ''',
   dependencies: [
-    apt_pkg_dep,
-    apt_inst_dep
+    apt_pkg_dep
   ]
 )
   ddtp_flag = ['-DHAVE_DDTP']
@@ -86,7 +51,6 @@ shared_module(
     packagekit_glib2_dep,
     gmodule_dep,
     apt_pkg_dep,
-    apt_inst_dep,
     gstreamer_dep,
     gstreamer_base_dep,
     gstreamer_plugins_base_dep,
@@ -115,3 +79,34 @@ install_data(
   'pkconffile.nodiff',
   install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'aptcc'),
 )
+
+if get_option('systemd')
+  executable(
+    'pk-debconf-helper',
+    'pk-debconf-helper.c',
+    dependencies: [
+      packagekit_glib2_dep,
+      libsystemd
+    ],
+    install: true,
+    install_dir: get_option('libexecdir')
+  )
+
+  sd_config_data = configuration_data()
+  sd_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('libexecdir')))
+
+  configure_file(
+    input: 'pk-debconf-helper.service.in',
+    output: 'pk-debconf-helper.service',
+    configuration: sd_config_data,
+    install: true,
+    install_dir: systemd_user_unit_dir,
+  )
+  configure_file(
+    input: 'pk-debconf-helper.socket.in',
+    output: 'pk-debconf-helper.socket',
+    configuration: sd_config_data,
+    install: true,
+    install_dir: systemd_user_unit_dir,
+  )
+endif

@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# Juliano de Souza Camargo <julianosc@protonmail.com>, 2020
 # Pedro Albuquerque <pmra@gmx.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Rui Gouveia <rui.gouveia@gmail.com>, 2010
@@ -154,6 +155,9 @@ msgstr "Autenticação é necessária para aceitar a EULA"
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por si"
 
+msgid "Authentication is required to change software repository parameters"
+msgstr "Autenticação é necessária para alterar parâmetros da fonte de aplicação"
+
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Autenticação é necessária para limpar a mensagem de atualizações offline"
 
@@ -168,6 +172,9 @@ msgstr "Autenticação é necessária para instalar programas"
 
 msgid "Authentication is required to install untrusted software"
 msgstr "Autenticação é necessária para instalar um pacote não confiável"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Autenticação é necessária para atualizar as fontes do sistema"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Autenticação é necessária para reinstalar programas"
@@ -197,6 +204,9 @@ msgstr "Autenticação é necessária para atualizar o sistema operativo"
 msgid "Author"
 msgstr "Autor"
 
+msgid "Automatically remove unused dependencies"
+msgstr "Remover automaticamente dependências não usadas"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Disponível"
@@ -204,6 +214,10 @@ msgstr "Disponível"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "Bloqueado"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Correção de erro"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -231,6 +245,13 @@ msgstr "A cancelar"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "Categori­a"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Alterar parâmetros da fonte de aplicação"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -356,6 +377,10 @@ msgstr "Transferido"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "A transferir"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "A transferir detalhes acerca das fontes do programa."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -529,6 +554,10 @@ msgstr "A obter repositórios"
 msgid "Getting requires"
 msgstr "A obter necessários"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Obter atualizações"
+
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
 msgstr "Falha ao obter a lista de ficheiros"
@@ -620,6 +649,11 @@ msgid "Installing"
 msgstr "A instalar"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "A instalar atualizações"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "A instalar atualizações"
@@ -635,6 +669,10 @@ msgstr "A instalar pacotes"
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
 msgstr "A instalar assinatura"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "A instalar atualizações; pode levar um tempo..."
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -689,6 +727,10 @@ msgstr "Etiqueta do suporte"
 msgid "Media type"
 msgstr "Tipo de suporte"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Modificar fontes"
+
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
@@ -737,6 +779,13 @@ msgstr "A tornar pacotes obsoletos"
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "A opção \"%s\" não é suportada"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Pacote"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -848,6 +897,12 @@ msgstr "Nome real"
 msgid "Rebooting after installing updates…"
 msgstr "A reiniciar após instalar atualizações"
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Atualizar fontes do sistema"
+
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
 msgstr "Atualizar a cache"
@@ -957,6 +1012,11 @@ msgstr "Executar o comando usando períodos de inatividade da rede e também usa
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "A executar"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "A executar ligações"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1141,6 +1201,10 @@ msgstr "Os seguintes pacotes precisam de ser desatualizados:"
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
 msgstr "Os seguintes pacotes precisam de ser instalados:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Os seguintes pacotes precisam de ser obsoletos:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"

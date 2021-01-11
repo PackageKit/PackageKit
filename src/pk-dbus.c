@@ -64,6 +64,10 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
+	/* no connection to DBus */
+	if (dbus->priv->proxy_uid == NULL)
+		return G_MAXUINT;
+
 	/* set in the test suite */
 	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
 		g_debug ("using self-check shortcut");
