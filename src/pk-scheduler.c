@@ -210,6 +210,12 @@ pk_scheduler_item_free (PkSchedulerItem *item)
 	g_free (item);
 }
 
+static void
+pk_scheduler_item_free_cb (PkSchedulerItem *item, gpointer user_data)
+{
+	pk_scheduler_item_free (item);
+}
+
 static gboolean
 pk_scheduler_remove_internal (PkScheduler *scheduler, PkSchedulerItem *item)
 {
@@ -1020,7 +1026,7 @@ static void
 pk_scheduler_init (PkScheduler *scheduler)
 {
 	scheduler->priv = PK_SCHEDULER_GET_PRIVATE (scheduler);
-	scheduler->priv->array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_scheduler_item_free);
+	scheduler->priv->array = g_ptr_array_new ();
 	scheduler->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
 							    NULL);
 	scheduler->priv->unwedge_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
@@ -1042,7 +1048,10 @@ pk_scheduler_finalize (GObject *object)
 	if (scheduler->priv->unwedge_id != 0)
 		g_source_remove (scheduler->priv->unwedge_id);
 
-	g_ptr_array_unref (scheduler->priv->array);
+	g_ptr_array_foreach (scheduler->priv->array,
+			     (GFunc) pk_scheduler_item_free_cb, NULL);
+	g_ptr_array_free (scheduler->priv->array, TRUE);
+
 	g_dbus_node_info_unref (scheduler->priv->introspection);
 	g_key_file_unref (scheduler->priv->conf);
 	if (scheduler->priv->backend != NULL)
