@@ -1249,6 +1249,8 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 
 	if (is_tumbleweed ()) {
 		resolver->setUpgradeMode (FALSE);
+	} else {
+		resolver->setUpdateMode (FALSE);
 	}
 }
 
