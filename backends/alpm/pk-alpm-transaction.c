@@ -794,9 +794,9 @@ pk_alpm_transaction_initialize (PkBackendJob* job, alpm_transflag_t flags, const
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 
 	if (alpm_trans_init (priv->alpm, flags) < 0) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 		return FALSE;
 	}
 
@@ -995,13 +995,13 @@ pk_alpm_transaction_simulate (PkBackendJob *job, GError **error)
 	}
 
 	if (prefix != NULL) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", prefix,
-			     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s: %s", prefix,
+			     alpm_strerror (alpm_err));
 	} else {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 	}
 
 	return FALSE;
@@ -1105,13 +1105,13 @@ pk_alpm_transaction_commit (PkBackendJob *job, GError **error)
 	}
 
 	if (prefix != NULL) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", prefix,
-			     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s: %s", prefix,
+			     alpm_strerror (alpm_err));
 	} else {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 	}
 
 	return FALSE;
@@ -1139,9 +1139,9 @@ pk_alpm_transaction_end (PkBackendJob *job, GError **error)
 	pkalpm_current_job = NULL;
 
 	if (alpm_trans_release (priv->alpm) < 0) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 		return FALSE;
 	}
 
