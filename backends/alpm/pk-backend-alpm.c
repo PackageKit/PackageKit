@@ -90,9 +90,9 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 
 	priv->localdb = alpm_get_localdb (priv->alpm);
 	if (priv->localdb == NULL) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s", "local",
-			     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "[%s]: %s", "local",
+			     alpm_strerror (alpm_err));
 	}
 
 	return TRUE;

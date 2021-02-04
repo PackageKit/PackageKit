@@ -42,9 +42,9 @@ pk_alpm_transaction_remove_targets (PkBackendJob *job, gchar** packages, GError 
 
 		alpm_pkg_t *pkg = alpm_db_get_pkg (priv->localdb, name);
 		if (pkg == NULL || alpm_remove_pkg (priv->alpm, pkg) < 0) {
-			alpm_errno_t errno = alpm_errno (priv->alpm);
-			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s", name,
-				     alpm_strerror (errno));
+			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s: %s", name,
+				     alpm_strerror (alpm_err));
 			return FALSE;
 		}
 	}
