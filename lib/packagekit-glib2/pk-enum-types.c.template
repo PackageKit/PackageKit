@@ -9,8 +9,8 @@
 /*** END file-header ***/
 
 /*** BEGIN file-production ***/
-#include "@filename@"
-/* enumerations from "@filename@" */
+#include "@basename@"
+/* enumerations from "@basename@" */
 /*** END file-production ***/
 
 /*** BEGIN value-header ***/
