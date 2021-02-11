@@ -70,9 +70,6 @@ bool AptCacheFile::BuildCaches(bool withLock)
 
 bool AptCacheFile::CheckDeps(bool AllowBroken)
 {
-    PkRoleEnum role = pk_backend_job_get_role(m_job);
-    bool FixBroken = (role == PK_ROLE_ENUM_REPAIR_SYSTEM);
-
     if (_error->PendingError() == true) {
         return false;
     }

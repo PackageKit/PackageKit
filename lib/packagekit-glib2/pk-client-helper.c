@@ -380,7 +380,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	fd = g_socket_get_fd (child->socket);
 	child->socket_channel = g_io_channel_unix_new (fd);
 	child->socket_channel_source =
-		make_input_source (child->socket_channel, (GSourceFunc) pk_client_helper_copy_conn_cb, child);
+		make_input_source (child->socket_channel, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
 	/* binary data */
 	status = g_io_channel_set_encoding (child->socket_channel, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
@@ -391,9 +391,9 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	/* frontend has data */
 	child->stdout_channel_source =
-		make_input_source (child->stdout_channel, (GSourceFunc) pk_client_helper_copy_stdout_cb, child);
+		make_input_source (child->stdout_channel, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
 	child->stderr_channel_source =
-		make_input_source (child->stderr_channel, (GSourceFunc) pk_client_helper_echo_stderr_cb, child);
+		make_input_source (child->stderr_channel, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
 	return G_SOURCE_CONTINUE;
 }
 
@@ -537,7 +537,7 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 	fd = g_socket_get_fd (priv->socket);
 	priv->socket_channel = g_io_channel_unix_new (fd);
 	priv->socket_channel_source =
-		make_input_source (priv->socket_channel, (GSourceFunc) pk_client_helper_accept_connection_cb, client_helper);
+		make_input_source (priv->socket_channel, G_SOURCE_FUNC (pk_client_helper_accept_connection_cb), client_helper);
 	return TRUE;
 }
 

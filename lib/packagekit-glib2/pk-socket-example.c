@@ -85,7 +85,7 @@ main (void)
 
 	/* socket has data */
 	source = g_socket_create_source (socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
-	g_source_set_callback (source, (GSourceFunc) pk_socket_example_accept_connection_cb, loop, NULL);
+	g_source_set_callback (source, G_SOURCE_FUNC (pk_socket_example_accept_connection_cb), loop, NULL);
 	g_source_attach (source, NULL);
 
 	/* send some data */

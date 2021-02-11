@@ -114,5 +114,6 @@ public:
 typedef list<SourcesList::SourceRecord *>::iterator SourcesListIter;
 
 ostream &operator <<(ostream &, const SourcesList::SourceRecord &);
+ostream &operator <<(ostream &os, const SourcesList::VendorRecord &rec);
 
 #endif

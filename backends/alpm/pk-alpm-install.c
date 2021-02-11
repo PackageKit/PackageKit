@@ -62,9 +62,9 @@ pk_alpm_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **erro
 
 	for (; *paths != NULL; ++paths) {
 		if (pk_alpm_install_add_file (job, *paths) < 0) {
-			alpm_errno_t errno = alpm_errno (priv->alpm);
-			g_set_error (error, PK_ALPM_ERROR, errno, "%s: %s",
-				     *paths, alpm_strerror (errno));
+			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s: %s",
+				     *paths, alpm_strerror (alpm_err));
 			return FALSE;
 		}
 	}

@@ -156,16 +156,6 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
-bool strIsPrefix(string const& s1, string const&s2)
-{
-    const char*p = s1.c_str();
-    const char*q = s2.c_str();
-    while (*p&&*q)
-        if (*p++!=*q++)
-            return false;
-    return true;
-}
-
 string fetchChangelogData(AptCacheFile &CacheFile,
                           pkgAcquire &Fetcher,
                           pkgCache::VerIterator Ver,
@@ -263,17 +253,16 @@ string fetchChangelogData(AptCacheFile &CacheFile,
             // and when it got updated
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                GTimeVal dateTime = {0, 0};
-                gchar *date;
+                g_autoptr(GDateTime) dateTime = NULL;
+                g_autofree gchar *date = NULL;
                 date = g_match_info_fetch_named(match_info, "date");
                 time_t time;
                 g_warn_if_fail(RFC1123StrToTime(date, time));
-                dateTime.tv_sec = time;
-                g_free(date);
+                dateTime = g_date_time_new_from_unix_local(time);
 
-                *issued = g_time_val_to_iso8601(&dateTime);
+                *issued = g_date_time_format_iso8601(dateTime);
                 if (updated->empty()) {
-                    *updated = g_time_val_to_iso8601(&dateTime);
+                    *updated = g_date_time_format_iso8601(dateTime);
                 }
             }
             g_match_info_free(match_info);

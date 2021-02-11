@@ -616,7 +616,7 @@ static alpm_handle_t *
 pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 {
 	alpm_handle_t *handle;
-	alpm_errno_t errno;
+	alpm_errno_t alpm_err;
 	gsize dir = 1;
 
 	g_return_val_if_fail (config != NULL, FALSE);
@@ -644,10 +644,10 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 	}
 
 
-	handle = alpm_initialize (config->root, config->dbpath, &errno);
+	handle = alpm_initialize (config->root, config->dbpath, &alpm_err);
 	if (handle == NULL) {
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 		return handle;
 	}
 
@@ -658,9 +658,9 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 	}
 
 	if (alpm_option_set_gpgdir (handle, config->gpgdir) < 0) {
-		errno = alpm_errno (handle);
-		g_set_error (error, PK_ALPM_ERROR, errno, "GPGDir: %s",
-			     alpm_strerror (errno));
+		alpm_err = alpm_errno (handle);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "GPGDir: %s",
+			     alpm_strerror (alpm_err));
 		return handle;
 	}
 
@@ -678,9 +678,9 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 	}
 
 	if (alpm_option_set_logfile (handle, config->logfile) < 0) {
-		errno = alpm_errno (handle);
-		g_set_error (error, PK_ALPM_ERROR, errno, "LogFile: %s",
-			     alpm_strerror (errno));
+		alpm_err = alpm_errno (handle);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "LogFile: %s",
+			     alpm_strerror (alpm_err));
 		return handle;
 	}
 
@@ -693,9 +693,9 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 
 	/* alpm takes ownership */
 	if (alpm_option_set_cachedirs (handle, config->cachedirs) < 0) {
-		errno = alpm_errno (handle);
-		g_set_error (error, PK_ALPM_ERROR, errno, "CacheDir: %s",
-			     alpm_strerror (errno));
+		alpm_err = alpm_errno (handle);
+		g_set_error (error, PK_ALPM_ERROR, alpm_err, "CacheDir: %s",
+			     alpm_strerror (alpm_err));
 		return handle;
 	}
 	config->cachedirs = NULL;

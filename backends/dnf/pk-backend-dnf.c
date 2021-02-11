@@ -823,6 +823,28 @@ dnf_utils_run_query_with_newest_filter (DnfSack *sack, HyQuery query)
 	return results;
 }
 
+static gboolean
+dnf_utils_force_distupgrade_on_upgrade (DnfSack *sack)
+{
+	g_autoptr(GPtrArray) plist = NULL;
+	gint candidates;
+	const gchar *distroverpkg_names[] = { "system-release", "distribution-release", NULL };
+	const gchar *distupgrade_provides[] = { "system-upgrade(dsync)", "product-upgrade() = dup", NULL };
+	HyQuery query_tmp = hy_query_create (sack);
+
+	hy_query_filter (query_tmp, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_provides_in (query_tmp, (gchar**) distroverpkg_names);
+	hy_query_filter_provides_in (query_tmp, (gchar**) distupgrade_provides);
+
+	plist = hy_query_run (query_tmp);
+	candidates = plist->len;
+	hy_query_free (query_tmp);
+
+	if (candidates > 0)
+		return TRUE;
+	return FALSE;
+}
+
 static GPtrArray *
 dnf_utils_run_query_with_filters (PkBackendJob *job, DnfSack *sack,
 				  HyQuery query, PkBitfield filters)
@@ -1001,7 +1023,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
-		hy_goal_upgrade_all (job_data->goal);
+		if (dnf_utils_force_distupgrade_on_upgrade (sack)) {
+			hy_goal_distupgrade_all (job_data->goal);
+		} else {
+			hy_goal_upgrade_all (job_data->goal);
+		}
 		ret = dnf_goal_depsolve (job_data->goal, DNF_ALLOW_UNINSTALL, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
