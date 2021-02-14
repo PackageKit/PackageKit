@@ -2218,6 +2218,20 @@ dependency_handle_selection(GIOChannel *source,
                             GIOCondition condition,
                             gpointer data)
 {
+  
+  if (G_IO_IN != (G_IO_IN & condition)) {
+  
+    if (G_IO_ERR == (G_IO_ERR & condition) ||
+      G_IO_HUP == (G_IO_HUP & condition) ||
+      G_IO_NVAL == (G_IO_NVAL & condition)) {
+      
+      return FALSE;
+    }
+    
+    return TRUE;
+  }
+  
+  
   #if 0
 helper->problems2.push_back(prob);
 #endif
@@ -2234,11 +2248,11 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
     
       
     }
-    else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:") - 1)) {
+    else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:"))) {
       
       buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
       
-      char *problem_str = strchr(buffer, ':');
+      char *problem_str = buffer;//strchr(buffer, ':');
       if (NULL == problem_str) {
 
         return FALSE;
@@ -2297,6 +2311,8 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
       
       pk_backend_job_thread_setup(msg_proc->job->helper);
       
+      return FALSE;
+      
     }
   }
   
@@ -2347,6 +2363,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
                   
                   rjob = new (struct backend_job_private)();
+                  rjob->msg_proc_helper = NULL;
                   pk_backend_job_set_priv_data(job, rjob);
                   transaction_problems = new struct msg_proc_helper;
                   transaction_problems->path_to_cache = path_to_cache;
@@ -2660,10 +2677,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             
                             write(rjob->output, "", sizeof(""));
                             ret = TRUE;
-                            goto exit;
                             
                         }
+                            goto exit;
                         }
+#if 0
                         else if (!second_time) {
                           
 #if 0
@@ -2679,6 +2697,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           goto test;
 #endif
                         }
+#endif
                         
 #if 0
                         add_resolution_to_zypp(&transaction_problems);
@@ -2696,7 +2715,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           //cleaning up
                           
                           write(rjob->output, "", sizeof(""));
-                          g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
+                         // g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
                           if (rjob->msg_proc_helper) 
                             free(rjob->msg_proc_helper->path_to_cache);
                           close(rjob->input);
