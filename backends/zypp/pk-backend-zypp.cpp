@@ -120,6 +120,7 @@ struct backend_job_private {
   std::list<std::string> to_remove;
   
   std::list<struct problem> problems;
+  bool interactively_res_init;
   
   struct msg_proc_helper *msg_proc_helper;
   
@@ -1528,6 +1529,11 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
 {
   bool apply = false;
    
+  if (NULL == helper) {
+    
+    return;
+  }
+  
   std::list<struct problem>::iterator it = helper->problems2->begin();
   
   for (; it != helper->problems2->end(); ++it) {
@@ -1562,271 +1568,12 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
       }
     }
   }
-#if 1
   if (apply) {
   
     helper->resolver->applySolutions(*helper->solution_list);
   }
-#endif
-}
-#if 0
-static void show_solutions(const char *msg_, intptr_t usr_p)
-{
-  char *buffer, *prev, *curr, *prev2, *prev3;
-  int length, length2;
-  int problem, solution;
-  xmlNodePtr root, text, anchor, message, form, checkbox;
-  struct msg_proc_helper *helper = (struct msg_proc_helper *) usr_p;
-  
-  ResolverProblemList::iterator it;
-  ProblemSolutionList::const_iterator sol_it;
-  
-
-  xmlDocPtr a = bonsole_window(nullptr);
-  root = xmlDocGetRootElement(a);
-  
-  form = xmlNewNode(NULL, BAD_CAST "form");
-  xmlSetProp(form, BAD_CAST "action",BAD_CAST "app:update");
-  xmlAddChild(root, form);
-  
-  problem = 0;
-  solution = 0;
-  for (it = helper->problems.begin(); it != helper->problems.end(); ++it) {
-    
-    text = xmlNewText(BAD_CAST (*it)->description ().c_str ());
-    xmlAddChild(form, text);   
-    for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
-      
-      checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
-      text = xmlNewText(BAD_CAST (*sol_it)->description ().c_str ());
-      xmlAddChild(checkbox, text);
-      
-      xmlAddChild(form, checkbox);
-      //text = xmlNewCDataBlock(a, BAD_CAST (*sol_it)->details ().c_str (), strlen((*sol_it)->details ().c_str ()));
-      char *string= strdup((*sol_it)->details ().c_str ());
-      
-      char *prev = string;
-      char *curr = string;
-      
-      while ('\0' != *curr) {
-      
-        if ('\n' == *curr) {
-        
-          *curr = '\0';
-          text = xmlNewText(BAD_CAST prev);
-          xmlAddChild(form, text);
-          text = xmlNewNode(NULL, BAD_CAST "br");
-          xmlAddChild(form, text);
-          prev = curr + 1;
-        }
-        
-        ++curr;
-      }
-      
-      text = xmlNewText(BAD_CAST prev);
-      xmlAddChild(checkbox, text);
-      free(string);
-      
-      
-      length = snprintf(NULL, 0, "%d_%d", problem, solution) + 1;
-      buffer = (char*) malloc(length);
-      snprintf(buffer, length, "%d_%d", problem, solution);
-      
-      xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
-   
-      
-      
-      //++solution;
-    }
-    ++problem;
-  }
-
-bonsole_window_release(nullptr);
-bonsole_flush_changes(nullptr);
 }
 
-static void message_proc(const char *msg__, intptr_t usr_p)
-{
-  char *buffer, *prev, *curr, *prev2, *prev3, *spec;
-  int length, length2;
-  int problem, solution;
-  xmlNodePtr root, text, anchor, message, form, checkbox;
-  struct msg_proc_helper *helper = (struct msg_proc_helper *) usr_p;
-  
-  char *msg_ = bonsole_message_unescape_string(msg__, 0);
-  
-  if (0 == strncmp("update?", msg_, sizeof("update?") - 1)) {
-  
-    if (NULL == helper->solution_list) {
-    
-      helper->solution_list = new ProblemSolutionList();
-    }
-    bonsole_reset_document(nullptr);
-    xmlDocPtr a = bonsole_window(nullptr);
-    root = xmlDocGetRootElement(a);
-    spec = msg_;
-    buffer = spec;
-    length = 0;
-    while ('\0' != *buffer) {
-    
-      if ('&' == *buffer) {
-      
-        ++length;
-        *buffer = '\0';
-      }
-      ++buffer;
-    }
-    ++length;
-    buffer = &spec[sizeof("update?") - 1];
-    
-    while (0 < length) {
-    
-      prev = buffer;
-      do {
-        
-        ++buffer;
-      } while ('_' != *buffer);
-      
-      *buffer = '\0';
-      ++buffer;
-      do {
-        ++buffer;
-      } while ('=' != *buffer);
-    
-      
-      ++buffer;
-      if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
-      
-        --length;
-        do {
-          ++buffer;
-        } while ('\0' != *buffer);
-        
-        continue;
-      }
-      
-      while ('\0' != *buffer) {
-        ++buffer;
-      }
-      
-      ++buffer;
-      curr = prev;
-      prev = buffer;
-      
-      length2 = length - 1;
-      while (0 < length2) {
-        prev2 = buffer;
-        
-        
-        
-        do {
-          
-          ++buffer;
-        } while ('_' != *buffer);
-        
-        *buffer = '\0';
-        ++buffer;
-        
-        
-        if (0 != strcmp(curr, prev2)) {
-          
-          --length2;
-          do {
-            ++buffer;
-          } while ('\0' != *buffer);
-          
-          continue;
-        }
-        
-        do {
-          ++buffer;
-        } while ('=' != *buffer);
-        
-        
-        ++buffer;
-        if ('\0' != buffer[0] && 0 != strcmp(buffer, "1")) {
-          
-          --length2;
-          do {
-            ++buffer;
-          } while ('\0' != *buffer);
-          
-          ++buffer;
-          if ('\0' != *buffer) {
-          
-            ++buffer;
-          }
-          continue;
-        }
-        message = xmlNewNode(NULL, BAD_CAST "message");
-        text = xmlNewText(BAD_CAST "You checked two different solutions for one problem");
-        xmlAddChild(message, text);   
-        xmlAddChild(root, message);   
-  
-        bonsole_window_release(nullptr);
-        show_solutions(msg_, usr_p);
-        
-        return;
-        
-      }
-        do {
-          ++buffer;
-        } while ('\0' != *buffer);
-        int problem_number, solution_number;
-        
-        problem_number = atoi(curr);
-        while ('\0' != *curr) ++curr;
-        prev3 = ++curr;
-        while ('\0' != *curr && '=' != *curr) ++curr;
-        *curr = '\0';
-        solution_number = atoi(prev3);
-        //++solution_number;
-        
-        ProblemSolutionList::const_iterator it2;
-        ResolverProblemList::iterator it = helper->problems.begin();
-        std::advance(
-          it, 
-          problem_number);
-        ResolverProblem problem = **it;
-        
-        it2 = problem.solutions().begin();
-        std::advance(
-          it2,
-          solution_number);
-        ProblemSolution solution = **it2;
-        
-        struct problem prob;
-        prob.kind = problem.description();
-        //prob.solutions = 
-        prob.selected = get_full_resolution_text(solution);
-        
-        it2 = problem.solutions().begin();
-        
-        for (; it2 != problem.solutions().end(); ++it2) {
-          
-          prob.solutions.push_back(get_full_resolution_text(**it2));
-        }
-        
-        helper->problems2.push_back(prob);
-        
-        free(spec);
-      
-      
-      --length;
-    }
-    
-    
-
-    bonsole_window_release(nullptr);
-    bonsole_flush_changes(nullptr);
-    
-    bonsole_quit_loop(nullptr);
-  }
-  
-  free(msg_);
-}
-
-#endif
 static char *get_record(int fd, char *buffer)
 {
   int count;
@@ -1888,7 +1635,6 @@ static char *get_record(int fd, char *buffer)
 static gboolean 
 load_transaction_from_history(const char *type, const char *file, struct backend_job_private *priv_)
 {
-  
   char *buffer = NULL;
   int fd = open(file, O_RDONLY);
   
@@ -2318,6 +2064,54 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
   
   return TRUE;
 }
+
+static void apply_resoultion_from_cache(struct backend_job_private *backend, ResolverProblemList *problems)
+{
+  int problem_number = 0;
+  ProblemSolutionList solution_list; 
+  
+  
+  std::list<struct problem>::iterator problems_it = backend->problems.begin();
+  std::list<struct problem>::iterator mit = backend->problems.begin();
+  ResolverProblemList::iterator it = problems->begin();
+  
+  for (; problems_it != backend->problems.begin(); ++problems_it, ++mit) {
+    //for (; mit != backend->problems.end(); ++mit) {
+    
+    
+  ProblemSolutionList::const_iterator it2;
+  std::advance(
+    it, 
+    problem_number);
+  //int solution_number = (*problems_it)->
+  ResolverProblem *problem = &(**it);
+  int solution_number = 0;
+  
+  std::list<string>::iterator solutions_it = (*problems_it).solutions.begin();
+  
+  for (; solutions_it != (*problems_it).solutions.begin(); ++solutions_it) {
+  
+    if ((*solutions_it) == (*problems_it).selected) {
+    
+      break;
+    }
+    ++solution_number;
+  }
+  it2 = problem->solutions().begin();
+  std::advance(
+    it2,
+    solution_number);
+  ProblemSolution solution = **it2;
+  // msg_proc->msg_proc_helper->solution_list->push_back(*it2);
+  
+  solution_list.push_back(&solution);
+   
+  //}
+  ++problem_number;
+  }
+  backend->msg_proc_helper->resolver->applySolutions(solution_list);
+}
+
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
@@ -2363,7 +2157,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
                   
                   rjob = new (struct backend_job_private)();
-                  rjob->msg_proc_helper = NULL;
                   pk_backend_job_set_priv_data(job, rjob);
                   transaction_problems = new struct msg_proc_helper;
                   transaction_problems->path_to_cache = path_to_cache;
@@ -2371,6 +2164,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   transaction_problems->reader_info.curr_old = 0;
                   transaction_problems->reader_info.loaded = 0;
                   transaction_problems->reader_info.buff_len = 0;
+                  rjob->msg_proc_helper = transaction_problems;
                   
                   
                   transaction_problems->it = problems.begin();
@@ -2379,6 +2173,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                   transaction_problems->problems2 = &rjob->problems;//std::list<struct problem> {};//priv->problems;
                   
                   rjob->job = job;
+                  rjob->interactively_res_init = false;
                   
                 }
                 else if (rjob->msg_proc_helper){
@@ -2402,12 +2197,11 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                       
                       
                       bool changed = false;
-                        // Adding additional packages (selected by zypper) to separated field
+
                       {
                         
-                         // if (Test if simulation) {
-                         // TODO: SL. S.L. Fill me
                          load_transaction_from_history("Install", path_to_cache, rjob);
+                         
                          
 /*
                          struct reader_info {
@@ -2533,35 +2327,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           goto test;
                         }
 #endif
-#if 0
-                        // TODO: Add support for passing request could be handled interactively
-                        if (force) {
-			
-                          for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
-				if (emsg == NULL) {
-					emsg = g_strdup ((*it)->description ().c_str ());
-                                        
-				}
-				else {
-					tempmsg = emsg;
-					emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
-					g_free (tempmsg);
-				}
-			  }
-
-			  // reset the status of all touched PoolItems
-			  ResPool pool = ResPool::instance ();
-			  for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
-			 	if (it->status ().isToBeInstalled ())
-					it->statusReset ();
-			  }
-			  pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
-                          
-                          g_free (emsg);
-                          
-			  goto exit;
-                        }
-#endif
                         
                         
                         if (changed) {
@@ -2579,8 +2344,9 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           job->done = 0;
                           if (! rjob->msg_proc_helper) {
                             rjob->msg_proc_helper = transaction_problems;
-                            
-                            
+                          }  
+                          
+                          if (! rjob->interactively_res_init) {
                             
                           pid_t child_pid;
                           
@@ -2677,8 +2443,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             
                             write(rjob->output, "", sizeof(""));
                             ret = TRUE;
-                            
-                        }
+                          }
                             goto exit;
                         }
 #if 0
@@ -2720,6 +2485,10 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             free(rjob->msg_proc_helper->path_to_cache);
                           close(rjob->input);
                           close(rjob->output);
+                          
+                          add_resolution_to_zypp(rjob->msg_proc_helper);
+                          if (rjob->msg_proc_helper)
+                          apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
                         }
                       
                         
