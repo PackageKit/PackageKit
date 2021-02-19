@@ -2481,14 +2481,17 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
                           write(rjob->output, "", sizeof(""));
                          // g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
-                          if (rjob->msg_proc_helper) 
-                            free(rjob->msg_proc_helper->path_to_cache);
                           close(rjob->input);
                           close(rjob->output);
                           
-                          add_resolution_to_zypp(rjob->msg_proc_helper);
-                          if (rjob->msg_proc_helper)
-                          apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
+                          if (rjob->msg_proc_helper) {
+                          
+                            add_resolution_to_zypp(rjob->msg_proc_helper);
+                            apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
+                            unlink(rjob->msg_proc_helper->path_to_cache);
+                            free(rjob->msg_proc_helper->path_to_cache);
+                            free(rjob->msg_proc_helper);
+                          } 
                         }
                       
                         
