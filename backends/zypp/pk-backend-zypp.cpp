@@ -2112,6 +2112,61 @@ static void apply_resoultion_from_cache(struct backend_job_private *backend, Res
   backend->msg_proc_helper->resolver->applySolutions(solution_list);
 }
 
+static gboolean no_conflicts_between_cache_and_zypp(ResolverProblemList *problems1, std::list<struct problem> *problems2)
+{
+  
+  ResolverProblemList::iterator it;
+  ProblemSolutionList::const_iterator sol_it;
+  
+  if (NULL == problems1 && NULL == problems2) {
+    
+    return true;
+  }
+  
+  if (NULL == problems1) {
+  
+    return false;
+  }
+  
+  if (NULL == problems2) {
+    
+    return false;
+  }
+  
+  ResolverProblemList::iterator it1 = problems1->begin();
+  std::list<struct problem>::iterator it2 = problems2->begin();
+  
+  for (; (it1 != problems1->end()) && (it2 != problems2->end()); ++it1,++it2) {
+  
+    if ((*it1)->description() != (*it2).kind) {
+      
+      return false;
+    }
+    ProblemSolutionList::const_iterator sol_it1 = (*it1)->solutions().begin();
+    std::list<string>::const_iterator sol_it2  = (*it2).solutions.begin();
+    
+    for (; (sol_it1 != (*it1)->solutions().end()) && (sol_it2 != (*it2).solutions.end()); ++sol_it1, ++sol_it2) {
+    
+      if (get_full_resolution_text(**sol_it1) != *sol_it2) {
+      
+        return false;
+      }
+    }
+    
+    if ((sol_it1 != (*it1)->solutions().end()) || (sol_it2 != (*it2).solutions.end())) {
+    
+      return false;
+    }
+  }
+  
+  if ((it1 != problems1->end()) || (it2 != problems2->end())) {
+    
+    return false;
+  }
+  
+  return true;
+}
+
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
@@ -2299,7 +2354,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                              
                             changed = true;
                          }
-                           
+                         
+                         
+                         if (!no_conflicts_between_cache_and_zypp(&problems, rjob->msg_proc_helper->problems2)) {
+                         
+                           changed = true;
+                        }
                        
                       }
 			// Manual intervention required to resolve dependencies
@@ -2488,9 +2548,16 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           
                             add_resolution_to_zypp(rjob->msg_proc_helper);
                             apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
-                            unlink(rjob->msg_proc_helper->path_to_cache);
+                            // FIXME: Remove cache even if it shold be persist
+#if 0
+                            if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+                            
+                              unlink(rjob->msg_proc_helper->path_to_cache);
+                            }
+#endif
                             free(rjob->msg_proc_helper->path_to_cache);
                             free(rjob->msg_proc_helper);
+                            
                           } 
                         }
                       
