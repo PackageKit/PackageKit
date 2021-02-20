@@ -1621,7 +1621,6 @@ static char *get_record(int fd, char *buffer)
   if (!done && 0 > count) {
     
     free(buffer);
-    close(fd);
     return NULL;
   }
   
@@ -1772,19 +1771,18 @@ load_transaction_from_history(const char *type, const char *file, struct backend
     buffer = NULL;
   }
   
-  
+  close(fd);
   return TRUE;
 }
 
-static void save_package_list(int fd, std::list<std::string>::iterator curr_pkg, std::list<std::string>::iterator end_pkg_list)
+static gboolean save_package_list(int fd, std::list<std::string>::iterator curr_pkg, std::list<std::string>::iterator end_pkg_list)
 {
   while (curr_pkg != end_pkg_list) {
   
     if (strlen((*curr_pkg).c_str()) >
       write(fd, (*curr_pkg).c_str(), strlen((*curr_pkg).c_str()) + 1)) {
       
-      close(fd);
-      return;
+      return false;
     }
     ++curr_pkg;
   }
@@ -1793,9 +1791,10 @@ static void save_package_list(int fd, std::list<std::string>::iterator curr_pkg,
   if (strlen("") >
     write(fd, "", 1)) {
     
-    close(fd);
-    return;
+     return false;
   }
+  
+  return true;
 }
 
 static void save_transaction_to_cache(const char *type, const char *file, struct msg_proc_helper *helper,
@@ -1828,12 +1827,20 @@ static void save_transaction_to_cache(const char *type, const char *file, struct
   curr_pkg = to_install.begin();
   end_pkg_list = to_install.end();
   
-  save_package_list(fd, curr_pkg, end_pkg_list);
+  if (!save_package_list(fd, curr_pkg, end_pkg_list)) {
+    
+    close(fd);
+    return;
+  }
   
   curr_pkg = to_remove.begin();
   end_pkg_list = to_remove.end();
   
-  save_package_list(fd, curr_pkg, end_pkg_list);
+  if (!save_package_list(fd, curr_pkg, end_pkg_list)) {
+  
+    close(fd);
+    return;
+  }
   
   
   std::list<struct problem>::iterator curr_problem, end_of_problems;
@@ -1914,7 +1921,7 @@ static char
     return NULL;
   }
   
-  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (errno == EAGAIN && info->loaded < info->curr_old))  {
+  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (((errno == EAGAIN) && (info->loaded < info->curr_old) && sleep(1))))  {
     
     curr = info->loaded;
     info->loaded += count;
@@ -2549,7 +2556,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             add_resolution_to_zypp(rjob->msg_proc_helper);
                             apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
                             // FIXME: Remove cache even if it shold be persist
-#if 0
+#if 1
                             if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
                             
                               unlink(rjob->msg_proc_helper->path_to_cache);
