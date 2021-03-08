@@ -44,6 +44,11 @@ shared_module(
 )
 
 install_data(
+  '90-packagekit-refresh.hook',
+  install_dir: join_paths(get_option('datadir'), 'libalpm', 'hooks')
+)
+
+install_data(
   'groups.list',
   'pacman.conf',
   'repos.list',
