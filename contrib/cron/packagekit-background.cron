@@ -39,7 +39,7 @@ else
 	pkcon $PKCON_OPTIONS $ONLY_DOWNLOAD update &> $PKTMP
 	PKCON_RETVAL=$?
 	if [ $PKCON_RETVAL -eq 0 -a "$UPDATE_OFFLINE" = "yes" ]; then
-		pkcon $PKCON_OPTIONS offline-trigger &> $PKTMP
+		pkcon $PKCON_OPTIONS offline-trigger &>> $PKTMP
 	fi
 fi
 
@@ -55,4 +55,3 @@ if [ $PKCON_RETVAL -ne 5 ]; then
 fi
 
 rm -f $PKTMP
-
