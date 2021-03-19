@@ -2760,7 +2760,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	gint retval;
-	guint length;
 	gboolean store_in_cache;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *directory = NULL;
@@ -2858,7 +2857,6 @@ pk_transaction_depends_on (PkTransaction *transaction,
 {
 	gboolean ret;
 	gchar *package_ids_temp;
-	guint length;
 	PkBitfield filter;
 	gboolean recursive;
 	g_autofree gchar **package_ids = NULL;
@@ -2913,7 +2911,6 @@ pk_transaction_get_details (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
@@ -3176,7 +3173,6 @@ pk_transaction_get_files (PkTransaction *transaction,
 			  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
@@ -3370,7 +3366,6 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield filter;
 	gboolean recursive;
 	g_autoptr(GError) error = NULL;
@@ -3427,7 +3422,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	guint length;
 	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
@@ -3649,7 +3643,6 @@ pk_transaction_install_packages (PkTransaction *transaction,
 				 GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
@@ -3832,7 +3825,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	gboolean allow_deps;
 	gboolean autoremove;
 	PkBitfield transaction_flags;
@@ -4514,7 +4506,6 @@ pk_transaction_update_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
