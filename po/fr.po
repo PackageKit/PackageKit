@@ -7,9 +7,9 @@
 # Claude Paroz <claude@2xlibre.net>, 2011
 # troubi51 <corentin.perard@gmail.com>, 2009
 # dominique bribanick <chepioq@gmail.com>, 2013-2014
-# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
+# Thomas <thomas.canniot@laposte.net>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
-# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
+# Thomas <thomas.canniot@laposte.net>, 2009
 # troubi51 <corentin.perard@gmail.com>, 2009
 msgid ""
 msgstr ""

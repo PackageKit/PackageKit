@@ -196,6 +196,7 @@ popd > /dev/null
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
+%{_datadir}/PackageKit/helpers/test_spawn/search-name.sh
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
 %{_bindir}/pkmon
