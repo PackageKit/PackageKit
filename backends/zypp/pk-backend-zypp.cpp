@@ -1921,6 +1921,7 @@ static char
     return NULL;
   }
   
+
   while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (((errno == EAGAIN) && (info->loaded < info->curr_old) && sleep(1))))  {
     
     curr = info->loaded;
