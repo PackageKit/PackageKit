@@ -1,3 +1,24 @@
+Version 1.2.3
+~~~~~~~~~~~~~
+Released: 2021-03-22
+
+Backends:
+ - alpm: Add post transaction hook (Vlad Zahorodnii)
+ - alpm: Rename errno to alpm_err to avoid name clashes (Richard Neumann)
+ - aptcc: Auto-remove old kernels, unless configured otherwise (Matthias Klumpp)
+ - dnf: Add support for coercing upgrade to distupgrade (Neal Gompa)
+ - zypp: Make sure pool is initialized at the beginning of some methods (Jonathan Kang)
+ - zypp: Reset update mode after getting updates (Jonathan Kang)
+
+Bugfixes:
+ - Append to cron log instead of overwriting it (realsobek)
+ - Cancel a transaction if calling Cancel fails or the daemon disappears (Philip Withnall)
+ - Do not crash when calling pk_dbus_get_uid() before D-Bus is setup (Richard Hughes)
+ - Fix all compiler warnings (Matthias Klumpp)
+ - Fix multilib conflicts in generated pk-enum-types.h (Kalev Lember)
+ - Free scheduler array correctly again (Matthias Klumpp)
+ - Remove large transaction size sanity check (Nate Graham)
+
 Version 1.2.2
 ~~~~~~~~~~~~~
 Released: 2020-11-02

@@ -123,6 +123,9 @@ typedef struct {
 } PkClientState;
 
 static void
+pk_client_state_finish (PkClientState *state,
+                        const GError  *error);
+static void
 pk_client_properties_changed_cb (GDBusProxy *proxy,
 				 GVariant *changed_properties,
 				 const gchar* const  *invalidated_properties,
@@ -133,6 +136,10 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		     const gchar *signal_name,
 		     GVariant *parameters,
 		     gpointer user_data);
+static void
+pk_client_notify_name_owner_cb (GObject    *obj,
+                                GParamSpec *pspec,
+                                gpointer    user_data);
 
 /**
  * pk_client_error_quark:
@@ -562,14 +569,18 @@ pk_client_cancel_cb (GObject *source_object,
 		     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
+	PkClientState *state = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
-		/* there's not really a lot we can do here */
-		g_warning ("failed to cancel: %s", error->message);
+		/* Instructing the daemon to cancel failed, so just return an
+		 * error to the client so they don’t wait forever. */
+		g_debug ("failed to cancel: %s", error->message);
+		g_prefix_error (&error, "Failed to cancel: ");
+		pk_client_state_finish (state, error);
 		return;
 	}
 }
@@ -593,7 +604,7 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 			   NULL,
-			   pk_client_cancel_cb, NULL);
+			   pk_client_cancel_cb, state);
 }
 
 /*
@@ -661,6 +672,9 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 						      state);
 		g_signal_handlers_disconnect_by_func (state->proxy,
 						      G_CALLBACK (pk_client_signal_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_notify_name_owner_cb),
 						      state);
 		g_object_unref (G_OBJECT (state->proxy));
 	}
@@ -1389,6 +1403,19 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 }
 
+static void
+pk_client_notify_name_owner_cb (GObject *obj,
+				GParamSpec *pspec,
+				gpointer user_data)
+{
+	PkClientState *state = (PkClientState *) user_data;
+	g_autoptr(GError) local_error = NULL;
+
+	local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+					   "PackageKit daemon disappeared");
+	pk_client_state_finish (state, local_error);
+}
+
 /*
  * pk_client_proxy_connect:
  **/
@@ -1416,6 +1443,9 @@ pk_client_proxy_connect (PkClientState *state)
 	g_signal_connect (state->proxy, "g-signal",
 			  G_CALLBACK (pk_client_signal_cb),
 			  state);
+	g_signal_connect (state->proxy, "notify::g-name-owner",
+			  G_CALLBACK (pk_client_notify_name_owner_cb),
+			  state);
 }
 
 /*
@@ -1440,7 +1470,7 @@ pk_client_method_cb (GObject *source_object,
 		return;
 	}
 
-	/* wait for ::Finished() */
+	/* wait for ::Finished() or notify::g-name-owner (if the daemon disappears) */
 }
 
 /*
@@ -4550,6 +4580,9 @@ pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 						      state);
 		g_signal_handlers_disconnect_by_func (state->proxy,
 						      G_CALLBACK (pk_client_signal_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_notify_name_owner_cb),
 						      state);
 		g_object_unref (G_OBJECT (state->proxy));
 	}

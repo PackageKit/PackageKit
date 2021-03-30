@@ -71,7 +71,7 @@ msgstr "Et pakkenavn til at løse kræves"
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "En pakke udbydningsstreng kræves"
+msgstr "En pakkeleverandørstreng kræves"
 
 msgid "A repo id and autoremove required"
 msgstr "Et pakkearkiv-id og automatisk fjernelse er krævet"
@@ -545,7 +545,7 @@ msgstr "Henter pakker"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Henter udbydere"
+msgstr "Henter leverandører"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
@@ -617,7 +617,7 @@ msgstr "Installer pakke"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Installer pakke »%s« for at udbyde kommandoen »%s«?"
+msgstr "Installer pakke »%s« for at levere kommandoen »%s«?"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -819,7 +819,7 @@ msgstr "PackageKit-tjeneste"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "Pakker der udbyder denne fil er:"
+msgstr "Pakker der leverer denne fil er:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
@@ -1225,7 +1225,7 @@ msgstr "Maksimumalderen for metadatamellemlager. Brug -1 for »aldrig«."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "Pakken der udbyder denne fil er:"
+msgstr "Pakken der leverer denne fil er:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"

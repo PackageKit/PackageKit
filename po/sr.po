@@ -4,6 +4,7 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
+# Slobodan Simić <slsimic@gmail.com>, 2021
 # Мирослав Николић <miroslavnikolic@rocketmail.com>, 2014
 msgid ""
 msgstr ""
@@ -153,6 +154,9 @@ msgstr "Потребно је потврђивање идентитета за �
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Потребно је потврђивање идентитета за отказивање посла који нисте ви покренули"
 
+msgid "Authentication is required to change software repository parameters"
+msgstr "Потребно је потврђивање идентитета за измену параметара ризница софтвера"
+
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Потребно је потврђивање идентитета за чишћење поруке ванмрежних ажурирања"
 
@@ -167,6 +171,9 @@ msgstr "Потребно је потврђивање идентитета за �
 
 msgid "Authentication is required to install untrusted software"
 msgstr "Потребно је потврђивање идентитета за неповерљивог софтвера"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Потребно је потврђивање идентитета за освежавање системских ризница"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Потребно је потврђивање идентитета за поновно инсталирање софтвера"
@@ -196,6 +203,9 @@ msgstr "Потребно је потврђивање идентитета за �
 msgid "Author"
 msgstr "Аутор"
 
+msgid "Automatically remove unused dependencies"
+msgstr "Аутоматски уклања неискоришћене зависности"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Доступан"
@@ -203,6 +213,10 @@ msgstr "Доступан"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "Блокирано"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Исправка грешке "
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -230,6 +244,13 @@ msgstr "Отказујем"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "Категорија"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Измени параметре ризнице софтвера"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -355,6 +376,10 @@ msgstr "Преузет"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Преузимам"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Преузимам појединости о ризницама софтвера."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -623,6 +648,11 @@ msgid "Installing"
 msgstr "Инсталирам"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Инсталирам надоградњу система"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Инсталирам ажурирања"
@@ -696,6 +726,10 @@ msgstr "Натпис медијума"
 msgid "Media type"
 msgstr "Врста медијума"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Мењам ризницу"
+
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
@@ -744,6 +778,13 @@ msgstr "Превазилазим пакете"
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Опција „%s“ није подржана"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Пакет"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -854,6 +895,12 @@ msgstr "Име и презиме"
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
 msgstr "Поново подижем систем након инсталирања ажурирања…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Освежи системске ризнице"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"

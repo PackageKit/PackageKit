@@ -76,9 +76,6 @@ static gboolean pk_transaction_is_supported_content_type (PkTransaction *transac
 /* maximum number of items that can be resolved in one go */
 #define PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE	10000
 
-/* maximum number of packages that can be processed in one go */
-#define PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS	10000
-
 struct PkTransactionPrivate
 {
 	PkRoleEnum		 role;
@@ -2807,7 +2804,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 {
 	gboolean ret;
 	gint retval;
-	guint length;
 	gboolean store_in_cache;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *directory = NULL;
@@ -2831,18 +2827,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "DownloadPackages not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -2917,7 +2901,6 @@ pk_transaction_depends_on (PkTransaction *transaction,
 {
 	gboolean ret;
 	gchar *package_ids_temp;
-	guint length;
 	PkBitfield filter;
 	gboolean recursive;
 	g_autofree gchar **package_ids = NULL;
@@ -2941,18 +2924,6 @@ pk_transaction_depends_on (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "DependsOn not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -2984,7 +2955,6 @@ pk_transaction_get_details (PkTransaction *transaction,
 			    GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
@@ -3005,18 +2975,6 @@ pk_transaction_get_details (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetDetails not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3074,21 +3032,13 @@ pk_transaction_get_details_local (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check for length sanity */
+	/* check for empty package list */
 	length = g_strv_length (full_paths);
 	if (length == 0) {
 		g_set_error_literal (&error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "No filenames listed");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many files to process (%i/%i)", length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3173,21 +3123,13 @@ pk_transaction_get_files_local (PkTransaction *transaction,
 		goto out;
 	}
 
-	/* check for length sanity */
+	/* check for empty package list */
 	length = g_strv_length (full_paths);
 	if (length == 0) {
 		g_set_error_literal (&error,
 				     PK_TRANSACTION_ERROR,
 				     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
 				     "No filenames listed");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many files to process (%i/%i)", length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3275,7 +3217,6 @@ pk_transaction_get_files (PkTransaction *transaction,
 			  GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
@@ -3296,18 +3237,6 @@ pk_transaction_get_files (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetFiles not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3481,7 +3410,6 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield filter;
 	gboolean recursive;
 	g_autoptr(GError) error = NULL;
@@ -3506,18 +3434,6 @@ pk_transaction_required_by (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RequiredBy not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3550,7 +3466,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 {
 	gboolean ret;
 	GError *error = NULL;
-	guint length;
 	g_autofree gchar **package_ids = NULL;
 	g_autofree gchar *package_ids_temp = NULL;
 
@@ -3570,18 +3485,6 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "GetUpdateDetail not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3784,7 +3687,6 @@ pk_transaction_install_packages (PkTransaction *transaction,
 				 GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
@@ -3810,18 +3712,6 @@ pk_transaction_install_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "InstallPackages not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3979,7 +3869,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	gboolean allow_deps;
 	gboolean autoremove;
 	PkBitfield transaction_flags;
@@ -4009,18 +3898,6 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "RemovePackages not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -4673,7 +4550,6 @@ pk_transaction_update_packages (PkTransaction *transaction,
 				GDBusMethodInvocation *context)
 {
 	gboolean ret;
-	guint length;
 	PkBitfield transaction_flags;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar **package_ids = NULL;
@@ -4699,18 +4575,6 @@ pk_transaction_update_packages (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "UpdatePackages not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	/* check for length sanity */
-	length = g_strv_length (package_ids);
-	if (length > PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-			     "Too many packages to process (%i/%i)",
-			     length, PK_TRANSACTION_MAX_PACKAGES_TO_PROCESS);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}

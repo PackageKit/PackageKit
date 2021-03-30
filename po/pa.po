@@ -5,6 +5,7 @@
 # Translators:
 # Amanpreet Singh Alam <aalam@users.sf.net>, 2008, 2009
 # A S Alam <aalam@users.sf.net>, 2009
+# A S Alam <alam.yellow@gmail.com>, 2021
 # A S Alam <alam.yellow@gmail.com>, 2011-2014,2016
 # Jaswinder Singh <jsingh@redhat.com>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -156,6 +157,9 @@ msgstr "EULA ਮਨਜ਼ੂਰ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦ
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ ਟਾਸਕ ਨੂੰ ਰੱਦ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
+msgid "Authentication is required to change software repository parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਰਿਪੋਜ਼ਟਰੀ ਪੈਰਾਮੀਟਰ ਬਦਲਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
+
 msgid "Authentication is required to clear the offline updates message"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
@@ -170,6 +174,9 @@ msgstr "ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮ�
 
 msgid "Authentication is required to install untrusted software"
 msgstr "ਨਾ-ਭਰੋਸੇਯੋਗ ਸਾਫਟਵੇਅਰ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "ਸਿਸਟਮ ਰਿਪੋਜ਼ਟਰੀਆਂ ਤਾਜ਼ਾ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 msgid "Authentication is required to reinstall software"
 msgstr "ਸਾਫਟਵੇਅਰ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
@@ -199,6 +206,9 @@ msgstr "ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਨੂੰ ਅੱਪਗਰੇਡ
 msgid "Author"
 msgstr "ਲੇਖਕ"
 
+msgid "Automatically remove unused dependencies"
+msgstr "ਨਾ-ਵਰਤੀਆਂ ਨਿਰਭਰਤਾਵਾਂ ਆਪਣੇ-ਆਪ ਹਟਾਓ"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "ਮੌਜੂਦ"
@@ -206,6 +216,10 @@ msgstr "ਮੌਜੂਦ"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "ਬਲਾਕ ਕੀਤੇ"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "ਬੱਗ ਠੀਕ"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -234,10 +248,17 @@ msgstr "ਰੱਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 msgid "Category"
 msgstr "ਕੈਟਾਗਰੀ"
 
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "ਸਾਫਟਵੇਅਰ ਰਿਪੋਜ਼ਟਰੀ ਪੈਰਾਮੀਟਰਾਂ ਨੂੰ ਬਦਲੋ"
+
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
-msgstr "ਬਦਲਾਅ"
+msgstr "ਤਬਦੀਲੀਆਂ"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
@@ -316,7 +337,7 @@ msgstr "ਵੇਹਲਾ ਟਾਈਮਰ ਆਯੋਗ"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "ਬੰਦ ਹੈ"
+msgstr "ਅਸਮਰੱਥ ਹੈ"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
@@ -359,6 +380,10 @@ msgstr "ਡਾਊਨਲੋਡ ਕੀਤੇ"
 msgid "Downloading"
 msgstr "ਡਾਊਨਲੋਡ ਜਾਰੀ"
 
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "ਸਾਫਟਵੇਅਰ ਰਿਪੋਜ਼ਟਰੀਆਂ ਬਾਰੇ ਵੇਰਵੇ ਡਾਊਨਲੋਡ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ।"
+
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
 msgstr "ਫਾਇਲ ਲਿਸਟਾਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਜਾ ਰਹੀਆਂ ਹਨ"
@@ -398,7 +423,7 @@ msgstr "ਅੰਤਰਾਲ"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "ਚਾਲੂ ਹੈ"
+msgstr "ਸਮਰੱਥ ਹੈ"
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
@@ -626,6 +651,11 @@ msgid "Installing"
 msgstr "ਇੰਸਟਾਲ ਕਰਨਾ ਜਾਰੀ"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "ਸਿਸਟਮ ਅੱਪਗਰੇਡ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
@@ -699,6 +729,10 @@ msgstr "ਮੀਡਿਆ ਲੇਬਲ"
 msgid "Media type"
 msgstr "ਮੀਡਿਆ ਕਿਸਮ"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "ਰਿਪੋਜ਼ਟਰੀ ਨੂੰ ਸੋਧਿਆ ਜਾ ਰਿਹਾ ਹੈ"
+
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
@@ -747,6 +781,13 @@ msgstr "ਪੈਕੇਜ ਬਰਤਰਫ਼ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "ਚੋਣ '%s' ਸਹਾਇਕ ਨਹੀਂ ਹੈ"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "ਪੈਕੇਜ"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -858,6 +899,12 @@ msgstr "ਅਸਲੀ ਨਾਂ"
 msgid "Rebooting after installing updates…"
 msgstr "...ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕਰਨ ਦੇ ਬਾਅਦ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "ਸਿਸਟਮ ਰਿਪੋਜ਼ਟਰੀਆਂ ਤਾਜ਼ਾ ਕਰੋ"
+
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
 msgstr "ਕੈਸ਼ ਨੂੰ ਤਾਜ਼ਾ ਕਰੋ"
@@ -950,7 +997,7 @@ msgstr "ਮੁੜ-ਚਾਲੂ ਕਰੋ"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr "ਨਤੀਜਾ:"
+msgstr "ਨਤੀਜੇ:"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
@@ -967,6 +1014,11 @@ msgstr "ਕਮਾਂਡ ਨੂੰ ਵੇਹਲੀ ਨੈੱਟਵਰਕ ਬੈ�
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "ਚੱਲ ਰਿਹਾ ਹੈ"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "ਹੁੱਕ ਚੱਲ ਰਹੀਆਂ ਹਨ"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1087,7 +1139,7 @@ msgstr "ਸਬ-ਕਮਾਂਡ:"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "ਸਫ਼ਲ ਹੈ"
+msgstr "ਕਾਮਯਾਬ ਹੈ"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
@@ -1281,7 +1333,7 @@ msgstr "ਸਾਫਟਵੇਅਰ ਸਾਈਨ ਕਰਨ ਲਈ ਵਰਤੀ ਕ�
 
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
-msgstr "ਟਾਈਪ"
+msgstr "ਕਿਸਮ"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
@@ -1307,7 +1359,7 @@ msgstr "ਸਾਫਟਵੇਅਰ ਅੱਪਡੇਟ"
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr "ਅੱਪਡੇਟ ਟੈਕਸਟ"
+msgstr "ਅੱਪਡੇਟ ਬਾਰੇ ਲਿਖਤ"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated

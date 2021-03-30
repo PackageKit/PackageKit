@@ -3306,6 +3306,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		return;
 	}
 
+	zypp_build_pool (zypp, true);
+
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	for (uint i = 0; package_ids[i]; i++) {
@@ -3793,6 +3795,8 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 		return;
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+	zypp_build_pool (zypp, TRUE);
 
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
@@ -4490,6 +4494,8 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	if (zypp == NULL){
 		return;
 	}
+
+	zypp_build_pool (zypp, true);
 
 	for (uint i = 0; package_ids[i]; i++) {
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);

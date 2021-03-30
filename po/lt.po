@@ -7,6 +7,7 @@
 # aurisc4 <aurisc4@gmail.com>, 2013
 # Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
 # Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
+# Moo, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
@@ -146,6 +147,10 @@ msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
 msgid "Authentication is required to trigger offline updates"
 msgstr "Atnaujinimams atsijungus sukelti būtina patvirtinti tapatybę"
 
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Autorius"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Prieinamas"
@@ -240,6 +245,10 @@ msgstr "Kopijuojami failai"
 
 msgid "Debugging Options"
 msgstr "Derinimo parametrai"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Aprašas"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
@@ -487,6 +496,10 @@ msgstr "Piktograma"
 msgid "Important"
 msgstr "Svarbus"
 
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Įdiegti paketą"
+
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
@@ -607,6 +620,10 @@ msgstr "Nėra failų"
 msgid "No packages require updating to newer versions."
 msgstr "Jokio paketo nereikia atnaujinti į naujesnę versiją."
 
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Nerasta jokių paketų"
+
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Normalus"
@@ -634,6 +651,13 @@ msgstr "Žymimo pasenę paketai"
 msgid "Option '%s' is not supported"
 msgstr "Parametras „%s“ nepalaikomas"
 
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paketas"
+
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
 msgstr "Paketo aprašymas"
@@ -641,6 +665,11 @@ msgstr "Paketo aprašymas"
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
 msgstr "Paketų failai"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Paketas nerastas"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -705,6 +734,11 @@ msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo - buvo įdiegta sv
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
 msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo."
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Paruošti atnaujinimai:"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "Print to screen a machine readable output, rather than using animated widgets"
