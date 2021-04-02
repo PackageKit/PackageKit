@@ -2000,7 +2000,10 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
   
     if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
     
+      buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
+      pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, buffer);
       
+      return FALSE;
     }
     else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:"))) {
       
@@ -2456,6 +2459,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                             execlp(LIBEXECDIR "/dependency-solving-helper", LIBEXECDIR "/dependency-solving-helper", "--comm-channel-input", comm_ch_input,"--comm-channel-output", comm_ch_output, NULL);
                             
                             write(STDOUT_FILENO, "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
+                            write(fds[1], "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
                             exit(1);
                             
                           }
