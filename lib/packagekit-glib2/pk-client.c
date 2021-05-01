@@ -4807,7 +4807,7 @@ pk_client_get_background (PkClient *client)
  * @interactive: the value to set
  *
  * Sets the interactive value for the client. Interactive transactions
- * are usally allowed to ask the user questions.
+ * are usually allowed to ask the user questions.
  *
  * Since: 0.6.10
  **/
