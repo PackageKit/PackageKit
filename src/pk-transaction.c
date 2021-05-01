@@ -2256,6 +2256,7 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 	PkTransactionPrivate *priv = transaction->priv;
 	const gchar *text = NULL;
 	struct AuthorizeActionsData *data = NULL;
+	PolkitCheckAuthorizationFlags flags;
 
 	if (actions->len <= 0) {
 		g_debug ("No authentication required");
@@ -2352,13 +2353,17 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 		}
 	}
 
+	flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE;
+	if (pk_backend_job_get_interactive (priv->job))
+		flags |= POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION;
+
 	g_debug ("authorizing action %s", action_id);
 	/* do authorization async */
 	polkit_authority_check_authorization (priv->authority,
 					      priv->subject,
 					      action_id,
 					      details,
-					      POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION,
+					      flags,
 					      priv->cancellable,
 					      (GAsyncReadyCallback) pk_transaction_authorize_actions_finished_cb,
 					      data);
