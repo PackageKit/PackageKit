@@ -4748,6 +4748,7 @@ pk_client_set_locale (PkClient *client, const gchar *locale)
 	if (g_strcmp0 (client->priv->locale, locale) == 0)
 		return;
 
+	g_free (client->priv->locale);
 	client->priv->locale = g_strdup (locale);
 	g_object_notify (G_OBJECT (client), "locale");
 }
