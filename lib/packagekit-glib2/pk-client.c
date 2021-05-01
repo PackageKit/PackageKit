@@ -4744,6 +4744,10 @@ void
 pk_client_set_locale (PkClient *client, const gchar *locale)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (g_strcmp0 (client->priv->locale, locale) == 0)
+		return;
+
 	client->priv->locale = g_strdup (locale);
 	g_object_notify (G_OBJECT (client), "locale");
 }
@@ -4780,6 +4784,10 @@ void
 pk_client_set_background (PkClient *client, gboolean background)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->background == background)
+		return;
+
 	client->priv->background = background;
 	g_object_notify (G_OBJECT (client), "background");
 }
@@ -4815,6 +4823,10 @@ void
 pk_client_set_interactive (PkClient *client, gboolean interactive)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->interactive == interactive)
+		return;
+
 	client->priv->interactive = interactive;
 	g_object_notify (G_OBJECT (client), "interactive");
 }
@@ -4866,6 +4878,10 @@ void
 pk_client_set_cache_age (PkClient *client, guint cache_age)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->cache_age == cache_age)
+		return;
+
 	client->priv->cache_age = cache_age;
 	g_object_notify (G_OBJECT (client), "cache-age");
 }
