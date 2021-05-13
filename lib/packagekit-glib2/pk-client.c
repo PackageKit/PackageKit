@@ -4404,8 +4404,9 @@ pk_client_repair_system_async (PkClient *client,
 	state->role = PK_ROLE_ENUM_REPAIR_SYSTEM;
 	state->res = g_object_ref (res);
 	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
 	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
+		state->cancellable_client = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
 	}
 	state->transaction_flags = transaction_flags;
