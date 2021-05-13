@@ -663,7 +663,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 		flags |= DNF_SACK_ADD_FLAG_REMOTE;
 
 	/* only load updateinfo when required */
-	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL ||
+	    pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES)
 		flags |= DNF_SACK_ADD_FLAG_UPDATEINFO;
 
 	/* only use unavailble packages for queries */
