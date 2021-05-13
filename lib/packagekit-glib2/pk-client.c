@@ -569,7 +569,6 @@ pk_client_cancel_cb (GObject *source_object,
 		     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkClientState *state = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
@@ -579,8 +578,6 @@ pk_client_cancel_cb (GObject *source_object,
 		/* Instructing the daemon to cancel failed, so just return an
 		 * error to the client so they don’t wait forever. */
 		g_debug ("failed to cancel: %s", error->message);
-		g_prefix_error (&error, "Failed to cancel: ");
-		pk_client_state_finish (state, error);
 		return;
 	}
 }
