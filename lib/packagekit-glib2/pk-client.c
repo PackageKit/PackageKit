@@ -663,8 +663,8 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		g_cancellable_disconnect (state->cancellable_client,
 					  state->cancellable_id);
 	}
-	if (state->cancellable != NULL)
-		g_object_unref (state->cancellable);
+	g_clear_object (&state->cancellable);
+	g_clear_object (&state->cancellable_client);
 
 	if (state->proxy != NULL) {
 		g_signal_handlers_disconnect_by_func (state->proxy,
@@ -4572,8 +4572,8 @@ pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 		g_cancellable_disconnect (state->cancellable_client,
 					  state->cancellable_id);
 	}
-	if (state->cancellable != NULL)
-		g_object_unref (state->cancellable);
+	g_clear_object (&state->cancellable);
+	g_clear_object (&state->cancellable_client);
 
 	if (state->proxy != NULL) {
 		g_signal_handlers_disconnect_by_func (state->proxy,
