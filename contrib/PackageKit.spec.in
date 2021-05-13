@@ -1,5 +1,8 @@
 %define alphatag                        #ALPHATAG#
 
+%global glib2_version 2.54.0
+%global libdnf_version 0.43.1
+
 Summary:   Package management service
 Name:      PackageKit
 Version:   #VERSION#
@@ -8,19 +11,13 @@ License:   GPLv2+ and LGPLv2+
 URL:       http://www.freedesktop.org/software/PackageKit/
 Source0:   http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
 
-Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: shared-mime-info
-Requires: systemd
-
-BuildRequires: glib2-devel >= 2.46.0
+BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: xmlto
 BuildRequires: gtk-doc
 BuildRequires: sqlite-devel
 BuildRequires: polkit-devel >= 0.92
-BuildRequires: libtool
 BuildRequires: gtk3-devel
 BuildRequires: docbook-utils
-BuildRequires: gnome-doc-utils
 BuildRequires: meson
 BuildRequires: gettext
 BuildRequires: vala
@@ -28,19 +25,17 @@ BuildRequires: gstreamer1-devel
 BuildRequires: gstreamer1-plugins-base-devel
 BuildRequires: pango-devel
 BuildRequires: fontconfig-devel
+BuildRequires: libappstream-glib-devel
+BuildRequires: libdnf-devel >= %{libdnf_version}
 BuildRequires: systemd-devel
 BuildRequires: gobject-introspection-devel
-%if !0%{?rhel}
 BuildRequires: bash-completion
-%endif
 
-%if !0%{?rhel}
-BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: libappstream-glib-devel
-BuildRequires: librepo-devel >= 1.1.5
-BuildRequires: libsolv-devel
-BuildRequires: libdnf-devel >= 0.7.0
-%endif
+Requires: %{name}-glib%{?_isa} = %{version}-%{release}
+Requires: glib2%{?_isa} >= %{glib2_version}
+Requires: libdnf%{?_isa} >= %{libdnf_version}
+Requires: shared-mime-info
+Requires: systemd
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -48,17 +43,16 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
-Obsoletes: PackageKit-browser-plugin < %{version}-%{release}
 
 # No more zif, smart or yum in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
-Obsoletes: PackageKit-yum < 0.8.15-2
-Obsoletes: PackageKit-yum-plugin < 0.8.15-2
+Obsoletes: PackageKit-yum < 0.9.1
+Obsoletes: PackageKit-yum-plugin < 0.9.1
 Obsoletes: PackageKit-zif < 0.8.13-2
 
 # components now built-in
-Obsoletes: PackageKit-debug-install < 0.8.15-2
-Obsoletes: PackageKit-hawkey < 0.8.15-2
+Obsoletes: PackageKit-debug-install < 0.9.1
+Obsoletes: PackageKit-hawkey < 0.9.1
 Obsoletes: PackageKit-backend-devel < 0.9.6
 
 # Udev no longer provides this functionality
@@ -122,57 +116,48 @@ fonts from configured repositories using PackageKit.
 %package command-not-found
 Summary: Ask the user to install command line programs automatically
 Requires: bash
+Requires: %{name} = %{version}-%{release}
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: PackageKit
 
 %description command-not-found
 A simple helper that offers to install new packages on the command line
 using PackageKit.
 
 %prep
-%setup -q
+%autosetup -p1
 
 %build
 %meson \
         -Dgtk_doc=true \
         -Dpython_backend=false \
-%if 0%{?rhel} == 0
         -Dpackaging_backend=dnf \
-        -Dbash_completion=true \
-%else
-        -Dbash_completion=false \
-%endif
         -Dlocal_checkout=false
 %meson_build
 
 %install
 %meson_install
 
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/downloads
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/metadata
-
-mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants
-ln -sf /usr/lib/systemd/system/packagekit-offline-update.service \
-        $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants/packagekit-offline-update.service
+# Create directories for downloaded appstream data
+mkdir -p %{buildroot}%{_localstatedir}/cache/app-info/{icons,xmls}
 
 # create a link that GStreamer will recognise
-pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
+pushd %{buildroot}%{_libexecdir} > /dev/null
 ln -s pk-gstreamer-install gst-install-plugins-helper
 popd > /dev/null
 
-# create a link that from the comps icons to PK, as PackageKit frontends
-# cannot add /usr/share/pixmaps/comps to the icon search path as some distros
-# do not use comps. Patching this in the frontend is not a good idea, as there
-# are multiple frontends in multiple programming languages.
-pushd ${RPM_BUILD_ROOT}%{_datadir}/PackageKit > /dev/null
-ln -s ../pixmaps/comps icons
-popd > /dev/null
+# enable packagekit-offline-updates.service here for now, till we
+# decide how to do it upstream after the meson conversion:
+# https://github.com/hughsie/PackageKit/issues/401
+# https://bugzilla.redhat.com/show_bug.cgi?id=1833176
+mkdir -p %{buildroot}%{_unitdir}/system-update.target.wants/
+ln -sf ../packagekit-offline-update.service %{buildroot}%{_unitdir}/system-update.target.wants/packagekit-offline-update.service
 
 %find_lang %name
 
-%post glib -p /sbin/ldconfig
-
-%postun glib -p /sbin/ldconfig
+%post
+# Remove leftover symlinks from /etc/systemd; the offline update service is
+# instead now hooked into /usr/lib/systemd/system/system-update.target.wants
+systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 
 %files -f %{name}.lang
 %license COPYING
@@ -180,19 +165,16 @@ popd > /dev/null
 %dir %{_datadir}/PackageKit
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
-%dir %{_localstatedir}/cache/PackageKit
-%dir %{_localstatedir}/cache/PackageKit/downloads
-%dir %{_localstatedir}/cache/PackageKit/metadata
-%if !0%{?rhel}
+%dir %{_localstatedir}/cache/app-info
+%dir %{_localstatedir}/cache/app-info/icons
+%dir %{_localstatedir}/cache/app-info/xmls
 %{_datadir}/bash-completion/completions/pkcon
-%endif
 %dir %{_libdir}/packagekit-backend
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
 %config %{_sysconfdir}/dbus-1/system.d/*
-%{_datadir}/PackageKit/icons
-%{_datadir}/man/man1/pkcon.1.gz
-%{_datadir}/man/man1/pkmon.1.gz
+%{_datadir}/man/man1/pkcon.1*
+%{_datadir}/man/man1/pkmon.1*
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
@@ -204,16 +186,14 @@ popd > /dev/null
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
+%ghost %verify(not md5 size mtime) %attr(0644,-,-) %{_localstatedir}/lib/PackageKit/transactions.db
 %{_datadir}/dbus-1/system-services/*.service
 %{_datadir}/dbus-1/interfaces/*.xml
 %{_unitdir}/packagekit-offline-update.service
 %{_unitdir}/packagekit.service
 %{_unitdir}/system-update.target.wants/
 %{_libexecdir}/pk-*offline-update
-%if 0%{?rhel} == 0
 %{_libdir}/packagekit-backend/libpk_backend_dnf.so
-%endif
 
 %files glib
 %{_libdir}/*packagekit-glib2.so.*
