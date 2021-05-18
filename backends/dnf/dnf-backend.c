@@ -32,15 +32,20 @@
 void
 dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 {
+	PkInfoEnum update_severity;
+
+	update_severity = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY));
+
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = dnf_package_get_info (pkg);
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = dnf_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-	pk_backend_job_package (job,
-				info,
-				dnf_package_get_package_id (pkg),
-				dnf_package_get_summary (pkg));
+	pk_backend_job_package_full (job,
+				     info,
+				     dnf_package_get_package_id (pkg),
+				     dnf_package_get_summary (pkg),
+				     update_severity);
 }
 
 void
@@ -196,6 +201,27 @@ dnf_advisory_kind_to_info_enum (DnfAdvisoryKind kind)
 		break;
 	}
 	return info_enum;
+}
+
+PkInfoEnum
+dnf_update_severity_to_enum (const gchar *severity)
+{
+	if (severity == NULL || *severity == '\0')
+		return PK_INFO_ENUM_UNKNOWN;
+	if (g_ascii_strcasecmp (severity, "None") == 0)
+		return PK_INFO_ENUM_UNKNOWN;
+	if (g_ascii_strcasecmp (severity, "Low") == 0)
+		return PK_INFO_ENUM_LOW;
+	if (g_ascii_strcasecmp (severity, "Moderate") == 0)
+		return PK_INFO_ENUM_NORMAL;
+	if (g_ascii_strcasecmp (severity, "Important") == 0)
+		return PK_INFO_ENUM_IMPORTANT;
+	if (g_ascii_strcasecmp (severity, "Critical") == 0)
+		return PK_INFO_ENUM_CRITICAL;
+
+	g_warning ("Failed to map update severity '%s', returning Unknown", severity);
+
+	return PK_INFO_ENUM_UNKNOWN;
 }
 
 PkBitfield

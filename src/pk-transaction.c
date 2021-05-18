@@ -1149,8 +1149,10 @@ pk_transaction_package_cb (PkBackend *backend,
 {
 	const gchar *role_text;
 	PkInfoEnum info;
+	PkInfoEnum update_severity;
 	const gchar *package_id;
 	const gchar *summary = NULL;
+	guint encoded_value;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1210,13 +1212,20 @@ pk_transaction_package_cb (PkBackend *backend,
 			 package_id,
 			 summary);
 	}
+
+	/* Safety checks, that the two values do not interleave, neither overflow */
+	g_assert ((PK_INFO_ENUM_LAST & (~0xFFFF)) == 0);
+
+	update_severity = pk_package_get_update_severity (item);
+	encoded_value = info | (update_severity << 16);
+
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
 				       PK_DBUS_INTERFACE_TRANSACTION,
 				       "Package",
 				       g_variant_new ("(uss)",
-						      info,
+						      encoded_value,
 						      package_id,
 						      summary ? summary : ""),
 				       NULL);

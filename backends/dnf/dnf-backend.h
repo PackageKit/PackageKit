@@ -29,9 +29,12 @@
 
 #include <pk-backend.h>
 
+#define PK_DNF_UPDATE_SEVERITY_KEY	"pk-dnf-update-severity"
+
 G_BEGIN_DECLS
 
 PkInfoEnum	 dnf_advisory_kind_to_info_enum	(DnfAdvisoryKind	 kind);
+PkInfoEnum	 dnf_update_severity_to_enum	(const gchar		*severity);
 void		 dnf_emit_package		(PkBackendJob		*job,
 						 PkInfoEnum		 info,
 						 DnfPackage		*pkg);
