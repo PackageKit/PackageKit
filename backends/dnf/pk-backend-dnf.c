@@ -1923,7 +1923,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 					PK_GROUP_ENUM_UNKNOWN,
 					dnf_package_get_description (pkg),
 					dnf_package_get_url (pkg),
-					(gulong) dnf_package_get_size (pkg));
+					(gulong) dnf_package_get_installsize (pkg));
 	}
 
 	/* done */
@@ -2011,7 +2011,7 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 						PK_GROUP_ENUM_UNKNOWN,
 						dnf_package_get_description (pkg),
 						dnf_package_get_url (pkg),
-						(gulong) dnf_package_get_size (pkg));
+						(gulong) dnf_package_get_installsize (pkg));
 		}
 	}
 
