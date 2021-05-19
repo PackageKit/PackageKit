@@ -497,6 +497,10 @@ pk_transaction_details_cb (PkBackendJob *job,
 	if (size != 0)
 		g_variant_builder_add (&builder, "{sv}", "size",
 				       g_variant_new_uint64 (size));
+	size = pk_details_get_download_size (item);
+	if (size != G_MAXUINT64)
+		g_variant_builder_add (&builder, "{sv}", "download-size",
+				       g_variant_new_uint64 (size));
 
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
