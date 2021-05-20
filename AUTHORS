@@ -2,11 +2,16 @@ Richard Hughes <richard@hughsie.com>
 Tom Parker <palfrey@tevp.net>
 Ken VanDine <ken@vandine.org>
 Matthias Klumpp <matthias@tenstral.net>
+Neal Gompa <ngompa13@gmail.com>
 
 Backend: alpm
     Aleix Pol i Gonzàlez <aleixpol@kde.org>
     Fabien Bourigault <bourigaultfabien@gmail.com>
     Jonathan Conder <jonno.conder@gmail.com>
+
+Backend: dnf
+    Richard Hughes <richard@hughsie.com>
+    Neal Gompa <ngompa13@gmail.com>
 
 Backend: pisi
     S.Çağlar Onur <caglar@pardus.org.tr>
