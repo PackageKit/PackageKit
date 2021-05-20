@@ -173,11 +173,6 @@ void		 pk_backend_job_package			(PkBackendJob	*job,
 							 PkInfoEnum	 info,
 							 const gchar	*package_id,
 							 const gchar	*summary);
-void		 pk_backend_job_package_full		(PkBackendJob	*job,
-							 PkInfoEnum	 info,
-							 const gchar	*package_id,
-							 const gchar	*summary,
-							 PkInfoEnum	 update_severity);
 void		 pk_backend_job_repo_detail		(PkBackendJob	*job,
 							 const gchar	*repo_id,
 							 const gchar	*description,

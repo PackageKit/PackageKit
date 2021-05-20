@@ -70,7 +70,6 @@ struct _PkPackagePrivate
 	PkUpdateStateEnum	 update_state;
 	gchar			*update_issued;
 	gchar			*update_updated;
-	PkInfoEnum	 	 update_severity;
 };
 
 enum {
@@ -99,7 +98,6 @@ enum {
 	PROP_UPDATE_STATE,
 	PROP_UPDATE_ISSUED,
 	PROP_UPDATE_UPDATED,
-	PROP_UPDATE_SEVERITY,
 	PROP_LAST
 };
 
@@ -481,9 +479,6 @@ pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 	case PROP_UPDATE_UPDATED:
 		g_value_set_string (value, priv->update_updated);
 		break;
-	case PROP_UPDATE_SEVERITY:
-		g_value_set_enum (value, priv->update_severity);
-		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -565,9 +560,6 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 	case PROP_UPDATE_UPDATED:
 		g_free (priv->update_updated);
 		priv->update_updated = g_strdup (g_value_get_string (value));
-		break;
-	case PROP_UPDATE_SEVERITY:
-		pk_package_set_update_severity (package, g_value_get_enum (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -797,20 +789,6 @@ pk_package_class_init (PkPackageClass *klass)
 	g_object_class_install_property (object_class, PROP_UPDATE_UPDATED, pspec);
 
 	/**
-	 * PkPackage:update-severity:
-	 *
-	 * Can be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL,
-	 * %PK_INFO_ENUM_IMPORTANT or %PK_INFO_ENUM_CRITICAL.
-	 *
-	 * Since: 1.2.4
-	 */
-	pspec = g_param_spec_enum ("update-severity", NULL,
-				   "Package update severity",
-				    PK_TYPE_INFO_ENUM, PK_INFO_ENUM_UNKNOWN,
-				    G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_UPDATE_SEVERITY, pspec);
-
-	/**
 	 * PkPackage::changed:
 	 * @package: the #PkPackage instance that emitted the signal
 	 *
@@ -882,54 +860,4 @@ pk_package_new (void)
 	PkPackage *package;
 	package = g_object_new (PK_TYPE_PACKAGE, NULL);
 	return PK_PACKAGE (package);
-}
-
-/**
- * pk_package_get_update_severity:
- * @package: a #PkPackage
- *
- * Returns the @package update severity. Can be one of %PK_INFO_ENUM_UNKNOWN,
- * %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL, %PK_INFO_ENUM_IMPORTANT or
- * %PK_INFO_ENUM_CRITICAL.
- *
- * Returns: the @package update severity, if known.
- *
- * Since: 1.2.4
- **/
-PkInfoEnum
-pk_package_get_update_severity (PkPackage *package)
-{
-	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_INFO_ENUM_UNKNOWN);
-
-	return package->priv->update_severity;
-}
-
-/**
- * pk_package_set_update_severity:
- * @package: a #PkPackage
- * @update_severity: a #PkInfoEnum
- *
- * Set an update severity for the @package. The @update_severity can be
- * one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL,
- * %PK_INFO_ENUM_IMPORTANT or %PK_INFO_ENUM_CRITICAL.
- *
- * Since: 1.2.4
- **/
-void
-pk_package_set_update_severity (PkPackage *package,
-				PkInfoEnum update_severity)
-{
-	g_return_if_fail (PK_IS_PACKAGE (package));
-	g_return_if_fail (update_severity == PK_INFO_ENUM_UNKNOWN ||
-			  update_severity == PK_INFO_ENUM_LOW ||
-			  update_severity == PK_INFO_ENUM_NORMAL ||
-			  update_severity == PK_INFO_ENUM_IMPORTANT ||
-			  update_severity == PK_INFO_ENUM_CRITICAL);
-
-	if (package->priv->update_severity == update_severity)
-		return;
-
-	package->priv->update_severity = update_severity;
-
-	g_object_notify (G_OBJECT (package), "update-severity");
 }

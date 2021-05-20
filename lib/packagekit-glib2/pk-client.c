@@ -753,7 +753,6 @@ pk_client_properties_changed_cb (GDBusProxy *proxy,
 static void
 pk_client_signal_package (PkClientState *state,
 			  PkInfoEnum info_enum,
-			  PkInfoEnum update_severity,
 			  const gchar *package_id,
 			  const gchar *summary)
 {
@@ -770,7 +769,6 @@ pk_client_signal_package (PkClientState *state,
 	g_object_set (package,
 		      "info", info_enum,
 		      "summary", summary,
-		      "update-severity", update_severity,
 		      "role", state->role,
 		      "transaction-id", state->transaction_id,
 		      NULL);
@@ -1085,12 +1083,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			       &tmp_uint,
 			       &tmp_str[1],
 			       &tmp_str[2]);
-		/* The 'info' and 'update-severity' are encoded in the single value */
-		tmp_uint2 = tmp_uint & 0xFFFF;
-		tmp_uint3 = (tmp_uint >> 16) & 0xFFFF;
 		pk_client_signal_package (state,
-					  tmp_uint2,
-					  tmp_uint3,
+					  tmp_uint,
 					  tmp_str[1],
 					  tmp_str[2]);
 		return;

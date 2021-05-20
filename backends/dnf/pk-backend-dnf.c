@@ -1082,6 +1082,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 
+	/* FIXME: actually get the right update severity */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		guint i;
 		DnfPackage *pkg;
@@ -1093,8 +1094,6 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			advisory = dnf_package_get_advisory (pkg);
 			if (advisory != NULL) {
 				kind = dnf_advisory_get_kind (advisory);
-				g_object_set_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY,
-					GUINT_TO_POINTER (dnf_update_severity_to_enum (dnf_advisory_get_severity (advisory))));
 				dnf_advisory_free (advisory);
 				info_enum = dnf_advisory_kind_to_info_enum (kind);
 				dnf_package_set_info (pkg, info_enum);

@@ -961,16 +961,6 @@ pk_backend_job_package (PkBackendJob *job,
 			const gchar *package_id,
 			const gchar *summary)
 {
-	pk_backend_job_package_full (job, info, package_id, summary, PK_INFO_ENUM_UNKNOWN);
-}
-
-void
-pk_backend_job_package_full (PkBackendJob *job,
-			     PkInfoEnum info,
-			     const gchar *package_id,
-			     const gchar *summary,
-			     PkInfoEnum update_severity)
-{
 	PkPackage *emitted_item;
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
@@ -988,7 +978,6 @@ pk_backend_job_package_full (PkBackendJob *job,
 		return;
 	}
 	pk_package_set_info (item, info);
-	pk_package_set_update_severity (item, update_severity);
 	pk_package_set_summary (item, summary);
 
 	/* already emitted? */
