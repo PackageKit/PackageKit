@@ -55,7 +55,7 @@
         PackageKit daemon. The machine-readable specifications are
         available as XML documents for both the PackageKit interface
         and the PackageKit.Transaction interface.
-        <xref href="https://github.com/hughsie/PackageKit/blob/master/src/org.freedesktop.PackageKit.xml" scope="external" role="friend" format="html"> XML specification of the org.freedesktop.PackageKit interface</xref>
+        <xref href="https://github.com/PackageKit/PackageKit/blob/main/src/org.freedesktop.PackageKit.xml" scope="external" role="friend" format="html"> XML specification of the org.freedesktop.PackageKit interface</xref>
       </para>
     </partintro>
     <xi:include href="dbus/org.freedesktop.PackageKit.ref.xml"/>
