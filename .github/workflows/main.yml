@@ -1,0 +1,22 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        distro:
+          - fedora
+          - debian
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
+      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=dnf
+        if: ${{ matrix.distro == 'fedora' }}
+      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=aptcc
+        if: ${{ matrix.distro == 'debian' }}
