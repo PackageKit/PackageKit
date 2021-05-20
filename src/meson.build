@@ -39,6 +39,10 @@ packagekit_direct_exec = executable(
   'pk-direct.c',
   'pk-shared.c',
   'pk-shared.h',
+  'pk-spawn.c',
+  'pk-spawn.h',
+  'pk-backend-spawn.h',
+  'pk-backend-spawn.c',
   dependencies: [
     packagekit_glib2_dep,
     libsystemd,
