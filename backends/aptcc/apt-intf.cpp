@@ -1320,7 +1320,7 @@ PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &inst
         if (pkg->SelectedState == pkgCache::State::Hold) {
             // We pretend held packages are not upgradable at all since we can't represent
             // the concept of holds in PackageKit.
-            // https://github.com/hughsie/PackageKit/issues/120
+            // https://github.com/PackageKit/PackageKit/issues/120
             continue;
         } else if (state.Upgrade() == true && state.NewInstall() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
