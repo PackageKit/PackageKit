@@ -1103,6 +1103,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 					g_object_set (item, "group", g_variant_get_uint32 (value), NULL);
 				else if (g_strcmp0 (key, "size") == 0)
 					g_object_set (item, "size", g_variant_get_uint64 (value), NULL);
+				else if (g_strcmp0 (key, "download-size") == 0)
+					g_object_set (item, "download-size", g_variant_get_uint64 (value), NULL);
 				else
 					g_object_set (item, key, g_variant_get_string (value, NULL), NULL);
 			}

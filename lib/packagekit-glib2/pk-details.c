@@ -53,6 +53,7 @@ struct _PkDetailsPrivate
 	gchar				*url;
 	gchar                           *summary;
 	guint64				 size;
+	guint64				 download_size;
 };
 
 enum {
@@ -64,6 +65,7 @@ enum {
 	PROP_URL,
 	PROP_SIZE,
 	PROP_SUMMARY,
+	PROP_DOWNLOAD_SIZE,
 	PROP_LAST
 };
 
@@ -189,6 +191,23 @@ pk_details_get_size (PkDetails *details)
 	return details->priv->size;
 }
 
+/**
+ * pk_details_get_download_size:
+ * @details: a #PkDetails instance
+ *
+ * Gets the package download size.
+ *
+ * Returns: the package download size, 0 if already downloaded and G_MAXUINT64 when unknown
+ *
+ * Since: 1.2.4
+ **/
+guint64
+pk_details_get_download_size (PkDetails *details)
+{
+	g_return_val_if_fail (details != NULL, G_MAXUINT64);
+	return details->priv->download_size;
+}
+
 /*
  * pk_details_get_property:
  **/
@@ -219,6 +238,9 @@ pk_details_get_property (GObject *object, guint prop_id, GValue *value, GParamSp
 		break;
 	case PROP_SUMMARY:
 		g_value_set_string (value, priv->summary);
+		break;
+	case PROP_DOWNLOAD_SIZE:
+		g_value_set_uint64 (value, priv->download_size);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -261,6 +283,9 @@ pk_details_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_SIZE:
 		priv->size = g_value_get_uint64 (value);
+		break;
+	case PROP_DOWNLOAD_SIZE:
+		priv->download_size = g_value_get_uint64 (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -350,6 +375,16 @@ pk_details_class_init (PkDetailsClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
+	/**
+	 * PkDetails:download-size:
+	 *
+	 * Since: 1.2.4
+	 */
+	pspec = g_param_spec_uint64 ("download-size", NULL, NULL,
+				     0, G_MAXUINT64, G_MAXUINT64,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE, pspec);
+
 	g_type_class_add_private (klass, sizeof (PkDetailsPrivate));
 }
 
@@ -360,6 +395,7 @@ static void
 pk_details_init (PkDetails *details)
 {
 	details->priv = PK_DETAILS_GET_PRIVATE (details);
+	details->priv->download_size = G_MAXUINT64;
 }
 
 /*

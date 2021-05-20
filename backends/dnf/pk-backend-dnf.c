@@ -1916,14 +1916,15 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
-		pk_backend_job_details (job,
-					package_ids[i],
-					dnf_package_get_summary (pkg),
-					dnf_package_get_license (pkg),
-					PK_GROUP_ENUM_UNKNOWN,
-					dnf_package_get_description (pkg),
-					dnf_package_get_url (pkg),
-					(gulong) dnf_package_get_installsize (pkg));
+		pk_backend_job_details_full (job,
+					     package_ids[i],
+					     dnf_package_get_summary (pkg),
+					     dnf_package_get_license (pkg),
+					     PK_GROUP_ENUM_UNKNOWN,
+					     dnf_package_get_description (pkg),
+					     dnf_package_get_url (pkg),
+					     (gulong) dnf_package_get_installsize (pkg),
+					     dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
 	}
 
 	/* done */
@@ -2004,14 +2005,15 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 							   full_paths[i]);
 				return;
 			}
-			pk_backend_job_details (job,
-						dnf_package_get_package_id (pkg),
-						dnf_package_get_summary (pkg),
-						dnf_package_get_license (pkg),
-						PK_GROUP_ENUM_UNKNOWN,
-						dnf_package_get_description (pkg),
-						dnf_package_get_url (pkg),
-						(gulong) dnf_package_get_installsize (pkg));
+			pk_backend_job_details_full (job,
+						     dnf_package_get_package_id (pkg),
+						     dnf_package_get_summary (pkg),
+						     dnf_package_get_license (pkg),
+						     PK_GROUP_ENUM_UNKNOWN,
+						     dnf_package_get_description (pkg),
+						     dnf_package_get_url (pkg),
+						     (gulong) dnf_package_get_installsize (pkg),
+						     dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
 		}
 	}
 
