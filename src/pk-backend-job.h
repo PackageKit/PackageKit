@@ -206,6 +206,15 @@ void		 pk_backend_job_details			(PkBackendJob	*job,
 							 const gchar	*description,
 							 const gchar	*url,
 							 gulong	  size);
+void		 pk_backend_job_details_full		(PkBackendJob	*job,
+							 const gchar	*package_id,
+							 const gchar    *summary,
+							 const gchar	*license,
+							 PkGroupEnum	 group,
+							 const gchar	*description,
+							 const gchar	*url,
+							 gulong		 size,
+							 guint64	 download_size);
 void	 	 pk_backend_job_files 			(PkBackendJob	*job,
 							 const gchar	*package_id,
 							 gchar	 	**files);

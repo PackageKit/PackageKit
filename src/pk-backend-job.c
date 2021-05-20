@@ -1143,6 +1143,21 @@ pk_backend_job_details (PkBackendJob *job,
 			const gchar *url,
 			gulong size)
 {
+	pk_backend_job_details_full (job, package_id, summary, license, group,
+				     description, url, size, G_MAXUINT64);
+}
+
+void
+pk_backend_job_details_full (PkBackendJob *job,
+			     const gchar *package_id,
+			     const gchar *summary,
+			     const gchar *license,
+			     PkGroupEnum group,
+			     const gchar *description,
+			     const gchar *url,
+			     gulong size,
+			     guint64 download_size)
+{
 	g_autoptr(PkDetails) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1164,6 +1179,7 @@ pk_backend_job_details (PkBackendJob *job,
 		      "description", description,
 		      "url", url,
 		      "size", (guint64) size,
+		      "download-size", download_size,
 		      NULL);
 
 	/* emit */
