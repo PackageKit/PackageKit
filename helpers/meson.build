@@ -4,7 +4,7 @@ helper_exec = executable(
   'dependency-solving-helper',
   'dependency-solving-helper.cpp',
   dependencies: [
-    dependency('libbonsole'),
+    dependency('libBonsoleClient'),
     dependency('dbus-1'),
     dependency('libxslt'),
   ],
