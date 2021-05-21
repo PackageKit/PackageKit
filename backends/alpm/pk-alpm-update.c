@@ -72,7 +72,7 @@ static gchar **
 pk_alpm_pkg_build_urls (alpm_pkg_t *pkg)
 {
 	gchar **urls = g_new0 (gchar *, 2);
-	urls[0] = g_strdup_printf ("http://www.archlinux.org/packages/%s/%s/%s/",
+	urls[0] = g_strdup_printf ("http://archlinux.org/packages/%s/%s/%s/",
 				   alpm_db_get_name (alpm_pkg_get_db (pkg)),
 				   alpm_pkg_get_arch (pkg),
 				   alpm_pkg_get_name (pkg));
