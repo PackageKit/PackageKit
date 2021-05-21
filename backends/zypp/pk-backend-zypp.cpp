@@ -2976,6 +2976,113 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 static void
+backend_import_pubkey_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	const gchar *key_file;
+
+	g_variant_get(params, "(&s)",
+		&key_file);
+
+	ZyppJob zjob(job);
+	ZYpp::Ptr zypp = zjob.get_zypp();
+	if (zypp == NULL) {
+		return;
+	}
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+   
+	try {
+		zypp::Pathname key_pathname(key_file);
+		zypp::PublicKey public_key;
+		try {
+			public_key = zypp::PublicKey(key_pathname);
+		} catch (const Exception &ex) {
+			zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_FILE_NOT_FOUND, "Failed to read public key from %s", key_file);
+			return;
+		}
+		
+		if (!public_key.isValid()) {
+			zypp_backend_finished_error (job, PK_ERROR_ENUM_GPG_FAILURE,
+							"Key %s is not valid GPG pubkey", key_file);
+			return;
+		}
+		zypp->target()->rpmDb().importPubkey(public_key);
+	} catch (const target::rpm::RpmException &ex) {
+		zypp_backend_finished_error (job, PK_ERROR_ENUM_GPG_FAILURE,
+							"Failed to import public key: %s", ex.asUserHistory (). c_str());
+		return;
+	} catch (const Exception &ex) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+		return;
+	}
+}
+
+/**
+  * pk_backend_import_pubkey
+  */
+void
+pk_backend_import_pubkey (PkBackend *backend, PkBackendJob *job, const gchar *key_path)
+{
+	zypp_backend_job_thread_create (job, backend_import_pubkey_thread, NULL, NULL);
+}
+
+static void
+backend_remove_pubkey_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	const gchar *key_id;
+
+	g_variant_get(params, "(&s)",
+		&key_id);
+
+	ZyppJob zjob(job);
+	ZYpp::Ptr zypp = zjob.get_zypp();
+	if (zypp == NULL) {
+		return;
+	}
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+   
+	zypp::PublicKey public_key;
+	std::list<PublicKey> keys = zypp->target()->rpmDb().pubkeys();
+
+	for (const PublicKey& key : keys) {
+		if (key.providesKey(key_id)) {
+			public_key = key;
+			break;
+		}
+	}
+
+	if (!public_key.isValid()) {
+		zypp_backend_finished_error (job, PK_ERROR_ENUM_GPG_FAILURE,
+						"Key %s is not found", key_id);
+		return;
+	}
+
+	try {
+		zypp->target()->rpmDb().removePubkey(public_key);
+	} catch (const target::rpm::RpmException &ex) {
+		zypp_backend_finished_error (job, PK_ERROR_ENUM_GPG_FAILURE,
+							"Failed to remove public key: %s", ex.asUserHistory (). c_str());
+		return;
+	} catch (const Exception &ex) {
+		zypp_backend_finished_error (
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+		return;
+	}
+}
+
+/**
+  * pk_backend_remove_pubkey
+  */
+void
+pk_backend_remove_pubkey (PkBackend *backend, PkBackendJob *job, const gchar *key_id)
+{
+	zypp_backend_job_thread_create (job, backend_remove_pubkey_thread, NULL, NULL);
+}
+
+static void
 backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;

@@ -120,6 +120,7 @@ typedef struct {
 	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 refcount;
 	PkClientHelper			*client_helper;
+	gchar				*key_file;
 } PkClientState;
 
 static void
@@ -1874,6 +1875,24 @@ pk_client_set_hints_cb (GObject *source_object,
 		g_dbus_proxy_call (state->proxy, "RepairSystem",
 				   g_variant_new ("(t)",
 						  state->transaction_flags),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+	} else if (state->role == PK_ROLE_ENUM_IMPORT_PUBKEY) {
+		g_dbus_proxy_call (state->proxy, "ImportPubkey",
+				   g_variant_new ("(s)",
+						  state->key_file),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   state);
+	} else if (state->role == PK_ROLE_ENUM_REMOVE_PUBKEY) {
+		g_dbus_proxy_call (state->proxy, "RemovePubkey",
+				   g_variant_new ("(s)",
+						  state->key_id),
 				   G_DBUS_CALL_FLAGS_NONE,
 				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
 				   state->cancellable,

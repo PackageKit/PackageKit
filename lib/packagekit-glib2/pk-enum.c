@@ -128,6 +128,8 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
+	{PK_ROLE_ENUM_IMPORT_PUBKEY,			"import-pubkey"},
+	{PK_ROLE_ENUM_REMOVE_PUBKEY,			"remove-pubkey"},
 	{0, NULL}
 };
 
@@ -1251,6 +1253,14 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Getting system upgrades");
+		break;
+	case PK_ROLE_ENUM_IMPORT_PUBKEY:
+		/* TRANSLATORS: The role of the transaction, in present tense */
+		text = dgettext("PackageKit", "Importing GPG public key");
+		break;
+	case PK_ROLE_ENUM_REMOVE_PUBKEY:
+		/* TRANSLATORS: The role of the transaction, in present tense */
+		text = dgettext("PackageKit", "Remove public key");
 		break;
 	default:
 		g_warning ("role unrecognised: %s", pk_role_enum_to_string (role));

@@ -259,6 +259,12 @@ gboolean	 pk_backend_is_eula_valid		(PkBackend	*backend,
 gpointer	 pk_backend_get_user_data		(PkBackend	*backend);
 void		 pk_backend_set_user_data		(PkBackend	*backend,
 							 gpointer	 user_data);
+void		 pk_backend_import_pubkey		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*key_path);
+void		 pk_backend_remove_pubkey		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 const gchar	*key_id);
 
 G_END_DECLS
 
