@@ -125,12 +125,11 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   xmlAddChild(root, form);
   
   problem = 0;
-  solution = 0;
   buffer = NULL;
   
   while ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
     
-    
+    solution = 0;
     text = xmlNewText(BAD_CAST buffer);
     
     xmlAddChild(form, text);
@@ -413,18 +412,19 @@ static void message_proc(const char *msg__, intptr_t usr_p)
       
       while ('\0' != *curr) ++curr;
       
-      prev3 = ++curr;
       
       while ('\0' != *curr && '=' != *curr) ++curr;
       
       *curr = '\0';
+    
+      prev3 = ++curr;
       
       solution_number = atoi(prev3);
       
-      
       free(spec);
       
-      int length = (int) (snprintf(NULL, 0, "SELECTION:%d:%d", problem_number, solution_number)) + 1; 
+      int length = (int) (snprintf(NULL, 0, "SELECTION:%d:%d", problem_number, solution_number)) + 2; 
+
       char *buffer = (char*) malloc(length);
       snprintf(buffer, length, "SELECTION:%c%d:%d", '\0',problem_number, solution_number);
       if (1 > write(app->output, buffer, length)) {

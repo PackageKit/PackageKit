@@ -771,6 +771,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendJobThreadHelper, 1);
 	helper->job = g_object_ref (job);
+        helper->job->started = FALSE;
 	helper->backend = job->priv->backend;
 	helper->func = func;
 	helper->user_data = user_data;

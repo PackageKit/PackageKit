@@ -70,8 +70,9 @@ typedef struct
         
         char                    *sender;
         void                    *private_data;
-        char                     done;
+        char                     done:1;
         void                    *helper;
+        char                     started:1;
 } PkBackendJob;
 
 typedef struct
