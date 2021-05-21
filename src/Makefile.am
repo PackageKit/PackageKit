@@ -87,7 +87,11 @@ packagekit_direct_SOURCES =				\
 	pk-backend-job.h				\
 	pk-direct.c					\
 	pk-shared.c					\
-	pk-shared.h
+	pk-shared.h					\
+	pk-spawn.c					\
+	pk-spawn.h					\
+	pk-backend-spawn.h				\
+	pk-backend-spawn.c
 
 packagekit_direct_CPPFLAGS =				\
 	$(AM_CPPFLAGS)					\
