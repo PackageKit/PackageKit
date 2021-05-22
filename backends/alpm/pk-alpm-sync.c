@@ -264,7 +264,7 @@ pk_backend_update_packages (PkBackend *self,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids)
 {
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, TRUE);
+	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, (void *)TRUE);
 }
 
 void
