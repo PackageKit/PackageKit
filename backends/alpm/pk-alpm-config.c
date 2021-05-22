@@ -635,8 +635,10 @@ pk_alpm_config_initialize_alpm (PkAlpmConfig *config, GError **error)
 	}
 
 	if (config->is_check) {
+		gchar* path;
+
 		g_free(config->dbpath);
-		gchar* path = g_strconcat (config->root,
+		path = g_strconcat (config->root,
 						 "/var/lib/PackageKit/alpm" + dir,
 						 NULL);
 		g_mkdir_with_parents(path, 0755);
