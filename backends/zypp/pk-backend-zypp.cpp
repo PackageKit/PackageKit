@@ -2208,7 +2208,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
-                
+               
                 // Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
@@ -2219,6 +2219,34 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 ResPool pool = ResPool::instance ();
                 test:
                 if (!zypp->resolver ()->resolvePool ()) {
+                  
+                  if (! pk_backend_job_get_interactive(job)) {
+                    ResolverProblemList problems = zypp->resolver ()->problems ();
+                    gchar * emsg = NULL, * tempmsg = NULL;
+                    
+                    for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
+                      if (emsg == NULL) {
+                        emsg = g_strdup ((*it)->description ().c_str ());
+                      }
+                      else {
+                        tempmsg = emsg;
+                        emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
+                        g_free (tempmsg);
+                      }
+                    }
+                    
+                    // reset the status of all touched PoolItems
+                    ResPool pool = ResPool::instance ();
+                    for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
+                      if (it->status ().isToBeInstalled ())
+                        it->statusReset ();
+                    }
+                    
+                    pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
+                    g_free (emsg);
+                    
+                    goto exit;
+                  }
                     
                     ResolverProblemList list = zypp->resolver()->problems();
 
@@ -4039,10 +4067,13 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			to_install++;
 			PoolItem item(solvable);
 			// set status to ToBeInstalled
-			item.status ().setToBeInstalled (ResStatus::USER);
-			items.push_back (item);
+                        if (FALSE == job->started) {
+			    item.status ().setToBeInstalled (ResStatus::USER);
+			    items.push_back (item);
+                        }
 		}
 
+		job->started = true;
 		pk_backend_job_set_percentage (job, 40);
 
 		if (!to_install) {
@@ -4147,14 +4178,15 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			return;
 		}
 		PoolItem item(solvable);
-		if (solvable.isSystem ()) {
+                if (FALSE == job->started)
+		  if (solvable.isSystem ()) {
 			item.status ().setToBeUninstalled (ResStatus::USER);
 			items.push_back (item);
-		} else {
+		  } else {
 			item.status ().resetTransact (ResStatus::USER);
-		}
+		  }
 	}
-
+        job->started = true;
 	pk_backend_job_set_percentage (job, 40);
 
 	try
@@ -4661,8 +4693,11 @@ upgrade_system (PkBackendJob *job,
 		}
 	}
 
-	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
-	zypp->resolver ()->doUpgrade ();
+	if (FALSE == job->started) {
+	
+          zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+	  zypp->resolver ()->doUpgrade ();
+        }
 
 	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
 
@@ -4722,9 +4757,12 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			}
 		}
 
-		item.status ().setToBeInstalled (ResStatus::USER);
-		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
-		zypp_check_restart (&restart, patch);
+		if (FALSE == job->started) {
+		  item.status ().setToBeInstalled (ResStatus::USER);
+		  Patch::constPtr patch = asKind<Patch>(item.resolvable ());
+		  zypp_check_restart (&restart, patch);
+                }
+                job->started = true;
 		if (restart != PK_RESTART_ENUM_NONE){
 			pk_backend_job_require_restart (job, restart, package_ids[i]);
 			restart = PK_RESTART_ENUM_NONE;
