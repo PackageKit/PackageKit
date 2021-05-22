@@ -30,6 +30,7 @@
 #include "pk-alpm-error.h"
 #include "pk-alpm-transaction.h"
 #include "pk-alpm-update.h"
+#include "pk-alpm-packages.h"
 
 static gboolean
 pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gboolean update, GError **error)
@@ -70,8 +71,10 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 
 			ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
 			for (group_iter = alpm_pkg_get_groups (pkg); group_iter != NULL; group_iter = group_iter->next) {
-				if (alpm_list_find_str (ignoregroups, i->data) != NULL)
-					pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_BLOCKED); goto cont;
+				if (alpm_list_find_str (ignoregroups, i->data) != NULL) {
+					pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_BLOCKED);
+					goto cont;
+				}
 			}
 		}
 
