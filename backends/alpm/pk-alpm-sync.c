@@ -176,7 +176,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	PkBitfield flags;
 	gboolean only_trusted;
-	const alpm_list_t *i;
+	alpm_list_t *i;
 	alpm_list_t *asdeps = NULL, *asexplicit = NULL;
 	alpm_transflag_t alpm_flags = 0;
 	const gchar** package_ids;
@@ -190,9 +190,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 	if ((gboolean)p) {
 		i = alpm_get_syncdbs(priv->alpm);
-		for (; i != NULL; i = i->next) {
-			pk_alpm_update_database(job, TRUE, i->data, &error);
-		}
+		pk_alpm_refresh_databases (job, TRUE, i, &error);
 	}
 
 	/* download only */
