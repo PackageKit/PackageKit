@@ -191,7 +191,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
-	if ((gboolean)p) {
+	if ((gblooean)p) {
 		i = alpm_get_syncdbs(priv->alpm);
 		pk_alpm_refresh_databases (job, TRUE, i, &error);
 	}
