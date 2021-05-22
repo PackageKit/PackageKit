@@ -201,7 +201,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
 	if (pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error) &&
-	    pk_alpm_transaction_sync_targets (job, package_ids, (gboolean)p, &error) &&
+	    pk_alpm_transaction_sync_targets (job, package_ids, p ? TRUE : FALSE, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
 
 		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
