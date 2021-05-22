@@ -1,4 +1,4 @@
-alpm_dep = dependency('libalpm', version: '>=12.0.0')
+alpm_dep = dependency('libalpm', version: '>=13.0.0')
 
 shared_module(
   'pk_backend_alpm',
