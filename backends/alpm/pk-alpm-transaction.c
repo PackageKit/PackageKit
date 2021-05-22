@@ -270,7 +270,9 @@ pk_alpm_install_ignorepkg (PkBackendJob *job, alpm_question_install_ignorepkg_t 
 		output = g_strdup_printf ("%s: was not ignored\n",
 					  alpm_pkg_get_name (q->pkg));
 		pk_alpm_transaction_output (output);
-
+#if  (!defined(__clang__)) && (__GNUC__ >= 7)
+		__attribute__ ((fallthrough)); /* let's be explicit about falltrhough */
+#endif
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		q->install = 1;
 		break;
