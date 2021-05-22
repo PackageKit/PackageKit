@@ -942,6 +942,9 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 {
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (config->backend);
 	alpm_handle_t *handle;
+	gchar **arches;
+	gint i;
+	alpm_list_t *arches_list = NULL;
 
 	g_return_val_if_fail (config != NULL, FALSE);
 
@@ -951,7 +954,14 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 
 	alpm_option_set_checkspace (handle, config->checkspace);
 	alpm_option_set_usesyslog (handle, config->usesyslog);
-	alpm_option_set_arch (handle, config->arch);
+
+	arches = g_strsplit (config->arch, ",", -1);
+	for (i = 0; arches[i]; i++) {
+		arches_list = alpm_list_add (arches_list, arches[i]);
+	}
+	alpm_option_set_architectures (handle, arches_list);
+	g_strfreev (arches);
+	alpm_list_free (arches_list);
 
 	/* backend takes ownership */
 	g_free (xfercmd);
