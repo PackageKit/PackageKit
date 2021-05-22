@@ -870,7 +870,7 @@ pk_alpm_spawn (const gchar *command)
 }
 
 static gint
-pk_alpm_fetchcb (const gchar *url, const gchar *path, gint force)
+pk_alpm_fetchcb (void *ctx, const gchar *url, const gchar *path, gint force)
 {
 	GRegex *xo, *xi;
 	gint result = 0;
@@ -969,9 +969,9 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 	config->xfercmd = NULL;
 
 	if (xfercmd != NULL) {
-		alpm_option_set_fetchcb (handle, pk_alpm_fetchcb);
+		alpm_option_set_fetchcb (handle, pk_alpm_fetchcb, NULL);
 	} else {
-		alpm_option_set_fetchcb (handle, NULL);
+		alpm_option_set_fetchcb (handle, NULL, NULL);
 	}
 
 	/* backend takes ownership */
