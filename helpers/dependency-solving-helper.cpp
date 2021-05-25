@@ -114,7 +114,7 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   char *buffer, *prev, *curr, *prev2, *prev3;
   int length, length2;
   int problem, solution;
-  xmlNodePtr root, text, anchor, message, form, checkbox;
+  xmlNodePtr root, text, anchor, message, form, checkbox, group, header, line, content;
   
   xmlDocPtr a = bonsole_window(nullptr);
   root = xmlDocGetRootElement(a);
@@ -127,71 +127,78 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   problem = 0;
   buffer = NULL;
   
+  group= xmlNewNode( NULL, BAD_CAST "dl");
+  
+  xmlAddChild(form, group);
   while ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
     
     solution = 0;
+    
     text = xmlNewText(BAD_CAST buffer);
-    
-    xmlAddChild(form, text);
-    
-    
-    text = xmlNewNode(NULL, BAD_CAST "br");
-    xmlAddChild(form, text);
-    
+
+    header = xmlNewNode( NULL, BAD_CAST "dt");
+    content = xmlNewNode( NULL, BAD_CAST "dd");
+    xmlAddChild(header, text);
+    xmlAddChild(group, header);
+    xmlAddChild(group, content);
+
     while ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
     
-      checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
       
-      char *prev = buffer;
-      char *curr = buffer;
-      
-      
-      while ('\0' != *curr) {
+        checkbox = xmlNewNode(NULL, BAD_CAST "checkbox");
+        text = xmlNewNode(NULL, BAD_CAST "br");
         
-        if ('\n' == *curr) {
-          
-          *curr = '\0';
-          
-          text = xmlNewText(BAD_CAST prev);
-          xmlAddChild(checkbox, text);
+        xmlAddChild(content, text);
+        xmlAddChild(content, checkbox);
+        
+        if ('\0' != buffer[0]) {
+          text = xmlNewText(BAD_CAST buffer);
+          xmlAddChild(content, text);
           text = xmlNewNode(NULL, BAD_CAST "br");
-          xmlAddChild(checkbox, text);
-          prev = curr + 1;
+          xmlAddChild(content, text);
         }
+      
+      
+      if ((buffer = get_record(fd, in_ch_reader))&& ('\0' != buffer[0])) {
         
-        ++curr;
-      }
-      
-      text = xmlNewText(BAD_CAST prev);
-      xmlAddChild(checkbox, text);
-      
-      xmlAddChild(form, checkbox);
-      
-      if ((buffer = get_record(fd, in_ch_reader)) && ('\0' != buffer[0])) {
+        char *startpos = strdup(buffer);
+        char *prev = startpos;
+        char *curr = prev;
         
-        char *prev = buffer;
-        char *curr = buffer;
         
         while ('\0' != *curr) {
+          while ('\0' != *curr
+            && '\n' != *curr) ++curr;
           
-          if ('\n' == *curr) {
-            
+          if ('\n' == *curr &&
+              '\0' == curr[1]) {
+          
             *curr = '\0';
-            
-            text = xmlNewText(BAD_CAST prev);
-            xmlAddChild(checkbox, text);
-            text = xmlNewNode(NULL, BAD_CAST "br");
-            xmlAddChild(checkbox, text);
-            prev = curr + 1;
+             curr += 2;
+          }
+          else {
+            *curr = '\0'; 
+            ++curr;
           }
           
-          ++curr;
+          if ('\0' != *curr)  {
+            
+            text = xmlNewText(BAD_CAST prev);
+            xmlAddChild(content, text);
+            text = xmlNewNode(NULL, BAD_CAST "br");
+            xmlAddChild(content, text);
+            prev = curr;
+          }
+        
+        
         }
         
         text = xmlNewText(BAD_CAST prev);
-        xmlAddChild(checkbox, text);
+        xmlAddChild(content, text);
         
-      }
+        if (startpos)
+           free(startpos);
+        }
         length = snprintf(NULL, 0, "%d_%d", problem, solution) + 1;
         buffer = (char*) malloc(length);
         snprintf(buffer, length, "%d_%d", problem, solution);
@@ -199,26 +206,22 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
         xmlSetProp(checkbox, BAD_CAST "name", BAD_CAST buffer);
         
         buffer = NULL;
-      
-      ++solution;
+        
+        ++solution;
+        
+        text = xmlNewNode(NULL, BAD_CAST "br");
+        xmlAddChild(content, text);
 
-      text = xmlNewNode(NULL, BAD_CAST "br");
-      xmlAddChild(form, text);
     }
-    text = xmlNewNode(NULL, BAD_CAST "br");
-    xmlAddChild(form, text);
     ++problem;
   }
   
   
   if (0 == problem) {
     
-    bonsole_reset_document(nullptr);
-    
-    a = bonsole_window(nullptr);
     root = xmlDocGetRootElement(a);
     
-    text = xmlNewText(BAD_CAST "Done. You can now close this page");
+    text = xmlNewText(BAD_CAST "Done. You can close this page.");
     message = xmlNewNode(NULL, BAD_CAST "message");
     xmlAddChild(message, text);
     xmlAddChild(root, message);
@@ -440,6 +443,12 @@ static void message_proc(const char *msg__, intptr_t usr_p)
       
       
     }
+    
+    xmlChar *ent = xmlEncodeEntitiesReentrant(a, BAD_CAST "Processing ...");
+    
+    xmlNodeSetContent(app->window.message, ent);
+    
+    free(ent);
    
     bonsole_window_release(nullptr);
     bonsole_flush_changes(nullptr);  
