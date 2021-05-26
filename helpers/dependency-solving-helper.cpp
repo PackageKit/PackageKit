@@ -11,6 +11,9 @@
 #include <dbus/dbus.h>
 
 
+static const char *app_name_real = "PackageKit - dependency solver";
+static char *app_name[] = {"title", NULL, NULL};
+
 struct reader_info {
   char *buffer;
   int   curr_old;
@@ -119,6 +122,7 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   xmlDocPtr a = bonsole_window(nullptr);
   root = xmlDocGetRootElement(a);
 
+  bonsole_set_context_params(0, app_name);
   
   form = xmlNewNode(NULL, BAD_CAST "form");
   xmlSetProp(form, BAD_CAST "action",BAD_CAST "app:update");
@@ -678,6 +682,9 @@ int main(int argc, char **argv)
   {
   int argc = 1;
   char *argv[2] = {(char*)"packagekitd", (char*)NULL};
+  
+  
+  app_name[1] = bonsole_escape_quotes(app_name_real);
   
   if (0 != bonsole_client_init(&argc, argv)) exit(1);
   }
