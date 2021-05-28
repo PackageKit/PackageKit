@@ -1962,6 +1962,8 @@ dependency_handle_selection(GIOChannel *source,
       G_IO_NVAL == (G_IO_NVAL & condition)) {
       
       pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Error when handling dependency. PIPE problem");
+      
+      pk_backend_job_done (msg_proc->job->helper);
       return FALSE;
     }
     

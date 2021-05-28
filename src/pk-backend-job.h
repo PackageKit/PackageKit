@@ -262,6 +262,7 @@ gboolean	 pk_backend_job_get_started		(PkBackendJob *job);
 
 void            *pk_backend_job_get_priv_data           (PkBackendJob *job);
 void             pk_backend_job_set_priv_data           (PkBackendJob *job, void *a);
+void             pk_backend_job_done  (gpointer thread_data);
 gpointer
 pk_backend_job_thread_setup (gpointer thread_data);
 G_END_DECLS

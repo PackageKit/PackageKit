@@ -739,8 +739,7 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 	/* destroy helper */
         
-        // TODO: S.L SL Jeżeli pewne pole wskazuje, że zadanie nie jest zakończone, to nie wykonujemy poniższego wywołania
-        // Podobnie poniższe 4 linijki
+        
         if (helper->job->done) {
           g_object_unref (helper->job);
           if (helper->destroy_func != NULL)
@@ -750,6 +749,20 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 	/* no return value */
 	return NULL;
+}
+
+void pk_backend_job_done  (gpointer thread_data)
+{
+  PkBackendJobThreadHelper *helper = (PkBackendJobThreadHelper *) thread_data;
+  
+  pk_backend_job_finished (helper->job);
+ 
+  g_object_unref (helper->job);
+  if (helper->destroy_func != NULL)
+    helper->destroy_func (helper->user_data);
+  g_free (helper);
+  pk_backend_thread_stop (helper->backend, helper->job, helper->func);
+  
 }
 
 /**
