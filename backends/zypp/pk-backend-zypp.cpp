@@ -592,20 +592,6 @@ class PkBackendZYppPrivate {
 	std::vector<std::string> signatures;
 	EventDirector eventDirector;
 	PkBackendJob *currentJob;
-#if 0
-        bool isBonsoleInit;
-        ResolverProblemList::iterator it;
-        ProblemSolutionList* sol_it;
-        char *sender;
-        
-        
-        std::list<std::string> to_install;
-        std::list<std::string> to_remove;
-        
-        std::list<struct problem> problems;
-        bool first_run;
-        
-#endif
 	pthread_mutex_t zypp_mutex;
 };
 
@@ -1490,18 +1476,7 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 /**
   * simulate, or perform changes in pool to the system
   */
-/* LIBXML/LIBXSLT includes - remove unnecessary in future */
-#include <libxml/xmlmemory.h>
-#include <libxml/debugXML.h>
-#include <libxml/HTMLtree.h>
-#include <libxml/xmlIO.h>
-#include <libxml/DOCBparser.h>
-#include <libxml/xinclude.h>
-#include <libxml/catalog.h>
-#include <libxslt/xslt.h>
-#include <libxslt/xsltInternals.h>
-#include <libxslt/transform.h>
-#include <libxslt/xsltutils.h>
+
 struct reader_info {
   char *buffer;
   int   curr_old;
@@ -1534,7 +1509,7 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
    
   if (NULL == helper) {
     
-    return;
+        return;
   }
   
   std::list<struct problem>::iterator it = helper->problems2->begin();
@@ -1542,9 +1517,9 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
   for (; it != helper->problems2->end(); ++it) {
   
     ResolverProblemList::iterator it2 = helper->problems.begin();
-    
+
     for (; it2 != helper->problems.end(); ++it2) {
-    
+
       if ((*it2)->description() == (*it).kind) {
       
         break;
@@ -1552,10 +1527,10 @@ static void add_resolution_to_zypp(struct msg_proc_helper *helper)
     }
     
     if (it2 == helper->problems.end()) {
-      
-      continue;
+ 
+            continue;
     }
-      
+//       
     ProblemSolutionList::const_iterator it3;
     ResolverProblem problem = **it2;
     it3 = problem.solutions().begin();
@@ -1977,26 +1952,23 @@ dependency_handle_selection(GIOChannel *source,
                             gpointer data)
 {
   
+  
+  
+  struct backend_job_private *msg_proc = (struct backend_job_private*) data;
   if (G_IO_IN != (G_IO_IN & condition)) {
   
     if (G_IO_ERR == (G_IO_ERR & condition) ||
       G_IO_HUP == (G_IO_HUP & condition) ||
       G_IO_NVAL == (G_IO_NVAL & condition)) {
       
+      pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Error when handling dependency. PIPE problem");
       return FALSE;
     }
     
     return TRUE;
   }
-  
-  
-  #if 0
-helper->problems2.push_back(prob);
-#endif
-struct backend_job_private *msg_proc = (struct backend_job_private*) data;
   int fd = g_io_channel_unix_get_fd (source);
   
-  //fcntl(fd, F_SETFL, O_NONBLOCK);
   int flags = fcntl(fd, F_GETFL, 0);
   fcntl(fd, F_SETFL, flags | O_NONBLOCK);
   char *buffer ;
@@ -2045,7 +2017,6 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
         it2,
         solution_number);
       ProblemSolution solution = **it2;
-     // msg_proc->msg_proc_helper->solution_list->push_back(*it2);
       
       struct problem rproblem;
       
@@ -2069,6 +2040,7 @@ struct backend_job_private *msg_proc = (struct backend_job_private*) data;
     }
     else if (0 == strncmp("DONE!", buffer, sizeof("DONE!") - 1)) {
       /* Save resolution to file */
+      
       add_resolution_to_zypp(msg_proc->msg_proc_helper);
       save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
                                 msg_proc->to_install, msg_proc->to_remove);
@@ -2202,7 +2174,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	
         
         
-        
+        struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
 	try {
           try {
 		if (force)
@@ -2218,8 +2190,10 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                 ResPool pool = ResPool::instance ();
                 test:
+                if (rjob)
+                  add_resolution_to_zypp(rjob->msg_proc_helper);
                 if (!zypp->resolver ()->resolvePool ()) {
-                  
+#if 0
                   if (! pk_backend_job_get_interactive(job)) {
                     ResolverProblemList problems = zypp->resolver ()->problems ();
                     gchar * emsg = NULL, * tempmsg = NULL;
@@ -2247,10 +2221,10 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                     
                     goto exit;
                   }
-                    
+#endif               
                     ResolverProblemList list = zypp->resolver()->problems();
 
-                struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                
                 struct msg_proc_helper *transaction_problems;
                 
                 ResolverProblemList problems = zypp->resolver ()->problems ();
@@ -2290,11 +2264,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                   transaction_problems = rjob->msg_proc_helper;
                   path_to_cache = transaction_problems->path_to_cache;
+                  
+                  
+                
+                  
                 }
                 
                 transaction_problems->problems = problems;
-                rjob->to_install = rjob->to_install_s; //std::list<std::string>();
-                rjob->to_remove = rjob->to_remove_s; //std::list<std::string>();
+                rjob->to_install = rjob->to_install_s; 
+                rjob->to_remove = rjob->to_remove_s; 
                 rjob->problems = std::list<struct problem> ();
                 
                 rjob->to_install_s = std::list<std::string>();
@@ -2422,28 +2400,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
-#if 0
-			if (changed && NULL == rjob->msg_proc_helper) {
-                        
-                          if (rjob->sol_it) {
-                            
-                            //                             delete job->sol_it;
-                          }
-                          rjob->problems = std::list<struct problem> ();
-                          
-                          // rjob->sol_it = new ProblemSolutionList();
-                          rjob->to_install = to_install;
-                          rjob->to_remove = to_remove;
-                          
-                          
-                          add_resolution_to_zypp(transaction_problems);
-                          /* Save resolution to file */
-                          save_transaction_to_cache("Install", path_to_cache, transaction_problems, 
-                                                    rjob->to_install, rjob->to_remove);
-                          
-                          goto test;
-                        }
-#endif
+
                         
                         
                         if (changed) {
@@ -2571,35 +2528,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           rjob->interactively_res_init = true;
                             goto exit;
                         }
-#if 0
-                        else if (!second_time) {
-                          
-#if 0
-                          if (! rjob->msg_proc_helper) {
-                            rjob->msg_proc_helper = transaction_problems;
-                          }
-                          second_time = true;
-                          add_resolution_to_zypp(rjob->msg_proc_helper);
-                          goto test;
-#else
-                          second_time = true;
-                          add_resolution_to_zypp(transaction_problems);
-                          goto test;
-#endif
-                        }
-#endif
+
                         
-#if 0
-                        add_resolution_to_zypp(&transaction_problems);
-                        
-                        // Save resolution to file
-                        save_transaction_to_cache("Install", path_to_cache, &transaction_problems, 
-                                                  priv->to_install, priv->to_remove);
-#endif
+
 
                         }
                         struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
                         
+                        int empty = zypp->resolver()->getTransaction().actionEmpty();
+
                         if (NULL != rjob) {
                         
                           //cleaning up
@@ -2610,24 +2547,26 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                           close(rjob->output);
                           
                           if (rjob->msg_proc_helper) {
-                          
-                            add_resolution_to_zypp(rjob->msg_proc_helper);
-                            apply_resoultion_from_cache(rjob, &rjob->msg_proc_helper->problems);
-                            // FIXME: Remove cache even if it shold be persist
-#if 1
-                            if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+
+                            if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) || empty) {
                             
                               unlink(rjob->msg_proc_helper->path_to_cache);
                             }
                             free(rjob->msg_proc_helper->path_to_cache);
                             free(rjob->msg_proc_helper);
-#endif
+                            
                             
                           } 
                         }
-                      
-                        
                 job->done = 1;
+                
+              
+                if (empty) {
+                  
+                                    pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "There is nothing to do. Problably action canceled by user" );
+                  ret = FALSE;
+                  goto exit;
+                }
 		switch (type) {
 		case INSTALL:
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
@@ -2647,6 +2586,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			break;
 		}
 
+
+               
 		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 			ret = TRUE;
 
@@ -2720,12 +2661,18 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 		ZYppCommitResult result = zypp->commit (policy);
 
+                if (!result.attemptToModify()) {
+                  pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "There is nothing to do. Problably action canceled by user" );
+                  ret = FALSE;
+                  goto exit;
+                }
 		bool worked = result.allDone();
 		if (only_download)
 			worked = result.noError();
 
 		if ( ! worked )
 		{
+                  
 			std::ostringstream todolist;
 			char separator = '\0';
 
@@ -3821,6 +3768,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		MIL << "Setting " << *it << " for installation" << endl;
 		PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
 	}
+	job->started = TRUE;
 	struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
 	if (NULL != rjob) {
 	
@@ -3830,7 +3778,6 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
           }
         }
 	
-	job->started = TRUE;
 
 	if (!zypp_perform_execution (job, zypp, INSTALL, FALSE, transaction_flags)) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
@@ -4068,8 +4015,9 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			PoolItem item(solvable);
 			// set status to ToBeInstalled
                         if (FALSE == job->started) {
-			    item.status ().setToBeInstalled (ResStatus::USER);
-			    items.push_back (item);
+			
+                          item.status ().setToBeInstalled (ResStatus::USER);
+			  items.push_back (item);
                         }
 		}
 
@@ -4177,17 +4125,20 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 						     "couldn't find package");
 			return;
 		}
+		
+                  
 		PoolItem item(solvable);
-                if (FALSE == job->started)
-		  if (solvable.isSystem ()) {
-			item.status ().setToBeUninstalled (ResStatus::USER);
-			items.push_back (item);
-		  } else {
-			item.status ().resetTransact (ResStatus::USER);
-		  }
+		if (FALSE == job->started) {
+                  if (solvable.isSystem ()) {
+                      item.status ().setToBeUninstalled (ResStatus::USER);
+                      items.push_back (item);
+                  } else {
+                      item.status ().resetTransact (ResStatus::USER);
+                  }
+                }
 	}
-        job->started = true;
-	pk_backend_job_set_percentage (job, 40);
+        pk_backend_job_set_percentage (job, 40);
+        job->started == TRUE;
 
 	try
 	{
@@ -4694,10 +4645,11 @@ upgrade_system (PkBackendJob *job,
 	}
 
 	if (FALSE == job->started) {
-	
+          
           zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
-	  zypp->resolver ()->doUpgrade ();
         }
+        job->started == TRUE;
+	zypp->resolver ()->doUpgrade ();
 
 	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
 
@@ -4757,12 +4709,10 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			}
 		}
 
-		if (FALSE == job->started) {
-		  item.status ().setToBeInstalled (ResStatus::USER);
-		  Patch::constPtr patch = asKind<Patch>(item.resolvable ());
-		  zypp_check_restart (&restart, patch);
-                }
-                job->started = true;
+		item.status ().setToBeInstalled (ResStatus::USER);
+		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
+		zypp_check_restart (&restart, patch);
+
 		if (restart != PK_RESTART_ENUM_NONE){
 			pk_backend_job_require_restart (job, restart, package_ids[i]);
 			restart = PK_RESTART_ENUM_NONE;
