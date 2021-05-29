@@ -2195,7 +2195,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 if (rjob)
                   add_resolution_to_zypp(rjob->msg_proc_helper);
                 if (!zypp->resolver ()->resolvePool ()) {
-#if 0
+
                   if (! pk_backend_job_get_interactive(job)) {
                     ResolverProblemList problems = zypp->resolver ()->problems ();
                     gchar * emsg = NULL, * tempmsg = NULL;
@@ -2223,7 +2223,6 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                     
                     goto exit;
                   }
-#endif               
                     ResolverProblemList list = zypp->resolver()->problems();
 
                 
