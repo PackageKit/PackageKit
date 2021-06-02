@@ -392,6 +392,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	PkBitfield filters = 0;
 	FILE *file;
 	int stored_count;
+	alpm_handle_t* old_handle = priv->alpm;
 	alpm_handle_t* handle = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, TRUE, &error);
 
 	alpm_logaction (handle, PK_LOG_PREFIX, "synchronizing package lists\n");
@@ -400,7 +401,11 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	/* set total size to minus the number of databases */
 	i = alpm_get_syncdbs (handle);
 
+	// swap around the handles since the refresh database will grab
+	// the main system handle and not the check update handle otherwise
+	priv->alpm = handle;
 	pk_alpm_refresh_databases (job, TRUE, i, &error);
+	priv->alpm = old_handle;
 
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		g_variant_get (params, "(t)", &filters);
