@@ -933,6 +933,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	gboolean ret;
 	DnfDb *db;
 	DnfState *state_local;
+	DnfGoalActions flags;
 	GPtrArray *installs = NULL;
 	GPtrArray *pkglist = NULL;
 	HyQuery query = NULL;
@@ -1029,7 +1030,10 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		} else {
 			hy_goal_upgrade_all (job_data->goal);
 		}
-		ret = dnf_goal_depsolve (job_data->goal, DNF_ALLOW_UNINSTALL, &error);
+		flags = DNF_ALLOW_UNINSTALL;
+		if (!dnf_context_get_install_weak_deps ())
+			flags |= DNF_IGNORE_WEAK_DEPS;
+		ret = dnf_goal_depsolve (job_data->goal, flags, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
@@ -2545,6 +2549,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 			    GError **error)
 {
 	DnfState *state_local;
+	DnfGoalActions dnf_flags = DNF_ALLOW_UNINSTALL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret = TRUE;
 	/* allow downgrades for all transaction types */
@@ -2573,6 +2578,15 @@ pk_backend_transaction_run (PkBackendJob *job,
 	dnf_transaction_set_flags (job_data->transaction, flags);
 
 	state_local = dnf_state_get_child (state);
+
+	/* we solve the goal ourselves, so we can deal with flags */
+	dnf_transaction_set_dont_solve_goal (job_data->transaction, TRUE);
+	if (!dnf_context_get_install_weak_deps ())
+		dnf_flags |= DNF_IGNORE_WEAK_DEPS;
+	ret = dnf_goal_depsolve (job_data->goal, dnf_flags, error);
+	if (!ret)
+		return FALSE;
+
 	ret = dnf_transaction_depsolve (job_data->transaction,
 					job_data->goal,
 					state_local,
