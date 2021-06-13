@@ -47,7 +47,7 @@ typedef struct
 
 	 alpm_list_t		*cachedirs, *holdpkgs, *ignoregroups,
 				*ignorepkgs, *localfilesiglevels, *noextracts,
-				*noupgrades, *remotefilesiglevels;
+				*noupgrades, *remotefilesiglevels, *hookdirs;
 
 	 alpm_list_t		*sections;
 	 GRegex			*xrepo, *xarch;
@@ -106,6 +106,7 @@ pk_alpm_config_free (PkAlpmConfig *config)
 	FREELIST (config->noextracts);
 	FREELIST (config->noupgrades);
 	FREELIST (config->remotefilesiglevels);
+	FREELIST (config->hookdirs);
 
 	alpm_list_free_inner (config->sections, pk_alpm_config_section_free);
 	alpm_list_free (config->sections);
@@ -369,6 +370,7 @@ static const PkAlpmConfigList pk_alpm_config_list_options[] = {
 	{ "NoUpgrade", G_STRUCT_OFFSET (PkAlpmConfig, noupgrades) },
 	{ "RemoteFileSigLevel", G_STRUCT_OFFSET (PkAlpmConfig,
 						 remotefilesiglevels) },
+	{ "HookDir", G_STRUCT_OFFSET (PkAlpmConfig, hookdirs) },
 	{ NULL, 0 }
 };
 
@@ -1010,6 +1012,10 @@ pk_alpm_config_configure_alpm (PkBackend *backend, PkAlpmConfig *config, GError 
 	/* alpm takes ownership */
 	alpm_option_set_noupgrades (handle, config->noupgrades);
 	config->noupgrades = NULL;
+
+	/* alpm takes ownership */
+	alpm_option_set_noupgrades (handle, config->hookdirs);
+	config->hookdirs = NULL;
 
 	pk_alpm_config_configure_repos (backend, config, handle, error);
 
