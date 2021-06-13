@@ -39,33 +39,32 @@
 #include "pk-alpm-transaction.h"
 #include "pk-alpm-update.h"
 
-static gchar *
+static gchar **
 pk_alpm_pkg_build_replaces (PkBackendJob *job, alpm_pkg_t *pkg)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
-	GString *string = NULL;
+	gchar **replaces = NULL;
+	gint count = 0;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
 	/* make a list of the packages that package replaces */
 	for (i = alpm_pkg_get_replaces (pkg); i != NULL; i = i->next) {
-		alpm_pkg_t *replaces = alpm_db_get_pkg (priv->localdb, i->data);
+		alpm_pkg_t *package = alpm_db_get_pkg (priv->localdb, i->data);
 
-		if (replaces != NULL) {
-			g_autofree gchar *package = pk_alpm_pkg_build_id (replaces);
-			if (string == NULL) {
-				string = g_string_new (package);
-			} else {
-				g_string_append_printf (string, "&%s", package);
+		if (package != NULL) {
+			gchar *id = pk_alpm_pkg_build_id (package);
+			if (id) {
+				replaces =  g_realloc (replaces, ((++count) + 1) * sizeof(gchar *));
+				replaces[count - 1] = id;
+				replaces[count] = NULL;
 			}
 		}
 	}
 
-	if (string == NULL)
-		return NULL;
-	return g_string_free (string, FALSE);
+	return replaces;
 }
 
 static gchar **
@@ -143,8 +142,9 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 		PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_STABLE;
 		alpm_time_t built, installed;
-		g_autofree gchar *upgrades = NULL;
-		g_autofree gchar *replaces = NULL;
+		gchar *upgrades[2] = { NULL, NULL };
+		gchar **replaces;
+		gchar **charptr;
 		g_auto(GStrv) urls = NULL;
 		g_autofree gchar *issued = NULL;
 		g_autofree gchar *updated = NULL;
@@ -158,7 +158,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 
 		old = alpm_db_get_pkg (priv->localdb, alpm_pkg_get_name (pkg));
 		if (old != NULL) {
-			upgrades = pk_alpm_pkg_build_id (old);
+			upgrades[0] = pk_alpm_pkg_build_id (old);
 			if (pk_alpm_pkg_same_pkgver (pkg, old)) {
 				reason = "Update to a newer release";
 			} else {
@@ -188,10 +188,16 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 				updated = pk_alpm_time_to_iso8601 (installed);
 		}
 
-		pk_backend_job_update_detail (job, *packages, &upgrades,
-					      &replaces, urls, NULL, NULL,
+		pk_backend_job_update_detail (job, *packages, upgrades,
+					      replaces, urls, NULL, NULL,
 					      restart, reason, NULL, state,
 					      issued, updated);
+		if (upgrades[0]) g_free (upgrades[0]);
+		if (replaces) {
+			for (charptr = replaces; charptr[0]; charptr++)
+				g_free (charptr[0]);
+			g_free(replaces);
+		}
 	}
 
 	pk_alpm_finish (job, error);
