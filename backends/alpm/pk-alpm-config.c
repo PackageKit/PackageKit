@@ -807,7 +807,7 @@ static gboolean
 pk_alpm_config_configure_repos (PkBackend *backend, PkAlpmConfig *config,
 				   alpm_handle_t *handle, GError **error)
 {
-	alpm_siglevel_t base, level, mask, local, remote;
+	alpm_siglevel_t base, level = 0, mask = 0, local, remote;
 	const alpm_list_t *i;
 	PkAlpmConfigSection *options;
 
