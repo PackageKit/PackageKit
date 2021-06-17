@@ -1030,7 +1030,8 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
 
 	/* don't really finish the transaction if we only completed to wait for lock */
-	if (pk_transaction_is_finished_with_lock_required (transaction)) {
+	if (exit_enum != PK_EXIT_ENUM_CANCELLED &&
+	    pk_transaction_is_finished_with_lock_required (transaction)) {
 		/* finish only for the transaction list */
 		g_signal_emit (transaction, signals[SIGNAL_FINISHED], 0);
 		return;
