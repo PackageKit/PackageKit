@@ -912,19 +912,66 @@ pk_backend_what_provides_decompose (gchar **values, GError **error)
 	return (gchar **) g_ptr_array_free (array, FALSE);
 }
 
-static DnfAdvisory *
-dnf_package_get_advisory (DnfPackage *package)
+static GHashTable *
+pk_backend_dnf_cache_advisories (DnfSack *sack)
 {
+#ifdef HAVE_HY_QUERY_GET_ADVISORY_PKGS
+	g_autoptr(GPtrArray) array = NULL;
+	GHashTable *hash;
+	HyQuery query;
+	guint ii;
+
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) dnf_advisory_free);
+	query = hy_query_create (sack);
+	array = hy_query_get_advisory_pkgs (query, HY_EQ);
+
+	for (ii = 0; ii < array->len; ii++) {
+		DnfAdvisoryPkg *advpkg = g_ptr_array_index (array, ii);
+		gchar *id;
+
+		id = g_strdup_printf ("%s;%s;%s",
+			dnf_advisorypkg_get_name (advpkg),
+			dnf_advisorypkg_get_evr (advpkg),
+			dnf_advisorypkg_get_arch (advpkg));
+
+		g_hash_table_insert (hash, id, dnf_advisorypkg_get_advisory (advpkg));
+	}
+
+	hy_query_free (query);
+	return hash;
+#else
+	return NULL;
+#endif
+}
+
+static DnfAdvisory *
+pk_backend_dnf_get_advisory (GHashTable *advisories_hash,
+			     DnfPackage *pkg)
+{
+#ifdef HAVE_HY_QUERY_GET_ADVISORY_PKGS
+	g_autofree gchar *id = NULL;
+
+	if (pkg == NULL)
+		return NULL;
+
+	id = g_strdup_printf ("%s;%s;%s",
+		dnf_package_get_name (pkg),
+		dnf_package_get_evr (pkg),
+		dnf_package_get_arch (pkg));
+
+	return g_hash_table_lookup (advisories_hash, id);
+#else
 	GPtrArray *advisorylist;
 	DnfAdvisory *advisory = NULL;
 
-	advisorylist = dnf_package_get_advisories (package, HY_EQ);
+	advisorylist = dnf_package_get_advisories (pkg, HY_EQ);
 
 	if (advisorylist->len > 0)
 		advisory = g_steal_pointer (&g_ptr_array_index (advisorylist, 0));
 	g_ptr_array_unref (advisorylist);
 
 	return advisory;
+#endif
 }
 
 static void
@@ -1092,14 +1139,17 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		DnfAdvisory *advisory;
 		DnfAdvisoryKind kind;
 		PkInfoEnum info_enum;
+		g_autoptr(GHashTable) advisories_hash = pk_backend_dnf_cache_advisories (sack);
 		for (i = 0; i < pkglist->len; i++) {
 			pkg = g_ptr_array_index (pkglist, i);
-			advisory = dnf_package_get_advisory (pkg);
+			advisory = pk_backend_dnf_get_advisory (advisories_hash, pkg);
 			if (advisory != NULL) {
 				kind = dnf_advisory_get_kind (advisory);
 				g_object_set_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY,
 					GUINT_TO_POINTER (dnf_update_severity_to_enum (dnf_advisory_get_severity (advisory))));
+#ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 				dnf_advisory_free (advisory);
+#endif
 				info_enum = dnf_advisory_kind_to_info_enum (kind);
 				dnf_package_set_info (pkg, info_enum);
 			}
@@ -3698,6 +3748,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
+	g_autoptr(GHashTable) advisories_hash = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -3740,6 +3791,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		return;
 	}
 
+	advisories_hash = pk_backend_dnf_cache_advisories (sack);
+
 	/* emit details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		g_autoptr(GPtrArray) vendor_urls = NULL;
@@ -3749,7 +3802,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
-		advisory = dnf_package_get_advisory (pkg);
+		advisory = pk_backend_dnf_get_advisory (advisories_hash, pkg);
 		if (advisory == NULL)
 			continue;
 
@@ -3801,7 +3854,9 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 					      NULL /* updated */);
 
 		g_ptr_array_unref (references);
+#ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 		dnf_advisory_free (advisory);
+#endif
 	}
 
 	/* done */
