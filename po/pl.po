@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# Krzysztof Żelechowski <giecrilj@stegny.2a.pl>, 2021
 # Piotr Drąg <piotrdrag@gmail.com>, 2011-2018
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
@@ -1272,7 +1273,7 @@ msgstr "Brak dostępnych aktualizacji w tej chwili."
 #. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Te narzędzie nie może odnaleźć wszystkich pakietów: %s"
+msgstr "To narzędzie nie może odnaleźć wszystkich pakietów: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
