@@ -382,9 +382,12 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 
     const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if the provided package isn't virtual too
-    if (candidateVer.end() == false &&
-            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
-        return PkgInfo(candidateVer, piAction);
+    // also iterate through all the available versions
+    for (auto candidate = candidateVer; !candidate.end(); candidate++) {
+        if (strcmp(candidate.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
+            return PkgInfo(ver, piAction);
+        }
+    }
 
     return PkgInfo(ver, piAction);
 }
