@@ -163,7 +163,8 @@ public:
       */
     void emitPackages(PkgList &output,
                       PkBitfield filters = PK_FILTER_ENUM_NONE,
-                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN);
+                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
+                      bool multiversion = false);
 
     void emitRequireRestart(PkgList &output);
 

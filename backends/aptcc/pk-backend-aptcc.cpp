@@ -607,7 +607,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
     PkgList pkgs = apt->resolvePackageIds(search);
 
     // It's faster to emit the packages here rather than in the matching part
-    apt->emitPackages(pkgs, filters);
+    apt->emitPackages(pkgs, filters, PK_INFO_ENUM_UNKNOWN, true);
 }
 
 void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
@@ -716,7 +716,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     }
 
     // It's faster to emit the packages here than in the matching part
-    apt->emitPackages(output, filters);
+    apt->emitPackages(output, filters, PK_INFO_ENUM_UNKNOWN, true);
 
     pk_backend_job_set_percentage(job, 100);
 }
