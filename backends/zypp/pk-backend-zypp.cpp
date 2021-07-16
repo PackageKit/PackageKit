@@ -1973,6 +1973,40 @@ static char
   
 }
 
+static void dependency_error(const char *message_prefix,
+                             struct backend_job_private *msg_proc)
+{
+  const char *buffer = message_prefix;
+  
+  if (! pk_backend_job_get_interactive(msg_proc->job)) {
+    ResolverProblemList problems = msg_proc->msg_proc_helper->resolver->problems ();
+    gchar * emsg = NULL, * tempmsg = NULL;
+    
+    for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
+      if (emsg == NULL) {
+        emsg = g_strdup ((*it)->description ().c_str ());
+      }
+      else {
+        tempmsg = emsg;
+        emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
+        g_free (tempmsg);
+      }
+    }
+    
+    // reset the status of all touched PoolItems
+    ResPool pool = ResPool::instance ();
+    for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
+      if (it->status ().isToBeInstalled ())
+        it->statusReset ();
+    }
+    
+    pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s:%s", buffer, emsg);
+    g_free (emsg);
+    
+    
+  }
+}
+
 static gboolean  
 dependency_handle_selection(GIOChannel *source,
                             GIOCondition condition,
@@ -2011,7 +2045,13 @@ dependency_handle_selection(GIOChannel *source,
     if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
     
       buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
-      pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, buffer);
+      
+      
+      
+      dependency_error(buffer, msg_proc);
+      
+      msg_proc->job->done = 1;
+      pk_backend_job_thread_setup(msg_proc->job->helper);
       
       return FALSE;
     }
@@ -2077,9 +2117,9 @@ dependency_handle_selection(GIOChannel *source,
       
       msg_proc->resolution_done = true;
       
+      add_resolution_to_zypp(msg_proc->msg_proc_helper);
       save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
                                 msg_proc->to_install, msg_proc->to_remove);
-      add_resolution_to_zypp(msg_proc->msg_proc_helper);
       
       pk_backend_job_thread_setup(msg_proc->job->helper);
       
@@ -2134,7 +2174,7 @@ static void apply_resoultion_from_cache(struct backend_job_private *backend, Res
     it2,
     solution_number);
   ProblemSolution solution = **it2;
-  // msg_proc->msg_proc_helper->solution_list->push_back(*it2);
+  backend->msg_proc_helper->solution_list->push_back(*it2);
 
   solution_list.push_back(&solution);
    
@@ -2226,42 +2266,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 bool second_time = false;
                 
                 ResPool pool = ResPool::instance ();
+                
                 test:
-#if 1
-                if (rjob)
-                  add_resolution_to_zypp(rjob->msg_proc_helper);
-#endif
                 if (!zypp->resolver ()->resolvePool ()) {
-#if 0
 
-                  if (! pk_backend_job_get_interactive(job)) {
-                    ResolverProblemList problems = zypp->resolver ()->problems ();
-                    gchar * emsg = NULL, * tempmsg = NULL;
-                    
-                    for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
-                      if (emsg == NULL) {
-                        emsg = g_strdup ((*it)->description ().c_str ());
-                      }
-                      else {
-                        tempmsg = emsg;
-                        emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
-                        g_free (tempmsg);
-                      }
-                    }
-                    
-                    // reset the status of all touched PoolItems
-                    ResPool pool = ResPool::instance ();
-                    for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
-                      if (it->status ().isToBeInstalled ())
-                        it->statusReset ();
-                    }
-                    
-                    pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
-                    g_free (emsg);
-                    
-                    goto exit;
-                  }
-#endif
+                  
+
                     ResolverProblemList list = zypp->resolver()->problems();
 
                 
@@ -2339,7 +2349,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         
                          load_transaction_from_history("Install", path_to_cache, rjob);
                          
-                         
+                         if (rjob)
+                           add_resolution_to_zypp(rjob->msg_proc_helper);
 /*
                          struct reader_info {
                            char *buffer;
@@ -2355,22 +2366,20 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                          
                          std::list<std::string>::iterator it;
                          
-                         puts("TO INSTALL");
                          for (; itb != ite; ++itb) {
                            
                            if (itb->status().isToBeInstalled()) {
-                             puts(itb->satSolvable().asString().c_str());
+                             
                              to_install.push_back(itb->satSolvable().asString());
                            }
                          }
                          
                          itb = pool.byKindBegin (kind);
                          
-                         puts("TO REMOVE");
                          for (; itb != ite;  ++itb) {
                            
                            if (itb->status().isToBeUninstalled()) {
-                             puts(itb->satSolvable().asString().c_str());
+                             
                              to_remove.push_back(itb->satSolvable().asString());
                            }
                          }
@@ -2453,8 +2462,9 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                         
                         
                         if (changed) {
-                          
                           add_resolution_to_zypp(transaction_problems);
+                          
+                          // TODO: Może to powoduje problem?
                           
                           if (false == second_time) {
                           
@@ -2612,7 +2622,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
               
                 if (empty) {
                   
-                                    pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "44443r3333433There is nothing to do. Problably action canceled by user" );
+                                    pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "There is nothing to do. Problably action canceled by user" );
                   ret = FALSE;
                   goto exit;
                 }
@@ -3725,33 +3735,40 @@ static void
 backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	ZyppJob zjob(job);
-	ZYpp::Ptr zypp = zjob.get_zypp();
-        // create a plaindir-repo and cache it
-        Repository repo;
-        RepoInfo tmpRepo;
-
+	
 	PkBitfield transaction_flags;
 	gchar **full_paths;
 	g_variant_get (params, "(t^a&s)",
 		       &transaction_flags,
 		       &full_paths);
 	
-	if (zypp == NULL){
-		return;
-	}
 
 	struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
         
         if (NULL == rjob) {
 	
           rjob = new (struct backend_job_private)();
-          
-          rjob->manager = new RepoManager();
+          rjob->manager = NULL;
           pk_backend_job_set_priv_data(job, rjob);
         }
         
+        if (NULL == rjob->manager) {
+          
+          rjob->manager = new RepoManager();
+        }
+        
         RepoManager *manager = rjob->manager;
+        
+        ZyppJob zjob(job);
+        ZYpp::Ptr zypp = zjob.get_zypp();
+        // create a plaindir-repo and cache it
+        Repository repo;
+        RepoInfo tmpRepo, checkForRepo;
+        
+	if (zypp == NULL){
+		return;
+	}
+        
 	// create a temporary directory
 	filesystem::TmpDir tmpDir;
 	if (tmpDir == NULL) {
@@ -3790,10 +3807,12 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
         
         snprintf(name, length, "PK_TMP_DIR_%s", job->sender);
         
+        checkForRepo = manager->getRepo(name);
+        
+        repo = ResPool::instance().reposFind(name);
+        
 
-
-        printf("JOB->STARTED IS %d\n", job->started);
-        if (FALSE == job->started) {
+        if (RepoInfo::noRepo == checkForRepo ) {
         
 	try {
 		tmpRepo.setType(repo::RepoType::RPMPLAINDIR);
@@ -3834,42 +3853,18 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
         }
         }
         else {
-          tmpRepo = manager->getRepo(name);
-          
-          repo = ResPool::instance().reposFind(name);
-          if (RepoInfo::noRepo == tmpRepo) {
-            
-            zypp_backend_finished_error (
-              job, PK_ERROR_ENUM_INTERNAL_ERROR, "Error with creating an local repo");
-            free(name);
-            return;
-          }
-          
+        
+          tmpRepo = checkForRepo;
         }
 
-
-        try {
-        
-       // tmpRepo.setEnabled(true);
-        
-       
-        }
-        catch (const Exception &ex) {
+        if (RepoInfo::noRepo == tmpRepo) {
+          
           zypp_backend_finished_error (
-            job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+            job, PK_ERROR_ENUM_INTERNAL_ERROR, "Error with creating an local repo");
           free(name);
           return;
         }
-#if 0
-	struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
-	if (NULL != rjob) {
-	
-          for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
-            MIL << "Setting " << *it << " for installation" << endl;
-            rjob->to_install_s.push_back(PoolItem(*it).satSolvable().asString());
-          }
-        }
-#endif
+
 
 	if (!zypp_perform_execution (job, zypp, INSTALL, FALSE, transaction_flags)) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
@@ -3878,11 +3873,11 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	job->started = TRUE;
         //tmpRepo.setEnabled(false);
 
-        printf("JOB->DONE IS %d\n", job->done);
+  
 	// remove tmp-dir and the tmp-repo
 	if (true == job->done)
 	try {
-          puts("REMOVING");
+   
 		manager->removeRepository (tmpRepo);
 		repo.eraseFromPool();
                 
@@ -3893,6 +3888,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	
 	
 	free(name);
+
 }
 
 /**
