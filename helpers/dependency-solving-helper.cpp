@@ -504,12 +504,13 @@ int main(int argc, char **argv)
   printf("COMM_CH_OUTPUT: %d COMM_CH_INPUT: %d\n", output, input);
 
   reader_info_init(&i_ch_reader);
-  
   if (-1 != output) {
-  
+    
     int flags = fcntl(output, F_GETFL, 0);
     fcntl(output, F_SETFL, flags | O_NONBLOCK);
   }
+  
+
   
   char *sender = get_record(input, &i_ch_reader);
   
@@ -517,6 +518,7 @@ int main(int argc, char **argv)
   dup_1 = dup(1);
   dup_2 = dup(2);
   
+
   DBusConnection *bus_connection;
   DBusError error;
   
@@ -570,6 +572,7 @@ int main(int argc, char **argv)
   
   if (NULL == reply) {
     
+    write(output, "ERR:\nNo reply\n", sizeof("ERR\n:No reply\n"));
     puts("Error: No reply");
     goto exit;
   }
@@ -580,10 +583,12 @@ int main(int argc, char **argv)
     char *emsg;
     if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
       
+      write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
       puts("No error message provided");
       goto  exit;
     }
     
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
     puts(emsg);
     goto exit;
   }
@@ -596,6 +601,12 @@ int main(int argc, char **argv)
     goto exit;
   }
   
+  if (NULL == server || NULL == cookie
+    || '\0' == server[0] || '\0' == cookie[0]) {
+    
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    goto exit;
+  }
   
   msg = dbus_message_new_method_call("pl.art.lach.slawek.apps.DaemonUI","/pl/art/lach/slawek/apps/DaemonUI", "pl.art.lach.slawek.apps.DaemonUI.client", "getRealTTYForClient");
   
@@ -628,6 +639,7 @@ int main(int argc, char **argv)
   if (NULL == reply) {
     
     puts("Error: No reply");
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
     goto exit;
   }
   
@@ -642,16 +654,28 @@ int main(int argc, char **argv)
     }
     
     puts(emsg);
+    write(output, "ERR:\0Error message obtained\n", sizeof("ERR:\0Error message obtained\n"));
     goto exit;
   }
+  
+  
   dbus_bool_t error_1;
   
   dup_0 = dup_1 = dup_2 = -1;
   dbus_error_init(&error);
   dbus_message_get_args(reply, &error, DBUS_TYPE_BOOLEAN, &error_1, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+  
+  if (-1 == fd) {
+    
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    goto exit;
+  }
+  
   if (dbus_error_is_set(&error)) {
     
     puts(error.message);
+    
+    write(output, "ERR:\0DBUSError is set\n", sizeof("ERR:\0DBUSError i set\n"));
     goto exit;
   }
 #if 1
@@ -680,6 +704,10 @@ int main(int argc, char **argv)
   setenv("BONSOLE_DBUS_NAME", server, 1);
   setenv("BONSOLE_COOKIE", cookie, 1);
   {
+    
+    
+  puts(server);
+  puts(cookie);  
   int argc = 1;
   char *argv[2] = {(char*)"packagekitd", (char*)NULL};
   
