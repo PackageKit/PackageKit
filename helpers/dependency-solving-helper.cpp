@@ -561,6 +561,9 @@ int main(int argc, char **argv)
   if (!dbus_connection_send_with_reply(bus_connection, msg, &pending, -1))
   {
     dbus_message_unref(msg);
+    
+    write(output, "ERR:\nNo reply\n", sizeof("ERR\n:No reply\n"));
+    puts("Error: No reply");
     goto exit;
   }
   dbus_connection_flush(bus_connection);
@@ -583,12 +586,12 @@ int main(int argc, char **argv)
     char *emsg;
     if (!dbus_message_get_args(reply, &error, DBUS_TYPE_STRING, &emsg,  DBUS_TYPE_INVALID)) {
       
-      write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+      write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run"));
       puts("No error message provided");
       goto  exit;
     }
     
-    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run"));
     puts(emsg);
     goto exit;
   }
@@ -604,7 +607,7 @@ int main(int argc, char **argv)
   if (NULL == server || NULL == cookie
     || '\0' == server[0] || '\0' == cookie[0]) {
     
-    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run"));
     goto exit;
   }
   
@@ -639,7 +642,7 @@ int main(int argc, char **argv)
   if (NULL == reply) {
     
     puts("Error: No reply");
-    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run"));
     goto exit;
   }
   
@@ -667,7 +670,7 @@ int main(int argc, char **argv)
   
   if (-1 == fd) {
     
-    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon"));
+    write(output, "ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run", sizeof("ERR:\0No reply: Possible causes daemonUI as system-wide daemon or as session daemon not run"));
     goto exit;
   }
   
