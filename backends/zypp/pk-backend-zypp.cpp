@@ -126,6 +126,7 @@ struct backend_job_private {
   bool interactively_res_init;
   bool resolution_done;
   bool init;
+  bool error;
   
   struct msg_proc_helper *msg_proc_helper;
   
@@ -1978,7 +1979,7 @@ static void dependency_error(const char *message_prefix,
 {
   const char *buffer = message_prefix;
   
-  if (! pk_backend_job_get_interactive(msg_proc->job)) {
+  //if (! pk_backend_job_get_interactive(msg_proc->job)) {
     ResolverProblemList problems = msg_proc->msg_proc_helper->resolver->problems ();
     gchar * emsg = NULL, * tempmsg = NULL;
     
@@ -2002,9 +2003,9 @@ static void dependency_error(const char *message_prefix,
     
     pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s:%s", buffer, emsg);
     g_free (emsg);
+    msg_proc->error = 1;
     
-    
-  }
+  //}
 }
 
 static gboolean  
@@ -2249,9 +2250,15 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	
-        
+    
         
         struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+        
+        if (rjob->error) {
+        
+          goto exit;
+        }
+        
 	try {
           try {
 		if (force)
@@ -2289,6 +2296,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                      rjob = new (struct backend_job_private)();
                   
                   rjob->init = true;
+                  rjob->error = false;
                   
                   pk_backend_job_set_priv_data(job, rjob);
                   
@@ -2325,6 +2333,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
                 
                   
                 }
+                
                 rjob->resolution_done = false;
                 transaction_problems->problems = problems;
                 // rjob->to_install =std::list<std::string>();
@@ -3867,6 +3876,8 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 
 	if (!zypp_perform_execution (job, zypp, INSTALL, FALSE, transaction_flags)) {
+          
+          if (! rjob->error)
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 	}
 	
