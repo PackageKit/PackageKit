@@ -121,6 +121,7 @@ static bool show_solutions(int fd, struct reader_info *in_ch_reader)
   
   xmlDocPtr a = bonsole_window(nullptr);
   root = xmlDocGetRootElement(a);
+  
 
   //bonsole_set_context_params(0, app_name);
   
@@ -709,13 +710,14 @@ int main(int argc, char **argv)
   {
     
     
-  puts(server);
-  puts(cookie);  
   int argc = 1;
   char *argv[2] = {(char*)"packagekitd", (char*)NULL};
   
   
-  //app_name[1] = bonsole_escape_quotes(app_name_real);
+  app_name[1] = bonsole_escape_quotes((char*) app_name_real);//bonsole_add_entitites( (char*) app_name_real);//bonsole_escape_quotes(app_name_real);
+
+  bonsole_set_context_params(0, app_name);
+
   
   if (0 != bonsole_client_init(&argc, argv)) exit(1);
   }
