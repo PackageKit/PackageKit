@@ -128,6 +128,8 @@ struct backend_job_private {
   bool init;
   bool error;
   
+  filesystem::TmpDir *tmpDir;
+  
   struct msg_proc_helper *msg_proc_helper;
   
   PkBackendJob *job;
@@ -3744,7 +3746,6 @@ static void
 backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	
 	PkBitfield transaction_flags;
 	gchar **full_paths;
 	g_variant_get (params, "(t^a&s)",
@@ -3758,6 +3759,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	
           rjob = new (struct backend_job_private)();
           rjob->manager = NULL;
+          rjob->tmpDir = NULL;
           pk_backend_job_set_priv_data(job, rjob);
         }
         
@@ -3765,6 +3767,13 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
           
           rjob->manager = new RepoManager();
         }
+        
+        if (NULL == rjob->tmpDir) {
+        
+          rjob->tmpDir = new (filesystem::TmpDir)();
+        }
+        
+        filesystem::TmpDir *tmpDir = rjob->tmpDir;
         
         RepoManager *manager = rjob->manager;
         
@@ -3778,8 +3787,10 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		return;
 	}
         
+        if (FALSE == job->started) {
+        
 	// create a temporary directory
-	filesystem::TmpDir tmpDir;
+	
 	if (tmpDir == NULL) {
 		zypp_backend_finished_error (
 			job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
@@ -3801,7 +3812,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		}
 
 		// copy the rpm into tmpdir
-		string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
+		string tempDest = tmpDir->path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
 		if (filesystem::copy (full_paths[i], tempDest) != 0) {
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
@@ -3809,7 +3820,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 			return;
 		}
 	}
-	
+        }
 	int length = snprintf(NULL, 0, "PK_TMP_DIR_%s", job->sender) + 1;
         
         char *name = (char *) malloc(length);
@@ -3825,7 +3836,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
         
 	try {
 		tmpRepo.setType(repo::RepoType::RPMPLAINDIR);
-		string url = "dir://" + tmpDir.path ().asString ();
+		string url = "dir://" + tmpDir->path ().asString ();
 		tmpRepo.addBaseUrl(Url::parseUrl(url));
 		tmpRepo.setEnabled (true);
 		tmpRepo.setAutorefresh (true);
@@ -3892,7 +3903,9 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		manager->removeRepository (tmpRepo);
 		repo.eraseFromPool();
                 
+                rjob->manager = NULL;
                 delete manager;
+                delete tmpDir;
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
