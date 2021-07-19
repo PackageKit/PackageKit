@@ -2033,6 +2033,12 @@ dependency_handle_selection(GIOChannel *source,
       //pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Error when handling dependency. PIPE problem");
       
       //pk_backend_job_done (msg_proc->job->helper);
+      
+      
+      dependency_error("Runtime-Error when handling dependency", msg_proc);
+    
+      msg_proc->job->done = 1;
+      pk_backend_job_thread_setup(msg_proc->job->helper);
       return FALSE;
     }
     
@@ -3897,7 +3903,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 
   
 	// remove tmp-dir and the tmp-repo
-	if (true == job->done)
+	if (true == job->done || true == rjob->error)
 	try {
    
 		manager->removeRepository (tmpRepo);
