@@ -1745,6 +1745,7 @@ pk_backend_job_new (GKeyFile *conf)
 {
 	PkBackendJob *job;
 	job = g_object_new (PK_TYPE_BACKEND_JOB, NULL);
+        job->started = FALSE;
 	job->priv->conf = g_key_file_ref (conf);
 	return PK_BACKEND_JOB (job);
 }
