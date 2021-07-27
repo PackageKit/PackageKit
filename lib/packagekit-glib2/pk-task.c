@@ -821,7 +821,7 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 	g_debug ("declined request %i", state->request);
 	g_set_error (&error,
 			     PK_CLIENT_ERROR,
-			     PK_CLIENT_ERROR_FAILED, "user declined interaction");
+			     PK_CLIENT_ERROR_DECLINED_INTERACTION, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
 	return FALSE;
 }

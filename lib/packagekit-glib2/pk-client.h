@@ -57,6 +57,7 @@ G_BEGIN_DECLS
  * @PK_CLIENT_ERROR_INVALID_FILE: the file is invalid
  * @PK_CLIENT_ERROR_NOT_SUPPORTED: the action is not supported
  * @PK_CLIENT_ERROR_DECLINED_SIMULATION: the simulation was declined by the user
+ * @PK_CLIENT_ERROR_DECLINED_INTERACTION: the user declined interaction on the task
  * @PK_CLIENT_ERROR_LAST:
  *
  * Errors that can be thrown
@@ -73,6 +74,7 @@ typedef enum
 	PK_CLIENT_ERROR_INVALID_FILE,
 	PK_CLIENT_ERROR_NOT_SUPPORTED,
 	PK_CLIENT_ERROR_DECLINED_SIMULATION,
+	PK_CLIENT_ERROR_DECLINED_INTERACTION,
 	/* we define this so we can punt the PkErrorEnums here at offset 0xff */
 	PK_CLIENT_ERROR_LAST
 } PkClientError;
