@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_1_2_3.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_1_2_4.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.2.4
+Version 1.2.5
 ~~~~~~~~~~~~~
 Released: 2021-xx-xx
 
@@ -33,8 +33,8 @@ git add ../po/*.po
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.2.4"
-export release_tag="PACKAGEKIT_1_2_4"
+export release_version="1.2.5"
+export release_tag="PACKAGEKIT_1_2_5"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
@@ -65,7 +65,7 @@ git push
 9. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.2.4 released!
+PackageKit 1.2.5 released!
 
 Tarballs available here: http://www.freedesktop.org/software/PackageKit/releases/
 
