@@ -1,3 +1,31 @@
+Version 1.2.4
+~~~~~~~~~~~~~
+Released: 2021-07-30
+
+Notes:
+
+Libraries:
+ - Add specific error code when user declined interaction (Milan Crha)
+ - Avoid spurious GObject::notify signal emissions (Philip Withnall)
+ - Correct 'cancellable' use in pk_client_repair_system_async() (Milan Crha)
+ - Fix a leak on calling set_locale() a second time (Philip Withnall)
+ - Fix a possible use-after-free under pk_client_cancel_cb() (Milan Crha)
+ - Improve thread safety on an operation cancellation (Milan Crha)
+
+Backends:
+ - dnf: Read update information also when getting list of updates (Milan Crha)
+ - dnf: honor install_weak_deps=False if it is there (Dario Faggioli)
+ - dnf: Use 'hy_query_get_advisory_pkgs', if available (Milan Crha)
+
+New Features:
+ - PkDetails: Add 'download-size' property (Milan Crha)
+ - PkPackage: Add update severity property (Milan Crha)
+
+Bugfixes:
+ - Let the finish understand the 'cancelled' exit code (Milan Crha)
+ - Make backends that use pk-backend-spawn work (#477) (Ivan Zakharyaschev)
+ - Only set polkit interactive flag if method call has too (Philip Withnall)
+
 Version 1.2.3
 ~~~~~~~~~~~~~
 Released: 2021-03-22

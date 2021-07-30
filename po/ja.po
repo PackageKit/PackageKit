@@ -6,6 +6,7 @@
 # hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
 # Kiyoto Hashida <khashida@redhat.com>, 2009
 # Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
+# Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
 # Takuro Onoue <kusanaginoturugi@gmail.com>, 2021
 # e93ed3aa97dec2eb31063731872555fc_1460a05 <71305a0095156d8e18373a5b7cfeb79e_8587>, 2011-2013
@@ -897,7 +898,7 @@ msgstr "本名"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "更新をインストール後にリブートします…"
+msgstr "更新をインストールしたので再起動します…"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the

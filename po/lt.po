@@ -34,6 +34,9 @@ msgstr "Reikia nurodyti teisingą vaidmenį"
 msgid "A destination directory and the package names to download are required"
 msgstr "Reikia nurodyti paskirties katalogą ir atsiųstinų paketų pavadinimus"
 
+msgid "A filename is required"
+msgstr "Reikia failo pavadinimo"
+
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
@@ -464,6 +467,10 @@ msgstr "Gaunamos saugyklos"
 msgid "Getting requires"
 msgstr "Gaunami reikalavimai"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Gaunami sistemos naujinimai"
+
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
 msgstr "Nepavyko gauti failų sąrašo"
@@ -537,6 +544,11 @@ msgid "Installing"
 msgstr "Diegiamas"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Įdiegiamas sistemos naujinimas"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Diegiami atnaujinimai"
@@ -553,9 +565,17 @@ msgstr "Diegiami paketai"
 msgid "Installing signature"
 msgstr "Diegiamas parašas"
 
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Įdiegiamas sistemos naujinimas; tai gali šiek tiek užtrukti..."
+
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
 msgstr "Diegiami atnaujinimai"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Įdiegiami atnaujinimai; tai gali šiek tiek užtrukti..."
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
@@ -670,6 +690,10 @@ msgstr "Paketų failai"
 #. * that could not be found in any repo
 msgid "Package not found"
 msgstr "Paketas nerastas"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -920,6 +944,10 @@ msgstr "Parodyti programos versiją ir išeiti"
 msgid "Show version and exit"
 msgstr "Parodyti versiją ir išeiti"
 
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Išjungiama įdiegus atnaujinimus…"
+
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
 msgstr "Panaši komanda yra:"
@@ -1145,6 +1173,15 @@ msgstr "Nežinomas vaidmens tipas"
 msgid "Unknown state"
 msgstr "Nežinoma būsena"
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+msgid "Update software"
+msgstr "Atnaujinti programinę įrangą"
+
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
@@ -1172,6 +1209,13 @@ msgstr "Atnaujinami paketai"
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
 msgstr "Atnaujinamos veikiančios programos"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "Naujinti sistemą"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
