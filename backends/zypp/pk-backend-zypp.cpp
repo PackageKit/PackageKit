@@ -3088,6 +3088,12 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 		&_filters,
 		&values);
 
+	if (values == NULL && values[0] == NULL) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					   "Empty search string is not supported.");
+		return;
+	}
+
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	
