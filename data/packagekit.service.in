@@ -10,3 +10,4 @@ Type=dbus
 BusName=org.freedesktop.PackageKit
 User=@PACKAGEKIT_USER@
 ExecStart=@libexecdir@/packagekitd
+Wants=network-online.target
