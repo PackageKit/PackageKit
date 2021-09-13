@@ -71,6 +71,21 @@ typedef enum
 	PK_OFFLINE_ERROR_LAST
 } PkOfflineError;
 
+/**
+ * PkOfflineFlags:
+ * @PK_OFFLINE_FLAGS_NONE:		No specific flag
+ * @PK_OFFLINE_FLAGS_INTERACTIVE:	Run the action in an interactive mode, allowing polkit authentication dialogs
+ *
+ * Flags to be used for the method invocations.
+ *
+ * Since: 1.2.5
+ */
+typedef enum
+{
+	PK_OFFLINE_FLAGS_NONE		= 0,
+	PK_OFFLINE_FLAGS_INTERACTIVE	= 1 << 0
+} PkOfflineFlags;
+
 GQuark			 pk_offline_error_quark		(void);
 const gchar		*pk_offline_action_to_string	(PkOfflineAction	 action);
 PkOfflineAction		 pk_offline_action_from_string	(const gchar		*action);
@@ -92,12 +107,28 @@ PkResults		*pk_offline_get_results		(GError			**error);
 guint64			 pk_offline_get_results_mtime	(GError			**error);
 gboolean		 pk_offline_cancel		(GCancellable		*cancellable,
 							 GError			**error);
+gboolean		 pk_offline_cancel_with_flags	(PkOfflineFlags		 flags,
+							 GCancellable		*cancellable,
+							 GError			**error);
 gboolean		 pk_offline_clear_results	(GCancellable		*cancellable,
+							 GError			**error);
+gboolean		 pk_offline_clear_results_with_flags
+							(PkOfflineFlags		 flags,
+							 GCancellable		*cancellable,
 							 GError			**error);
 gboolean		 pk_offline_trigger		(PkOfflineAction	 action,
 							 GCancellable		*cancellable,
 							 GError			**error);
+gboolean		 pk_offline_trigger_with_flags	(PkOfflineAction	 action,
+							 PkOfflineFlags		 flags,
+							 GCancellable		*cancellable,
+							 GError			**error);
 gboolean		 pk_offline_trigger_upgrade	(PkOfflineAction	 action,
+							 GCancellable		*cancellable,
+							 GError			**error);
+gboolean		 pk_offline_trigger_upgrade_with_flags
+							(PkOfflineAction	 action,
+							 PkOfflineFlags		 flags,
 							 GCancellable		*cancellable,
 							 GError			**error);
 
