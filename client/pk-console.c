@@ -2283,14 +2283,14 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "offline-trigger") == 0) {
 
 		run_mainloop = FALSE;
-		ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, &error);
+		ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 		if (!ret)
 			ctx->retval = error->code;
 
 	} else if (strcmp (mode, "offline-cancel") == 0) {
 
 		run_mainloop = FALSE;
-		ret = pk_offline_cancel (NULL, &error);
+		ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 		if (!ret)
 			ctx->retval = error->code;
 

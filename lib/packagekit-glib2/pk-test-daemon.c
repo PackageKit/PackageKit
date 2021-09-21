@@ -154,7 +154,7 @@ pk_test_offline_func (void)
 	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
 
 	/* trigger */
-	ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, &error);
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
@@ -163,7 +163,7 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* cancel the trigger */
-	ret = pk_offline_cancel (NULL, &error);
+	ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
