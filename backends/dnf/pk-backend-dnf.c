@@ -70,6 +70,12 @@ typedef struct {
 	HyGoal		 goal;
 } PkBackendDnfJobData;
 
+static GPtrArray * pk_backend_find_refresh_repos (PkBackendJob *job,
+						  DnfState     *state,
+						  GPtrArray    *repos,
+						  gboolean      force,
+						  GError      **error);
+
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
@@ -555,11 +561,13 @@ dnf_utils_add_remote (PkBackendJob *job,
 	gboolean ret;
 	DnfState *state_local;
 	g_autoptr(GPtrArray) repos = NULL;
+	g_autoptr(GPtrArray) refresh_repos = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
 				   2, /* load files */
-				   98, /* add repos */
+				   1, /* count */
+				   97, /* add repos */
 				   -1);
 	if (!ret)
 		return FALSE;
@@ -573,6 +581,20 @@ dnf_utils_add_remote (PkBackendJob *job,
 	if (!dnf_state_done (state, error))
 		return FALSE;
 
+	/* Find out what repositories potentially will get downloaded - we might need to update
+	 * the appstream data for these repositories. Note that there is a small chance that the
+	 * repo metadata could expire between the call to dnf_repo_check() at this point, and
+	 * the call to dnf_repo_check() inside dnf_sack_add_repos() - in this case we'll end up
+	 * with stale appstream data until the next metadata refresh.
+	 */
+	refresh_repos = pk_backend_find_refresh_repos (job,
+						       state,
+						       repos,
+						       FALSE /* !force */,
+						       error);
+	if (refresh_repos == NULL)
+		return FALSE;
+
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
@@ -583,6 +605,12 @@ dnf_utils_add_remote (PkBackendJob *job,
 	                          error);
 	if (!ret)
 		return FALSE;
+
+	for (guint i = 0; i < refresh_repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (refresh_repos, i);
+		if (!dnf_utils_refresh_repo_appstream (repo, error))
+			return FALSE;
+	}
 
 	/* done */
 	if (!dnf_state_done (state, error))
@@ -1655,6 +1683,68 @@ pk_backend_refresh_subman (PkBackendJob *job)
 	pk_backend_repo_list_changed (backend);
 }
 
+static GPtrArray *
+pk_backend_find_refresh_repos (PkBackendJob *job,
+			       DnfState     *state,
+			       GPtrArray    *repos,
+			       gboolean      force,
+			       GError      **error)
+{
+	g_autoptr(GPtrArray) refresh_repos = NULL;
+	DnfState *state_local;
+	DnfState *state_loop;
+	guint cnt = 0;
+	guint i;
+
+	/* count the enabled repos */
+	for (i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
+			continue;
+		cnt++;
+	}
+
+	/* figure out which repos need refreshing */
+	refresh_repos = g_ptr_array_new ();
+	state_local = dnf_state_get_child (state);
+	dnf_state_set_number_steps (state_local, cnt);
+	for (i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		gboolean repo_okay;
+
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
+			continue;
+
+		/* is the repo up to date? */
+		state_loop = dnf_state_get_child (state_local);
+		repo_okay = dnf_repo_check (repo,
+		                            pk_backend_job_get_cache_age (job),
+		                            state_loop,
+		                            NULL);
+		if (!repo_okay || force)
+			g_ptr_array_add (refresh_repos,
+			                 g_ptr_array_index (repos, i));
+
+		/* done */
+		if (!dnf_state_done (state_local, error))
+			return NULL;
+	}
+
+	/* done */
+	if (!dnf_state_done (state, error))
+		return NULL;
+
+	return g_steal_pointer (&refresh_repos);
+}
+
 static void
 pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 GVariant *params,
@@ -1667,7 +1757,6 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	DnfState *state_loop;
 	gboolean force;
 	gboolean ret;
-	guint cnt = 0;
 	guint i;
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
@@ -1695,54 +1784,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		return;
 	}
 
-	/* count the enabled repos */
-	for (i = 0; i < repos->len; i++) {
-		repo = g_ptr_array_index (repos, i);
-		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
-			continue;
-		cnt++;
-	}
-
 	/* figure out which repos need refreshing */
-	refresh_repos = g_ptr_array_new ();
-	state_local = dnf_state_get_child (job_data->state);
-	dnf_state_set_number_steps (state_local, cnt);
-	for (i = 0; i < repos->len; i++) {
-		gboolean repo_okay;
-
-		repo = g_ptr_array_index (repos, i);
-		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
-			continue;
-
-		/* is the repo up to date? */
-		state_loop = dnf_state_get_child (state_local);
-		repo_okay = dnf_repo_check (repo,
-		                            pk_backend_job_get_cache_age (job),
-		                            state_loop,
-		                            NULL);
-		if (!repo_okay || force)
-			g_ptr_array_add (refresh_repos,
-			                 g_ptr_array_index (repos, i));
-
-		/* done */
-		ret = dnf_state_done (state_local, &error);
-		if (!ret) {
-			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			return;
-		}
-	}
-
-	/* done */
-	ret = dnf_state_done (job_data->state, &error);
-	if (!ret) {
+	refresh_repos = pk_backend_find_refresh_repos (job, job_data->state, repos, force, &error);
+	if (refresh_repos == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
 	}
