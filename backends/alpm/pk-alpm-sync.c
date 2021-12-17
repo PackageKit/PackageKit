@@ -190,9 +190,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 	if ((gboolean)p) {
 		i = alpm_get_syncdbs(priv->alpm);
-		for (; i != NULL; i = i->next) {
-			pk_alpm_update_database(job, TRUE, i->data, &error);
-		}
+		pk_alpm_refresh_databases(job, TRUE, i, &error);
 	}
 
 	/* download only */
