@@ -194,6 +194,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	if (p) {
 		i = alpm_get_syncdbs(priv->alpm);
 		pk_alpm_refresh_databases (job, TRUE, i, &error);
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	}
 
 	/* download only */
