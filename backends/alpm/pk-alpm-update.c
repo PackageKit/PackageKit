@@ -331,13 +331,42 @@ pk_alpm_pkg_is_syncfirst (alpm_list_t *syncfirsts, alpm_pkg_t *pkg)
 	return FALSE;
 }
 
-static gboolean
-pk_alpm_pkg_replaces (alpm_pkg_t *pkg, const gchar *name)
+static int dep_vercmp(const char *version1, alpm_depmod_t mod,
+		const char *version2)
 {
-	g_return_val_if_fail (pkg != NULL, FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
+	int equal = 0;
 
-	return alpm_list_find_str (alpm_pkg_get_replaces (pkg), name) != NULL;
+	if(mod == ALPM_DEP_MOD_ANY) {
+		equal = 1;
+	} else {
+		int cmp = alpm_pkg_vercmp(version1, version2);
+		switch(mod) {
+			case ALPM_DEP_MOD_EQ: equal = (cmp == 0); break;
+			case ALPM_DEP_MOD_GE: equal = (cmp >= 0); break;
+			case ALPM_DEP_MOD_LE: equal = (cmp <= 0); break;
+			case ALPM_DEP_MOD_LT: equal = (cmp < 0); break;
+			case ALPM_DEP_MOD_GT: equal = (cmp > 0); break;
+			default: equal = 1; break;
+		}
+	}
+	return equal;
+}
+
+alpm_pkg_t *
+pk_alpm_pkg_replaces (alpm_db_t *db, alpm_pkg_t *pkg)
+{
+	g_return_val_if_fail (db != NULL, FALSE);
+	g_return_val_if_fail (pkg != NULL, FALSE);
+	gboolean ret = FALSE;
+
+	for (alpm_list_t *list = alpm_pkg_get_replaces (pkg); list != NULL && !ret; list = list->next) {
+		alpm_depend_t *depend = list->data;
+		alpm_pkg_t *deppkg = alpm_db_get_pkg(db, depend->name);
+		if (deppkg && dep_vercmp(alpm_pkg_get_version(deppkg), depend->mod, depend->version)) {
+			return deppkg;
+		}
+	}
+	return NULL;
 }
 
 static alpm_pkg_t *
@@ -359,12 +388,6 @@ pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 				return update;
 			}
 			return NULL;
-		}
-
-		i = alpm_db_get_pkgcache (dbs->data);
-		for (; i != NULL; i = i->next) {
-			if (pk_alpm_pkg_replaces (i->data, name))
-				return i->data;
 		}
 	}
 

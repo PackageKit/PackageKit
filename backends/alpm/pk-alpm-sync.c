@@ -61,6 +61,11 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
+		alpm_pkg_t *dep_to_remove = pk_alpm_pkg_replaces(priv->localdb, pkg);
+		if (dep_to_remove) {
+			g_debug("scheduling to remove %s for %s", alpm_pkg_get_name(dep_to_remove), name);
+			alpm_remove_pkg(priv->alpm, dep_to_remove);
+		}
 
 		if (update) { // libalpm only checks for ignorepkgs on an update
 			const alpm_list_t *ignorepkgs, *ignoregroups, *group_iter;
