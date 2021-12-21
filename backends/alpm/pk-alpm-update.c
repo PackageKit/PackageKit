@@ -288,12 +288,12 @@ pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
 	i = alpm_get_syncdbs (priv->alpm);
-	pk_alpm_refresh_databases (job, force, i, error);
+	int ret = pk_alpm_refresh_databases(job, force, i, error);
 
 	if (i == NULL)
 		return pk_alpm_transaction_end (job, error);
 	pk_alpm_transaction_end (job, NULL);
-	return FALSE;
+	return ret != 0;
 }
 
 static gboolean
