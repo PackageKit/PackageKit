@@ -253,19 +253,14 @@ pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GErr
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	alpm_cb_download dlcb;
 	gint result;
 	alpm_list_t *i;
-
-	dlcb = alpm_option_get_dlcb (priv->alpm);
 
 	if (!force)
 		return TRUE;
 
 	result = alpm_db_update (priv->alpm, dbs, force);
-	if (result > 0) {
-		dlcb (NULL, "", ALPM_DOWNLOAD_COMPLETED, (void *)1);
-	} else if (result < 0) {
+	if (result < 0) {
 		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "failed to uptate database: %s",
 				alpm_strerror (errno));
 		return FALSE;
