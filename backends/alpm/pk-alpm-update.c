@@ -182,7 +182,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		if (built > 0)
 			issued = pk_alpm_time_to_iso8601 (built);
 
-		if (upgrades != NULL) {
+		if (upgrades[0] != NULL) {
 			installed = alpm_pkg_get_installdate (old);
 			if (installed > 0)
 				updated = pk_alpm_time_to_iso8601 (installed);
