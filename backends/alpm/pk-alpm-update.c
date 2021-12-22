@@ -182,7 +182,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 		if (built > 0)
 			issued = pk_alpm_time_to_iso8601 (built);
 
-		if (upgrades != NULL) {
+		if (upgrades[0] != NULL) {
 			installed = alpm_pkg_get_installdate (old);
 			if (installed > 0)
 				updated = pk_alpm_time_to_iso8601 (installed);
@@ -253,19 +253,14 @@ pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GErr
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
-	alpm_cb_download dlcb;
 	gint result;
 	alpm_list_t *i;
-
-	dlcb = alpm_option_get_dlcb (priv->alpm);
 
 	if (!force)
 		return TRUE;
 
 	result = alpm_db_update (priv->alpm, dbs, force);
-	if (result > 0) {
-		dlcb (NULL, "", ALPM_DOWNLOAD_COMPLETED, (void *)1);
-	} else if (result < 0) {
+	if (result < 0) {
 		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "failed to uptate database: %s",
 				alpm_strerror (errno));
 		return FALSE;
@@ -293,12 +288,12 @@ pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
 	i = alpm_get_syncdbs (priv->alpm);
-	pk_alpm_refresh_databases (job, force, i, error);
+	int ret = pk_alpm_refresh_databases(job, force, i, error);
 
 	if (i == NULL)
 		return pk_alpm_transaction_end (job, error);
 	pk_alpm_transaction_end (job, NULL);
-	return FALSE;
+	return ret != 0;
 }
 
 static gboolean

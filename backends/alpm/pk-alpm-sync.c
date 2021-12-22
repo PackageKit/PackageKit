@@ -66,8 +66,10 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 			const alpm_list_t *ignorepkgs, *ignoregroups, *group_iter;
 
 			ignorepkgs = alpm_option_get_ignorepkgs (priv->alpm);
-			if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL)
+			if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL) {
+				pk_alpm_pkg_emit(job, pkg, PK_INFO_ENUM_BLOCKED);
 				goto cont;
+			}
 
 			ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
 			for (group_iter = alpm_pkg_get_groups (pkg); group_iter != NULL; group_iter = group_iter->next) {
@@ -194,6 +196,7 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	if (p) {
 		i = alpm_get_syncdbs(priv->alpm);
 		pk_alpm_refresh_databases (job, TRUE, i, &error);
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	}
 
 	/* download only */
