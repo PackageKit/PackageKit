@@ -262,6 +262,11 @@ pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GErr
 	if (!force)
 		return TRUE;
 
+	if (priv->alpm != priv->alpm_check) {
+		// We can now discard the check db as the main db is more up to date again
+		alpm_release(priv->alpm_check);
+		priv->alpm_check = NULL;
+	}
 	result = alpm_db_update (priv->alpm, dbs, force);
 	if (result > 0) {
 		dlcb (NULL, "", ALPM_DOWNLOAD_COMPLETED, (void *)1);
@@ -399,7 +404,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	FILE *file;
 	int stored_count;
 	alpm_handle_t* old_handle = priv->alpm;
-	alpm_handle_t* handle = pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, TRUE, &error);
+	alpm_handle_t* handle = priv->alpm_check ? priv->alpm_check : pk_alpm_configure (backend, PK_BACKEND_CONFIG_FILE, TRUE, &error);
 
 	alpm_logaction (handle, PK_LOG_PREFIX, "synchronizing package lists\n");
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
@@ -412,6 +417,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	priv->alpm = handle;
 	pk_alpm_refresh_databases (job, TRUE, i, &error);
 	priv->alpm = old_handle;
+	priv->alpm_check = handle;
 
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		g_variant_get (params, "(t)", &filters);

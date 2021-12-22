@@ -82,7 +82,7 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 	if (g_strcmp0 (repo_id, "installed") == 0) {
 		db = priv->localdb;
 	} else {
-		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
+		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm_check ? priv->alpm_check : priv->alpm);
 		for (; i != NULL; i = i->next) {
 			const gchar *repo = alpm_db_get_name (i->data);
 

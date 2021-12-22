@@ -86,6 +86,7 @@ pk_alpm_initialize (PkBackend *backend, GError **error)
 		return FALSE;
 	}
 
+	priv->alpm_check = NULL;
 	alpm_option_set_logcb (priv->alpm, pk_alpm_logcb, NULL);
 
 	priv->localdb = alpm_get_localdb (priv->alpm);
