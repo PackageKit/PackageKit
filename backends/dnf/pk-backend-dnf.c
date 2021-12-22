@@ -2956,7 +2956,6 @@ dnf_is_installed_package_id_name_arch (DnfSack *sack, const gchar *package_id)
 /**
  * pk_backend_remove_packages_thread:
  *
- * FIXME: Use autoremove
  * FIXME: Use allow_deps
  */
 static void
@@ -2994,12 +2993,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	g_assert (ret);
 
 	/* not supported */
-	if (autoremove) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NOT_SUPPORTED,
-					   "autoremove is not supported");
-		return;
-	}
 	if (!allow_deps) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_NOT_SUPPORTED,
@@ -3072,7 +3065,11 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		hy_goal_erase (job_data->goal, pkg);
+		if (autoremove) {
+			hy_goal_erase_flags (job_data->goal, pkg, HY_CLEAN_DEPS);
+		} else {
+			hy_goal_erase (job_data->goal, pkg);
+		}
 	}
 
 	/* run transaction */
