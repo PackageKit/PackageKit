@@ -414,7 +414,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	if (skip_remote)
 		goto out;
 
-	for (i = alpm_get_syncdbs (priv->alpm); i != NULL; i = i->next) {
+	for (i = alpm_get_syncdbs (priv->alpm_check ? priv->alpm_check : priv->alpm); i != NULL; i = i->next) {
 		if (pk_backend_job_is_cancelled (job))
 			break;
 
