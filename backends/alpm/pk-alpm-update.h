@@ -25,3 +25,6 @@
 
 gboolean pk_alpm_refresh_databases (PkBackendJob *job, gint force,
 					alpm_list_t *dbs, GError **error);
+
+alpm_pkg_t *
+pk_alpm_pkg_replaces (alpm_db_t *db, alpm_pkg_t *pkg);
