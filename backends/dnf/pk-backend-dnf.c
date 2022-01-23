@@ -1083,11 +1083,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
-		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_ICASE | HY_SUBSTR, (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
-		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query, HY_PKG_NAME, HY_ICASE | HY_SUBSTR, (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
