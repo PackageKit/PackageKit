@@ -2510,13 +2510,15 @@ bool AptIntf::installPackages(PkBitfield flags)
         if ((m_interactive) && (socket != NULL)) {
             g_setenv("DEBIAN_FRONTEND", "passthrough", TRUE);
             g_setenv("DEBCONF_PIPE", socket, TRUE);
+
+            // Set the LANGUAGE so debconf messages get localization
+            // NOTE: This will cause dpkg messages to be localized and APTcc's string matching
+            // to fail, so progress information may no longer be accurate in these cases.
+            setEnvLocaleFromJob();
         } else {
             // we don't have a socket set or are not interactive, let's fallback to noninteractive
             g_setenv("DEBIAN_FRONTEND", "noninteractive", TRUE);
         }
-
-        // Set the LANGUAGE so debconf messages get localization
-        setEnvLocaleFromJob();
 
         // apt will record this in its history.log
         guint uid = pk_backend_job_get_uid(m_job);
