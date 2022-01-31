@@ -393,11 +393,11 @@ bool utilRestartRequired(const string &packageName)
 
 string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 {
-    if (vf.File().Origin() == NULL)
+    if (vf.File().Origin() == nullptr)
         return string("local");
-    if (vf.File().Archive() == NULL)
+    if (vf.File().Archive() == nullptr)
         return string("local");
-    if (vf.File().Component() == NULL)
+    if (vf.File().Component() == nullptr)
         return string("invalid");
 
     // https://wiki.debian.org/DebianRepository/Format
