@@ -2544,7 +2544,8 @@ bool AptIntf::installPackages(PkBitfield flags)
         _exit(res);
     }
 
-    cout << "PARENT process running..." << endl;
+    cout << "APTcc parent process running..." << endl;
+
     // make it nonblocking, verry important otherwise
     // when the child finish we stay stuck.
     fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
@@ -2568,6 +2569,6 @@ bool AptIntf::installPackages(PkBitfield flags)
     close(pty_master);
     _system->LockInner();
 
-    cout << "Parent finished..." << endl;
+    cout << "APTcc Parent finished..." << endl;
     return true;
 }

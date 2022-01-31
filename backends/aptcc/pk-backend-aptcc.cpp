@@ -352,13 +352,12 @@ void pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job, gchar *
 
 static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    gchar **files = nullptr;
+    g_autofree gchar **files = nullptr;
     g_variant_get(params, "(^a&s)",
                   &files);
-
     AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
 
-    for (guint i = 0; i < g_strv_length(files); ++i)
+    for (guint i = 0; files[i] != nullptr; ++i)
         apt->emitPackageFilesLocal(files[i]);
 }
 

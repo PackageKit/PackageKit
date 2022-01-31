@@ -1,5 +1,5 @@
 /* apt-cache-file.cpp
- * 
+ *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2012 Matthias Klumpp <matthias@tenstral.net>
  * Copyright (c) 2016 Harald Sitter <sitter@kde.org>
@@ -357,35 +357,27 @@ bool AptCacheFile::isRemovingEssentialPackages()
 
 pkgCache::VerIterator AptCacheFile::resolvePkgID(const gchar *packageId)
 {
-    gchar **parts;
+    g_auto(GStrv) parts = nullptr;
     pkgCache::PkgIterator pkg;
 
     parts = pk_package_id_split(packageId);
     pkg = (*this)->FindPkg(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
 
     // Ignore packages that could not be found or that exist only due to dependencies.
-    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
-        g_strfreev(parts);
+    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end()))
         return pkgCache::VerIterator();
-    }
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (ver.end() == false &&
-            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
-        g_strfreev(parts);
+            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
         return ver;
-    }
 
     const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if the provided package isn't virtual too
     if (candidateVer.end() == false &&
-            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
-        g_strfreev(parts);
+            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
         return candidateVer;
-    }
-
-    g_strfreev (parts);
 
     return ver;
 }
