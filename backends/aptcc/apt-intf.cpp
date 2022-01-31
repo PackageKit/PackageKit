@@ -429,7 +429,7 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
     }
 
     gchar *package_id;
-    package_id = utilBuildPackageId(ver);
+    package_id = utilBuildPackageId(m_cache, ver);
     pk_backend_job_package(m_job,
                            state,
                            package_id,
@@ -440,7 +440,7 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
 void AptIntf::emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, uint percentage)
 {
     gchar *package_id;
-    package_id = utilBuildPackageId(ver);
+    package_id = utilBuildPackageId(m_cache, ver);
     pk_backend_job_set_item_progress(m_job, package_id, status, percentage);
     g_free(package_id);
 }
@@ -473,7 +473,7 @@ void AptIntf::emitRequireRestart(PkgList &output)
 
     for (const pkgCache::VerIterator &verIt : output) {
         gchar *package_id;
-        package_id = utilBuildPackageId(verIt);
+        package_id = utilBuildPackageId(m_cache, verIt);
         pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, package_id);
         g_free(package_id);
     }
@@ -756,7 +756,7 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
     }
 
     gchar *package_id;
-    package_id = utilBuildPackageId(ver);
+    package_id = utilBuildPackageId(m_cache, ver);
     pk_backend_job_details(m_job,
                            package_id,
                            m_cache->getShortDescription(ver).c_str(),
@@ -801,7 +801,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     const pkgCache::VerIterator &currver = m_cache->findVer(pkg);
 
     // Build a package_id from the current version
-    gchar *current_package_id = utilBuildPackageId(currver);
+    gchar *current_package_id = utilBuildPackageId(m_cache, currver);
 
     pkgCache::VerFileIterator vf = candver.FileList();
     string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
@@ -846,7 +846,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
     // Build a package_id from the update version
     string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
     gchar *package_id;
-    package_id = utilBuildPackageId(candver);
+    package_id = utilBuildPackageId(m_cache, candver);
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
     if (archive.compare("stable") == 0) {

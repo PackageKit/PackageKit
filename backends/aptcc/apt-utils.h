@@ -75,7 +75,8 @@ bool utilRestartRequired(const string &packageName);
   * Build a package id from the given package version
   * The caller must g_free the returned value
   */
-gchar* utilBuildPackageId(const pkgCache::VerIterator &ver);
+gchar* utilBuildPackageId(AptCacheFile *cacheFile,
+			  const pkgCache::VerIterator &ver);
 
 /**
  * Build a unique repository origin, in the form of
