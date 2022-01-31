@@ -428,25 +428,36 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
     return res;
 }
 
-gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
+gchar* utilBuildPackageId(AptCacheFile *cacheFile, const pkgCache::VerIterator &ver)
 {
-    gchar *package_id;
     pkgCache::VerFileIterator vf = ver.FileList();
-
-    string data = "";
     const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
-        // when a package is installed, the data part of a package-id is "installed:<repo-id>"
-        data = "installed:" + utilBuildPackageOriginId(vf);
+    pkgDepCache::StateCache &State = (*cacheFile)[pkg];
+
+    const bool isInstalled = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
+    const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
+
+    // when a package is installed manually, the data part of a package-id is "manual:<repo-id>",
+    // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
+    // a pending installation is marked, in which case we prefix the desired new mode of the installed
+    // package (auto/manual) with a plus sign (+).
+    string data;
+    if (isInstalled) {
+        data = isAuto? "auto:" : "manual:";
+        data += utilBuildPackageOriginId(vf);
     } else {
-        data = utilBuildPackageOriginId(vf);
+        if (State.NewInstall()) {
+            data = isAuto? "+auto:" : "+manual:";
+            data += utilBuildPackageOriginId(vf);
+        } else {
+            data = utilBuildPackageOriginId(vf);
+        }
     }
 
-    package_id = pk_package_id_build(ver.ParentPkg().Name(),
-                                     ver.VerStr(),
-                                     ver.Arch(),
-                                     data.c_str());
-    return package_id;
+    return pk_package_id_build(ver.ParentPkg().Name(),
+                               ver.VerStr(),
+                               ver.Arch(),
+                               data.c_str());
 }
 
 const char *utf8(const char *str)
