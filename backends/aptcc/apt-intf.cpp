@@ -3,7 +3,7 @@
  * Copyright (c) 1999-2008 Daniel Burrows
  * Copyright (c) 2004 Michael Vogt <mvo@debian.org>
  *               2009-2018 Daniel Nicoletti <dantti12@gmail.com>
- *               2012-2015 Matthias Klumpp <matthias@tenstral.net>
+ *               2012-2022 Matthias Klumpp <matthias@tenstral.net>
  *               2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -94,7 +94,7 @@ bool AptIntf::init(gchar **localDebs)
     }
 
     // Check if we should open the Cache with lock
-    bool withLock;
+    bool withLock = false;
     bool AllowBroken = false;
     PkRoleEnum role = pk_backend_job_get_role(m_job);
     switch (role) {
@@ -346,9 +346,9 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
         PkgList ret;
         ret.reserve(packages.size());
 
-        for (const pkgCache::VerIterator &ver : packages) {
-            if (matchPackage(ver, filters)) {
-                ret.push_back(ver);
+        for (const PkgInfo &info : packages) {
+            if (matchPackage(info.ver, filters)) {
+                ret.push_back(info);
             }
         }
 
@@ -360,12 +360,12 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
             {
                 pkgDepCache::ActionGroup group(*m_cache);
                 for (auto autoInst : { true, false }) {
-                    for (const pkgCache::VerIterator &ver : ret) {
+                    for (const PkgInfo &info : ret) {
                         if (m_cancel) {
                             break;
                         }
 
-                        m_cache->tryToInstall(Fix, ver, false, autoInst, false);
+                        m_cache->tryToInstall(Fix, info.ver, false, autoInst, false);
                     }
                 }
             }
@@ -385,7 +385,7 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
                 return downloaded;
             }
 
-            for (const pkgCache::VerIterator &verIt : ret) {
+            for (const PkgInfo &info : ret) {
                 bool found = false;
                 for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
                     pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(*it));
@@ -393,15 +393,14 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
                         continue;
                     }
                     const pkgCache::VerIterator ver = archive->version();
-                    if ((*it)->Local && verIt == ver) {
+                    if ((*it)->Local && info.ver == ver) {
                         found = true;
                         break;
                     }
                 }
 
-                if (found) {
-                    downloaded.push_back(verIt);
-                }
+                if (found)
+                    downloaded.append(info);
             }
 
             return downloaded;
@@ -454,12 +453,12 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
     output.removeDuplicates();
 
     output = filterPackages(output, filters);
-    for (const pkgCache::VerIterator &verIt : output) {
+    for (const PkgInfo &info : output) {
         if (m_cancel) {
             break;
         }
 
-        emitPackage(verIt, state);
+        emitPackage(info.ver, state);
     }
 }
 
@@ -471,9 +470,9 @@ void AptIntf::emitRequireRestart(PkgList &output)
     // Remove the duplicated entries
     output.removeDuplicates();
 
-    for (const pkgCache::VerIterator &verIt : output) {
+    for (const PkgInfo &info : output) {
         gchar *package_id;
-        package_id = utilBuildPackageId(m_cache, verIt);
+        package_id = utilBuildPackageId(m_cache, info.ver);
         pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, package_id);
         g_free(package_id);
     }
@@ -489,7 +488,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
     output.removeDuplicates();
 
     output = filterPackages(output, filters);
-    for (const pkgCache::VerIterator &verIt : output) {
+    for (const PkgInfo &pkgInfo : output) {
         if (m_cancel) {
             break;
         }
@@ -498,7 +497,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
         state = PK_INFO_ENUM_NORMAL;
 
         // let find what kind of upgrade this is
-        pkgCache::VerFileIterator vf = verIt.FileList();
+        pkgCache::VerFileIterator vf = pkgInfo.ver.FileList();
         std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
         std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
         std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
@@ -517,7 +516,7 @@ void AptIntf::emitUpdates(PkgList &output, PkBitfield filters)
             state = PK_INFO_ENUM_ENHANCEMENT;
         }
 
-        emitPackage(verIt, state);
+        emitPackage(pkgInfo.ver, state);
     }
 }
 
@@ -564,7 +563,7 @@ void AptIntf::providesCodec(PkgList &output, gchar **values)
         rec.GetRec(start, stop);
         string record(start, stop - start);
         if (matcher.matches(record, arch)) {
-            output.push_back(ver);
+            output.append(ver);
         }
     }
 }
@@ -632,7 +631,7 @@ void AptIntf::providesLibrary(PkgList &output, gchar **values)
                 std::transform(libPkgName.begin(), libPkgName.end(), libPkgName.begin(), ::tolower);
 
                 if (g_strcmp0 (pkg.Name (), libPkgName.c_str ()) == 0) {
-                    output.push_back(ver);
+                    output.append(ver);
                 }
             }
         } else {
@@ -777,12 +776,11 @@ void AptIntf::emitDetails(PkgList &pkgs)
     // Remove the duplicated entries
     pkgs.removeDuplicates();
 
-    for (const pkgCache::VerIterator &verIt : pkgs) {
-        if (m_cancel) {
+    for (const PkgInfo &pkgInfo : pkgs) {
+        if (m_cancel)
             break;
-        }
 
-        emitPackageDetail(verIt);
+        emitPackageDetail(pkgInfo.ver);
     }
 }
 
@@ -910,12 +908,10 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
 void AptIntf::emitUpdateDetails(const PkgList &pkgs)
 {
-    for (const pkgCache::VerIterator &verIt : pkgs) {
-        if (m_cancel) {
+    for (const PkgInfo &pi : pkgs) {
+        if (m_cancel)
             break;
-        }
-
-        emitUpdateDetail(verIt);
+        emitUpdateDetail(pi.ver);
     }
 }
 
@@ -937,11 +933,11 @@ void AptIntf::getDepends(PkgList &output,
         } else if (dep->Type == pkgCache::Dep::Depends) {
             if (recursive) {
                 if (!output.contains(dep.TargetPkg())) {
-                    output.push_back(ver);
+                    output.append(ver);
                     getDepends(output, ver, recursive);
                 }
             } else {
-                output.push_back(ver);
+                output.append(ver);
             }
         }
         dep++;
@@ -967,15 +963,15 @@ void AptIntf::getRequires(PkgList &output,
         if (parentVer.end() == false) {
             PkgList deps;
             getDepends(deps, parentVer, false);
-            for (const pkgCache::VerIterator &depVer : deps) {
-                if (depVer == ver) {
+            for (const PkgInfo &depInfo : deps) {
+                if (depInfo.ver == ver) {
                     if (recursive) {
                         if (!output.contains(parentPkg)) {
-                            output.push_back(parentVer);
+                            output.append(parentVer);
                             getRequires(output, parentVer, recursive);
                         }
                     } else {
-                        output.push_back(parentVer);
+                        output.append(parentVer);
                     }
                     break;
                 }
@@ -1002,9 +998,8 @@ PkgList AptIntf::getPackages()
 
         // Don't insert virtual packages as they don't have all kinds of info
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == false) {
-            output.push_back(ver);
-        }
+        if (ver.end() == false)
+            output.append(ver);
     }
     return output;
 }
@@ -1052,7 +1047,7 @@ PkgList AptIntf::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
             continue;
         }
 
-        output.push_back(ver);
+        output.append(ver);
     }
     return output;
 }
@@ -1099,7 +1094,7 @@ PkgList AptIntf::getPackagesFromGroup(gchar **values)
             // Don't insert virtual packages instead add what it provides
             for (PkGroupEnum group : groups) {
                 if (group == get_enum_group(section)) {
-                    output.push_back(ver);
+                    output.append(ver);
                     break;
                 }
             }
@@ -1143,7 +1138,7 @@ PkgList AptIntf::searchPackageName(const vector<string> &queries)
             // Don't insert virtual packages instead add what it provides
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
             if (ver.end() == false) {
-                output.push_back(ver);
+                output.append(ver);
             } else {
                 // iterate over the provides list
                 for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
@@ -1153,7 +1148,7 @@ PkgList AptIntf::searchPackageName(const vector<string> &queries)
                     if (ownerVer.end() == false) {
                         // we add the package now because we will need to
                         // remove duplicates later anyway
-                        output.push_back(ownerVer);
+                        output.append(ownerVer);
                     }
                 }
             }
@@ -1180,7 +1175,7 @@ PkgList AptIntf::searchPackageDetails(const vector<string> &queries)
             if (matchesQueries(queries, pkg.Name()) ||
                     matchesQueries(queries, (*m_cache).getLongDescription(ver))) {
                 // The package matched
-                output.push_back(ver);
+                output.append(ver);
             }
         } else if (matchesQueries(queries, pkg.Name())) {
             // The package is virtual and MATCHED the name
@@ -1194,7 +1189,7 @@ PkgList AptIntf::searchPackageDetails(const vector<string> &queries)
                 if (ownerVer.end() == false) {
                     // we add the package now because we will need to
                     // remove duplicates later anyway
-                    output.push_back(ownerVer);
+                    output.append(ownerVer);
                 }
             }
         }
@@ -1298,7 +1293,7 @@ PkgList AptIntf::searchPackageFiles(gchar **values)
         if (ver.end()) {
             continue;
         }
-        output.push_back(ver);
+        output.append(ver);
     }
 
     return output;
@@ -1325,24 +1320,24 @@ PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &inst
         } else if (state.Upgrade() == true && state.NewInstall() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                updates.push_back(ver);
+                updates.append(ver);
             }
         } else if (state.Downgrade() == true) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                downgrades.push_back(ver);
+                downgrades.append(ver);
             }
         } else if (state.Upgradable() == true &&
                    pkg->CurrentVer != 0 &&
                    state.Delete() == false) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                blocked.push_back(ver);
+                blocked.append(ver);
             }
         } else if (state.NewInstall()) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                installs.push_back(ver);
+                installs.append(ver);
             }
         } else if (state.Delete()) {
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
@@ -1363,15 +1358,12 @@ PkgList AptIntf::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &inst
                     }
                 }
 
-                if( is_obsoleted )
-                {
+                if (is_obsoleted ) {
                     /* Obsoleted packages */
-                    obsoleted.push_back(ver);
-                }
-                else
-                {
+                    obsoleted.append(ver);
+                } else {
                     /* Removed packages */
-                    removals.push_back(ver);
+                    removals.append(ver);
                 }
             }
         }
@@ -1423,7 +1415,7 @@ void AptIntf::providesMimeType(PkgList &output, gchar **values)
         if (ver.end() == true)
             continue;
 
-        output.push_back(ver);
+        output.append(ver);
     }
 
     /* check if we found nothing because AppStream data is missing completely */
@@ -1588,7 +1580,7 @@ bool AptIntf::checkTrusted(pkgAcquire &fetcher, PkBitfield flags)
             if (archive == nullptr) {
                 continue;
             }
-            untrusted.push_back(archive->version());
+            untrusted.append(archive->version());
 
             UntrustedList += string((*I)->ShortDesc()) + " ";
         }
@@ -1637,19 +1629,19 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
             // installing;
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                ret.push_back(ver);
-                installing.push_back(ver);
+                ret.append(ver);
+                installing.append(ver);
 
                 // append to the restart required list
                 if (utilRestartRequired(pkg.Name())) {
-                    m_restartPackages.push_back(ver);
+                    m_restartPackages.append(ver);
                 }
             }
         } else if ((*m_cache)[pkg].Delete() == true) {
             // removing
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
             if (!ver.end()) {
-                ret.push_back(ver);
+                ret.append(ver);
 
                 bool is_obsoleted = false;
 
@@ -1668,38 +1660,37 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
                 }
 
                 if (!is_obsoleted) {
-                    removing.push_back(ver);
+                    removing.append(ver);
                 } else {
-                    obsoleting.push_back(ver);
+                    obsoleting.append(ver);
                 }
 
                 // append to the restart required list
                 if (utilRestartRequired(pkg.Name())) {
-                    m_restartPackages.push_back(ver);
+                    m_restartPackages.append(ver);
                 }
             }
         } else if ((*m_cache)[pkg].Upgrade() == true) {
             // updating
             const pkgCache::VerIterator &ver = m_cache->findCandidateVer(pkg);
             if (!ver.end()) {
-                ret.push_back(ver);
-                updating.push_back(ver);
+                ret.append(ver);
+                updating.append(ver);
 
                 // append to the restart required list
-                if (utilRestartRequired(pkg.Name())) {
-                    m_restartPackages.push_back(ver);
-                }
+                if (utilRestartRequired(pkg.Name()))
+                    m_restartPackages.append(ver);
             }
         } else if ((*m_cache)[pkg].Downgrade() == true) {
             // downgrading
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
             if (!ver.end()) {
-                ret.push_back(ver);
-                downgrading.push_back(ver);
+                ret.append(ver);
+                downgrading.append(ver);
 
                 // append to the restart required list
                 if (utilRestartRequired(pkg.Name())) {
-                    m_restartPackages.push_back(ver);
+                    m_restartPackages.append(ver);
                 }
             }
         }
@@ -1719,9 +1710,9 @@ PkgList AptIntf::checkChangedPackages(bool emitChanged)
 
 pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
 {
-    for (const pkgCache::VerIterator &verIt : m_pkgs) {
-        if (verIt.ParentPkg().Name() == name) {
-            return verIt;
+    for (const PkgInfo &pkInfo : m_pkgs) {
+        if (pkInfo.ver.ParentPkg().Name() == name) {
+            return pkInfo.ver;
         }
     }
 
@@ -2108,15 +2099,13 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
 
                     const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
                     // check to see if the provided package isn't virtual too
-                    if (!ver.end()) {
-                        ret.push_back(ver);
-                    }
+                    if (!ver.end())
+                        ret.append(ver);
 
                     const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
                     // check to see if the provided package isn't virtual too
-                    if (!candidateVer.end()) {
-                        ret.push_back(candidateVer);
-                    }
+                    if (!candidateVer.end())
+                        ret.append(candidateVer);
                 }
             } else {
                 const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
@@ -2127,22 +2116,19 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
 
                 const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
                 // check to see if the provided package isn't virtual too
-                if (ver.end() == false) {
-                    ret.push_back(ver);
-                }
+                if (ver.end() == false)
+                    ret.append(ver);
 
                 const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
                 // check to see if the provided package isn't virtual too
-                if (candidateVer.end() == false) {
-                    ret.push_back(candidateVer);
-                }
+                if (candidateVer.end() == false)
+                    ret.append(candidateVer);
             }
         } else {
             const pkgCache::VerIterator &ver = m_cache->resolvePkgID(pi);
             // check to see if we found the package
-            if (!ver.end()) {
-                ret.push_back(ver);
-            }
+            if (!ver.end())
+                ret.append(ver);
         }
     }
 
@@ -2172,13 +2158,12 @@ void AptIntf::refreshCache()
 
 void AptIntf::markAutoInstalled(const PkgList &pkgs)
 {
-    for (const pkgCache::VerIterator &verIt : pkgs) {
-        if (m_cancel) {
+    for (const PkgInfo &pkInfo : pkgs) {
+        if (m_cancel)
             break;
-        }
 
         // Mark package as auto-installed
-        (*m_cache)->MarkAuto(verIt.ParentPkg(), true);
+        (*m_cache)->MarkAuto(pkInfo.ver.ParentPkg(), true);
     }
 }
 
@@ -2197,9 +2182,8 @@ PkgList AptIntf::resolveLocalFiles(gchar **localDebs)
         }
 
         // Set any version providing the .deb as the candidate.
-        for (auto Prv = P.ProvidesList(); Prv.end() == false; Prv++) {
-            ret.push_back(Prv.OwnerVer());
-        }
+        for (auto Prv = P.ProvidesList(); Prv.end() == false; Prv++)
+            ret.append(Prv.OwnerVer());
 
         // TODO do we need this?
         // via cacheset to have our usual virtual handling
@@ -2236,7 +2220,7 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
         for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); ! pkg.end(); ++pkg) {
             const pkgCache::VerIterator &ver = pkg.CurrentVer();
             if (!ver.end() && m_cache->isGarbage(pkg))
-                initial_garbage.push_back(ver);
+                initial_garbage.append(ver);
         }
     }
 
@@ -2246,23 +2230,22 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
 
         for (auto op : { Operation { install, false }, Operation { update, true } }) {
             for (auto autoInst : { false, true }) {
-                for (const pkgCache::VerIterator &verIt : op.list) {
+                for (const PkgInfo &pkInfo : op.list) {
                     if (m_cancel) {
                         break;
                     }
-                    if (!m_cache->tryToInstall(Fix, verIt, BrokenFix, autoInst, op.preserveAuto)) {
+                    if (!m_cache->tryToInstall(Fix, pkInfo.ver, BrokenFix, autoInst, op.preserveAuto)) {
                         return false;
                     }
                 }
             }
         }
 
-        for (const pkgCache::VerIterator &verIt : remove) {
-            if (m_cancel) {
+        for (const PkgInfo &pkInfo : remove) {
+            if (m_cancel)
                 break;
-            }
 
-            m_cache->tryToRemove(Fix, verIt);
+            m_cache->tryToRemove(Fix, pkInfo.ver);
         }
 
         // Call the scored problem resolver

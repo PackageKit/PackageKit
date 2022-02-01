@@ -1,6 +1,7 @@
 /* pkg-list.h
  *
- * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2012-2016 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2015-2022 Matthias Klumpp <matthias@tenstral.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +28,48 @@
 using std::vector;
 
 /**
- * This class is meant to show Operation Progress using PackageKit
+ * A designated action to perform on a package.
  */
-class PkgList : public vector<pkgCache::VerIterator>
+enum class PkgAction
+{
+    NONE,
+    INSTALL_AUTO,
+    INSTALL_MANUAL
+};
+
+/**
+ * Information about a package, mainly containing its VerIterator
+ * and some information about the intended action on a package
+ * extracted from a PackageKit package-ID.
+ */
+class PkgInfo
 {
 public:
+    explicit PkgInfo(const pkgCache::VerIterator &verIter)
+        : ver(verIter),
+          action(PkgAction::NONE) {};
+    explicit PkgInfo(const pkgCache::VerIterator &verIter, PkgAction a)
+        : ver(verIter),
+          action(a) {};
+    pkgCache::VerIterator ver;
+    PkgAction action;
+};
+
+/**
+ * This class is meant to show Operation Progress using PackageKit
+ */
+class PkgList : public vector<PkgInfo>
+{
+public:
+    /**
+     * Add a new package to the list
+     * @param verIter The pkgCache::VerIterator assoicated with this package.
+     * @param action An optional action that should be performed on this package in future.
+     */
+    void append(const pkgCache::VerIterator &verIter, PkgAction action = PkgAction::NONE);
+
+    void append(const PkgInfo &pi) { this->push_back(pi); };
+
     /**
      * Return if the given vector contain a package
      */
