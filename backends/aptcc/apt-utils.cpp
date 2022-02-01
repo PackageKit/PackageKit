@@ -1,7 +1,7 @@
 /* apt-utils.cpp
  *
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
- * Copyright (c) 2014 Matthias Klumpp <mak@debian.org>
+ * Copyright (c) 2014-2022 Matthias Klumpp <mak@debian.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -426,38 +426,6 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 
     string res = origin + "-" + suite + "-" + component;
     return res;
-}
-
-gchar* utilBuildPackageId(AptCacheFile *cacheFile, const pkgCache::VerIterator &ver)
-{
-    pkgCache::VerFileIterator vf = ver.FileList();
-    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-    pkgDepCache::StateCache &State = (*cacheFile)[pkg];
-
-    const bool isInstalled = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
-    const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
-
-    // when a package is installed manually, the data part of a package-id is "manual:<repo-id>",
-    // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
-    // a pending installation is marked, in which case we prefix the desired new mode of the installed
-    // package (auto/manual) with a plus sign (+).
-    string data;
-    if (isInstalled) {
-        data = isAuto? "auto:" : "manual:";
-        data += utilBuildPackageOriginId(vf);
-    } else {
-        if (State.NewInstall()) {
-            data = isAuto? "+auto:" : "+manual:";
-            data += utilBuildPackageOriginId(vf);
-        } else {
-            data = utilBuildPackageOriginId(vf);
-        }
-    }
-
-    return pk_package_id_build(ver.ParentPkg().Name(),
-                               ver.VerStr(),
-                               ver.Arch(),
-                               data.c_str());
 }
 
 const char *utf8(const char *str)
