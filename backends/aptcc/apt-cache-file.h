@@ -27,6 +27,8 @@
 #include <apt-pkg/progress.h>
 #include <pk-backend.h>
 
+#include "pkg-list.h"
+
 class pkgProblemResolver;
 class AptCacheFile : public pkgCacheFile
 {
@@ -102,9 +104,15 @@ public:
 
     /**
      * Tries to find a package with the given packageId
-     * @returns pkgCache::VerIterator, if .end() is true the package could not be found
+     * @returns PkgInfo containing a pkgCache::VerIterator. If PkgInfo::ver::end() is true, the package could not be found
      */
-    pkgCache::VerIterator resolvePkgID(const gchar *packageId);
+    PkgInfo resolvePkgID(const gchar *packageId);
+
+    /**
+      * Build a package id from the given package version
+      * The caller must g_free the returned value
+      */
+    gchar* buildPackageId(const pkgCache::VerIterator &ver);
 
     /**
      * Tries to find the candidate version of a package
@@ -136,11 +144,11 @@ public:
     std::string getLongDescriptionParsed(const pkgCache::VerIterator &ver);
 
     bool tryToInstall(pkgProblemResolver &Fix,
-                      const pkgCache::VerIterator &ver,
+                      const PkgInfo &pki,
                       bool BrokenFix, bool autoInst, bool preserveAuto);
 
     void tryToRemove(pkgProblemResolver &Fix,
-                     const pkgCache::VerIterator &ver);
+                     const PkgInfo &pki);
 
 private:
     void buildPkgRecords();
