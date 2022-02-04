@@ -2226,6 +2226,13 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
         pkgDepCache::ActionGroup group(*m_cache);
 
         for (auto op : { Operation { install, false }, Operation { update, true } }) {
+            // We first need to mark all manual selections with AutoInst=false, so they influence which packages
+            // are chosen when resolving dependencies.
+            // Consider A depends X|Y, with installation of A,Y requested.
+            // With just one run and AutoInst=true, A would be marked for install, it would auto-install X;
+            // then Y is marked for install, and we end up with both X and Y marked for install.
+            // With two runs (one without AutoInst and one with AutoInst), we first mark A and Y for install.
+            // In the 2nd run, when resolving X|Y APT notices that X is already marked for install, and does not install Y.
             for (auto autoInst : { false, true }) {
                 for (const PkgInfo &pkInfo : op.list) {
                     if (m_cancel) {
