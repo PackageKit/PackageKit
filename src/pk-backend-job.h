@@ -149,6 +149,8 @@ guint		 pk_backend_job_get_cache_age		(PkBackendJob	*job);
 typedef void	 (*PkBackendJobVFunc)			(PkBackendJob	*job,
 							 gpointer	 object,
 							 gpointer	 user_data);
+#define 	PK_BACKEND_JOB_VFUNC(f) ((PkBackendJobVFunc) (void (*)(void)) (f))
+
 void		 pk_backend_job_set_vfunc		(PkBackendJob	*job,
 							 PkBackendJobSignal signal_kind,
 							 PkBackendJobVFunc vfunc,
@@ -171,6 +173,11 @@ void		 pk_backend_job_package			(PkBackendJob	*job,
 							 PkInfoEnum	 info,
 							 const gchar	*package_id,
 							 const gchar	*summary);
+void		 pk_backend_job_package_full		(PkBackendJob	*job,
+							 PkInfoEnum	 info,
+							 const gchar	*package_id,
+							 const gchar	*summary,
+							 PkInfoEnum	 update_severity);
 void		 pk_backend_job_repo_detail		(PkBackendJob	*job,
 							 const gchar	*repo_id,
 							 const gchar	*description,
@@ -199,6 +206,15 @@ void		 pk_backend_job_details			(PkBackendJob	*job,
 							 const gchar	*description,
 							 const gchar	*url,
 							 gulong	  size);
+void		 pk_backend_job_details_full		(PkBackendJob	*job,
+							 const gchar	*package_id,
+							 const gchar    *summary,
+							 const gchar	*license,
+							 PkGroupEnum	 group,
+							 const gchar	*description,
+							 const gchar	*url,
+							 gulong		 size,
+							 guint64	 download_size);
 void	 	 pk_backend_job_files 			(PkBackendJob	*job,
 							 const gchar	*package_id,
 							 gchar	 	**files);

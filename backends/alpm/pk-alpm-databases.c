@@ -40,9 +40,9 @@ pk_alpm_disabled_repos_configure (PkBackend *backend, gboolean only_trusted, GEr
 	const alpm_list_t *i;
 
 	if (alpm_unregister_all_syncdbs (priv->alpm) < 0) {
-		alpm_errno_t errno = alpm_errno (priv->alpm);
-		g_set_error_literal (error, PK_ALPM_ERROR, errno,
-				     alpm_strerror (errno));
+		alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+		g_set_error_literal (error, PK_ALPM_ERROR, alpm_err,
+				     alpm_strerror (alpm_err));
 		return FALSE;
 	}
 
@@ -59,9 +59,9 @@ pk_alpm_disabled_repos_configure (PkBackend *backend, gboolean only_trusted, GEr
 
 		db = alpm_register_syncdb (priv->alpm, repo->name, level);
 		if (db == NULL) {
-			alpm_errno_t errno = alpm_errno (priv->alpm);
-			g_set_error (error, PK_ALPM_ERROR, errno, "[%s]: %s",
-				     repo->name, alpm_strerror (errno));
+			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+			g_set_error (error, PK_ALPM_ERROR, alpm_err, "[%s]: %s",
+				     repo->name, alpm_strerror (alpm_err));
 			return FALSE;
 		}
 

@@ -22,7 +22,8 @@ shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Zypp"',
     '-Wall',
     '-Woverloaded-virtual',
-    '-Wnon-virtual-dtor'
+    '-Wnon-virtual-dtor',
+    '-std=c++1z'
   ],
   c_args: [
     '-Wno-deprecated',

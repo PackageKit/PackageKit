@@ -75,6 +75,7 @@ const gchar	*pk_details_get_description		(PkDetails	*details);
 const gchar	*pk_details_get_url			(PkDetails	*details);
 guint64		 pk_details_get_size			(PkDetails	*details);
 const gchar     *pk_details_get_summary                 (PkDetails      *details);
+guint64		 pk_details_get_download_size		(PkDetails      *details);
 
 G_END_DECLS
 

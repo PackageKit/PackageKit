@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# milotype <mail@milotype.de>, 2020
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012
 # gogo <trebelnik2@gmail.com>, 2017-2019
 msgid ""
@@ -989,7 +990,7 @@ msgstr "Rješavanje zavisnosti"
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "Ponovno pokreni"
+msgstr "Ponovno pokretanje"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
@@ -1010,6 +1011,11 @@ msgstr "Pokreni naredbu koristeći mrežnu propusnost mirovanja uz manju upotreb
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "Pokrenuto"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Pokretanje umetnutog programskog koda"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1361,7 +1367,7 @@ msgstr "Nadopunjeno"
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 msgid "Updates"
-msgstr "Nadopunjivanje"
+msgstr "Nadopune"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"

@@ -7,8 +7,8 @@
 # Pau Iranzo <pau@somgnu.cat>, 2009
 # Pere Argelich <bakidok@gmail.com>, 2008
 # Richard Hughes <richard@hughsie.com>, 2011
-# Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2017-2018
-# Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2015-2016
+# Robert Antoni Buj i Gelonch <rbuj@fedoraproject.org>, 2017-2018
+# Robert Antoni Buj i Gelonch <rbuj@fedoraproject.org>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"

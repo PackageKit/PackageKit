@@ -961,6 +961,16 @@ pk_backend_job_package (PkBackendJob *job,
 			const gchar *package_id,
 			const gchar *summary)
 {
+	pk_backend_job_package_full (job, info, package_id, summary, PK_INFO_ENUM_UNKNOWN);
+}
+
+void
+pk_backend_job_package_full (PkBackendJob *job,
+			     PkInfoEnum info,
+			     const gchar *package_id,
+			     const gchar *summary,
+			     PkInfoEnum update_severity)
+{
 	PkPackage *emitted_item;
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
@@ -978,6 +988,7 @@ pk_backend_job_package (PkBackendJob *job,
 		return;
 	}
 	pk_package_set_info (item, info);
+	pk_package_set_update_severity (item, update_severity);
 	pk_package_set_summary (item, summary);
 
 	/* already emitted? */
@@ -1132,6 +1143,21 @@ pk_backend_job_details (PkBackendJob *job,
 			const gchar *url,
 			gulong size)
 {
+	pk_backend_job_details_full (job, package_id, summary, license, group,
+				     description, url, size, G_MAXUINT64);
+}
+
+void
+pk_backend_job_details_full (PkBackendJob *job,
+			     const gchar *package_id,
+			     const gchar *summary,
+			     const gchar *license,
+			     PkGroupEnum group,
+			     const gchar *description,
+			     const gchar *url,
+			     gulong size,
+			     guint64 download_size)
+{
 	g_autoptr(PkDetails) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1153,6 +1179,7 @@ pk_backend_job_details (PkBackendJob *job,
 		      "description", description,
 		      "url", url,
 		      "size", (guint64) size,
+		      "download-size", download_size,
 		      NULL);
 
 	/* emit */

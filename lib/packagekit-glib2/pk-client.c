@@ -80,7 +80,59 @@ enum {
 
 G_DEFINE_TYPE (PkClient, pk_client, G_TYPE_OBJECT)
 
-typedef struct {
+#define PK_TYPE_CLIENT_STATE (pk_client_state_get_type ())
+
+G_DECLARE_FINAL_TYPE (PkClientState, pk_client_state, PK, CLIENT_STATE, GObject)
+
+static GWeakRef *
+pk_client_weak_ref_new (gpointer object)
+{
+	GWeakRef *weak_ref;
+
+	weak_ref = g_slice_new0 (GWeakRef);
+	g_weak_ref_init (weak_ref, object);
+
+	return weak_ref;
+}
+
+static void
+pk_client_weak_ref_free (gpointer ptr)
+{
+	GWeakRef *weak_ref = ptr;
+
+	g_return_if_fail (weak_ref != NULL);
+
+	g_weak_ref_clear (weak_ref);
+	g_slice_free (GWeakRef, weak_ref);
+}
+
+static void
+pk_client_weak_ref_free_gclosure (gpointer ptr,
+				  GClosure *closure)
+{
+	pk_client_weak_ref_free (ptr);
+}
+
+static void
+pk_client_properties_changed_cb (GDBusProxy *proxy,
+				 GVariant *changed_properties,
+				 const gchar* const  *invalidated_properties,
+				 gpointer user_data);
+static void
+pk_client_signal_cb (GDBusProxy *proxy,
+		     const gchar *sender_name,
+		     const gchar *signal_name,
+		     GVariant *parameters,
+		     gpointer user_data);
+static void
+pk_client_notify_name_owner_cb (GObject    *obj,
+                                GParamSpec *pspec,
+                                gpointer    user_data);
+
+struct _PkClientState
+{
+	GObject				 parent_instance;
+
 	gboolean			 allow_deps;
 	gboolean			 autoremove;
 	gboolean			 enabled;
@@ -120,19 +172,223 @@ typedef struct {
 	PkUpgradeKindEnum		 upgrade_kind;
 	guint				 refcount;
 	PkClientHelper			*client_helper;
-} PkClientState;
+	gboolean			 waiting_for_finished;
+};
+
+G_DEFINE_TYPE (PkClientState, pk_client_state, G_TYPE_OBJECT)
 
 static void
-pk_client_properties_changed_cb (GDBusProxy *proxy,
-				 GVariant *changed_properties,
-				 const gchar* const  *invalidated_properties,
-				 gpointer user_data);
+pk_client_state_unset_proxy (PkClientState *state)
+{
+	if (state->proxy != NULL) {
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_properties_changed_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_signal_cb),
+						      state);
+		g_signal_handlers_disconnect_by_func (state->proxy,
+						      G_CALLBACK (pk_client_notify_name_owner_cb),
+						      state);
+		g_clear_object (&state->proxy);
+	}
+}
+
 static void
-pk_client_signal_cb (GDBusProxy *proxy,
-		     const gchar *sender_name,
-		     const gchar *signal_name,
-		     GVariant *parameters,
-		     gpointer user_data);
+pk_client_state_remove (PkClient *client, PkClientState *state)
+{
+	gboolean is_idle;
+	g_ptr_array_remove (client->priv->calls, state);
+
+	/* has the idle state changed? */
+	is_idle = (client->priv->calls->len == 0);
+	if (is_idle != client->priv->idle) {
+		client->priv->idle = is_idle;
+		g_object_notify (G_OBJECT(client), "idle");
+	}
+}
+
+static void
+pk_client_state_finish (PkClientState *state, const GError *error)
+{
+	gboolean ret;
+	g_autoptr(GError) error_local = NULL;
+
+	if (state->res == NULL)
+		return;
+
+	/* force finished (if not already set) so clients can update the UI's */
+	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
+	if (ret && state->progress_callback != NULL) {
+		state->progress_callback (state->progress,
+					  PK_PROGRESS_TYPE_STATUS,
+					  state->progress_user_data);
+		state->progress_callback = NULL;
+	}
+
+	if (state->cancellable_id > 0) {
+		g_cancellable_disconnect (state->cancellable_client,
+					  state->cancellable_id);
+		state->cancellable_id = 0;
+	}
+	g_clear_object (&state->cancellable);
+	g_clear_object (&state->cancellable_client);
+
+	pk_client_state_unset_proxy (state);
+
+	if (state->proxy_props != NULL)
+		g_object_unref (G_OBJECT (state->proxy_props));
+
+	if (state->ret) {
+		g_simple_async_result_set_op_res_gpointer (state->res,
+							   g_object_ref (state->results),
+							   g_object_unref);
+	} else {
+		g_simple_async_result_set_from_error (state->res, error);
+	}
+
+	/* remove any socket file */
+	if (state->client_helper != NULL) {
+		if (!pk_client_helper_stop (state->client_helper, &error_local))
+			g_warning ("failed to stop the client helper: %s", error_local->message);
+		g_object_unref (state->client_helper);
+	}
+
+	/* remove from list */
+	pk_client_state_remove (state->client, state);
+
+	/* complete */
+	g_simple_async_result_complete_in_idle (state->res);
+
+	/* mark the state as finished */
+	g_clear_object (&state->res);
+
+	g_object_unref (state);
+}
+
+static void
+pk_client_state_finalize (GObject *object)
+{
+	PkClientState *state = PK_CLIENT_STATE (object);
+
+	g_free (state->directory);
+	g_free (state->eula_id);
+	g_free (state->key_id);
+	g_free (state->package_id);
+	g_free (state->parameter);
+	g_free (state->repo_id);
+	g_strfreev (state->search);
+	g_free (state->value);
+	g_free (state->tid);
+	g_free (state->distro_id);
+	g_free (state->transaction_id);
+	g_strfreev (state->files);
+	g_strfreev (state->package_ids);
+	/* results will not exist if the CreateTransaction fails */
+	g_clear_object (&state->results);
+	g_object_unref (state->progress);
+	g_clear_object (&state->res);
+	g_object_unref (state->client);
+
+	G_OBJECT_CLASS (pk_client_state_parent_class)->finalize (object);
+}
+
+static void
+pk_client_state_class_init (PkClientStateClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+	object_class->finalize = pk_client_state_finalize;
+}
+
+static void
+pk_client_state_init (PkClientState *state)
+{
+}
+
+static void
+pk_client_cancel_cb (GObject *source_object,
+		     GAsyncResult *res,
+		     gpointer user_data)
+{
+	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
+	GWeakRef *weak_ref = user_data;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) value = NULL;
+	g_autoptr(PkClientState) state = NULL;
+
+	state = g_weak_ref_get (weak_ref);
+
+	pk_client_weak_ref_free (weak_ref);
+
+	/* get the result */
+	value = g_dbus_proxy_call_finish (proxy, res, &error);
+	if (value == NULL) {
+		/* Instructing the daemon to cancel failed, so just return an
+		 * error to the client so they don’t wait forever. */
+		g_debug ("failed to cancel: %s", error->message);
+
+		if (state)
+			pk_client_state_finish (state, error);
+	}
+}
+
+static void
+pk_client_cancellable_cancel_cb (GCancellable *cancellable,
+				 gpointer user_data)
+{
+	GWeakRef *weak_ref = user_data;
+	g_autoptr(PkClientState) state = NULL;
+
+	state = g_weak_ref_get (weak_ref);
+
+	if (state == NULL) {
+		g_debug ("Cancelled, but the operation is already over");
+		return;
+	}
+
+	/* dbus method has not yet fired */
+	if (state->proxy == NULL) {
+		g_debug ("Cancelled, but no proxy, not sure what to do here");
+		return;
+	}
+
+	/* takeover the call with the cancel method */
+	g_debug ("cancelling %s", state->tid);
+	g_dbus_proxy_call (state->proxy, "Cancel",
+			   NULL,
+			   G_DBUS_CALL_FLAGS_NONE,
+			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+			   NULL,
+			   pk_client_cancel_cb, pk_client_weak_ref_new (state));
+}
+
+static PkClientState *
+pk_client_state_new (PkClient *client,
+		     GAsyncReadyCallback callback_ready,
+		     gpointer user_data,
+		     gpointer source_tag,
+		     PkRoleEnum role,
+		     GCancellable *cancellable)
+{
+	PkClientState *state;
+
+	state = g_object_new (PK_TYPE_CLIENT_STATE, NULL);
+	state->role = role;
+	state->res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, source_tag);
+	state->client = g_object_ref (client);
+	state->cancellable = g_cancellable_new ();
+
+	if (cancellable != NULL) {
+		state->cancellable_client = g_object_ref (cancellable);
+		state->cancellable_id = g_cancellable_connect (cancellable,
+							       G_CALLBACK (pk_client_cancellable_cancel_cb),
+							       pk_client_weak_ref_new (state),
+							       pk_client_weak_ref_free);
+	}
+
+	return state;
+}
 
 /**
  * pk_client_error_quark:
@@ -554,66 +810,6 @@ pk_client_set_property_value (PkClientState *state,
 }
 
 /*
- * pk_client_cancel_cb:
- **/
-static void
-pk_client_cancel_cb (GObject *source_object,
-		     GAsyncResult *res,
-		     gpointer user_data)
-{
-	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GVariant) value = NULL;
-
-	/* get the result */
-	value = g_dbus_proxy_call_finish (proxy, res, &error);
-	if (value == NULL) {
-		/* there's not really a lot we can do here */
-		g_warning ("failed to cancel: %s", error->message);
-		return;
-	}
-}
-
-/*
- * pk_client_cancellable_cancel_cb:
- **/
-static void
-pk_client_cancellable_cancel_cb (GCancellable *cancellable, PkClientState *state)
-{
-	/* dbus method has not yet fired */
-	if (state->proxy == NULL) {
-		g_debug ("Cancelled, but no proxy, not sure what to do here");
-		return;
-	}
-
-	/* takeover the call with the cancel method */
-	g_debug ("cancelling %s", state->tid);
-	g_dbus_proxy_call (state->proxy, "Cancel",
-			   NULL,
-			   G_DBUS_CALL_FLAGS_NONE,
-			   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-			   NULL,
-			   pk_client_cancel_cb, NULL);
-}
-
-/*
- * pk_client_state_remove:
- **/
-static void
-pk_client_state_remove (PkClient *client, PkClientState *state)
-{
-	gboolean is_idle;
-	g_ptr_array_remove (client->priv->calls, state);
-
-	/* has the idle state changed? */
-	is_idle = (client->priv->calls->len == 0);
-	if (is_idle != client->priv->idle) {
-		client->priv->idle = is_idle;
-		g_object_notify (G_OBJECT(client), "idle");
-	}
-}
-
-/*
  * pk_client_state_add:
  **/
 static void
@@ -632,87 +828,6 @@ pk_client_state_add (PkClient *client, PkClientState *state)
 }
 
 /*
- * pk_client_state_finish:
- **/
-static void
-pk_client_state_finish (PkClientState *state, const GError *error)
-{
-	gboolean ret;
-	g_autoptr(GError) error_local = NULL;
-
-	/* force finished (if not already set) so clients can update the UI's */
-	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
-	if (ret && state->progress_callback != NULL) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_STATUS,
-					  state->progress_user_data);
-	}
-
-	if (state->cancellable_id > 0) {
-		g_cancellable_disconnect (state->cancellable_client,
-					  state->cancellable_id);
-	}
-	if (state->cancellable != NULL)
-		g_object_unref (state->cancellable);
-
-	if (state->proxy != NULL) {
-		g_signal_handlers_disconnect_by_func (state->proxy,
-						      G_CALLBACK (pk_client_properties_changed_cb),
-						      state);
-		g_signal_handlers_disconnect_by_func (state->proxy,
-						      G_CALLBACK (pk_client_signal_cb),
-						      state);
-		g_object_unref (G_OBJECT (state->proxy));
-	}
-
-	if (state->proxy_props != NULL)
-		g_object_unref (G_OBJECT (state->proxy_props));
-
-	if (state->ret) {
-		g_simple_async_result_set_op_res_gpointer (state->res,
-							   g_object_ref (state->results),
-							   g_object_unref);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove any socket file */
-	if (state->client_helper != NULL) {
-		if (!pk_client_helper_stop (state->client_helper, &error_local))
-			g_warning ("failed to stop the client helper: %s", error_local->message);
-		g_object_unref (state->client_helper);
-	}
-
-	/* remove from list */
-	pk_client_state_remove (state->client, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* destroy state */
-	g_free (state->directory);
-	g_free (state->eula_id);
-	g_free (state->key_id);
-	g_free (state->package_id);
-	g_free (state->parameter);
-	g_free (state->repo_id);
-	g_strfreev (state->search);
-	g_free (state->value);
-	g_free (state->tid);
-	g_free (state->distro_id);
-	g_free (state->transaction_id);
-	g_strfreev (state->files);
-	g_strfreev (state->package_ids);
-	/* results will no exists if the CreateTransaction fails */
-	if (state->results != NULL)
-		g_object_unref (state->results);
-	g_object_unref (state->progress);
-	g_object_unref (state->res);
-	g_object_unref (state->client);
-	g_slice_free (PkClientState, state);
-}
-
-/*
  * pk_client_properties_changed_cb:
  **/
 static void
@@ -724,7 +839,11 @@ pk_client_properties_changed_cb (GDBusProxy *proxy,
 	const gchar *key;
 	GVariantIter *iter;
 	GVariant *value;
-	PkClientState *state = (PkClientState *) user_data;
+	GWeakRef *weak_ref = user_data;
+	g_autoptr(PkClientState) state = g_weak_ref_get (weak_ref);
+
+	if (!state)
+		return;
 
 	if (g_variant_n_children (changed_properties) > 0) {
 		g_variant_get (changed_properties,
@@ -742,6 +861,7 @@ pk_client_properties_changed_cb (GDBusProxy *proxy,
 static void
 pk_client_signal_package (PkClientState *state,
 			  PkInfoEnum info_enum,
+			  PkInfoEnum update_severity,
 			  const gchar *package_id,
 			  const gchar *summary)
 {
@@ -758,6 +878,7 @@ pk_client_signal_package (PkClientState *state,
 	g_object_set (package,
 		      "info", info_enum,
 		      "summary", summary,
+		      "update-severity", update_severity,
 		      "role", state->role,
 		      "transaction-id", state->transaction_id,
 		      NULL);
@@ -1027,7 +1148,8 @@ pk_client_signal_finished (PkClientState *state,
 
 	/* do we have to copy results? */
 	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
-	    state->directory != NULL) {
+	    state->directory != NULL &&
+	    exit_enum != PK_EXIT_ENUM_CANCELLED) {
 		pk_client_copy_downloaded (state);
 		return;
 	}
@@ -1047,7 +1169,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		     GVariant *parameters,
 		     gpointer user_data)
 {
-	PkClientState *state = (PkClientState *) user_data;
+	GWeakRef *weak_ref = user_data;
+	g_autoptr(PkClientState) state = g_weak_ref_get (weak_ref);
 	gchar *tmp_str[12];
 	gchar **tmp_strv[5];
 	gboolean tmp_bool;
@@ -1055,6 +1178,9 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	guint tmp_uint;
 	guint tmp_uint2;
 	guint tmp_uint3;
+
+	if (!state)
+		return;
 
 	if (g_strcmp0 (signal_name, "Finished") == 0) {
 		g_variant_get (parameters,
@@ -1072,8 +1198,12 @@ pk_client_signal_cb (GDBusProxy *proxy,
 			       &tmp_uint,
 			       &tmp_str[1],
 			       &tmp_str[2]);
+		/* The 'info' and 'update-severity' are encoded in the single value */
+		tmp_uint2 = tmp_uint & 0xFFFF;
+		tmp_uint3 = (tmp_uint >> 16) & 0xFFFF;
 		pk_client_signal_package (state,
-					  tmp_uint,
+					  tmp_uint2,
+					  tmp_uint3,
 					  tmp_str[1],
 					  tmp_str[2]);
 		return;
@@ -1092,6 +1222,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 					g_object_set (item, "group", g_variant_get_uint32 (value), NULL);
 				else if (g_strcmp0 (key, "size") == 0)
 					g_object_set (item, "size", g_variant_get_uint64 (value), NULL);
+				else if (g_strcmp0 (key, "download-size") == 0)
+					g_object_set (item, "download-size", g_variant_get_uint64 (value), NULL);
 				else
 					g_object_set (item, key, g_variant_get_string (value, NULL), NULL);
 			}
@@ -1389,6 +1521,29 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 }
 
+static void
+pk_client_notify_name_owner_cb (GObject *obj,
+				GParamSpec *pspec,
+				gpointer user_data)
+{
+	GWeakRef *weak_ref = user_data;
+	g_autoptr(PkClientState) state = g_weak_ref_get (weak_ref);
+
+	if (!state)
+		return;
+
+	if (state->waiting_for_finished) {
+		g_autoptr(GError) local_error = NULL;
+
+		local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+						   "PackageKit daemon disappeared");
+		pk_client_state_finish (state, local_error);
+	} else {
+		pk_client_state_unset_proxy (state);
+		g_cancellable_cancel (state->cancellable);
+	}
+}
+
 /*
  * pk_client_proxy_connect:
  **/
@@ -1410,12 +1565,15 @@ pk_client_proxy_connect (PkClientState *state)
 	}
 
 	/* connect up signals */
-	g_signal_connect (state->proxy, "g-properties-changed",
-			  G_CALLBACK (pk_client_properties_changed_cb),
-			  state);
-	g_signal_connect (state->proxy, "g-signal",
-			  G_CALLBACK (pk_client_signal_cb),
-			  state);
+	g_signal_connect_data (state->proxy, "g-properties-changed",
+			       G_CALLBACK (pk_client_properties_changed_cb),
+			       pk_client_weak_ref_new (state), pk_client_weak_ref_free_gclosure, 0);
+	g_signal_connect_data (state->proxy, "g-signal",
+			       G_CALLBACK (pk_client_signal_cb),
+			       pk_client_weak_ref_new (state), pk_client_weak_ref_free_gclosure, 0);
+	g_signal_connect_data (state->proxy, "notify::g-name-owner",
+			       G_CALLBACK (pk_client_notify_name_owner_cb),
+			       pk_client_weak_ref_new (state), pk_client_weak_ref_free_gclosure, 0);
 }
 
 /*
@@ -1440,7 +1598,8 @@ pk_client_method_cb (GObject *source_object,
 		return;
 	}
 
-	/* wait for ::Finished() */
+	/* wait for ::Finished() or notify::g-name-owner (if the daemon disappears) */
+	state->waiting_for_finished = TRUE;
 }
 
 /*
@@ -2153,27 +2312,13 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_resolve_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_RESOLVE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_resolve_async, PK_ROLE_ENUM_RESOLVE, cancellable);
 	state->filters = filters;
 	state->package_ids = g_strdupv (packages);
 	state->progress_callback = progress_callback;
@@ -2220,27 +2365,13 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_names_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SEARCH_NAME;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_search_names_async, PK_ROLE_ENUM_SEARCH_NAME, cancellable);
 	state->filters = filters;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
@@ -2288,27 +2419,13 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_details_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SEARCH_DETAILS;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_search_details_async, PK_ROLE_ENUM_SEARCH_DETAILS, cancellable);
 	state->filters = filters;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
@@ -2354,27 +2471,13 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_groups_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SEARCH_GROUP;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_search_groups_async, PK_ROLE_ENUM_SEARCH_GROUP, cancellable);
 	state->filters = filters;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
@@ -2420,27 +2523,13 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_search_files_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_SEARCH_FILE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_search_files_async, PK_ROLE_ENUM_SEARCH_FILE, cancellable);
 	state->filters = filters;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
@@ -2486,28 +2575,14 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_details_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_DETAILS;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_details_async, PK_ROLE_ENUM_GET_DETAILS, cancellable);
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -2552,28 +2627,14 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (files != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_details_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_DETAILS_LOCAL;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_details_local_async, PK_ROLE_ENUM_GET_DETAILS_LOCAL, cancellable);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2622,28 +2683,14 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (files != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_details_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_FILES_LOCAL;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_files_local_async, PK_ROLE_ENUM_GET_FILES_LOCAL, cancellable);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -2692,28 +2739,14 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_update_detail_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_UPDATE_DETAIL;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_update_detail_async, PK_ROLE_ENUM_GET_UPDATE_DETAIL, cancellable);
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -2758,28 +2791,14 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_download_packages_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_DOWNLOAD_PACKAGES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_download_packages_async, PK_ROLE_ENUM_DOWNLOAD_PACKAGES, cancellable);
 	state->package_ids = g_strdupv (package_ids);
 	state->directory = g_strdup (directory);
 	state->progress_callback = progress_callback;
@@ -2824,27 +2843,13 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_updates_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_UPDATES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_updates_async, PK_ROLE_ENUM_GET_UPDATES, cancellable);
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -2888,27 +2893,13 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_old_transactions_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_OLD_TRANSACTIONS;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_old_transactions_async, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS, cancellable);
 	state->number = number;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -2954,28 +2945,14 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_depends_on_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_DEPENDS_ON;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_depends_on_async, PK_ROLE_ENUM_DEPENDS_ON, cancellable);
 	state->filters = filters;
 	state->recursive = recursive;
 	state->package_ids = g_strdupv (package_ids);
@@ -3021,27 +2998,13 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_packages_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_PACKAGES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_packages_async, PK_ROLE_ENUM_GET_PACKAGES, cancellable);
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -3087,28 +3050,14 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_required_by_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REQUIRED_BY;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_required_by_async, PK_ROLE_ENUM_REQUIRED_BY, cancellable);
 	state->recursive = recursive;
 	state->filters = filters;
 	state->package_ids = g_strdupv (package_ids);
@@ -3160,27 +3109,13 @@ pk_client_what_provides_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_what_provides_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_WHAT_PROVIDES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_what_provides_async, PK_ROLE_ENUM_WHAT_PROVIDES, cancellable);
 	state->filters = filters;
 	state->search = g_strdupv (values);
 	state->progress_callback = progress_callback;
@@ -3225,27 +3160,13 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_distro_upgrades_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_DISTRO_UPGRADES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_distro_upgrades_async, PK_ROLE_ENUM_GET_DISTRO_UPGRADES, cancellable);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -3288,28 +3209,14 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_files_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_FILES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_files_async, PK_ROLE_ENUM_GET_FILES, cancellable);
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -3352,27 +3259,13 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_categories_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_CATEGORIES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_categories_async, PK_ROLE_ENUM_GET_CATEGORIES, cancellable);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->progress = pk_progress_new ();
@@ -3427,28 +3320,14 @@ pk_client_remove_packages_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_remove_packages_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REMOVE_PACKAGES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_remove_packages_async, PK_ROLE_ENUM_REMOVE_PACKAGES, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->allow_deps = allow_deps;
 	state->autoremove = autoremove;
@@ -3498,27 +3377,13 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_refresh_cache_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REFRESH_CACHE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_refresh_cache_async, PK_ROLE_ENUM_REFRESH_CACHE, cancellable);
 	state->force = force;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -3563,28 +3428,14 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_install_packages_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_INSTALL_PACKAGES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_install_packages_async, PK_ROLE_ENUM_INSTALL_PACKAGES, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -3631,27 +3482,13 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_install_signature_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_INSTALL_SIGNATURE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_install_signature_async, PK_ROLE_ENUM_INSTALL_SIGNATURE, cancellable);
 	state->type = type;
 	state->key_id = g_strdup (key_id);
 	state->package_id = g_strdup (package_id);
@@ -3703,28 +3540,14 @@ pk_client_update_packages_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (package_ids != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_update_packages_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_UPDATE_PACKAGES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_update_packages_async, PK_ROLE_ENUM_UPDATE_PACKAGES, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->package_ids = g_strdupv (package_ids);
 	state->progress_callback = progress_callback;
@@ -3853,28 +3676,14 @@ pk_client_install_files_async (PkClient *client,
 	gboolean ret;
 	guint i;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 	g_return_if_fail (files != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_install_files_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_INSTALL_FILES;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_install_files_async, PK_ROLE_ENUM_INSTALL_FILES, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -3940,27 +3749,13 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_accept_eula_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_ACCEPT_EULA;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_accept_eula_async, PK_ROLE_ENUM_ACCEPT_EULA, cancellable);
 	state->eula_id = g_strdup (eula_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -4004,27 +3799,13 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_repo_list_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_GET_REPO_LIST;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_repo_list_async, PK_ROLE_ENUM_GET_REPO_LIST, cancellable);
 	state->filters = filters;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -4069,27 +3850,13 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repo_enable_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REPO_ENABLE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_repo_enable_async, PK_ROLE_ENUM_REPO_ENABLE, cancellable);
 	state->enabled = enabled;
 	state->repo_id = g_strdup (repo_id);
 	state->progress_callback = progress_callback;
@@ -4137,27 +3904,13 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repo_set_data_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REPO_SET_DATA;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_repo_set_data_async, PK_ROLE_ENUM_REPO_SET_DATA, cancellable);
 	state->repo_id = g_strdup (repo_id);
 	state->parameter = g_strdup (parameter);
 	state->value = g_strdup (value);
@@ -4211,27 +3964,13 @@ pk_client_repo_remove_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repo_remove_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REPO_REMOVE;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_repo_remove_async, PK_ROLE_ENUM_REPO_REMOVE, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->repo_id = g_strdup (repo_id);
 	state->autoremove = autoremove;
@@ -4286,28 +4025,14 @@ pk_client_upgrade_system_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_upgrade_system_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_UPGRADE_SYSTEM;
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_upgrade_system_async, PK_ROLE_ENUM_UPGRADE_SYSTEM, cancellable);
 	state->transaction_flags = transaction_flags;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
 	state->distro_id = g_strdup (distro_id);
 	state->upgrade_kind = upgrade_kind;
 	state->progress_callback = progress_callback;
@@ -4361,23 +4086,13 @@ pk_client_repair_system_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_repair_system_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_REPAIR_SYSTEM;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	if (cancellable != NULL) {
-		state->cancellable = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable, G_CALLBACK (pk_client_cancellable_cancel_cb), state, NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_repair_system_async, PK_ROLE_ENUM_REPAIR_SYSTEM, cancellable);
 	state->transaction_flags = transaction_flags;
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -4444,27 +4159,13 @@ pk_client_adopt_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_adopt_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->role = PK_ROLE_ENUM_UNKNOWN;
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_adopt_async, PK_ROLE_ENUM_UNKNOWN, cancellable);
 	state->tid = g_strdup (transaction_id);
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
@@ -4541,18 +4242,10 @@ pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 		g_cancellable_disconnect (state->cancellable_client,
 					  state->cancellable_id);
 	}
-	if (state->cancellable != NULL)
-		g_object_unref (state->cancellable);
+	g_clear_object (&state->cancellable);
+	g_clear_object (&state->cancellable_client);
 
-	if (state->proxy != NULL) {
-		g_signal_handlers_disconnect_by_func (state->proxy,
-						      G_CALLBACK (pk_client_properties_changed_cb),
-						      state);
-		g_signal_handlers_disconnect_by_func (state->proxy,
-						      G_CALLBACK (pk_client_signal_cb),
-						      state);
-		g_object_unref (G_OBJECT (state->proxy));
-	}
+	pk_client_state_unset_proxy (state);
 
 	if (state->proxy_props != NULL)
 		g_object_unref (G_OBJECT (state->proxy_props));
@@ -4572,11 +4265,7 @@ pk_client_get_progress_state_finish (PkClientState *state, const GError *error)
 	g_simple_async_result_complete_in_idle (state->res);
 
 	/* destroy state */
-	g_free (state->transaction_id);
-	g_object_unref (state->progress);
-	g_object_unref (state->res);
-	g_object_unref (state->client);
-	g_slice_free (PkClientState, state);
+	g_object_unref (state);
 }
 
 /*
@@ -4624,26 +4313,13 @@ pk_client_get_progress_async (PkClient *client,
 {
 	PkClientState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (client), callback_ready, user_data, pk_client_get_progress_async);
-
 	/* save state */
-	state = g_slice_new0 (PkClientState);
-	state->res = g_object_ref (res);
-	state->client = g_object_ref (client);
-	state->cancellable = g_cancellable_new ();
-	if (cancellable != NULL) {
-		state->cancellable_client = g_object_ref (cancellable);
-		state->cancellable_id = g_cancellable_connect (cancellable,
-							       G_CALLBACK (pk_client_cancellable_cancel_cb),
-							       state,
-							       NULL);
-	}
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_progress_async, PK_ROLE_ENUM_UNKNOWN, cancellable);
 	state->tid = g_strdup (transaction_id);
 	state->progress = pk_progress_new ();
 
@@ -4711,6 +4387,11 @@ void
 pk_client_set_locale (PkClient *client, const gchar *locale)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (g_strcmp0 (client->priv->locale, locale) == 0)
+		return;
+
+	g_free (client->priv->locale);
 	client->priv->locale = g_strdup (locale);
 	g_object_notify (G_OBJECT (client), "locale");
 }
@@ -4747,6 +4428,10 @@ void
 pk_client_set_background (PkClient *client, gboolean background)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->background == background)
+		return;
+
 	client->priv->background = background;
 	g_object_notify (G_OBJECT (client), "background");
 }
@@ -4774,7 +4459,7 @@ pk_client_get_background (PkClient *client)
  * @interactive: the value to set
  *
  * Sets the interactive value for the client. Interactive transactions
- * are usally allowed to ask the user questions.
+ * are usually allowed to ask the user questions.
  *
  * Since: 0.6.10
  **/
@@ -4782,6 +4467,10 @@ void
 pk_client_set_interactive (PkClient *client, gboolean interactive)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->interactive == interactive)
+		return;
+
 	client->priv->interactive = interactive;
 	g_object_notify (G_OBJECT (client), "interactive");
 }
@@ -4833,6 +4522,10 @@ void
 pk_client_set_cache_age (PkClient *client, guint cache_age)
 {
 	g_return_if_fail (PK_IS_CLIENT (client));
+
+	if (client->priv->cache_age == cache_age)
+		return;
+
 	client->priv->cache_age = cache_age;
 	g_object_notify (G_OBJECT (client), "cache-age");
 }

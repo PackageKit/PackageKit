@@ -7,13 +7,13 @@ executable(
   c_args: [
     '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
     '-DG_LOG_DOMAIN="PackageKit"',
-    '-DPACKAGE_LOCALE_DIR="@0@"'.format(get_option('localedir')),
+    '-DPACKAGE_LOCALE_DIR="@0@"'.format(join_paths(get_option('prefix'), get_option('localedir'))),
     '-DSYSCONFDIR="@0@"'.format(get_option('sysconfdir')),
   ]
 )
 
 bashprofile_config_data = configuration_data()
-bashprofile_config_data.set('LIBEXECDIR', get_option('libexecdir'))
+bashprofile_config_data.set('LIBEXECDIR', join_paths(get_option('prefix'), get_option('libexecdir')))
 configure_file(
   input: 'PackageKit.sh.in',
   output: 'PackageKit.sh',

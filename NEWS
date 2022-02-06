@@ -1,3 +1,91 @@
+Version 1.2.4
+~~~~~~~~~~~~~
+Released: 2021-07-30
+
+Notes:
+
+Libraries:
+ - Add specific error code when user declined interaction (Milan Crha)
+ - Avoid spurious GObject::notify signal emissions (Philip Withnall)
+ - Correct 'cancellable' use in pk_client_repair_system_async() (Milan Crha)
+ - Fix a leak on calling set_locale() a second time (Philip Withnall)
+ - Fix a possible use-after-free under pk_client_cancel_cb() (Milan Crha)
+ - Improve thread safety on an operation cancellation (Milan Crha)
+
+Backends:
+ - dnf: Read update information also when getting list of updates (Milan Crha)
+ - dnf: honor install_weak_deps=False if it is there (Dario Faggioli)
+ - dnf: Use 'hy_query_get_advisory_pkgs', if available (Milan Crha)
+
+New Features:
+ - PkDetails: Add 'download-size' property (Milan Crha)
+ - PkPackage: Add update severity property (Milan Crha)
+
+Bugfixes:
+ - Let the finish understand the 'cancelled' exit code (Milan Crha)
+ - Make backends that use pk-backend-spawn work (#477) (Ivan Zakharyaschev)
+ - Only set polkit interactive flag if method call has too (Philip Withnall)
+
+Version 1.2.3
+~~~~~~~~~~~~~
+Released: 2021-03-22
+
+Backends:
+ - alpm: Add post transaction hook (Vlad Zahorodnii)
+ - alpm: Rename errno to alpm_err to avoid name clashes (Richard Neumann)
+ - aptcc: Auto-remove old kernels, unless configured otherwise (Matthias Klumpp)
+ - dnf: Add support for coercing upgrade to distupgrade (Neal Gompa)
+ - zypp: Make sure pool is initialized at the beginning of some methods (Jonathan Kang)
+ - zypp: Reset update mode after getting updates (Jonathan Kang)
+
+Bugfixes:
+ - Append to cron log instead of overwriting it (realsobek)
+ - Cancel a transaction if calling Cancel fails or the daemon disappears (Philip Withnall)
+ - Do not crash when calling pk_dbus_get_uid() before D-Bus is setup (Richard Hughes)
+ - Fix all compiler warnings (Matthias Klumpp)
+ - Fix multilib conflicts in generated pk-enum-types.h (Kalev Lember)
+ - Free scheduler array correctly again (Matthias Klumpp)
+ - Remove large transaction size sanity check (Nate Graham)
+
+Version 1.2.2
+~~~~~~~~~~~~~
+Released: 2020-11-02
+
+Backends:
+ - aptcc: Build socket-activated debconf helper again (Matthias Klumpp)
+ - aptcc: Do not trust local debs (CVE-2020-16122) (Julian Andres Klode)
+ - aptcc: Drop apt-inst, use apt-pkg pkg-config file for dependency detection (Matthias Klumpp)
+ - zypp: Don’t refresh repos again when actually updating packages (Jonathan Kang)
+ - zypp: Erase tmp repo from pool after local installation (#409) (Rinat Dobrokhotov)
+ - zypp: Set PATH variable (Jonathan Kang)
+
+New Features:
+ - Notify the service manager when it's beginning to shutdown (Jonathan Kang)
+
+Bugfixes:
+ - Fix possible information disclosure [CVE-2020-16121] (Julian Andres Klode)
+ - Install required test helper files (Neal Gompa)
+ - Silence meson warning by bumping minimum version (Matthias Klumpp)
+
+Version 1.2.1
+~~~~~~~~~~~~~
+Released: 2020-09-07
+
+Backends:
+ - alpm: Fix paths for configuration files (Christian Hesse)
+ - alpm: Pass correct type to pk_alpm_transaction_initialize() (Christian Hesse)
+ - alpm: Synchronise syncdbs on update (#400) (jan Pontaoski)
+ - dnf: Add vendor configuration for openSUSE (Neal Gompa)
+ - zypp: Clean up temporary files when PK quits (Jonathan Kang)
+ - zypp: Ensure ResPool is built before is_tumbleweed() (Jonathan Kang)
+
+Bugfixes:
+ - Actually merge in the PolicyKit translation (Richard Hughes)
+ - Fix setting libexecdir for command-not-found helper (Elliott Sales de Andrade)
+ - Fix command-not-found handling arguments with spaces (Fernando Herrera)
+ - Use SQL statements for queries with input (Juho Hämäläinen)
+ - Exit pkcon with retval 5 if no packages needed be installed (Dominique Leuenberger)
+
 Version 1.2.0
 ~~~~~~~~~~~~~
 Released: 2020-05-04

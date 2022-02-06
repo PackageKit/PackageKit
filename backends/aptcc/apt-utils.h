@@ -72,12 +72,6 @@ bool starts_with(const string &str, const char *end);
 bool utilRestartRequired(const string &packageName);
 
 /**
-  * Build a package id from the given package version
-  * The caller must g_free the returned value
-  */
-gchar* utilBuildPackageId(const pkgCache::VerIterator &ver);
-
-/**
  * Build a unique repository origin, in the form of
  * {distro}-{suite}-{component}
  */

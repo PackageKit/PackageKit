@@ -1249,6 +1249,8 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 
 	if (is_tumbleweed ()) {
 		resolver->setUpgradeMode (FALSE);
+	} else {
+		resolver->setUpdateMode (FALSE);
 	}
 }
 
@@ -1829,6 +1831,9 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	priv->zypp_mutex = PTHREAD_MUTEX_INITIALIZER;
 	zypp_logging ();
 
+	/* Set PATH variable to avoid problems when installing packges(bsc#1175315). */
+	g_setenv("PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin", TRUE);
+
 	g_debug ("zypp_backend_initialize");
 }
 
@@ -1836,6 +1841,8 @@ void
 pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("zypp_backend_destroy");
+
+	filesystem::recursive_rmdir (zypp::myTmpDir ());
 
 	g_free (_repoName);
 	delete priv;
@@ -2137,6 +2144,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	if (zypp == NULL){
 		return;
 	}
+
+	zypp_build_pool (zypp, true);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
@@ -2589,6 +2598,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	// remove tmp-dir and the tmp-repo
 	try {
 		manager.removeRepository (tmpRepo);
+		repo.eraseFromPool();
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
@@ -2624,6 +2634,8 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 		return;
 	}
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+	zypp_build_pool (zypp, TRUE);
 
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
@@ -2734,7 +2746,6 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 		PoolStatusSaver saver;
 		pk_backend_job_set_percentage (job, 10);
 		vector<PoolItem> items;
-		VersionRelation relations[g_strv_length (package_ids)];
 		guint to_install = 0;
 
 		for (guint i = 0; package_ids[i]; i++) {
@@ -2764,43 +2775,45 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 				}
 			}
 
+			VersionRelation relation = NEWER_VERSION;
+
 			for (guint j = 0; j < installed.size (); j++) {
 				inst_pkg = &installed.at (j);
 				ret = inst_pkg->edition ().compare (Edition (split[PK_PACKAGE_ID_VERSION]));
 
-				if (relations[i] == 0 && ret < 0) {
-					relations[i] = NEWER_VERSION;
-				} else if (relations[i] != EQUAL_VERSION && ret > 0) {
-					relations[i] = OLDER_VERSION;
+				if (ret < 0) {
+					relation = NEWER_VERSION;
+				} else if (relation != EQUAL_VERSION && ret > 0) {
+					relation = OLDER_VERSION;
 					if (!latest_pkg ||
 					    latest_pkg->edition ().compare (inst_pkg->edition ()) < 0) {
 						latest_pkg = inst_pkg;
 					}
 				} else if (ret == 0) {
-					relations[i] = EQUAL_VERSION;
+					relation = EQUAL_VERSION;
 					break;
 				}
 			}
 
-			if (relations[i] == EQUAL_VERSION &&
+			if (relation == EQUAL_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
 						  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
 				continue;
 			}
 
-			if (relations[i] == OLDER_VERSION &&
+			if (relation == OLDER_VERSION &&
 			    !pk_bitfield_contain (transaction_flags,
 						  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
 				pk_backend_job_error_code (job,
 							   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 							   "higher version \"%s\" of package %s.%s is already installed",
-							   latest_pkg->edition ().version ().c_str (),
+							   latest_pkg ? latest_pkg->edition ().version ().c_str () : "<NULL>",
 							   split[PK_PACKAGE_ID_NAME],
 							   split[PK_PACKAGE_ID_ARCH]);
 				return;
 			}
 
-			if (relations[i] && relations[i] != EQUAL_VERSION &&
+			if (relation != EQUAL_VERSION && installed.size() > 0 &&
 			    pk_bitfield_contain (transaction_flags,
 						 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
 				pk_backend_job_error_code (job,
@@ -3076,6 +3089,12 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 		&_filters,
 		&values);
 
+	if (values == NULL && values[0] == NULL) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+					   "Empty search string is not supported.");
+		return;
+	}
+
 	ZyppJob zjob(job);
 	ZYpp::Ptr zypp = zjob.get_zypp();
 	
@@ -3322,6 +3341,8 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		return;
 	}
 
+	zypp_build_pool (zypp, true);
+
 	for (uint i = 0; package_ids[i]; i++) {
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
@@ -3417,16 +3438,19 @@ upgrade_system (PkBackendJob *job,
 {
 	set<PoolItem> candidates;
 
-	/* refresh the repos before checking for updates. */
-	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		return;
-	}
-	zypp_get_updates (job, zypp, candidates);
-	if (candidates.empty ()) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
-					   "No Distribution Upgrade Available.");
+	/* Only refresh repos when it's simulating. */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		/* refresh the repos before checking for updates. */
+		if (!zypp_refresh_cache (job, zypp, FALSE)) {
+			return;
+		}
+		zypp_get_updates (job, zypp, candidates);
+		if (candidates.empty ()) {
+			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
+						   "No Distribution Upgrade Available.");
 
-		return;
+			return;
+		}
 	}
 
 	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());

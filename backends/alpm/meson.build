@@ -1,4 +1,4 @@
-alpm_dep = dependency('libalpm', version: '>=12.0.0')
+alpm_dep = dependency('libalpm', version: '>=13.0.0')
 
 shared_module(
   'pk_backend_alpm',
@@ -41,6 +41,11 @@ shared_module(
   ],
   install: true,
   install_dir: pk_plugin_dir,
+)
+
+install_data(
+  '90-packagekit-refresh.hook',
+  install_dir: join_paths(get_option('datadir'), 'libalpm', 'hooks')
 )
 
 install_data(

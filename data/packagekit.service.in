@@ -4,6 +4,7 @@ Description=PackageKit Daemon
 # currently the design is to have dedicated daemons like
 # eos-updater and rpm-ostree, and gnome-software talks to those.
 ConditionPathExists=!/run/ostree-booted
+Wants=network-online.target
 
 [Service]
 Type=dbus

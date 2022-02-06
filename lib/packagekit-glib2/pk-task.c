@@ -794,7 +794,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, (GSourceFunc) pk_task_user_accepted_idle_cb, state, NULL);
+	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_accepted_idle_cb), state, NULL);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
@@ -821,7 +821,7 @@ pk_task_user_declined_idle_cb (PkTaskState *state)
 	g_debug ("declined request %i", state->request);
 	g_set_error (&error,
 			     PK_CLIENT_ERROR,
-			     PK_CLIENT_ERROR_FAILED, "user declined interaction");
+			     PK_CLIENT_ERROR_DECLINED_INTERACTION, "user declined interaction");
 	pk_task_generic_state_finish (state, error);
 	return FALSE;
 }
@@ -851,7 +851,7 @@ pk_task_user_declined (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, (GSourceFunc) pk_task_user_declined_idle_cb, state, NULL);
+	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_declined_idle_cb), state, NULL);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;

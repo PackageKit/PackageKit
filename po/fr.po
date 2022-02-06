@@ -7,9 +7,10 @@
 # Claude Paroz <claude@2xlibre.net>, 2011
 # troubi51 <corentin.perard@gmail.com>, 2009
 # dominique bribanick <chepioq@gmail.com>, 2013-2014
-# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
+# Heldwin <listes.00@gmail.com>, 2021
+# Thomas <thomas.canniot@laposte.net>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
-# Thomas CANNIOT <thomas.canniot@laposte.net>, 2009
+# Thomas <thomas.canniot@laposte.net>, 2009
 # troubi51 <corentin.perard@gmail.com>, 2009
 msgid ""
 msgstr ""
@@ -154,13 +155,16 @@ msgid "Application restart required by:"
 msgstr "Redémarrage de l'application requis par :"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Authentification requise pour accepter une licence"
+msgstr "Une authentification est nécessaire pour accepter une licence"
 
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Authentification requise pour annuler une tâche non initiée par vos soins"
+msgstr "Une authentification est nécessaire pour annuler une tâche non initiée par vos soins"
+
+msgid "Authentication is required to change software repository parameters"
+msgstr "Une authentification est nécessaire pour changer les paramètres du dépôt des logiciels"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Il est nécessaire d'être authentifié pour effacer le message de mise à jour hors ligne"
+msgstr "Une authentification est nécessaire pour effacer le message de mise à jour hors ligne"
 
 msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "Une authentification est nécessaire pour considérer une clé utilisée pour la signature de logiciel comme fiable"
@@ -174,23 +178,26 @@ msgstr "Une authentification est nécessaire pour installer un logiciel"
 msgid "Authentication is required to install untrusted software"
 msgstr "Une authentification est nécessaire pour installer un logiciel non certifié"
 
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Une authentification est nécessaire pour rafraîchir les dépôts du système "
+
 msgid "Authentication is required to reinstall software"
 msgstr "Une authentification est nécessaire pour réinstaller un logiciel"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "Authentification requise pour redémarrer le périphérique avec un nouveau pilote"
+msgstr "Une authentification est nécessaire pour redémarrer le périphérique avec un nouveau pilote"
 
 msgid "Authentication is required to remove software"
 msgstr "Une authentification est nécessaire pour désinstaller un logiciel"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Il est nécessaire d'être authentifié pour réparer les logiciels installés"
+msgstr "Une authentification est nécessaire pour réparer les logiciels installés"
 
 msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Une authentification est nécessaire pour configurer le serveur mandataire utilisé pour le téléchargement de logiciels"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "Il est nécessaire d'être authentifié pour lancer des mises à jour hors ligne"
+msgstr "Une authentification est nécessaire pour lancer des mises à jour hors ligne"
 
 msgid "Authentication is required to update software"
 msgstr "Une authentification est nécessaire pour mettre à jour un logiciel"
@@ -202,6 +209,9 @@ msgstr "Une authentification est nécessaire pour mettre à niveau le système d
 msgid "Author"
 msgstr "Auteur"
 
+msgid "Automatically remove unused dependencies"
+msgstr "Retirer automatiquement les dépendances inutilisées"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Disponible"
@@ -209,6 +219,10 @@ msgstr "Disponible"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "Bloquée"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Bug fix"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -236,6 +250,13 @@ msgstr "Annulation"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "Catégorie"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Changer les paramètres du dépôt des logiciels"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -361,6 +382,10 @@ msgstr "Téléchargé"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Téléchargement"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Téléchargement des détails à propos des dépôts des logiciels"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -629,6 +654,11 @@ msgid "Installing"
 msgstr "Installation"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Installation des mises à niveau du système"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Installation des mises à jour"
@@ -702,6 +732,10 @@ msgstr "Étiquette du média"
 msgid "Media type"
 msgstr "Type de média"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Modification du dépôt"
+
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
@@ -750,6 +784,13 @@ msgstr "Marquage des paquets comme obsolètes"
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "L'option « %s » n'est pas prise en charge"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paquet"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -861,6 +902,12 @@ msgstr "Nom réel"
 msgid "Rebooting after installing updates…"
 msgstr "Redémarrage après l'installation des mises à jour…"
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Actualiser les dépôts du système"
+
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
 msgstr "Actualiser le cache"
@@ -970,6 +1017,11 @@ msgstr "Lancer la commande en utilisant la bande passante réseau inutilisée, e
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "Exécution"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Exécution des hooks"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"

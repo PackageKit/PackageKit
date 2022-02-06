@@ -27,7 +27,6 @@ if get_option('python_backend')
 install_data(
   packagekit_py_sources,
   install_dir: python_package_dir,
-  install: true,
 )
 endif
 

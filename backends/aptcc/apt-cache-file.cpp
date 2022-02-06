@@ -1,5 +1,5 @@
 /* apt-cache-file.cpp
- * 
+ *
  * Copyright (c) 2012 Daniel Nicoletti <dantti12@gmail.com>
  * Copyright (c) 2012 Matthias Klumpp <matthias@tenstral.net>
  * Copyright (c) 2016 Harald Sitter <sitter@kde.org>
@@ -70,9 +70,6 @@ bool AptCacheFile::BuildCaches(bool withLock)
 
 bool AptCacheFile::CheckDeps(bool AllowBroken)
 {
-    PkRoleEnum role = pk_backend_job_get_role(m_job);
-    bool FixBroken = (role == PK_ROLE_ENUM_REPAIR_SYSTEM);
-
     if (_error->PendingError() == true) {
         return false;
     }
@@ -358,39 +355,70 @@ bool AptCacheFile::isRemovingEssentialPackages()
     return false;
 }
 
-pkgCache::VerIterator AptCacheFile::resolvePkgID(const gchar *packageId)
+PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 {
-    gchar **parts;
+    g_auto(GStrv) parts = nullptr;
     pkgCache::PkgIterator pkg;
 
     parts = pk_package_id_split(packageId);
     pkg = (*this)->FindPkg(parts[PK_PACKAGE_ID_NAME], parts[PK_PACKAGE_ID_ARCH]);
 
     // Ignore packages that could not be found or that exist only due to dependencies.
-    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
-        g_strfreev(parts);
-        return pkgCache::VerIterator();
-    }
+    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end()))
+        return PkgInfo(pkgCache::VerIterator());
+
+    // check if any intended action was encoded in this package-ID
+    auto piAction = PkgAction::NONE;
+    if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+auto"))
+            piAction = PkgAction::INSTALL_AUTO;
+    else if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+manual"))
+        piAction = PkgAction::INSTALL_MANUAL;
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
     if (ver.end() == false &&
-            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
-        g_strfreev(parts);
-        return ver;
-    }
+            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+        return PkgInfo(ver, piAction);
 
     const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if the provided package isn't virtual too
     if (candidateVer.end() == false &&
-            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
-        g_strfreev(parts);
-        return candidateVer;
+            strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+        return PkgInfo(candidateVer, piAction);
+
+    return PkgInfo(ver, piAction);
+}
+
+gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
+{
+    pkgCache::VerFileIterator vf = ver.FileList();
+    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
+    pkgDepCache::StateCache &State = (*this)[pkg];
+
+    const bool isInstalled = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
+    const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
+
+    // when a package is installed manually, the data part of a package-id is "manual:<repo-id>",
+    // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
+    // a pending installation is marked, in which case we prefix the desired new mode of the installed
+    // package (auto/manual) with a plus sign (+).
+    string data;
+    if (isInstalled) {
+        data = isAuto? "auto:" : "manual:";
+        data += utilBuildPackageOriginId(vf);
+    } else {
+        if (State.NewInstall()) {
+            data = isAuto? "+auto:" : "+manual:";
+            data += utilBuildPackageOriginId(vf);
+        } else {
+            data = utilBuildPackageOriginId(vf);
+        }
     }
 
-    g_strfreev (parts);
-
-    return ver;
+    return pk_package_id_build(ver.ParentPkg().Name(),
+                               ver.VerStr(),
+                               ver.Arch(),
+                               data.c_str());
 }
 
 pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)
@@ -460,15 +488,15 @@ std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &
 }
 
 bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
-                                const pkgCache::VerIterator &ver,
+                                const PkgInfo &pki,
                                 bool BrokenFix,
                                 bool autoInst,
                                 bool preserveAuto)
 {
-    pkgCache::PkgIterator Pkg = ver.ParentPkg();
+    pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
 
     // Check if there is something at all to install
-    GetDepCache()->SetCandidateVersion(ver);
+    GetDepCache()->SetCandidateVersion(pki.ver);
     pkgDepCache::StateCache &State = (*this)[Pkg];
 
     if (State.CandidateVer == 0) {
@@ -479,10 +507,21 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
         return false;
     }
 
-    // On updates we want to always preserve the autoflag as updates are usually
-    // non-indicative of whether or not the user explicitly wants this package to be
-    // installed or simply wants it to be updated.
-    const bool fromUser = preserveAuto ? !(State.Flags & pkgCache::Flag::Auto) : true;
+    // Always install as "automatic" or "manual" if the package is explicitly set to
+    // either of the modes (because it may have been resolved in a previous transaction
+    // to be marked as automatic, for example in updates)
+    // If the package indicates no explicit preference we keep the current state
+    // unless the package should explicitly be marked as manually installed
+    // (via preserveAuto == false).
+    // See https://github.com/PackageKit/PackageKit/issues/450 for details.
+    bool fromUser = false;
+    if (pki.action == PkgAction::INSTALL_AUTO)
+        fromUser = false;
+    else if (pki.action == PkgAction::INSTALL_MANUAL)
+        fromUser = true;
+    else
+        fromUser = preserveAuto ? !(State.Flags & pkgCache::Flag::Auto) : true;
+
     // FIXME: this is ignoring the return value. OTOH the return value means little to us
     //   since we run markinstall twice, once without autoinst and once with.
     //   We probably should change the return value behavior and have the callee decide whether to
@@ -497,9 +536,9 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
 }
 
 void AptCacheFile::tryToRemove(pkgProblemResolver &Fix,
-                               const pkgCache::VerIterator &ver)
+                               const PkgInfo &pki)
 {
-    pkgCache::PkgIterator Pkg = ver.ParentPkg();
+    pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
 
     // The package is not installed
     if (Pkg->CurrentVer == 0) {

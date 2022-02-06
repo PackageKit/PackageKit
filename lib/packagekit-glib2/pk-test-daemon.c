@@ -154,7 +154,7 @@ pk_test_offline_func (void)
 	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
 
 	/* trigger */
-	ret = pk_offline_trigger (PK_OFFLINE_ACTION_REBOOT, NULL, &error);
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
@@ -163,7 +163,7 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* cancel the trigger */
-	ret = pk_offline_cancel (NULL, &error);
+	ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
@@ -269,7 +269,7 @@ pk_test_client_helper_func (void)
 
 	/* socket has data */
 	source = g_socket_create_source (socket, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, NULL);
-	g_source_set_callback (source, (GSourceFunc) pk_test_client_helper_output_cb, NULL, NULL);
+	g_source_set_callback (source, G_SOURCE_FUNC (pk_test_client_helper_output_cb), NULL, NULL);
 	g_source_attach (source, NULL);
 
 	/* send some data */
@@ -677,7 +677,7 @@ pk_test_client_func (void)
 	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
 		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
 		     (GAsyncReadyCallback) pk_test_client_search_name_cb, NULL);
-	g_timeout_add (500, (GSourceFunc) pk_test_client_cancel_cb, cancellable);
+	g_timeout_add (500, G_SOURCE_FUNC (pk_test_client_cancel_cb), cancellable);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("cancelled in %f", g_test_timer_elapsed ());
 
@@ -1403,7 +1403,7 @@ pk_test_transaction_list_func (void)
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* wait for remove */
-	g_timeout_add (100, (GSourceFunc) pk_transaction_list_delay_cb, NULL);
+	g_timeout_add (100, G_SOURCE_FUNC (pk_transaction_list_delay_cb), NULL);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
 

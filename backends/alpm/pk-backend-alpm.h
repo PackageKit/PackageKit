@@ -30,6 +30,7 @@ typedef struct {
 	alpm_list_t	*syncfirsts;
 	alpm_list_t	*holdpkgs;
 	alpm_handle_t	*alpm;
+	alpm_handle_t	*alpm_check;
 	GFileMonitor    *monitor;
 	alpm_list_t     *configured_repos; /* list of configured repos */
 	gboolean	localdb_changed;

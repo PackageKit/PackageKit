@@ -7,7 +7,7 @@
 # Francesco Tombolini <tombo@adamantio.net>, 2008
 # fvalen <fvalen@redhat.com>, 2008
 # fvalen <fvalen@redhat.com>, 2008
-# Luca Ferretti <elle.uca@libero.it>, 2011-2012
+# Luca Ferretti <elle.uca@gmail.com>, 2011-2012
 # mario_santagiuliana <mario at marionline.it>, 2009
 # Milo Casagrande <milo@ubuntu.com>, 2009,2013,2018
 # Milo Casagrande <milo@ubuntu.com>, 2009,2013

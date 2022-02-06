@@ -70,6 +70,12 @@ typedef struct {
 	HyGoal		 goal;
 } PkBackendDnfJobData;
 
+static GPtrArray * pk_backend_find_refresh_repos (PkBackendJob *job,
+						  DnfState     *state,
+						  GPtrArray    *repos,
+						  gboolean      force,
+						  GError      **error);
+
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
@@ -555,11 +561,13 @@ dnf_utils_add_remote (PkBackendJob *job,
 	gboolean ret;
 	DnfState *state_local;
 	g_autoptr(GPtrArray) repos = NULL;
+	g_autoptr(GPtrArray) refresh_repos = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (state, error,
 				   2, /* load files */
-				   98, /* add repos */
+				   1, /* count */
+				   97, /* add repos */
 				   -1);
 	if (!ret)
 		return FALSE;
@@ -573,6 +581,20 @@ dnf_utils_add_remote (PkBackendJob *job,
 	if (!dnf_state_done (state, error))
 		return FALSE;
 
+	/* Find out what repositories potentially will get downloaded - we might need to update
+	 * the appstream data for these repositories. Note that there is a small chance that the
+	 * repo metadata could expire between the call to dnf_repo_check() at this point, and
+	 * the call to dnf_repo_check() inside dnf_sack_add_repos() - in this case we'll end up
+	 * with stale appstream data until the next metadata refresh.
+	 */
+	refresh_repos = pk_backend_find_refresh_repos (job,
+						       state,
+						       repos,
+						       FALSE /* !force */,
+						       error);
+	if (refresh_repos == NULL)
+		return FALSE;
+
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
@@ -583,6 +605,12 @@ dnf_utils_add_remote (PkBackendJob *job,
 	                          error);
 	if (!ret)
 		return FALSE;
+
+	for (guint i = 0; i < refresh_repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (refresh_repos, i);
+		if (!dnf_utils_refresh_repo_appstream (repo, error))
+			return FALSE;
+	}
 
 	/* done */
 	if (!dnf_state_done (state, error))
@@ -663,7 +691,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 		flags |= DNF_SACK_ADD_FLAG_REMOTE;
 
 	/* only load updateinfo when required */
-	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL)
+	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATE_DETAIL ||
+	    pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES)
 		flags |= DNF_SACK_ADD_FLAG_UPDATEINFO;
 
 	/* only use unavailble packages for queries */
@@ -823,6 +852,28 @@ dnf_utils_run_query_with_newest_filter (DnfSack *sack, HyQuery query)
 	return results;
 }
 
+static gboolean
+dnf_utils_force_distupgrade_on_upgrade (DnfSack *sack)
+{
+	g_autoptr(GPtrArray) plist = NULL;
+	gint candidates;
+	const gchar *distroverpkg_names[] = { "system-release", "distribution-release", NULL };
+	const gchar *distupgrade_provides[] = { "system-upgrade(dsync)", "product-upgrade() = dup", NULL };
+	HyQuery query_tmp = hy_query_create (sack);
+
+	hy_query_filter (query_tmp, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
+	hy_query_filter_provides_in (query_tmp, (gchar**) distroverpkg_names);
+	hy_query_filter_provides_in (query_tmp, (gchar**) distupgrade_provides);
+
+	plist = hy_query_run (query_tmp);
+	candidates = plist->len;
+	hy_query_free (query_tmp);
+
+	if (candidates > 0)
+		return TRUE;
+	return FALSE;
+}
+
 static GPtrArray *
 dnf_utils_run_query_with_filters (PkBackendJob *job, DnfSack *sack,
 				  HyQuery query, PkBitfield filters)
@@ -889,19 +940,66 @@ pk_backend_what_provides_decompose (gchar **values, GError **error)
 	return (gchar **) g_ptr_array_free (array, FALSE);
 }
 
-static DnfAdvisory *
-dnf_package_get_advisory (DnfPackage *package)
+static GHashTable *
+pk_backend_dnf_cache_advisories (DnfSack *sack)
 {
+#ifdef HAVE_HY_QUERY_GET_ADVISORY_PKGS
+	g_autoptr(GPtrArray) array = NULL;
+	GHashTable *hash;
+	HyQuery query;
+	guint ii;
+
+	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) dnf_advisory_free);
+	query = hy_query_create (sack);
+	array = hy_query_get_advisory_pkgs (query, HY_EQ);
+
+	for (ii = 0; ii < array->len; ii++) {
+		DnfAdvisoryPkg *advpkg = g_ptr_array_index (array, ii);
+		gchar *id;
+
+		id = g_strdup_printf ("%s;%s;%s",
+			dnf_advisorypkg_get_name (advpkg),
+			dnf_advisorypkg_get_evr (advpkg),
+			dnf_advisorypkg_get_arch (advpkg));
+
+		g_hash_table_insert (hash, id, dnf_advisorypkg_get_advisory (advpkg));
+	}
+
+	hy_query_free (query);
+	return hash;
+#else
+	return NULL;
+#endif
+}
+
+static DnfAdvisory *
+pk_backend_dnf_get_advisory (GHashTable *advisories_hash,
+			     DnfPackage *pkg)
+{
+#ifdef HAVE_HY_QUERY_GET_ADVISORY_PKGS
+	g_autofree gchar *id = NULL;
+
+	if (pkg == NULL)
+		return NULL;
+
+	id = g_strdup_printf ("%s;%s;%s",
+		dnf_package_get_name (pkg),
+		dnf_package_get_evr (pkg),
+		dnf_package_get_arch (pkg));
+
+	return g_hash_table_lookup (advisories_hash, id);
+#else
 	GPtrArray *advisorylist;
 	DnfAdvisory *advisory = NULL;
 
-	advisorylist = dnf_package_get_advisories (package, HY_EQ);
+	advisorylist = dnf_package_get_advisories (pkg, HY_EQ);
 
 	if (advisorylist->len > 0)
 		advisory = g_steal_pointer (&g_ptr_array_index (advisorylist, 0));
 	g_ptr_array_unref (advisorylist);
 
 	return advisory;
+#endif
 }
 
 static void
@@ -910,6 +1008,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	gboolean ret;
 	DnfDb *db;
 	DnfState *state_local;
+	DnfGoalActions flags;
 	GPtrArray *installs = NULL;
 	GPtrArray *pkglist = NULL;
 	HyQuery query = NULL;
@@ -984,11 +1083,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
-		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_ICASE | HY_SUBSTR, (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
-		hy_query_filter_in (query, HY_PKG_NAME, HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query, HY_PKG_NAME, HY_ICASE | HY_SUBSTR, (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
@@ -1001,8 +1100,15 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
-		hy_goal_upgrade_all (job_data->goal);
-		ret = dnf_goal_depsolve (job_data->goal, DNF_ALLOW_UNINSTALL, &error);
+		if (dnf_utils_force_distupgrade_on_upgrade (sack)) {
+			hy_goal_distupgrade_all (job_data->goal);
+		} else {
+			hy_goal_upgrade_all (job_data->goal);
+		}
+		flags = DNF_ALLOW_UNINSTALL;
+		if (!dnf_context_get_install_weak_deps ())
+			flags |= DNF_IGNORE_WEAK_DEPS;
+		ret = dnf_goal_depsolve (job_data->goal, flags, &error);
 		if (!ret) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			goto out;
@@ -1055,19 +1161,23 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		goto out;
 	}
 
-	/* FIXME: actually get the right update severity */
 	if (pk_backend_job_get_role (job) == PK_ROLE_ENUM_GET_UPDATES) {
 		guint i;
 		DnfPackage *pkg;
 		DnfAdvisory *advisory;
 		DnfAdvisoryKind kind;
 		PkInfoEnum info_enum;
+		g_autoptr(GHashTable) advisories_hash = pk_backend_dnf_cache_advisories (sack);
 		for (i = 0; i < pkglist->len; i++) {
 			pkg = g_ptr_array_index (pkglist, i);
-			advisory = dnf_package_get_advisory (pkg);
+			advisory = pk_backend_dnf_get_advisory (advisories_hash, pkg);
 			if (advisory != NULL) {
 				kind = dnf_advisory_get_kind (advisory);
+				g_object_set_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY,
+					GUINT_TO_POINTER (dnf_update_severity_to_enum (dnf_advisory_get_severity (advisory))));
+#ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 				dnf_advisory_free (advisory);
+#endif
 				info_enum = dnf_advisory_kind_to_info_enum (kind);
 				dnf_package_set_info (pkg, info_enum);
 			}
@@ -1573,6 +1683,68 @@ pk_backend_refresh_subman (PkBackendJob *job)
 	pk_backend_repo_list_changed (backend);
 }
 
+static GPtrArray *
+pk_backend_find_refresh_repos (PkBackendJob *job,
+			       DnfState     *state,
+			       GPtrArray    *repos,
+			       gboolean      force,
+			       GError      **error)
+{
+	g_autoptr(GPtrArray) refresh_repos = NULL;
+	DnfState *state_local;
+	DnfState *state_loop;
+	guint cnt = 0;
+	guint i;
+
+	/* count the enabled repos */
+	for (i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
+			continue;
+		cnt++;
+	}
+
+	/* figure out which repos need refreshing */
+	refresh_repos = g_ptr_array_new ();
+	state_local = dnf_state_get_child (state);
+	dnf_state_set_number_steps (state_local, cnt);
+	for (i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		gboolean repo_okay;
+
+		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
+			continue;
+		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
+			continue;
+
+		/* is the repo up to date? */
+		state_loop = dnf_state_get_child (state_local);
+		repo_okay = dnf_repo_check (repo,
+		                            pk_backend_job_get_cache_age (job),
+		                            state_loop,
+		                            NULL);
+		if (!repo_okay || force)
+			g_ptr_array_add (refresh_repos,
+			                 g_ptr_array_index (repos, i));
+
+		/* done */
+		if (!dnf_state_done (state_local, error))
+			return NULL;
+	}
+
+	/* done */
+	if (!dnf_state_done (state, error))
+		return NULL;
+
+	return g_steal_pointer (&refresh_repos);
+}
+
 static void
 pk_backend_refresh_cache_thread (PkBackendJob *job,
 				 GVariant *params,
@@ -1585,7 +1757,6 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	DnfState *state_loop;
 	gboolean force;
 	gboolean ret;
-	guint cnt = 0;
 	guint i;
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
@@ -1613,54 +1784,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		return;
 	}
 
-	/* count the enabled repos */
-	for (i = 0; i < repos->len; i++) {
-		repo = g_ptr_array_index (repos, i);
-		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
-			continue;
-		cnt++;
-	}
-
 	/* figure out which repos need refreshing */
-	refresh_repos = g_ptr_array_new ();
-	state_local = dnf_state_get_child (job_data->state);
-	dnf_state_set_number_steps (state_local, cnt);
-	for (i = 0; i < repos->len; i++) {
-		gboolean repo_okay;
-
-		repo = g_ptr_array_index (repos, i);
-		if (dnf_repo_get_enabled (repo) == DNF_REPO_ENABLED_NONE)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_MEDIA)
-			continue;
-		if (dnf_repo_get_kind (repo) == DNF_REPO_KIND_LOCAL)
-			continue;
-
-		/* is the repo up to date? */
-		state_loop = dnf_state_get_child (state_local);
-		repo_okay = dnf_repo_check (repo,
-		                            pk_backend_job_get_cache_age (job),
-		                            state_loop,
-		                            NULL);
-		if (!repo_okay || force)
-			g_ptr_array_add (refresh_repos,
-			                 g_ptr_array_index (repos, i));
-
-		/* done */
-		ret = dnf_state_done (state_local, &error);
-		if (!ret) {
-			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			return;
-		}
-	}
-
-	/* done */
-	ret = dnf_state_done (job_data->state, &error);
-	if (!ret) {
+	refresh_repos = pk_backend_find_refresh_repos (job, job_data->state, repos, force, &error);
+	if (refresh_repos == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
 	}
@@ -1889,14 +2015,15 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
-		pk_backend_job_details (job,
-					package_ids[i],
-					dnf_package_get_summary (pkg),
-					dnf_package_get_license (pkg),
-					PK_GROUP_ENUM_UNKNOWN,
-					dnf_package_get_description (pkg),
-					dnf_package_get_url (pkg),
-					(gulong) dnf_package_get_size (pkg));
+		pk_backend_job_details_full (job,
+					     package_ids[i],
+					     dnf_package_get_summary (pkg),
+					     dnf_package_get_license (pkg),
+					     PK_GROUP_ENUM_UNKNOWN,
+					     dnf_package_get_description (pkg),
+					     dnf_package_get_url (pkg),
+					     (gulong) dnf_package_get_installsize (pkg),
+					     dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
 	}
 
 	/* done */
@@ -1977,14 +2104,15 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 							   full_paths[i]);
 				return;
 			}
-			pk_backend_job_details (job,
-						dnf_package_get_package_id (pkg),
-						dnf_package_get_summary (pkg),
-						dnf_package_get_license (pkg),
-						PK_GROUP_ENUM_UNKNOWN,
-						dnf_package_get_description (pkg),
-						dnf_package_get_url (pkg),
-						(gulong) dnf_package_get_size (pkg));
+			pk_backend_job_details_full (job,
+						     dnf_package_get_package_id (pkg),
+						     dnf_package_get_summary (pkg),
+						     dnf_package_get_license (pkg),
+						     PK_GROUP_ENUM_UNKNOWN,
+						     dnf_package_get_description (pkg),
+						     dnf_package_get_url (pkg),
+						     (gulong) dnf_package_get_installsize (pkg),
+						     dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
 		}
 	}
 
@@ -2515,6 +2643,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 			    GError **error)
 {
 	DnfState *state_local;
+	DnfGoalActions dnf_flags = DNF_ALLOW_UNINSTALL;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	gboolean ret = TRUE;
 	/* allow downgrades for all transaction types */
@@ -2543,6 +2672,15 @@ pk_backend_transaction_run (PkBackendJob *job,
 	dnf_transaction_set_flags (job_data->transaction, flags);
 
 	state_local = dnf_state_get_child (state);
+
+	/* we solve the goal ourselves, so we can deal with flags */
+	dnf_transaction_set_dont_solve_goal (job_data->transaction, TRUE);
+	if (!dnf_context_get_install_weak_deps ())
+		dnf_flags |= DNF_IGNORE_WEAK_DEPS;
+	ret = dnf_goal_depsolve (job_data->goal, dnf_flags, error);
+	if (!ret)
+		return FALSE;
+
 	ret = dnf_transaction_depsolve (job_data->transaction,
 					job_data->goal,
 					state_local,
@@ -2818,7 +2956,6 @@ dnf_is_installed_package_id_name_arch (DnfSack *sack, const gchar *package_id)
 /**
  * pk_backend_remove_packages_thread:
  *
- * FIXME: Use autoremove
  * FIXME: Use allow_deps
  */
 static void
@@ -2856,12 +2993,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	g_assert (ret);
 
 	/* not supported */
-	if (autoremove) {
-		pk_backend_job_error_code (job,
-					   PK_ERROR_ENUM_NOT_SUPPORTED,
-					   "autoremove is not supported");
-		return;
-	}
 	if (!allow_deps) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_NOT_SUPPORTED,
@@ -2934,7 +3065,11 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 						   "Failed to find %s", package_ids[i]);
 			return;
 		}
-		hy_goal_erase (job_data->goal, pkg);
+		if (autoremove) {
+			hy_goal_erase_flags (job_data->goal, pkg, HY_CLEAN_DEPS);
+		} else {
+			hy_goal_erase (job_data->goal, pkg);
+		}
 	}
 
 	/* run transaction */
@@ -3654,6 +3789,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
+	g_autoptr(GHashTable) advisories_hash = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -3696,6 +3832,8 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		return;
 	}
 
+	advisories_hash = pk_backend_dnf_cache_advisories (sack);
+
 	/* emit details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		g_autoptr(GPtrArray) vendor_urls = NULL;
@@ -3705,7 +3843,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
-		advisory = dnf_package_get_advisory (pkg);
+		advisory = pk_backend_dnf_get_advisory (advisories_hash, pkg);
 		if (advisory == NULL)
 			continue;
 
@@ -3757,7 +3895,9 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 					      NULL /* updated */);
 
 		g_ptr_array_unref (references);
+#ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 		dnf_advisory_free (advisory);
+#endif
 	}
 
 	/* done */

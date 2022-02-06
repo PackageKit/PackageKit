@@ -169,10 +169,9 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
     }
 
     // calculate the overall speed
-    double localCPS = (CurrentCPS >= 0) ? CurrentCPS : -1 * CurrentCPS;
-    if (localCPS != m_lastCPS)
+    if (CurrentCPS != m_lastCPS)
     {
-        m_lastCPS = localCPS;
+        m_lastCPS = CurrentCPS;
         pk_backend_job_set_speed(m_job, static_cast<uint>(m_lastCPS));
     }
 

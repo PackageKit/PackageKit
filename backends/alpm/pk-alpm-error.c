@@ -72,7 +72,6 @@ pk_alpm_error_emit (PkBackendJob *job, GError *error)
 		break;
 	case ALPM_ERR_DB_OPEN:
 	case ALPM_ERR_DB_NOT_FOUND:
-	case ALPM_ERR_PKG_REPO_NOT_FOUND:
 		code = PK_ERROR_ENUM_REPO_NOT_FOUND;
 		break;
 	case ALPM_ERR_DB_CREATE:

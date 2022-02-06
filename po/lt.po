@@ -5,8 +5,9 @@
 # Translators:
 # aurisc4 <aurisc4@gmail.com>, 2013
 # aurisc4 <aurisc4@gmail.com>, 2013
-# Mantas Kriaučiūnas <mantas@akl.lt>, 2011,2014
-# Mantas Kriaučiūnas <mantas@akl.lt>, 2011,2014
+# Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
+# Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
+# Moo, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
@@ -32,6 +33,9 @@ msgstr "Reikia nurodyti teisingą vaidmenį"
 #. * download or where
 msgid "A destination directory and the package names to download are required"
 msgstr "Reikia nurodyti paskirties katalogą ir atsiųstinų paketų pavadinimus"
+
+msgid "A filename is required"
+msgstr "Reikia failo pavadinimo"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
@@ -146,6 +150,10 @@ msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
 msgid "Authentication is required to trigger offline updates"
 msgstr "Atnaujinimams atsijungus sukelti būtina patvirtinti tapatybę"
 
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Autorius"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Prieinamas"
@@ -240,6 +248,10 @@ msgstr "Kopijuojami failai"
 
 msgid "Debugging Options"
 msgstr "Derinimo parametrai"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Aprašas"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
@@ -455,6 +467,10 @@ msgstr "Gaunamos saugyklos"
 msgid "Getting requires"
 msgstr "Gaunami reikalavimai"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Gaunami sistemos naujinimai"
+
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
 msgstr "Nepavyko gauti failų sąrašo"
@@ -486,6 +502,10 @@ msgstr "Piktograma"
 #. TRANSLATORS: The type of update
 msgid "Important"
 msgstr "Svarbus"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Įdiegti paketą"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
@@ -524,6 +544,11 @@ msgid "Installing"
 msgstr "Diegiamas"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Įdiegiamas sistemos naujinimas"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Diegiami atnaujinimai"
@@ -540,9 +565,17 @@ msgstr "Diegiami paketai"
 msgid "Installing signature"
 msgstr "Diegiamas parašas"
 
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Įdiegiamas sistemos naujinimas; tai gali šiek tiek užtrukti..."
+
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
 msgstr "Diegiami atnaujinimai"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Įdiegiami atnaujinimai; tai gali šiek tiek užtrukti..."
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
@@ -607,6 +640,10 @@ msgstr "Nėra failų"
 msgid "No packages require updating to newer versions."
 msgstr "Jokio paketo nereikia atnaujinti į naujesnę versiją."
 
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Nerasta jokių paketų"
+
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Normalus"
@@ -634,6 +671,13 @@ msgstr "Žymimo pasenę paketai"
 msgid "Option '%s' is not supported"
 msgstr "Parametras „%s“ nepalaikomas"
 
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paketas"
+
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
 msgstr "Paketo aprašymas"
@@ -641,6 +685,15 @@ msgstr "Paketo aprašymas"
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
 msgstr "Paketų failai"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Paketas nerastas"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -705,6 +758,11 @@ msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo - buvo įdiegta sv
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
 msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo."
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Paruošti atnaujinimai:"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "Print to screen a machine readable output, rather than using animated widgets"
@@ -885,6 +943,10 @@ msgstr "Parodyti programos versiją ir išeiti"
 #. TRANSLATORS: show version
 msgid "Show version and exit"
 msgstr "Parodyti versiją ir išeiti"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Išjungiama įdiegus atnaujinimus…"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -1111,6 +1173,15 @@ msgstr "Nežinomas vaidmens tipas"
 msgid "Unknown state"
 msgstr "Nežinoma būsena"
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+msgid "Update software"
+msgstr "Atnaujinti programinę įrangą"
+
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
@@ -1138,6 +1209,13 @@ msgstr "Atnaujinami paketai"
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
 msgstr "Atnaujinamos veikiančios programos"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "Naujinti sistemą"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"

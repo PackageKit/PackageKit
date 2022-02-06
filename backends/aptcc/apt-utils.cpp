@@ -1,7 +1,7 @@
 /* apt-utils.cpp
  *
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
- * Copyright (c) 2014 Matthias Klumpp <mak@debian.org>
+ * Copyright (c) 2014-2022 Matthias Klumpp <mak@debian.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,16 +156,6 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
-bool strIsPrefix(string const& s1, string const&s2)
-{
-    const char*p = s1.c_str();
-    const char*q = s2.c_str();
-    while (*p&&*q)
-        if (*p++!=*q++)
-            return false;
-    return true;
-}
-
 string fetchChangelogData(AptCacheFile &CacheFile,
                           pkgAcquire &Fetcher,
                           pkgCache::VerIterator Ver,
@@ -263,17 +253,16 @@ string fetchChangelogData(AptCacheFile &CacheFile,
             // and when it got updated
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                GTimeVal dateTime = {0, 0};
-                gchar *date;
+                g_autoptr(GDateTime) dateTime = NULL;
+                g_autofree gchar *date = NULL;
                 date = g_match_info_fetch_named(match_info, "date");
                 time_t time;
                 g_warn_if_fail(RFC1123StrToTime(date, time));
-                dateTime.tv_sec = time;
-                g_free(date);
+                dateTime = g_date_time_new_from_unix_local(time);
 
-                *issued = g_time_val_to_iso8601(&dateTime);
+                *issued = g_date_time_format_iso8601(dateTime);
                 if (updated->empty()) {
-                    *updated = g_time_val_to_iso8601(&dateTime);
+                    *updated = g_date_time_format_iso8601(dateTime);
                 }
             }
             g_match_info_free(match_info);
@@ -404,11 +393,11 @@ bool utilRestartRequired(const string &packageName)
 
 string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 {
-    if (vf.File().Origin() == NULL)
+    if (vf.File().Origin() == nullptr)
         return string("local");
-    if (vf.File().Archive() == NULL)
+    if (vf.File().Archive() == nullptr)
         return string("local");
-    if (vf.File().Component() == NULL)
+    if (vf.File().Component() == nullptr)
         return string("invalid");
 
     // https://wiki.debian.org/DebianRepository/Format
@@ -437,27 +426,6 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 
     string res = origin + "-" + suite + "-" + component;
     return res;
-}
-
-gchar* utilBuildPackageId(const pkgCache::VerIterator &ver)
-{
-    gchar *package_id;
-    pkgCache::VerFileIterator vf = ver.FileList();
-
-    string data = "";
-    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
-        // when a package is installed, the data part of a package-id is "installed:<repo-id>"
-        data = "installed:" + utilBuildPackageOriginId(vf);
-    } else {
-        data = utilBuildPackageOriginId(vf);
-    }
-
-    package_id = pk_package_id_build(ver.ParentPkg().Name(),
-                                     ver.VerStr(),
-                                     ver.Arch(),
-                                     data.c_str());
-    return package_id;
 }
 
 const char *utf8(const char *str)

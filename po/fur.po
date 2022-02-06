@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Fabio Tomat <f.t.public@gmail.com>, 2019
+# Fabio Tomat <f.t.public@gmail.com>, 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -457,7 +457,7 @@ msgstr "No si è rivâts a otignî lis proprietâts"
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "No si è rivâts a otignî la ore di cuant che cheste azion e je stade completade la ultime volte."
+msgstr "No si è rivâts a otignî la ore di cuant che cheste azion e je stade completade la ultime volte"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
@@ -839,11 +839,11 @@ msgstr "Sielç un pachet di instalâ"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "Par plasê, sielç il pachet just:"
+msgstr "Par plasê, sielç il pachet just: "
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Inserìs un numar di 1 a %i:"
+msgstr "Inserìs un numar di 1 a %i: "
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
@@ -1009,6 +1009,11 @@ msgstr "Eseguìs il comant doprant la largjece di bande inative e ancje doprant 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "In esecuzion"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Esecuzion dai atuadôrs"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1228,7 +1233,7 @@ msgstr "La firme no je stade acetade."
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "Il software al rive di une sorzint no fidade"
+msgstr "Il software al rive di une sorzint no fidade."
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."

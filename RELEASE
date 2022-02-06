@@ -2,12 +2,12 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog PACKAGEKIT_1_2_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog PACKAGEKIT_1_2_4.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.2.0
+Version 1.2.5
 ~~~~~~~~~~~~~
-Released: 2020-xx-xx
+Released: 2021-xx-xx
 
 Notes:
 
@@ -20,23 +20,21 @@ New Features:
 Bugfixes:
 --------------------------------------------------------------------------------
 
-2. Add download date to docs/html/pk-download.html, save file.
-
-2.5. Update translations and commit them with sign-off:
+2. Update translations and commit them with sign-off:
 
 ninja PackageKit-pot
 tx push --source
 tx pull --all --force --minimum-perc=5
 ninja-build fix-translations
-git add *.po
+git add ../po/*.po
 
-3. Update library version if new ABI or API in configure.ac
+3. Update library version if new ABI or API in meson.build
 
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.2.0"
-export release_tag="PACKAGEKIT_1_2_0"
+export release_version="1.2.5"
+export release_tag="PACKAGEKIT_1_2_5"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
@@ -57,19 +55,17 @@ gpg -b -a meson-dist/PackageKit-${release_version}.tar.xz
 
 scp meson-dist/PackageKit-${release_version}.tar.* hughsient@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
 
-7. Do post release version bump in configure.ac
+7. Do post release version bump in meson.build
 
 8. Commit trivial changes:
 
 git commit -a -m "trivial: post release version bump"
 git push
 
-9. Upload new html sources
-
-10. Send an email to packagekit@lists.freedesktop.org
+9. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.2.0 released!
+PackageKit 1.2.5 released!
 
 Tarballs available here: http://www.freedesktop.org/software/PackageKit/releases/
 

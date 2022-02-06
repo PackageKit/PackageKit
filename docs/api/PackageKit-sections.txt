@@ -525,9 +525,13 @@ pk_offline_get_action_monitor
 pk_offline_get_results
 pk_offline_get_results_mtime
 pk_offline_cancel
+pk_offline_cancel_with_flags
 pk_offline_clear_results
+pk_offline_clear_results_with_flags
 pk_offline_trigger
+pk_offline_trigger_with_flags
 pk_offline_trigger_upgrade
+pk_offline_trigger_upgrade_with_flags
 </SECTION>
 
 <SECTION>

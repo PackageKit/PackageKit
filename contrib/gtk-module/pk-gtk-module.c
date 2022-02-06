@@ -262,7 +262,7 @@ pk_pango_fc_font_map_load_fontset (PangoFontMap *font_map,
 }
 
 static void
-pk_pango_fc_font_map_class_init (PangoFontMapClass *klass)
+pk_pango_fc_font_map_class_init (PangoFontMapClass *klass, gpointer class_data)
 {
 	g_return_if_fail (pk_pango_fc_font_map_load_fontset_default == NULL);
 

@@ -623,21 +623,24 @@ out:
 }
 
 static gint
-pk_cnf_spawn_command (const gchar *exec, gchar **arguments)
+pk_cnf_spawn_command (const gchar *exec, gchar **arguments, guint arguments_count)
 {
+	g_autofree gchar **argv = NULL;
 	gint exit_status = EXIT_FAILURE;
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *args = NULL;
-	g_autofree gchar *cmd = NULL;
 
 	/* ensure program starts on a fresh line */
 	g_print ("\n");
 
-	args = g_strjoinv (" ", arguments);
-	cmd = g_strjoin (" ", exec, args, NULL);
-	if (!g_spawn_command_line_sync (cmd, NULL, NULL, &exit_status, &error)) {
+	argv = g_new0 (gchar *, arguments_count + 2);
+	argv[0] = (gchar*) exec;
+	for (guint i = 0; i <= arguments_count; i++) {
+		argv[1+i] = arguments[i];
+	}
+	if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+											NULL, NULL, &exit_status, &error)) {
 		/* TRANSLATORS: we failed to launch the executable, the error follows */
-		g_printerr ("%s '%s': %s\n", _("Failed to launch:"), cmd, error->message);
+		g_printerr ("%s '%s': %s\n", _("Failed to launch:"), exec, error->message);
 	}
 	return exit_status;
 }
@@ -802,7 +805,7 @@ main (int argc, char *argv[])
 
 		/* run */
 		if (config->single_match == PK_CNF_POLICY_RUN) {
-			retval = pk_cnf_spawn_command (possible, &argv[2]);
+			retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
 			goto out;
 		}
 
@@ -812,7 +815,7 @@ main (int argc, char *argv[])
 			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
 			ret = pk_console_get_prompt (text, TRUE);
 			if (ret)
-				retval = pk_cnf_spawn_command (possible, &argv[2]);
+				retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
 			g_free (text);
 		}
 		goto out;
@@ -842,7 +845,7 @@ main (int argc, char *argv[])
 
 			/* run command */
 			possible = g_ptr_array_index (array, i);
-			retval = pk_cnf_spawn_command (possible, &argv[2]);
+			retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
 		}
 		goto out;
 
@@ -870,7 +873,7 @@ main (int argc, char *argv[])
 				if (ret) {
 					ret = pk_cnf_install_package_id (package_ids[0]);
 					if (ret)
-						retval = pk_cnf_spawn_command (argv[1], &argv[2]);
+						retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 				}
 				g_print ("\n");
 				goto out;
@@ -880,7 +883,7 @@ main (int argc, char *argv[])
 			if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
-					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
+					retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 			}
 			g_strfreev (parts);
 			goto out;
@@ -915,7 +918,7 @@ main (int argc, char *argv[])
 				/* run command */
 				ret = pk_cnf_install_package_id (package_ids[i - 1]);
 				if (ret)
-					retval = pk_cnf_spawn_command (argv[1], &argv[2]);
+					retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 			}
 			goto out;
 		}

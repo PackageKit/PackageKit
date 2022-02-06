@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# Omer I.S. <omeritzicschwartz@gmail.com>, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
 # Yaron Shahrabani <sh.yaron@gmail.com>, 2012
 msgid ""
@@ -129,6 +130,10 @@ msgstr "אימות נדרש כדי לבטל משימה שלא התחלת בעצ�
 msgid "Authentication is required to reload the device with a new driver"
 msgstr "אימות נדרש כדי לטעון מחדש התקן עם מנהל התקן חדש"
 
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "יוצר"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "זמין"
@@ -139,7 +144,7 @@ msgstr "חסום"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
-msgstr "באגזילה"
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 msgid "CVE"
@@ -217,6 +222,10 @@ msgstr "מעתיק קבצים"
 
 msgid "Debugging Options"
 msgstr "מידע ניפוי שגיאות"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "תיאור"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
@@ -332,7 +341,7 @@ msgstr "צא אחרי שהמנוע נטען"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "נכשל ביצירת קשר עם שירות הרקע של Packagekit"
+msgstr "נכשלה יצירת הקשר עם שירות הרקע של Packagekit"
 
 msgid "Failed to get daemon state"
 msgstr "לא ניתן לקבל מצב שירות הרקע"
@@ -340,7 +349,7 @@ msgstr "לא ניתן לקבל מצב שירות הרקע"
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "נכשל בקבלת הזמן שעבר מאז שהפעולה הושלמה"
+msgstr "נכשלה קבלת הזמן שעבר מאז שהפעולה הושלמה"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
@@ -546,6 +555,10 @@ msgstr "שם"
 msgid "No files"
 msgstr "אין קבצים"
 
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "לא נמצאו חבילות"
+
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "רגיל"
@@ -573,6 +586,13 @@ msgstr "מיישן חבילות"
 msgid "Option '%s' is not supported"
 msgstr "אפשרות '%s' לא נתמכת"
 
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "חבילה"
+
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
 msgstr "תיאור חבילה"
@@ -580,6 +600,11 @@ msgstr "תיאור חבילה"
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
 msgstr "קבצי החבילה"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "החבילה לא נמצאה"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -737,7 +762,7 @@ msgstr "מטפל בתלויות"
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "הפעל מחדש"
+msgstr "הפעלה מחדש"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
@@ -800,7 +825,7 @@ msgstr "הגדר שרת proxy"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "קבע את המסנן, למשל, מותקנות"
+msgstr "קביעת סינון, למשל: מותקנות"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -815,7 +840,7 @@ msgstr "הצג אפשרויות ניפוי באגים"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "הצג את גרסת התוכנה וסיים"
+msgstr "הצגת גרסת התוכנית ויציאה"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
@@ -854,11 +879,11 @@ msgstr "מצב"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr "תת-פקודות:"
+msgstr "תת־פקודות:"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "הצליח"
+msgstr "הצליחה"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
@@ -998,6 +1023,10 @@ msgstr "הכלי הזה לא הצליח למצוא את החבילה המותק�
 msgid "This tool could not find the package: %s"
 msgstr "הכלי הזה לא הצליח למצוא את החבילה: %s"
 
+#. TRANSLATORS: this is the time since this role was used
+msgid "Time since"
+msgstr "הזמן שעבר מהשימוש האחרון"
+
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
@@ -1053,7 +1082,7 @@ msgstr "מעדכן את רשימת היישומים הפעילים"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "זיהוי משתמש"
+msgstr "מזהה משתמש"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
