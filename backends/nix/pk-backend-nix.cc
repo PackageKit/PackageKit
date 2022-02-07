@@ -32,6 +32,8 @@
 #include <nix/attr-path.hh>
 #include <nix/profiles.hh>
 #include <nix/flake/flake.hh>
+#include <nix/experimental-features.hh>
+#include <nix/installables.hh>
 
 #include <pwd.h>
 
@@ -53,7 +55,7 @@ pk_backend_initialize (GKeyFile* conf, PkBackend* backend)
 
 	nix::verbosity = nix::lvlWarn;
 	nix::settings.verboseBuild = false;
-	nix::settings.experimentalFeatures = {"flakes"};
+	nix::settings.experimentalFeatures = {nix::ExperimentalFeature::Flakes};
 	nix::evalSettings.pureEval = true;
 
 	const nix::Strings searchPath;
@@ -137,19 +139,7 @@ nix_get_cursor (nix::EvalState & state, std::string flake, std::string attrPath)
 	nix::flake::LockFlags lockFlags;
 	auto lockedFlake = std::make_shared<nix::flake::LockedFlake> (nix::flake::lockFlake (state, nix::parseFlakeRef(flake), lockFlags));
 
-	auto evalCache = nix::ref (std::make_shared<nix::eval_cache::EvalCache> (true, lockedFlake->getFingerprint(), state,
-								[&state, lockedFlake]()
-		{
-			auto vFlake = state.allocValue ();
-			nix::flake::callFlake (state, *lockedFlake, *vFlake);
-
-			state.forceValue (*vFlake);
-
-			auto aOutputs = vFlake->attrs->get (state.symbols.create("outputs"));
-			assert (aOutputs);
-
-			return aOutputs->value;
-		}));
+	auto evalCache = nix::openEvalCache (state, lockedFlake);
 
 	return evalCache->getRoot()->findAlongAttrPath (nix::parseAttrPath (state, attrPath));
 }
