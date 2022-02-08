@@ -526,7 +526,16 @@ nix_install_thread (PkBackendJob* job, GVariant* params, gpointer p)
 
 		/* Add in the already installed derivations, unless they have
 		   the same name as a to-be-installed element. */
-		nix::DrvInfos installedElems = nix::queryInstalled (*priv->state, profile);
+		nix::DrvInfos installedElems;
+		try {
+			installedElems = nix::queryInstalled (*priv->state, profile);
+		} catch (nix::Error & e) {
+			priv->state->allowedPaths = oldAllowedPaths;
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_UNKNOWN,
+						   "failed to create new environment: %s", e.what ());
+			return;
+		}
 
 		for (auto & i : installedElems) {
 			bool found = false;
@@ -549,7 +558,7 @@ nix_install_thread (PkBackendJob* job, GVariant* params, gpointer p)
 			priv->state->allowedPaths = oldAllowedPaths;
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_UNKNOWN,
-						   "failed to create new environment");
+						   "failed to create new environment: %s", e.what ());
 			return;
 		}
 	}
