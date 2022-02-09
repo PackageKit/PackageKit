@@ -241,7 +241,6 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		g_variant_get (params, "(t^a&s)", &filters, &search);
 		break;
 	default:
-		g_assert_not_reached ();
 		break;
 	}
 
