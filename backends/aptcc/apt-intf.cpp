@@ -1756,16 +1756,15 @@ void AptIntf::updateInterface(int fd, int writeFd)
             }
             //cout << "got line: " << line << endl;
 
-            gchar **split  = g_strsplit(line, ":",5);
-            gchar *status  = g_strstrip(split[0]);
-            gchar *pkg     = g_strstrip(split[1]);
-            gchar *percent = g_strstrip(split[2]);
-            gchar *str     = g_strdup(g_strstrip(split[3]));
+            g_auto(GStrv) split   = g_strsplit(line, ":",5);
+            const gchar *status   = g_strstrip(split[0]);
+            const gchar *pkg      = g_strstrip(split[1]);
+            const gchar *percent  = g_strstrip(split[2]);
+            g_autofree gchar *str = g_strdup(g_strstrip(split[3]));
 
             // major problem here, we got unexpected input. should _never_ happen
-            if(!(pkg && status)) {
+            if(pkg == nullptr && status == nullptr)
                 continue;
-            }
 
             // Since PackageKit doesn't emulate finished anymore
             // we need to manually do it here, as at this point
@@ -2008,7 +2007,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
                         //                         emitPackageProgress(ver, m_lastSubProgress);
                     }
                 } else {
-                    cout << ">>>Unmaped value<<< :" << line << endl;
+                    std::cout << "aptcc: >>>Unmaped dpkg status value: " << line << std::endl;
                 }
 
                 if (!starts_with(str, "Running")) {
@@ -2024,8 +2023,6 @@ void AptIntf::updateInterface(int fd, int writeFd)
             pk_backend_job_set_percentage(m_job, val);
 
             // clean-up
-            g_strfreev(split);
-            g_free(str);
             line[0] = 0;
         } else {
             buf[1] = 0;
@@ -2549,7 +2546,7 @@ bool AptIntf::installPackages(PkBitfield flags)
     char masterbuf[1024];
     while (waitpid(m_child_pid, &ret, WNOHANG) == 0) {
         // TODO: This is dpkg's raw output. Maybe save it for error-solving?
-        while(read(pty_master, masterbuf, sizeof(masterbuf)) > 0);
+        while (read(pty_master, masterbuf, sizeof(masterbuf)) > 0);
         updateInterface(readFromChildFD[0], pty_master);
     }
 
