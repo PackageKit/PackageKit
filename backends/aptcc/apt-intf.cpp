@@ -215,9 +215,8 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
         bool installed = false;
 
         // Check if the package is installed
-        if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
+        if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver)
             installed = true;
-        }
 
         // if we are on multiarch check also the arch filter
         if (m_isMultiArch && pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH)/* && !installed*/) {
@@ -241,11 +240,10 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             component = str.substr(0, found);
         }
 
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed) {
+        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed)
             return false;
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed) {
+        else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed)
             return false;
-        }
 
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT)) {
             // if ver.end() means unknow
@@ -342,73 +340,72 @@ bool AptIntf::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 
 PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
 {
-    if (filters != 0) {
-        PkgList ret;
-        ret.reserve(packages.size());
+    if (filters == 0)
+        return packages;
 
-        for (const PkgInfo &info : packages) {
-            if (matchPackage(info.ver, filters)) {
-                ret.push_back(info);
+    PkgList ret;
+    ret.reserve(packages.size());
+
+    for (const PkgInfo &info : packages) {
+        if (matchPackage(info.ver, filters)) {
+            ret.push_back(info);
+        }
+    }
+
+    // This filter is more complex so we filter it after the list has shrunk
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && ret.size() > 0) {
+        PkgList downloaded;
+
+        pkgProblemResolver Fix(*m_cache);
+        {
+            pkgDepCache::ActionGroup group(*m_cache);
+            for (auto autoInst : { true, false }) {
+                for (const PkgInfo &pki : ret) {
+                    if (m_cancel)
+                        break;
+
+                    m_cache->tryToInstall(Fix, pki, false, autoInst, false);
+                }
             }
         }
 
-        // This filter is more complex so we filter it after the list has shrunk
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DOWNLOADED) && ret.size() > 0) {
-            PkgList downloaded;
+        // get a fetcher
+        pkgAcquire fetcher;
 
-            pkgProblemResolver Fix(*m_cache);
-            {
-                pkgDepCache::ActionGroup group(*m_cache);
-                for (auto autoInst : { true, false }) {
-                    for (const PkgInfo &pki : ret) {
-                        if (m_cancel)
-                            break;
-
-                        m_cache->tryToInstall(Fix, pki, false, autoInst, false);
-                    }
-                }
-            }
-
-            // get a fetcher
-            pkgAcquire fetcher;
-
-            // Read the source list
-            if (m_cache->BuildSourceList() == false) {
-                return downloaded;
-            }
-
-            // Create the package manager and prepare to download
-            std::unique_ptr<pkgPackageManager> PM (_system->CreatePM(*m_cache));
-            if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
-                    _error->PendingError() == true) {
-                return downloaded;
-            }
-
-            for (const PkgInfo &info : ret) {
-                bool found = false;
-                for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
-                    pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(*it));
-                    if (archive == nullptr) {
-                        continue;
-                    }
-                    const pkgCache::VerIterator ver = archive->version();
-                    if ((*it)->Local && info.ver == ver) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                    downloaded.append(info);
-            }
-
+        // Read the source list
+        if (m_cache->BuildSourceList() == false) {
             return downloaded;
         }
 
-        return ret;
-    } else {
-        return packages;
+        // Create the package manager and prepare to download
+        std::unique_ptr<pkgPackageManager> PM (_system->CreatePM(*m_cache));
+        if (!PM->GetArchives(&fetcher, m_cache->GetSourceList(), m_cache->GetPkgRecords()) ||
+                _error->PendingError() == true) {
+            return downloaded;
+        }
+
+        for (const PkgInfo &info : ret) {
+            bool found = false;
+            for (pkgAcquire::ItemIterator it = fetcher.ItemsBegin(); it < fetcher.ItemsEnd(); ++it) {
+                pkgAcqArchiveSane *archive = static_cast<pkgAcqArchiveSane*>(dynamic_cast<pkgAcqArchive*>(*it));
+                if (archive == nullptr) {
+                    continue;
+                }
+                const pkgCache::VerIterator ver = archive->version();
+                if ((*it)->Local && info.ver == ver) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                downloaded.append(info);
+        }
+
+        return downloaded;
     }
+
+    return ret;
 }
 
 // used to emit packages it collects all the needed info
@@ -453,9 +450,8 @@ void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state
 
     output = filterPackages(output, filters);
     for (const PkgInfo &info : output) {
-        if (m_cancel) {
+        if (m_cancel)
             break;
-        }
 
         emitPackage(info.ver, state);
     }
