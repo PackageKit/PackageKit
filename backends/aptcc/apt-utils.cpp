@@ -383,9 +383,10 @@ bool starts_with(const string &str, const char *start)
 bool utilRestartRequired(const string &packageName)
 {
     if (starts_with(packageName, "linux-image-") ||
-            starts_with(packageName, "nvidia-") ||
-            packageName == "libc6" ||
-            packageName == "dbus") {
+        starts_with(packageName, "nvidia-") ||
+        packageName == "libc6" ||
+        packageName == "dbus" ||
+        packageName == "dbus-broker") {
         return true;
     }
     return false;
