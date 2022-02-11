@@ -405,15 +405,13 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     string data;
     if (isInstalled) {
         data = isAuto? "auto:" : "manual:";
-        data += utilBuildPackageOriginId(vf);
     } else {
-        if (State.NewInstall()) {
+        if (State.NewInstall())
             data = isAuto? "+auto:" : "+manual:";
-            data += utilBuildPackageOriginId(vf);
-        } else {
-            data = utilBuildPackageOriginId(vf);
-        }
+        else
+            data = "available:";
     }
+    data += utilBuildPackageOriginId(vf);
 
     return pk_package_id_build(ver.ParentPkg().Name(),
                                ver.VerStr(),

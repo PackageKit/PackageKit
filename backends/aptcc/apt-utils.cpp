@@ -418,9 +418,9 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
     // Sanitize it!
     // All space characters, control characters and punctuation get replaced
     // with underscore.
-    // In particular the punctuations ',' and ';' may be used as list separators
-    // so we must not have them appear in our package_ids as that would break
-    // any number of higher level features.
+    // In particular the punctuations ':', ';' and ',' may be used as list separators
+    // so we must not have them appear in our package_ids as that would cause
+    // breakage down the line.
     std::transform(origin.begin(), origin.end(), origin.begin(), ::tolower);
     origin = std::regex_replace(origin, std::regex("[[:space:][:cntrl:][:punct:]]+"), "_");
 
