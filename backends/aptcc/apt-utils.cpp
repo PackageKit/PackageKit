@@ -209,7 +209,7 @@ string fetchChangelogData(AptCacheFile &CacheFile,
         if (starts_with(line, "  "))
             line.erase(0,1);
         // no need to free str later, it is allocated in a static buffer
-        const char *str = utf8(line.c_str());
+        const char *str = toUtf8(line.c_str());
         if (strcmp(str, "") == 0) {
             changelog.append("\n");
             continue;
@@ -428,16 +428,14 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
     return res;
 }
 
-const char *utf8(const char *str)
+const char *toUtf8(const char *str)
 {
-    static char *_str = NULL;
-    if (str == NULL) {
+    static __thread char *_str = NULL;
+    if (str == NULL)
         return NULL;
-    }
 
-    if (g_utf8_validate(str, -1, NULL) == true) {
+    if (g_utf8_validate(str, -1, NULL) == true)
         return str;
-    }
 
     g_free(_str);
     _str = NULL;

@@ -61,6 +61,6 @@ void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
         pk_backend_job_error_code(job,
                                   errorCode,
                                   "%s",
-                                  utf8(errors.str().c_str()));
+                                  toUtf8(errors.str().c_str()));
     }
 }

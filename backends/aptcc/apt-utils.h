@@ -80,6 +80,6 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf);
 /**
   * Return an utf8 string
   */
-const char *utf8(const char *str);
+const char *toUtf8(const char *str);
 
 #endif

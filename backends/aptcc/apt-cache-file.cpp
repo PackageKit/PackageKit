@@ -248,7 +248,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
     pk_backend_job_error_code(m_job,
                               error,
                               "%s",
-                              utf8(out.str().c_str()));
+                              toUtf8(out.str().c_str()));
 }
 
 void AptCacheFile::buildPkgRecords()
