@@ -369,9 +369,9 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 
     // check if any intended action was encoded in this package-ID
     auto piAction = PkgAction::NONE;
-    if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+auto"))
+    if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+auto:"))
             piAction = PkgAction::INSTALL_AUTO;
-    else if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+manual"))
+    else if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+manual:"))
         piAction = PkgAction::INSTALL_MANUAL;
 
     const pkgCache::VerIterator &ver = findVer(pkg);
