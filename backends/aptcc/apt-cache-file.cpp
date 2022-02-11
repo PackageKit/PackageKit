@@ -402,14 +402,12 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
     // a pending installation is marked, in which case we prefix the desired new mode of the installed
     // package (auto/manual) with a plus sign (+).
-    string data;
+    string data = "";
     if (isInstalled) {
         data = isAuto? "auto:" : "manual:";
     } else {
         if (State.NewInstall())
             data = isAuto? "+auto:" : "+manual:";
-        else
-            data = "available:";
     }
     data += utilBuildPackageOriginId(vf);
 
