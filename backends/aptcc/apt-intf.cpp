@@ -1519,7 +1519,7 @@ void AptIntf::emitPackageFilesLocal(const gchar *file)
 
     GPtrArray *files = g_ptr_array_new_with_free_func(g_free);
     for (auto file : deb.files()) {
-        g_ptr_array_add(files, g_strdup(file.c_str()));
+        g_ptr_array_add(files, g_canonicalize_filename(file.c_str(), "/"));
     }
     g_ptr_array_add(files, NULL);
     pk_backend_job_files(m_job, package_id, (gchar **) files->pdata);
