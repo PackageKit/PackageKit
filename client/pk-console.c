@@ -973,12 +973,11 @@ pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 static gboolean
 pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 {
-	guint i;
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
 	/* test to see if we've been given files, not packages */
-	for (i = 0; packages[i] != NULL; i++) {
+	for (guint i = 0; packages[i] != NULL; i++) {
 		if (g_file_test (packages[i], G_FILE_TEST_EXISTS)) {
 			g_set_error (error,
 				     PK_CONSOLE_ERROR,
@@ -1007,14 +1006,42 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
-		g_set_error (error,
-			     PK_CONSOLE_ERROR,
-			     PK_ERROR_ENUM_INTERNAL_ERROR,
-			     /* TRANSLATORS: There was an error getting the list
-			      * of files for the package. The detailed error follows */
-			     _("This tool could not find any available package: %s"),
-			     error_local->message);
-		ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
+		/* the the error was not "no package found", display it immediately. */
+		if (!g_error_matches (error_local, PK_CONSOLE_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
+			g_set_error (error,
+				     PK_CONSOLE_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     /* TRANSLATORS: There was an error finding a package
+				      * for installation. The detailed error follows. */
+				     _("This tool could not find any available package: %s"),
+				     error_local->message);
+			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
+			return FALSE;
+		}
+
+		/* If we are here, the package may exist, but may already be installed.
+		 * Check for that to provide a better error */
+		pk_bitfield_remove (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_INSTALLED);
+		package_ids = pk_console_resolve_packages (ctx, packages, NULL);
+		if (package_ids == NULL) {
+			/* the package does not exist at all */
+			g_set_error_literal (error,
+					     PK_CONSOLE_ERROR,
+					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     /* TRANSLATORS: We were unable to find a package for installation. */
+					     _("This tool could not find any available package."));
+			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
+		} else {
+			/* the package exists, but is already installed */
+			g_set_error_literal (error,
+				     PK_CONSOLE_ERROR,
+				     PK_ERROR_ENUM_INTERNAL_ERROR,
+				     /* TRANSLATORS: There was an error finding a package
+				      * for installation. The detailed error follows */
+				     _("The selected packages may already be installed."));
+			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
+		}
 		return FALSE;
 	}
 
