@@ -485,10 +485,21 @@ std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &
 
 bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
                                 const PkgInfo &pki,
-                                bool BrokenFix,
                                 bool autoInst,
-                                bool preserveAuto)
+                                bool preserveAuto,
+                                bool fixBroken)
 {
+    // attempt to fix broken packages, if requested
+    if (fixBroken) {
+        if (!CheckDeps(false)) {
+            pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_INTERNAL_ERROR,
+                                  "Unable to resolve broken packages. Please attempt to resolve this manually, or try "
+                                  "`sudo apt -f install`.");
+            return false;
+        }
+    }
+
     pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
 
     // Check if there is something at all to install

@@ -145,7 +145,9 @@ public:
 
     bool tryToInstall(pkgProblemResolver &Fix,
                       const PkgInfo &pki,
-                      bool BrokenFix, bool autoInst, bool preserveAuto);
+                      bool autoInst,
+                      bool preserveAuto,
+                      bool fixBroken = false);
 
     void tryToRemove(pkgProblemResolver &Fix,
                      const PkgInfo &pki);

@@ -364,7 +364,7 @@ PkgList AptIntf::filterPackages(const PkgList &packages, PkBitfield filters)
                     if (m_cancel)
                         break;
 
-                    m_cache->tryToInstall(Fix, pki, false, autoInst, false);
+                    m_cache->tryToInstall(Fix, pki, autoInst, false);
                 }
             }
         }
@@ -2189,9 +2189,9 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
 
     // Enter the special broken fixing mode if the user specified arguments
     // THIS mode will run if fixBroken is false and the cache has broken packages
-    bool BrokenFix = false;
+    bool attemptFixBroken = false;
     if ((*m_cache)->BrokenCount() != 0) {
-        BrokenFix = true;
+        attemptFixBroken = true;
     }
 
     pkgProblemResolver Fix(*m_cache);
@@ -2231,7 +2231,11 @@ bool AptIntf::runTransaction(const PkgList &install, const PkgList &remove, cons
                     if (m_cancel) {
                         break;
                     }
-                    if (!m_cache->tryToInstall(Fix, pkInfo, BrokenFix, autoInst, op.preserveAuto)) {
+                    if (!m_cache->tryToInstall(Fix,
+                                               pkInfo,
+                                               autoInst,
+                                               op.preserveAuto,
+                                               attemptFixBroken)) {
                         return false;
                     }
                 }
