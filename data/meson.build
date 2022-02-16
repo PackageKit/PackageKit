@@ -51,6 +51,14 @@ if get_option('systemd')
       install: true,
       install_dir: systemd_system_unit_dir,
     )
+
+    if meson.version().version_compare('>=0.61')
+        install_symlink(
+            'packagekit-offline-update.service',
+            pointing_to: systemd_system_unit_dir / 'packagekit-offline-update.service',
+            install_dir: systemd_system_unit_dir / 'system-update.target.wants'
+        )
+    endif
   endif
 endif
 
