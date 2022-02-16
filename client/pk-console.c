@@ -1046,7 +1046,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
 				     /* TRANSLATORS: There was an error finding a package
-				      * for installation. The detailed error follows */
+				      * for installation, it may already be installed. */
 				     _("The selected packages may already be installed."));
 			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		}
