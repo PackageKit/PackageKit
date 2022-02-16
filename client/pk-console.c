@@ -975,6 +975,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 {
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
+	gboolean reinstall_allowed = FALSE;
 
 	/* test to see if we've been given files, not packages */
 	for (guint i = 0; packages[i] != NULL; i++) {
@@ -992,6 +993,8 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 		}
 	}
 
+	reinstall_allowed = pk_task_get_allow_reinstall (PK_TASK (ctx->task));
+
 	/* assume arch filter unless specified otherwise */
 	if (!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_ARCH) &&
 	    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_ARCH))
@@ -1002,12 +1005,17 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE))
 		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
 
-	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
+	if (!reinstall_allowed)
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
+
 	package_ids = pk_console_resolve_packages (ctx, packages, &error_local);
 	if (package_ids == NULL) {
-		/* the the error was not "no package found", display it immediately. */
-		if (!g_error_matches (error_local, PK_CONSOLE_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
+		/* the the error was not "no package found", or we did allow reinstallations
+		 * (and therefore didn't filter out already installed packages) we show the
+		 * emitted error immediately. */
+		if (!g_error_matches (error_local, PK_CONSOLE_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
+		     reinstall_allowed) {
 			g_set_error (error,
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
