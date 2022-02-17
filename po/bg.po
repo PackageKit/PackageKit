@@ -995,8 +995,8 @@ msgstr "В момента няма налични надграждания."
 msgid "This tool could not find all the packages: %s"
 msgstr "Този инструмент не може да намери всички пакети: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Този инструмент не може да намери наличен пакет: %s"

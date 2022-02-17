@@ -965,8 +965,8 @@ msgstr "ಪ್ರಸಕ್ತ ಯಾವುದೆ ಅಪ್‌ಡೇಟುಗಳ�
 msgid "This tool could not find all the packages: %s"
 msgstr "ಈ ಉಪಕರಣದಿಂದ ಎಲ್ಲಾ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಪತ್ತೆ ಮಾಡಲು ಸಾಧ್ಯವಾಗಿಲ್ಲ: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ಲಭ್ಯವಿರುವ ಪ್ಯಾಕೇಜುಗಳನ್ನು ಉಪಕರಣವು ಪತ್ತೆ ಮಾಡಿಲ್ಲ: %s"

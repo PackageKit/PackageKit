@@ -1275,8 +1275,8 @@ msgstr "此刻尚無升級可用。"
 msgid "This tool could not find all the packages: %s"
 msgstr "此工具無法找到所有軟體包：%s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "此工具無法找到任何可用的軟體包：%s"

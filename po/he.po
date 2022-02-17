@@ -5,7 +5,7 @@
 # Translators:
 # Omer I.S. <omeritzicschwartz@gmail.com>, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yaron Shahrabani <sh.yaron@gmail.com>, 2012
+# Yaron Shahrabani <sh.yaron@gmail.com>, 2012,2021
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -30,6 +30,9 @@ msgstr "תפקיד נוכחי נדרש"
 #. * download or where
 msgid "A destination directory and the package names to download are required"
 msgstr "יש לקבוע תיקיית יעד וחבילות להורדה"
+
+msgid "A filename is required"
+msgstr "דרוש שם קובץ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
@@ -68,6 +71,9 @@ msgstr "שם חבילה להצגת התלויות שלה"
 msgid "A package provide string is required"
 msgstr "מחרוזת 'מספק את' של חבילה נדרשת"
 
+msgid "A repo id and autoremove required"
+msgstr "נדרש מזהה מאגר ו־autoremove (הסרה אוט׳)"
+
 msgid "A repo name, parameter and value are required"
 msgstr "יש לציין שם מאגר תכנה או פרמטר וערך"
 
@@ -99,7 +105,7 @@ msgstr "סוג, זיהוי מפתח וזיהוי חבילה נדרשים"
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "קבל רשיון משתמש הקצה (EULA)"
+msgstr "הסכמה לרישיון משתמש הקצה (EULA)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
@@ -111,28 +117,94 @@ msgstr "חבילות מושפעות:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "חבילות שהושפעו: אין"
+msgstr "חבילות מושפעות: אין"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
 msgstr "הסכם"
 
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "כינוי עבור %s"
+
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "לאפשר את שנמוך החבילות במהלך הפעולה"
+
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "לאפשר התקנת חבילות מחדש בזמן הפעולה"
+
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "לאפשר התקנה של חבילות לא מהימנות."
+
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "דרושה פעולה, למשל: ‚update-packages’ (עדכון חבילות)"
+
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "נדרשת הפעלה מחדש של תוכנה ע\"י:"
+msgstr "נדרשת הפעלה מחדש של תוכנה ע״י:"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "אימות נדרש כדי לקבל רשיון משתמש הקצה (EULA)"
+msgstr "נדרש אימות כדי להסכים לרישיון משתמש הקצה (EULA)"
 
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "אימות נדרש כדי לבטל משימה שלא התחלת בעצמך"
+msgstr "נדרש אימות כדי לבטל משימה שלא התחלת בעצמך"
+
+msgid "Authentication is required to change software repository parameters"
+msgstr "נדרש אימות כדי לשנות את משתני מאגר התכנה"
+
+msgid "Authentication is required to clear the offline updates message"
+msgstr "נדרש אימות כדי לפנות את הודעת העדכונים הבלתי מקוונים"
+
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "נדרש אימות כדי להתייחס למפתח שמשמש לחתימה על תכנה כמהימן"
+
+msgid "Authentication is required to downgrade software"
+msgstr "נדרש אימות כדי לשנמך תכנה"
+
+msgid "Authentication is required to install software"
+msgstr "נדרש אימות כדי להתקין תכנה"
+
+msgid "Authentication is required to install untrusted software"
+msgstr "נדרש אימות כדי להתקין תכנה בלתי מהימנה"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "נדרש אימות כדי לרענן את מאגרי המערכת"
+
+msgid "Authentication is required to reinstall software"
+msgstr "נדרש אימות כדי להתקין תכנה מחדש"
 
 msgid "Authentication is required to reload the device with a new driver"
-msgstr "אימות נדרש כדי לטעון מחדש התקן עם מנהל התקן חדש"
+msgstr "נדרש אימות כדי לרענן את ההתקן עם מנהל התקן חדש"
+
+msgid "Authentication is required to remove software"
+msgstr "נדרש אימות להסרת תכנה"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "נדרש אימות כדי לתקן את התכניות המותקנות"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "נדרש אימות כדי להגדיר את מתווך הרשת לטובת הורדת תכנה"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "נדרש אימות כדי להקפיץ עדכונים בלתי מקוונים"
+
+msgid "Authentication is required to update software"
+msgstr "נדרש אימות לעדכון תכנה"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "נדרש אימות כדי לשדרג את מערכת ההפעלה"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
 msgstr "יוצר"
+
+msgid "Automatically remove unused dependencies"
+msgstr "להסיר תלויות שאינן בשימוש אוטומטית"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
@@ -141,6 +213,10 @@ msgstr "זמין"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "חסום"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "תיקון תקלה"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -155,7 +231,7 @@ msgstr "CVE"
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr "בטל משימה זרה"
+msgstr "ביטול משימה זרה"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
@@ -168,6 +244,13 @@ msgstr "מבטל"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "קטגוריה"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "החלפת משתני מאגר תכנה"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -202,13 +285,22 @@ msgstr "מנקה"
 msgid "Cleaning up packages"
 msgstr "מנקה חבילות"
 
+#. SECURITY:
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "פינוי הודעת עדכון בלתי מקוון"
+
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "פעולה נכשלה"
+msgstr "פקודה נכשלה"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
 msgstr "שורת פקודה"
+
+msgid "Command not found, valid commands are:"
+msgstr "הפקודה לא נמצאה, הפקודות הזמינות הן:"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
@@ -238,7 +330,7 @@ msgstr "תיקייה לא נמצאה"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "כבה את מד הזמן לחוסר פעילות"
+msgstr "השבתת מודד חוסר הפעילות"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
@@ -249,20 +341,20 @@ msgid "Distribution"
 msgstr "הפצה"
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "אל תתתקין את החבילות הזאת האלו אלא אם אתה בטוח שזה בטוח לעשות זאת"
+msgstr "אין להתקין את החבילות האלו אלמלא השתכנעת שבטוח לעשות זאת."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "אל תתתקין את החבילה הזאת אלא אם אתה בטוח שזה בטוח לעשות זאת"
+msgstr "אין להתקין את החבילה הזאת אלמלא השתכנעת שבטוח לעשות זאת."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "אל תעדכן את החבילות האלו אלא אם אתה בטוח שזה בטוח לעשות זאת"
+msgstr "אין לעדכן את החבילות האלו אלמלא השתכנעת שבטוח לעשות זאת."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "אל תעדכן את החבילה הזאת אלא אם אתה בטוח שזה בטוח לעשות זאת"
+msgstr "אין לעדכן את החבילה הזאת אלמלא השתכנעת שבטוח לעשות זאת."
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "האם אתה מסכים להסכם זה?"
+msgstr "הסכם זה מקובל עליך?"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
@@ -271,7 +363,11 @@ msgstr "האם לתת אמון בחתימה זו?"
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "אתה רוצה לאפשר התקנה של תוכנה לא חתומה"
+msgstr "לאפשר התקנה של תכנה לא חתומה?"
+
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "לא לפנות את הסביבה עם ההפעלה"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
@@ -281,13 +377,17 @@ msgstr "ירד"
 msgid "Downloading"
 msgstr "מוריד מהאינטרנט"
 
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "מתקבלים פרטים על מאגרי התוכנה."
+
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
 msgstr "מוריד רשימות קבצים"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "מוריד רשימת קבצים (זה עלול לקחת קצת זמן)"
+msgstr "רשימת קבצים מתקבלת (זה עלול לקחת קצת זמן)."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
@@ -333,18 +433,28 @@ msgstr "שיפור"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "צא אחרי המתנה קצרה"
+msgstr "לצאת לאחר המתנה קצרה"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "צא אחרי שהמנוע נטען"
+msgstr "לצאת לאחר טעינת המנגנון"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "אמורה הייתה להיות שם חבילה, במקום התקבל קובץ. כדאי לנסות להשתמש ב־‚pkcon install-local %s’ במקום."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "נכשלה יצירת הקשר עם שירות הרקע של Packagekit"
+msgstr "יצירת הקשר עם PackageKit נכשלה"
 
 msgid "Failed to get daemon state"
-msgstr "לא ניתן לקבל מצב שירות הרקע"
+msgstr "לא ניתן לקבל מצב סוכן"
+
+msgid "Failed to get properties"
+msgstr "קבלת המאפיינים נכשלה"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -353,15 +463,35 @@ msgstr "נכשלה קבלת הזמן שעבר מאז שהפעולה הושלמה
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "כישלון בהתקנת החבילות: %s"
+msgstr "כשל בהתקנת החבילות: %s"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
 msgstr "לא ניתן להפעיל: %s"
 
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "טעינת המנגנון נכשלה"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "טעינת קובץ ההגדרות נכשל"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "פענוח הארגומנטים נכשל"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "פענוח שורת הפקודה נכשל"
+
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "נכשל בחיפוש קובץ"
+msgstr "חיפוש אחר קובץ נכשל"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "פריקת המנגנון נכשלה"
 
 msgid "False"
 msgstr "שקר"
@@ -370,6 +500,13 @@ msgstr "שקר"
 #. * fatal in my book
 msgid "Fatal error"
 msgstr "שגיאה פאטלית"
+
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "קובץ כבר קיים: %s"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
@@ -390,7 +527,7 @@ msgstr "מקבל תלויות"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "מקבל פרטים"
+msgstr "פרטים מתקבלים"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
@@ -410,11 +547,19 @@ msgstr "מקבל 'מה מספק'"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "מקבל מאגרים"
+msgstr "מאגרים מתקבלים"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "מקבל דרישות"
+msgstr "דרישות מתקבלות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "שדרוגי המערכת מתקבלים"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "קבלת רשימת הקבצים נכשלה"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
@@ -422,11 +567,11 @@ msgstr "מקבל פעולות ישנות"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "מקבל פרטי עדכון"
+msgstr "פרטי העדכון מתקבלים"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr "מקבל עדכונים"
+msgstr "עדכונים מתקבלים"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
@@ -438,17 +583,39 @@ msgstr "מזהה קבוצה"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "סמליל"
+msgstr "סמל"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
 msgstr "חשוב"
 
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "התקנת חבילה שכבר הותקנה בעבר"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to dowgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "התקנת גרסה ישנה יותר של חבילה שכבר הותקנה"
+
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "התקנת חבילה"
+
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "להתקין את החבילה '%s' כדי לספק את הפקודה '%s'?"
+msgstr "להתקין את החבילה ‚%s’ כדי לספק את הפקודה ‚%s’?"
 
 #. SECURITY:
 #. - Normal users do not need authentication to install signed packages
@@ -456,11 +623,11 @@ msgstr "להתקין את החבילה '%s' כדי לספק את הפקודה '%
 #. - Paranoid users (or parents!) can change this to 'auth_admin' or
 #. 'auth_admin_keep'.
 msgid "Install signed package"
-msgstr "התקן חבילה חתומה"
+msgstr "התקנת חבילה חתומה"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "התקן את החבילה הזאת מבלי לבקש אישור"
+msgstr "להתקין את החבילות האלה מבלי לבקש אישור"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -468,7 +635,7 @@ msgstr "התקן את החבילה הזאת מבלי לבקש אישור"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "התקן קובץ מקומי לא מהימן"
+msgstr "התקנת קובץ מקומי לא מהימן"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
@@ -480,9 +647,19 @@ msgstr "הותקן"
 msgid "Installing"
 msgstr "מתקין"
 
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "מותקן שדרוג למערכת"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "עדכונים מותקנים"
+
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "מתקין קבצים"
+msgstr "קבצים מותקנים"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
@@ -492,9 +669,17 @@ msgstr "מתקין חבילות"
 msgid "Installing signature"
 msgstr "מתקין חתימה"
 
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "מותקן שדרוג למערכת, זה עשוי לארוך זמן מה…"
+
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
 msgstr "מתקין עדכונים"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "עדכונים מותקנים, זה עשוי לארוך זמן מה…"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
@@ -527,11 +712,11 @@ msgstr "טוען מטמון"
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "טוען רשימת חבילות"
+msgstr "רשימת החבילות נטענת."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr "שינוי מדיה נדרש"
+msgstr "נדרשת החלפת מדיה"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
@@ -540,6 +725,10 @@ msgstr "תווית המדיה"
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
 msgstr "סוג המדיה"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "מאגר משתנה"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -554,6 +743,10 @@ msgstr "שם"
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
 msgstr "אין קבצים"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "אין חבילות שדורשות עדכון לגרסאות חדשות יותר."
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
@@ -570,7 +763,7 @@ msgstr "יושן"
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "מיישן"
+msgstr "מיישנת"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
@@ -584,7 +777,7 @@ msgstr "מיישן חבילות"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "אפשרות '%s' לא נתמכת"
+msgstr "אין תמיכה באפשרות ‚%s’"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -599,12 +792,16 @@ msgstr "תיאור חבילה"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr "קבצי החבילה"
+msgstr "קובצי החבילה"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
 msgstr "החבילה לא נמצאה"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
@@ -612,7 +809,7 @@ msgstr "מנשק שורת פקודה של PackageKit"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "מוניטור PackageKit"
+msgstr "צג PackageKit"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
@@ -636,11 +833,11 @@ msgstr "אחוזים"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "אנא בחר פקודה להרצה"
+msgstr "נא לבחור פקודה להרצה"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "אנא בחר חבילה להתקנה"
+msgstr "נא לבחור חבילה להתקנה"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
@@ -648,7 +845,7 @@ msgstr "נא לבחור את החבילה הנכונה: "
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "נא להזין מספר בין 1 ל-%i: "
+msgstr "נא לבחור מספר בין 1 ל־%i: "
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
@@ -656,11 +853,11 @@ msgstr "נא להכניס את המדיה הנכונה"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "נא לצאת (logout) מהמחשב לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה חשובים."
+msgstr "נא לצאת מהחשבון לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה חשובים."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "נא לצאת (logout) מהמחשב לצורך השלמת העדכון."
+msgstr "נא לצאת מהחשבון לצורך השלמת העדכון."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid "Please restart the computer to complete the update as important security updates have been installed."
@@ -670,9 +867,18 @@ msgstr "נא להפעיל את המחשב מחדש לצורך השלמת העד�
 msgid "Please restart the computer to complete the update."
 msgstr "נא להפעיל את המחשב מחדש לצורך השלמת העדכון."
 
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "להתכונן לפעולה על ידי הורדת החבילות בלבד"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "עדכונים מוכנים:"
+
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "הדפס למסך פלט לקריאה ע\"י מכונה במקום ווידג'טים מונפשים"
+msgstr "להציג פלט למסך לקריאה ע״י מכונה במקום וידג׳טים מונפשים"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
@@ -686,9 +892,27 @@ msgstr "מעיין בנתונים"
 msgid "Real name"
 msgstr "שם אמיתי"
 
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "תתבצע הפעלה מחדש לאחר התקנת העדכונים…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "רענון מאגרי המערכת"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "רענון זיכרון המטמון"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "רענון זכרון המטמון (בכוח)"
+
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "מרענן מטמון"
+msgstr "המטמון מתעדכן"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
@@ -709,7 +933,7 @@ msgstr "מתקין מחדש"
 #. try to rebind drivers in use, for instance security authentication
 #. devices.
 msgid "Reload a device"
-msgstr "טען התקן מחדש"
+msgstr "רענון התקן"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -721,7 +945,7 @@ msgstr "טען התקן מחדש"
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "הסר חבילה"
+msgstr "הסרת חבילה"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
@@ -735,6 +959,10 @@ msgstr "מסיר"
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
 msgstr "מסיר חבילות"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "מאגר נמחק"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
@@ -774,7 +1002,7 @@ msgstr "תפקיד"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "הרץ פקודה דומה:"
+msgstr "הרצת פקודה דומה:"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -784,25 +1012,42 @@ msgstr "הרץ את הפקודה הזאת תוך שימוש ברוחב פס סר
 msgid "Running"
 msgstr "פועל"
 
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "התליות מופעלות"
+
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
 msgstr "סורק יישומים מותקנים"
 
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "חיפוש לפי פרטים"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "חיפוש לפי קבצים"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "חיפוש לפי שמות"
+
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "מחפש לפי פרטים"
+msgstr "מתבצע חיפוש לפי פרטים"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "מחפש לפי קובץ"
+msgstr "מתבצע חיפוש לפי קובץ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "מחפש לפי שם"
+msgstr "מתבצע חיפוש לפי שם"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "מחפש קבוצות"
+msgstr "מתבצע חיפוש אחר קבוצות"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
@@ -811,17 +1056,21 @@ msgstr "אבטחה"
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "נדרשת התחברות מחדש ע\"י:"
+msgstr "נדרשת הפעלה מחדש (אבטחה) ע״י:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "נדרשת התחברות מחדש ע\"י:"
+msgstr "נדרשת התחברות מחדש ע״י:"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "הגדר שרת proxy"
+msgstr "הגדרת מתווך לרשת"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "הגדרת אפשרויות מאגר"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
@@ -829,14 +1078,14 @@ msgstr "קביעת סינון, למשל: מותקנות"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "מגדיר מידע"
+msgstr "נתונים מוגדרים"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "הצג מידע ניפוי באגים עבור כל הקבצים"
+msgstr "הצגת מידע ניפוי שגיאות עבור כל הקבצים"
 
 msgid "Show debugging options"
-msgstr "הצג אפשרויות ניפוי באגים"
+msgstr "הצגת אפשרויות ניפוי שגיאות"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
@@ -844,7 +1093,11 @@ msgstr "הצגת גרסת התוכנית ויציאה"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "הצג גרסה וסיים"
+msgstr "הצגת הגרסה ויציאה"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "יתבצע כיבוי לאחר התקנת העדכונים…"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -857,7 +1110,7 @@ msgstr "פקודות דומות:"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "שם מקור התוכנה"
+msgstr "שם מקור התכנה"
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
@@ -898,11 +1151,11 @@ msgstr "תיאור"
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "נדרש אתחול של המערכת ע\"י:"
+msgstr "נדרש אתחול של המערכת ע״י:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "נדרש אתחול מחדש של המערכת ע\"י:"
+msgstr "נדרש אתחול מחדש של המערכת ע״י:"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
@@ -928,12 +1181,17 @@ msgstr "המדיה הנוכחית לא הוכנסה."
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "תכנית השירות (daemon) התרסקה באמצע טראנזקציה!"
+msgstr "הסוכן התרסק באמצע פעולה!"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
 msgstr "מסנן החיפוש לא תקין"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "החבילות הבאות אינן מהימנות:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
@@ -942,6 +1200,10 @@ msgstr "יש לשנמך (לשדרג לאחור) את החבילות הבאות:"
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
 msgstr "יש להתקין את החבילות הבאות:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "יש ליישן את החבילות הבאות:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
@@ -955,9 +1217,17 @@ msgstr "יש להסיר את החבילות הבאות:"
 msgid "The following packages have to be updated:"
 msgstr "יש לעדכן את החבילות הבאות:"
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "הגיל המרבי של זיכרון מטמון נתוני העל. -1 מייצג את ‚אף פעם לא’."
+
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
 msgstr "החבילה המספקת את הקובץ הזה:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "לא ניתן להגדיר את המתווך"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
@@ -965,7 +1235,7 @@ msgstr "החתימה נדחתה."
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "התוכנה הזאת לא הגיעה ממקור מהימן"
+msgstr "התכנה הזאת לא הגיעה ממקור מהימן"
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
@@ -979,7 +1249,7 @@ msgstr "הרצת הפעולה נכשלה"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "התוכנה הלא חתומה לא תותקן"
+msgstr "התכנה הלא חתומה לא תותקן"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -1005,8 +1275,8 @@ msgstr "אין שדרוגים זמינים נכון לעכשיו."
 msgid "This tool could not find all the packages: %s"
 msgstr "הכלי הזה לא הצליח למצוא את כל החבילות: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "הכלי הזה לא הצליח למצוא אף חבילה זמינה: %s"
@@ -1033,6 +1303,16 @@ msgstr "הזמן שעבר מהשימוש האחרון"
 msgid "Transaction"
 msgstr "פעולה"
 
+#. SECURITY:
+#. - Normal users are able to ask updates to be installed at
+#. early boot time without a password.
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the system
+#. to a new distribution since this can make the system unbootable or
+#. stop other applications from working.
+msgid "Trigger offline updates"
+msgstr "הקפצת עדכונים בלתי מקוונים"
+
 #. TRANSLATORS: The type of update
 msgid "Trivial"
 msgstr "עדכון שטחי"
@@ -1040,9 +1320,21 @@ msgstr "עדכון שטחי"
 msgid "True"
 msgstr "אמת"
 
+#. SECURITY:
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+msgid "Trust a key used for signing software"
+msgstr "לתת אמון במפתח שמשמש לחתימת תכנה"
+
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
 msgstr "סוג"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "לא זמין"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -1051,6 +1343,15 @@ msgstr "סוג תפקיד לא ידוע"
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
 msgstr "מצב לא ידוע"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+msgid "Update software"
+msgstr "עדכון תכנה"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
@@ -1074,15 +1375,25 @@ msgstr "מעדכן"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "מעדכן חבילות"
+msgstr "חבילות מתעדכנות"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
 msgstr "מעדכן את רשימת היישומים הפעילים"
 
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "שדרוג המערכת"
+
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
 msgstr "מזהה משתמש"
+
+msgid "User aborted selection"
+msgstr "המשתמש ביטל את הבחירה"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
@@ -1104,9 +1415,19 @@ msgstr "ממנית לנעילה על מנוע ניהול החבילות"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "ממתין לנעילה על מנוע ניהול החבילות"
+msgstr "בהמתנה לנעילה על מנהל החבילות."
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
 msgstr "ממתין בתור"
+
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "עליך לציין קובץ רשימה ליצירה"
+
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "הפקודה לא נמצאה"

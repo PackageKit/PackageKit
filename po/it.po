@@ -1281,8 +1281,8 @@ msgstr "Al momento non è disponibile alcun avanzamento di versione."
 msgid "This tool could not find all the packages: %s"
 msgstr "Questo strumento non può trovare tutti i pacchetti: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Questo strumento non può trovare alcun pacchetto disponibile: %s"

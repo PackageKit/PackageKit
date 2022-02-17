@@ -8,9 +8,9 @@
 # troubi51 <corentin.perard@gmail.com>, 2009
 # dominique bribanick <chepioq@gmail.com>, 2013-2014
 # Heldwin <listes.00@gmail.com>, 2021
-# Thomas <thomas.canniot@laposte.net>, 2009
+# Thomas <thomas.canniot@outlook.fr>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
-# Thomas <thomas.canniot@laposte.net>, 2009
+# Thomas <thomas.canniot@outlook.fr>, 2009
 # troubi51 <corentin.perard@gmail.com>, 2009
 msgid ""
 msgstr ""
@@ -1281,8 +1281,8 @@ msgstr "Il n'y a pas de mise à niveau disponible pour le moment."
 msgid "This tool could not find all the packages: %s"
 msgstr "Cet outil n'a pas pu trouver tous les paquets : %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Cet outil n'a pas pu trouver de paquet disponible : %s"

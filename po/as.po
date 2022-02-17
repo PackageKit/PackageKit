@@ -965,8 +965,8 @@ msgstr "এই মুহূৰ্তে কোনো উন্নয়ন উপ�
 msgid "This tool could not find all the packages: %s"
 msgstr "এই সৰঞ্জামে সকলো সৰঞ্জামসমূহ বিচাৰিব নোৱাৰিলে: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "উপলব্ধ কোনো সৰঞ্জাম এই সামগ্ৰী দ্বাৰা পোৱা নাযায়: %s"

@@ -3,11 +3,11 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Adolfo Jayme Barrientos, 2014
-# Adolfo Jayme Barrientos, 2013
-# Adolfo Jayme Barrientos, 2019
-# Adolfo Jayme Barrientos, 2015
-# Adolfo Jayme Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2014
+# Adolfo Jayme-Barrientos, 2013
+# Adolfo Jayme-Barrientos, 2019
+# Adolfo Jayme-Barrientos, 2015
+# Adolfo Jayme-Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
 # 0f759dd1ea6c4c76cedc299039ca4f23_7584d04 <454cc45058db9632179dc8079c0c1af3_5311>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
@@ -1283,8 +1283,8 @@ msgstr "En este momento no hay versiones nuevas disponibles."
 msgid "This tool could not find all the packages: %s"
 msgstr "Esta herramienta no pudo encontrar todos los paquetes: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Esta herramienta no pudo encontrar ningún paquete disponible: %s"

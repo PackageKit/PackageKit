@@ -964,8 +964,8 @@ msgstr "ഒരു പരിഷ്കരണങ്ങളും ഇപ്പോള�
 msgid "This tool could not find all the packages: %s"
 msgstr "എല്ലാ പാക്കേജുകളും കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ലഭ്യമായ പാക്കേജ് കണ്ടുപിടിക്കുവാന്‍ ഈ പ്രയോഗത്തിനു് സാധ്യമായില്ല: %s"

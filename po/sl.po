@@ -4,7 +4,7 @@
 #
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2015
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -153,6 +153,9 @@ msgstr "Zahtevana je overitev za sprejemanje dovoljenja uporabe"
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev."
 
+msgid "Authentication is required to change software repository parameters"
+msgstr "Za spremembo parametrov skladišč programja je zahtevana overitev"
+
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potrebno overjanje"
 
@@ -167,6 +170,9 @@ msgstr "Za namestitev programja je obvezna overitev"
 
 msgid "Authentication is required to install untrusted software"
 msgstr "Za namestitev programja, ki ni zaupanja vredno, je obvezna overitev"
+
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Za osvežitev sistemskih skladišč je zahtevana overitev"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Za ponovno namestitev programa je potrebna overovitev"
@@ -189,9 +195,15 @@ msgstr "Za proženje posodobitev v stanju nepovezanosti je potrebno overjanje"
 msgid "Authentication is required to update software"
 msgstr "Za posodobitev programja je obvezna overitev"
 
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Za nadgradnjo operacijskega sistema je zahtevana overitev"
+
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
 msgstr "Avtor"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Samodejno odstrani neuporabljene odvisnosti"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
@@ -200,6 +212,10 @@ msgstr "Na voljo"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "Blokirana"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Popravek hrošča"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -227,6 +243,13 @@ msgstr "Preklic v teku"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "Kategorija"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Spremeni parametre skladišč programja"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -352,6 +375,10 @@ msgstr "Prejeto"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Prejemanje"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Prejemanje podrobnosti o skladiščih programja."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -525,6 +552,10 @@ msgstr "Pridobivanje skladišč"
 msgid "Getting requires"
 msgstr "Pridobivanje zahtevanega"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Pridobivanje sistemskih posodobitev"
+
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
 msgstr "Dobivanje seznama datotek je spodletelo"
@@ -616,6 +647,11 @@ msgid "Installing"
 msgstr "Nameščanje"
 
 #. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Nameščanje sistemske nadgradnje"
+
+#. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
 msgstr "Nameščanje posodobitev"
@@ -631,6 +667,10 @@ msgstr "Nameščanje paketov"
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
 msgstr "Nameščanje podpisa"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Nameščanje nadgradnje sistema zahteva svoj čas ..."
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -685,6 +725,10 @@ msgstr "Oznaka nosilca"
 msgid "Media type"
 msgstr "Vrsta nosilca"
 
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Spreminjanje skladišča"
+
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
@@ -733,6 +777,13 @@ msgstr "Nastavljanje zastarelih paketov"
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "Možnost '%s' ni podprta"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Paket"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
@@ -844,6 +895,12 @@ msgstr "Pravo ime"
 msgid "Rebooting after installing updates…"
 msgstr "Ponoven zagon po namestitvi posodobitev ..."
 
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Osveži sistemska skladišča"
+
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
 msgstr "Osveži predpomnilnik"
@@ -953,6 +1010,11 @@ msgstr "Požene ukaz z uporabo pasovne širine nedejavnega omrežja in tudi pora
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
 msgstr "Izvajanje"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Izvajanje spojev"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1138,6 +1200,10 @@ msgstr "Naslednje pakete je treba podgraditi:"
 msgid "The following packages have to be installed:"
 msgstr "Namestiti je treba naslednje pakete:"
 
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Naslednje pakete je treba označiti kot zastarele:"
+
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
 msgstr "Ponovno je treba namestiti naslednje pakete:"
@@ -1208,8 +1274,8 @@ msgstr "Trenutno ni nadgradenj na voljo."
 msgid "This tool could not find all the packages: %s"
 msgstr "To orodje ni moglo najti vseh paketov: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa: %s"
@@ -1313,6 +1379,13 @@ msgstr "Posodabljanje paketov"
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
 msgstr "Posodabljanje izvajajočih programov"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "Nadgradi sistem"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"

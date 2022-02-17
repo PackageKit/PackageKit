@@ -1276,8 +1276,8 @@ msgstr "Tidak ada peningkatan tersedia saat ini."
 msgid "This tool could not find all the packages: %s"
 msgstr "Alat ini tidak bisa menemukan semua paket: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Alat ini tidak dapat menemukan paket yang tersedia: %s"

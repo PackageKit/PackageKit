@@ -3,9 +3,9 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# milotype <mail@milotype.de>, 2020
+# Milo Ivir <mail@milotype.de>, 2020
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012
-# gogo <trebelnik2@gmail.com>, 2017-2019
+# gogo <trebelnik2@gmail.com>, 2017-2019,2021
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -1015,7 +1015,7 @@ msgstr "Pokrenuto"
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr "Pokretanje umetnutog programskog koda"
+msgstr "Pokretanje umetnutog programskog kôda"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
@@ -1275,8 +1275,8 @@ msgstr "Trenutno nema dostupnih nadogradnja."
 msgid "This tool could not find all the packages: %s"
 msgstr "Ovaj alat ne može pronaći sve pakete: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Alat ne može pronaći dostupne pakete: %s"

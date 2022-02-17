@@ -1,3 +1,60 @@
+Version 1.2.5
+~~~~~~~~~~~~~
+Released: 2022-02-17
+
+Backends:
+ - alpm: adapt to changes in db updates and total cb calling (Carsten Haitzler)
+ - alpm: adapt to changes in setting arch config - now a list (Carsten Haitzler)
+ - alpm: Also mark single ignored matches as blocked (Aleix Pol)
+ - alpm: Do not call dlcb completed explicitly (Aleix Pol)
+ - alpm: fix apparent lack of braces in if clause (Carsten Haitzler)
+ - alpm: fix bug waiting to happen with cast from ptr to boolean (Carsten Haitzler)
+ - alpm: fix change in alpm_option_set_logcb to add ctx pointer (Carsten Haitzler)
+ - alpm: fix changes in alpm_option_set_fetchcb to add ctx (Carsten Haitzler)
+ - alpm: fix get-update-detail which uses totally wrong list of strings (Carsten Haitzler)
+ - alpm: fix get-updates (Jan Blackquill)
+ - alpm: fix missing handling of hookdir in pacman.conf (Carsten Haitzler)
+ - alpm: fix uninitialized stack vars used later in config (Carsten Haitzler)
+ - alpm: fix warning about fallthrough - be explicit about it (Carsten Haitzler)
+ - alpm: fix warning of casing ptr to gboolean - this is problematic (Carsten Haitzler)
+ - alpm: fix warning to keep local var declarations c99 consistent (Carsten Haitzler)
+ - alpm: handle configuration 'NoProgressBar' (Antonio Rojas)
+ - alpm: have pk_alpm_update_databases() return meaningful information (Aleix Pol)
+ - alpm: Offer the database we create when updating (Aleix Pol)
+ - alpm: Properly check if upgrades is set (Aleix Pol)
+ - alpm: remove unused error PK_ERROR_ENUM_REPO_NOT_FOUND (Carsten Haitzler)
+ - alpm: set the status of the job (Aleix Pol)
+ - alpm: silence warning for gool to ptr conversion with a cast (Carsten Haitzler)
+ - alpm: Support replaces with version expressions (Aleix Pol)
+ - alpm: update to breaking changes in transactions (Carsten Haitzler)
+ - aptcc: Allow PkgList to track additional state per package (Matthias Klumpp)
+ - aptcc: Apply auto/manual state from previously resolved pkgids when needed (Matthias Klumpp)
+ - aptcc: Attempt to fix broken packages again when system repair is requested (Matthias Klumpp)
+ - aptcc: correctly lists all the available package versions .. (liushuyu)
+ - aptcc: Display an excerpt of dpkg's log on error instead of not failing at all (Matthias Klumpp)
+ - aptcc: Emit only the first, likely highest-quality error when dpkg fails (Matthias Klumpp)
+ - aptcc: fix a bug where downgrade is not working .. (liushuyu)
+ - aptcc: Only set locale from job if we are not on Debconf passthrough (Matthias Klumpp)
+ - aptcc: Propagate install mode info in all emitted package-IDs (Matthias Klumpp)
+ - aptcc: return local file listings in the same format as installed ones (Matthias Klumpp)
+ - dnf: Add support for autoremove flag when removing packages (Neal Gompa)
+ - dnf: Searches by name and package details should be case insensitive (Matias De lellis)
+ - dnf: Update appstream xml files if dnf_sack_add_repos() does the download (Owen W. Taylor)
+ - nix: remove g_assert_not_reached (Matthew Bauer)
+ - nix: Update backend to use Nix Flakes (#414) (Matthew Bauer)
+ - slack: Add bzip2 and sqlite3 dependencies (Eugen Wissner)
+ - zypp: Add -std=c++1z cpp flags (Jonathan Kang)
+ - zypp: Fix crash when search string is NULL (Jonathan Kang)
+ - zypp: Fix package installation using undefined data (Pekka Vuorela)
+
+Bugfixes:
+ - Install offline-update enablement symlink if Meson is new enough (Matthias Klumpp)
+ - Move Wants= line for network-online.target (Erich Eickmeyer)
+ - Add flags to D-Bus offline invoking methods (Milan Crha)
+ - Properly handle allow-reinstall flag for installations (Matthias Klumpp)
+ - Provide better error message if trying to install an installed package (Matthias Klumpp)
+ - Wait until online to activate systemd service (Erich Eickmeyer)
+
 Version 1.2.4
 ~~~~~~~~~~~~~
 Released: 2021-07-30

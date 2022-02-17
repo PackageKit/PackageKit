@@ -964,8 +964,8 @@ msgstr "இந்த முறை மேம்படுத்தல்கள் 
 msgid "This tool could not find all the packages: %s"
 msgstr "இந்த கருவி அனைத்து தொகுப்புகளையும் தேட முடியவில்லை: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "இந்த கருவி இருக்கும் தொகுப்பை தேட முடியவில்லை: %s"

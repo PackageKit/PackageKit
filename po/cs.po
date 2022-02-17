@@ -8,7 +8,7 @@
 # Ascii Wolf <mail@asciiwolf.com>, 2018
 # fri, 2011
 # fri, 2011
-# Jozef Mlích <xmlich02@stud.fit.vutbr.cz>, 2015
+# Jozef Mlích <jmlich83@gmail.com>, 2015
 # Marek Černocký <marek@manet.cz>, 2013-2016,2018
 # Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -1282,8 +1282,8 @@ msgstr "V tuto chvíli není dostupné žádné povýšení."
 msgid "This tool could not find all the packages: %s"
 msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček: %s"

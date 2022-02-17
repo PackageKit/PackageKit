@@ -966,8 +966,8 @@ msgstr "આ સમયે ઉપલ્બ્ધ સુધારાઓ નથી."
 msgid "This tool could not find all the packages: %s"
 msgstr "આ સાધન બધા પેકેજોને શોધી શક્યુ નહિં: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "આ સાધન ઉપલ્બધ પેકેજ ને શોધી શક્યુ નહિં: %s"

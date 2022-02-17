@@ -965,8 +965,8 @@ msgstr "इस समय कोई अद्यतन उपलब्ध नह�
 msgid "This tool could not find all the packages: %s"
 msgstr "यह औजार संकुल को नहीं ढ़ूँढ़ सका: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "यह औजार किसी उपलब्ध संकुल को नहीं ढूँढ़ सका: %s"

@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# Green, 2021
 # hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
 # Kiyoto Hashida <khashida@redhat.com>, 2009
 # Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
@@ -309,7 +310,7 @@ msgstr "コマンドが見つかりません、有効なコマンドは:"
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "変更をコミット中"
+msgstr "変更を適用中"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
@@ -334,7 +335,7 @@ msgstr "ディレクトリーが見つかりません"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "遊休タイマーを無効にする"
+msgstr "待機タイマーを無効にする"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
@@ -479,7 +480,7 @@ msgstr "バックエンドのロードに失敗しました"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr "コンフィグファイルのロードに失敗しました"
+msgstr "設定ファイルのロードに失敗しました"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
@@ -1279,8 +1280,8 @@ msgstr "現時点では利用可能なアップグレードはありません。
 msgid "This tool could not find all the packages: %s"
 msgstr "このツールでは全パッケージを見つけられません: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"

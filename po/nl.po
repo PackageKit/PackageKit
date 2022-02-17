@@ -1225,8 +1225,8 @@ msgstr "Er zijn op dit moment geen upgrades beschikbaar."
 msgid "This tool could not find all the packages: %s"
 msgstr "Dit programma kon niet alle pakketten vinden: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Dit programma kon geen enkel beschikbaar pakket %s vinden."

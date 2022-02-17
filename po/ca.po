@@ -7,8 +7,8 @@
 # Pau Iranzo <pau@somgnu.cat>, 2009
 # Pere Argelich <bakidok@gmail.com>, 2008
 # Richard Hughes <richard@hughsie.com>, 2011
-# Robert Antoni Buj i Gelonch <rbuj@fedoraproject.org>, 2017-2018
-# Robert Antoni Buj i Gelonch <rbuj@fedoraproject.org>, 2015-2016
+# Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2017-2018
+# Robert Antoni Buj Gelonch <rbuj@fedoraproject.org>, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -1278,8 +1278,8 @@ msgstr "En aquest moment no hi ha disponible cap actualització a nivell de llan
 msgid "This tool could not find all the packages: %s"
 msgstr "Aquesta eina no ha pogut trobar tots els paquets: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "Aquesta eina no ha pogut trobar cap paquet disponible: %s"

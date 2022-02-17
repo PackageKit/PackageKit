@@ -1276,8 +1276,8 @@ msgstr "현재 사용 가능한 업그레이드가 없습니다."
 msgid "This tool could not find all the packages: %s"
 msgstr "모든 패키지를 찾을 수 없음: %s"
 
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "사용 가능한 패키지를 찾을 수 없음: %s"
