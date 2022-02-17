@@ -37,6 +37,7 @@
 
 #include <appstream.h>
 
+#include <sys/prctl.h>
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
 #include <sys/wait.h>
@@ -44,6 +45,7 @@
 #include <pty.h>
 
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <fstream>
 #include <dirent.h>
@@ -2481,6 +2483,9 @@ bool AptIntf::installPackages(PkBitfield flags)
     if (m_child_pid == 0) {
         //cout << "FORKED: installPackages(): DoInstall" << endl;
 
+        // ensure that this process dies with its parent
+        prctl(PR_SET_PDEATHSIG, SIGKILL);
+
         // close pipe we don't need
         close(readFromChildFD[0]);
 
@@ -2532,7 +2537,7 @@ bool AptIntf::installPackages(PkBitfield flags)
 
     cout << "APTcc parent process running..." << endl;
 
-    // make it nonblocking, verry important otherwise
+    // make it nonblocking, very important otherwise
     // when the child finish we stay stuck.
     fcntl(readFromChildFD[0], F_SETFL, O_NONBLOCK);
     fcntl(pty_master, F_SETFL, O_NONBLOCK);
@@ -2542,11 +2547,21 @@ bool AptIntf::installPackages(PkBitfield flags)
     m_startCounting = false;
 
     // Check if the child died
-    int ret;
+    int ret = 0;
     char masterbuf[1024];
-    while (waitpid(m_child_pid, &ret, WNOHANG) == 0) {
-        // TODO: This is dpkg's raw output. Maybe save it for error-solving?
-        while (read(pty_master, masterbuf, sizeof(masterbuf)) > 0);
+    std::string errorLogTail = "";
+    while (true) {
+        while (true) {
+            int bufLen = read(pty_master, masterbuf, sizeof(masterbuf));
+            if (bufLen <= 0)
+                break;
+            masterbuf[bufLen] = '\0';
+            errorLogTail.append(masterbuf);
+            if (errorLogTail.length() > 2048)
+                errorLogTail.erase(0, errorLogTail.length() - 2048);
+        }
+        if (waitpid(m_child_pid, &ret, WNOHANG) != 0)
+            break;
         updateInterface(readFromChildFD[0], pty_master);
     }
 
@@ -2555,6 +2570,37 @@ bool AptIntf::installPackages(PkBitfield flags)
     close(pty_master);
     _system->LockInner();
 
-    cout << "APTcc Parent finished..." << endl;
+    cout << "APTcc parent process finished." << endl;
+
+    if (ret != 0) {
+        // an error occurred, let's see if we can find any kind of not
+        // overlay verbose information to display
+
+        std::stringstream ss(errorLogTail);
+        std::string line;
+        std::string shortErrorLog = "";
+        while(std::getline(ss, line, '\n')) {
+            if (line.starts_with("E:"))
+                shortErrorLog.append("\n" + line);
+        }
+
+        if (shortErrorLog.empty()) {
+            if (errorLogTail.length() > 1200)
+                errorLogTail.erase(0, errorLogTail.length() - 1200);
+            std::string logExcerpt = errorLogTail.substr(errorLogTail.find("\n") + 1, errorLogTail.length());
+            logExcerpt = logExcerpt.empty()? "No log generated. Check `/var/log/apt/term.log`!" : "\n" + logExcerpt;
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                      "Error while running dpkg. Log excerpt: %s",
+                                       logExcerpt.c_str());
+        } else {
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_TRANSACTION_ERROR,
+                                      "Error while running the transaction: %s",
+                                      shortErrorLog.c_str());
+        }
+        return false;
+    }
+
     return true;
 }

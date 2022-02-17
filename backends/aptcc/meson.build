@@ -65,7 +65,7 @@ shared_module(
   link_args: [
     '-lutil',
   ],
-  override_options: ['c_std=c11', 'cpp_std=c++11'],
+  override_options: ['c_std=c18', 'cpp_std=c++20'],
   install: true,
   install_dir: pk_plugin_dir,
 )
