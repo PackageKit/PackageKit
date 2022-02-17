@@ -1731,7 +1731,7 @@ pkgCache::VerIterator AptIntf::findTransactionPackage(const std::string &name)
     return candidateVer;
 }
 
-void AptIntf::updateInterface(int fd, int writeFd)
+void AptIntf::updateInterface(int fd, int writeFd, bool *errorEmitted)
 {
     char buf[2];
     static char line[1024] = "";
@@ -1741,17 +1741,16 @@ void AptIntf::updateInterface(int fd, int writeFd)
         int len = read(fd, buf, 1);
 
         // nothing was read
-        if(len < 1) {
+        if(len < 1)
             break;
-        }
 
         // update the time we last saw some action
         m_lastTermAction = time(NULL);
 
-        if( buf[0] == '\n') {
-            if (m_cancel) {
+        if (buf[0] == '\n') {
+            if (m_cancel)
                 kill(m_child_pid, SIGTERM);
-            }
+
             //cout << "got line: " << line << endl;
 
             g_auto(GStrv) split   = g_strsplit(line, ":",5);
@@ -1782,6 +1781,8 @@ void AptIntf::updateInterface(int fd, int writeFd)
                                           PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
                                           "Error while installing package: %s",
                                           str);
+                if (errorEmitted != nullptr)
+                    *errorEmitted = true;
             } else if (strstr(status, "pmconffile") != NULL) {
                 // conffile-request from dpkg, needs to be parsed different
                 int i = 0;
@@ -2030,7 +2031,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
 
     time_t now = time(NULL);
 
-    if(!m_startCounting) {
+    if (!m_startCounting) {
         usleep(100000);
         // wait until we get the first message from apt
         m_lastTermAction = now;
@@ -2043,7 +2044,7 @@ void AptIntf::updateInterface(int fd, int writeFd)
         m_lastTermAction = time(NULL);
     }
 
-    // sleep for a while to don't obcess over it
+    // sleep for a while to not obsess over it
     usleep(5000);
 }
 
@@ -2546,10 +2547,12 @@ bool AptIntf::installPackages(PkBitfield flags)
     m_lastTermAction = time(NULL);
     m_startCounting = false;
 
-    // Check if the child died
+    // process messages from child
     int ret = 0;
     char masterbuf[1024];
     std::string errorLogTail = "";
+    bool errorEmitted = false;
+    bool childTerminated = false;
     while (true) {
         while (true) {
             int bufLen = read(pty_master, masterbuf, sizeof(masterbuf));
@@ -2560,9 +2563,17 @@ bool AptIntf::installPackages(PkBitfield flags)
             if (errorLogTail.length() > 2048)
                 errorLogTail.erase(0, errorLogTail.length() - 2048);
         }
-        if (waitpid(m_child_pid, &ret, WNOHANG) != 0)
+
+        // don't continue if the child terminated previously
+        if (childTerminated)
             break;
-        updateInterface(readFromChildFD[0], pty_master);
+
+        // try to parse dpkg status
+        updateInterface(readFromChildFD[0], pty_master, &errorEmitted);
+
+        // Check if the child died
+        if (waitpid(m_child_pid, &ret, WNOHANG) != 0)
+            childTerminated = true; // one last round to read remaining output
     }
 
     close(readFromChildFD[0]);
@@ -2570,11 +2581,13 @@ bool AptIntf::installPackages(PkBitfield flags)
     close(pty_master);
     _system->LockInner();
 
-    cout << "APTcc parent process finished." << endl;
+    cout << "APTcc parent process finished: " << ret << endl;
 
-    if (ret != 0) {
-        // an error occurred, let's see if we can find any kind of not
-        // overlay verbose information to display
+    if (ret != 0 && !m_cancel && !errorEmitted) {
+        // If the child died with a non-zero exit code, and we didn't deliberately
+        // kill it in a cancel operation and we didn't already emit an error,
+        // we still need to find out what went wrong to present a message to the user.
+        // Let's see if we can find any kind of not overlay verbose information to display.
 
         std::stringstream ss(errorLogTail);
         std::string line;
