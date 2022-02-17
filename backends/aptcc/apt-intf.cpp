@@ -2580,7 +2580,7 @@ bool AptIntf::installPackages(PkBitfield flags)
         std::string line;
         std::string shortErrorLog = "";
         while(std::getline(ss, line, '\n')) {
-            if (line.starts_with("E:"))
+            if (g_str_has_prefix (line.c_str(), "E:"))
                 shortErrorLog.append("\n" + line);
         }
 
