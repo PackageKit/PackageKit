@@ -56,5 +56,5 @@ endif
 
 install_data(
   'transactions.db',
-  install_dir: join_paths('/mnt/ludata/repos/PackageKit/outputs/out', 'var', 'lib', 'PackageKit'),
+  install_dir: join_paths(get_option('localstatedir'), 'lib', 'PackageKit'),
 )
