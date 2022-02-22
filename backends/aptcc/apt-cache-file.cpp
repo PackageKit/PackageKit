@@ -380,13 +380,16 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
             strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
         return PkgInfo(ver, piAction);
 
-    const pkgCache::VerIterator &candidateVer = findCandidateVer(pkg);
     // check to see if the provided package isn't virtual too
     // also iterate through all the available versions
-    for (auto candidate = candidateVer; !candidate.end(); candidate++) {
-        if (strcmp(candidate.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0) {
-            return PkgInfo(ver, piAction);
-        }
+    auto candidateVer = findCandidateVer(pkg);
+    while (true) {
+        if (strcmp(candidateVer.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+            return PkgInfo(candidateVer, piAction);
+
+        if (candidateVer.end())
+            break;
+        candidateVer++;
     }
 
     return PkgInfo(ver, piAction);
