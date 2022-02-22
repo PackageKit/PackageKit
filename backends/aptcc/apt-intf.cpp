@@ -425,21 +425,17 @@ void AptIntf::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
         }
     }
 
-    gchar *package_id;
-    package_id = m_cache->buildPackageId(ver);
+    g_autofree gchar *package_id = m_cache->buildPackageId(ver);
     pk_backend_job_package(m_job,
                            state,
                            package_id,
                            m_cache->getShortDescription(ver).c_str());
-    g_free(package_id);
 }
 
 void AptIntf::emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, uint percentage)
 {
-    gchar *package_id;
-    package_id = m_cache->buildPackageId(ver);
+    g_autofree gchar *package_id = m_cache->buildPackageId(ver);
     pk_backend_job_set_item_progress(m_job, package_id, status, percentage);
-    g_free(package_id);
 }
 
 void AptIntf::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state, bool multiversion)
@@ -479,8 +475,7 @@ void AptIntf::emitRequireRestart(PkgList &output)
     output.removeDuplicates();
 
     for (const PkgInfo &info : output) {
-        g_autofree gchar *package_id = nullptr;
-        package_id = m_cache->buildPackageId(info.ver);
+        g_autofree gchar *package_id = m_cache->buildPackageId(info.ver);
         pk_backend_job_require_restart(m_job, PK_RESTART_ENUM_SYSTEM, package_id);
     }
 }
@@ -761,8 +756,7 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
         size = ver->Size;
     }
 
-    gchar *package_id;
-    package_id = m_cache->buildPackageId(ver);
+    g_autofree gchar *package_id = m_cache->buildPackageId(ver);
     pk_backend_job_details(m_job,
                            package_id,
                            m_cache->getShortDescription(ver).c_str(),
@@ -771,8 +765,6 @@ void AptIntf::emitPackageDetail(const pkgCache::VerIterator &ver)
                            m_cache->getLongDescriptionParsed(ver).c_str(),
                            rec.Homepage().c_str(),
                            size);
-
-    g_free(package_id);
 }
 
 void AptIntf::emitDetails(PkgList &pkgs)
@@ -850,8 +842,7 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
 
     // Build a package_id from the update version
     string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
-    gchar *package_id;
-    package_id = m_cache->buildPackageId(candver);
+    g_autofree gchar *package_id = m_cache->buildPackageId(candver);
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
     if (archive.compare("stable") == 0) {
@@ -868,17 +859,13 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
         restart = PK_RESTART_ENUM_SYSTEM;
     }
 
-    gchar **updates;
-    updates = (gchar **) g_malloc(2 * sizeof(gchar *));
+    g_auto(GStrv) updates = (gchar **) g_malloc(2 * sizeof(gchar *));
     updates[0] = current_package_id;
     updates[1] = NULL;
 
-    GPtrArray *bugzilla_urls;
-    GPtrArray *cve_urls;
-    bugzilla_urls = getBugzillaUrls(changelog);
-    cve_urls = getCVEUrls(changelog);
-
-    GPtrArray *obsoletes = g_ptr_array_new();
+    g_autoptr(GPtrArray) bugzilla_urls = getBugzillaUrls(changelog);
+    g_autoptr(GPtrArray) cve_urls = getCVEUrls(changelog);
+    g_autoptr(GPtrArray) obsoletes = g_ptr_array_new();
 
     for (auto deps = candver.DependsList(); not deps.end(); ++deps)
     {
@@ -905,12 +892,6 @@ void AptIntf::emitUpdateDetail(const pkgCache::VerIterator &candver)
                                  issued.c_str(), //const gchar *issued_text
                                  updated.c_str() //const gchar *updated_text
                                  );
-
-    g_free(package_id);
-    g_strfreev(updates);
-    g_ptr_array_unref(obsoletes);
-    g_ptr_array_unref(bugzilla_urls);
-    g_ptr_array_unref(cve_urls);
 }
 
 void AptIntf::emitUpdateDetails(const PkgList &pkgs)
@@ -1477,10 +1458,8 @@ void AptIntf::emitPackageFiles(const gchar *pi)
 {
     GPtrArray *files;
     string line;
-    gchar **parts;
 
-    parts = pk_package_id_split(pi);
-
+    g_auto(GStrv) parts = pk_package_id_split(pi);
     string fName;
     fName = "/var/lib/dpkg/info/" +
             string(parts[PK_PACKAGE_ID_NAME]) +
@@ -1493,7 +1472,6 @@ void AptIntf::emitPackageFiles(const gchar *pi)
                 string(parts[PK_PACKAGE_ID_NAME]) +
                 ".list";
     }
-    g_strfreev (parts);
 
     if (FileExists(fName)) {
         ifstream in(fName.c_str());
@@ -1524,20 +1502,17 @@ void AptIntf::emitPackageFilesLocal(const gchar *file)
         return;
     }
 
-    gchar *package_id;
-    package_id = pk_package_id_build(deb.packageName().c_str(),
-                                     deb.version().c_str(),
-                                     deb.architecture().c_str(),
-                                     file);
+    g_autofree gchar *package_id = pk_package_id_build(deb.packageName().c_str(),
+                                                       deb.version().c_str(),
+                                                       deb.architecture().c_str(),
+                                                       file);
 
-    GPtrArray *files = g_ptr_array_new_with_free_func(g_free);
+    g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
     for (auto file : deb.files()) {
         g_ptr_array_add(files, g_canonicalize_filename(file.c_str(), "/"));
     }
     g_ptr_array_add(files, NULL);
     pk_backend_job_files(m_job, package_id, (gchar **) files->pdata);
-
-    g_ptr_array_unref(files);
 }
 
 /**
@@ -2066,14 +2041,12 @@ PkgList AptIntf::resolvePackageIds(gchar **package_ids, PkBitfield filters)
     pk_backend_job_set_status (m_job, PK_STATUS_ENUM_QUERY);
 
     // Don't fail if package list is empty
-    if (package_ids == NULL) {
+    if (package_ids == NULL)
         return ret;
-    }
 
     for (uint i = 0; i < g_strv_length(package_ids); ++i) {
-        if (m_cancel) {
+        if (m_cancel)
             break;
-        }
 
         const gchar *pkgid = package_ids[i];
 
