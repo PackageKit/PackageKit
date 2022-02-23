@@ -266,7 +266,7 @@ pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GErr
 	}
 	result = alpm_db_update (priv->alpm, dbs, force);
 	if (result < 0) {
-		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "failed to uptate database: %s",
+		g_set_error (error, PK_ALPM_ERROR, alpm_errno (priv->alpm), "failed to update database: %s",
 				alpm_strerror (errno));
 		return FALSE;
 	}
