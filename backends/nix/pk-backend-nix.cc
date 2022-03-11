@@ -134,7 +134,7 @@ pk_backend_get_mime_types (PkBackend* backend)
 }
 
 static nix::OrSuggestions<nix::ref<nix::eval_cache::AttrCursor>>
-nix_get_cursor (nix::EvalState & state, std::string flake, std::string attrPath)
+nix_get_attr_or_suggestions (nix::EvalState & state, std::string flake, std::string attrPath)
 {
 	nix::flake::LockFlags lockFlags;
 	auto lockedFlake = std::make_shared<nix::flake::LockedFlake> (nix::flake::lockFlake (state, nix::parseFlakeRef(flake), lockFlags));
@@ -158,7 +158,7 @@ pk_backend_get_details_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
 		g_strfreev (parts);
 
-		auto attrOrSuggestions = nix_get_cursor (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
+		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
 		auto cursor = *attrOrSuggestions;
 
 		if (pk_backend_job_is_cancelled (job))
@@ -246,7 +246,7 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	}
 
 	std::string attrPath = "legacyPackages." + nix::settings.thisSystem.get () + ".";
-	auto attrOrSuggestions = nix_get_cursor (*priv->state, priv->defaultFlake, attrPath);
+	auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, priv->defaultFlake, attrPath);
 	auto cursor = *attrOrSuggestions;
 
 	if (pk_backend_job_is_cancelled (job))
@@ -469,7 +469,7 @@ nix_install_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
 		g_strfreev (parts);
 
-		auto attrOrSuggestions = nix_get_cursor (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
+		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
 		auto cursor = *attrOrSuggestions;
 
 		if (attrOrSuggestions && cursor->isDerivation ()) {
@@ -600,7 +600,7 @@ nix_remove_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
 		g_strfreev (parts);
 
-		auto attrOrSuggestions = nix_get_cursor (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
+		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
 		auto cursor = *attrOrSuggestions;
 		if (attrOrSuggestions && cursor->isDerivation ()) {
 			auto drv = nix::getDerivation (*priv->state, cursor->forceValue(), false);
@@ -699,7 +699,7 @@ nix_get_updates_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	for (auto & i : installedElems) {
 		pk_backend_job_set_percentage (job, 100 * progress++ / installedElems.size());
 
-		auto attrOrSuggestions = nix_get_cursor (*priv->state, priv->defaultFlake, "legacyPackages." + nix::settings.thisSystem.get () + "." + i.attrPath);
+		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, priv->defaultFlake, "legacyPackages." + nix::settings.thisSystem.get () + "." + i.attrPath);
 		auto cursor = *attrOrSuggestions;
 		if (attrOrSuggestions && cursor->isDerivation ()) {
 			auto drv = nix::getDerivation (*priv->state, cursor->forceValue(), false);
