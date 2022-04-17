@@ -1239,13 +1239,19 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 		resolver->doUpdate ();
 	}
 
-	for (; it != e; ++it)
-		if (it->status().isToBeInstalled()) {
+	for (; it != e; ++it) {
+		if (it->status().isLocked()) {
+			// We pretend locked packages are not upgradable at all since
+			// we can't represent the concept of holds in PackageKit.
+			// https://github.com/PackageKit/PackageKit/issues/325
+			continue;	
+		} else if (it->status().isToBeInstalled()) {
 			ui::Selectable::constPtr s =
 				ui::Selectable::get((*it)->kind(), (*it)->name());
 			if (s->hasInstalledObj())
 				pks.insert(*it);
 		}
+	}
 
 	if (is_tumbleweed ()) {
 		resolver->setUpgradeMode (FALSE);
