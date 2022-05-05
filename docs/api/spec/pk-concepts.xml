@@ -18,16 +18,22 @@
     <para>
       The <literal>package_id</literal> is parsed and checked carefully in
       the helper code.
-      The package arch and data is optional, but 3 <literal>;</literal>'s must
+      The package arch and data are optional, but 3 <literal>;</literal>'s must
       be present.
       For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
       valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
-      The data field is used for the repository name.
+      The data field is used for the repository name and/or installation state.
+      It should ideally not be parsed by frontends to extract state data, instead the
+      <code>PkInfoEnum</code> that is often provided alongside a <literal>package_id</literal>
+      will provide more accurate state information.
     </para>
     <para>
-      The data field for an installed package must be
-      <literal>installed</literal> as this is used to identify which packages
-      are installable or installed in the client tools.
+      The data field for an installed package can either be
+      <literal>installed</literal> for installed packages, <literal>auto</literal>
+      for automatically installed packages or <literal>manual</literal> for manually
+      installed packages. If the package has a repository origin, the installation state may be
+      prefixed to the origin, divided by a colon, e.g. <literal>auto:fedora-devel</literal>.
+      If a package is not installed, the data field is equal to the package origin.
     </para>
     <para>
       The data field for an non-installed local package must be
@@ -51,7 +57,12 @@
       </listitem>
       <listitem>
         <para>
-          <literal>csup;20060318-5;x86_64;installed</literal>: for locally installed package
+          <literal>csup;20060318-5;x86_64;installed:fedora-devel</literal>: for locally installed package
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;installed</literal>: for locally installed package without repository information
         </para>
       </listitem>
     </itemizedlist>
