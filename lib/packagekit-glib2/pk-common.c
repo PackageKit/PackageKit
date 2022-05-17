@@ -247,6 +247,7 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 	g_autofree gchar *contents = NULL;
 	g_autoptr(GKeyFile) key_file = NULL;
 	g_autoptr(GString) str = NULL;
+	gboolean isuos;
 
 	/* load data */
 	if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -264,14 +265,22 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 	}
 
 	/* get keys */
-	if (id != NULL) {
-		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "ID", error);
+	g_autofree gchar *idtmp = g_key_file_get_string (key_file, "os-release", "ID", error);
+	if (NULL == idtmp)
+		return FALSE;
+	if (0 == g_strncasecmp(idtmp, "uos", -1))
+		isuos = TRUE;
+	else
+		isuos = FALSE;
+	if (NULL != id)
+	{
 		if (tmp == NULL)
 			return FALSE;
 		*id = g_shell_unquote (tmp, error);
 		if (*id == NULL)
 			return FALSE;
 	}
+
 	if (name != NULL) {
 		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "NAME", error);
 		if (tmp == NULL)
@@ -281,7 +290,33 @@ pk_parse_os_release (gchar **id, gchar **name, gchar **version_id, GError **erro
 			return FALSE;
 	}
 	if (version_id != NULL) {
-		g_autofree gchar *tmp = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
+		g_autofree gchar *tmp = NULL;
+		if (FALSE == isuos)
+		{
+			tmp = g_key_file_get_string (key_file, "os-release", "VERSION_ID", error);
+		}
+		else
+		{
+			/* free some unused resource at first
+			g_key_file_free(key_file);
+			g_string_free(str, FALSE);
+			/* load data from /etc/os-version */
+			filename = "/etc/os-version";
+			if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+				return FALSE;
+			if (!g_file_get_contents (filename, &contents, NULL, error))
+			return FALSE;
+
+			/* make a valid GKeyFile from the .ini data by prepending a header */
+			str = g_string_new (contents);
+			g_string_prepend (str, "[version]\n");
+			key_file = g_key_file_new ();
+			ret = g_key_file_load_from_data (key_file, str->str, -1, G_KEY_FILE_NONE, error);
+			if (!ret)
+				return FALSE;
+			tmp = g_key_file_get_string (key_file, "version", "MinorVersion", error);
+		}
+
 		if (tmp == NULL)
 			return FALSE;
 		*version_id = g_shell_unquote (tmp, error);
