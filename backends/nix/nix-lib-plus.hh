@@ -17,7 +17,7 @@
 
 namespace nix {
 
-bool createUserEnv(EvalState & state, DrvInfos & elems, const Path & profile, bool keepDerivations, const string & lockToken);
+bool createUserEnv(EvalState & state, DrvInfos & elems, const Path & profile, bool keepDerivations, const std::string & lockToken);
 
 DrvInfos queryInstalled(EvalState & state, const Path & userEnv);
 
