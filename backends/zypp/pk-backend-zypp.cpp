@@ -1244,7 +1244,7 @@ zypp_get_package_updates (string repo, set<PoolItem> &pks)
 			// We pretend locked packages are not upgradable at all since
 			// we can't represent the concept of holds in PackageKit.
 			// https://github.com/PackageKit/PackageKit/issues/325
-			continue;	
+			continue;
 		} else if (it->status().isToBeInstalled()) {
 			ui::Selectable::constPtr s =
 				ui::Selectable::get((*it)->kind(), (*it)->name());
