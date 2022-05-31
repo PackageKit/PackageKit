@@ -83,6 +83,7 @@ struct PkTransactionPrivate
 	PkTransactionState	 state;
 	guint			 percentage;
 	guint			 elapsed_time;
+	guint			 remaining_time;
 	guint			 speed;
 	guint			 download_size_remaining;
 	gboolean		 finished;
@@ -104,6 +105,10 @@ struct PkTransactionPrivate
 	GCancellable		*cancellable;
 	gboolean		 skip_auth_check;
 	gboolean		 client_supports_plural_signals;
+
+	/* Rate limiting of progress reporting */
+	gboolean		 progress_changed;
+	GSource			*progress_timeout_source;  /* (nullable) (owned) */
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -352,6 +357,89 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 						NULL);
 }
 
+/* If any progress-related properties have changed since the last
+ * `PropertiesChanged` emission, immediately emit that D-Bus signal with the
+ * latest values and clear the pending changes flag.
+ *
+ * See schedule_progress_changed().
+ */
+static void
+flush_progress_changed (PkTransaction *transaction)
+{
+	PkTransactionPrivate *priv = transaction->priv;
+
+	if (!priv->progress_changed)
+		return;
+
+	/* Emit a D-Bus signal to notify of the progress changes. */
+	pk_transaction_emit_properties_changed (transaction,
+						"Percentage", g_variant_new_uint32 (priv->percentage),
+						"ElapsedTime", g_variant_new_uint32 (priv->elapsed_time),
+						"RemainingTime", g_variant_new_uint32 (priv->remaining_time),
+						"Speed", g_variant_new_uint32 (priv->speed),
+						"DownloadSizeRemaining", g_variant_new_uint64 (priv->download_size_remaining),
+						NULL);
+
+	priv->progress_changed = FALSE;
+}
+
+static gboolean
+progress_timeout_cb (gpointer user_data)
+{
+	PkTransaction *transaction = PK_TRANSACTION (user_data);
+
+	flush_progress_changed (transaction);
+
+	return G_SOURCE_CONTINUE;
+}
+
+/* Aggregate progress-related property notifications so that the transaction
+ * doesn’t emit multiple D-Bus signals every millisecond for fast-progressing
+ * operations (which are quite common).
+ *
+ * Instead, emit signals on a timer, set to 100ms (which should be fast enough
+ * for users to not notice the quantisation).
+ *
+ * This significantly reduces the context switching overhead between
+ * packagekitd, dbus-daemon, and the PackageKit clients.
+ *
+ * If the transaction reaches a point where property notifications need to be
+ * synced up with other externally-visible transaction state (such as if another
+ * progress calls `org.freedesktop.DBus.Properties.Get()`), call
+ * flush_progress_changed().
+ */
+static void
+schedule_progress_changed (PkTransaction *transaction)
+{
+	transaction->priv->progress_changed = TRUE;
+
+	if (transaction->priv->progress_timeout_source == NULL) {
+		g_autoptr(GSource) source = NULL;
+
+		source = g_timeout_source_new (100  /* ms */);
+		g_source_set_callback (source, G_SOURCE_FUNC (progress_timeout_cb), transaction, NULL);
+
+#if GLIB_CHECK_VERSION(2, 70, 0)
+		g_source_set_static_name (source, "PkTransaction progress timeout");
+#endif
+
+		g_source_attach (source, g_main_context_get_thread_default ());
+		transaction->priv->progress_timeout_source = g_steal_pointer (&source);
+	}
+}
+
+/* Remove the @progress_timeout_source, if set. */
+static void
+unschedule_progress_changed (PkTransaction *transaction)
+{
+	flush_progress_changed (transaction);
+
+	if (transaction->priv->progress_timeout_source != NULL) {
+		g_source_destroy (transaction->priv->progress_timeout_source);
+		g_clear_pointer (&transaction->priv->progress_timeout_source, g_source_unref);
+	}
+}
+
 static void
 pk_transaction_progress_changed_emit (PkTransaction *transaction,
 				     guint percentage,
@@ -360,16 +448,16 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 {
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 
-	/* save so we can do GetProgress on a queued or finished transaction */
+	if (transaction->priv->percentage == percentage &&
+	    transaction->priv->elapsed_time == elapsed &&
+	    transaction->priv->remaining_time == remaining)
+		return;
+
 	transaction->priv->percentage = percentage;
 	transaction->priv->elapsed_time = elapsed;
+	transaction->priv->remaining_time = remaining;
 
-	/* emit */
-	pk_transaction_emit_properties_changed (transaction,
-						"Percentage", g_variant_new_uint32 (percentage),
-						"ElapsedTime", g_variant_new_uint32 (elapsed),
-						"RemainingTime", g_variant_new_uint32 (remaining),
-						NULL);
+	schedule_progress_changed (transaction);
 }
 
 static void
@@ -404,7 +492,10 @@ pk_transaction_status_changed_emit (PkTransaction *transaction, PkStatusEnum sta
 
 	transaction->priv->status = status;
 
-	/* emit */
+	/* Emit the status change, and also flush out any pending progress updates,
+	 * since the client will want to know the latest values of those
+	 * alongside the status. */
+	flush_progress_changed (transaction);
 	pk_transaction_emit_property_changed (transaction,
 					      "Status",
 					      g_variant_new_uint32 (status));
@@ -1051,6 +1142,10 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		g_warning ("Already finished");
 		return;
 	}
+
+	/* Ensure any pending progress has been emitted and remove the progress
+	 * timer since it’s unlikely to be used again. */
+	unschedule_progress_changed (transaction);
 
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
@@ -1771,11 +1866,12 @@ pk_transaction_speed_cb (PkBackendJob *job,
 			 guint speed,
 			 PkTransaction *transaction)
 {
-	/* emit */
+	if (transaction->priv->speed == speed)
+		return;
+
 	transaction->priv->speed = speed;
-	pk_transaction_emit_property_changed (transaction,
-					      "Speed",
-					      g_variant_new_uint32 (speed));
+
+	schedule_progress_changed (transaction);
 }
 
 static void
@@ -1783,11 +1879,12 @@ pk_transaction_download_size_remaining_cb (PkBackendJob *job,
 					   guint64 *download_size_remaining,
 					   PkTransaction *transaction)
 {
-	/* emit */
+	if (transaction->priv->download_size_remaining == *download_size_remaining)
+		return;
+
 	transaction->priv->download_size_remaining = *download_size_remaining;
-	pk_transaction_emit_property_changed (transaction,
-					      "DownloadSizeRemaining",
-					      g_variant_new_uint64 (*download_size_remaining));
+
+	schedule_progress_changed (transaction);
 }
 
 static void
@@ -1795,11 +1892,12 @@ pk_transaction_percentage_cb (PkBackendJob *job,
 			      guint percentage,
 			      PkTransaction *transaction)
 {
-	/* emit */
+	if (transaction->priv->percentage == percentage)
+		return;
+
 	transaction->priv->percentage = percentage;
-	pk_transaction_emit_property_changed (transaction,
-					      "Percentage",
-					      g_variant_new_uint32 (percentage));
+
+	schedule_progress_changed (transaction);
 }
 
 gboolean
@@ -4949,6 +5047,10 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	PkTransaction *transaction = PK_TRANSACTION (user_data);
 	PkTransactionPrivate *priv = transaction->priv;
 
+	/* Ensure that progress signal emissions are done before we potentially
+	 * return more up-to-date property values. */
+	flush_progress_changed (transaction);
+
 	if (g_strcmp0 (property_name, "Role") == 0)
 		return g_variant_new_uint32 (priv->role);
 	if (g_strcmp0 (property_name, "Status") == 0)
@@ -5261,6 +5363,8 @@ pk_transaction_dispose (GObject *object)
 						     transaction->priv->registration_id);
 		transaction->priv->registration_id = 0;
 	}
+
+	unschedule_progress_changed (transaction);
 
 	/* send signal to clients that we are about to be destroyed */
 	if (transaction->priv->connection != NULL) {
