@@ -296,21 +296,40 @@ out:
 	return TRUE;
 }
 
+static void pk_transaction_emit_properties_changed (PkTransaction *transaction,
+                                                    const gchar   *first_property_name,
+                                                    GVariant      *first_property_value,
+                                                    ...) G_GNUC_NULL_TERMINATED;
+
 static void
-pk_transaction_emit_property_changed (PkTransaction *transaction,
-				      const gchar *property_name,
-				      GVariant *property_value)
+pk_transaction_emit_properties_changed (PkTransaction *transaction,
+                                        const gchar   *first_property_name,
+                                        GVariant      *first_property_value,
+                                        ...)
 {
 	GVariantBuilder builder;
 	GVariantBuilder invalidated_builder;
+	va_list args;
+	const gchar *property_name;
+	GVariant *property_value;
 
 	/* build the dict */
 	g_variant_builder_init (&invalidated_builder, G_VARIANT_TYPE ("as"));
 	g_variant_builder_init (&builder, G_VARIANT_TYPE_ARRAY);
-	g_variant_builder_add (&builder,
-			       "{sv}",
-			       property_name,
-			       property_value);
+
+	va_start (args, first_property_value);
+
+	for (property_name = first_property_name, property_value = first_property_value;
+	     property_name != NULL;
+	     property_name = va_arg (args, const gchar *), property_value = (property_name != NULL) ? va_arg (args, GVariant *) : NULL) {
+		g_variant_builder_add (&builder,
+				       "{sv}",
+				       property_name,
+				       property_value);
+	}
+
+	va_end (args);
+
 	g_dbus_connection_emit_signal (transaction->priv->connection,
 				       NULL,
 				       transaction->priv->tid,
@@ -321,6 +340,16 @@ pk_transaction_emit_property_changed (PkTransaction *transaction,
 						      &builder,
 						      &invalidated_builder),
 				       NULL);
+}
+
+static void
+pk_transaction_emit_property_changed (PkTransaction *transaction,
+                                      const gchar   *property_name,
+                                      GVariant      *property_value)
+{
+	pk_transaction_emit_properties_changed (transaction,
+						property_name, property_value,
+						NULL);
 }
 
 static void
@@ -336,15 +365,11 @@ pk_transaction_progress_changed_emit (PkTransaction *transaction,
 	transaction->priv->elapsed_time = elapsed;
 
 	/* emit */
-	pk_transaction_emit_property_changed (transaction,
-					      "Percentage",
-					      g_variant_new_uint32 (percentage));
-	pk_transaction_emit_property_changed (transaction,
-					      "ElapsedTime",
-					      g_variant_new_uint32 (elapsed));
-	pk_transaction_emit_property_changed (transaction,
-					      "RemainingTime",
-					      g_variant_new_uint32 (remaining));
+	pk_transaction_emit_properties_changed (transaction,
+						"Percentage", g_variant_new_uint32 (percentage),
+						"ElapsedTime", g_variant_new_uint32 (elapsed),
+						"RemainingTime", g_variant_new_uint32 (remaining),
+						NULL);
 }
 
 static void
