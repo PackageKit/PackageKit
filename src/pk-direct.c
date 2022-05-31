@@ -357,6 +357,20 @@ pk_direct_package_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 }
 
 static void
+pk_direct_packages_cb (PkBackendJob *job, gpointer object, gpointer user_data)
+{
+	GPtrArray *package_array = object;
+
+	for (guint i = 0; i < package_array->len; i++) {
+		PkPackage *pkg = g_ptr_array_index (package_array, i);
+
+		g_print ("Package: %s\t%s\n",
+			 pk_info_enum_to_string (pk_package_get_info (pkg)),
+			 pk_package_get_id (pkg));
+	}
+}
+
+static void
 pk_direct_error_cb (PkBackendJob *job, gpointer object, gpointer user_data)
 {
 	PkError *err = PK_ERROR_CODE (object);
@@ -515,6 +529,8 @@ main (int argc, char *argv[])
 				  pk_direct_status_changed_cb, priv);
 	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PACKAGE,
 				  pk_direct_package_cb, priv);
+	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PACKAGES,
+				  pk_direct_packages_cb, priv);
 	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_ERROR_CODE,
 				  pk_direct_error_cb, priv);
 	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_ITEM_PROGRESS,

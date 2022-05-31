@@ -536,6 +536,8 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "Finished";
 	if (id == PK_BACKEND_SIGNAL_PACKAGE)
 		return "Package";
+	if (id == PK_BACKEND_SIGNAL_PACKAGES)
+		return "Packages";
 	if (id == PK_BACKEND_SIGNAL_ITEM_PROGRESS)
 		return "ItemProgress";
 	if (id == PK_BACKEND_SIGNAL_FILES)
@@ -1029,6 +1031,62 @@ pk_backend_job_package_full (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_PACKAGE,
 				   g_object_ref (item),
 				   g_object_unref);
+}
+
+void
+pk_backend_job_packages (PkBackendJob *job,
+                         GPtrArray    *packages  /* (element-type PkPackage) */)
+{
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+	g_return_if_fail (packages != NULL);
+
+	for (guint i = 0; i < packages->len; i++) {
+		PkPackage *item = g_ptr_array_index (packages, i);
+		PkInfoEnum info = pk_package_get_info (item);
+		PkPackage *emitted_item;
+
+		/* already emitted? */
+		emitted_item = g_hash_table_lookup (job->priv->emitted, pk_package_get_id (item));
+		if (emitted_item != NULL && pk_package_equal (emitted_item, item))
+			continue;
+
+		/* update the emitted package table */
+		g_hash_table_insert (job->priv->emitted,
+			             g_strdup (pk_package_get_id (item)),
+			             g_object_ref (item));
+
+		/* have we already set an error? */
+		if (job->priv->set_error) {
+			g_warning ("already set error: package %s", pk_package_get_id (item));
+			continue;
+		}
+
+		/* we automatically set the transaction status  */
+		if (info == PK_INFO_ENUM_DOWNLOADING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+		else if (info == PK_INFO_ENUM_UPDATING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+		else if (info == PK_INFO_ENUM_INSTALLING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+		else if (info == PK_INFO_ENUM_REMOVING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+		else if (info == PK_INFO_ENUM_CLEANUP)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
+		else if (info == PK_INFO_ENUM_OBSOLETING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
+
+		/* we've sent a package for this transaction */
+		job->priv->has_sent_package = TRUE;
+	}
+
+	/* emit; this relies on the @packages array having ownership of all its
+	 * elements, as the job is asynchronous so they may be freed in their
+	 * original calling context */
+	if (packages->len > 0)
+		pk_backend_job_call_vfunc (job,
+					   PK_BACKEND_SIGNAL_PACKAGES,
+					   g_ptr_array_ref (packages),
+					   (GDestroyNotify) g_ptr_array_unref);
 }
 
 void

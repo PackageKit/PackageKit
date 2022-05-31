@@ -103,6 +103,7 @@ struct PkTransactionPrivate
 	PolkitSubject		*subject;
 	GCancellable		*cancellable;
 	gboolean		 skip_auth_check;
+	gboolean		 client_supports_plural_signals;
 
 	/* needed for gui coldplugging */
 	gchar			*last_package_id;
@@ -1233,6 +1234,143 @@ pk_transaction_package_cb (PkBackend *backend,
 }
 
 static void
+pk_transaction_packages_cb (PkBackend *backend,
+			    GPtrArray *package_array,
+			    PkTransaction *transaction)
+{
+	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(uss)"));
+	g_autoptr(GVariant) package_array_variant = NULL;
+	guint n_added_packages = 0;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* have we already been marked as finished? */
+	if (transaction->priv->finished) {
+		g_warning ("Already finished");
+		return;
+	}
+
+	/* Loop through the packages and build a signal emission. */
+	for (guint i = 0; i < package_array->len; i++) {
+		PkPackage *item = g_ptr_array_index (package_array, i);
+		const gchar *role_text;
+		PkInfoEnum info;
+		PkInfoEnum update_severity;
+		const gchar *package_id;
+		const gchar *summary = NULL;
+		guint encoded_value;
+
+		/* check the backend is doing the right thing */
+		info = pk_package_get_info (item);
+		if (transaction->priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+		    transaction->priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+			if (info == PK_INFO_ENUM_INSTALLED) {
+				role_text = pk_role_enum_to_string (transaction->priv->role);
+				g_warning ("%s emitted 'installed' rather than 'installing'",
+					   role_text);
+				continue;
+			}
+		}
+
+		/* check we are respecting the filters */
+		if (pk_bitfield_contain (transaction->priv->cached_filters,
+					 PK_FILTER_ENUM_NOT_INSTALLED)) {
+			if (info == PK_INFO_ENUM_INSTALLED) {
+				role_text = pk_role_enum_to_string (transaction->priv->role);
+				g_warning ("%s emitted package that was installed when "
+					   "the ~installed filter is in place",
+					   role_text);
+				continue;
+			}
+		}
+		if (pk_bitfield_contain (transaction->priv->cached_filters,
+					 PK_FILTER_ENUM_INSTALLED)) {
+			if (info == PK_INFO_ENUM_AVAILABLE) {
+				role_text = pk_role_enum_to_string (transaction->priv->role);
+				g_warning ("%s emitted package that was ~installed when "
+					   "the installed filter is in place",
+					   role_text);
+				continue;
+			}
+		}
+
+		/* add to results even if we already got a result */
+		if (info != PK_INFO_ENUM_FINISHED)
+			pk_results_add_package (transaction->priv->results, item);
+
+		/* emit */
+		package_id = pk_package_get_id (item);
+		g_free (transaction->priv->last_package_id);
+		transaction->priv->last_package_id = g_strdup (package_id);
+		summary = pk_package_get_summary (item);
+		if (transaction->priv->role != PK_ROLE_ENUM_GET_PACKAGES) {
+			g_debug ("emit package %s, %s, %s",
+				 pk_info_enum_to_string (info),
+				 package_id,
+				 summary);
+		}
+
+		/* Safety checks, that the two values do not interleave, neither overflow */
+		g_assert ((PK_INFO_ENUM_LAST & (~0xFFFF)) == 0);
+
+		update_severity = pk_package_get_update_severity (item);
+		encoded_value = info | (((guint32) update_severity) << 16);
+
+		g_variant_builder_add (&builder,
+				       "(uss)",
+				       encoded_value,
+				       package_id,
+				       summary ? summary : "");
+		n_added_packages++;
+	}
+
+	if (n_added_packages == 0) {
+		g_debug ("Empty package array");
+		return;
+	}
+
+	package_array_variant = g_variant_builder_end (&builder);
+
+	/* Emit the signal. Grouping multiple package details into a single
+	 * signal reduces the number of signals and hence the amount of context
+	 * switching between packagekitd, dbus-daemon and the client process.
+	 * This results in much improved performance compared to emitting one
+	 * signal per package.
+	 *
+	 * This should not hit the D-Bus limits (maximum array size of 64MB,
+	 * maximum message size of 128MB) until it’s listing on the order of
+	 * 100000 packages. */
+	if (transaction->priv->client_supports_plural_signals) {
+		g_dbus_connection_emit_signal (transaction->priv->connection,
+					       NULL,
+					       transaction->priv->tid,
+					       PK_DBUS_INTERFACE_TRANSACTION,
+					       "Packages",
+					       g_variant_new ("(@a(uss))",
+						              g_steal_pointer (&package_array_variant)),
+					       NULL);
+	} else {
+		GVariantIter iter;
+		g_autoptr(GVariant) child = NULL;
+
+		/* Fall back to one signal per package. */
+		g_variant_iter_init (&iter, package_array_variant);
+
+		while ((child = g_variant_iter_next_value (&iter))) {
+			g_dbus_connection_emit_signal (transaction->priv->connection,
+						       NULL,
+						       transaction->priv->tid,
+						       PK_DBUS_INTERFACE_TRANSACTION,
+						       "Package",
+						       child,
+						       NULL);
+			g_clear_pointer (&child, g_variant_unref);
+		}
+	}
+}
+
+static void
 pk_transaction_repo_detail_cb (PkBackend *backend,
 			       PkRepoDetail *item,
 			       PkTransaction *transaction)
@@ -1721,6 +1859,10 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_package_cb),
+				  transaction);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_PACKAGES,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_packages_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_ITEM_PROGRESS,
@@ -4470,6 +4612,22 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			return FALSE;
 		}
 		pk_backend_job_set_cache_age (priv->job, cache_age);
+		return TRUE;
+	}
+
+	/* Is the plural Packages signal supported? The key’s value is ignored,
+	 * as clients will only send it if it’s true. */
+	if (g_strcmp0 (key, "supports-plural-signals") == 0) {
+		if (g_strcmp0 (value, "true") != 0) {
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "supports-plural-signals hint expects true only, not %s", value);
+			return FALSE;
+		}
+
+		g_debug ("Client has set supports-plural-signals=true");
+		priv->client_supports_plural_signals = TRUE;
 		return TRUE;
 	}
 
