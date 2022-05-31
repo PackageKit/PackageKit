@@ -4607,7 +4607,7 @@ pk_client_class_init (PkClientClass *klass)
 	 * Since: 0.6.10
 	 */
 	pspec = g_param_spec_uint ("cache-age", NULL, NULL,
-				   0, G_MAXUINT, 0,
+				   0, G_MAXUINT, G_MAXUINT,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_CACHE_AGE, pspec);
 }
