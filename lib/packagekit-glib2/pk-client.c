@@ -1208,6 +1208,30 @@ pk_client_signal_cb (GDBusProxy *proxy,
 					  tmp_str[2]);
 		return;
 	}
+	if (g_strcmp0 (signal_name, "Packages") == 0) {
+		g_autoptr(GVariantIter) iter = NULL;
+		guint flags;
+		PkInfoEnum info, severity;
+		const gchar *package_id, *summary;
+
+		g_variant_get (parameters, "(a(uss))", &iter);
+
+		while (g_variant_iter_loop (iter, "(u&s&s)",
+					    &flags,
+					    &package_id,
+					    &summary)) {
+			/* The 'info' and 'update-severity' are encoded in the single value */
+			info = flags & 0xFFFF;
+			severity = (flags >> 16) & 0xFFFF;
+			pk_client_signal_package (state,
+						  info,
+						  severity,
+						  package_id,
+						  summary);
+		}
+
+		return;
+	}
 	if (g_strcmp0 (signal_name, "Details") == 0) {
 		gchar *key;
 		GVariantIter *dictionary;
@@ -2205,6 +2229,9 @@ pk_client_get_proxy_cb (GObject *object,
 					state->client->priv->cache_age);
 		g_ptr_array_add (array, hint);
 	}
+
+	/* Always set the supports-plural-signals hint to get higher performance signals */
+	g_ptr_array_add (array, g_strdup ("supports-plural-signals=true"));
 
 	/* create socket for roles that need interaction */
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||

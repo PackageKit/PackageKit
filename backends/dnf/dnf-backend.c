@@ -53,13 +53,43 @@ dnf_emit_package_list (PkBackendJob *job,
 		       PkInfoEnum info,
 		       GPtrArray *pkglist)
 {
-	guint i;
-	DnfPackage *pkg;
+	g_autoptr(GPtrArray) pk_packages = g_ptr_array_new_full (pkglist->len, (GDestroyNotify) g_object_unref);
 
-	for (i = 0; i < pkglist->len; i++) {
-		pkg = g_ptr_array_index (pkglist, i);
-		dnf_emit_package (job, info, pkg);
+	for (guint i = 0; i < pkglist->len; i++) {
+		DnfPackage *dnf_package;
+		g_autoptr(PkPackage) pk_package = NULL;
+		PkInfoEnum package_info;
+		PkInfoEnum update_severity;
+		const gchar *package_id;
+		g_autoptr(GError) local_error = NULL;
+
+		dnf_package = g_ptr_array_index (pkglist, i);
+		package_id = dnf_package_get_package_id (dnf_package);
+		update_severity = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (dnf_package), PK_DNF_UPDATE_SEVERITY_KEY));
+
+		package_info = info;
+		if (package_info == PK_INFO_ENUM_UNKNOWN)
+			package_info = dnf_package_get_info (dnf_package);
+		if (package_info == PK_INFO_ENUM_UNKNOWN)
+			package_info = dnf_package_installed (dnf_package) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+
+		/* check we are valid */
+		pk_package = pk_package_new ();
+		if (!pk_package_set_id (pk_package, package_id, &local_error)) {
+			g_warning ("package_id %s invalid and cannot be processed: %s",
+				   package_id, local_error->message);
+			continue;
+		}
+
+		pk_package_set_info (pk_package, package_info);
+		pk_package_set_update_severity (pk_package, update_severity);
+		pk_package_set_summary (pk_package, dnf_package_get_summary (dnf_package));
+
+		g_ptr_array_add (pk_packages, g_steal_pointer (&pk_package));
 	}
+
+	if (pk_packages->len > 0)
+		pk_backend_job_packages (job, pk_packages);
 }
 
 void
@@ -67,13 +97,7 @@ dnf_emit_package_array (PkBackendJob *job,
 			 PkInfoEnum info,
 			 GPtrArray *array)
 {
-	guint i;
-	DnfPackage *pkg;
-
-	for (i = 0; i < array->len; i++) {
-		pkg = g_ptr_array_index (array, i);
-		dnf_emit_package (job, info, pkg);
-	}
+	dnf_emit_package_list (job, info, array);
 }
 
 void
@@ -86,6 +110,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 	guint i;
 	g_autoptr(GHashTable) hash_cost = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
+	g_autoptr(GPtrArray) filtered_list = g_ptr_array_new_with_free_func (NULL);
 
 	/* if a package exists in multiple repos, show the one with the lowest
 	 * cost of downloading */
@@ -175,8 +200,10 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 				continue;
 		}
 
-		dnf_emit_package (job, PK_INFO_ENUM_UNKNOWN, pkg);
+		g_ptr_array_add (filtered_list, pkg);
 	}
+
+	dnf_emit_package_list (job, PK_INFO_ENUM_UNKNOWN, filtered_list);
 }
 
 PkInfoEnum

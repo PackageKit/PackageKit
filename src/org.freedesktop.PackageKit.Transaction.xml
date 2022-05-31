@@ -197,6 +197,17 @@
                   Most transactions will not have this value set.
                 </doc:definition>
               </doc:item>
+              <doc:item>
+                <doc:term>supports-plural-signals</doc:term>
+                <doc:definition>
+                  This allows the frontend to tell the daemon that it supports the
+                  new <doc:tt>Packages</doc:tt> signal for receiving information about
+                  multiple packages at once, rather than just the original
+                  <doc:tt>Package</doc:tt> signal.
+                  If this is set, and the daemon supports the signal, it will be used.
+                  If present, this must always be set to <doc:tt>true</doc:tt>.
+                </doc:definition>
+              </doc:item>
             </doc:list>
             <doc:para>
               Other values will cause a verbose warning in the daemon, but will
@@ -1855,6 +1866,47 @@
           <doc:summary>
             <doc:para>
               The one line package summary, e.g. Clipart for OpenOffice
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*********************************************************************-->
+    <signal name="Packages">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal allows the backend to communicate multiple packages to the session.
+          </doc:para>
+          <doc:para>
+            If updating, as packages are updated then emit them to the screen.
+            This allows a summary to be presented after the transaction.
+          </doc:para>
+          <doc:para>
+            When returning results from a search always return
+            <doc:tt>installed</doc:tt> before <doc:tt>available</doc:tt> for
+            the same package name.
+          </doc:para>
+          <doc:para>
+            This signal was added to the API in PackageKit 1.2.6. It will only be emitted
+            by the daemon if the client sets the <doc:tt>supports-plural-signals=true</doc:tt>
+            hint on the transaction using <doc:tt>SetHints()</doc:tt>.
+          </doc:para>
+          <doc:para>
+            Even if this signal is used by the transaction, it may also still emit
+            <doc:tt>Package</doc:tt> signals at other times. The content of one signal will
+            never duplicate the content of another. Clients must be prepared to handle both
+            signals within the same transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="a(uss)" name="packages" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package details. Each array element is one package,
+              as documented for the <doc:tt>Package</doc:tt> signal.
             </doc:para>
           </doc:summary>
         </doc:doc>

@@ -30,6 +30,7 @@
 #include <packagekit-glib2/pk-enum.h>
 #include <packagekit-glib2/pk-common.h>
 #include <packagekit-glib2/pk-bitfield.h>
+#include <packagekit-glib2/pk-package.h>
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 #include <packagekit-glib2/pk-bitfield.h>

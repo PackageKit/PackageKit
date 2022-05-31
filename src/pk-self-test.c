@@ -140,6 +140,17 @@ pk_test_backend_package_cb (PkBackend *backend, PkPackage *package, gpointer use
 }
 
 static void
+pk_test_backend_packages_cb (PkBackend *backend, GPtrArray *package_array, gpointer user_data)
+{
+	for (guint i = 0; i < package_array->len; i++) {
+		PkPackage *package = g_ptr_array_index (package_array, i);
+
+		g_debug ("package:%s", pk_package_get_id (package));
+		number_packages++;
+	}
+}
+
+static void
 pk_test_backend_func (void)
 {
 	const gchar *text;
@@ -184,6 +195,10 @@ pk_test_backend_func (void)
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
 				  PK_BACKEND_JOB_VFUNC (pk_test_backend_package_cb),
+				  NULL);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PACKAGES,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_packages_cb),
 				  NULL);
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_FINISHED,
@@ -301,6 +316,13 @@ pk_test_backend_spawn_package_cb (PkBackend *backend, PkInfoEnum info,
 				  PkBackendSpawn *backend_spawn)
 {
 	_backend_spawn_number_packages++;
+}
+
+static void
+pk_test_backend_spawn_packages_cb (PkBackend *backend, GPtrArray *package_array,
+				   PkBackendSpawn *backend_spawn)
+{
+	_backend_spawn_number_packages += package_array->len;
 }
 
 static void
@@ -435,6 +457,10 @@ pk_test_backend_spawn_func (void)
 	pk_backend_job_set_vfunc (job,
 				  PK_BACKEND_SIGNAL_PACKAGE,
 				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_package_cb),
+				  backend_spawn);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PACKAGES,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_packages_cb),
 				  backend_spawn);
 
 	/* test search-name.sh running */
