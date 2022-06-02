@@ -36,6 +36,7 @@
 #include <nix/installables.hh>
 
 #include <pwd.h>
+#include <regex>
 
 #include "nix-lib-plus.hh"
 
@@ -320,7 +321,7 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 				auto description = aDescription ? aDescription->getString() : "";
 				std::replace (description.begin (), description.end (), '\n', ' ');
 
-				auto attrPath2 = concatStringsSep (".", attrPath);
+				auto attrPath2 = concatStringsSep (".", priv->state->symbols.resolve(attrPath));
 
 				for (auto & regex : regexes) {
 					switch (role) {
