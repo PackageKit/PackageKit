@@ -208,6 +208,7 @@ struct PkBackendPrivate
 G_DEFINE_TYPE (PkBackend, pk_backend, G_TYPE_OBJECT)
 
 enum {
+	SIGNAL_INSTALLED_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_LAST
@@ -680,6 +681,8 @@ pk_backend_installed_db_changed_cb (gpointer user_data)
 			g_warning ("failed to invalidate: %s", error->message);
 	}
 	backend->priv->installed_db_changed_id = 0;
+	g_debug ("emitting installed-changed");
+	g_signal_emit (backend, signals [SIGNAL_INSTALLED_CHANGED], 0);
 	return FALSE;
 }
 
@@ -1094,6 +1097,11 @@ pk_backend_class_init (PkBackendClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_finalize;
 
+	signals [SIGNAL_INSTALLED_CHANGED] =
+		g_signal_new ("installed-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	signals [SIGNAL_REPO_LIST_CHANGED] =
 		g_signal_new ("repo-list-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,

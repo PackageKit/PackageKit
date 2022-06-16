@@ -30,6 +30,12 @@
 static PkClient *client = NULL;
 
 static void
+pk_monitor_installed_changed_cb (PkControl *control, gpointer data)
+{
+	g_print ("installed-changed\n");
+}
+
+static void
 pk_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 {
 	g_print ("repo-list-changed\n");
@@ -368,6 +374,8 @@ main (int argc, char *argv[])
 	loop = g_main_loop_new (NULL, FALSE);
 
 	control = pk_control_new ();
+	g_signal_connect (control, "installed-changed",
+			  G_CALLBACK (pk_monitor_installed_changed_cb), NULL);
 	g_signal_connect (control, "repo-list-changed",
 			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
 	g_signal_connect (control, "updates-changed",

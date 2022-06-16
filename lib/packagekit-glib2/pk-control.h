@@ -84,12 +84,12 @@ struct _PkControlClass
 							 gboolean	 is_locked);
 	void		(* connection_changed)		(PkControl	*control,
 							 gboolean	 connected);
+	void		(* installed_changed)		(PkControl	*control);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
 	void (*_pk_reserved3) (void);
 	void (*_pk_reserved4) (void);
-	void (*_pk_reserved5) (void);
 };
 
 GQuark		 pk_control_error_quark			(void);

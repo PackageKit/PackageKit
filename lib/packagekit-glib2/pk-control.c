@@ -75,6 +75,7 @@ struct _PkControlPrivate
 enum {
 	SIGNAL_TRANSACTION_LIST_CHANGED,
 	SIGNAL_RESTART_SCHEDULE,
+	SIGNAL_INSTALLED_CHANGED,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_REPO_LIST_CHANGED,
 	SIGNAL_LAST
@@ -339,6 +340,11 @@ pk_control_signal_cb (GDBusProxy *proxy,
 		g_signal_emit (control,
 			       signals[SIGNAL_TRANSACTION_LIST_CHANGED], 0,
 			       ids);
+	}
+	if (g_strcmp0 (signal_name, "InstalledChanged") == 0) {
+		g_debug ("emit installed-changed");
+		g_signal_emit (control, signals[SIGNAL_INSTALLED_CHANGED], 0);
+		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdatesChanged") == 0) {
 		g_debug ("emit updates-changed");
@@ -1896,6 +1902,21 @@ pk_control_class_init (PkControlClass *klass)
 				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CONNECTED, pspec);
 
+	/**
+	 * PkControl::installed-changed:
+	 * @control: the #PkControl instance that emitted the signal
+	 *
+	 * The ::installed-changed signal is emitted when the list of installed apps may have
+	 * changed and the control program may have to update some UI.
+	 *
+	 * Since: 1.2.9
+	 **/
+	signals[SIGNAL_INSTALLED_CHANGED] =
+		g_signal_new ("installed-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (PkControlClass, installed_changed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
 	/**
 	 * PkControl::updates-changed:
 	 * @control: the #PkControl instance that emitted the signal

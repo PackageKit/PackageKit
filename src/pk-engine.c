@@ -329,6 +329,21 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 }
 
 static void
+pk_engine_backend_installed_changed_cb (PkBackend *backend, PkEngine *engine)
+{
+	g_return_if_fail (PK_IS_ENGINE (engine));
+
+	g_debug ("emitting InstalledChanged");
+	g_dbus_connection_emit_signal (engine->priv->connection,
+				       NULL,
+				       PK_DBUS_PATH,
+				       PK_DBUS_INTERFACE,
+				       "InstalledChanged",
+				       NULL,
+				       NULL);
+}
+
+static void
 pk_engine_backend_repo_list_changed_cb (PkBackend *backend, PkEngine *engine)
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
@@ -1942,6 +1957,8 @@ pk_engine_new (GKeyFile *conf)
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->priv->conf = g_key_file_ref (conf);
 	engine->priv->backend = pk_backend_new (engine->priv->conf);
+	g_signal_connect (engine->priv->backend, "installed-changed",
+			  G_CALLBACK (pk_engine_backend_installed_changed_cb), engine);
 	g_signal_connect (engine->priv->backend, "repo-list-changed",
 			  G_CALLBACK (pk_engine_backend_repo_list_changed_cb), engine);
 	g_signal_connect (engine->priv->backend, "updates-changed",
