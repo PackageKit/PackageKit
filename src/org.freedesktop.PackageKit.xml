@@ -477,6 +477,17 @@
     </signal>
 
     <!--*********************************************************************-->
+    <signal name="InstalledChanged">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal is emitted when the set of installed apps has potentially changed.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <!--*********************************************************************-->
     <signal name="RepoListChanged">
       <doc:doc>
         <doc:description>
