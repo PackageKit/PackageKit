@@ -3790,6 +3790,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GHashTable) advisories_hash = NULL;
+	g_autoptr(GPtrArray) update_details_array = NULL;
 
 	/* set state */
 	ret = dnf_state_set_steps (job_data->state, NULL,
@@ -3833,12 +3834,14 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	}
 
 	advisories_hash = pk_backend_dnf_cache_advisories (sack);
+	update_details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 
-	/* emit details for each */
+	/* Build array of details for each */
 	for (i = 0; package_ids[i] != NULL; i++) {
 		g_autoptr(GPtrArray) vendor_urls = NULL;
 		g_autoptr(GPtrArray) bugzilla_urls = NULL;
 		g_autoptr(GPtrArray) cve_urls = NULL;
+		g_autoptr(PkUpdateDetail) item = NULL;
 
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
@@ -3880,25 +3883,32 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		g_ptr_array_add (bugzilla_urls, NULL);
 		g_ptr_array_add (cve_urls, NULL);
 
-		pk_backend_job_update_detail (job,
-					      package_ids[i],
-					      NULL,
-					      NULL,
-					      (gchar **) vendor_urls->pdata,
-					      (gchar **) bugzilla_urls->pdata,
-					      (gchar **) cve_urls->pdata,
-					      PK_RESTART_ENUM_NONE, /* FIXME */
-					      dnf_advisory_get_description (advisory),
-					      NULL,
-					      PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
-					      NULL, /* issued */
-					      NULL /* updated */);
+		/* form PkUpdateDetail struct */
+		item = pk_update_detail_new ();
+		g_object_set (item,
+			      "package-id", package_ids[i],
+			      "updates", NULL,
+			      "obsoletes", NULL,
+			      "vendor-urls", (gchar **) vendor_urls->pdata,
+			      "bugzilla-urls", (gchar **) bugzilla_urls->pdata,
+			      "cve-urls", (gchar **) cve_urls->pdata,
+			      "restart", PK_RESTART_ENUM_NONE, /* FIXME */
+			      "update-text", dnf_advisory_get_description (advisory),
+			      "changelog", NULL,
+			      "state", PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
+			      "issued", NULL,
+			      "updated", NULL,
+			      NULL);
+		g_ptr_array_add (update_details_array, g_steal_pointer (&item));
 
 		g_ptr_array_unref (references);
 #ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 		dnf_advisory_free (advisory);
 #endif
 	}
+
+	/* Emit the signal */
+	pk_backend_job_update_details (job, update_details_array);
 
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {

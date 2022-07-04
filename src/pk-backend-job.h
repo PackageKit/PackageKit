@@ -60,6 +60,7 @@ typedef enum {
 	PK_BACKEND_SIGNAL_STATUS_CHANGED,
 	PK_BACKEND_SIGNAL_LOCKED_CHANGED,
 	PK_BACKEND_SIGNAL_UPDATE_DETAIL,
+	PK_BACKEND_SIGNAL_UPDATE_DETAILS,
 	PK_BACKEND_SIGNAL_CATEGORY,
 	PK_BACKEND_SIGNAL_LAST
 } PkBackendJobSignal;
@@ -198,6 +199,8 @@ void		 pk_backend_job_update_detail		(PkBackendJob	*job,
 							 PkUpdateStateEnum state,
 							 const gchar	*issued,
 							 const gchar	*updated);
+void		 pk_backend_job_update_details		(PkBackendJob	*job,
+							 GPtrArray	*update_details);
 void		 pk_backend_job_require_restart		(PkBackendJob	*job,
 							 PkRestartEnum	 restart,
 							 const gchar	*package_id);

@@ -1804,6 +1804,115 @@ pk_transaction_update_detail_cb (PkBackend *backend,
 				       NULL);
 }
 
+static void
+pk_transaction_update_details_cb (PkBackend *backend,
+				  GPtrArray *update_details_array,  /* (element-type PkUpdateDetail) */
+				  PkTransaction *transaction)
+{
+	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(sasasasasasussuss)"));
+	g_autoptr(GVariant) update_details_array_variant = NULL;
+	guint n_update_details = 0;
+	gboolean emitted = FALSE;
+
+	g_return_if_fail (PK_IS_TRANSACTION (transaction));
+	g_return_if_fail (transaction->priv->tid != NULL);
+
+	/* Loop through the packages and build a signal emission. */
+	for (guint i = 0; i < update_details_array->len; i++) {
+		PkUpdateDetail *item = g_ptr_array_index (update_details_array, i);
+		const gchar *changelog;
+		const gchar *issued;
+		const gchar *package_id;
+		const gchar *updated;
+		const gchar *update_text;
+		const gchar * const *bugzilla_urls;
+		const gchar * const *cve_urls;
+		const gchar * const empty[] = { NULL };
+		const gchar * const *obsoletes;
+		const gchar * const *updates;
+		const gchar * const *vendor_urls;
+
+		/* add to results */
+		pk_results_add_update_detail (transaction->priv->results, item);
+
+		/* emit */
+		package_id = pk_update_detail_get_package_id (item);
+		updates = (const gchar * const *) pk_update_detail_get_updates (item);
+		obsoletes = (const gchar * const *) pk_update_detail_get_obsoletes (item);
+		vendor_urls = (const gchar * const *) pk_update_detail_get_vendor_urls (item);
+		bugzilla_urls = (const gchar * const *) pk_update_detail_get_bugzilla_urls (item);
+		cve_urls = (const gchar * const *) pk_update_detail_get_cve_urls (item);
+		update_text = pk_update_detail_get_update_text (item);
+		changelog = pk_update_detail_get_changelog (item);
+		issued = pk_update_detail_get_issued (item);
+		updated = pk_update_detail_get_updated (item);
+		g_debug ("emitting update-detail for %s", package_id);
+
+		g_variant_builder_add (&builder,
+				       "(s^as^as^as^as^asussuss)",
+				       package_id,
+				       updates != NULL ? updates : empty,
+				       obsoletes != NULL ? obsoletes : empty,
+				       vendor_urls != NULL ? vendor_urls : empty,
+				       bugzilla_urls != NULL ? bugzilla_urls : empty,
+				       cve_urls != NULL ? cve_urls : empty,
+				       pk_update_detail_get_restart (item),
+				       update_text != NULL ? update_text : "",
+				       changelog != NULL ? changelog : "",
+				       pk_update_detail_get_state (item),
+				       issued != NULL ? issued : "",
+				       updated != NULL ? updated : "");
+		n_update_details++;
+	}
+
+	if (n_update_details == 0) {
+		g_debug ("Empty update details array");
+		return;
+	}
+
+	update_details_array_variant = g_variant_ref_sink (g_variant_builder_end (&builder));
+
+	/* Emit the signal. Grouping multiple update details into a single
+	 * signal reduces the number of signals and hence the amount of context
+	 * switching between packagekitd, dbus-daemon and the client process.
+	 * This results in much improved performance compared to emitting one
+	 * signal per update details.
+	 *
+	 * This should not hit the D-Bus limits (maximum array size of 64MB,
+	 * maximum message size of 128MB) until it’s listing on the order of
+	 * 6400 updates, if we assume 10KB of changelog/details per update.
+	 * If it does hit the limits, we fall back to the old code below. */
+	if (transaction->priv->client_supports_plural_signals &&
+	    g_dbus_connection_emit_signal (transaction->priv->connection,
+					   NULL,
+					   transaction->priv->tid,
+					   PK_DBUS_INTERFACE_TRANSACTION,
+					   "UpdateDetails",
+					   g_variant_new ("(@a(sasasasasasussuss))",
+					                  update_details_array_variant),
+					   NULL))
+		emitted = TRUE;
+
+	if (!emitted) {
+		GVariantIter iter;
+		g_autoptr(GVariant) child = NULL;
+
+		/* Fall back to one signal per update details. */
+		g_variant_iter_init (&iter, update_details_array_variant);
+
+		while ((child = g_variant_iter_next_value (&iter))) {
+			g_dbus_connection_emit_signal (transaction->priv->connection,
+						       NULL,
+						       transaction->priv->tid,
+						       PK_DBUS_INTERFACE_TRANSACTION,
+						       "UpdateDetail",
+						       child,
+						       NULL);
+			g_clear_pointer (&child, g_variant_unref);
+		}
+	}
+}
+
 static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction,
 				  GError **error)
@@ -2033,6 +2142,10 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_update_detail_cb),
+				  transaction);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_UPDATE_DETAILS,
+				  PK_BACKEND_JOB_VFUNC (pk_transaction_update_details_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (priv->job,
 				  PK_BACKEND_SIGNAL_CATEGORY,

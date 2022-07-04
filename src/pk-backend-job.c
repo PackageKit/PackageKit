@@ -564,6 +564,8 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "LockedChanged";
 	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAIL)
 		return "UpdateDetail";
+	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAILS)
+		return "UpdateDetails";
 	if (id == PK_BACKEND_SIGNAL_CATEGORY)
 		return "Category";
 	return NULL;
@@ -1154,6 +1156,29 @@ pk_backend_job_update_detail (PkBackendJob *job,
 				   PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 				   g_object_ref (item),
 				   g_object_unref);
+}
+
+void
+pk_backend_job_update_details (PkBackendJob *job,
+                               GPtrArray    *update_details  /* (element-type PkUpdateDetail) */)
+{
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+	g_return_if_fail (update_details != NULL);
+
+	/* have we already set an error? */
+	if (job->priv->set_error) {
+		g_warning ("already set error: update_details");
+		return;
+	}
+
+	/* emit; this relies on the @update_details array having ownership of
+	 * all its elements, as the job is asynchronous so they may be freed in
+	 * their original calling context */
+	if (update_details->len > 0)
+		pk_backend_job_call_vfunc (job,
+					   PK_BACKEND_SIGNAL_UPDATE_DETAILS,
+					   g_ptr_array_ref (update_details),
+					   (GDestroyNotify) g_ptr_array_unref);
 }
 
 void

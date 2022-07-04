@@ -2398,6 +2398,40 @@
     </signal>
 
     <!--*********************************************************************-->
+    <signal name="UpdateDetails">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This signal allows the backend to communicate specific details for
+            multiple updates to the session. It is equivalent to the sequential
+            emission of N <doc:tt>UpdateDetail</doc:tt> signals.
+          </doc:para>
+          <doc:para>
+            This signal was added to the API in PackageKit 1.2.6. It will only be emitted
+            by the daemon if the client sets the <doc:tt>supports-plural-signals=true</doc:tt>
+            hint on the transaction using <doc:tt>SetHints()</doc:tt>.
+          </doc:para>
+          <doc:para>
+            Even if this signal is used by the transaction, it may also still emit
+            <doc:tt>UpdateDetail</doc:tt> signals at other times. The content of one signal will
+            never duplicate the content of another. Clients must be prepared to handle both
+            signals within the same transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="a(sasasasasasussuss)" name="details" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of update details. Each array element is one update,
+              as documented for the <doc:tt>UpdateDetail</doc:tt> signal.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </signal>
+
+    <!--*********************************************************************-->
     <signal name="DistroUpgrade">
       <doc:doc>
         <doc:description>
