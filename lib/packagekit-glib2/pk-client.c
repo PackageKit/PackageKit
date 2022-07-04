@@ -1317,6 +1317,20 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		g_free (tmp_strv[4]);
 		return;
 	}
+	if (g_strcmp0 (signal_name, "UpdateDetails") == 0) {
+		g_autoptr(GVariantIter) iter = NULL;
+		g_autoptr(GVariant) update_detail = NULL;
+
+		g_variant_get (parameters, "(a(sasasasasasussuss))", &iter);
+
+		while ((update_detail = g_variant_iter_next_value (iter))) {
+			results_add_update_detail_from_variant (state->results, update_detail,
+								state->role, state->transaction_id);
+			g_clear_pointer (&update_detail, g_variant_unref);
+		}
+
+		return;
+	}
 	if (g_strcmp0 (signal_name, "Transaction") == 0) {
 		g_autoptr(PkTransactionPast) item = NULL;
 		g_variant_get (parameters,
