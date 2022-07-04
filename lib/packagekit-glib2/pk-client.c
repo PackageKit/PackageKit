@@ -1159,6 +1159,58 @@ pk_client_signal_finished (PkClientState *state,
 	pk_client_state_finish (state, NULL);
 }
 
+static void
+results_add_update_detail_from_variant (PkResults   *results,
+                                        GVariant    *update_variant,
+                                        PkRoleEnum   role,
+                                        const gchar *transaction_id)
+{
+	g_autoptr(PkUpdateDetail) item = NULL;
+	const gchar *package_id;
+	g_autofree gchar **updates_strv = NULL;
+	g_autofree gchar **obsoletes_strv = NULL;
+	g_autofree gchar **vendor_urls_strv = NULL;
+	g_autofree gchar **bugzilla_urls_strv = NULL;
+	g_autofree gchar **cve_urls_strv = NULL;
+	guint restart, state;
+	const gchar *update_text, *changelog, *issued, *updated;
+
+	g_variant_get (update_variant,
+		       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
+		       &package_id,
+		       &updates_strv,
+		       &obsoletes_strv,
+		       &vendor_urls_strv,
+		       &bugzilla_urls_strv,
+		       &cve_urls_strv,
+		       &restart,
+		       &update_text,
+		       &changelog,
+		       &state,
+		       &issued,
+		       &updated);
+
+	item = pk_update_detail_new ();
+	g_object_set (item,
+		      "package-id", package_id,
+		      "updates", updates_strv[0] != NULL ? updates_strv : NULL,
+		      "obsoletes", obsoletes_strv[0] != NULL ? obsoletes_strv : NULL,
+		      "vendor-urls", vendor_urls_strv[0] != NULL ? vendor_urls_strv : NULL,
+		      "bugzilla-urls", bugzilla_urls_strv[0] != NULL ? bugzilla_urls_strv : NULL,
+		      "cve-urls", cve_urls_strv[0] != NULL ? cve_urls_strv : NULL,
+		      "restart", restart,
+		      "update-text", update_text,
+		      "changelog", changelog,
+		      "state", state,
+		      "issued", issued,
+		      "updated", updated,
+		      "role", role,
+		      "transaction-id", transaction_id,
+		      NULL);
+
+	pk_results_add_update_detail (results, item);
+}
+
 /*
  * pk_client_signal_cb:
  **/
@@ -1172,7 +1224,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	GWeakRef *weak_ref = user_data;
 	g_autoptr(PkClientState) state = g_weak_ref_get (weak_ref);
 	gchar *tmp_str[12];
-	gchar **tmp_strv[5];
 	gboolean tmp_bool;
 	gboolean ret;
 	guint tmp_uint;
@@ -1277,44 +1328,8 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
-		g_autoptr(PkUpdateDetail) item = NULL;
-		g_variant_get (parameters,
-			       "(&s^a&s^a&s^a&s^a&s^a&su&s&su&s&s)",
-			       &tmp_str[0],
-			       &tmp_strv[0],
-			       &tmp_strv[1],
-			       &tmp_strv[2],
-			       &tmp_strv[3],
-			       &tmp_strv[4],
-			       &tmp_uint,
-			       &tmp_str[7],
-			       &tmp_str[8],
-			       &tmp_uint2,
-			       &tmp_str[10],
-			       &tmp_str[11]);
-		item = pk_update_detail_new ();
-		g_object_set (item,
-			      "package-id", tmp_str[0],
-			      "updates", tmp_strv[0][0] != NULL ? tmp_strv[0] : NULL,
-			      "obsoletes", tmp_strv[1][0] != NULL ? tmp_strv[1] : NULL,
-			      "vendor-urls", tmp_strv[2][0] != NULL ? tmp_strv[2] : NULL,
-			      "bugzilla-urls", tmp_strv[3][0] != NULL ? tmp_strv[3] : NULL,
-			      "cve-urls", tmp_strv[4][0] != NULL ? tmp_strv[4] : NULL,
-			      "restart", tmp_uint,
-			      "update-text", tmp_str[7],
-			      "changelog", tmp_str[8],
-			      "state", tmp_uint2,
-			      "issued", tmp_str[10],
-			      "updated", tmp_str[11],
-			      "role", state->role,
-			      "transaction-id", state->transaction_id,
-			      NULL);
-		pk_results_add_update_detail (state->results, item);
-		g_free (tmp_strv[0]);
-		g_free (tmp_strv[1]);
-		g_free (tmp_strv[2]);
-		g_free (tmp_strv[3]);
-		g_free (tmp_strv[4]);
+		results_add_update_detail_from_variant (state->results, parameters,
+							state->role, state->transaction_id);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetails") == 0) {
