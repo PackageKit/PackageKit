@@ -3565,6 +3565,55 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 static void
+pk_backend_upgrade_system_thread (PkBackendJob *job,
+				  GVariant *params,
+				  gpointer user_data)
+{
+	const gchar *release_ver = NULL;
+	PkBitfield transaction_flags = 0;
+
+	g_variant_get (params, "(t&su)",
+		       &transaction_flags,
+		       &release_ver, NULL);
+
+	ZyppJob zjob(job);
+	ZYpp::Ptr zypp = zjob.get_zypp ();
+	if (zypp == NULL) {
+		return;
+	}
+
+	if (is_tumbleweed ()) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "upgrade-system is not supported in Tumbleweed, use \"pkcon update\" instead.");
+		return;
+	}
+
+	ResPool pool = zypp_build_pool (zypp, TRUE);
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+	PoolStatusSaver saver;
+
+	/* Set environment variable ZYPP_REPO_RELEASEVER to target version. */
+	g_setenv ("ZYPP_REPO_RELEASEVER", release_ver, TRUE);
+
+	upgrade_system (job, zypp, transaction_flags);
+
+	g_unsetenv ("ZYPP_REPO_RELEASEVER");
+}
+
+/**
+  * pk_backend_upgrade_system
+  */
+void
+pk_backend_upgrade_system (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   const gchar *distro_id,
+			   PkUpgradeKindEnum upgrade_kind)
+{
+	pk_backend_job_thread_create (job, pk_backend_upgrade_system_thread, NULL, NULL);
+}
+
+static void
 backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
