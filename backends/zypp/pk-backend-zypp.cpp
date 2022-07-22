@@ -1482,7 +1482,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			ResPool pool = ResPool::instance ();
 			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
 				if (it->status ().isToBeInstalled ())
-					it->statusReset ();
+					it->statusReinit ();
 			}
 
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
@@ -1520,7 +1520,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 				switch (type) {
 				case REMOVE:
 					if (!(*it)->isSystem ()) {
-						it->statusReset ();
+						it->statusReinit ();
 						continue;
 					}
 					break;
@@ -1537,7 +1537,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 				if (!zypp_backend_pool_item_notify (job, *it, TRUE))
 					ret = FALSE;
-				it->statusReset ();
+				it->statusReinit ();
 			}
 			goto exit;
 		}
@@ -2849,7 +2849,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 		if (!zypp_perform_execution (job, zypp, INSTALL, FALSE, transaction_flags)) {
 			// reset the status of the marked packages
 			for (vector<PoolItem>::iterator it = items.begin (); it != items.end (); ++it) {
-				it->statusReset ();
+				it->statusReinit ();
 			}
 			return;
 		}
@@ -2954,7 +2954,7 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		if (!zypp_perform_execution (job, zypp, REMOVE, TRUE, transaction_flags)) {
 			//reset the status of the marked packages
 			for (vector<PoolItem>::iterator it = items.begin (); it != items.end (); ++it) {
-				it->statusReset();
+				it->statusReinit ();
 			}
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_TRANSACTION_ERROR,
@@ -3803,7 +3803,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 				zypp_backend_package (job, status, it->resolvable()->satSolvable(),
 						      it->resolvable ()->summary ().c_str ());
 			}
-			it->statusReset ();
+			it->statusReinit ();
 		}
 		solver.setIgnoreAlreadyRecommended (FALSE);
 	} else {
