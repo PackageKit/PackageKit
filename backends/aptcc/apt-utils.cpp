@@ -288,7 +288,7 @@ GPtrArray* getCVEUrls(const string &changelog)
         gchar *cve = g_match_info_fetch (match_info, 0);
         gchar *cveLink;
 
-        cveLink = g_strdup_printf("http://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve);
+        cveLink = g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve);
         g_ptr_array_add(cve_urls, (gpointer) cveLink);
 
         g_free(cve);
@@ -331,7 +331,7 @@ GPtrArray* getBugzillaUrls(const string &changelog)
     // Debian bugs
     // Regular expressions to detect bug numbers in changelogs according to the
     // Debian Policy Chapter 4.4. For details see the footnote 15:
-    // http://www.debian.org/doc/debian-policy/footnotes.html#f15
+    // https://www.debian.org/doc/debian-policy/footnotes.html#f15
     // /closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*/i
     regex = g_regex_new("closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
                         G_REGEX_CASELESS,
@@ -342,16 +342,16 @@ GPtrArray* getBugzillaUrls(const string &changelog)
         gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
         gchar *bugLink1;
 
-        bugLink1 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1);
+        bugLink1 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1);
         g_ptr_array_add(bugzilla_urls, (gpointer) bugLink1);
 
         g_free(bug1);
 
         gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
-        if (bug2 != NULL) {
+        if (bug2 != NULL && bug2[0] != '\0') {
             gchar *bugLink2;
 
-            bugLink2 = g_strdup_printf("http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2);
+            bugLink2 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2);
             g_ptr_array_add(bugzilla_urls, (gpointer) bugLink2);
 
             g_free(bug2);
