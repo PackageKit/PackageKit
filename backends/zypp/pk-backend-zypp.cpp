@@ -44,6 +44,7 @@
 #include <pk-backend.h>
 #include <pk-shared.h>
 #include <packagekit-glib2/packagekit.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-enum.h>
 
 #include <zypp/Digest.h>
@@ -3548,6 +3549,8 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 				  gpointer user_data)
 {
 	const gchar *release_ver = NULL;
+    g_autofree gchar *release_name = NULL;
+    g_autoptr(GError) error = NULL;
 	PkBitfield transaction_flags = 0;
 
 	g_variant_get (params, "(t&su)",
@@ -3565,6 +3568,16 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 					   "upgrade-system is not supported in Tumbleweed, use \"pkcon update\" instead.");
 		return;
 	}
+
+    release_name = pk_get_distro_name (&error);
+	if (release_name == NULL)
+		g_error ("Failed to parse os-release: %s", error->message);
+    if (g_str_has_prefix (release_name, "SLE")) {
+		pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "upgrade-system is not supported in SLE.");
+
+		return;
+    }
 
 	ResPool pool = zypp_build_pool (zypp, TRUE);
 	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
