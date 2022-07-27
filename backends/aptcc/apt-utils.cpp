@@ -213,9 +213,6 @@ string fetchChangelogData(AptCacheFile &CacheFile,
         if (strcmp(str, "") == 0) {
             changelog.append("\n");
             continue;
-        } else {
-            changelog.append(str);
-            changelog.append("\n");
         }
 
         if (starts_with(str, srcpkg.c_str())) {
@@ -267,8 +264,12 @@ string fetchChangelogData(AptCacheFile &CacheFile,
             }
             g_match_info_free(match_info);
         }
+
+        changelog.append(str);
+        changelog.append("\n");
     }
 
+    changelog.erase(changelog.find_last_not_of(" \t\n") + 1);
     return changelog;
 }
 
