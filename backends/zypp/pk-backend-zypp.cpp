@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+
 #include <iterator>
 #include <list>
 #include <map>
@@ -89,12 +90,58 @@
 #include <zypp/target/rpm/librpmDb.h>
 #include <zypp/ui/Selectable.h>
 
+#include <zypp/Capabilities.h>
+#include <zypp/base/Logger.h>
+
 using namespace std;
 using namespace zypp;
 using zypp::filesystem::PathInfo;
+using zypp::sat::detail::SolvableIterator;
+using zypp::sat::Solvable;
+using zypp::solver::detail::SolutionAction;
 
 #undef ZYPP_BASE_LOGGER_LOGGROUP
 #define ZYPP_BASE_LOGGER_LOGGROUP "packagekit"
+
+
+
+struct problem {
+  
+  string kind;
+  std::list<string> solutions;
+  string selected;
+};
+
+struct backend_job_private {
+
+  ResolverProblemList::iterator it;
+  ProblemSolutionList* sol_it;
+  std::list<std::string> to_install;
+  std::list<std::string> to_remove;
+  
+  std::list<std::string> to_install_s;
+  std::list<std::string> to_remove_s;
+  
+  std::list<struct problem> problems;
+  bool interactively_res_init;
+  bool resolution_done;
+  bool init;
+  bool error;
+  
+  filesystem::TmpDir *tmpDir;
+  
+  struct msg_proc_helper *msg_proc_helper;
+  
+  PkBackendJob *job;
+  gint input_id;
+  int input;
+  int ouput;
+  
+  int output;
+  
+  RepoManager *manager;
+  
+};
 
 typedef enum {
         INSTALL,
@@ -281,7 +328,8 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 
 	virtual Action problem (zypp::Resolvable::constPtr resolvable, Error error, const std::string &description, RpmLevel level) {
 		pk_backend_job_error_code (_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "%s", description.c_str ());
-		return ABORT;
+		
+                return ABORT;
 	}
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason, RpmLevel level) {
@@ -551,7 +599,6 @@ class PkBackendZYppPrivate {
 	std::vector<std::string> signatures;
 	EventDirector eventDirector;
 	PkBackendJob *currentJob;
-	
 	pthread_mutex_t zypp_mutex;
 };
 
@@ -874,7 +921,7 @@ zypp_get_packages_by_file (ZYpp::Ptr zypp,
 		sat::WhatProvides prov (cap);
 
 		for(sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
-			ret.push_back (*it);
+ 			ret.push_back (*it);
 		}
 	}
 }
@@ -1442,55 +1489,1166 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 /**
   * simulate, or perform changes in pool to the system
   */
+
+struct reader_info {
+  char *buffer;
+  int   curr_old;
+  int   loaded;
+  int   buff_len;
+} ;
+struct msg_proc_helper {
+  
+  ResolverProblemList::iterator it;
+  Resolver_Ptr resolver;
+  ResolverProblemList problems;
+  ProblemSolutionList *solution_list; 
+  std::list<struct problem> *problems2;
+  char *path_to_cache;
+  
+  struct reader_info reader_info;
+
+};
+
+static std::string get_full_resolution_text(zypp::ProblemSolution& item)
+{
+  return item.description() + item.details();
+}
+
+
+// Popracować nad tym
+static void add_resolution_to_zypp(struct msg_proc_helper *helper)
+{
+  bool apply = false;
+   
+  if (NULL == helper) {
+    
+        return;
+  }
+  
+  std::list<struct problem>::iterator it = helper->problems2->begin();
+  
+  for (; it != helper->problems2->end(); ++it) {
+  
+    ResolverProblemList::iterator it2 = helper->problems.begin();
+
+    for (; it2 != helper->problems.end(); ++it2) {
+
+      if ((*it2)->description() == (*it).kind) {
+      
+        break;
+      }
+    }
+    
+    if (it2 == helper->problems.end()) {
+ 
+            continue;
+    }
+//       
+    ProblemSolutionList::const_iterator it3;
+    ResolverProblem problem = **it2;
+    it3 = problem.solutions().begin();
+    
+    for (; it3 != problem.solutions().end(); ++it3) {
+    
+      if (get_full_resolution_text(**it3) == (*it).selected) {
+   
+        
+        ProblemSolution *solution = &(**it3);        
+        apply = true;
+        helper->solution_list->push_back(solution);
+        
+      }
+    }
+  }
+  if (apply) {
+  
+    helper->resolver->applySolutions(*helper->solution_list);
+  }
+}
+
+static char *get_record(int fd, char *buffer)
+{
+  int count;
+  int curr = 0;
+  int buff_len = 0;
+  int loaded = 0;
+  bool done = false;
+  
+  
+  
+  buff_len += 512;
+  buffer = (char*)realloc(buffer, buff_len);
+  
+  if (NULL == buffer) {
+    
+    return NULL;
+  }
+  
+  while ((count = read(fd, buffer, buff_len - 1 - loaded)) > 0)  {
+    
+    
+    curr = loaded;
+    loaded += count;
+    while ('\0' != buffer[curr] && curr < loaded) {
+      
+      ++curr;
+    }
+    
+    if (curr < loaded && '\0' == buffer[curr]) {
+    
+      done = true;
+      break;
+    }
+
+    buff_len += 512;
+    buffer = (char*)realloc(buffer, buff_len);
+    
+    if (NULL == buffer) {
+      
+      count = 0;
+      break;
+    }
+  };
+  
+  if (!done && 0 > count) {
+    
+    free(buffer);
+    return NULL;
+  }
+  
+  buffer[loaded] = '\0';
+  
+  lseek(fd, - (loaded - curr) + 1, SEEK_CUR);
+  
+  return buffer;
+}
+
+static gboolean 
+load_transaction_from_history(const char *type, const char *file, struct backend_job_private *priv_)
+{
+  bool read;
+  char *buffer = NULL;
+  int fd = open(file, O_RDONLY);
+  
+  if (-1 == fd) {
+  
+    return FALSE;
+  }
+  
+  
+  buffer = get_record(fd, buffer);
+  
+  if (NULL == buffer) {
+    
+    close(fd);
+    return FALSE;
+  }
+  
+  if (0 != strcmp("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", buffer)) {
+  
+    close(fd);
+    return FALSE;
+  }
+  
+  free(buffer);
+  buffer = NULL;
+  buffer = get_record(fd, buffer);
+  
+  if (NULL == buffer) {
+    
+    close(fd);
+    return FALSE;
+  }
+  
+  // TODO: It should be "Simulate"X, where X is a suffix - we should use strncmp
+  if (0 != strcmp("Install", buffer)) {
+    
+    close(fd);
+    return FALSE;
+  }
+  
+  free(buffer);
+  buffer = NULL;
+  
+  priv_->to_install.clear();
+  priv_->to_remove.clear();
+  
+  read = FALSE;
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
+  
+    read = TRUE;
+    priv_->to_install.push_back(buffer);
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if (NULL != buffer) {
+  
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if ((FALSE == read) && (NULL != (buffer = get_record(fd, buffer))) && ('\0' != buffer[0])) {
+   
+    if (buffer)
+      free(buffer);
+    close(fd);
+    return FALSE;
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  
+  read = FALSE;
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
+    
+    read = TRUE;
+    priv_->to_remove.push_back(buffer);
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  if ((FALSE == read) && (NULL != (buffer = get_record(fd, buffer))) && ('\0' != buffer[0])) {
+    
+    if (buffer)
+      free(buffer);
+    close(fd);
+    return FALSE;
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  
+  struct problem problem;
+  
+  while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
+    
+    
+     problem.kind = strdup(buffer); 
+     
+     free(buffer);
+     buffer = NULL;
+     
+     while ((buffer = get_record(fd, buffer)) && ('\0' != buffer[0])) {
+     
+  
+       string a(buffer);
+       
+       
+       problem.solutions.push_back(a);
+       
+       
+       free(buffer);
+       buffer = NULL;
+    }
+    
+    buffer = get_record(fd, buffer);
+    
+    if (NULL == buffer) {
+      
+      close(fd);
+      return FALSE;
+    }
+    
+    problem.selected = std::string(buffer);
+    
+    free(buffer);
+    buffer = NULL;
+    
+    priv_->problems.push_back(problem);
+  }
+  
+  if (NULL != buffer) {
+    
+    free(buffer);
+    buffer = NULL;
+  }
+  
+  close(fd);
+  return TRUE;
+}
+
+static gboolean save_package_list(int fd, std::list<std::string>::iterator curr_pkg, std::list<std::string>::iterator end_pkg_list)
+{
+  if (curr_pkg == end_pkg_list) {
+    
+    if (sizeof("")>
+      write(fd, "", sizeof(""))) {
+      
+      return false;
+      }
+  }
+  while (curr_pkg != end_pkg_list) {
+  
+    if (strlen((*curr_pkg).c_str()) >
+      write(fd, (*curr_pkg).c_str(), strlen((*curr_pkg).c_str()) + 1)) {
+      
+      return false;
+    }
+    ++curr_pkg;
+  }
+  
+  /* Writes null character */
+  if (strlen("") >
+    write(fd, "", 1)) {
+    
+     return false;
+  }
+  
+  return true;
+}
+
+static void save_transaction_to_cache(const char *type, const char *file, struct msg_proc_helper *helper,
+                                      std::list<std::string> to_install, std::list<std::string> to_remove) {
+
+  std::list<std::string>::iterator curr_pkg, end_pkg_list;
+  int fd = open(file, O_CREAT | O_RDWR, S_IWUSR | S_IRUSR);
+  
+  if (-1 == fd) {
+  
+    return;
+  }
+  
+  ftruncate(fd, 0);
+  
+  if (sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0") - 1 >
+    write(fd, "PACKAGEKIT ZYPPER USER SELECTION FILE 1.0", sizeof("PACKAGEKIT ZYPPER USER SELECTION FILE 1.0"))) {
+  
+      close(fd);
+      return;
+  }
+    
+  if (strlen(type) >
+    write(fd, type, strlen(type) + 1)) {
+  
+    close(fd);
+    return;
+  }
+    
+  curr_pkg = to_install.begin();
+  end_pkg_list = to_install.end();
+  
+  if (!save_package_list(fd, curr_pkg, end_pkg_list)) {
+    
+    close(fd);
+    return;
+  }
+  
+  curr_pkg = to_remove.begin();
+  end_pkg_list = to_remove.end();
+  
+  if (!save_package_list(fd, curr_pkg, end_pkg_list)) {
+  
+    close(fd);
+    return;
+  }
+  
+  
+  std::list<struct problem>::iterator curr_problem, end_of_problems;
+  std::list<string>::iterator curr_sol, end_of_sol;
+  
+  
+  curr_problem = helper->problems2->begin();
+  end_of_problems = helper->problems2->end();
+  
+  while (curr_problem != end_of_problems) {
+  
+    curr_sol = (*curr_problem).solutions.begin();
+    end_of_sol = (*curr_problem).solutions.end();
+    
+    if (strlen((*curr_problem).kind.c_str()) >
+      write(fd, (*curr_problem).kind.c_str(), strlen((*curr_problem).kind.c_str()) + 1)) {
+      
+      close(fd);
+      return;
+    }
+    
+    while (curr_sol != end_of_sol) {
+    
+      if (strlen((*curr_sol).c_str()) >
+        write(fd, (*curr_sol).c_str(), strlen((*curr_sol).c_str()) + 1)) {
+        
+        close(fd);
+        return;
+      }
+      ++curr_sol;
+    }
+    
+    if (strlen("") >
+      write(fd, "", 1)) {
+      
+      close(fd);
+      return;
+    }
+    
+    if (strlen((*curr_problem).selected.c_str()) >
+      write(fd, (*curr_problem).selected.c_str(), strlen((*curr_problem).selected.c_str()) + 1)) {
+      
+      close(fd);
+      return;
+    }
+    ++curr_problem;
+  }
+  close(fd);
+}
+
+static char 
+*get_record2(int fd, struct reader_info *info)
+{
+  int count = 0;
+  bool done = false;
+  int curr = 0;
+  int curr2 = info->curr_old;
+  
+  
+  while (info->loaded > curr2) {
+    
+    
+    if ('\0' == info->buffer[curr2]) {
+      
+      curr = info->curr_old ; 
+      info->curr_old = curr2 + 1;
+      return &info->buffer[curr];
+    }
+    
+    ++curr2;
+  }
+  
+  info->buff_len += 512;
+  info->buffer = (char*)realloc(info->buffer, info->buff_len);
+  
+  if (NULL == info->buffer) {
+    
+    return NULL;
+  }
+  
+
+  while ((count = read(fd, &info->buffer[info->loaded], info->buff_len - 1 - info->loaded)) > 0 || (((errno == EAGAIN) && (info->loaded < info->curr_old) && sleep(1))))  {
+    
+    curr = info->loaded;
+    info->loaded += count;
+    while ('\0' != info->buffer[curr] && curr < info->loaded) {
+      
+      ++curr;
+    }
+    
+    if (curr < info->loaded && '\0' == info->buffer[curr]) {
+      
+      done = true;
+      break;
+    }
+    
+    info->buff_len += 512;
+    info->buffer = (char*)realloc(info->buffer, info->buff_len);
+    
+    if (NULL == info->buffer) {
+      
+      count = 0;
+      break;
+    }
+  };
+  
+  if (!done && 0 > count && info->loaded >= info->curr_old) {
+    
+    perror("Error while read from pipe");
+    free(info->buffer);
+    info->buffer = 0;
+    info->buff_len = 0;
+    info->loaded = 0;
+    info->curr_old = 0;
+    close(fd);
+    return NULL;
+  }
+  
+  info->buffer[info->loaded] = '\0';
+  
+  curr2 = info->curr_old;
+  info->curr_old = curr + 1;
+  return &info->buffer[curr2];
+  
+}
+
+static void dependency_error(const char *message_prefix,
+                             struct backend_job_private *msg_proc)
+{
+  const char *buffer = message_prefix;
+  
+  //if (! pk_backend_job_get_interactive(msg_proc->job)) {
+    ResolverProblemList problems = msg_proc->msg_proc_helper->resolver->problems ();
+    gchar * emsg = NULL, * tempmsg = NULL;
+    
+    for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
+      if (emsg == NULL) {
+        emsg = g_strdup ((*it)->description ().c_str ());
+      }
+      else {
+        tempmsg = emsg;
+        emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
+        g_free (tempmsg);
+      }
+    }
+    
+    // reset the status of all touched PoolItems
+    ResPool pool = ResPool::instance ();
+    for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
+      if (it->status ().isToBeInstalled ())
+        it->statusReset ();
+    }
+    
+    pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s:%s", buffer, emsg);
+    g_free (emsg);
+    msg_proc->error = 1;
+    
+  //}
+}
+
+static gboolean  
+dependency_handle_selection(GIOChannel *source,
+                            GIOCondition condition,
+                            gpointer data)
+{
+  
+  
+  
+  struct backend_job_private *msg_proc = (struct backend_job_private*) data;
+  
+  if (msg_proc->resolution_done) {
+  
+    //return FALSE;
+  }
+  if (G_IO_IN != (G_IO_IN & condition)) {
+  
+    if (G_IO_ERR == (G_IO_ERR & condition) ||
+      G_IO_HUP == (G_IO_HUP & condition) ||
+      G_IO_NVAL == (G_IO_NVAL & condition)) {
+      
+      //pk_backend_job_error_code (msg_proc->job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Error when handling dependency. PIPE problem");
+      
+      //pk_backend_job_done (msg_proc->job->helper);
+      
+      
+      dependency_error("Runtime-Error when handling dependency", msg_proc);
+    
+      msg_proc->job->done = 1;
+      pk_backend_job_thread_setup(msg_proc->job->helper);
+      return FALSE;
+    }
+    
+    return TRUE;
+  }
+  int fd = g_io_channel_unix_get_fd (source);
+  
+  int flags = fcntl(fd, F_GETFL, 0);
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+  char *buffer ;
+  while (buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info)) {
+  
+    if (0 == strncmp("ERR:", buffer, sizeof("ERR:") - 1)) {
+    
+      buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
+      
+      
+      
+      dependency_error(buffer, msg_proc);
+      
+      msg_proc->job->done = 1;
+      pk_backend_job_thread_setup(msg_proc->job->helper);
+      
+      return FALSE;
+    }
+    else if (0 == strncmp("SELECTION:", buffer, sizeof("SELECTION:"))) {
+      
+      buffer = get_record2(fd, &msg_proc->msg_proc_helper->reader_info);
+      
+      char *problem_str = buffer;//strchr(buffer, ':');
+      if (NULL == problem_str) {
+
+        return FALSE;
+      }
+      
+      char *solution_str = strchr(problem_str, ':');
+      
+      if (NULL == solution_str) {
+      
+        return FALSE;
+      }
+      
+      ++solution_str;
+      
+      int solution_number = atoi(solution_str);
+      int problem_number = atoi(problem_str);
+      
+      
+
+      ProblemSolutionList::const_iterator it2;
+      ResolverProblemList::iterator it = msg_proc->msg_proc_helper->problems.begin();
+      std::advance(
+        it, 
+        problem_number);
+      ResolverProblem *problem = &(**it);
+      
+      it2 = problem->solutions().begin();
+      std::advance(
+        it2,
+        solution_number);
+      ProblemSolution solution = **it2;
+      
+      struct problem rproblem;
+      
+      rproblem.kind = problem->description();
+      rproblem.selected = get_full_resolution_text(solution);
+      
+      ProblemSolutionList::const_iterator it3 = problem->solutions().begin();
+
+      
+      for (; it3 != problem->solutions().end(); ++it3) {
+        
+        rproblem.solutions.push_back(get_full_resolution_text(**it3));
+      }
+      
+      msg_proc->problems.push_back(rproblem);
+      
+    }
+    else if (0 == strncmp("STOP", buffer, sizeof("STOP") - 1)) {
+      
+      
+    }
+    else if (0 == strncmp("DONE!", buffer, sizeof("DONE!") - 1)) {
+      /* Save resolution to file */
+      
+      msg_proc->resolution_done = true;
+      
+      add_resolution_to_zypp(msg_proc->msg_proc_helper);
+      save_transaction_to_cache("Install", msg_proc->msg_proc_helper->path_to_cache, msg_proc->msg_proc_helper, 
+                                msg_proc->to_install, msg_proc->to_remove);
+      
+      pk_backend_job_thread_setup(msg_proc->job->helper);
+      
+      return FALSE;
+      
+    }
+  }
+  
+  return TRUE;
+}
+
+static void apply_resoultion_from_cache(struct backend_job_private *backend, ResolverProblemList *problems)
+{
+  int problem_number = 0;
+  ProblemSolutionList solution_list; 
+  
+  
+  std::list<struct problem>::iterator problems_it = backend->problems.begin();
+  std::list<struct problem>::iterator mit = backend->problems.begin();
+  ResolverProblemList::iterator it = problems->begin();
+  
+  for (; problems_it != backend->problems.begin(); ++problems_it, ++mit) {
+    //for (; mit != backend->problems.end(); ++mit) {
+    
+    
+    // TODO: SL S.L Czytaj poniższe TODO
+  ProblemSolutionList::const_iterator it2;
+  std::advance(
+    it, 
+    problem_number);
+  //int solution_number = (*problems_it)->
+  ResolverProblem *problem = &(**it);
+  int solution_number = 0;
+  // TODO: SL. S.L Tutaj zmieniać. Powinnyśmy porównywać ciągi nie względem pozycji na liście stworzenej przez backend, a podanej przez libzypp
+  std::list<string>::iterator solutions_it = (*problems_it).solutions.begin();
+  
+  for (; solutions_it != (*problems_it).solutions.end(); ++solutions_it) {
+  
+    if ((*solutions_it) == (*problems_it).selected) {
+    
+      break;
+    }
+    ++solution_number;
+  }
+  
+  if (solutions_it == (*problems_it).solutions.end()) {
+    
+    return;
+  }
+  it2 = problem->solutions().begin();
+  std::advance(
+    it2,
+    solution_number);
+  ProblemSolution solution = **it2;
+  backend->msg_proc_helper->solution_list->push_back(*it2);
+
+  solution_list.push_back(&solution);
+   
+  //}
+  ++problem_number;
+  }
+  backend->msg_proc_helper->resolver->applySolutions(solution_list);
+}
+
+static gboolean no_conflicts_between_cache_and_zypp(ResolverProblemList *problems1, std::list<struct problem> *problems2)
+{
+  
+  ResolverProblemList::iterator it;
+  ProblemSolutionList::const_iterator sol_it;
+  
+  if (NULL == problems1 && NULL == problems2) {
+    
+    return true;
+  }
+  
+  if (NULL == problems1) {
+  
+    return false;
+  }
+  
+  if (NULL == problems2) {
+    
+    return false;
+  }
+  
+  ResolverProblemList::iterator it1 = problems1->begin();
+  std::list<struct problem>::iterator it2 = problems2->begin();
+  
+  for (; (it1 != problems1->end()) && (it2 != problems2->end()); ++it1,++it2) {
+  
+    if ((*it1)->description() != (*it2).kind) {
+      
+      return false;
+    }
+    ProblemSolutionList::const_iterator sol_it1 = (*it1)->solutions().begin();
+    std::list<string>::const_iterator sol_it2  = (*it2).solutions.begin();
+    
+    for (; (sol_it1 != (*it1)->solutions().end()) && (sol_it2 != (*it2).solutions.end()); ++sol_it1, ++sol_it2) {
+    
+      if (get_full_resolution_text(**sol_it1) != *sol_it2) {
+      
+        return false;
+      }
+    }
+    
+    if ((sol_it1 != (*it1)->solutions().end()) || (sol_it2 != (*it2).solutions.end())) {
+    
+      return false;
+    }
+  }
+  
+  if ((it1 != problems1->end()) || (it2 != problems2->end())) {
+    
+    return false;
+  }
+  
+  return true;
+}
+
 static gboolean
 zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gboolean force, PkBitfield transaction_flags)
 {
+        char *path_to_cache = NULL;
+  
 	MIL << force << " " << pk_filter_bitfield_to_string(transaction_flags) << endl;
 	gboolean ret = FALSE;
 	
 	PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(job));
 	
+    
+        
+        struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+        
+        if (rjob->error) {
+        
+          goto exit;
+        }
+        
 	try {
+          try {
 		if (force)
 			zypp->resolver ()->setForceResolve (force);
 
-		// Gather up any dependencies
+               
+                // Gather up any dependencies
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 		pk_backend_job_set_percentage(job, 0);
 		zypp->resolver ()->setIgnoreAlreadyRecommended (TRUE);
 		pk_backend_job_set_percentage(job, 100);
-		if (!zypp->resolver ()->resolvePool ()) {
+                bool second_time = false;
+                
+                ResPool pool = ResPool::instance ();
+                
+                test:
+                if (!zypp->resolver ()->resolvePool ()) {
+
+                  
+
+                    ResolverProblemList list = zypp->resolver()->problems();
+
+                
+                struct msg_proc_helper *transaction_problems;
+                
+                ResolverProblemList problems = zypp->resolver ()->problems ();
+                
+                if (NULL == rjob || FALSE == rjob->init) {
+                  
+                  int len = snprintf(NULL, 0, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender) + 1;
+                  path_to_cache = (char*) malloc(len);
+                  snprintf(path_to_cache, len, "/var/local/lib/PackageKit/solutions-cache-%s", job->sender);
+                  
+                  if (NULL == rjob)
+                     rjob = new (struct backend_job_private)();
+                  
+                  rjob->init = true;
+                  rjob->error = false;
+                  
+                  pk_backend_job_set_priv_data(job, rjob);
+                  
+                  transaction_problems = new struct msg_proc_helper;
+                  transaction_problems->path_to_cache = path_to_cache;
+                  transaction_problems->reader_info.buffer = NULL;
+                  transaction_problems->reader_info.curr_old = 0;
+                  transaction_problems->reader_info.loaded = 0;
+                  transaction_problems->reader_info.buff_len = 0;
+                  rjob->msg_proc_helper = transaction_problems;
+                  
+                  rjob->problems = std::list<struct problem> ();
+                  
+                 
+                  
+                  //rjob->to_install = std::list<std::string>();
+                  //rjob->to_remove = std::list<std::string>();
+                  
+                  transaction_problems->it = problems.begin();
+                  transaction_problems->resolver = zypp->resolver ();
+                  transaction_problems->solution_list = new ProblemSolutionList();
+                  transaction_problems->problems2 = &rjob->problems;//std::list<struct problem> {};//priv->problems;
+                  
+                  rjob->job = job;
+                  rjob->interactively_res_init = false;
+                  
+                }
+                else if (rjob->msg_proc_helper){
+                
+                  transaction_problems = rjob->msg_proc_helper;
+                  path_to_cache = transaction_problems->path_to_cache;
+                  
+                  
+                
+                  
+                }
+                
+                rjob->resolution_done = false;
+                transaction_problems->problems = problems;
+                // rjob->to_install =std::list<std::string>();
+                // rjob->to_remove = std::list<std::string>();
+
+                //rjob->to_install = rjob->to_install_s; 
+                //rjob->to_remove = rjob->to_remove_s; 
+                //rjob->problems = std::list<struct problem> ();
+                
+                
+                ResObject::Kind kind = ResTraits<Package>::kind;
+                
+                // Adding packages selected by user
+                      ResolverProblemList::iterator it = problems.begin ();
+                      std::list<std::string> to_remove;
+                      std::list<std::string> to_install;
+                      
+                      
+                      bool changed = false;
+
+                      {
+                        
+                         load_transaction_from_history("Install", path_to_cache, rjob);
+                         
+                         if (rjob)
+                           add_resolution_to_zypp(rjob->msg_proc_helper);
+/*
+                         struct reader_info {
+                           char *buffer;
+                           int   curr_old;
+                           int   loaded;
+                           int   buff_len;
+                         };
+*/
+                         ResPool::byKind_iterator itb = pool.byKindBegin (kind);
+                         ResPool::byKind_iterator ite = pool.byKindEnd (kind);
+                         
+                       
+                         
+                         std::list<std::string>::iterator it;
+                         
+                         for (; itb != ite; ++itb) {
+                           
+                           if (itb->status().isToBeInstalled()) {
+                             
+                             to_install.push_back(itb->satSolvable().asString());
+                           }
+                         }
+                         
+                         itb = pool.byKindBegin (kind);
+                         
+                         for (; itb != ite;  ++itb) {
+                           
+                           if (itb->status().isToBeUninstalled()) {
+                             
+                             to_remove.push_back(itb->satSolvable().asString());
+                           }
+                         }
+                         
+                         if (rjob->to_remove.size() != to_remove.size()) {
+                         
+                           changed = true;
+                        }
+                         
+                         if (!changed && rjob->to_remove.size() > 0) {
+                           for (it = rjob->to_remove.begin(); it != rjob->to_remove.end(); ++it) {
+                           
+                           std::list<string>::iterator it2;
+                           for (it2 = to_remove.begin(); it2 != to_remove.end(); ++it2) {
+                             
+                             if (*it2 == *it) {
+                             
+                               break;
+                             }
+                           }
+                           
+                           if (it2 == to_remove.end()) {
+                             
+                             changed = true;
+                             break;
+                           }
+                         }
+                         
+                         if (it != rjob->to_remove.end()) {
+                           
+                           changed = true;
+                         }
+                         }
+                         
+                         if (rjob->to_install.size() != to_install.size()) {
+                           
+                           changed = true;
+                         }
+                         
+                         if (!changed && rjob->to_install.size() > 0) {
+                           
+                           for (it = rjob->to_install.begin(); it != rjob->to_install.end(); ++it) {
+                             
+                             std::list<string>::iterator it2;
+                             
+                             for (it2 = to_install.begin(); it2 != to_install.end(); ++it2) {
+                             
+                               if (*it2 == *it) {
+                                 
+                                 break;
+                               }
+                             }
+                             
+                             if (it2 == to_install.end()) {
+                               
+                               changed = true;
+                               break;
+                             }
+                           }
+                         }
+                           
+                         if (!changed
+                           && it != rjob->to_install.end()
+                            )  {
+                             
+                            changed = true;
+                         }
+                         
+                         
+                         if (!no_conflicts_between_cache_and_zypp(&problems, rjob->msg_proc_helper->problems2)) {
+                         
+                           changed = true;
+                        }
+                       
+                      }
 			// Manual intervention required to resolve dependencies
 			// TODO: Figure out what we need to do with PackageKit
 			// to pull off interactive problem solving.
 
-			ResolverProblemList problems = zypp->resolver ()->problems ();
-			gchar * emsg = NULL, * tempmsg = NULL;
+                        
+                        
+                        if (changed) {
+                          add_resolution_to_zypp(transaction_problems);
+                          
+                          // TODO: Może to powoduje problem?
+                          
+                          if (false == second_time) {
+                          
+                            second_time = true;
+                            goto test;
+                          }
+                          if (rjob->sol_it) {
+                            
+                            //                             delete job->sol_it;
+                          }
+                          rjob->problems = std::list<struct problem> ();
+                          
+                          // rjob->sol_it = new ProblemSolutionList();
+                          rjob->to_install = to_install;
+                          rjob->to_remove = to_remove;
+                          job->done = 0;
+                          if (! rjob->msg_proc_helper) {
+                            rjob->msg_proc_helper = transaction_problems;
+                          }  
+                          
+                          if (! rjob->interactively_res_init) {
+                            
+                          pid_t child_pid;
+                          
+                          
+                          int fds[2];
+                          int fds2[2];
+                          
+                          int input, output;
+                          
+                          if (pipe(fds) < 0) {
+                            
+                            perror("Error while pipe creating");
+                          }
+                          else if (pipe(fds2) < 0) {
+                            
+                            perror("Error while pipe creating");
+                          }
+                          
+                          child_pid = fork();
+ 
+                          
+                          if (0 == child_pid) {
+                            
+                            close(fds[0]);
+                            close(fds2[1]);
+                            
+                            int length;
+                            char *comm_ch_output;
+                            char *comm_ch_input;
+                            
+                            length = snprintf(NULL, 0, "%d", fds[1]) + 1;
+                            comm_ch_output = (char*) malloc(length);
+                            snprintf(comm_ch_output, length, "%d", fds[1]); 
+                            
+                            length = snprintf(NULL, 0, "%d", fds2[0]) + 1;
+                            comm_ch_input = (char*) malloc(length);
+                            snprintf(comm_ch_input, length, "%d", fds2[0]);
+                            
+                            execlp(LIBEXECDIR "/dependency-solving-helper", LIBEXECDIR "/dependency-solving-helper", "--comm-channel-input", comm_ch_input,"--comm-channel-output", comm_ch_output, NULL);
+                            
+                            write(STDOUT_FILENO, "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
+                            write(fds[1], "ERR:\0Unable to start dependency solver\n", sizeof("Unable to start dependency solver\n") - 1);
+                            exit(1);
+                            
+                          }
+                          else if (-1 == child_pid)
+                          {
+                            perror("Cannot spawn interactive dependency solver");
+                            
+                            close(fds[0]);
+                            close(fds2[1]);
+                            close(fds[1]);
+                            close(fds2[0]);
+                            
+                            pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Cannot spawn interactive dependency solver");
+                          }
+                          else {
+                            
+                            close(fds[1]);
+                            close(fds2[0]);
+                            GError *error;
+                            GIOChannel *chann = g_io_channel_unix_new (fds[0]);
+                            g_io_channel_set_encoding(chann, NULL, &error);
+                            g_io_channel_set_buffered(chann, false);
+                            rjob->input_id = g_io_add_watch(chann, G_IO_IN, dependency_handle_selection, (void*)rjob);
+                            
+                            rjob->input = fds[0];
+                            rjob->output = fds2[1];
+                            input = fds[0];
+                            
+                            write(rjob->output, job->sender, strlen(job->sender) + 1);
+                            
+                          }
+                          }
+                          {
+                            ResolverProblemList::iterator it;
+                            ProblemSolutionList::const_iterator sol_it;
+                            const char *string;
+                            
+                            for (it = transaction_problems->problems.begin(); it != transaction_problems->problems.end(); ++it) {
+                              
+                              string = (*it)->description ().c_str ();
+                              write(rjob->output, string, strlen(string)+1);
+                              for (sol_it = (**it).solutions().begin(); sol_it != (**it).solutions().end(); ++sol_it) {
+                                
+                                
+                                string = (*sol_it)->description ().c_str ();
+                                write(rjob->output, string, strlen(string)+1);
+                                string = (*sol_it)->details ().c_str ();
+                                write(rjob->output, string, strlen(string)+1);
+                                
+                              }
+                              write(rjob->output, "", sizeof(""));
+                            }
+                            
+                            write(rjob->output, "", sizeof(""));
+                            ret = TRUE;
+                          }
+                          rjob->interactively_res_init = true;
+                            goto exit;
+                        }
 
-			for (ResolverProblemList::iterator it = problems.begin (); it != problems.end (); ++it) {
-				if (emsg == NULL) {
-					emsg = g_strdup ((*it)->description ().c_str ());
-				}
-				else {
-					tempmsg = emsg;
-					emsg = g_strconcat (emsg, "\n", (*it)->description ().c_str (), NULL);
-					g_free (tempmsg);
-				}
-			}
+                        
 
-			// reset the status of all touched PoolItems
-			ResPool pool = ResPool::instance ();
-			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
-				if (it->status ().isToBeInstalled ())
-					it->statusReset ();
-			}
 
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", emsg);
-			g_free (emsg);
+                        }
+                        struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+                        
+                        int empty = zypp->resolver()->getTransaction().actionEmpty();
 
-			goto exit;
-		}
+                        if (NULL != rjob && true == rjob->init) {
+                        
+                          //cleaning up
+                          
+                          write(rjob->output, "", sizeof(""));
+                         // g_source_unref( g_main_context_find_source_by_id(g_main_context_default(), rjob->input_id));
+                          close(rjob->input);
+                          close(rjob->output);
+                          
+                          if (rjob->msg_proc_helper) {
 
+                            if (!pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) || empty) {
+                            
+                              unlink(rjob->msg_proc_helper->path_to_cache);
+                            }
+                            free(rjob->msg_proc_helper->path_to_cache);
+                            free(rjob->msg_proc_helper);
+                            
+                            
+                          } 
+                        }
+                job->done = 1;
+                
+              
+                if (empty) {
+                  
+                                    pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "There is nothing to do. Problably action canceled by user" );
+                  ret = FALSE;
+                  goto exit;
+                }
 		switch (type) {
 		case INSTALL:
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
@@ -1510,7 +2668,8 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 			break;
 		}
 
-		ResPool pool = ResPool::instance ();
+
+               
 		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 			ret = TRUE;
 
@@ -1549,7 +2708,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 		for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
 			if (it->status ().isToBeInstalled ())
 				_dl_count++;
-			if (it->status ().isToBeInstalled () && !(it->resolvable()->licenseToConfirm().empty ())) {
+			if (NULL == rjob && it->status ().isToBeInstalled () && !(it->resolvable()->licenseToConfirm().empty ())) {
 				gchar *eula_id = g_strdup ((*it)->name ().c_str ());
 				gboolean has_eula = pk_backend_is_eula_valid (backend, eula_id);
 				if (!has_eula) {
@@ -1584,12 +2743,18 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 		ZYppCommitResult result = zypp->commit (policy);
 
+                if (!result.attemptToModify()) {
+                  pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "There is nothing to do. Problably action canceled by user" );
+                  ret = FALSE;
+                  goto exit;
+                }
 		bool worked = result.allDone();
 		if (only_download)
 			worked = result.noError();
 
 		if ( ! worked )
 		{
+                  
 			std::ostringstream todolist;
 			char separator = '\0';
 
@@ -1612,23 +2777,100 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 			goto exit;
 		}
+                
 
 		pk_backend_job_set_percentage(job, 100);
 		ret = TRUE;
+          }
+          catch (std::bad_alloc &ex) {
+
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_cast &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_typeid &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_alloc &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::bad_exception &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::domain_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::invalid_argument &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::length_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::out_of_range &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::logic_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::overflow_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::range_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::underflow_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::runtime_error &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
+          catch (std::exception &ex) {
+            
+            fprintf(stderr, "%s\n", ex.what());
+            throw;
+          }
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	} catch (const target::rpm::RpmException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "%s", ex.asUserString().c_str () );
 	} catch (const Exception &ex) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
+                pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str() );
 	}
 
  exit:
+        
 	/* reset the various options */
 	try {
 		zypp->resolver ()->setForceResolve (FALSE);
 	} catch (const Exception &ex) { /* we tried */ }
-
 	return ret;
 }
 
@@ -2516,22 +3758,51 @@ static void
 backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	MIL << endl;
-	RepoManager manager;
-	ZyppJob zjob(job);
-	ZYpp::Ptr zypp = zjob.get_zypp();
-
 	PkBitfield transaction_flags;
 	gchar **full_paths;
 	g_variant_get (params, "(t^a&s)",
 		       &transaction_flags,
 		       &full_paths);
 	
+
+	struct backend_job_private *rjob = (struct backend_job_private*) pk_backend_job_get_priv_data (job);
+        
+        if (NULL == rjob) {
+	
+          rjob = new (struct backend_job_private)();
+          rjob->manager = NULL;
+          rjob->tmpDir = NULL;
+          pk_backend_job_set_priv_data(job, rjob);
+        }
+        
+        if (NULL == rjob->manager) {
+          
+          rjob->manager = new RepoManager();
+        }
+        
+        if (NULL == rjob->tmpDir) {
+        
+          rjob->tmpDir = new (filesystem::TmpDir)();
+        }
+        
+        filesystem::TmpDir *tmpDir = rjob->tmpDir;
+        
+        RepoManager *manager = rjob->manager;
+        
+        ZyppJob zjob(job);
+        ZYpp::Ptr zypp = zjob.get_zypp();
+        // create a plaindir-repo and cache it
+        Repository repo;
+        RepoInfo tmpRepo, checkForRepo;
+        
 	if (zypp == NULL){
 		return;
 	}
-
+        
+        if (FALSE == job->started) {
+        
 	// create a temporary directory
-	filesystem::TmpDir tmpDir;
+	
 	if (tmpDir == NULL) {
 		zypp_backend_finished_error (
 			job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
@@ -2553,7 +3824,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 		}
 
 		// copy the rpm into tmpdir
-		string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
+		string tempDest = tmpDir->path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
 		if (filesystem::copy (full_paths[i], tempDest) != 0) {
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
@@ -2561,53 +3832,99 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 			return;
 		}
 	}
+        }
+	int length = snprintf(NULL, 0, "PK_TMP_DIR_%s", job->sender) + 1;
+        
+        char *name = (char *) malloc(length);
+        
+        snprintf(name, length, "PK_TMP_DIR_%s", job->sender);
+        
+        checkForRepo = manager->getRepo(name);
+        
+        repo = ResPool::instance().reposFind(name);
+        
 
-	// create a plaindir-repo and cache it
-	RepoInfo tmpRepo;
-
+        if (RepoInfo::noRepo == checkForRepo ) {
+        
 	try {
 		tmpRepo.setType(repo::RepoType::RPMPLAINDIR);
-		string url = "dir://" + tmpDir.path ().asString ();
+		string url = "dir://" + tmpDir->path ().asString ();
 		tmpRepo.addBaseUrl(Url::parseUrl(url));
 		tmpRepo.setEnabled (true);
 		tmpRepo.setAutorefresh (true);
-		tmpRepo.setAlias ("PK_TMP_DIR");
-		tmpRepo.setName ("PK_TMP_DIR");
+                
+                
+                
+		tmpRepo.setAlias (name);
+		tmpRepo.setName (name);
 
 		// add Repo to pool
-		manager.addRepository (tmpRepo);
+		manager->addRepository (tmpRepo);
 
-		if (!zypp_refresh_meta_and_cache (manager, tmpRepo)) {
-			zypp_backend_finished_error (
-			  job, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't refresh repositories");
-			return;
-		}
-		zypp_build_pool (zypp, true);
-
+		
+                if (!zypp_refresh_meta_and_cache (*manager, tmpRepo)) {
+                  zypp_backend_finished_error (
+                    job, PK_ERROR_ENUM_INTERNAL_ERROR, "Can't refresh repositories");
+                  free(name);
+                  return;
+                }
+                zypp_build_pool (zypp, true);
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
 			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
-		return;
+                free(name);
+                return;
 	}
+	
+	repo = ResPool::instance().reposFind(name);
+        
+        
+        for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
+          MIL << "Setting " << *it << " for installation" << endl;
+          PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
+        }
+        }
+        else {
+        
+          tmpRepo = checkForRepo;
+        }
 
-	Repository repo = ResPool::instance().reposFind("PK_TMP_DIR");
+        if (RepoInfo::noRepo == tmpRepo) {
+          
+          zypp_backend_finished_error (
+            job, PK_ERROR_ENUM_INTERNAL_ERROR, "Error with creating an local repo");
+          free(name);
+          return;
+        }
 
-	for_(it, repo.solvablesBegin(), repo.solvablesEnd()){
-		MIL << "Setting " << *it << " for installation" << endl;
-		PoolItem(*it).status().setToBeInstalled(ResStatus::USER);
-	}
 
 	if (!zypp_perform_execution (job, zypp, INSTALL, FALSE, transaction_flags)) {
+          
+          if (! rjob->error)
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED, "Could not install the rpm-file.");
 	}
+	
+	job->started = TRUE;
+        //tmpRepo.setEnabled(false);
 
+  
 	// remove tmp-dir and the tmp-repo
+	if (true == job->done || true == rjob->error)
 	try {
-		manager.removeRepository (tmpRepo);
+   
+		manager->removeRepository (tmpRepo);
 		repo.eraseFromPool();
+                
+                rjob->manager = NULL;
+                delete manager;
+                delete tmpDir;
 	} catch (const repo::RepoNotFoundException &ex) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str() );
 	}
+	
+	
+	free(name);
+
 }
 
 /**
@@ -2831,10 +4148,14 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 			to_install++;
 			PoolItem item(solvable);
 			// set status to ToBeInstalled
-			item.status ().setToBeInstalled (ResStatus::USER);
-			items.push_back (item);
+                       // if (FALSE == job->started) {
+			
+                          item.status ().setToBeInstalled (ResStatus::USER);
+			  items.push_back (item);
+                       // }
 		}
 
+		job->started = true;
 		pk_backend_job_set_percentage (job, 40);
 
 		if (!to_install) {
@@ -2938,16 +4259,20 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 						     "couldn't find package");
 			return;
 		}
+		
+                  
 		PoolItem item(solvable);
-		if (solvable.isSystem ()) {
-			item.status ().setToBeUninstalled (ResStatus::USER);
-			items.push_back (item);
-		} else {
-			item.status ().resetTransact (ResStatus::USER);
-		}
+		//if (FALSE == job->started) {
+                  if (solvable.isSystem ()) {
+                      item.status ().setToBeUninstalled (ResStatus::USER);
+                      items.push_back (item);
+                  } else {
+                      item.status ().resetTransact (ResStatus::USER);
+                  }
+                //}
 	}
-
-	pk_backend_job_set_percentage (job, 40);
+        pk_backend_job_set_percentage (job, 40);
+        job->started == TRUE;
 
 	try
 	{
@@ -3459,7 +4784,11 @@ upgrade_system (PkBackendJob *job,
 		}
 	}
 
-	zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+	//if (FALSE == job->started) {
+          
+          zypp->resolver ()->dupSetAllowVendorChange (ZConfig::instance ().solver_dupAllowVendorChange ());
+       // }
+        job->started == TRUE;
 	zypp->resolver ()->doUpgrade ();
 
 	zypp_perform_execution (job, zypp, UPGRADE_SYSTEM, FALSE, transaction_flags);
@@ -3523,6 +4852,7 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 		item.status ().setToBeInstalled (ResStatus::USER);
 		Patch::constPtr patch = asKind<Patch>(item.resolvable ());
 		zypp_check_restart (&restart, patch);
+
 		if (restart != PK_RESTART_ENUM_NONE){
 			pk_backend_job_require_restart (job, restart, package_ids[i]);
 			restart = PK_RESTART_ENUM_NONE;

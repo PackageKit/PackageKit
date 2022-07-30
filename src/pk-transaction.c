@@ -174,6 +174,13 @@ static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
+PkBackend *
+pk_transaction_get_backend(PkTransaction *transaction)
+{
+  g_return_val_if_fail (PK_IS_TRANSACTION (transaction), NULL);
+  return transaction->priv->backend;
+}
+
 GQuark
 pk_transaction_error_quark (void)
 {
@@ -450,6 +457,8 @@ pk_transaction_locked_changed_cb (PkBackendJob *job,
 	/* if backend cache is locked at some time, this transaction is running in exclusive mode */
 	if (locked)
 		pk_transaction_make_exclusive (transaction);
+        else
+                pk_transaction_make_inclusive (transaction);
 }
 
 static void
@@ -864,6 +873,8 @@ pk_transaction_get_backend_job (PkTransaction *transaction)
 	return transaction->priv->job;
 }
 
+
+
 /**
  * pk_transaction_is_finished_with_lock_required:
  **/
@@ -1007,7 +1018,23 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 		break;
 	}
 }
+#if 0
+// TODO: S.L SL LOOK HERE (pk_transaction_finished_cb)
 
+static gboolean pk_transaction_is_user_interaction_required(PkTransaction *transaction)
+{
+  g_autoptr(PkError) error_code = NULL;
+  
+  g_return_val_if_fail (PK_IS_TRANSACTION (transaction), FALSE);
+  
+  error_code = pk_results_get_error_code (transaction->priv->results);
+  if (error_code != NULL &&
+    pk_error_get_code (error_code) == PK_ERROR_ENUM_LOCK_REQUIRED) {
+    return TRUE;
+    }
+    return FALSE;
+}
+#endif
 static void
 pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransaction *transaction)
 {
@@ -1029,6 +1056,9 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* save this so we know if the cache is valid */
 	pk_results_set_exit_code (transaction->priv->results, exit_enum);
 
+        
+        // TODO: S.L SL HERE: Wstawić kod sprawdzający czy nie oczekujemy na odpowiedź i wykonać return
+        
 	/* don't really finish the transaction if we only completed to wait for lock */
 	if (exit_enum != PK_EXIT_ENUM_CANCELLED &&
 	    pk_transaction_is_finished_with_lock_required (transaction)) {
@@ -1107,6 +1137,8 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		pk_transaction_db_action_time_reset (transaction->priv->transaction_db, transaction->priv->role);
 
 	/* did we finish okay? */
+        
+        // TODO: S.L SL HERE
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
 		pk_transaction_db_set_finished (transaction->priv->transaction_db, transaction->priv->tid, TRUE, time_ms);
 	else
@@ -1636,6 +1668,8 @@ pk_transaction_percentage_cb (PkBackendJob *job,
 					      g_variant_new_uint32 (percentage));
 }
 
+
+// TODO: S.L SL HERE
 gboolean
 pk_transaction_run (PkTransaction *transaction)
 {
@@ -1987,6 +2021,16 @@ pk_transaction_make_exclusive (PkTransaction *transaction)
 	g_debug ("changing transaction to exclusive mode");
 
 	transaction->priv->exclusive = TRUE;
+}
+
+void
+pk_transaction_make_inclusive (PkTransaction *transaction)
+{
+  g_return_if_fail (PK_IS_TRANSACTION (transaction));
+  
+  g_debug ("changing transaction to exclusive mode");
+  
+  transaction->priv->exclusive = FALSE;
 }
 
 static void

@@ -714,15 +714,19 @@ typedef struct {
 	GDestroyNotify		 destroy_func;
 } PkBackendJobThreadHelper;
 
-static gpointer
+gpointer
 pk_backend_job_thread_setup (gpointer thread_data)
 {
 	PkBackendJobThreadHelper *helper = (PkBackendJobThreadHelper *) thread_data;
 
+        helper->job->done = 1;
 	/* run original function with automatic locking */
 	pk_backend_thread_start (helper->backend, helper->job, helper->func);
 	helper->func (helper->job, helper->job->priv->params, helper->user_data);
-	pk_backend_job_finished (helper->job);
+        
+        // TODO: S.L SL Jeżeli pewne pole wskazuje, że zadanie nie jest zakończone, to nie wykonujemy poniższego wywołania
+        if (helper->job->done)
+          pk_backend_job_finished (helper->job);
 	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* set idle IO priority */
@@ -734,13 +738,31 @@ pk_backend_job_thread_setup (gpointer thread_data)
 #endif
 
 	/* destroy helper */
-	g_object_unref (helper->job);
-	if (helper->destroy_func != NULL)
-		helper->destroy_func (helper->user_data);
-	g_free (helper);
+        
+        
+        if (helper->job->done) {
+          g_object_unref (helper->job);
+          if (helper->destroy_func != NULL)
+                  helper->destroy_func (helper->user_data);
+          g_free (helper);
+        }
 
 	/* no return value */
 	return NULL;
+}
+
+void pk_backend_job_done  (gpointer thread_data)
+{
+  PkBackendJobThreadHelper *helper = (PkBackendJobThreadHelper *) thread_data;
+  
+  pk_backend_job_finished (helper->job);
+ 
+  g_object_unref (helper->job);
+  if (helper->destroy_func != NULL)
+    helper->destroy_func (helper->user_data);
+  g_free (helper);
+  pk_backend_thread_stop (helper->backend, helper->job, helper->func);
+  
 }
 
 /**
@@ -762,9 +784,11 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendJobThreadHelper, 1);
 	helper->job = g_object_ref (job);
+        helper->job->started = FALSE;
 	helper->backend = job->priv->backend;
 	helper->func = func;
 	helper->user_data = user_data;
+        job->helper = (void*) helper;
 
 	/* create a thread and unref it immediately as we do not need to join()
 	 * this at any stage */
@@ -1589,6 +1613,16 @@ pk_backend_job_get_allow_cancel (PkBackendJob *job)
 	return job->priv->allow_cancel;
 }
 
+void *pk_backend_job_get_priv_data (PkBackendJob *job)
+{
+  return job->private_data;
+}
+
+
+void pk_backend_job_set_priv_data (PkBackendJob *job, void *a)
+{
+  job->private_data = a;
+}
 /**
  * pk_backend_job_set_exit_code:
  *
@@ -1723,6 +1757,9 @@ pk_backend_job_init (PkBackendJob *job)
 	job->priv->status = PK_STATUS_ENUM_UNKNOWN;
 	job->priv->emitted = g_hash_table_new_full (g_str_hash, g_str_equal,
 	                                            g_free, (GDestroyNotify) g_object_unref);
+        
+        job->private_data = NULL;
+        job->done = 0;
 }
 
 /**
@@ -1735,6 +1772,7 @@ pk_backend_job_new (GKeyFile *conf)
 {
 	PkBackendJob *job;
 	job = g_object_new (PK_TYPE_BACKEND_JOB, NULL);
+        job->started = FALSE;
 	job->priv->conf = g_key_file_ref (conf);
 	return PK_BACKEND_JOB (job);
 }

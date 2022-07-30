@@ -153,3 +153,6 @@ subdir('client')
 subdir('backends')
 subdir('contrib')
 subdir('docs')
+if get_option('dependency_handling_by_user')
+  subdir('helpers')
+endif
