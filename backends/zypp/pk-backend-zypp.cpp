@@ -3450,6 +3450,7 @@ upgrade_system (PkBackendJob *job,
 		if (!zypp_refresh_cache (job, zypp, FALSE)) {
 			return;
 		}
+		PoolStatusSaver saver;
 		zypp_get_updates (job, zypp, candidates);
 		if (candidates.empty ()) {
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
