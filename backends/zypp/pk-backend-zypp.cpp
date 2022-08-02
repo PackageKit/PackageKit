@@ -3563,6 +3563,10 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 		return;
 	}
 
+	ResPool pool = zypp_build_pool (zypp, TRUE);
+	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
+	PoolStatusSaver saver;
+
 	if (is_tumbleweed ()) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED,
 					   "upgrade-system is not supported in Tumbleweed, use \"pkcon update\" instead.");
@@ -3578,10 +3582,6 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 
 		return;
     }
-
-	ResPool pool = zypp_build_pool (zypp, TRUE);
-	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
-	PoolStatusSaver saver;
 
 	/* Set environment variable ZYPP_REPO_RELEASEVER to target version. */
 	g_setenv ("ZYPP_REPO_RELEASEVER", release_ver, TRUE);
