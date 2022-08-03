@@ -1,6 +1,6 @@
 add_languages('cpp')
 
-zypp_dep = dependency('libzypp', version: '>=6.16.0')
+zypp_dep = dependency('libzypp', version: '>=17.31.0')
 
 # define if libzypp returns package size in bytes
 zypp_args = []
