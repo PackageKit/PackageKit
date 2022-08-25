@@ -85,7 +85,7 @@
   <action id="org.freedesktop.packagekit.package-downgrade">
     <!-- SECURITY
           - Normal users require admin authentication to downgrade packages.
-          - User authorized to dowgrade signed packages is authorized to install
+          - User authorized to downgrade signed packages is authorized to install
             them as well.
           - If a package in question is not trusted, user's permission to install
             untrusted package will be checked as well.
