@@ -220,25 +220,6 @@
     </defaults>
   </action>
 
-  <action id="org.freedesktop.packagekit.device-rebind">
-    <!-- SECURITY:
-          - Normal users require admin authentication to rebind a driver
-            so that it works after we install firmware.
-          - This should not be set to 'yes' as unprivileged users could then
-            try to rebind drivers in use, for instance security authentication
-            devices.
-     -->
-    <description>Reload a device</description>
-    <message>Authentication is required to reload the device with a new driver</message>
-    <icon_name>package-x-generic</icon_name>
-    <defaults>
-      <allow_any>auth_admin</allow_any>
-      <allow_inactive>auth_admin</allow_inactive>
-      <allow_active>yes</allow_active>
-    </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">/usr/sbin/pk-device-rebind</annotate>
-  </action>
-
   <action id="org.freedesktop.packagekit.upgrade-system">
     <!-- SECURITY:
           - Normal users require admin authentication to upgrade the disto as
