@@ -3109,11 +3109,6 @@ backend_find_packages_thread (PkBackendJob *job, GVariant *params, gpointer user
 		return;
 	}
 
-	// refresh the repos before searching
-	if (!zypp_refresh_cache (job, zypp, FALSE)) {
-		return;
-	}
-
 	search = values[0];  //Fixme - support the possible multiple values (logical OR search)
 	role = pk_backend_job_get_role(job);
 
