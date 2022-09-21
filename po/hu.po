@@ -1,597 +1,1471 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Hungarian translation for PackageKit.
+# Copyright (C) 2009, 2014, 2015, 2016, 2022 Free Software Foundation, Inc.
 # This file is distributed under the same license as the PackageKit package.
 #
-# Translators:
-# Balázs Meskó <meskobalazs@mailbox.org>, 2018
-# Balázs Úr, 2014-2015
-# Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012
-# kelemeng <kelemeng@ubuntu.com>, 2013-2014
-# kelemeng <kelemeng@ubuntu.com>, 2012
-# kelemeng <kelemeng@ubuntu.com>, 2015-2016
-# Richard Hughes <richard@hughsie.com>, 2011
+# Gabor Kelemen <kelemeng at gnome dot hu>, 2009, 2012, 2013, 2014, 2015, 2016.
+# Richard Hughes <richard at hughsie dot com>, 2011.
+# Balázs Úr <ur.balazs at fsf dot hu>, 2014, 2015, 2022.
+# Balázs Meskó <mesko.balazs at fsf dot hu>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"Language-Team: Hungarian (http://www.transifex.com/freedesktop/packagekit/language/hu/)\n"
+"Report-Msgid-Bugs-To: https://github.com/hughsie/PackageKit/issues\n"
+"POT-Creation-Date: 2022-09-06 09:31+0000\n"
+"PO-Revision-Date: 2022-09-21 23:29+0200\n"
+"Last-Translator: Balázs Úr <ur.balazs at fsf dot hu>\n"
+"Language-Team: Hungarian <gnome-hu-list at gnome dot org>\n"
+"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: hu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lokalize 19.12.3\n"
 
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+#: client/pk-console.c:165 client/pk-console.c:560
+msgid "Transaction"
+msgstr "Tranzakció"
+
+#. TRANSLATORS: this is the time the transaction was started in system timezone
+#: client/pk-console.c:167
+msgid "System time"
+msgstr "Rendszeridő"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+#: client/pk-console.c:169
+msgid "Succeeded"
+msgstr "Sikeres"
+
+#: client/pk-console.c:169
+msgid "True"
+msgstr "Igaz"
+
+#: client/pk-console.c:169
+msgid "False"
+msgstr "Hamis"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+#: client/pk-console.c:171
+msgid "Role"
+msgstr "Szerep"
+
+#. TRANSLATORS: this is The duration of the transaction
+#: client/pk-console.c:176
+msgid "Duration"
+msgstr "Időtartam"
+
+#: client/pk-console.c:176
 msgid "(seconds)"
 msgstr "(másodperc)"
 
+#. TRANSLATORS: this is The command line used to do the action
+#: client/pk-console.c:180
+msgid "Command line"
+msgstr "Parancssor"
+
+#. TRANSLATORS: this is the user ID of the user that started the action
+#: client/pk-console.c:182
+msgid "User ID"
+msgstr "Felhasználóazonosító"
+
+#. TRANSLATORS: this is the username, e.g. hughsie
+#: client/pk-console.c:189
+msgid "Username"
+msgstr "Felhasználónév"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+#: client/pk-console.c:193
+msgid "Real name"
+msgstr "Valódi név"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:201
+msgid "Affected packages:"
+msgstr "Érintett csomagok:"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:204
+msgid "Affected packages: None"
+msgstr "Érintett csomagok: nincs"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+#: client/pk-console.c:230
+msgid "Distribution"
+msgstr "Disztribúció"
+
+#. TRANSLATORS: this is type of update, stable or testing
+#: client/pk-console.c:232
+msgid "Type"
+msgstr "Típus"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: client/pk-console.c:234 client/pk-console.c:267
+msgid "Summary"
+msgstr "Összegzés"
+
+#. TRANSLATORS: this is the group category name
+#: client/pk-console.c:256
+msgid "Category"
+msgstr "Kategória"
+
+#. TRANSLATORS: this is group identifier
+#: client/pk-console.c:258
+msgid "ID"
+msgstr "Azonosító"
+
+#. TRANSLATORS: this is the parent group
+#: client/pk-console.c:261
+msgid "Parent"
+msgstr "Szülő"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+#: client/pk-console.c:264 client/pk-console.c:2286
+msgid "Name"
+msgstr "Név"
+
+#. TRANSLATORS: this is preferred icon for the group
+#: client/pk-console.c:270
+msgid "Icon"
+msgstr "Ikon"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: client/pk-console.c:308
+msgid "Details about the update:"
+msgstr "A frissítés részletei:"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: client/pk-console.c:314 client/pk-console.c:579
+#: lib/packagekit-glib2/pk-task-text.c:123
+#: lib/packagekit-glib2/pk-task-text.c:198
+msgid "Package"
+msgstr "Csomag"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+#: client/pk-console.c:319
+msgid "Updates"
+msgstr "Frissítések"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+#: client/pk-console.c:326
+msgid "Obsoletes"
+msgstr "Elavult"
+
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:201
+msgid "Vendor"
+msgstr "Gyártó"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+#: client/pk-console.c:338
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+#: client/pk-console.c:344
+msgid "CVE"
+msgstr "CVE"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+#: client/pk-console.c:350
+msgid "Restart"
+msgstr "Újraindítás"
+
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+#: client/pk-console.c:355
+msgid "Update text"
+msgstr "Frissítési szöveg"
+
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+#: client/pk-console.c:360
+msgid "Changes"
+msgstr "Változások"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+#: client/pk-console.c:365
+msgid "State"
+msgstr "Állapot"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+#: client/pk-console.c:370
+msgid "Issued"
+msgstr "Kiadva"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+#: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1086
+msgid "Updated"
+msgstr "Frissítve"
+
+#. TRANSLATORS: if the repo is enabled
+#: client/pk-console.c:397
+msgid "Enabled"
+msgstr "Engedélyezve"
+
+#. TRANSLATORS: if the repo is disabled
+#: client/pk-console.c:400
+msgid "Disabled"
+msgstr "Tiltva"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#: client/pk-console.c:429
+msgid "System restart required by:"
+msgstr "A rendszer újraindítását igényli:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#: client/pk-console.c:432
+msgid "Session restart required:"
+msgstr "A munkamenet újraindítását igényli:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+#: client/pk-console.c:436
+msgid "System restart (security) required by:"
+msgstr "A rendszer újraindítását (biztonsági okból) igényli:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+#: client/pk-console.c:440
+msgid "Session restart (security) required:"
+msgstr "A munkamenet újraindítását (biztonsági okból) igényli:"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: client/pk-console.c:443
+msgid "Application restart required by:"
+msgstr "Az alkalmazás újraindítását igényli:"
+
+#. TRANSLATORS: This a list of details about the package
+#: client/pk-console.c:474
+msgid "Package description"
+msgstr "Csomagleírás"
+
+#. TRANSLATORS: This where the package has no files
+#: client/pk-console.c:494
+msgid "No files"
+msgstr "Nincsenek fájlok"
+
+#. TRANSLATORS: This a list files contained in the package
+#: client/pk-console.c:499
+msgid "Package files"
+msgstr "Csomag fájljai"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: client/pk-console.c:595
+msgid "Percentage"
+msgstr "Százalék"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: client/pk-console.c:618
+msgid "Status"
+msgstr "Állapot"
+
+#. TRANSLATORS: the results from the transaction
+#: client/pk-console.c:659
+msgid "Results:"
+msgstr "Eredmények:"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+#: client/pk-console.c:667 client/pk-console.c:827
+msgid "Fatal error"
+msgstr "Végzetes hiba"
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+#: client/pk-console.c:692
+msgid "There are no packages to update."
+msgstr "Nincsenek frissítendő csomagok."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: client/pk-console.c:696 contrib/command-not-found/pk-command-not-found.c:670
+msgid "The transaction failed"
+msgstr "A tranzakció meghiúsult"
+
+#. TRANSLATORS: print a message when there are no updates
+#: client/pk-console.c:725
+msgid "There are no updates available at this time."
+msgstr "Nincs elérhető frissítés"
+
+#: client/pk-console.c:748
+msgid "There are no upgrades available at this time."
+msgstr "Nincs elérhető frissítés."
+
+#. TRANSLATORS: a package needs to restart their system
+#: client/pk-console.c:810
+msgid "Please restart the computer to complete the update."
+msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez."
+
+#. TRANSLATORS: a package needs to restart the session
+#: client/pk-console.c:813
+msgid "Please logout and login to complete the update."
+msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: client/pk-console.c:816
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos "
+"biztonsági frissítések kerültek telepítésre."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: client/pk-console.c:819
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági "
+"frissítések kerültek telepítésre."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pk-console.c:897
+msgid "More than one package matches:"
+msgstr "Több csomag illeszkedik:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pk-console.c:909
+msgid "Please choose the correct package: "
+msgstr "Válassza ki a megfelelő csomagot: "
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+#: client/pk-console.c:946
+msgid "Package not found"
+msgstr "Csomag nem található"
+
+#. TRANSLATORS: we couldn't find anything
+#: client/pk-console.c:964
+msgid "No packages were found"
+msgstr "Nem találhatók csomagok"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#: client/pk-console.c:989
+#, c-format
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"A várt csomagnév helyett fájl érkezett. Inkább a „pkcon install-local %s” "
+"parancsot próbálja kiadni."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#: client/pk-console.c:1024
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Az eszköz nem talál elérhető csomagokat: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pk-console.c:1041
+msgid "This tool could not find any available package."
+msgstr "Ez az eszköz nem talált semmilyen elérhető csomagot."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+#: client/pk-console.c:1050
+msgid "The selected packages may already be installed."
+msgstr "A kiválasztott csomagok már telepítve lehetnek."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1078
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Az eszköz nem találja a telepített csomagot: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1107 client/pk-console.c:1138
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Az eszköz nem találja a csomagot: %s"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+#: client/pk-console.c:1183
+msgid "No packages require updating to newer versions."
+msgstr "Nincsenek frissítést igénylő csomagok."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#: client/pk-console.c:1221 client/pk-console.c:1250 client/pk-console.c:1289
+#: client/pk-console.c:1348 client/pk-console.c:1376
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Az eszköz nem találja az összes csomagot: %s"
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pk-console.c:1403
+msgid "The daemon crashed mid-transaction!"
+msgstr "A démon tranzakció közben összeomlott!"
+
+#. TRANSLATORS: This is the header to the --help menu
+#: client/pk-console.c:1425
+msgid "PackageKit Console Interface"
+msgstr "PackageKit parancssori felület"
+
+#. these are commands we can use with pkcon
+#: client/pk-console.c:1427
+msgid "Subcommands:"
+msgstr "Részparancsok:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pk-console.c:1514
+msgid "Failed to get the time since this action was last completed"
+msgstr "A művelet utolsó végrehajtása óta eltelt idő lekérése meghiúsult"
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pk-console.c:1518
+msgid "Time since"
+msgstr "Eltelt idő"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+#: client/pk-console.c:1538
+msgid "Prepared updates:"
+msgstr "Előkészített frissítések:"
+
+#. TRANSLATORS: The network settings could not be sent
+#: client/pk-console.c:1607
+msgid "The proxy could not be set"
+msgstr "A proxy nem állítható be"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pk-console.c:1649 client/pk-monitor.c:277
+msgid "Show the program version and exit"
+msgstr "Programverzió kiírása és kilépés"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pk-console.c:1652
+msgid "Set the filter, e.g. installed"
+msgstr "Szűrő beállítása, például: installed"
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1655
+msgid "Install the packages without asking for confirmation"
+msgstr "Telepíti a csomagokat megerősítés kérése nélkül"
+
+#. command line argument, do we just download or apply changes
+#: client/pk-console.c:1658
+msgid "Prepare the transaction by downloading packages only"
+msgstr "A tranzakció előkészítése a csomagok letöltésével"
+
+#. command line argument, do we allow package downgrades
+#: client/pk-console.c:1661
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Csomagok visszafejlesztésének engedélyezése a tranzakció során"
+
+#: client/pk-console.c:1663
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Csomagok újratelepítésének engedélyezése a tranzakció során"
+
+#: client/pk-console.c:1665
+msgid "Automatically remove unused dependencies"
+msgstr "Nem használt függőségek automatikus eltávolítása"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pk-console.c:1668
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb "
+"energiát is használ"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1671
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"Gép által olvasható kimenetre írás, mint hogy az animált widgetek használata"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1674
+msgid "The maximum metadata cache age. Use -1 for 'never'."
+msgstr "A metaadat-gyorsítótár maximális kora. A -1 = soha nem jár le."
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1677
+msgid "Allow untrusted packages to be installed."
+msgstr "Megbízhatatlan csomagok telepítésének engedélyezése."
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1715
+msgid "Failed to parse command line"
+msgstr "A parancssor feldolgozása sikertelen"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1725
+msgid "Failed to contact PackageKit"
+msgstr "A kapcsolatfelvétel a PackageKit démonnal meghiúsult."
+
 #. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Megfelelő szerep szükséges"
+#. * an incorrect filter
+#: client/pk-console.c:1788
+msgid "The filter specified was invalid"
+msgstr "A megadott szűrő érvénytelen"
 
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "A célkönyvtár és a letöltendő csomagnevek szükségesek"
-
-msgid "A filename is required"
-msgstr "Egy fájlnév szükséges"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "A telepítendő fájl neve szükséges"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Licencazonosító (eula-id) szükséges"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Csomagnév szükséges"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "A telepítendő csomag neve szükséges"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Az eltávolítandó csomag neve szükséges"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Feloldandó csomagnév szükséges"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "A csomag által biztosított elemeket jelző karakterlánc szükséges"
-
-msgid "A repo id and autoremove required"
-msgstr "Egy tárolóazonosító és automatikus eltávolítás szükséges"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Tárolónév, paraméter és érték szükséges"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Tárolónév szükséges"
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+#: client/pk-console.c:1814
+msgid "A search type is required, e.g. name"
+msgstr "Keresési típus szükséges, például: name"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
+#: client/pk-console.c:1824 client/pk-console.c:1841 client/pk-console.c:1858
+#: client/pk-console.c:1875
 msgid "A search term is required"
 msgstr "Keresőkifejezés szükséges"
 
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Keresési típus szükséges, például: name"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1901
+msgid "A package name to install is required"
+msgstr "A telepítendő csomag neve szükséges"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1915
+msgid "A filename to install is required"
+msgstr "A telepítendő fájl neve szükséges"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
+#: client/pk-console.c:1931
 msgid "A type, key_id and package_id are required"
 msgstr "A type, key_id és package_id értékek szükségesek"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "EULA elfogadása"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+#: client/pk-console.c:1949
+msgid "A package name to remove is required"
+msgstr "Az eltávolítandó csomag neve szükséges"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "EULA elfogadása"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+#: client/pk-console.c:1962
+msgid "A destination directory and the package names to download are required"
+msgstr "A célkönyvtár és a letöltendő csomagnevek szükségesek"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages:"
-msgstr "Érintett csomagok:"
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+#: client/pk-console.c:1972
+msgid "Directory not found"
+msgstr "A könyvtár nem található"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages: None"
-msgstr "Érintett csomagok: nincs"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pk-console.c:1987
+msgid "A licence identifier (eula-id) is required"
+msgstr "Licencazonosító (eula-id) szükséges"
 
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Egyezmény"
+#. TRANSLATORS: The user did not
+#. * specify a package name
+#: client/pk-console.c:2013
+msgid "A package name to resolve is required"
+msgstr "Feloldandó csomagnév szükséges"
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Álnév erre: %s"
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+#: client/pk-console.c:2030 client/pk-console.c:2047
+msgid "A repository name is required"
+msgstr "Tárolónév szükséges"
 
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Csomagok visszafejlesztésének engedélyezése a tranzakció során"
+#: client/pk-console.c:2063
+msgid "A repo name, parameter and value are required"
+msgstr "Tárolónév, paraméter és érték szükséges"
 
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Csomagok újratelepítésének engedélyezése a tranzakció során"
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Megbízhatatlan csomagok telepítésének engedélyezése."
+#: client/pk-console.c:2080
+msgid "A repo id and autoremove required"
+msgstr "Egy tárolóazonosító és automatikus eltávolítás szükséges"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
+#: client/pk-console.c:2107
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Egy művelet, például az „update-packages” szükséges"
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Az alkalmazás újraindítását igényli:"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pk-console.c:2117
+msgid "A correct role is required"
+msgstr "Megfelelő szerep szükséges"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Hitelesítés szükséges az EULA elfogadásához"
+#. TRANSLATORS: The user did not
+#. * provide a package name
+#: client/pk-console.c:2137 client/pk-console.c:2154 client/pk-console.c:2166
+#: client/pk-console.c:2196 client/pk-console.c:2229
+msgid "A package name is required"
+msgstr "Csomagnév szükséges"
 
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Hitelesítés szükséges a nem Ön által indított feladat megszakításához"
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+#: client/pk-console.c:2180
+msgid "A package provide string is required"
+msgstr "A csomag által biztosított elemeket jelző karakterlánc szükséges"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Hitelesítés szükséges a szoftvertároló-paraméterek módosításához"
+#: client/pk-console.c:2207 client/pk-console.c:2218
+msgid "A filename is required"
+msgstr "Egy fájlnév szükséges"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Hitelesítés szükséges a kapcsolat nélküli frissítés üzenet törléséhez"
-
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Hitelesítés szükséges a szoftver aláírásához használt kulcs megbízhatóvá nyilvánításához"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Hitelesítés szükséges a szoftver visszafejlesztéséhez"
-
-msgid "Authentication is required to install software"
-msgstr "Hitelesítés szükséges a szoftver telepítéséhez"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Hitelesítés szükséges a nem megbízható szoftver telepítéséhez"
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Hitelesítés szükséges a rendszertárolók frissítéséhez"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Hitelesítés szükséges a szoftver újratelepítéséhez"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Hitelesítés szükséges az eszköz újratöltéséhez az új meghajtóval"
-
-msgid "Authentication is required to remove software"
-msgstr "Hitelesítés szükséges a szoftver eltávolításához"
-
-msgid "Authentication is required to repair the installed software"
-msgstr "Hitelesítés szükséges a telepített szoftverek javításához"
-
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Hitelesítés szükséges a szoftver letöltéséhez használt hálózati proxy beállításához"
-
-msgid "Authentication is required to trigger offline updates"
-msgstr "Hitelesítés szükséges a kapcsolat nélküli frissítés kezdeményezéséhez"
-
-msgid "Authentication is required to update software"
-msgstr "Hitelesítés szükséges a szoftver frissítéséhez"
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Hitelesítés szükséges az operációs rendszer frissítéséhez"
+#. TRANSLATORS: this is the description of the backend
+#: client/pk-console.c:2290
+msgid "Description"
+msgstr "Leírás"
 
 #. TRANSLATORS: this is the author of the backend
+#: client/pk-console.c:2294
 msgid "Author"
 msgstr "Szerző"
 
-msgid "Automatically remove unused dependencies"
-msgstr "Nem használt függőségek automatikus eltávolítása"
+#. TRANSLATORS: The user did not provide a distro name
+#: client/pk-console.c:2364
+msgid "You need to specify a list file to create"
+msgstr "Meg kell adnia egy listafájlt a létrehozáshoz"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Elérhető"
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#: client/pk-console.c:2377
+#, c-format
+msgid "File already exists: %s"
+msgstr "A fájl már létezik: %s"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#: client/pk-console.c:2395
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "„%s” nevű kapcsoló nem támogatott"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+#: client/pk-console.c:2405
+msgid "Command failed"
+msgstr "A parancs meghiúsult"
+
+#: client/pk-monitor.c:217
+msgid "Failed to get daemon state"
+msgstr "A démon állapotának lekérése meghiúsult"
+
+#: client/pk-monitor.c:260
+msgid "Failed to get properties"
+msgstr "A tulajdonságok lekérése meghiúsult"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: client/pk-monitor.c:288
+msgid "PackageKit Monitor"
+msgstr "PackageKit-figyelő"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:157
+msgid "Installing System Upgrade"
+msgstr "Rendszerfrissítés telepítése"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:161
+msgid "Installing Updates"
+msgstr "Frissítések telepítése"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:197
+msgid "Rebooting after installing updates…"
+msgstr "Újraindítás frissítések telepítése után…"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:239
+msgid "Shutting down after installing updates…"
+msgstr "Leállítás a frissítések telepítése után…"
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:380
+msgid "Installing updates; this could take a while..."
+msgstr "Frissítések telepítése, ez eltarthat egy ideig…"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:417
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Rendszerfrissítés telepítése, ez eltarthat egy ideig…"
+
+#. TRANSLATORS: downloading repo data so we can search
+#: contrib/command-not-found/pk-command-not-found.c:427
+msgid "Downloading details about the software repositories."
+msgstr "A szoftvertárolókkal kapcsolatos részletek letöltése."
+
+#. TRANSLATORS: downloading file lists so we can search
+#: contrib/command-not-found/pk-command-not-found.c:431
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Fájllisták letöltése (ez eltarthat egy ideig)."
+
+#. TRANSLATORS: waiting for native lock
+#: contrib/command-not-found/pk-command-not-found.c:435
+msgid "Waiting for package manager lock."
+msgstr "Várakozás csomagkezelői zárra."
+
+#. TRANSLATORS: loading package cache so we can search
+#: contrib/command-not-found/pk-command-not-found.c:439
+msgid "Loading list of packages."
+msgstr "Csomaglista betöltése."
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+#: contrib/command-not-found/pk-command-not-found.c:499
+msgid "Failed to search for file"
+msgstr "A fájl keresése meghiúsult"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: contrib/command-not-found/pk-command-not-found.c:511
+msgid "Getting the list of files failed"
+msgstr "A fájlok listájának lekérése meghiúsult"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+#: contrib/command-not-found/pk-command-not-found.c:643
+msgid "Failed to launch:"
+msgstr "Az indítás meghiúsult:"
+
+#. TRANSLATORS: we failed to install the package
+#: contrib/command-not-found/pk-command-not-found.c:662
+msgid "Failed to install packages"
+msgstr "Nem sikerült a csomagok telepítése"
+
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+#: contrib/command-not-found/pk-command-not-found.c:781
+msgid "command not found"
+msgstr "a parancs nem található"
+
+#. TRANSLATORS: tell the user what we think the command is
+#: contrib/command-not-found/pk-command-not-found.c:802
+msgid "Similar command is:"
+msgstr "Hasonló parancs:"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+#: contrib/command-not-found/pk-command-not-found.c:815
+msgid "Run similar command:"
+msgstr "Hasonló parancs futtatása:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+#: contrib/command-not-found/pk-command-not-found.c:827
+#: contrib/command-not-found/pk-command-not-found.c:836
+msgid "Similar commands are:"
+msgstr "Hasonló parancsok:"
+
+#. TRANSLATORS: ask the user to choose a file to run
+#: contrib/command-not-found/pk-command-not-found.c:843
+msgid "Please choose a command to run"
+msgstr "Válasszon egy futtatandó parancsot"
+
+#. TRANSLATORS: tell the user what package provides the command
+#: contrib/command-not-found/pk-command-not-found.c:863
+msgid "The package providing this file is:"
+msgstr "A fájlt biztosító csomag:"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the command
+#: contrib/command-not-found/pk-command-not-found.c:870
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr ""
+"Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+#: contrib/command-not-found/pk-command-not-found.c:893
+msgid "Packages providing this file are:"
+msgstr "A fájlt biztosító csomagok:"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to provide this command
+#: contrib/command-not-found/pk-command-not-found.c:903
+msgid "Suitable packages are:"
+msgstr "A megfelelő csomagok:"
+
+#. TRANSLATORS: ask the user to choose a file to install
+#: contrib/command-not-found/pk-command-not-found.c:911
+msgid "Please choose a package to install"
+msgstr "Válasszon egy telepítendő csomagot"
+
+#: contrib/command-not-found/pk-command-not-found.c:913
+msgid "User aborted selection"
+msgstr "A felhasználó megszakította a kijelölést"
+
+#: lib/packagekit-glib2/pk-console-shared.c:73
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Adjon meg egy számot 1-től %i-ig: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: lib/packagekit-glib2/pk-console-shared.c:202
+msgid "Unknown state"
+msgstr "Ismeretlen állapot"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: lib/packagekit-glib2/pk-console-shared.c:206
+msgid "Starting"
+msgstr "Indul"
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
+#: lib/packagekit-glib2/pk-console-shared.c:210
+msgid "Waiting in queue"
+msgstr "Várakozik a sorban"
+
+#. TRANSLATORS: transaction state, just started
+#: lib/packagekit-glib2/pk-console-shared.c:214
+msgid "Running"
+msgstr "Fut"
+
+#. TRANSLATORS: transaction state, is querying data
+#: lib/packagekit-glib2/pk-console-shared.c:218
+msgid "Querying"
+msgstr "Lekérdezés"
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:222
+msgid "Getting information"
+msgstr "Információk lekérése"
+
+#. TRANSLATORS: transaction state, removing packages
+#: lib/packagekit-glib2/pk-console-shared.c:226
+msgid "Removing packages"
+msgstr "Csomagok eltávolítása"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-enum.c:1237
+msgid "Downloading packages"
+msgstr "Csomagok letöltése"
+
+#. TRANSLATORS: transaction state, installing packages
+#: lib/packagekit-glib2/pk-console-shared.c:234
+msgid "Installing packages"
+msgstr "Csomagok telepítése"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: lib/packagekit-glib2/pk-console-shared.c:238
+msgid "Refreshing software list"
+msgstr "Szoftverlista frissítése"
+
+#. TRANSLATORS: transaction state, installing updates
+#: lib/packagekit-glib2/pk-console-shared.c:242
+msgid "Installing updates"
+msgstr "Frissítések telepítése"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
+#: lib/packagekit-glib2/pk-console-shared.c:246
+msgid "Cleaning up packages"
+msgstr "Csomagok tisztítása"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: lib/packagekit-glib2/pk-console-shared.c:250
+msgid "Obsoleting packages"
+msgstr "Csomagok elavulttá tétele"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: lib/packagekit-glib2/pk-console-shared.c:254
+msgid "Resolving dependencies"
+msgstr "Függőségek feloldása"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
+#: lib/packagekit-glib2/pk-console-shared.c:258
+msgid "Checking signatures"
+msgstr "Aláírások ellenőrzése"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: lib/packagekit-glib2/pk-console-shared.c:262
+msgid "Testing changes"
+msgstr "Módosítások tesztelése"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package database
+#: lib/packagekit-glib2/pk-console-shared.c:266
+msgid "Committing changes"
+msgstr "Módosítások véglegesítése"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:270
+msgid "Requesting data"
+msgstr "Adatok lekérése"
+
+#. TRANSLATORS: transaction state, all done!
+#: lib/packagekit-glib2/pk-console-shared.c:274
+msgid "Finished"
+msgstr "Befejeződött"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+#: lib/packagekit-glib2/pk-console-shared.c:278
+msgid "Cancelling"
+msgstr "Megszakítás"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:282
+msgid "Downloading repository information"
+msgstr "Tárolóinformációk letöltése"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:286
+msgid "Downloading list of packages"
+msgstr "Csomaglista letöltése"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:290
+msgid "Downloading file lists"
+msgstr "Fájllisták letöltése"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:294
+msgid "Downloading lists of changes"
+msgstr "Változáslisták letöltése"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:298
+msgid "Downloading groups"
+msgstr "Csoportok letöltése"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:302
+msgid "Downloading update information"
+msgstr "Frissítési információk letöltése"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: lib/packagekit-glib2/pk-console-shared.c:306
+msgid "Repackaging files"
+msgstr "Fájlok újracsomagolása"
+
+#. TRANSLATORS: transaction state, loading databases
+#: lib/packagekit-glib2/pk-console-shared.c:310
+msgid "Loading cache"
+msgstr "Gyorsítótár betöltése"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: lib/packagekit-glib2/pk-console-shared.c:314
+msgid "Scanning applications"
+msgstr "Alkalmazások vizsgálata"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on the system
+#: lib/packagekit-glib2/pk-console-shared.c:318
+msgid "Generating package lists"
+msgstr "Csomaglisták előállítása"
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
+#: lib/packagekit-glib2/pk-console-shared.c:322
+msgid "Waiting for package manager lock"
+msgstr "Várakozás a csomagkezelő zárolására"
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: lib/packagekit-glib2/pk-console-shared.c:326
+msgid "Waiting for authentication"
+msgstr "Várakozás hitelesítésre"
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: lib/packagekit-glib2/pk-console-shared.c:330
+msgid "Updating running applications"
+msgstr "Futó alkalmazások frissítése"
+
+#. TRANSLATORS: transaction state, we are checking executable files currently in use
+#: lib/packagekit-glib2/pk-console-shared.c:334
+msgid "Checking applications in use"
+msgstr "Használatban lévő alkalmazások keresése"
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in use
+#: lib/packagekit-glib2/pk-console-shared.c:338
+msgid "Checking libraries in use"
+msgstr "Használatban lévő programkönyvtárak keresése"
+
+#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
+#: lib/packagekit-glib2/pk-console-shared.c:342
+msgid "Copying files"
+msgstr "Fájlok másolása"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the transaction
+#: lib/packagekit-glib2/pk-console-shared.c:346
+msgid "Running hooks"
+msgstr "Hurkok futtatása"
+
+#. TRANSLATORS: turn on all debugging
+#: lib/packagekit-glib2/pk-debug.c:142
+msgid "Show debugging information for all files"
+msgstr "Hibakeresési információk megjelenítése az összes fájlhoz"
+
+#: lib/packagekit-glib2/pk-debug.c:216
+msgid "Debugging Options"
+msgstr "Hibakeresési lehetőségek"
+
+#: lib/packagekit-glib2/pk-debug.c:216
+msgid "Show debugging options"
+msgstr "Hibakeresési lehetőségek megjelenítése"
 
 #. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokkolt"
+#: lib/packagekit-glib2/pk-enum.c:970
+msgid "Trivial"
+msgstr "Triviális"
 
 #. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:974
+msgid "Normal"
+msgstr "Normál"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:978
+msgid "Important"
+msgstr "Fontos"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:982
+msgid "Security"
+msgstr "Biztonsági"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:986
 msgid "Bug fix"
 msgstr "Hibajavítás"
 
-#. TRANSLATORS: details about the update, the bugzilla URLs
-msgid "Bugzilla"
-msgstr "Bugzilla"
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:990
+msgid "Enhancement"
+msgstr "Bővítés"
 
-#. TRANSLATORS: details about the update, the CVE URLs
-msgid "CVE"
-msgstr "CVE"
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:994
+msgid "Blocked"
+msgstr "Blokkolt"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:999 lib/packagekit-glib2/pk-enum.c:1090
+msgid "Installed"
+msgstr "Telepítve"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1004
+msgid "Available"
+msgstr "Elérhető"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1008
+msgid "Unavailable"
+msgstr "Nem érhető el"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1033
+msgid "Downloading"
+msgstr "Letöltés"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1037
+msgid "Updating"
+msgstr "Frissítés"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1041 lib/packagekit-glib2/pk-enum.c:1176
+msgid "Installing"
+msgstr "Telepítés"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1045 lib/packagekit-glib2/pk-enum.c:1172
+msgid "Removing"
+msgstr "Eltávolítás"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1049
+msgid "Cleaning up"
+msgstr "Tisztítás"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1053
+msgid "Obsoleting"
+msgstr "Elavulttá tétel"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1057
+msgid "Reinstalling"
+msgstr "Újratelepítés"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1082
+msgid "Downloaded"
+msgstr "Letöltve"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1094
+msgid "Removed"
+msgstr "Eltávolítva"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1098
+msgid "Cleaned up"
+msgstr "Megtisztítva"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1102
+msgid "Obsoleted"
+msgstr "Elavulttá téve"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1106
+msgid "Reinstalled"
+msgstr "Újratelepítve"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1131
+msgid "Unknown role type"
+msgstr "Ismeretlen szereptípus"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1135
+msgid "Getting dependencies"
+msgstr "Függőségek lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1139
+msgid "Getting update details"
+msgstr "Frissítés részleteinek lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1144
+msgid "Getting details"
+msgstr "Részletek lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1148
+msgid "Getting requires"
+msgstr "Követelmények lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1152
+msgid "Getting updates"
+msgstr "Frissítések lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1156
+msgid "Searching by details"
+msgstr "Keresés részletek szerint"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1160
+msgid "Searching by file"
+msgstr "Keresés fájl szerint"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1164
+msgid "Searching groups"
+msgstr "Csoportok keresése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1168
+msgid "Searching by name"
+msgstr "Keresés név szerint"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1180
+msgid "Installing files"
+msgstr "Fájlok telepítése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1184
+msgid "Refreshing cache"
+msgstr "Gyorsítótár frissítése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1188
+msgid "Updating packages"
+msgstr "Csomagok frissítése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1192
+msgid "Canceling"
+msgstr "Megszakítás"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1196
+msgid "Getting repositories"
+msgstr "Tárolók lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1200
+msgid "Modifying repository"
+msgstr "Tároló módosítása"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1204
+msgid "Setting data"
+msgstr "Adatok beállítása"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1208
+msgid "Removing repository"
+msgstr "Tároló eltávolítása"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1212
+msgid "Resolving"
+msgstr "Feloldás"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1217
+msgid "Getting file list"
+msgstr "Fájllista lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1221
+msgid "Getting provides"
+msgstr "Biztosító csomagok lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1225
+msgid "Installing signature"
+msgstr "Aláírás telepítése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1229
+msgid "Getting packages"
+msgstr "Csomaglista lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1233
+msgid "Accepting EULA"
+msgstr "EULA elfogadása"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1241
+msgid "Getting upgrades"
+msgstr "Frissítések lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1245
+msgid "Getting categories"
+msgstr "Kategóriák lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1249
+msgid "Getting transactions"
+msgstr "Tranzakciók lekérése"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1253
+msgid "Getting system upgrades"
+msgstr "Rendszerfrissítések lekérése"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
+#: lib/packagekit-glib2/pk-task-text.c:66
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Engedélyezni kívánja aláíratlan szoftverek telepítését?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:71
+msgid "The unsigned software will not be installed."
+msgstr "Az aláíratlan szoftverek nem kerülnek telepítésre."
+
+#. TRANSLATORS: the package repository is signed by a key that is not recognised
+#: lib/packagekit-glib2/pk-task-text.c:120
+msgid "Software source signature required"
+msgstr "Szoftverforrás-aláírás szükséges"
+
+#. TRANSLATORS: the package repository name
+#: lib/packagekit-glib2/pk-task-text.c:126
+msgid "Software source name"
+msgstr "Szoftverforrás neve"
+
+#. TRANSLATORS: the key URL
+#: lib/packagekit-glib2/pk-task-text.c:129
+msgid "Key URL"
+msgstr "Kulcs URL-címe"
+
+#. TRANSLATORS: the username of the key
+#: lib/packagekit-glib2/pk-task-text.c:132
+msgid "Key user"
+msgstr "Kulcs felhasználója"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: lib/packagekit-glib2/pk-task-text.c:135
+msgid "Key ID"
+msgstr "Kulcs azonosítója"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: lib/packagekit-glib2/pk-task-text.c:138
+msgid "Key fingerprint"
+msgstr "Kulcs ujjlenyomata"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: lib/packagekit-glib2/pk-task-text.c:141
+msgid "Key Timestamp"
+msgstr "Kulcs időbélyege"
+
+#. TRANSLATORS: ask the user if they want to import
+#: lib/packagekit-glib2/pk-task-text.c:154
+msgid "Do you accept this signature?"
+msgstr "Elfogadja ezt az aláírást?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:159
+msgid "The signature was not accepted."
+msgstr "Az aláírást nem fogadta el."
+
+#. TRANSLATORS: this is another name for a software licence that has to be read before installing
+#: lib/packagekit-glib2/pk-task-text.c:195
+msgid "End user licence agreement required"
+msgstr "Végfelhasználói licencszerződés szükséges"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: lib/packagekit-glib2/pk-task-text.c:204
+msgid "Agreement"
+msgstr "Egyezmény"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: lib/packagekit-glib2/pk-task-text.c:208
+msgid "Do you accept this agreement?"
+msgstr "Elfogadja ezt az egyezményt?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:213
+msgid "The agreement was not accepted."
+msgstr "Az egyezményt nem fogadta el."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: lib/packagekit-glib2/pk-task-text.c:252
+msgid "Media change required"
+msgstr "Adathordozó-csere szükséges"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: lib/packagekit-glib2/pk-task-text.c:255
+msgid "Media type"
+msgstr "Adathordozó típusa"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: lib/packagekit-glib2/pk-task-text.c:258
+msgid "Media label"
+msgstr "Adathordozó címkéje"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: lib/packagekit-glib2/pk-task-text.c:261
+msgid "Text"
+msgstr "Szöveg"
+
+#. TRANSLATORS: ask the user to insert the media
+#: lib/packagekit-glib2/pk-task-text.c:267
+msgid "Please insert the correct media"
+msgstr "Helyezze be a megfelelő adathordozót"
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: lib/packagekit-glib2/pk-task-text.c:272
+msgid "The correct media was not inserted."
+msgstr "Nincs behelyezve a megfelelő adathordozó."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:287
+msgid "The following packages have to be removed:"
+msgstr "A következő csomagokat el kell távolítani:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:292
+msgid "The following packages have to be installed:"
+msgstr "A következő csomagokat kell telepíteni:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:297
+msgid "The following packages have to be updated:"
+msgstr "A következő csomagokat kell frissíteni:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:302
+msgid "The following packages have to be reinstalled:"
+msgstr "A következő csomagokat újra kell telepíteni:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:307
+msgid "The following packages have to be downgraded:"
+msgstr "A következő csomagokat vissza kell fejleszteni:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:312
+msgid "The following packages have to be obsoleted:"
+msgstr "A következő csomagokat elavulttá kell tenni:"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
+#: lib/packagekit-glib2/pk-task-text.c:317
+msgid "The following packages are untrusted:"
+msgstr "Az alábbi csomagok nem megbízható:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: lib/packagekit-glib2/pk-task-text.c:421
+msgid "Proceed with changes?"
+msgstr "Végrehajtja a módosításokat?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: lib/packagekit-glib2/pk-task-text.c:426
+msgid "The transaction did not proceed."
+msgstr "A tranzakciót nem folytatta."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
+#: policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
 msgstr "Külső feladat megszakítása"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Megszakítás"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-msgid "Cancelling"
-msgstr "Megszakítás"
-
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategória"
+#: policy/org.freedesktop.packagekit.policy.in:23
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "Hitelesítés szükséges a nem Ön által indított feladat megszakításához"
 
 #. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Szoftvertároló-paraméterek módosítása"
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
+#: policy/org.freedesktop.packagekit.policy.in:39
+msgid "Install signed package"
+msgstr "Aláírt csomag telepítése"
 
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-msgid "Changes"
-msgstr "Változások"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-msgid "Checking applications in use"
-msgstr "Használatban lévő alkalmazások keresése"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-msgid "Checking libraries in use"
-msgstr "Használatban lévő programkönyvtárak keresése"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Aláírások ellenőrzése"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Megtisztítva"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Tisztítás"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Csomagok tisztítása"
+#: policy/org.freedesktop.packagekit.policy.in:40
+msgid "Authentication is required to install software"
+msgstr "Hitelesítés szükséges a szoftver telepítéséhez"
 
 #. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Kapcsolat nélküli frissítés üzenet törlése"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "A parancs meghiúsult"
-
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Parancssor"
-
-msgid "Command not found, valid commands are:"
-msgstr "Parancs nem található, az érvényes parancsok:"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Módosítások véglegesítése"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-msgid "Copying files"
-msgstr "Fájlok másolása"
-
-msgid "Debugging Options"
-msgstr "Hibakeresési lehetőségek"
-
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Leírás"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "A frissítés részletei:"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "A könyvtár nem található"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Üresjárati időzítő kikapcsolása"
-
-#. TRANSLATORS: if the repo is disabled
-msgid "Disabled"
-msgstr "Tiltva"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Disztribúció"
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Elfogadja ezt az egyezményt?"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Elfogadja ezt az aláírást?"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Engedélyezni kívánja aláíratlan szoftverek telepítését?"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Ne tisztítsa ki a környezetet indításkor"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Letöltve"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Letöltés"
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "A szoftvertárolókkal kapcsolatos részletek letöltése."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Fájllisták letöltése"
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Fájllisták letöltése (ez eltarthat egy ideig)."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Csoportok letöltése"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Csomaglista letöltése"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Változáslisták letöltése"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Csomagok letöltése"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Tárolóinformációk letöltése"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Frissítési információk letöltése"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Időtartam"
-
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Engedélyezve"
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Végfelhasználói licencszerződés szükséges"
-
-#. TRANSLATORS: The type of update
-msgid "Enhancement"
-msgstr "Bővítés"
-
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Kilépés rövid késleltetés után"
-
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Kilépés az alrendszer betöltése után"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "A várt csomagnév helyett fájl érkezett. Inkább a „pkcon install-local %s” parancsot próbálja kiadni."
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "A kapcsolatfelvétel a PackageKit démonnal meghiúsult."
-
-msgid "Failed to get daemon state"
-msgstr "A démon állapotának lekérése meghiúsult"
-
-msgid "Failed to get properties"
-msgstr "A tulajdonságok lekérése meghiúsult"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "A művelet utolsó végrehajtása óta eltelt idő lekérése meghiúsult"
-
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Nem sikerült a csomagok telepítése"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Az indítás meghiúsult:"
-
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "A háttérprogram betöltése sikertelen"
-
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "A beállítófájl betöltése sikertelen"
-
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Az argumentumok feldolgozása sikertelen"
-
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "A parancssor feldolgozása sikertelen"
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "A fájl keresése meghiúsult"
-
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "A háttérprogram eltávolítása sikertelen"
-
-msgid "False"
-msgstr "Hamis"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-msgid "Fatal error"
-msgstr "Végzetes hiba"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "A fájl már létezik: %s"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Befejeződött"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Csomaglisták előállítása"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Kategóriák lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting dependencies"
-msgstr "Függőségek lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Részletek lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Fájllista lekérése"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Információk lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Csomaglista lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Biztosító csomagok lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Tárolók lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Követelmények lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Rendszerfrissítések lekérése"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "A fájlok listájának lekérése meghiúsult"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Tranzakciók lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting update details"
-msgstr "Frissítés részleteinek lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting updates"
-msgstr "Frissítések lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting upgrades"
-msgstr "Frissítések lekérése"
-
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "Azonosító"
-
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikon"
-
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Fontos"
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:56
+msgid "Install untrusted local file"
+msgstr "Nem megbízható helyi fájl telepítése"
+
+#: policy/org.freedesktop.packagekit.policy.in:57
+msgid "Authentication is required to install untrusted software"
+msgstr "Hitelesítés szükséges a nem megbízható szoftver telepítéséhez"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -599,345 +1473,57 @@ msgstr "Fontos"
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "A már telepített csomag újratelepítése"
 
+#: policy/org.freedesktop.packagekit.policy.in:76
+msgid "Authentication is required to reinstall software"
+msgstr "Hitelesítés szükséges a szoftver újratelepítéséhez"
+
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "A telepített csomag régebbi verziójának telepítése"
 
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Csomag telepítése"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
+#: policy/org.freedesktop.packagekit.policy.in:94
+msgid "Authentication is required to downgrade software"
+msgstr "Hitelesítés szükséges a szoftver visszafejlesztéséhez"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
-msgid "Install signed package"
-msgstr "Aláírt csomag telepítése"
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:111
+msgid "Trust a key used for signing software"
+msgstr "Szoftver aláírására használt kulcs megbízhatóvá nyilvánítása"
 
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Telepíti a csomagokat megerősítés kérése nélkül"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Nem megbízható helyi fájl telepítése"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Telepítve"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Telepítés"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Rendszerfrissítés telepítése"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Frissítések telepítése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Fájlok telepítése"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Csomagok telepítése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Aláírás telepítése"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Rendszerfrissítés telepítése, ez eltarthat egy ideig…"
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Frissítések telepítése"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Frissítések telepítése, ez eltarthat egy ideig…"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Kiadva"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Kulcs azonosítója"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Kulcs időbélyege"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Kulcs URL-címe"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Kulcs ujjlenyomata"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Kulcs felhasználója"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Gyorsítótár betöltése"
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Csomaglista betöltése."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Adathordozó-csere szükséges"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Adathordozó címkéje"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Adathordozó típusa"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Tároló módosítása"
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Több csomag illeszkedik:"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Név"
-
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Nincsenek fájlok"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Nincsenek frissítést igénylő csomagok."
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Nem találhatók csomagok"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normál"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Elavulttá téve"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Elavult"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Elavulttá tétel"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Csomagok elavulttá tétele"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "„%s” nevű kapcsoló nem támogatott"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Csomag"
-
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Csomagleírás"
-
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Csomag fájljai"
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Csomag nem található"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKit parancssori felület"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit-figyelő"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit szolgáltatás"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "A fájlt biztosító csomagok:"
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Használandó csomagkezelő háttérprogram, például: dummy"
-
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Szülő"
-
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Százalék"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Válasszon egy futtatandó parancsot"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Válasszon egy telepítendő csomagot"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Válassza ki a megfelelő csomagot: "
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Adjon meg egy számot 1-től %i-ig: "
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Helyezze be a megfelelő adathordozót"
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
-
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez."
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "A tranzakció előkészítése a csomagok letöltésével"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Előkészített frissítések:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Gép által olvasható kimenetre írás, mint hogy az animált widgetek használata"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Végrehajtja a módosításokat?"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Lekérdezés"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Valódi név"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Újraindítás frissítések telepítése után…"
+#: policy/org.freedesktop.packagekit.policy.in:112
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr ""
+"Hitelesítés szükséges a szoftver aláírásához használt kulcs megbízhatóvá "
+"nyilvánításához"
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Rendszertárolók frissítése"
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#: policy/org.freedesktop.packagekit.policy.in:128
+msgid "Accept EULA"
+msgstr "EULA elfogadása"
 
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "A gyorsítótár frissítése"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Gyorsítótár frissítése (erőltetett)"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Gyorsítótár frissítése"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Szoftverlista frissítése"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Újratelepítve"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Újratelepítés"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Eszköz újratöltése"
+#: policy/org.freedesktop.packagekit.policy.in:129
+msgid "Authentication is required to accept a EULA"
+msgstr "Hitelesítés szükséges az EULA elfogadásához"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -948,364 +1534,89 @@ msgstr "Eszköz újratöltése"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
+#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:434
 msgid "Remove package"
 msgstr "Csomag eltávolítása"
 
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Eltávolítva"
+#: policy/org.freedesktop.packagekit.policy.in:149
+msgid "Authentication is required to remove software"
+msgstr "Hitelesítés szükséges a szoftver eltávolításához"
 
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Eltávolítás"
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+#: policy/org.freedesktop.packagekit.policy.in:167
+msgid "Update software"
+msgstr "Szoftver frissítése"
 
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Csomagok eltávolítása"
+#: policy/org.freedesktop.packagekit.policy.in:168
+msgid "Authentication is required to update software"
+msgstr "Hitelesítés szükséges a szoftver frissítéséhez"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Tároló eltávolítása"
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+#: policy/org.freedesktop.packagekit.policy.in:183
+msgid "Change software repository parameters"
+msgstr "Szoftvertároló-paraméterek módosítása"
 
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Fájlok újracsomagolása"
+#: policy/org.freedesktop.packagekit.policy.in:184
+msgid "Authentication is required to change software repository parameters"
+msgstr "Hitelesítés szükséges a szoftvertároló-paraméterek módosításához"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#: policy/org.freedesktop.packagekit.policy.in:198
+msgid "Refresh system repositories"
+msgstr "Rendszertárolók frissítése"
+
+#: policy/org.freedesktop.packagekit.policy.in:199
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Hitelesítés szükséges a rendszertárolók frissítéséhez"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#: policy/org.freedesktop.packagekit.policy.in:213
+msgid "Set network proxy"
+msgstr "Hálózati proxy beállítása"
+
+#: policy/org.freedesktop.packagekit.policy.in:214
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr ""
+"Hitelesítés szükséges a szoftver letöltéséhez használt hálózati proxy "
+"beállításához"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#: policy/org.freedesktop.packagekit.policy.in:229
+msgid "Upgrade System"
+msgstr "Rendszer frissítése"
+
+#: policy/org.freedesktop.packagekit.policy.in:230
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Hitelesítés szükséges az operációs rendszer frissítéséhez"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "Rendszer javítása"
 
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Adatok lekérése"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Feloldás"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Függőségek feloldása"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Újraindítás"
-
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Eredmények:"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Szerep"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Hasonló parancs futtatása:"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb energiát is használ"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Fut"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Hurkok futtatása"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Alkalmazások vizsgálata"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Keresés részletek szerint"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Keresés fájlok szerint"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Keresés nevek szerint"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Keresés részletek szerint"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Keresés fájl szerint"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Keresés név szerint"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Csoportok keresése"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Biztonsági"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "A munkamenet újraindítását (biztonsági okból) igényli:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "A munkamenet újraindítását igényli:"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Hálózati proxy beállítása"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Tároló-beállítások beállítása"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Szűrő beállítása, például: installed"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Adatok beállítása"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Hibakeresési információk megjelenítése az összes fájlhoz"
-
-msgid "Show debugging options"
-msgstr "Hibakeresési lehetőségek megjelenítése"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Programverzió kiírása és kilépés"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Verziószám kiírása és kilépés"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Leállítás a frissítések telepítése után…"
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Hasonló parancs:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Hasonló parancsok:"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Szoftverforrás neve"
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Szoftverforrás-aláírás szükséges"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Indul"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Állapot"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Állapot"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Részparancsok:"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Sikeres"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "A megfelelő csomagok:"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Összegzés"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "A rendszer újraindítását (biztonsági okból) igényli:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "A rendszer újraindítását igényli:"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Rendszeridő"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Módosítások tesztelése"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Szöveg"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Az egyezményt nem fogadta el."
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Nincs behelyezve a megfelelő adathordozó."
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "A démon tranzakció közben összeomlott!"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "A megadott szűrő érvénytelen"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Az alábbi csomagok nem megbízható:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "A következő csomagokat vissza kell fejleszteni:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "A következő csomagokat kell telepíteni:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "A következő csomagokat elavulttá kell tenni:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "A következő csomagokat újra kell telepíteni:"
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "A következő csomagokat el kell távolítani:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "A következő csomagokat kell frissíteni:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "A metaadat-gyorsítótár maximális kora. A -1 = soha nem jár le."
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "A fájlt biztosító csomag:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "A proxy nem állítható be"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Az aláírást nem fogadta el."
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "A szoftver nem hiteles forrásból származik."
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "A tranzakciót nem folytatta."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "The transaction failed"
-msgstr "A tranzakció meghiúsult"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Az aláíratlan szoftverek nem kerülnek telepítésre."
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Nincsenek frissítendő csomagok."
-
-#. TRANSLATORS: print a message when there are no updates
-msgid "There are no updates available at this time."
-msgstr "Nincs elérhető frissítés"
-
-msgid "There are no upgrades available at this time."
-msgstr "Nincs elérhető frissítés."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Az eszköz nem találja az összes csomagot: %s"
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Az eszköz nem talál elérhető csomagokat: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Az eszköz nem találja a telepített csomagot: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Az eszköz nem találja a csomagot: %s"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr "Eltelt idő"
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Tranzakció"
+#: policy/org.freedesktop.packagekit.policy.in:246
+msgid "Authentication is required to repair the installed software"
+msgstr "Hitelesítés szükséges a telepített szoftverek javításához"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1314,124 +1625,176 @@ msgstr "Tranzakció"
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:260
+#: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "Triviális"
-
-msgid "True"
-msgstr "Igaz"
+#: policy/org.freedesktop.packagekit.policy.in:261
+#: policy/org.freedesktop.packagekit.policy.in:277
+msgid "Authentication is required to trigger offline updates"
+msgstr "Hitelesítés szükséges a kapcsolat nélküli frissítés kezdeményezéséhez"
 
 #. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr "Szoftver aláírására használt kulcs megbízhatóvá nyilvánítása"
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+#: policy/org.freedesktop.packagekit.policy.in:291
+msgid "Clear offline update message"
+msgstr "Kapcsolat nélküli frissítés üzenet törlése"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Típus"
+#: policy/org.freedesktop.packagekit.policy.in:292
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Hitelesítés szükséges a kapcsolat nélküli frissítés üzenet törléséhez"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Nem érhető el"
+#. TRANSLATORS: this is a command alias
+#: src/pk-direct.c:99
+#, c-format
+msgid "Alias to %s"
+msgstr "Álnév erre: %s"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Ismeretlen szereptípus"
+#: src/pk-direct.c:168
+msgid "Command not found, valid commands are:"
+msgstr "Parancs nem található, az érvényes parancsok:"
 
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Ismeretlen állapot"
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+#: src/pk-direct.c:394 src/pk-main.c:117
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Használandó csomagkezelő háttérprogram, például: dummy"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr "Szoftver frissítése"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:410
+msgid "Refresh the cache"
+msgstr "A gyorsítótár frissítése"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Frissítési szöveg"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:414
+msgid "Refresh the cache (forced)"
+msgstr "Gyorsítótár frissítése (erőltetett)"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Frissítve"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:418
+msgid "Search by names"
+msgstr "Keresés nevek szerint"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Frissítések"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:422
+msgid "Search by details"
+msgstr "Keresés részletek szerint"
 
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Frissítés"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:426
+msgid "Search by files"
+msgstr "Keresés fájlok szerint"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Csomagok frissítése"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:430
+msgid "Install package"
+msgstr "Csomag telepítése"
 
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Futó alkalmazások frissítése"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:438
+msgid "Set repository options"
+msgstr "Tároló-beállítások beállítása"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr "Rendszer frissítése"
+#. TRANSLATORS: program name
+#: src/pk-direct.c:451
+msgid "PackageKit"
+msgstr "PackageKit"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Felhasználóazonosító"
+#. TRANSLATORS: the user didn't read the man page
+#: src/pk-direct.c:457
+msgid "Failed to parse arguments"
+msgstr "Az argumentumok feldolgozása sikertelen"
 
-msgid "User aborted selection"
-msgstr "A felhasználó megszakította a kijelölést"
+#. TRANSLATORS: probably not yet installed
+#: src/pk-direct.c:468
+msgid "Failed to load the config file"
+msgstr "A beállítófájl betöltése sikertelen"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Felhasználónév"
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-direct.c:501
+msgid "Failed to load the backend"
+msgstr "A háttérprogram betöltése sikertelen"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Gyártó"
+#. TRANSLATORS: cannot unload the backend the user specified
+#: src/pk-direct.c:539
+msgid "Failed to unload the backend"
+msgstr "A háttérprogram eltávolítása sikertelen"
 
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Várakozás hitelesítésre"
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+#: src/pk-main.c:120
+msgid "Disable the idle timer"
+msgstr "Üresjárati időzítő kikapcsolása"
 
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Várakozás a csomagkezelő zárolására"
+#. TRANSLATORS: show version
+#: src/pk-main.c:123
+msgid "Show version and exit"
+msgstr "Verziószám kiírása és kilépés"
 
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Várakozás csomagkezelői zárra."
+#. TRANSLATORS: exit after we've started up, used for user profiling
+#: src/pk-main.c:126
+msgid "Exit after a small delay"
+msgstr "Kilépés rövid késleltetés után"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Várakozik a sorban"
+#. TRANSLATORS: exit straight away, used for automatic profiling
+#: src/pk-main.c:129
+msgid "Exit after the engine has loaded"
+msgstr "Kilépés az alrendszer betöltése után"
 
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Meg kell adnia egy listafájlt a létrehozáshoz"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+#: src/pk-main.c:132
+msgid "Don't clear environment on startup"
+msgstr "Ne tisztítsa ki a környezetet indításkor"
 
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "a parancs nem található"
+#. TRANSLATORS: describing the service that is running
+#: src/pk-main.c:146
+msgid "PackageKit service"
+msgstr "PackageKit szolgáltatás"
+
+#: src/pk-main.c:168
+msgid "Config file was not found."
+msgstr "A beállítófájl nem található."
+
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:175
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "A beállítófájl betöltése sikertelen: %s"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#: src/pk-main.c:203
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Az automata megoldása sikertelen: %s"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-main.c:227
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "A háttérprogram betöltése sikertelen: %s"
+
+#. TRANSLATORS: is not GPG signed
+#: src/pk-transaction.c:2325
+msgid "The software is not from a trusted source."
+msgstr "A szoftver nem hiteles forrásból származik."
+
+#: src/pk-transaction.c:2333
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr ""
+"Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+
+#: src/pk-transaction.c:2334
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr ""
+"Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+
+#: src/pk-transaction.c:2344
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr ""
+"Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+
+#: src/pk-transaction.c:2345
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr ""
+"Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
