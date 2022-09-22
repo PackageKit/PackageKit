@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 msgid "(seconds)"
 msgstr "(secondes)"
@@ -183,9 +183,6 @@ msgstr "Une authentification est nécessaire pour rafraîchir les dépôts du sy
 
 msgid "Authentication is required to reinstall software"
 msgstr "Une authentification est nécessaire pour réinstaller un logiciel"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Une authentification est nécessaire pour redémarrer le périphérique avec un nouveau pilote"
 
 msgid "Authentication is required to remove software"
 msgstr "Une authentification est nécessaire pour désinstaller un logiciel"
@@ -606,7 +603,7 @@ msgstr "Installer une nouvelle fois un paquet déjà installé"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -624,10 +621,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Voulez-vous installer le paquet « %s » qui fournit la commande « %s » ?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Installer un paquet signé"
 
@@ -931,15 +928,6 @@ msgstr "Réinstallé"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Réinstallation"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Recharger un périphérique"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

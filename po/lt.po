@@ -141,9 +141,6 @@ msgstr "Reikia patvirtinti tapatybę, norint atšaukti veiksmą, kurį pradėjot
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Atnaujinimo atsijungus pranešimui išvalyti būtina patvirtinti tapatybę"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Reikia patvirtinti tapatybę, norint iš naujo įkelti įrenginį su nauja tvarkykle"
-
 msgid "Authentication is required to repair the installed software"
 msgstr "Įdiegtai programinei įrangai sutaisyti būtina patvirtinti tapatybę"
 
@@ -514,10 +511,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Įdiegti paketą „%s“, suteikiantį komandą „%s“?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Įdiegti pasirašytą paketą"
 
@@ -799,15 +796,6 @@ msgstr "Įdiegtas iš naujo"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Diegiamas iš naujo"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Iš naujo įkelti įrenginį"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

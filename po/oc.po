@@ -240,10 +240,10 @@ msgid "Important"
 msgstr "Important"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Installar un paquet signat"
 

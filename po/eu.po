@@ -179,9 +179,6 @@ msgstr "Autentifikazioa behar da sistemaren biltegiak freskatzeko"
 msgid "Authentication is required to reinstall software"
 msgstr "Autentifikazioa behar da softwarea berrinstalatzeko"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Autentifikazioa behar da gailua kontrolagailu berri batekin birkargatzeko"
-
 msgid "Authentication is required to remove software"
 msgstr "Autentifikazioa behar da softwarea kentzeko"
 
@@ -601,7 +598,7 @@ msgstr "Instalatu berriro lehendik instalatuta dagoen paketea"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -619,10 +616,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Instalatu  '%s' paketea  '%s' komandoaz hornitzeko?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Instalatu sinatutako paketea"
 
@@ -926,15 +923,6 @@ msgstr "Berrinstalatua"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Berriro instalatzen"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Birkargatu gailu bat"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

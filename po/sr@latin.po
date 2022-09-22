@@ -125,9 +125,6 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenuli"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Neophodna je autentifikacija za ponovno učitavanje uređaja sa novim upravljačkim programom"
-
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Dostupan"
@@ -448,10 +445,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Da instaliram paket „%s“ koji pruža naredbu „%s“?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Instaliraj potpisani paket"
 
@@ -682,15 +679,6 @@ msgstr "Ponovo instaliran"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Ponovna instalacija"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Ponovo učitaj uređaj"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

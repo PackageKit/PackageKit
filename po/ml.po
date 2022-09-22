@@ -125,9 +125,6 @@ msgstr "ഒരു EULA സ്വീകരിക്കുന്നതിനായ
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "ഒരു പുതിയ ഡ്രൈവറുപയോഗിച്ചു് ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുന്നതിനു് ആധികാരികത ആവശ്യമുണ്ടു്"
-
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "ലഭ്യം"
@@ -441,10 +438,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "ഒപ്പിട്ട പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
 
@@ -675,15 +672,6 @@ msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ�
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "വീണ്ടും ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "ഒരു ഡിവൈസ് വീണ്ടും ലഭ്യമാക്കുക"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

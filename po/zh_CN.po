@@ -4,7 +4,7 @@
 #
 # Translators:
 # Boyuan Yang <073plan@gmail.com>, 2015,2019
-# ᴄʜʀɪsᴛᴏᴘʜᴇʀ ᴍᴇɴɢ <i@cicku.me>, 2013
+# ᴄʜʀɪsᴛᴏᴘʜᴇʀ ᴍᴇɴɢ, 2013
 # Dingzhong Chen <wsxy162@gmail.com>, 2021
 # Dingzhong Chen <wsxy162@gmail.com>, 2017
 # e0c668032ced196bd60f2b6a070d982d_8f72ae0, 2014
@@ -13,7 +13,7 @@
 # Michael Jay Tong <michaeljayt@gmail.com>, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2016-2018
 # Richard Hughes <richard@hughsie.com>, 2011
-# ᴄʜʀɪsᴛᴏᴘʜᴇʀ ᴍᴇɴɢ <i@cicku.me>, 2013
+# ᴄʜʀɪsᴛᴏᴘʜᴇʀ ᴍᴇɴɢ, 2013
 # Tommy He <lovenemesis@gmail.com>, 2011-2012
 # e0c668032ced196bd60f2b6a070d982d_8f72ae0, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2016
@@ -188,9 +188,6 @@ msgstr "刷新系统仓库需要认证"
 
 msgid "Authentication is required to reinstall software"
 msgstr "重新安装软件需要认证"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "使用新驱动重新装载设备需要认证"
 
 msgid "Authentication is required to remove software"
 msgstr "移除软件需要认证"
@@ -611,7 +608,7 @@ msgstr "重新安装已安装的软件包"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -629,10 +626,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "安装软件包“%s”以提供命令“%s”？"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "安装已签名软件包"
 
@@ -936,15 +933,6 @@ msgstr "已重装"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "正在重新安装"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "重新装载设备"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

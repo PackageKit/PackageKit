@@ -178,9 +178,6 @@ msgstr "נדרש אימות כדי לרענן את מאגרי המערכת"
 msgid "Authentication is required to reinstall software"
 msgstr "נדרש אימות כדי להתקין תכנה מחדש"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "נדרש אימות כדי לרענן את ההתקן עם מנהל התקן חדש"
-
 msgid "Authentication is required to remove software"
 msgstr "נדרש אימות להסרת תכנה"
 
@@ -600,7 +597,7 @@ msgstr "התקנת חבילה שכבר הותקנה בעבר"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -618,10 +615,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "להתקין את החבילה ‚%s’ כדי לספק את הפקודה ‚%s’?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "התקנת חבילה חתומה"
 
@@ -925,15 +922,6 @@ msgstr "הותקן מחדש"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "מתקין מחדש"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "רענון התקן"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

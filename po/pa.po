@@ -181,9 +181,6 @@ msgstr "ਸਿਸਟਮ ਰਿਪੋਜ਼ਟਰੀਆਂ ਤਾਜ਼ਾ ਕਰਨ �
 msgid "Authentication is required to reinstall software"
 msgstr "ਸਾਫਟਵੇਅਰ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "ਨਵੇਂ ਡਰਾਈਵਰ ਨਾਲ ਜੰਤਰ ਰੀਲੋਡ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
-
 msgid "Authentication is required to remove software"
 msgstr "ਸਾਫਟਵੇਅਰ ਨੂੰ ਹਟਾਉਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
@@ -603,7 +600,7 @@ msgstr "ਪਹਿਲਾਂ ਹੀ ਇੰਸਟਾਲ ਹੋਏ ਪੈਕੇਜ �
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -621,10 +618,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "ਕਮਾਂਡ '%2$s' ਦੇਣ ਲਈ ਪੈਕੇਜ '%1$s' ਇੰਸਟਾਲ ਕਰਨਾ ਹੈ?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "ਸਾਈਨ ਕੀਤੇ ਪੈਕੇਜ ਇੰਸਟਾਲ"
 
@@ -928,15 +925,6 @@ msgstr "ਮੁੜ-ਇੰਸਟਾਲ ਕੀਤੇ"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨਾ ਜਾਰੀ"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "ਜੰਤਰ ਨੂੰ ਮੁੜ-ਲੋਡ ਕਰੋ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

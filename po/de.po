@@ -192,9 +192,6 @@ msgstr "Legitimation ist zum Aktualisieren der System-Repositorien erforderlich"
 msgid "Authentication is required to reinstall software"
 msgstr "Legitimation ist zum erneuten Installieren der Software erforderlich"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Legitimation ist zum Laden des Geräts mit einem neuen Treiber erforderlich"
-
 msgid "Authentication is required to remove software"
 msgstr "Legitimation ist zum Entfernen von Software erforderlich"
 
@@ -614,7 +611,7 @@ msgstr "Bereits installiertes Paket erneut installieren"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -632,10 +629,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Soll das Paket »%s« installiert werden, welches den Befehl »%s« bereitstellt?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Signierte Pakete installieren"
 
@@ -939,15 +936,6 @@ msgstr "Neu installiert"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Neu installieren"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Ein Gerät neu laden"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

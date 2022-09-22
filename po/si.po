@@ -3,107 +3,98 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Green, 2021
-# hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
-# Kiyoto Hashida <khashida@redhat.com>, 2009
-# Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, 2022
-# Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
-# Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2021
-# Richard Hughes <richard@hughsie.com>, 2011
-# Takuro Onoue <kusanaginoturugi@gmail.com>, 2021
-# e93ed3aa97dec2eb31063731872555fc_1460a05 <71305a0095156d8e18373a5b7cfeb79e_8587>, 2011-2013
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Japanese (http://www.transifex.com/freedesktop/packagekit/language/ja/)\n"
+"Language-Team: Sinhala (http://www.transifex.com/freedesktop/packagekit/language/si/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: si\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "(seconds)"
-msgstr "(秒)"
+msgstr "(තත්පර)"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 msgid "A correct role is required"
-msgstr "正しいロールが必要です"
+msgstr "නිවැරදි භූමිකාවක් අවශ්ය වේ"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "ダウンロードする宛先ディレクトリーとパッケージ名が必要です"
+msgstr "ගමනාන්ත නාමාවලියක් සහ බාගත කිරීමට පැකේජ නම් අවශ්‍ය වේ"
 
 msgid "A filename is required"
-msgstr "ファイル名は必須です"
+msgstr "ගොනු නාමයක් අවශ්ය වේ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A filename to install is required"
-msgstr "インストールするファイル名が必要です"
+msgstr "ස්ථාපනය කිරීමට ගොනු නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A licence identifier (eula-id) is required"
-msgstr "ライセンス ID (eula-id) が必要です"
+msgstr "බලපත්‍ර හැඳුනුම්කාරකයක් (eula-id) අවශ්‍ය වේ"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
 msgid "A package name is required"
-msgstr "パッケージ名が必要です"
+msgstr "පැකේජයේ නමක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 msgid "A package name to install is required"
-msgstr "インストールするパッケージ名が必要です"
+msgstr "ස්ථාපනය කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 msgid "A package name to remove is required"
-msgstr "削除するパッケージ名が必要です"
+msgstr "ඉවත් කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 msgid "A package name to resolve is required"
-msgstr "削除するパッケージ名が必要です"
+msgstr "විසඳීමට පැකේජ නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 msgid "A package provide string is required"
-msgstr "パッケージの提供する文字列が必要です"
+msgstr "තන්තුවක් සපයන පැකේජයක් අවශ්‍ය වේ"
 
 msgid "A repo id and autoremove required"
-msgstr "リポジトリIDと自動削除が必要です"
+msgstr "repo id සහ autoremove අවශ්‍යයි"
 
 msgid "A repo name, parameter and value are required"
-msgstr "リポジトリー名と、パラメーター、値が必要です"
+msgstr "Repo නමක්, පරාමිතියක් සහ අගයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "リポジトリー名が必要です"
+msgstr "ගබඩා නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
 msgid "A search term is required"
-msgstr "検索語が必要です"
+msgstr "සෙවුම් පදයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "名前のような、検索タイプが必要です"
+msgstr "සෙවුම් වර්ගයක් අවශ්‍ය වේ, උදා: නම"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "タイプと、キー id、パッケージ id が必要です"
+msgstr "වර්ගයක්, key_id සහ pack_id අවශ්‍ය වේ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -111,115 +102,115 @@ msgstr "タイプと、キー id、パッケージ id が必要です"
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
 msgid "Accept EULA"
-msgstr "EULA を承認"
+msgstr "EULA පිළිගන්න"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Accepting EULA"
-msgstr "EULA を受入れ中"
+msgstr "EULA පිළිගැනීම"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages:"
-msgstr "影響するパッケージ:"
+msgstr "බලපෑමට ලක් වූ පැකේජ:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "影響するパッケージ: なし"
+msgstr "බලපෑමට ලක් වූ පැකේජ: කිසිවක් නැත"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
-msgstr "同意書"
+msgstr "ගිවිසුම"
 
 #. TRANSLATORS: this is a command alias
 #, c-format
 msgid "Alias to %s"
-msgstr "%s へのエイリアス"
+msgstr "අන්වර්ථ නාමය %s"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "トランザクション中にパッケージをダウングレードできるようにする"
+msgstr "ගනුදෙනුව අතරතුර පැකේජ පහත හෙලීමට ඉඩ දෙන්න"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "トランザクション中にパッケージを再インストールできるようにする"
+msgstr "ගනුදෙනුව අතරතුර පැකේජ නැවත ස්ථාපනය කිරීමට ඉඩ දෙන්න"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "信頼できないパッケージのインストールを許可します。"
+msgstr "විශ්වාස නොකළ පැකේජ ස්ථාපනය කිරීමට ඉඩ දෙන්න."
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "'update-packages' のようなアクションが必要です"
+msgstr "ක්‍රියාවක්, උදා: 'යාවත්කාලීන-පැකේජ' අවශ්‍ය වේ"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
-msgstr "以下によりアプリケーションの再起動が必要:"
+msgstr "යෙදුම නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "EULA を承認するには認証が必要です"
+msgstr "EULA එකක් පිළිගැනීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "ユーザー自身が開始していないタスクをキャンセルするには認証が必要です"
+msgstr "ඔබ විසින් ආරම්භ නොකළ කාර්යයක් අවලංගු කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr "ソフトウェアリポジトリパラメータの変更には認証が必要です"
+msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "オフライン更新メッセージを削除するには認証が必要です"
+msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "ソフトウェアの署名に使用されるキーを信頼できるものと見なすには、認証が必要です"
+msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාසදායක ලෙස සලකා බැලීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to downgrade software"
-msgstr "ソフトウェアをダウングレードするには認証が必要です"
+msgstr "මෘදුකාංගය පහත හෙලීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to install software"
-msgstr "ソフトウェアをインストールするには認証が必要です"
+msgstr "මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "信頼されていないソフトウェアをインストールするには認証が必要です"
+msgstr "විශ්වාස නොකළ මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr "システムリポジトリの更新には認証が必要です"
+msgstr "පද්ධති ගබඩාවන් නැවුම් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to reinstall software"
-msgstr "ソフトウェアを再インストールするには認証が必要です"
+msgstr "මෘදුකාංග නැවත ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to remove software"
-msgstr "ソフトウェアを削除するには認証が必要です"
+msgstr "මෘදුකාංග ඉවත් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "インストールされたソフトウェアを復旧するには認証が必要です"
+msgstr "ස්ථාපිත මෘදුකාංගය අලුත්වැඩියා කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "ソフトウェアのダウンロードに使用するネットワークプロキシを設定するには、認証が必要です"
+msgstr "මෘදුකාංග බාගත කිරීම සඳහා භාවිතා කරන ජාල ප්‍රොක්සි සැකසීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "オフライン更新を開始するには認証が必要です"
+msgstr "නොබැඳි යාවත්කාලීන ක්‍රියාරම්භ කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to update software"
-msgstr "ソフトウェアを更新するには認証が必要です"
+msgstr "මෘදුකාංග යාවත්කාලීන කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr "オペレーティングシステムをアップグレードするには認証が必要です"
+msgstr "මෙහෙයුම් පද්ධතිය උත්ශ්‍රේණි කිරීම සඳහා සත්‍යාපනය අවශ්‍ය වේ"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
-msgstr "著者"
+msgstr "කර්තෘ"
 
 msgid "Automatically remove unused dependencies"
-msgstr "未使用の依存関係を自動的に削除します"
+msgstr "භාවිතයට නොගත් පරායත්තතා ස්වයංක්‍රීයව ඉවත් කරන්න"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "利用可能"
+msgstr "පවතින"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "ブロックされています"
+msgstr "අවහිර කර ඇත"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "バグ修正"
+msgstr "දෝෂ නිවැරදි කිරීම"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -234,363 +225,363 @@ msgstr "CVE"
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
 msgid "Cancel foreign task"
-msgstr "他人のタスクをキャンセル"
+msgstr "විදේශීය කාර්යය අවලංගු කරන්න"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Canceling"
-msgstr "キャンセル中"
+msgstr "අවලංගු කරනවා"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 msgid "Cancelling"
-msgstr "キャンセル中"
+msgstr "අවලංගු කරනවා"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
-msgstr "カテゴリー"
+msgstr "වර්ගය"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
 msgid "Change software repository parameters"
-msgstr "ソフトウェアリポジトリパラメータの変更"
+msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කරන්න"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 msgid "Changes"
-msgstr "変更"
+msgstr "වෙනස්කම්"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
 msgid "Checking applications in use"
-msgstr "使用中アプリケーションをチェック中"
+msgstr "භාවිතයේ ඇති යෙදුම් පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
 msgid "Checking libraries in use"
-msgstr "使用中ライブラリをチェック中"
+msgstr "භාවිතයේ ඇති පුස්තකාල පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys
 #. for the operation
 msgid "Checking signatures"
-msgstr "署名をチェック中"
+msgstr "අත්සන් පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "クリーンアップ済み"
+msgstr "සුද්ද කළා"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "クリーンアップ中"
+msgstr "සුද්ද කරනවා"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
 msgid "Cleaning up packages"
-msgstr "パッケージをクリーンアップ中"
+msgstr "පැකේජ පිරිසිදු කිරීම"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 msgid "Clear offline update message"
-msgstr "オフライン更新メッセージの削除"
+msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කරන්න"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "コマンド失敗"
+msgstr "විධානය අසාර්ථක විය"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
-msgstr "コマンドライン"
+msgstr "විධාන රේඛාව"
 
 msgid "Command not found, valid commands are:"
-msgstr "コマンドが見つかりません、有効なコマンドは:"
+msgstr "විධානය හමු නොවීය, වලංගු විධාන වන්නේ:"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
 msgid "Committing changes"
-msgstr "変更を適用中"
+msgstr "වෙනස්කම් සිදු කිරීම"
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
-msgstr "ファイル複写中"
+msgstr "ගොනු පිටපත් කිරීම"
 
 msgid "Debugging Options"
-msgstr "デバッギングオプション"
+msgstr "දෝශ නිරාකරණ විකල්ප"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
-msgstr "説明"
+msgstr "විස්තර"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "更新の詳細:"
+msgstr "යාවත්කාලීන කිරීම පිළිබඳ විස්තර:"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "ディレクトリーが見つかりません"
+msgstr "නාමාවලිය හමු නොවීය"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
-msgstr "待機タイマーを無効にする"
+msgstr "idle timer එක disable කරන්න"
 
 #. TRANSLATORS: if the repo is disabled
 msgid "Disabled"
-msgstr "無効"
+msgstr "ආබාධිතයි"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 msgid "Distribution"
-msgstr "ディストリビューション"
+msgstr "බෙදා හැරීම"
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群をインストールしないで下さい。"
+msgstr "මෙම පැකේජ ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージをインストールしないで下さい。"
+msgstr "මෙම පැකේජය ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群を更新しないで下さい。"
+msgstr "එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජ යාවත්කාලීන නොකරන්න."
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージを更新しないで下さい。"
+msgstr "මෙම පැකේජය එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජය යාවත්කාලීන නොකරන්න."
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "この同意書を承認しますか？"
+msgstr "ඔබ මෙම ගිවිසුම පිළිගන්නවාද?"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr "この署名を承認しますか？"
+msgstr "ඔබ මෙම අත්සන පිළිගන්නවාද?"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "署名無しのソフトウェアのインストールを許可しますか？"
+msgstr "ඔබට අත්සන් නොකළ මෘදුකාංග ස්ථාපනය කිරීමට ඉඩ දීමට අවශ්‍යද?"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
-msgstr "起動時に環境を消去しません"
+msgstr "ආරම්භයේදී පරිසරය පිරිසිදු නොකරන්න"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
-msgstr "ダウンロード済み"
+msgstr "බාගත කර ඇත"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "ダウンロード中"
+msgstr "බාගත කිරීම"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr "ソフトウェアリポジトリに関する詳細をダウンロードします。"
+msgstr "මෘදුකාංග ගබඩා පිළිබඳ විස්තර බාගත කිරීම."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr "ファイルリストをダウンロード中"
+msgstr "ගොනු ලැයිස්තු බාගත කිරීම"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "ファイル一覧をダウンロード中 (完了まで時間がかかるかもしれません)。"
+msgstr "ගොනු ලැයිස්තු බාගැනීම (මෙය සම්පූර්ණ කිරීමට යම් කාලයක් ගත විය හැක)."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
-msgstr "グループをダウンロード中"
+msgstr "කණ්ඩායම් බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "パッケージリストをダウンロード中"
+msgstr "පැකේජ ලැයිස්තුව බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "変更のリストをダウンロード中"
+msgstr "වෙනස්කම් ලැයිස්තුව බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Downloading packages"
-msgstr "パッケージをダウンロード中"
+msgstr "පැකේජ බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "レポジトリ情報をダウンロード中"
+msgstr "ගබඩා තොරතුරු බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "更新情報をダウンロード中"
+msgstr "යාවත්කාලීන තොරතුරු බාගත කිරීම"
 
 #. TRANSLATORS: this is The duration of the transaction
 msgid "Duration"
-msgstr "期間"
+msgstr "කාල සීමාව"
 
 #. TRANSLATORS: if the repo is enabled
 msgid "Enabled"
-msgstr "有効"
+msgstr "සබල කර ඇත"
 
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "エンドユーザーライセンス同意書が必要です"
+msgstr "අවසාන පරිශීලක බලපත්‍ර ගිවිසුම අවශ්‍යයි"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
-msgstr "機能追加"
+msgstr "වැඩිදියුණු කිරීම"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 msgid "Exit after a small delay"
-msgstr "少し遅れて終了"
+msgstr "කුඩා ප්‍රමාදයකින් පසු පිටවන්න"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "エンジンがロードされてから終了"
+msgstr "එන්ජිම පූරණය වූ පසු පිටවන්න"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
 #. * 'pkcon install-local dave.rpm'
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "予期されるパッケージ名は実際にはファイルを持ちます。代わりに 'pkcon install-local %s' を 試して下さい。"
+msgstr "අපේක්ෂිත පැකේජයේ නම, ඇත්ත වශයෙන්ම ගොනුව ලැබී ඇත. ඒ වෙනුවට 'pkcon install-local %s' භාවිතා කිරීමට උත්සාහ කරන්න."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit への接触に失敗"
+msgstr "PackageKit සම්බන්ධ කර ගැනීමට අසමත් විය"
 
 msgid "Failed to get daemon state"
-msgstr "デーモンの状態を得るのに失敗しました"
+msgstr "ඩීමන් තත්වය ලබා ගැනීමට අසමත් විය"
 
 msgid "Failed to get properties"
-msgstr "プロパティの取得に失敗しました"
+msgstr "දේපල ලබා ගැනීමට අපොහොසත් විය"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 msgid "Failed to get the time since this action was last completed"
-msgstr "このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
+msgstr "මෙම ක්‍රියාව අවසන් වරට සම්පූර්ණ කළ දින සිට කාලය ලබා ගැනීමට අපොහොසත් විය"
 
 #. TRANSLATORS: we failed to install the package
 msgid "Failed to install packages"
-msgstr "パッケージをインストールできません"
+msgstr "පැකේජ ස්ථාපනය කිරීමට අසමත් විය"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "起動に失敗:"
+msgstr "දියත් කිරීමට අසමත් විය:"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
-msgstr "バックエンドのロードに失敗しました"
+msgstr "පසු අන්තය පූරණය කිරීමට අසමත් විය"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
-msgstr "設定ファイルのロードに失敗しました"
+msgstr "වින්‍යාස ගොනුව පූරණය කිරීමට අසමත් විය"
 
 #. TRANSLATORS: the user didn't read the man page
 msgid "Failed to parse arguments"
-msgstr "引数の解析に失敗しました"
+msgstr "තර්ක විග්‍රහ කිරීමට අසමත් විය"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr "コマンドラインの解析に失敗しました"
+msgstr "විධාන රේඛාව විග්‍රහ කිරීමට අසමත් විය"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
-msgstr "ファイルの探索に失敗しました"
+msgstr "ගොනුව සෙවීමට අසමත් විය"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 msgid "Failed to unload the backend"
-msgstr "バックエンドのアンロードの失敗しました"
+msgstr "පසුපෙළ ගොඩබෑම අසාර්ථක විය"
 
 msgid "False"
-msgstr "偽"
+msgstr "බොරු"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 msgid "Fatal error"
-msgstr "重大なエラー"
+msgstr "මාරාන්තික දෝෂයක්"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr "ファイルがすでに存在します: %s"
+msgstr "ගොනුව දැනටමත් පවතී: %s"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
-msgstr "終了"
+msgstr "අවසන්"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "パッケージリストを生成中"
+msgstr "පැකේජ ලැයිස්තු උත්පාදනය කිරීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
-msgstr "区分の取得中"
+msgstr "කාණ්ඩ ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting dependencies"
-msgstr "依存関係の取得中"
+msgstr "පරායත්තතා ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting details"
-msgstr "詳細の取得中"
+msgstr "විස්තර ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "ファイル一覧の取得中"
+msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
-msgstr "情報の取得中"
+msgstr "තොරතුරු ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting packages"
-msgstr "パッケージの取得中"
+msgstr "පැකේජ ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "提供者の取得中"
+msgstr "ලබා ගැනීම සපයයි"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
-msgstr "リポジトリの取得中"
+msgstr "ගබඩා ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting requires"
-msgstr "要求の取得中"
+msgstr "ලබා ගැනීම අවශ්ය වේ"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting system upgrades"
-msgstr "システムアップグレードの取得中"
+msgstr "පද්ධති වැඩිදියුණු කිරීම් ලබා ගැනීම"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "Getting the list of files failed"
-msgstr "ファイルの一覧の取得に失敗しました"
+msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම අසාර්ථක විය"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting transactions"
-msgstr "トランザクションの取得中"
+msgstr "ගනුදෙනු ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting update details"
-msgstr "更新の詳細の取得中"
+msgstr "යාවත්කාලීන විස්තර ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting updates"
-msgstr "更新の取得中"
+msgstr "යාවත්කාලීන ලබා ගැනීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting upgrades"
-msgstr "更新の取得中"
+msgstr "උසස්වීම් ලබා ගැනීම"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "ID"
+msgstr "හැඳුනුම්පත"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
-msgstr "アイコン"
+msgstr "නිරූපකය"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr "重要"
+msgstr "වැදගත්"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -599,7 +590,7 @@ msgstr "重要"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install already installed package again"
-msgstr "すでにインストール済みのパッケージを再インストール"
+msgstr "දැනටමත් ස්ථාපනය කර ඇති පැකේජය නැවත ස්ථාපනය කරන්න"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -608,17 +599,17 @@ msgstr "すでにインストール済みのパッケージを再インストー
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 msgid "Install older version of installed package"
-msgstr "インストール済みパッケージの古いバージョンをインストール"
+msgstr "ස්ථාපිත පැකේජයේ පැරණි අනුවාදය ස්ථාපනය කරන්න"
 
 #. TRANSLATORS: command description
 msgid "Install package"
-msgstr "パッケージをインストール"
+msgstr "පැකේජය ස්ථාපනය කරන්න"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
+msgstr "'%s' විධානය ලබා දීමට '%s' පැකේජය ස්ථාපනය කරන්නද?"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -626,11 +617,11 @@ msgstr "コマンド %2$s' を提供するためにパッケージ '%1$s' をイ
 #. only as secure as the least-secure package available in the
 #. repositories.
 msgid "Install signed package"
-msgstr "署名付きのパッケージをインストール"
+msgstr "අත්සන් කළ පැකේජය ස්ථාපනය කරන්න"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "確認を要求せずにパッケージをインストール"
+msgstr "තහවුරු කිරීමකින් තොරව පැකේජ ස්ථාපනය කරන්න"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -638,296 +629,296 @@ msgstr "確認を要求せずにパッケージをインストール"
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
 msgid "Install untrusted local file"
-msgstr "信頼できないローカルファイルをインストール"
+msgstr "විශ්වාස නොකළ දේශීය ගොනුව ස්ථාපනය කරන්න"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "インストール済み"
+msgstr "ස්ථාපනය කර ඇත"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "インストール中"
+msgstr "ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 msgid "Installing System Upgrade"
-msgstr "システムアップグレードのインストール"
+msgstr "පද්ධති උත්ශ්‍රේණි කිරීම ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 msgid "Installing Updates"
-msgstr "更新をインストール中"
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing files"
-msgstr "ファイルをインストール中"
+msgstr "ගොනු ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: transaction state, installing packages
 msgid "Installing packages"
-msgstr "パッケージのインストール中"
+msgstr "පැකේජ ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing signature"
-msgstr "署名をインストール中"
+msgstr "අත්සන ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "システムアップグレードのインストール; しばらく時間がかかる場合があります..."
+msgstr "පද්ධතිය වැඩිදියුණු කිරීම ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
-msgstr "更新をインストール中"
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr "更新のインストール; しばらく時間がかかる場合があります..."
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 msgid "Issued"
-msgstr "発行済"
+msgstr "නිකුත් කළ"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr "キー ID"
+msgstr "යතුරු හැඳුනුම්පත"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
-msgstr "キーのタイムスタンプ"
+msgstr "ප්රධාන කාල මුද්රාව"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr "キーの URL"
+msgstr "ප්රධාන URL"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
-msgstr "キーのフィンガープリント"
+msgstr "යතුරු ඇඟිලි සලකුණ"
 
 #. TRANSLATORS: the username of the key
 msgid "Key user"
-msgstr "キーのユーザー"
+msgstr "ප්රධාන පරිශීලක"
 
 #. TRANSLATORS: transaction state, loading databases
 msgid "Loading cache"
-msgstr "キャッシュをロード中"
+msgstr "හැඹිලිය පූරණය වේ"
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "パッケージの一覧をロード中。"
+msgstr "පැකේජ ලැයිස්තුව පූරණය වේ."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
-msgstr "メディアの変更が必要です"
+msgstr "මාධ්‍ය වෙනසක් අවශ්‍යයි"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 msgid "Media label"
-msgstr "メディアラベル"
+msgstr "මාධ්ය ලේබලය"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
-msgstr "メディアタイプ"
+msgstr "මාධ්ය වර්ගය"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Modifying repository"
-msgstr "リポジトリの変更"
+msgstr "ගබඩාව වෙනස් කිරීම"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "複数のパッケージが一致しています:"
+msgstr "පැකේජ එකකට වඩා ගැලපේ:"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
 msgid "Name"
-msgstr "名前"
+msgstr "නම"
 
 #. TRANSLATORS: This where the package has no files
 msgid "No files"
-msgstr "ファイルなし"
+msgstr "ගොනු නැත"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 msgid "No packages require updating to newer versions."
-msgstr "新しいバージョンに更新する必要があるパッケージはありません。"
+msgstr "කිසිදු පැකේජයක් නව අනුවාදවලට යාවත්කාලීන කිරීම අවශ්‍ය නොවේ."
 
 #. TRANSLATORS: we couldn't find anything
 msgid "No packages were found"
-msgstr "1つもパッケージが見つかりませんでした"
+msgstr "පැකේජ කිසිවක් හමු නොවීය"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "通常"
+msgstr "සාමාන්යයි"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "旧ファイル分類済み"
+msgstr "යල් පැන ගිය"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 msgid "Obsoletes"
-msgstr "旧版"
+msgstr "යල් පැන ගිය ඒවා"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Obsoleting"
-msgstr "旧ファイル区分中"
+msgstr "යල්පැන යනවා"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 msgid "Obsoleting packages"
-msgstr "旧パッケージを区分中"
+msgstr "යල් පැන ගිය පැකේජ"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "オプション '%s' はサポートされていません"
+msgstr "'%s' විකල්පය සහය නොදක්වයි"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
 msgid "Package"
-msgstr "パッケージ"
+msgstr "පැකේජය"
 
 #. TRANSLATORS: This a list of details about the package
 msgid "Package description"
-msgstr "パッケージの説明"
+msgstr "පැකේජ විස්තරය"
 
 #. TRANSLATORS: This a list files contained in the package
 msgid "Package files"
-msgstr "パッケージファイル"
+msgstr "පැකේජ ගොනු"
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 msgid "Package not found"
-msgstr "パッケージが見つかりません"
+msgstr "පැකේජය හමු නොවීය"
 
 #. TRANSLATORS: program name
 msgid "PackageKit"
-msgstr "PackageKit"
+msgstr "පැකේජ කට්ටලය"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "PackageKit コンソールインターフェース"
+msgstr "PackageKit කොන්සෝල අතුරුමුහුණත"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "PackageKit モニター"
+msgstr "PackageKit මොනිටරය"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
-msgstr "PackageKit サービス"
+msgstr "PackageKit සේවාව"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 msgid "Packages providing this file are:"
-msgstr "このファイルを提供しているパッケージは:"
+msgstr "මෙම ගොනුව සපයන පැකේජ:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "使用するパッケージバックエンド、例、ダミー"
+msgstr "භාවිතා කිරීමට ඇසුරුම් පසුබිම, උදා: ව්යාජ"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "親"
+msgstr "දෙමාපිය"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
-msgstr "パーセンテージ"
+msgstr "ප්රතිශතය"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "実行するコマンドを選んでください"
+msgstr "කරුණාකර ධාවනය කිරීමට විධානයක් තෝරන්න"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
-msgstr "インストールするパッケージを選んでください"
+msgstr "කරුණාකර ස්ථාපනය කිරීමට පැකේජයක් තෝරන්න"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "現在のパッケージを選択して下さい: "
+msgstr "කරුණාකර නිවැරදි පැකේජය තෝරන්න: "
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "1 から %i までの数字を１つ入力して下さい: "
+msgstr "කරුණාකර 1 සිට %iදක්වා අංකයක් ඇතුළු කරන්න: "
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "適切なメディアを挿入して下さい"
+msgstr "කරුණාකර නිවැරදි මාධ්‍ය ඇතුලත් කරන්න"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにログアウトとログインを行って下さい。"
+msgstr "වැදගත් ආරක්‍ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "更新を完了するためにログアウトし、ログインしてください。"
+msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにコンピューターを再起動してください。"
+msgstr "වැදගත් ආරක්ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "更新を完了するためにコンピューターを再起動してください。"
+msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "パッケージをダウンロードのみ実行することにより、トランザクションを準備します"
+msgstr "පැකේජ බාගත කිරීමෙන් පමණක් ගනුදෙනුව සූදානම් කරන්න"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 msgid "Prepared updates:"
-msgstr "準備されたアップデート:"
+msgstr "සූදානම් කළ යාවත්කාලීන:"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "動画のウィジェットの使用ではなく、マシン可読の出力を画面に表示"
+msgstr "සජීවිකරණ විජට් භාවිතා කරනවාට වඩා යන්ත්‍රයෙන් කියවිය හැකි ප්‍රතිදානයක් තිරගත කිරීමට මුද්‍රණය කරන්න"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "変更したまま継続しますか？"
+msgstr "වෙනස්කම් සමඟ ඉදිරියට යන්නද?"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr "クエリ中"
+msgstr "විමසනවා"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
-msgstr "本名"
+msgstr "සැබෑ නම"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "更新をインストールしたので再起動します…"
+msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු නැවත ආරම්භ කිරීම"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 msgid "Refresh system repositories"
-msgstr "システムリポジトリの更新"
+msgstr "පද්ධති ගබඩාවන් නැවුම් කරන්න"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache"
-msgstr "キャッシュをリフレッシュ"
+msgstr "හැඹිලිය නැවුම් කරන්න"
 
 #. TRANSLATORS: command description
 msgid "Refresh the cache (forced)"
-msgstr "キャッシュをリフレッシュ (強制)"
+msgstr "හැඹිලිය නැවුම් කරන්න (බලහත්කාරයෙන්)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "キャッシュをリフレッシュ中"
+msgstr "නැවුම් හැඹිලිය"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "ソフトウェアリストをリフレッシュ中"
+msgstr "මෘදුකාංග ලැයිස්තුව නැවුම් කිරීම"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "再インストール済み"
+msgstr "නැවත ස්ථාපනය කරන ලදී"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "再インストール中"
+msgstr "නැවත ස්ථාපනය කිරීම"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -939,328 +930,328 @@ msgstr "再インストール中"
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 msgid "Remove package"
-msgstr "パッケージを削除"
+msgstr "පැකේජය ඉවත් කරන්න"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "削除済み"
+msgstr "ඉවත් කරන ලදී"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "削除中"
+msgstr "ඉවත් කිරීම"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "パッケージを削除中"
+msgstr "පැකේජ ඉවත් කිරීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr "リポジトリの削除"
+msgstr "ගබඩාව ඉවත් කිරීම"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "ファイルを再パッケージ中"
+msgstr "ගොනු නැවත ඇසුරුම් කිරීම"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
 msgid "Repair System"
-msgstr "システムの復旧"
+msgstr "අලුත්වැඩියා පද්ධතිය"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 msgid "Requesting data"
-msgstr "データを要求中"
+msgstr "දත්ත ඉල්ලා සිටීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Resolving"
-msgstr "解除中"
+msgstr "විසඳනවා"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 msgid "Resolving dependencies"
-msgstr "依存関係を解決中"
+msgstr "පරායත්තතා විසඳීම"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 msgid "Restart"
-msgstr "再起動"
+msgstr "යළි අරඹන්න"
 
 #. TRANSLATORS: the results from the transaction
 msgid "Results:"
-msgstr "結果:"
+msgstr "ප්රතිපල:"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
-msgstr "ロール"
+msgstr "කාර්යභාරය"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "よく似たコマンドを実行:"
+msgstr "සමාන විධානයක් ක්‍රියාත්මක කරන්න:"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "遊休のネットワークバンド幅とより少ない電力を使用してコマンドを実行"
+msgstr "idle network bandwidth භාවිතයෙන් සහ අඩු බලයක් භාවිතා කරමින් විධානය ක්‍රියාත්මක කරන්න"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
-msgstr "実行中"
+msgstr "දුවනවා"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the
 #. transaction
 msgid "Running hooks"
-msgstr "フックの起動"
+msgstr "ධාවන කොකු"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "アプリケーションをスキャン中"
+msgstr "යෙදුම් ස්කෑන් කිරීම"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
-msgstr "詳細で検索"
+msgstr "විස්තර අනුව සොයන්න"
 
 #. TRANSLATORS: command description
 msgid "Search by files"
-msgstr "ファイル名で検索"
+msgstr "ගොනු අනුව සොයන්න"
 
 #. TRANSLATORS: command description
 msgid "Search by names"
-msgstr "名前で検索"
+msgstr "නම් අනුව සොයන්න"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
-msgstr "詳細で検索中"
+msgstr "විස්තර අනුව සොයනවා"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by file"
-msgstr "ファイルで検索中"
+msgstr "ගොනුව අනුව සෙවීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by name"
-msgstr "名前で検索中"
+msgstr "නමින් සොයනවා"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching groups"
-msgstr "グループ検索中"
+msgstr "කණ්ඩායම් සෙවීම"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr "セキュリティー"
+msgstr "ආරක්ෂක"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "セッション再起動 (セキュリティー) が必要:"
+msgstr "සැසිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වේ:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "セッションの再起動が必要です:"
+msgstr "සැසිය නැවත ආරම්භ කිරීම අවශ්‍යයි:"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
-msgstr "ネットワークプロキシをセット"
+msgstr "ජාල ප්‍රොක්සි සකසන්න"
 
 #. TRANSLATORS: command description
 msgid "Set repository options"
-msgstr "リポジトリオプションの設定"
+msgstr "ගබඩා විකල්ප සකසන්න"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "インストール済などのフィルターを設定"
+msgstr "පෙරහන සකසන්න, උදා: ස්ථාපනය කර ඇත"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "データを設定中"
+msgstr "දත්ත සැකසීම"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "全てのファイル用にデバッグ情報を表示"
+msgstr "සියලුම ගොනු සඳහා නිදොස් කිරීමේ තොරතුරු පෙන්වන්න"
 
 msgid "Show debugging options"
-msgstr "デバッグオプションを表示"
+msgstr "නිදොස් කිරීමේ විකල්ප පෙන්වන්න"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "プログラムのバージョンを表示して終了"
+msgstr "වැඩසටහනේ අනුවාදය පෙන්වන්න සහ පිටවන්න"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
-msgstr "バージョンを表示して終了"
+msgstr "අනුවාදය පෙන්වන්න සහ පිටවන්න"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr "更新のインストール後にシャットダウン…"
+msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු වසා දැමීම"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr "よく似たコマンドは:"
+msgstr "සමාන විධානය වන්නේ:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr "よく似たコマンドは:"
+msgstr "සමාන විධාන වන්නේ:"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
-msgstr "ソフトウェアソース名"
+msgstr "මෘදුකාංග මූලාශ්‍ර නාමය"
 
 #. TRANSLATORS: the package repository is signed by a key that is not
 #. recognised
 msgid "Software source signature required"
-msgstr "ソフトウェアソースの署名が必要です"
+msgstr "මෘදුකාංග මූලාශ්‍ර අත්සන අවශ්‍යයි"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 msgid "Starting"
-msgstr "開始中"
+msgstr "පටන් ගන්නවා"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
 msgid "State"
-msgstr "状態"
+msgstr "රජයේ"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 msgid "Status"
-msgstr "状態"
+msgstr "තත්ත්වය"
 
 #. these are commands we can use with pkcon
 msgid "Subcommands:"
-msgstr "サブコマンド:"
+msgstr "උප විධාන:"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "成功"
+msgstr "සාර්ථක විය"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
 msgid "Suitable packages are:"
-msgstr "適切なパッケージは:"
+msgstr "සුදුසු පැකේජ නම්:"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 msgid "Summary"
-msgstr "概要"
+msgstr "සාරාංශය"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "以下によりシステム再起動 (セキュリティー) が必要です:"
+msgstr "පද්ධතිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වන්නේ:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
-msgstr "以下によりシステムの再起動が必要です:"
+msgstr "පද්ධතිය නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
 
 #. TRANSLATORS: this is the time the transaction was started in system
 #. timezone
 msgid "System time"
-msgstr "システム時刻"
+msgstr "පද්ධති කාලය"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 msgid "Testing changes"
-msgstr "変更をテスト中"
+msgstr "පරීක්ෂණ වෙනස්කම්"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 msgid "Text"
-msgstr "テキスト"
+msgstr "පෙළ"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The agreement was not accepted."
-msgstr "同意書は承認されませんでした。"
+msgstr "ගිවිසුම පිළිගත්තේ නැත."
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 msgid "The correct media was not inserted."
-msgstr "適切なメディアが挿入されていません。"
+msgstr "නිවැරදි මාධ්‍ය ඇතුළත් කළේ නැහැ."
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "トランザクション中にデーモンがクラッシュしました!"
+msgstr "ඩීමන් ගනුදෙනුව මැද කඩා වැටුණි!"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "指定されたフィルターは無効です"
+msgstr "සඳහන් කළ පෙරහන වලංගු නොවේ"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
 msgid "The following packages are untrusted:"
-msgstr "以下のパッケージは信頼できません:"
+msgstr "පහත පැකේජ විශ්වාස කළ නොහැක:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 msgid "The following packages have to be downgraded:"
-msgstr "以下のパッケージはダウングレードされるべきものです:"
+msgstr "පහත පැකේජ පහත හෙලීමට සිදුවේ:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
-msgstr "以下のパッケージはインストールされるべきものです:"
+msgstr "පහත පැකේජ ස්ථාපනය කළ යුතුය:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr "次のパッケージは廃止する必要があります:"
+msgstr "පහත පැකේජ යල්පැනීමට සිදුවේ:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
-msgstr "以下のパッケージは再インストールされるべきものです:"
+msgstr "පහත පැකේජ නැවත ස්ථාපනය කළ යුතුය:"
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 msgid "The following packages have to be removed:"
-msgstr "以下のパッケージは削除されるべきものです:"
+msgstr "පහත පැකේජ ඉවත් කළ යුතුය:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
-msgstr "以下のパッケージは更新されるべきものです:"
+msgstr "පහත පැකේජ යාවත්කාලීන කළ යුතුය:"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "メタデータの最大キャッシュ世代です。「なし」にするには -1 を使用します。"
+msgstr "උපරිම පාරදත්ත හැඹිලි වයස. 'කවදාවත්' සඳහා -1 භාවිතා කරන්න."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
-msgstr "このファイルを提供しているパッケージは:"
+msgstr "මෙම ගොනුව සපයන පැකේජය වන්නේ:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr "プロキシーを設定できませんでした。"
+msgstr "ප්‍රොක්සිය සැකසිය නොහැක"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 msgid "The selected packages may already be installed."
-msgstr "選択したパッケージはすでにインストールされている可能性があります。"
+msgstr "තෝරාගත් පැකේජ දැනටමත් ස්ථාපනය කර තිබිය හැක."
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
-msgstr "署名は承認されませんでした。"
+msgstr "අත්සන පිළිගත්තේ නැත."
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "ソフトウェアは信頼できるソースのものではありません。"
+msgstr "මෘදුකාංගය විශ්වාසදායක මූලාශ්‍රයකින් නොවේ."
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "トランザクションは進展しませんでした。"
+msgstr "ගනුදෙනුව ඉදිරියට ගියේ නැත."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "トランザクションが失敗しました"
+msgstr "ගනුදෙනුව අසාර්ථක විය"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "署名無しのソフトウェアはインストールされません。"
+msgstr "අත්සන් නොකළ මෘදුකාංගය ස්ථාපනය නොකෙරේ."
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 msgid "There are no packages to update."
-msgstr "更新が必要なパッケージはありません。"
+msgstr "යාවත්කාලීන කිරීමට පැකේජ නොමැත."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "現時点では利用可能な更新はありません。"
+msgstr "මෙම අවස්ථාවේදී යාවත්කාලීන කිසිවක් නොමැත."
 
 msgid "There are no upgrades available at this time."
-msgstr "現時点では利用可能なアップグレードはありません。"
+msgstr "මෙම අවස්ථාවේදී ලබා ගත හැකි වැඩිදියුණු කිරීම් නොමැත."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -1272,39 +1263,39 @@ msgstr "現時点では利用可能なアップグレードはありません。
 #. * any software repositories. The detailed error follows
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "このツールでは全パッケージを見つけられません: %s"
+msgstr "මෙම මෙවලමට සියලුම පැකේජ සොයා ගැනීමට නොහැකි විය: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 msgid "This tool could not find any available package."
-msgstr "利用可能なパッケージを見つけることができませんでした。"
+msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයා ගත නොහැකි විය."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
+msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයාගත නොහැකි විය: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "このツールではインストールされたパッケージを見つけられません: %s"
+msgstr "මෙම මෙවලම ස්ථාපිත පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "このツールではパッケージを見つけられません: %s"
+msgstr "මෙම මෙවලම පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
 
 #. TRANSLATORS: this is the time since this role was used
 msgid "Time since"
-msgstr "からの時間"
+msgstr "ඉඳලා කාලය"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 msgid "Transaction"
-msgstr "トランザクション"
+msgstr "ගනුදෙනුව"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1314,14 +1305,14 @@ msgstr "トランザクション"
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr "オフライン更新の開始"
+msgstr "නොබැඳි යාවත්කාලීන ක්‍රියාරම්භ කරන්න"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr "些細な"
+msgstr "සුළු සුළුය"
 
 msgid "True"
-msgstr "真"
+msgstr "සැබෑ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1329,23 +1320,23 @@ msgstr "真"
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
 msgid "Trust a key used for signing software"
-msgstr "ソフトウェアの署名に使用されるキーを信頼する"
+msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාස කරන්න"
 
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
-msgstr "形式"
+msgstr "ටයිප් කරන්න"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr "利用不可"
+msgstr "ලබා ගත නොහැක"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr "不明なロールタイプ"
+msgstr "නොදන්නා භූමිකාවේ වර්ගය"
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
-msgstr "不明な状態"
+msgstr "නොදන්නා තත්වය"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1354,83 +1345,83 @@ msgstr "不明な状態"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 msgid "Update software"
-msgstr "ソフトウェアを更新"
+msgstr "මෘදුකාංග යාවත්කාලීන කරන්න"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 msgid "Update text"
-msgstr "更新テキスト"
+msgstr "පෙළ යාවත්කාලීන කරන්න"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Updated"
-msgstr "更新済"
+msgstr "යාවත්කාලීන කරන ලදී"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 msgid "Updates"
-msgstr "更新"
+msgstr "යාවත්කාලීන"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Updating"
-msgstr "更新中"
+msgstr "යාවත්කාලීන කිරීම"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Updating packages"
-msgstr "パッケージを更新中"
+msgstr "පැකේජ යාවත්කාලීන කිරීම"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 msgid "Updating running applications"
-msgstr "実行アプリケーションの更新中"
+msgstr "ධාවනය වන යෙදුම් යාවත්කාලීන කිරීම"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
 msgid "Upgrade System"
-msgstr "システムをアップグレード"
+msgstr "පද්ධතිය උත්ශ්‍රේණි කරන්න"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "ユーザー ID"
+msgstr "පරිශීලක ID"
 
 msgid "User aborted selection"
-msgstr "ユーザーが選択を中断しました。"
+msgstr "පරිශීලක තේරීම නවත්වන ලදී"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
-msgstr "ユーザー名"
+msgstr "පරිශීලක නාමය"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 msgid "Vendor"
-msgstr "供給元"
+msgstr "වෙළෙන්දා"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
-msgstr "認証を待ち受け中"
+msgstr "සත්‍යාපනය සඳහා රැඳී සිටිමින්"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "パッケージマネージャロックを待ち受け中"
+msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "パッケージマネージャーのロックを待っています。"
+msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්."
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "キューで待機中"
+msgstr "පෝලිමේ බලාගෙන ඉන්නවා"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
-msgstr "作成する一覧ファイルを指定する必要があります。"
+msgstr "නිර්මාණය කිරීමට ඔබ ලැයිස්තු ගොනුවක් සඳහන් කළ යුතුය"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "コマンドが見つかりませんでした"
+msgstr "විධානය සොයාගත නොහැකි"

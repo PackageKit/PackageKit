@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 msgid "(seconds)"
 msgstr "(segundos)"
@@ -178,9 +178,6 @@ msgstr "Autenticação é necessária para atualizar as fontes do sistema"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Autenticação é necessária para reinstalar programas"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Autenticação é necessária para recarregar o dispositivo com o novo controlador"
 
 msgid "Authentication is required to remove software"
 msgstr "Autenticação é necessária para remover pacotes"
@@ -601,7 +598,7 @@ msgstr "Instalar novamente pacote já instalado"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -619,10 +616,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Instalar pacote \"%s\" para disponibilizar comando \"%s\"?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Instalar pacote assinado"
 
@@ -926,15 +923,6 @@ msgstr "Reinstalado"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "A reinstalar"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Recarregar dispositivo"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

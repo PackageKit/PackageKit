@@ -4,7 +4,7 @@
 #
 # Translators:
 # Adam Pribyl <pribyl@lowlevel.cz>, 2008
-# Ascii Wolf <mail@asciiwolf.com>, 2017-2018,2020
+# Ascii Wolf <mail@asciiwolf.com>, 2017-2018,2020,2022
 # Ascii Wolf <mail@asciiwolf.com>, 2018
 # fri, 2011
 # fri, 2011
@@ -184,9 +184,6 @@ msgstr "Pro aktualizaci systémových repozitářů je vyžadováno ověření"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Reinstalace vyžaduje ověření"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Pro opětovné zavedení zařízení s novým ovladačem je vyžadováno ověření"
 
 msgid "Authentication is required to remove software"
 msgstr "Pro odebrání softwaru je vyžadováno ověření"
@@ -607,7 +604,7 @@ msgstr "Opětovně nainstalovat již nainstalovaný balíček"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -625,10 +622,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Nainstalovat balíček „%s“, který poskytuje příkaz „%s“?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Nainstalovat podepsaný balíček"
 
@@ -934,15 +931,6 @@ msgid "Reinstalling"
 msgstr "Opětovně se instaluje"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Znovu zavést zařízení"
-
-#. SECURITY:
 #. - Normal users require admin authentication to remove packages as
 #. this can make the system unbootable or stop other applications from
 #. working.
@@ -1236,6 +1224,11 @@ msgstr "Balíček poskytující tento soubor je:"
 msgid "The proxy could not be set"
 msgstr "Proxy se nepodařilo nastavit"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Vybrané balíčky mohou být již nainstalovány."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "Podpis nebyl přijat."
@@ -1281,6 +1274,10 @@ msgstr "V tuto chvíli není dostupné žádné povýšení."
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.

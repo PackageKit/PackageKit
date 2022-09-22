@@ -179,9 +179,6 @@ msgstr "시스템 저장소를 새로 고치려면 인증해야 합니다"
 msgid "Authentication is required to reinstall software"
 msgstr "소프트웨어를 다시 설치하려면 인증해야 합니다"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "새로운 드라이버로 장치를 다시 로드하려면 인증해야 합니다"
-
 msgid "Authentication is required to remove software"
 msgstr "소프트웨어를 제거하려면 인증해야 합니다"
 
@@ -601,7 +598,7 @@ msgstr "이미 설치한 패키지 다시 설치"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -619,10 +616,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' 명령을 제공하는 '%s' 꾸러미를 설치하시겠습니까?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "서명된 패키지 설치"
 
@@ -926,15 +923,6 @@ msgstr "재설치됨"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "재설치 중"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "장치 다시 로드"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

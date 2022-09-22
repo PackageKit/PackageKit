@@ -11,6 +11,7 @@
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
 # 0f759dd1ea6c4c76cedc299039ca4f23_7584d04 <454cc45058db9632179dc8079c0c1af3_5311>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
+# Francisco Serrador, 2022
 # Javier Alejandro Castro <javier.alejandro.castro@gmail.com>, 2008
 # Jorge González <aloriel@gmail.com>, 2011
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 msgid "(seconds)"
 msgstr "(segundos)"
@@ -186,9 +187,6 @@ msgstr "Necesita autenticarse para actualizar los repositorios del sistema"
 msgid "Authentication is required to reinstall software"
 msgstr "Necesita autenticarse para reinstalar software"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Necesita autenticarse para recargar el dispositivo con un controlador nuevo"
-
 msgid "Authentication is required to remove software"
 msgstr "Necesita autenticarse para desinstalar software"
 
@@ -282,11 +280,11 @@ msgstr "Comprobando firmas"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Cleaned up"
-msgstr "Limpios"
+msgstr "Purgado"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Cleaning up"
-msgstr "Limpiando"
+msgstr "Purgando"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config
 #. files
@@ -301,7 +299,7 @@ msgstr "Limpiar el mensaje de actualización en modo desconectado"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 msgid "Command failed"
-msgstr "Falló la orden"
+msgstr "Instrucción errónea"
 
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
@@ -391,7 +389,7 @@ msgstr "Descargando detalles sobre los repositorios de software."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
-msgstr "Descargando listas de archivos"
+msgstr "Descargando listados de archivos"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
@@ -403,11 +401,11 @@ msgstr "Descargando grupos"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading list of packages"
-msgstr "Descargando listas de paquetes"
+msgstr "Descargando listados de paquetes"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading lists of changes"
-msgstr "Descargando listas de modificaciones"
+msgstr "Descargando listados de modificaciones"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
@@ -420,7 +418,7 @@ msgstr "Descargando información del repositorio"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
-msgstr "Descargando información de la actualización"
+msgstr "Descargando información de actualización"
 
 #. TRANSLATORS: this is The duration of the transaction
 msgid "Duration"
@@ -459,10 +457,10 @@ msgid "Failed to contact PackageKit"
 msgstr "Falló al contactar con PackageKit"
 
 msgid "Failed to get daemon state"
-msgstr "Falló al obtener el estado del demonio"
+msgstr "Error al obtener el estado del demonio"
 
 msgid "Failed to get properties"
-msgstr "Falló al intentar obtener las propiedades"
+msgstr "Error al intentar obtener las propiedades"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -475,7 +473,7 @@ msgstr "No se pudieron instalar los paquetes"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "Falló al iniciar:"
+msgstr "Error al iniciar:"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
@@ -523,7 +521,7 @@ msgstr "Finalizado"
 #. TRANSLATORS: transaction state, generating a list of packages installed on
 #. the system
 msgid "Generating package lists"
-msgstr "Generando la lista de paquetes"
+msgstr "Generando el listado de paquetes"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting categories"
@@ -539,7 +537,7 @@ msgstr "Obteniendo detalles"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting file list"
-msgstr "Obteniendo lista de archivos"
+msgstr "Obteniendo listado de archivos"
 
 #. TRANSLATORS: transaction state, getting data from a server
 msgid "Getting information"
@@ -551,7 +549,7 @@ msgstr "Obteniendo paquetes"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting provides"
-msgstr "Obteniendo lo que provee"
+msgstr "Obteniendo proveedores"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Getting repositories"
@@ -608,7 +606,7 @@ msgstr "Instalar otra vez un paquete ya instalado"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -626,10 +624,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "¿Quiere instalar el paquete «%s» que proporciona la orden «%s»?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Instalar paquete firmado"
 
@@ -833,7 +831,7 @@ msgstr "Motor de paquetes que se usará, p. ej., «apt»"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "Padre"
+msgstr "Antecesor"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
@@ -841,7 +839,7 @@ msgstr "Porcentaje"
 
 #. TRANSLATORS: ask the user to choose a file to run
 msgid "Please choose a command to run"
-msgstr "Elija una orden para ejecutar"
+msgstr "Elija una instrucción para ejecutar"
 
 #. TRANSLATORS: ask the user to choose a file to install
 msgid "Please choose a package to install"
@@ -920,11 +918,11 @@ msgstr "Actualizar la caché (forzadamente)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
-msgstr "Actualizando antememoria"
+msgstr "Recargando archivo temporal"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 msgid "Refreshing software list"
-msgstr "Actualizando la lista de software"
+msgstr "Recargando el listado de software"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
@@ -933,15 +931,6 @@ msgstr "Reinstalados"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Reinstalando"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Recargar un dispositivo"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -957,24 +946,24 @@ msgstr "Eliminar paquete"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Removed"
-msgstr "Eliminados"
+msgstr "Desinstalado"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing"
-msgstr "Eliminando"
+msgstr "Desinstalando"
 
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
-msgstr "Eliminando paquetes"
+msgstr "Desinstalando paquetes"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Removing repository"
-msgstr "Quitando el repositorio"
+msgstr "Quitando repositorio"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
-msgstr "Volviendo a empaquetar archivos"
+msgstr "Reempaquetado de archivos"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1010,7 +999,7 @@ msgstr "Función"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
-msgstr "Ejecutar una orden similar:"
+msgstr "Ejecutar una instrucción similar:"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
@@ -1027,7 +1016,7 @@ msgstr "Ejecutando actuadores"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
-msgstr "Escaneando aplicaciones"
+msgstr "Enumerando aplicaciones"
 
 #. TRANSLATORS: command description
 msgid "Search by details"
@@ -1086,7 +1075,7 @@ msgstr "Establecer el filtro, p. ej. instalado"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
-msgstr "Definiendo los datos"
+msgstr "Definiendo datos"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
@@ -1109,12 +1098,12 @@ msgstr "Apagando tras la instalación de actualizaciones…"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
-msgstr "Una orden similar es:"
+msgstr "Una instrucción similar es:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
 msgid "Similar commands are:"
-msgstr "Las órdenes similares son:"
+msgstr "Las instrucciones similares son:"
 
 #. TRANSLATORS: the package repository name
 msgid "Software source name"
@@ -1144,7 +1133,7 @@ msgstr "Subórdenes:"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "Exitosa"
+msgstr "Lograda"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
@@ -1237,6 +1226,11 @@ msgstr "El paquete que proporciona este archivo es:"
 msgid "The proxy could not be set"
 msgstr "No se pudo definir el proxy"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Los paquetes seleccionados quizá ya está instalado."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "No se aceptó la firma."
@@ -1253,7 +1247,7 @@ msgstr "No se pudo continuar con la operación."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "Falló la operación"
+msgstr "La transacción es errónea"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
@@ -1283,6 +1277,10 @@ msgstr "En este momento no hay versiones nuevas disponibles."
 msgid "This tool could not find all the packages: %s"
 msgstr "Esta herramienta no pudo encontrar todos los paquetes: %s"
 
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Esta herramienta no pudo encontrar ningún paquete disponible."
+
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #, c-format
@@ -1300,6 +1298,10 @@ msgstr "Esta herramienta no pudo encontrar el paquete instalado: %s"
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "Esta herramienta no pudo encontrar el paquete: %s"
+
+#. TRANSLATORS: this is the time since this role was used
+msgid "Time since"
+msgstr "Hora origen"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1342,7 +1344,7 @@ msgstr "No disponible"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
-msgstr "Tipo de función desconocido"
+msgstr "Tipo de rol desconocido"
 
 #. TRANSLATORS: This is when the transaction status is not known
 msgid "Unknown state"
@@ -1401,12 +1403,12 @@ msgstr "El usuario ha cancelado la selección"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 msgid "Username"
-msgstr "Nombre de usuario"
+msgstr "Usuario"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 msgid "Vendor"
-msgstr "Fabricante"
+msgstr "Proveedor"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"
@@ -1434,4 +1436,4 @@ msgstr "Debe especificar un archivo de lista que crear"
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 msgid "command not found"
-msgstr "no se encontró la orden"
+msgstr "instrucción no encontrada"

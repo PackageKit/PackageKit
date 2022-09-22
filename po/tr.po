@@ -181,9 +181,6 @@ msgstr "Sistem depolarını yenilemek için kimlik doğrulama gerekiyor"
 msgid "Authentication is required to reinstall software"
 msgstr "Yazılımları yeniden kurmak için kimlik doğrulama gerekiyor"
 
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Bir aygıtı yenib ri sürücüyle yeniden yüklemek için kimlik kanıtlaması gereklidir"
-
 msgid "Authentication is required to remove software"
 msgstr "Yazılım kaldırmak kimlik doğrulama gerektiriyor"
 
@@ -603,7 +600,7 @@ msgstr "Zaten kurulu paketi yeniden kur"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -621,10 +618,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' paketi '%s' komutunu sağlaması için kurulsun mu?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "İmzalı paketi yükle"
 
@@ -928,15 +925,6 @@ msgstr "Yeniden Kuruldu"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Yeniden Kuruluyor"
-
-#. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Bir aygıtı yeniden yükle"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

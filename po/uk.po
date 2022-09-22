@@ -4,7 +4,7 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -176,9 +176,6 @@ msgstr "Для оновлення списку сховищ системи сл�
 
 msgid "Authentication is required to reinstall software"
 msgstr "Для повторного встановлення програмного забезпечення слід пройти розпізнавання"
-
-msgid "Authentication is required to reload the device with a new driver"
-msgstr "Для перезавантаження пристрою з новим драйвером слід пройти розпізнавання"
 
 msgid "Authentication is required to remove software"
 msgstr "Для вилучення програмного забезпечення слід пройти розпізнавання"
@@ -599,7 +596,7 @@ msgstr "Встановлення вже встановленого пакунк�
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
-#. - User authorized to dowgrade signed packages is authorized to install
+#. - User authorized to downgrade signed packages is authorized to install
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
@@ -617,10 +614,10 @@ msgid "Install package '%s' to provide command '%s'?"
 msgstr "Встановити пакунок «%s», щоб забезпечити виконання команди «%s»?"
 
 #. SECURITY:
-#. - Normal users do not need authentication to install signed packages
-#. from signed repositories, as this cannot exploit a system.
-#. - Paranoid users (or parents!) can change this to 'auth_admin' or
-#. 'auth_admin_keep'.
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
 msgid "Install signed package"
 msgstr "Встановлення підписаного пакунка"
 
@@ -926,15 +923,6 @@ msgid "Reinstalling"
 msgstr "Перевстановлення"
 
 #. SECURITY:
-#. - Normal users require admin authentication to rebind a driver
-#. so that it works after we install firmware.
-#. - This should not be set to 'yes' as unprivileged users could then
-#. try to rebind drivers in use, for instance security authentication
-#. devices.
-msgid "Reload a device"
-msgstr "Перезавантаження пристрою"
-
-#. SECURITY:
 #. - Normal users require admin authentication to remove packages as
 #. this can make the system unbootable or stop other applications from
 #. working.
@@ -1228,6 +1216,11 @@ msgstr "Пакунком, що містити цей файл є:"
 msgid "The proxy could not be set"
 msgstr "Не вдалося встановити параметри проксі-сервера"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Можливо, вибрані пакунки вже встановлено."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "Підпис не було підтверджено."
@@ -1273,6 +1266,10 @@ msgstr "На поточний момент оновлень не виявлен�
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Програмі не вдалося знайти всі пакунки: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Програмі не вдалося знайти жодного доступного пакунка."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
