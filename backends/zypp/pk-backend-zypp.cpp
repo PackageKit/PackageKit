@@ -2940,6 +2940,14 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 			return;
 		}
 		PoolItem item(solvable);
+		if (item.status ().isLocked ()) {
+			zypp_backend_finished_error (job,
+                                         PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE,
+                                         "Unable to remove %s: Locked package.",
+                                         solvable.name ().c_str ());
+
+			return;
+		}
 		if (solvable.isSystem ()) {
 			item.status ().setToBeUninstalled (ResStatus::USER);
 			items.push_back (item);
