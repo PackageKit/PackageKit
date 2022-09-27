@@ -166,12 +166,12 @@ bool AptJob::init(gchar **localDebs)
     m_interactive = pk_backend_job_get_interactive(m_job);
     if (!m_interactive) {
         // Do not ask about config updates if we are not interactive
-        if (!isSystemDpkgConf()) {
+        if (!dpkgHasForceConfFileSet()) {
             _config->Set("Dpkg::Options::", "--force-confdef");
             _config->Set("Dpkg::Options::", "--force-confold");
         } else {
             // If any option is set we should not change anything
-            cout << "Using system settings for --force-conf*" << endl;
+            g_debug("Using system settings for --force-conf*");
         }
         // Ensure nothing interferes with questions
         g_setenv("APT_LISTCHANGES_FRONTEND", "none", TRUE);
@@ -180,22 +180,6 @@ bool AptJob::init(gchar **localDebs)
 
     // Check if there are half-installed packages and if we can fix them
     return m_cache->CheckDeps(AllowBroken);
-}
-
-bool AptJob::isSystemDpkgConf() {
-    std::vector<std::string> dpkg_options = _config->FindVector("Dpkg::Options");
-
-    bool is_set = false;
-    const std::string forced_options[]{"--force-confdef", "--force-confold", "--force-confnew"};
-
-    for (auto setting : forced_options) {
-        if (std::find(dpkg_options.begin(), dpkg_options.end(), setting) != dpkg_options.end()) {
-            is_set = true;
-            break;
-        }
-    }
-
-    return is_set;
 }
 
 void AptJob::setEnvLocaleFromJob()
@@ -210,6 +194,22 @@ void AptJob::setEnvLocaleFromJob()
     // processes spawned by APT need to inherit the right locale as well
     g_setenv("LANG", locale, TRUE);
     g_setenv("LANGUAGE", locale, TRUE);
+}
+
+bool AptJob::dpkgHasForceConfFileSet() {
+    std::vector<std::string> dpkg_options = _config->FindVector("Dpkg::Options");
+
+    bool is_set = false;
+    const std::string forced_options[]{"--force-confdef", "--force-confold", "--force-confnew"};
+
+    for (auto setting : forced_options) {
+        if (std::find(dpkg_options.begin(), dpkg_options.end(), setting) != dpkg_options.end()) {
+            is_set = true;
+            break;
+        }
+    }
+
+    return is_set;
 }
 
 void AptJob::cancel()
