@@ -39,7 +39,21 @@ AcqPackageKitStatus::AcqPackageKitStatus(AptJob *apt) :
 // ---------------------------------------------------------------------
 void AcqPackageKitStatus::Start()
 {
-    pk_backend_job_set_status(m_job, PK_STATUS_ENUM_DOWNLOAD);
+    PkRoleEnum role = pk_backend_job_get_role(m_job);
+    PkStatusEnum status;
+
+    switch (role) {
+    case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+        status = PK_STATUS_ENUM_DOWNLOAD_CHANGELOG;
+        break;
+    case PK_ROLE_ENUM_REFRESH_CACHE:
+        status = PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO;
+        break;
+    default:
+        status = PK_STATUS_ENUM_DOWNLOAD;
+    }
+    pk_backend_job_set_status(m_job, status);
+
     pkgAcquireStatus::Start();
 }
 
