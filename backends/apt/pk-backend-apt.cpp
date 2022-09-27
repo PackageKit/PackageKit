@@ -26,6 +26,7 @@
 
 #include <config.h>
 #include <pk-backend.h>
+#include <packagekit-glib2/pk-debug.h>
 
 #include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/error.h>
@@ -60,14 +61,18 @@ pk_backend_supports_parallelization (PkBackend *backend)
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
-    g_debug("APT backend Initializing");
+    /* use logging */
+    pk_debug_add_log_domain (G_LOG_DOMAIN);
+    pk_debug_add_log_domain ("APT");
+
+    g_debug("Using APT: %s", pkgVersion);
 
     // Disable apt-listbugs as it freezes PK
-    setenv("APT_LISTBUGS_FRONTEND", "none", 1);
+    g_setenv("APT_LISTBUGS_FRONTEND", "none", 1);
 
     // Set apt-listchanges frontend to "debconf" to make it's output visible
     // (without using the debconf frontend, PK will freeze)
-    setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
+    g_setenv("APT_LISTCHANGES_FRONTEND", "debconf", 1);
 
     // pkgInitConfig makes sure the config is ready for the
     // get-filters call which needs to know about multi-arch

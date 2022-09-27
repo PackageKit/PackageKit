@@ -1318,7 +1318,6 @@ PkgList AptJob::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &insta
     if (m_cache->DistUpgrade() == false) {
         m_cache->ShowBroken(false);
         g_debug("Internal error, DistUpgrade broke stuff");
-        cout << "Internal error, DistUpgrade broke stuff" << endl;
         return updates;
     }
 
@@ -2016,7 +2015,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                         //                         emitPackageProgress(ver, m_lastSubProgress);
                     }
                 } else {
-                    std::cout << "apt-backend: >>>Unmaped dpkg status value: " << line << std::endl;
+                    g_debug("apt-backend: >>>Unmaped dpkg status value: %s", line);
                 }
 
                 if (!starts_with(str, "Running")) {
@@ -2375,8 +2374,8 @@ bool AptJob::installPackages(PkBitfield flags)
     unsigned long long FetchPBytes = fetcher.PartialPresent();
     unsigned long long DebBytes = fetcher.TotalNeeded();
     if (DebBytes != (*m_cache)->DebSize()) {
-        cout << DebBytes << ',' << (*m_cache)->DebSize() << endl;
-        cout << "How odd.. The sizes didn't match, email apt@packages.debian.org";
+        g_debug ("%lld, %lld: How odd.. The sizes didn't match, email apt@packages.debian.org",
+                 DebBytes, (*m_cache)->DebSize());
     }
 
     // Number of bytes
@@ -2415,7 +2414,7 @@ bool AptJob::installPackages(PkBitfield flags)
     }
 
     if (_error->PendingError() == true) {
-        cout << "PendingError " << endl;
+        g_debug("PendingError");
         return false;
     }
 
@@ -2444,7 +2443,7 @@ bool AptJob::installPackages(PkBitfield flags)
     }
 
     if (_error->PendingError() == true) {
-        cout << "PendingError download" << endl;
+        g_debug("PendingError download");
         return false;
     }
 
@@ -2479,7 +2478,7 @@ bool AptJob::installPackages(PkBitfield flags)
     // File descriptors for reading dpkg --status-fd
     int readFromChildFD[2];
     if (pipe(readFromChildFD) < 0) {
-        cout << "Failed to create a pipe" << endl;
+        g_warning("Failed to create a pipe");
         return false;
     }
 
@@ -2544,7 +2543,7 @@ bool AptJob::installPackages(PkBitfield flags)
         _exit(res);
     }
 
-    cout << "apt-backend parent process running..." << endl;
+    g_debug("apt-backend parent process running...");
 
     // make it nonblocking, very important otherwise
     // when the child finish we stay stuck.
@@ -2589,7 +2588,7 @@ bool AptJob::installPackages(PkBitfield flags)
     close(pty_master);
     _system->LockInner();
 
-    cout << "apt-backend parent process finished: " << ret << endl;
+    g_debug("apt-backend parent process finished: %d", ret);
 
     if (ret != 0 && !m_cancel && !errorEmitted) {
         // If the child died with a non-zero exit code, and we didn't deliberately

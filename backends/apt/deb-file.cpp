@@ -126,7 +126,7 @@ bool DebFile::check()
         return false;
     }
 
-    std::cout << architecture() << std::endl;
+    g_debug("DebFile architecture: %s", architecture().c_str());
     if (architecture().compare("all") != 0 &&
             architecture().compare(_config->Find("APT::Architecture")) != 0) {
         m_errorMsg = "Wrong architecture ";

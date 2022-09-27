@@ -285,8 +285,8 @@ bool AptCacheFile::doAutomaticRemove()
 
     // Now see if we destroyed anything
     if ((*this)->BrokenCount() != 0) {
-        cout << "Hmm, seems like the AutoRemover destroyed something which really\n"
-                "shouldn't happen. Please file a bug report against apt." << endl;
+        g_warning("Seems like the AutoRemover destroyed something which really "
+                  "shouldn't happen. Please file a bug report against APT.");
         // TODO call show_broken
         //       ShowBroken(c1out,cache,false);
         return _error->Error("Internal Error, AutoRemover broke stuff");

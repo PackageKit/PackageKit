@@ -25,6 +25,10 @@ if cpp_compiler.compiles(
   ddtp_flag = ['-DHAVE_DDTP']
 endif
 
+c_args = ['-DG_LOG_DOMAIN="PackageKit-APT"',
+          '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
+]
+
 shared_module(
   'pk_backend_apt',
   'pk-backend-apt.cpp',
@@ -51,15 +55,15 @@ shared_module(
     packagekit_glib2_dep,
     gmodule_dep,
     apt_pkg_dep,
+    appstream_dep,
     gstreamer_dep,
     gstreamer_base_dep,
     gstreamer_plugins_base_dep,
-    appstream_dep,
   ],
+  c_args: c_args,
   cpp_args: [
-    '-DG_LOG_DOMAIN="PackageKit-APT"',
-    '-DPK_COMPILATION=1',
-    '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
+    '-DPK_COMPILATION',
+    c_args,
     ddtp_flag,
   ],
   link_args: [
