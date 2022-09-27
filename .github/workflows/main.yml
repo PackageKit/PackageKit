@@ -18,5 +18,5 @@ jobs:
       - run: docker build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
       - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=dnf
         if: ${{ matrix.distro == 'fedora' }}
-      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=aptcc
+      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=apt
         if: ${{ matrix.distro == 'debian' }}

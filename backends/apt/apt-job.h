@@ -1,4 +1,4 @@
-/* apt-intf.h - Interface to APT
+/* apt-job.h - Interface to APT
  *
  * Copyright (c) 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
  * Copyright (c) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
@@ -21,8 +21,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef APTINTF_H
-#define APTINTF_H
+#pragma once
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -35,20 +34,25 @@
 #include "pkg-list.h"
 #include "apt-sourceslist.h"
 
-#define REBOOT_REQUIRED      "/var/run/reboot-required"
+#define REBOOT_REQUIRED      "/run/reboot-required"
 
 class pkgProblemResolver;
 class Matcher;
 class AptCacheFile;
-class AptIntf
+class AptJob
 {
 public:
-    AptIntf(PkBackendJob *job);
-    ~AptIntf();
+    AptJob(PkBackendJob *job);
+    ~AptJob();
 
     bool init(gchar **localDebs = nullptr);
     void cancel();
     bool cancelled() const;
+
+    /**
+     * Returns the PackageKit backend job associated with this APT job.
+     */
+    PkBackendJob *pkJob() const;
 
     /**
      * Tries to find a package with the given packageId
@@ -258,7 +262,7 @@ private:
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
     AptCacheFile *m_cache;
-    PkBackendJob  *m_job;
+    PkBackendJob *m_job;
     bool       m_cancel;
     struct stat m_restartStat;
 
@@ -276,5 +280,3 @@ private:
     int m_terminalTimeout;
     pid_t m_child_pid;
 };
-
-#endif

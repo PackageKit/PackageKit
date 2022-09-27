@@ -1,4 +1,4 @@
-/* pk-backend-aptcc.cpp
+/* pk-backend-apt.cpp
  *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
@@ -34,7 +34,7 @@
 #include <apt-pkg/init.h>
 #include <apt-pkg/pkgsystem.h>
 
-#include "apt-intf.h"
+#include "apt-job.h"
 #include "apt-cache-file.h"
 #include "apt-messages.h"
 #include "acqpkitstatus.h"
@@ -45,12 +45,13 @@ static PkBackendSpawn *spawn;
 
 const gchar* pk_backend_get_description(PkBackend *backend)
 {
-    return "APTcc";
+    return "APT";
 }
 
 const gchar* pk_backend_get_author(PkBackend *backend)
 {
-    return "Daniel Nicoletti <dantti12@gmail.com>";
+    return "Daniel Nicoletti <dantti12@gmail.com>, "
+           "Matthias Klumpp <mak@debian.org>";
 }
 
 gboolean
@@ -62,7 +63,7 @@ pk_backend_supports_parallelization (PkBackend *backend)
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
-    g_debug("APTcc Initializing");
+    g_debug("APT backend Initializing");
 
     // Disable apt-listbugs as it freezes PK
     setenv("APT_LISTBUGS_FRONTEND", "none", 1);
@@ -85,12 +86,12 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 
     spawn = pk_backend_spawn_new(conf);
     //     pk_backend_spawn_set_job(spawn, backend);
-    pk_backend_spawn_set_name(spawn, "aptcc");
+    pk_backend_spawn_set_name(spawn, "apt");
 }
 
 void pk_backend_destroy(PkBackend *backend)
 {
-    g_debug("APTcc being destroyed");
+    g_debug("APT backend being destroyed");
 }
 
 PkBitfield pk_backend_get_groups(PkBackend *backend)
@@ -152,16 +153,15 @@ gchar** pk_backend_get_mime_types(PkBackend *backend)
 void pk_backend_start_job(PkBackend *backend, PkBackendJob *job)
 {
     /* create private state for this job */
-    AptIntf *apt = new AptIntf(job);
+    auto apt = new AptJob(job);
     pk_backend_job_set_user_data(job, apt);
 }
 
 void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 {
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
-    if (apt) {
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
+    if (apt)
         delete apt;
-    }
 
     /* make debugging easier */
     pk_backend_job_set_user_data (job, NULL);
@@ -169,7 +169,7 @@ void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 
 void pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
 {
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (apt) {
         /* try to cancel the thread */
         g_debug ("cancelling transaction");
@@ -193,7 +193,7 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
 
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -257,7 +257,7 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
     g_variant_get(params, "(^a&s)",
                   &package_ids);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -314,7 +314,7 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
                       &package_ids);
     }
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init(files)) {
         g_debug ("Failed to create apt cache");
         return;
@@ -355,7 +355,7 @@ static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, 
     g_autofree gchar **files = nullptr;
     g_variant_get(params, "(^a&s)",
                   &files);
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
 
     for (guint i = 0; files[i] != nullptr; ++i)
         apt->emitPackageFilesLocal(files[i]);
@@ -373,9 +373,9 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
 
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
-        g_debug("Failed to create apt cache");
+        g_debug("Failed to create APT cache");
         return;
     }
 
@@ -406,7 +406,7 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
 {
     PkBitfield filters;
     gchar **values;
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
 
     g_variant_get(params, "(t^a&s)",
                   &filters,
@@ -458,7 +458,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     directory = _config->FindDir("Dir::Cache::archives");
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -468,7 +468,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     if (pk_backend_is_online(backend)) {
         pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
         // Create the progress
-        AcqPackageKitStatus Stat(apt, job);
+        AcqPackageKitStatus Stat(apt);
 
         // get a fetcher
         pkgAcquire fetcher(&Stat);
@@ -563,7 +563,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 {
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -598,9 +598,9 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
                   &search);
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
-        g_debug("Failed to create apt cache");
+        g_debug("Failed to initialize APT job");
         return;
     }
 
@@ -619,7 +619,7 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 {
     gchar **search;
     PkBitfield filters;
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
 
     g_variant_get(params, "(t^a&s)",
                   &filters,
@@ -657,7 +657,7 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
                   &filters,
                   &search);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -693,7 +693,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
         }
     }
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;
@@ -771,7 +771,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
 
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init(full_paths)) {
         g_debug("Failed to create apt cache");
         return;
@@ -814,7 +814,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
                                    autoremove);
     if (!ret) {
         // Print transaction errors
-        g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
+        g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
         return;
     }
 }
@@ -942,7 +942,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                 }
             } else if (role == PK_ROLE_ENUM_REPO_REMOVE) {
                 if (autoremove) {
-                    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+                    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
                     if (!apt->init()) {
                         g_debug("Failed to create apt cache");
                         return;
@@ -960,7 +960,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                                                   false);
                         if (!ret) {
                             // Print transaction errors
-                            g_debug("AptIntf::runTransaction() failed: %i", _error->PendingError());
+                            g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
                             return;
                         }
                     }
@@ -1017,7 +1017,7 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
                   &filters);
     pk_backend_job_set_allow_cancel(job, true);
 
-    AptIntf *apt = static_cast<AptIntf*>(pk_backend_job_get_user_data(job));
+    auto apt = static_cast<AptJob*>(pk_backend_job_get_user_data(job));
     if (!apt->init()) {
         g_debug("Failed to create apt cache");
         return;

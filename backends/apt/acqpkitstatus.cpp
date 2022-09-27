@@ -20,18 +20,18 @@
 
 #include "acqpkitstatus.h"
 
-#include "apt-intf.h"
+#include "apt-job.h"
 
 #include <apt-pkg/acquire-worker.h>
 #include <apt-pkg/error.h>
 
 // AcqPackageKitStatus::AcqPackageKitStatus - Constructor
 // ---------------------------------------------------------------------
-AcqPackageKitStatus::AcqPackageKitStatus(AptIntf *apt, PkBackendJob *job) :
-    m_job(job),
+AcqPackageKitStatus::AcqPackageKitStatus(AptJob *apt) :
     m_lastPercent(PK_BACKEND_PERCENTAGE_INVALID),
     m_lastCPS(0),
-    m_apt(apt)
+    m_apt(apt),
+    m_job(apt->pkJob())
 {
 }
 
@@ -225,7 +225,7 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc & Itm, int status)
     } else {
         // emit the package
         m_apt->emitPackage(ver, PK_INFO_ENUM_DOWNLOADING);
-        
+
         // Emit the individual progress
         m_apt->emitPackageProgress(ver, PK_STATUS_ENUM_DOWNLOAD, status);
     }

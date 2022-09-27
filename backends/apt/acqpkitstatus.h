@@ -31,11 +31,11 @@
 using std::set;
 using std::string;
 
-class AptIntf;
+class AptJob;
 class AcqPackageKitStatus : public pkgAcquireStatus
 {
 public:
-    AcqPackageKitStatus(AptIntf *apt, PkBackendJob *job);
+    AcqPackageKitStatus(AptJob *apt);
 
     virtual bool MediaChange(string Media, string Drive);
     virtual void IMSHit(pkgAcquire::ItemDesc &Itm);
@@ -50,11 +50,11 @@ public:
 private:
     void updateStatus(pkgAcquire::ItemDesc & Itm, int status);
 
-    PkBackendJob *m_job;
-
     unsigned long m_lastPercent;
     double        m_lastCPS;
-    AptIntf       *m_apt;
+
+    AptJob       *m_apt;
+    PkBackendJob *m_job;
 };
 
 class pkgAcqArchiveSane : public pkgAcqArchive

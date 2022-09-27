@@ -29,7 +29,6 @@ using std::string;
 
 class DebFile
 {
-    //     typedef int user_tag_reference;
 public:
     DebFile(const string &filename);
     virtual ~DebFile();
@@ -44,7 +43,7 @@ public:
     string conflicts() const;
     std::vector<std::string> files() const;
 
-    // THIS should be moved to AptIntf class
+    // FIXME: THIS should be moved to the AptJob class
     bool check();
     string errorMsg() const;
 
