@@ -26,7 +26,6 @@
 
 #include <config.h>
 #include <pk-backend.h>
-#include <pk-backend-spawn.h>
 
 #include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/error.h>
@@ -40,8 +39,6 @@
 #include "acqpkitstatus.h"
 #include "apt-sourceslist.h"
 
-/* static bodges */
-static PkBackendSpawn *spawn;
 
 const gchar* pk_backend_get_description(PkBackend *backend)
 {
@@ -83,10 +80,6 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
     if (!pkgInitSystem(*_config, _system)) {
         g_debug("ERROR initializing backend system");
     }
-
-    spawn = pk_backend_spawn_new(conf);
-    //     pk_backend_spawn_set_job(spawn, backend);
-    pk_backend_spawn_set_name(spawn, "apt");
 }
 
 void pk_backend_destroy(PkBackend *backend)
