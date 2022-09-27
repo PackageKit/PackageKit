@@ -87,6 +87,9 @@ AptJob::AptJob(PkBackendJob *job) :
         g_autofree gchar *uri = pk_backend_convert_uri(ftp_proxy);
         g_setenv("ftp_proxy", uri, TRUE);
     }
+
+    // default settings
+    _config->CndSet("APT::Get::AutomaticRemove::Kernels", _config->FindB("APT::Get::AutomaticRemove", true));
 }
 
 AptJob::~AptJob()
@@ -159,9 +162,6 @@ bool AptJob::init(gchar **localDebs)
         // Close the cache if we are going to try again
         m_cache->Close();
     }
-
-    // default settings
-    _config->CndSet("APT::Get::AutomaticRemove::Kernels", _config->FindB("APT::Get::AutomaticRemove", true));
 
     m_interactive = pk_backend_job_get_interactive(m_job);
     if (!m_interactive) {
