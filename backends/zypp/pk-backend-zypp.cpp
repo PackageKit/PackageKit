@@ -169,18 +169,30 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 {
 	gchar *package_id;
 	const char *arch;
+	g_autofree gchar *repo = NULL;
 
 	if (isKind<SrcPackage>(resolvable))
 		arch = "source";
 	else
 		arch = resolvable.arch ().asString ().c_str ();
 
-	string repo = resolvable.repository ().alias();
-	if (resolvable.isSystem())
-		repo = "installed";
+	if (resolvable.isSystem ()) {
+		PoolItem pi;
+		PoolItem installedPI { resolvable };
+		ui::Selectable::Ptr selectable { ui::Selectable::get (resolvable) };
+
+		if (selectable->identicalAvailableObj (installedPI) != NULL)
+			pi = selectable->identicalAvailableObj (installedPI);
+		else
+			pi = selectable->updateCandidateObj ();
+
+		repo = g_strconcat ("installed:", pi.repository ().alias ().c_str (), NULL);
+	} else
+		repo = g_strdup (resolvable.repository ().alias ().c_str ());
+
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
-					  arch, repo.c_str ());
+					  arch, repo);
 
 	return package_id;
 }
