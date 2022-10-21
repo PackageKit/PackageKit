@@ -450,6 +450,14 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 	guint uid;
 	g_autofree gchar *session = NULL;
 
+	if (!pk_dbus_connect (engine->priv->dbus, error)) {
+		g_set_error_literal (error,
+				     PK_ENGINE_ERROR,
+				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
+				     "failed to get the D-Bus proxy");
+		return FALSE;
+	}
+
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
 	if (uid == G_MAXUINT) {
@@ -593,6 +601,11 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender,
 	g_autofree gchar *proxy_socks_tmp = NULL;
 	g_autofree gchar *no_proxy_tmp = NULL;
 	g_autofree gchar *pac_tmp = NULL;
+
+	if (!pk_dbus_connect (engine->priv->dbus, NULL)) {
+		g_warning ("failed to get the D-Bus proxy");
+		return FALSE;
+	}
 
 	/* get uid */
 	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
