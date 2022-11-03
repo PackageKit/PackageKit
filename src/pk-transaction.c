@@ -1361,6 +1361,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(uss)"));
 	g_autoptr(GVariant) package_array_variant = NULL;
 	guint n_added_packages = 0;
+	gboolean emitted = FALSE;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1450,7 +1451,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 		return;
 	}
 
-	package_array_variant = g_variant_builder_end (&builder);
+	package_array_variant = g_variant_ref_sink (g_variant_builder_end (&builder));
 
 	/* Emit the signal. Grouping multiple package details into a single
 	 * signal reduces the number of signals and hence the amount of context
@@ -1460,17 +1461,19 @@ pk_transaction_packages_cb (PkBackend *backend,
 	 *
 	 * This should not hit the D-Bus limits (maximum array size of 64MB,
 	 * maximum message size of 128MB) until it’s listing on the order of
-	 * 100000 packages. */
-	if (transaction->priv->client_supports_plural_signals) {
-		g_dbus_connection_emit_signal (transaction->priv->connection,
-					       NULL,
-					       transaction->priv->tid,
-					       PK_DBUS_INTERFACE_TRANSACTION,
-					       "Packages",
-					       g_variant_new ("(@a(uss))",
-						              g_steal_pointer (&package_array_variant)),
-					       NULL);
-	} else {
+	 * 100000 packages. If it does, we fall back below. */
+	if (transaction->priv->client_supports_plural_signals &&
+	    g_dbus_connection_emit_signal (transaction->priv->connection,
+					   NULL,
+					   transaction->priv->tid,
+					   PK_DBUS_INTERFACE_TRANSACTION,
+					   "Packages",
+					   g_variant_new ("(@a(uss))",
+					                  package_array_variant),
+					   NULL))
+		emitted = TRUE;
+
+	if (!emitted) {
 		GVariantIter iter;
 		g_autoptr(GVariant) child = NULL;
 
