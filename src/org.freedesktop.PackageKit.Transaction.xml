@@ -1911,6 +1911,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 
     <!--*********************************************************************-->
@@ -2429,6 +2430,7 @@
           </doc:summary>
         </doc:doc>
       </arg>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 
     <!--*********************************************************************-->
