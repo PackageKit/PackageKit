@@ -434,20 +434,22 @@ PkgList AptJob::filterPackages(const PkgList &packages, PkBitfield filters)
     return ret;
 }
 
-// used to emit packages it collects all the needed info
+PkInfoEnum AptJob::packageStateFromVer(const pkgCache::VerIterator &ver) const
+{
+    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
+    if (pkg->CurrentState == pkgCache::State::Installed &&
+            pkg.CurrentVer() == ver) {
+        return PK_INFO_ENUM_INSTALLED;
+    } else {
+        return PK_INFO_ENUM_AVAILABLE;
+    }
+}
+
 void AptJob::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
 {
-    // check the state enum to see if it was not set.
-    if (state == PK_INFO_ENUM_UNKNOWN) {
-        const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-
-        if (pkg->CurrentState == pkgCache::State::Installed &&
-                pkg.CurrentVer() == ver) {
-            state = PK_INFO_ENUM_INSTALLED;
-        } else {
-            state = PK_INFO_ENUM_AVAILABLE;
-        }
-    }
+    // get state from the cache if it was not set explicitly
+    if (state == PK_INFO_ENUM_UNKNOWN)
+        state = packageStateFromVer(ver);
 
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
     pk_backend_job_package(m_job,
@@ -462,6 +464,30 @@ void AptJob::emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum 
     pk_backend_job_set_item_progress(m_job, package_id, status, percentage);
 }
 
+void AptJob::stagePackageForEmit(GPtrArray *array, const pkgCache::VerIterator &ver, PkInfoEnum state, PkInfoEnum updateSeverity)
+{
+    g_autoptr(PkPackage) pk_package = pk_package_new ();
+    g_autofree gchar *package_id = m_cache->buildPackageId(ver);
+    g_autoptr(GError) local_error = NULL;
+
+    if (!pk_package_set_id (pk_package, package_id, &local_error)) {
+        g_warning ("package_id %s invalid and cannot be processed: %s",
+               package_id, local_error->message);
+        return;
+    }
+
+    // get state from the cache if it was not set explicitly
+    if (state == PK_INFO_ENUM_UNKNOWN)
+        state = packageStateFromVer(ver);
+    pk_package_set_info (pk_package, state);
+
+    if (updateSeverity != PK_INFO_ENUM_UNKNOWN)
+        pk_package_set_update_severity (pk_package, updateSeverity);
+
+    pk_package_set_summary (pk_package, m_cache->getShortDescription(ver).c_str());
+    g_ptr_array_add (array, g_steal_pointer (&pk_package));
+}
+
 void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state, bool multiversion)
 {
     // Sort so we can remove the duplicated entries
@@ -470,7 +496,12 @@ void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state,
     // Remove the duplicated entries
     output.removeDuplicates();
 
+    // apply filter
     output = filterPackages(output, filters);
+
+    // create array of PK package data to emit
+    g_autoptr(GPtrArray) pkgArray = g_ptr_array_new_full (output.size(), (GDestroyNotify) g_object_unref);
+
     for (const PkgInfo &info : output) {
         if (m_cancel)
             break;
@@ -478,16 +509,20 @@ void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state,
         auto ver = info.ver;
         // emit only the latest/chosen version if newest is requested
         if (!multiversion || pk_bitfield_contain(filters, PK_FILTER_ENUM_NEWEST)) {
-            emitPackage(info.ver, state);
+            stagePackageForEmit(pkgArray, info.ver, state);
             continue;
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_NEWEST) && !ver.end()) {
             ver++;
         }
 
         for (; !ver.end(); ver++) {
-            emitPackage(ver, state);
+            stagePackageForEmit(pkgArray, info.ver, state);
         }
     }
+
+    // emit
+    if (pkgArray->len > 0)
+        pk_backend_job_packages(m_job, pkgArray);
 }
 
 void AptJob::emitRequireRestart(PkgList &output)
@@ -513,11 +548,15 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
     // Remove the duplicated entries
     output.removeDuplicates();
 
+    // filter
     output = filterPackages(output, filters);
+
+    // create array of PK package data to emit
+    g_autoptr(GPtrArray) pkgArray = g_ptr_array_new_full (output.size(), (GDestroyNotify) g_object_unref);
+
     for (const PkgInfo &pkgInfo : output) {
-        if (m_cancel) {
+        if (m_cancel)
             break;
-        }
 
         // the default update info
         state = PK_INFO_ENUM_NORMAL;
@@ -542,8 +581,12 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
             state = PK_INFO_ENUM_ENHANCEMENT;
         }
 
-        emitPackage(pkgInfo.ver, state);
+        stagePackageForEmit(pkgArray, pkgInfo.ver, PK_INFO_ENUM_UNKNOWN, state);
     }
+
+    // emit
+    if (pkgArray->len > 0)
+        pk_backend_job_packages(m_job, pkgArray);
 }
 
 // search packages which provide a codec (specified in "values")
