@@ -2328,17 +2328,17 @@ bool AptJob::runTransaction(const PkgList &install, const PkgList &remove, const
 
     // Prepare for the restart thing
     struct stat restartStatStart;
-    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
-        g_stat(REBOOT_REQUIRED, &restartStatStart);
+    if (g_file_test(REBOOT_REQUIRED_FILE, G_FILE_TEST_EXISTS)) {
+        g_stat(REBOOT_REQUIRED_FILE, &restartStatStart);
     }
 
     // If we are simulating the install packages
     // will just calculate the trusted packages
     const auto ret = installPackages(flags);
 
-    if (g_file_test(REBOOT_REQUIRED, G_FILE_TEST_EXISTS)) {
+    if (g_file_test(REBOOT_REQUIRED_FILE, G_FILE_TEST_EXISTS)) {
         struct stat restartStat;
-        g_stat(REBOOT_REQUIRED, &restartStat);
+        g_stat(REBOOT_REQUIRED_FILE, &restartStat);
 
         if (restartStat.st_mtime > restartStatStart.st_mtime) {
             // Emit the packages that caused the restart

@@ -34,7 +34,7 @@
 #include "pkg-list.h"
 #include "apt-sourceslist.h"
 
-#define REBOOT_REQUIRED      "/run/reboot-required"
+#define REBOOT_REQUIRED_FILE    "/run/reboot-required"
 
 class pkgProblemResolver;
 class Matcher;
