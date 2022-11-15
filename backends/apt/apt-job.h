@@ -199,11 +199,6 @@ public:
     void emitDetails(PkgList &pkgs);
 
     /**
-      * Emits update detail
-      */
-    void emitUpdateDetail(const pkgCache::VerIterator &candver);
-
-    /**
       * Emits update datails for the given list
       */
     void emitUpdateDetails(const PkgList &pkgs);
@@ -256,7 +251,8 @@ private:
     PkInfoEnum packageStateFromVer(const pkgCache::VerIterator &ver) const;
     void stagePackageForEmit(GPtrArray *array, const pkgCache::VerIterator &ver,
                              PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
-                             PkInfoEnum updateSeverity = PK_INFO_ENUM_UNKNOWN);
+                             PkInfoEnum updateSeverity = PK_INFO_ENUM_UNKNOWN) const;
+    void stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterator &candver);
 
     /**
      *  interprets dpkg status fd

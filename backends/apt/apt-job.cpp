@@ -464,7 +464,7 @@ void AptJob::emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum 
     pk_backend_job_set_item_progress(m_job, package_id, status, percentage);
 }
 
-void AptJob::stagePackageForEmit(GPtrArray *array, const pkgCache::VerIterator &ver, PkInfoEnum state, PkInfoEnum updateSeverity)
+void AptJob::stagePackageForEmit(GPtrArray *array, const pkgCache::VerIterator &ver, PkInfoEnum state, PkInfoEnum updateSeverity) const
 {
     g_autoptr(PkPackage) pk_package = pk_package_new ();
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
@@ -850,8 +850,8 @@ void AptJob::emitDetails(PkgList &pkgs)
     }
 }
 
-// used to emit packages it collects all the needed info
-void AptJob::emitUpdateDetail(const pkgCache::VerIterator &candver)
+// helper for emitUpdateDetails() to create update items and add them to the final array for emission
+void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterator &candver)
 {
     // Verify if our update version is valid
     if (candver.end()) {
@@ -945,29 +945,37 @@ void AptJob::emitUpdateDetail(const pkgCache::VerIterator &candver)
     // NULL terminate
     g_ptr_array_add(obsoletes, NULL);
 
-    pk_backend_job_update_detail(m_job,
-                                 package_id,
-                                 updates,//const gchar *updates
-                                 (gchar **) obsoletes->pdata,//const gchar *obsoletes
-                                 NULL,//const gchar *vendor_url
-                                 (gchar **) bugzilla_urls->pdata,// gchar **bugzilla_urls
-                                 (gchar **) cve_urls->pdata,// gchar **cve_urls
-                                 restart,//PkRestartEnum restart
-                                 update_text.c_str(),//const gchar *update_text
-                                 changelog.c_str(),//const gchar *changelog
-                                 updateState,//PkUpdateStateEnum state
-                                 issued.c_str(), //const gchar *issued_text
-                                 updated.c_str() //const gchar *updated_text
-                                 );
+    // construct the update item with out newly gathered data
+    PkUpdateDetail *item = pk_update_detail_new ();
+    g_object_set(item,
+              "package-id", package_id,
+              "updates", updates, //const gchar *updates
+              "obsoletes", (gchar **) obsoletes->pdata, //const gchar *obsoletes
+              "vendor-urls", NULL, //const gchar *vendor_url
+              "bugzilla-urls", (gchar **) bugzilla_urls->pdata, // gchar **bugzilla_urls
+              "cve-urls", (gchar **) cve_urls->pdata, // gchar **cve_urls
+              "restart", restart, //PkRestartEnum restart
+              "update-text", update_text.c_str(), //const gchar *update_text
+              "changelog", changelog.c_str(), //const gchar *changelog
+              "state", updateState, //PkUpdateStateEnum state
+              "issued", issued.c_str(), //const gchar *issued_text
+              "updated", updated.c_str(), //const gchar *updated_text
+              NULL);
+    g_ptr_array_add(updateArray, item);
 }
 
 void AptJob::emitUpdateDetails(const PkgList &pkgs)
 {
+    g_autoptr(GPtrArray) updateDetailsArray = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
     for (const PkgInfo &pi : pkgs) {
         if (m_cancel)
             break;
-        emitUpdateDetail(pi.ver);
+        stageUpdateDetail(updateDetailsArray, pi.ver);
     }
+
+    // emit all data that we've just collected
+    pk_backend_job_update_details(m_job, updateDetailsArray);
 }
 
 void AptJob::getDepends(PkgList &output,
