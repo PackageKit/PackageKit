@@ -86,6 +86,7 @@ PkProgress	*pk_progress_new			(void);
  * @PK_PROGRESS_TYPE_PACKAGE: package updated
  * @PK_PROGRESS_TYPE_ITEM_PROGRESS: item progress updated
  * @PK_PROGRESS_TYPE_TRANSACTION_FLAGS: transaction flags updated
+ * @PK_PROGRESS_TYPE_SENDER: D-Bus name of sender updated (Since: 1.2.6)
  * @PK_PROGRESS_TYPE_INVALID:
  *
  * Flag to show which progress field has been updated.
@@ -106,7 +107,8 @@ typedef enum {
 	PK_PROGRESS_TYPE_PACKAGE,
 	PK_PROGRESS_TYPE_ITEM_PROGRESS,
 	PK_PROGRESS_TYPE_TRANSACTION_FLAGS,
-	PK_PROGRESS_TYPE_INVALID
+	PK_PROGRESS_TYPE_INVALID,
+	PK_PROGRESS_TYPE_SENDER
 } PkProgressType;
 
 /**
@@ -163,6 +165,9 @@ guint64	 pk_progress_get_transaction_flags	(PkProgress		*progress);
 gboolean	 pk_progress_set_uid			(PkProgress		*progress,
 							 guint			 uid);
 guint		 pk_progress_get_uid			(PkProgress		*progress);
+gboolean	 pk_progress_set_sender			(PkProgress		*progress,
+							 const gchar		*bus_name);
+gchar		*pk_progress_get_sender			(PkProgress		*progress);
 gboolean	 pk_progress_set_package		(PkProgress		*progress,
 							 PkPackage		*package);
 PkPackage	*pk_progress_get_package		(PkProgress		*progress);

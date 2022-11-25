@@ -452,3 +452,30 @@ pk_string_replace (GString *string, const gchar *search, const gchar *replace)
 out:
 	return count;
 }
+
+/**
+ * pk_get_cmdline_for_pid:
+ * @dbus: the #PkDbus instance
+ * @pid: the process ID to get the command line for.
+ *
+ * Gets the command line for the given PID.
+ * NOTE: This is racy when the PID is reused while the function is called,
+ * so keep this in mind when using the returned value.
+ *
+ * Return value: (nullable): the cmdline, or %NULL if it could not be obtained
+ **/
+gchar*
+pk_get_cmdline_for_pid (guint32 pid)
+{
+	gboolean ret;
+	gchar *cmdline = NULL;
+	g_autofree gchar *filename = NULL;
+	g_autoptr(GError) error = NULL;
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret)
+		g_warning ("failed to get cmdline: %s", error->message);
+	return cmdline;
+}

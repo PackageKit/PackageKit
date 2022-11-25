@@ -128,6 +128,44 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 }
 
+static gchar*
+pk_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
+{
+	gboolean ret;
+	gchar *cmdline = NULL;
+	g_autofree gchar *filename = NULL;
+	g_autoptr(GError) error = NULL;
+	guint pid = G_MAXUINT;
+	g_autoptr(GVariant) value = NULL;
+
+	/* get pid from DBus */
+	value = g_dbus_proxy_call_sync (bus_proxy,
+					"GetConnectionUnixProcessID",
+					g_variant_new ("(s)",
+						       bus_name),
+					G_DBUS_CALL_FLAGS_NONE,
+					2000,
+					NULL,
+					&error);
+	if (value == NULL) {
+		g_warning ("Failed to get pid for %s: %s",
+			   bus_name, error->message);
+		return g_strdup_printf ("bus:%s", bus_name);
+	}
+	g_variant_get (value, "(u)", &pid);
+
+	/* get command line from proc */
+	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
+	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
+	if (!ret) {
+		/* we failed to get the command-line, maybe we don't have permission */
+		return g_strdup_printf ("pid:%i", pid);
+	}
+	/* the cmdline has its args nul-separated. We deliberately make use of this to only return
+	 * argv[0], i.e. the executable name */
+	return cmdline;
+}
+
 static void
 pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
@@ -140,8 +178,10 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	g_autofree gchar *package_id_tmp = NULL;
 	g_autofree gchar *summary = NULL;
 	g_autofree gchar *transaction_id = NULL;
+	g_autofree gchar *sender = NULL;
 	g_autoptr(PkItemProgress) item_progress = NULL;
 	g_autoptr(PkPackage) package = NULL;
+	GDBusProxy *bus_proxy = G_DBUS_PROXY (user_data);
 
 	/* get data */
 	g_object_get (progress,
@@ -153,6 +193,7 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		      "item-progress", &item_progress,
 		      "package-id", &package_id,
 		      "transaction-id", &transaction_id,
+		      "sender", &sender,
 		      NULL);
 
 	/* don't print before we have properties */
@@ -186,6 +227,9 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 			 pk_item_progress_get_package_id (item_progress),
 			 pk_item_progress_get_percentage (item_progress),
 			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)));
+	} else if (type == PK_PROGRESS_TYPE_SENDER) {
+		g_autofree gchar *cmdline = pk_monitor_get_caller_info (bus_proxy, sender);
+		g_print ("%s\tsender       %s\n", transaction_id, cmdline);
 	}
 }
 
@@ -271,6 +315,9 @@ main (int argc, char *argv[])
 	guint i;
 	g_autoptr(PkControl) control = NULL;
 	g_autoptr(PkTransactionList) tlist = NULL;
+	g_autoptr(GDBusConnection) bus_conn = NULL;
+	g_autoptr(GDBusProxy) bus_proxy = NULL;
+	g_autoptr(GError) error = NULL;
 
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
@@ -296,6 +343,28 @@ main (int argc, char *argv[])
 		goto out;
 	}
 
+	/* use the bus to resolve connection names to PIDs */
+	bus_conn = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	if (bus_conn == NULL) {
+		g_printerr ("Cannot connect to the system bus: %s\n", error->message);
+		retval = EXIT_FAILURE;
+		goto out;
+	}
+	bus_proxy = g_dbus_proxy_new_sync (bus_conn,
+				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+				       NULL,
+				       "org.freedesktop.DBus",
+				       "/org/freedesktop/DBus/Bus",
+				       "org.freedesktop.DBus",
+				       NULL,
+				       &error);
+	if (bus_proxy == NULL) {
+		g_printerr ("Cannot connect to D-Bus: %s\n", error->message);
+		retval = EXIT_FAILURE;
+		goto out;
+	}
+
 	loop = g_main_loop_new (NULL, FALSE);
 
 	control = pk_control_new ();
@@ -316,7 +385,7 @@ main (int argc, char *argv[])
 
 	tlist = pk_transaction_list_new ();
 	g_signal_connect (tlist, "added",
-			  G_CALLBACK (pk_monitor_transaction_list_added_cb), NULL);
+			  G_CALLBACK (pk_monitor_transaction_list_added_cb), bus_proxy);
 	g_signal_connect (tlist, "removed",
 			  G_CALLBACK (pk_monitor_transaction_list_removed_cb), NULL);
 
