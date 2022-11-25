@@ -57,6 +57,8 @@ guint		 pk_string_replace			(GString	*string,
 							 const gchar	*search,
 							 const gchar	*replace);
 
+gchar		*pk_get_cmdline_for_pid			(guint32	pid);
+
 G_END_DECLS
 
 #endif /* __PK_SHARED_H */

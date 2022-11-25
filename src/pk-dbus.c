@@ -45,6 +45,69 @@ static gpointer pk_dbus_object = NULL;
 
 G_DEFINE_TYPE (PkDbus, pk_dbus, G_TYPE_OBJECT)
 
+gboolean
+pk_dbus_get_uid_pid (PkDbus *dbus, const gchar *sender, guint32 *uid, guint32 *pid)
+{
+	GVariant *reply_var;
+	const char *key;
+	GVariant *value;
+	gboolean need_pid, need_uid;
+	g_autoptr(GVariantIter) iter = NULL;
+	g_autoptr(GError) error = NULL;
+
+	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
+	g_return_val_if_fail (sender != NULL, G_MAXUINT);
+
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		if (uid != NULL)
+			*uid = 500;
+		if (pid != NULL)
+			*pid = G_MAXUINT32;
+		return TRUE;
+	}
+
+	/* no connection to DBus */
+	if (dbus->priv->proxy_pid == NULL)
+		return FALSE;
+
+	/* get caller credentials from DBus */
+	reply_var = g_dbus_proxy_call_sync (dbus->priv->proxy_pid,
+					"GetConnectionCredentials",
+					g_variant_new ("(s)",
+						       sender),
+					G_DBUS_CALL_FLAGS_NONE,
+					2000,
+					NULL,
+					&error);
+	if (reply_var == NULL) {
+		g_warning ("Failed to get uid/pid for %s: %s",
+			   sender, error->message);
+		return FALSE;
+	}
+
+	need_pid = pid != NULL;
+	need_uid = uid != NULL;
+	g_variant_get (reply_var, "(a{sv})", &iter);
+	while (g_variant_iter_loop (iter, "{&sv}", &key, &value)) {
+		if (need_pid && g_strcmp0 (key, "ProcessID") == 0) {
+			*pid = g_variant_get_uint32 (value);
+			need_pid = FALSE;
+		} else if (need_uid && g_strcmp0 (key, "UnixUserID") == 0) {
+			*uid = g_variant_get_uint32 (value);
+			need_uid = FALSE;
+		}
+
+		if (!need_pid && !need_uid) {
+			g_variant_unref (value);
+			break;
+		}
+	}
+
+	return TRUE;
+}
+
 /**
  * pk_dbus_get_uid:
  * @dbus: the #PkDbus instance
@@ -54,7 +117,7 @@ G_DEFINE_TYPE (PkDbus, pk_dbus, G_TYPE_OBJECT)
  *
  * Return value: the UID, or %G_MAXUINT if it could not be obtained
  **/
-guint
+guint32
 pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 {
 	guint uid = G_MAXUINT;
@@ -99,7 +162,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
  *
  * Return value: the PID, or %G_MAXUINT if it could not be obtained
  **/
-static guint
+guint32
 pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 {
 	guint pid = G_MAXUINT;
@@ -135,48 +198,6 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	}
 	g_variant_get (value, "(u)", &pid);
 	return pid;
-}
-
-/**
- * pk_dbus_get_cmdline:
- * @dbus: the #PkDbus instance
- * @sender: the sender, usually got from dbus_g_method_get_dbus()
- *
- * Gets the command line for the ID.
- *
- * Return value: the cmdline, or %NULL if it could not be obtained
- **/
-gchar *
-pk_dbus_get_cmdline (PkDbus *dbus, const gchar *sender)
-{
-	gboolean ret;
-	gchar *cmdline = NULL;
-	guint pid;
-	g_autoptr(GError) error = NULL;
-	g_autofree gchar *filename = NULL;
-
-	g_return_val_if_fail (PK_IS_DBUS (dbus), NULL);
-	g_return_val_if_fail (sender != NULL, NULL);
-
-	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
-		g_debug ("using self-check shortcut");
-		return g_strdup ("/usr/sbin/packagekit");
-	}
-
-	/* get pid */
-	pid = pk_dbus_get_pid (dbus, sender);
-	if (pid == G_MAXUINT) {
-		g_warning ("failed to get PID");
-		return NULL;
-	}
-
-	/* get command line from proc */
-	filename = g_strdup_printf ("/proc/%i/cmdline", pid);
-	ret = g_file_get_contents (filename, &cmdline, NULL, &error);
-	if (!ret)
-		g_warning ("failed to get cmdline: %s", error->message);
-	return cmdline;
 }
 
 #ifdef HAVE_SYSTEMD_SD_LOGIN_H

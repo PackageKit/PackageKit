@@ -71,7 +71,10 @@ static gboolean pk_transaction_is_supported_content_type (PkTransaction *transac
 #define PK_TRANSACTION_UPDATES_CHANGED_TIMEOUT	100 /* ms */
 
 /* when the UID is invalid or not known */
-#define PK_TRANSACTION_UID_INVALID		G_MAXUINT
+#define PK_TRANSACTION_UID_INVALID		G_MAXUINT32
+
+/* when the client PID is invalid or not known */
+#define PK_TRANSACTION_PID_INVALID		G_MAXUINT32
 
 /* maximum number of items that can be resolved in one go */
 #define PK_TRANSACTION_MAX_ITEMS_TO_RESOLVE	10000
@@ -94,7 +97,8 @@ struct PkTransactionPrivate
 	gboolean		 emit_media_change_required;
 	gboolean		 caller_active;
 	gboolean		 exclusive;
-	guint			 uid;
+	guint32			 client_uid;
+	guint32			 client_pid;
 	guint			 watch_id;
 	PkBackend		*backend;
 	PkBackendJob		*job;
@@ -881,9 +885,24 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 		return;
 	}
 
+	/* check we're not assuming the same state twice */
+	if (priv->state == state) {
+		g_warning ("cannot set %s, as already in that state",
+			   pk_transaction_state_to_string (state));
+		return;
+	}
+
 	g_debug ("transaction now %s", pk_transaction_state_to_string (state));
 	priv->state = state;
 	g_signal_emit (transaction, signals[SIGNAL_STATE_CHANGED], 0, state);
+
+	/* only get cmdline when it's going to be saved into the database */
+	if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
+	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
+		if (priv->client_pid != PK_TRANSACTION_PID_INVALID && priv->cmdline == NULL)
+			priv->cmdline = pk_get_cmdline_for_pid (priv->client_pid);
+	}
 
 	/* only save into the database for useful stuff */
 	if (state == PK_TRANSACTION_STATE_READY &&
@@ -898,7 +917,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 		pk_transaction_db_set_role (priv->transaction_db, priv->tid, priv->role);
 
 		/* save uid */
-		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->uid);
+		pk_transaction_db_set_uid (priv->transaction_db, priv->tid, priv->client_uid);
 
 		/* save cmdline in db */
 		if (priv->cmdline != NULL)
@@ -908,7 +927,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 		syslog (LOG_DAEMON | LOG_DEBUG,
 			"new %s transaction %s scheduled from uid %i",
 			pk_role_enum_to_string (priv->role),
-			priv->tid, priv->uid);
+			priv->tid, priv->client_uid);
 	}
 
 	/* update GUI */
@@ -939,7 +958,7 @@ pk_transaction_get_state (PkTransaction *transaction)
 guint
 pk_transaction_get_uid (PkTransaction *transaction)
 {
-	return transaction->priv->uid;
+	return transaction->priv->client_uid;
 }
 
 static void
@@ -1211,7 +1230,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 					pk_role_enum_to_string (transaction->priv->role),
 					pk_package_get_id (item),
 					pk_info_enum_to_string (info),
-					transaction->priv->uid);
+					transaction->priv->client_uid);
 			}
 		}
 	}
@@ -1237,12 +1256,12 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	//TODO: on main interface
 
 	/* report to syslog */
-	if (transaction->priv->uid != PK_TRANSACTION_UID_INVALID) {
+	if (transaction->priv->client_uid != PK_TRANSACTION_UID_INVALID) {
 		syslog (LOG_DAEMON | LOG_DEBUG,
 			"%s transaction %s from uid %i finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
-			transaction->priv->uid,
+			transaction->priv->client_uid,
 			pk_exit_enum_to_string (exit_enum),
 			time_ms);
 	} else {
@@ -1939,7 +1958,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 
 	/* get from database */
 	ret = pk_transaction_db_get_proxy (priv->transaction_db,
-					   priv->uid,
+					   priv->client_uid,
 					   session,
 					   &proxy_http,
 					   &proxy_https,
@@ -1965,7 +1984,7 @@ pk_transaction_set_session_state (PkTransaction *transaction,
 	/* try to set the new uid and cmdline */
 	cmdline = g_strdup_printf ("PackageKit: %s",
 				   pk_role_enum_to_string (priv->role));
-	pk_backend_job_set_uid (priv->job, priv->uid);
+	pk_backend_job_set_uid (priv->job, priv->client_uid);
 	pk_backend_job_set_cmdline (priv->job, cmdline);
 	return TRUE;
 }
@@ -2415,13 +2434,18 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 		g_warning ("cannot get UID: %s", error->message);
 		return FALSE;
 	}
-	priv->uid = pk_dbus_get_uid (priv->dbus, sender);
 
-	/* only get when it's going to be saved into the database */
-	if (priv->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
-	    priv->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    priv->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		priv->cmdline = pk_dbus_get_cmdline (priv->dbus, sender);
+	/* get uid and pid of the caller */
+	if (!pk_dbus_get_uid_pid (priv->dbus, sender, &priv->client_uid, &priv->client_pid)) {
+		/* fallback in case our D-Bus does not support GetConnectionCredentials */
+		priv->client_uid = pk_dbus_get_uid (priv->dbus, sender);
+		priv->client_pid = pk_dbus_get_pid (priv->dbus, sender);
+	}
+
+	/* set in the test suite */
+	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+		g_debug ("using self-check shortcut");
+		priv->cmdline = g_strdup ("/usr/sbin/packagekit");
 	}
 
 	return TRUE;
@@ -2604,7 +2628,7 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 		pk_transaction_error_code_emit (data->transaction, PK_ERROR_ENUM_NOT_AUTHORIZED,
 						"Failed to obtain authentication.");
 		pk_transaction_finished_emit (data->transaction, PK_EXIT_ENUM_FAILED, 0);
-		syslog (LOG_AUTH | LOG_NOTICE, "uid %i failed to obtain auth", priv->uid);
+		syslog (LOG_AUTH | LOG_NOTICE, "uid %i failed to obtain auth", priv->client_uid);
 		goto out;
 	}
 
@@ -2615,7 +2639,7 @@ pk_transaction_authorize_actions_finished_cb (GObject *source_object,
 		/* log success too */
 		syslog (LOG_AUTH | LOG_INFO,
 			"uid %i obtained auth for %s",
-			priv->uid, action_id);
+			priv->client_uid, action_id);
 	} else {
 		/* process the rest of actions */
 		g_ptr_array_remove_index (data->actions, 0);
@@ -2663,7 +2687,7 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 	/* log */
 	syslog (LOG_AUTH | LOG_INFO,
 		"uid %i is trying to obtain %s auth (only_trusted:%i)",
-		priv->uid,
+		priv->client_uid,
 		action_id,
 		pk_bitfield_contain (priv->cached_transaction_flags,
 					PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED));
@@ -3095,7 +3119,7 @@ pk_transaction_cancel (PkTransaction *transaction,
 	}
 
 	/* check if we saved the uid */
-	if (transaction->priv->uid == PK_TRANSACTION_UID_INVALID) {
+	if (transaction->priv->client_uid == PK_TRANSACTION_UID_INVALID) {
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_CANNOT_CANCEL,
@@ -3116,8 +3140,8 @@ pk_transaction_cancel (PkTransaction *transaction,
 	}
 
 	/* check the caller uid with the originator uid */
-	if (transaction->priv->uid != uid) {
-		g_debug ("uid does not match (%i vs. %i)", transaction->priv->uid, uid);
+	if (transaction->priv->client_uid != uid) {
+		g_debug ("uid does not match (%i vs. %i)", transaction->priv->client_uid, uid);
 		ret = pk_transaction_obtain_authorization (transaction,
 							   PK_ROLE_ENUM_CANCEL,
 							   &error);
@@ -5171,7 +5195,7 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (property_name, "LastPackage") == 0)
 		return _g_variant_new_maybe_string (priv->last_package_id);
 	if (g_strcmp0 (property_name, "Uid") == 0)
-		return g_variant_new_uint32 (priv->uid);
+		return g_variant_new_uint32 (priv->client_uid);
 	if (g_strcmp0 (property_name, "Percentage") == 0)
 		return g_variant_new_uint32 (transaction->priv->percentage);
 	if (g_strcmp0 (property_name, "AllowCancel") == 0)
@@ -5438,7 +5462,8 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->priv->caller_active = TRUE;
 	transaction->priv->cached_transaction_flags = PK_TRANSACTION_FLAG_ENUM_NONE;
 	transaction->priv->cached_filters = PK_FILTER_ENUM_NONE;
-	transaction->priv->uid = PK_TRANSACTION_UID_INVALID;
+	transaction->priv->client_uid = PK_TRANSACTION_UID_INVALID;
+	transaction->priv->client_pid = PK_TRANSACTION_PID_INVALID;
 	transaction->priv->role = PK_ROLE_ENUM_UNKNOWN;
 	transaction->priv->status = PK_STATUS_ENUM_WAIT;
 	transaction->priv->percentage = PK_BACKEND_PERCENTAGE_INVALID;
