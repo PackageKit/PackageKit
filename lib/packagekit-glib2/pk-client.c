@@ -806,6 +806,18 @@ pk_client_set_property_value (PkClientState *state,
 		return;
 	}
 
+	/* sender */
+	if (g_strcmp0 (key, "Sender") == 0) {
+		ret = pk_progress_set_sender (state->progress,
+						  g_variant_get_string (value, NULL));
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_SENDER,
+						  state->progress_user_data);
+		}
+		return;
+	}
+
 	g_warning ("unhandled property '%s'", key);
 }
 

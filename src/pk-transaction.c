@@ -5196,6 +5196,8 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		return _g_variant_new_maybe_string (priv->last_package_id);
 	if (g_strcmp0 (property_name, "Uid") == 0)
 		return g_variant_new_uint32 (priv->client_uid);
+	if (g_strcmp0 (property_name, "Sender") == 0)
+		return _g_variant_new_maybe_string (priv->sender);
 	if (g_strcmp0 (property_name, "Percentage") == 0)
 		return g_variant_new_uint32 (transaction->priv->percentage);
 	if (g_strcmp0 (property_name, "AllowCancel") == 0)

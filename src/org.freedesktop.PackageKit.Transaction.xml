@@ -50,6 +50,15 @@
         </doc:description>
       </doc:doc>
     </property>
+    <property name="Sender" type="s" access="read">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            The D-Bus name of the process that started the transaction.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </property>
     <property name="Percentage" type="u" access="read">
       <doc:doc>
         <doc:description>

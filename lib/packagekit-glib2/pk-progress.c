@@ -57,6 +57,7 @@ struct _PkProgressPrivate
 	guint64				 download_size_remaining;
 	guint64				 transaction_flags;
 	guint				 uid;
+	gchar				*sender;
 	PkItemProgress			*item_progress;
 	PkPackage			*package;
 };
@@ -76,6 +77,7 @@ enum {
 	PROP_DOWNLOAD_SIZE_REMAINING,
 	PROP_TRANSACTION_FLAGS,
 	PROP_UID,
+	PROP_SENDER,
 	PROP_PACKAGE,
 	PROP_ITEM_PROGRESS,
 	PROP_LAST
@@ -133,6 +135,9 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 		break;
 	case PROP_UID:
 		g_value_set_uint (value, progress->priv->uid);
+		break;
+	case PROP_SENDER:
+		g_value_set_string (value, progress->priv->sender);
 		break;
 	case PROP_PACKAGE:
 		g_value_set_object (value, progress->priv->package);
@@ -775,6 +780,51 @@ pk_progress_get_uid (PkProgress *progress)
 }
 
 /**
+ * pk_progress_set_sender:
+ * @progress: a valid #PkProgress instance
+ * @bus_name: a D-Bus name
+ *
+ * Set the D-Bus name of the client that started this transaction.
+ *
+ * Return value: %TRUE if value changed.
+ *
+ * Since: 1.2.6
+ **/
+gboolean
+pk_progress_set_sender (PkProgress *progress, const gchar *bus_name)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
+
+	/* the same as before? */
+	if (g_strcmp0 (progress->priv->sender, bus_name) == 0)
+		return FALSE;
+
+	/* new value */
+	g_free (progress->priv->sender);
+	progress->priv->sender = g_strdup (bus_name);
+	g_object_notify (G_OBJECT(progress), "sender");
+
+	return TRUE;
+}
+
+/**
+ * pk_progress_get_sender:
+ * @progress: a valid #PkProgress instance
+ *
+ * Get the D-Bus name of the client that started this transaction.
+ *
+ * Return value: a D-Bus name
+ *
+ * Since: 1.2.6
+ **/
+gchar*
+pk_progress_get_sender (PkProgress *progress)
+{
+	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
+	return progress->priv->sender;
+}
+
+/**
  * pk_progress_set_package:
  * @progress: a valid #PkProgress instance
  * @package: a #PkPackage
@@ -1007,7 +1057,7 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_SPEED, pspec);
-	
+
 	/**
 	 * PkProgress:download-size-remaining:
 	 *
@@ -1043,6 +1093,18 @@ pk_progress_class_init (PkProgressClass *klass)
 				   0, G_MAXUINT, 0,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_UID, pspec);
+
+	/**
+	 * PkProgress:sender:
+	 *
+         * The D-Bus name of the client that started this transaction.
+         *
+	 * Since: 1.2.6
+	 */
+	pspec = g_param_spec_string ("sender", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_SENDER, pspec);
 
 	/**
 	 * PkProgress:package:
