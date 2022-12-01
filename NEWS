@@ -1,3 +1,53 @@
+Version 1.2.6
+~~~~~~~~~~~~~
+Released: 2022-12-01
+
+New Features:
+ - Expose transaction sender as read-only property on the bus (Matthias Klumpp)
+ - pkmon: Display transaction sender binary name in log (Matthias Klumpp)
+ - pk-transaction: Add Packages signal (Philip Withnall)
+ - pk-transaction: Combine some D-Bus PropertiesChanged signal emissions (Philip Withnall)
+ - pk-transaction: Add UpdateDetails signal (Philip Withnall)
+
+Backends:
+ - alpm: Fix incorrect handling of hookdirs config [fixes #342] (Adrián Insaurralde Avalos)
+ - aptcc: Refactor backend and rename to apt (Matthias Klumpp)
+ - apt: Fix emission of package IDs if there is just one candidate available (Matthias Klumpp)
+ - apt: Use smartpointers in more places (Matthias Klumpp)
+ - apt: Don't report bug URLs with empty ID, and use HTTPS URLs (Matthias Klumpp)
+ - apt: Don't add previous header and spaces to changelog entry end (Matthias Klumpp)
+ - apt: Don't create an unnecessary PkBackendSpawn instance (Matthias Klumpp)
+ - apt: Generate logging output properly (Matthias Klumpp)
+ - apt: Emit the correct status when downloading changelogs or indices (Matthias Klumpp)
+ - apt: Implement support for Packages signal to emit many packages at once (Matthias Klumpp)
+ - apt: Implement support for the new UpdateDetails plural signal (Matthias Klumpp)
+ - apt: Detect if apt system settings specify --force-conf* options and if so do not override them (Richard Schleich)
+ - nix: Fix compatibility with Nix 2.7.0 (Alex Ameen)
+ - nix: fix build with Nix 2.9.0 (#551) (Bobby Rong)
+ - zypp: implement upgrade-system method (Jonathan Kang)
+ - zypp: Clean up trailing whitespaces (Jonathan Kang)
+ - zypp: Avoid statuReset() on locked packages (Jonathan Kang)
+ - zypp: restore pool status after simulating an update (Jonathan Kang)
+ - zypp: Disable upgrade-system support in SLE (Jonathan Kang)
+ - zypp: build the pool before calling is_tumbleweed() (Jonathan Kang)
+ - zypp: update libzypp dependency version (Jonathan Kang)
+ - zypp: Don't refresh repos before searching (Jonathan Kang)
+ - zypp: Check if packages are locked before removing (Jonathan Kang)
+ - zypp: add repository data in package id (Jonathan Kang)
+ - zypp: Remove trailing whitespace (Rodrigo Pedra Brum)
+
+Bugfixes:
+ - docs: Adjust the definition of pkgid "data" field to match the status quo (Matthias Klumpp)
+ - Store sender command-line in transaction database again (Matthias Klumpp)
+ - Fix documentation of package-install policy (#568) (Michael Catanzaro)
+ - pk-client: Fix default value of cache-age property (Philip Withnall)
+ - docs: Fix some XML typos in the Transaction interface documentation (Philip Withnall)
+ - pk-main: Add newline on g_printerr() calls (Philip Withnall)
+ - pk-main: Mark some early-start error messages as translatable (Philip Withnall)
+ - pk-engine: Fix checking D-Bus caller details when setting proxy (Philip Withnall)
+ - pk-transaction: Reduce frequency of progress signal emissions (Philip Withnall)
+ - pk-client: Factor out parsing of UpdateDetail signal (Philip Withnall)
+
 Version 1.2.5
 ~~~~~~~~~~~~~
 Released: 2022-02-17
