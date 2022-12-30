@@ -200,6 +200,7 @@ popd > /dev/null
 %{_datadir}/PackageKit/helpers/test_spawn/search-name.sh
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
+%{_libexecdir}/packagekit-dnf-refresh-repo
 %pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
 %{_bindir}/pkmon
 %{_bindir}/pkcon

@@ -26,6 +26,8 @@ shared_module(
   'dnf-backend-vendor.h',
   'dnf-backend.c',
   'dnf-backend.h',
+  'pk-backend-dnf-common.c',
+  'pk-backend-dnf-common.h',
   'pk-backend-dnf.c',
   include_directories: packagekit_src_include,
   dependencies: [
@@ -36,8 +38,31 @@ shared_module(
     gmodule_dep,
   ],
   c_args: [
-    c_args
+    c_args,
+    '-DLIBEXECDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libexecdir'))),
   ],
   install: true,
   install_dir: pk_plugin_dir,
+)
+
+packagekit_refresh_repo_exec = executable(
+  'packagekit-dnf-refresh-repo',
+  '../../src/pk-shared.c',
+  '../../src/pk-shared.h',
+  'pk-backend-dnf-common.c',
+  'pk-backend-dnf-common.h',
+  'pk-backend-dnf-refresh.c',
+  include_directories: packagekit_src_include,
+  dependencies: [
+    packagekit_glib2_dep,
+    appstream_dep,
+    dnf_dep,
+    rpm_dep,
+    gmodule_dep,
+  ],
+  install: true,
+  install_dir: get_option('libexecdir'),
+  c_args: [
+    c_args
+  ]
 )
