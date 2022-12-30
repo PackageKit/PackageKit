@@ -45,6 +45,7 @@
 
 #include "dnf-backend-vendor.h"
 #include "dnf-backend.h"
+#include "pk-backend-dnf-common.h"
 
 typedef struct {
 	DnfSack		*sack;
@@ -136,63 +137,6 @@ pk_backend_context_invalidate_cb (DnfContext *context,
 {
 	pk_backend_sack_cache_invalidate (backend, message);
 	pk_backend_installed_db_changed (backend);
-}
-
-static gboolean
-pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *release_ver, GError **error)
-{
-	const gchar * const *repo_dirs;
-	const gchar * const *var_dirs;
-	gboolean keep_cache;
-	g_autofree gchar *cache_dir = NULL;
-	g_autofree gchar *destdir = NULL;
-	g_autofree gchar *lock_dir = NULL;
-	g_autofree gchar *solv_dir = NULL;
-
-	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
-	if (destdir == NULL)
-		destdir = g_strdup ("/");
-	dnf_context_set_install_root (context, destdir);
-	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "metadata", NULL);
-	dnf_context_set_cache_dir (context, cache_dir);
-	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
-	dnf_context_set_solv_dir (context, solv_dir);
-	lock_dir = g_build_filename (destdir, "/var/run", NULL);
-	dnf_context_set_lock_dir (context, lock_dir);
-	dnf_context_set_rpm_verbosity (context, "info");
-
-	/* Add prefix to repo directories */
-	repo_dirs = dnf_context_get_repos_dir (context);
-	if (repo_dirs != NULL && repo_dirs[0] != NULL) {
-		g_auto(GStrv) full_repo_dirs = NULL;
-		guint len = g_strv_length ((gchar **)repo_dirs);
-		full_repo_dirs = g_new0 (gchar*, len + 1);
-		for (guint i = 0; i < len; i++)
-			full_repo_dirs[i] = g_build_filename (destdir, repo_dirs[i], NULL);
-		dnf_context_set_repos_dir (context, (const gchar * const*)full_repo_dirs);
-	}
-
-	/* Add prefix to var directories */
-	var_dirs = dnf_context_get_vars_dir (context);
-	if (var_dirs != NULL && var_dirs[0] != NULL) {
-		g_auto(GStrv) full_var_dirs = NULL;
-		guint len = g_strv_length ((gchar **)var_dirs);
-		full_var_dirs = g_new0 (gchar*, len + 1);
-		for (guint i = 0; i < len; i++)
-			full_var_dirs[i] = g_build_filename (destdir, var_dirs[i], NULL);
-		dnf_context_set_vars_dir (context, (const gchar * const*)full_var_dirs);
-	}
-
-	/* use this initial data if repos are not present */
-	dnf_context_set_vendor_cache_dir (context, "/usr/share/PackageKit/metadata");
-	dnf_context_set_vendor_solv_dir (context, "/usr/share/PackageKit/hawkey");
-
-	/* do we keep downloaded packages */
-	keep_cache = g_key_file_get_boolean (conf, "Daemon", "KeepCache", NULL);
-	dnf_context_set_keep_cache (context, keep_cache);
-
-	/* set up context */
-	return dnf_context_setup (context, NULL, error);
 }
 
 static void
@@ -525,29 +469,6 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 		hy_goal_free (job_data->goal);
 	g_free (job_data);
 	pk_backend_job_set_user_data (job, NULL);
-}
-
-static gboolean
-dnf_utils_refresh_repo_appstream (DnfRepo *repo, GError **error)
-{
-	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
-	for (guint i = 0; as_basenames[i] != NULL; i++) {
-		const gchar *tmp = dnf_repo_get_filename_md (repo, as_basenames[i]);
-		if (tmp != NULL) {
-#if AS_CHECK_VERSION(0,3,4)
-			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
-							tmp,
-							dnf_repo_get_id (repo),
-							NULL,
-							error)) {
-				return FALSE;
-			}
-#else
-			g_warning ("need to install AppStream metadata %s", tmp);
-#endif
-		}
-	}
-	return TRUE;
 }
 
 static gboolean
@@ -1589,75 +1510,6 @@ pk_backend_get_mime_types (PkBackend *backend)
 	return g_strdupv ((gchar **) mime_types);
 }
 
-static gboolean
-pk_backend_refresh_repo (PkBackendJob *job,
-                         DnfRepo *repo,
-                         DnfState *state,
-                         GError **error)
-{
-	gboolean ret;
-	gboolean repo_okay;
-	DnfState *state_local;
-	GError *error_local = NULL;
-
-	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   2, /* check */
-				   98, /* download */
-				   -1);
-	if (!ret)
-		return FALSE;
-
-	/* is the repo up to date? */
-	state_local = dnf_state_get_child (state);
-	repo_okay = dnf_repo_check (repo,
-	                            pk_backend_job_get_cache_age (job),
-	                            state_local,
-	                            &error_local);
-	if (!repo_okay) {
-		g_debug ("repo %s not okay [%s], refreshing",
-			 dnf_repo_get_id (repo), error_local->message);
-		g_clear_error (&error_local);
-		if (!dnf_state_finished (state_local, error))
-			return FALSE;
-	}
-
-	/* done */
-	if (!dnf_state_done (state, error))
-		return FALSE;
-
-	/* update repo, TODO: if we have network access */
-	if (!repo_okay) {
-		state_local = dnf_state_get_child (state);
-		ret = dnf_repo_update (repo,
-		                       DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
-		                       state_local,
-		                       &error_local);
-		if (!ret) {
-			if (g_error_matches (error_local,
-					     DNF_ERROR,
-					     DNF_ERROR_CANNOT_FETCH_SOURCE)) {
-				g_warning ("Skipping refresh of %s: %s",
-					   dnf_repo_get_id (repo),
-					   error_local->message);
-				g_clear_error (&error_local);
-				if (!dnf_state_finished (state_local, error))
-					return FALSE;
-			} else {
-				g_propagate_error (error, error_local);
-				return FALSE;
-			}
-		}
-	}
-
-	/* copy the appstream files somewhere that the GUI will pick them up */
-	if (!dnf_utils_refresh_repo_appstream (repo, error))
-		return FALSE;
-
-	/* done */
-	return dnf_state_done (state, error);
-}
-
 static void
 pk_backend_refresh_subman (PkBackendJob *job)
 {
@@ -1752,9 +1604,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 {
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackend *backend = pk_backend_job_get_backend (job);
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	DnfRepo *repo;
 	DnfState *state_local;
-	DnfState *state_loop;
 	gboolean force;
 	gboolean ret;
 	guint i;
@@ -1762,6 +1614,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) refresh_repos = NULL;
 	g_autoptr(GPtrArray) repos = NULL;
+	g_autofree gchar *max_cache_age = NULL;
 
 	/* set state */
 	dnf_state_set_steps (job_data->state, NULL,
@@ -1801,7 +1654,10 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	/* refresh each repo */
 	state_local = dnf_state_get_child (job_data->state);
 	dnf_state_set_number_steps (state_local, refresh_repos->len);
+	max_cache_age = g_strdup_printf ("%u", pk_backend_job_get_cache_age (job));
 	for (i = 0; i < refresh_repos->len; i++) {
+		gint wait_status;
+		const gchar *refresh[5];
 		repo = g_ptr_array_index (refresh_repos, i);
 
 		/* delete content even if up to date */
@@ -1815,12 +1671,22 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 		}
 
 		/* check and download */
-		state_loop = dnf_state_get_child (state_local);
-		ret = pk_backend_refresh_repo (job, repo, state_loop, &error);
-		if (!ret) {
-			pk_backend_job_error_code (job, error->code, "%s", error->message);
-			return;
-		}
+		refresh[0] = LIBEXECDIR "/packagekit-dnf-refresh-repo";
+		refresh[1] = max_cache_age;
+		refresh[2] = dnf_repo_get_id (repo);
+		refresh[3] = priv->release_ver;
+		refresh[4] = NULL;
+		if (!g_spawn_sync (NULL,
+				   (gchar **) refresh,
+				   NULL,
+				   G_SPAWN_DEFAULT,
+				   NULL,
+				   NULL,
+				   NULL,
+				   NULL,
+				   &wait_status,
+				   &error))
+			pk_backend_job_error_code (job, error->code, "%s", "unkown error in pk_backend_refresh_repo");
 
 		/* done */
 		ret = dnf_state_done (state_local, &error);
