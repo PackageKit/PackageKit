@@ -611,7 +611,7 @@ ZyppJob::get_zypp()
 		/* TODO: we need to lifecycle manage this, detect changes
 		   in the requested 'root' etc. */
 		if (!initialized) {
-			filesystem::Pathname pathname("/");
+			zypp::filesystem::Pathname pathname("/");
 			zypp->initializeTarget (pathname);
 
 			initialized = TRUE;
@@ -1669,7 +1669,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 
 	if (zypp == NULL)
 		return  FALSE;
-	filesystem::Pathname pathname("/");
+	zypp::filesystem::Pathname pathname("/");
 
 	bool poolIsClean = sat::Pool::instance ().reposEmpty ();
 	// Erase and reload all if pool is too holey (densyity [100: good | 0 bad])
@@ -1855,7 +1855,7 @@ pk_backend_destroy (PkBackend *backend)
 {
 	g_debug ("zypp_backend_destroy");
 
-	filesystem::recursive_rmdir (zypp::myTmpDir ());
+	zypp::filesystem::recursive_rmdir (zypp::myTmpDir ());
 
 	g_free (_repoName);
 	delete priv;
@@ -2538,7 +2538,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 	}
 
 	// create a temporary directory
-	filesystem::TmpDir tmpDir;
+	zypp::filesystem::TmpDir tmpDir;
 	if (tmpDir == NULL) {
 		zypp_backend_finished_error (
 			job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
@@ -2561,7 +2561,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 		// copy the rpm into tmpdir
 		string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
-		if (filesystem::copy (full_paths[i], tempDest) != 0) {
+		if (zypp::filesystem::copy (full_paths[i], tempDest) != 0) {
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
 				"Could not copy the rpm-file into the temp-dir");
@@ -3924,7 +3924,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			PoolItem item(solvable);
 			size += 2 * make<ResObject>(solvable)->downloadSize();
 
-			filesystem::Pathname repo_dir = solvable.repository().info().packagesPath();
+			zypp::filesystem::Pathname repo_dir = solvable.repository().info().packagesPath();
 			struct statfs stat;
 			statfs(repo_dir.c_str(), &stat);
 			if (size > stat.f_bavail * 4) {
@@ -3949,7 +3949,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			// be sure it ends with /
 			target += "/";
 			target += tmp_file->basename();
-			filesystem::hardlinkCopy(tmp_file, target);
+			zypp::filesystem::hardlinkCopy(tmp_file, target);
 			const gchar *to_strv[] = { NULL, NULL };
 			to_strv[0] =  target.c_str();
 			pk_backend_job_files (job, package_ids[i],(gchar **) to_strv);
