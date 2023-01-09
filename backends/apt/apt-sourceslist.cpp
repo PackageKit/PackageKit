@@ -472,7 +472,24 @@ string SourcesList::SourceRecord::niceName()
         ret += " Sources";
     }
 
-    return ret;
+    std::string uri_info;
+    size_t schema_pos = URI.find("://");
+    if (schema_pos == std::string::npos) {
+        uri_info = URI;
+    } else {
+        uri_info = URI.substr(schema_pos + 3);
+        if (uri_info.back() == '/')
+            uri_info.pop_back();
+    }
+
+    if (g_pattern_match_simple ("*.debian.org/*", uri_info.c_str()))
+        return "Debian " + ret;
+    if (g_pattern_match_simple ("*.ubuntu.com/*", uri_info.c_str()))
+        return "Debian " + ret;
+    if (g_pattern_match_simple ("*.pureos.net/*", uri_info.c_str()))
+        return "PureOS " + ret;
+
+    return uri_info + " - " + ret;
 }
 
 string SourcesList::SourceRecord::repoId()
