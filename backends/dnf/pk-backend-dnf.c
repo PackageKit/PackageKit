@@ -46,10 +46,12 @@
 #include "dnf-backend-vendor.h"
 #include "dnf-backend.h"
 
+#define DNF_SACK_MAX_AGE	600 /* seconds */
+
 typedef struct {
 	DnfSack		*sack;
-	gboolean	 valid;
 	gchar		*key;
+	GTimer		*timer;
 } DnfSackCacheItem;
 
 typedef struct {
@@ -59,6 +61,7 @@ typedef struct {
 	GMutex		 sack_mutex;
 	GTimer		*repos_timer;
 	gchar		*release_ver;
+	guint		 sack_expire_id;
 } PkBackendDnfPrivate;
 
 typedef struct {
@@ -94,24 +97,37 @@ pk_backend_supports_parallelization (PkBackend *backend)
 	return FALSE;
 }
 
+static gboolean
+pk_backend_check_sack_timer (gpointer key, gpointer value, gpointer user_data)
+{
+	DnfSackCacheItem *cache_item = value;
+	if (g_timer_elapsed (cache_item->timer, NULL) > DNF_SACK_MAX_AGE) {
+		g_debug ("invalidating %s as expired", (char *)key);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
+pk_backend_sack_expire (gpointer user_data)
+{
+	PkBackendDnfPrivate *priv = user_data;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
+
+	g_hash_table_foreach_remove (priv->sack_cache,
+				     pk_backend_check_sack_timer, NULL);
+	return TRUE;
+}
+
 static void
 pk_backend_sack_cache_invalidate (PkBackend *backend, const gchar *why)
 {
-	GList *l;
-	DnfSackCacheItem *cache_item;
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
-	g_autoptr(GList) values = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 
-	/* set all the cached sacks as invalid */
-	values = g_hash_table_get_values (priv->sack_cache);
-	for (l = values; l != NULL; l = l->next) {
-		cache_item = l->data;
-		if (cache_item->valid) {
-			g_debug ("invalidating %s as %s", cache_item->key, why);
-			cache_item->valid = FALSE;
-		}
-	}
+	/* remove all cached sacks */
+	g_debug ("removing all dnf sack caches");
+	g_hash_table_remove_all (priv->sack_cache);
 }
 
 static void
@@ -124,6 +140,7 @@ pk_backend_yum_repos_changed_cb (DnfRepoLoader *repo_loader, PkBackend *backend)
 static void
 dnf_sack_cache_item_free (DnfSackCacheItem *cache_item)
 {
+	g_timer_destroy (cache_item->timer);
 	g_object_unref (cache_item->sack);
 	g_free (cache_item->key);
 	g_slice_free (DnfSackCacheItem, cache_item);
@@ -318,6 +335,10 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 						  g_free,
 						  (GDestroyNotify) dnf_sack_cache_item_free);
 
+	priv->sack_expire_id = g_timeout_add_seconds (DNF_SACK_MAX_AGE / 2,
+						      pk_backend_sack_expire,
+						      priv);
+
 	if (!pk_backend_ensure_default_dnf_context (backend, &error))
 		g_warning ("failed to setup context: %s", error->message);
 }
@@ -330,6 +351,8 @@ pk_backend_destroy (PkBackend *backend)
 		g_key_file_unref (priv->conf);
 	if (priv->context != NULL)
 		g_object_unref (priv->context);
+	if (priv->sack_expire_id > 0)
+		g_source_remove (priv->sack_expire_id);
 	g_timer_destroy (priv->repos_timer);
 	g_mutex_clear (&priv->sack_mutex);
 	g_hash_table_unref (priv->sack_cache);
@@ -731,14 +754,9 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
 		if (cache_item != NULL && cache_item->sack != NULL) {
-			if (cache_item->valid) {
-				g_debug ("using cached sack %s", cache_key);
-				return g_object_ref (cache_item->sack);
-			} else {
-				/* we have to do this now rather than rely on the
-				 * callback of the hash table */
-				g_hash_table_remove (priv->sack_cache, cache_key);
-			}
+			g_debug ("using cached sack %s", cache_key);
+			g_timer_start (cache_item->timer);
+			return g_object_ref (cache_item->sack);
 		}
 	}
 
@@ -804,7 +822,7 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	cache_item = g_slice_new (DnfSackCacheItem);
 	cache_item->key = g_strdup (cache_key);
 	cache_item->sack = g_object_ref (sack);
-	cache_item->valid = TRUE;
+	cache_item->timer = g_timer_new ();
 	g_debug ("created cached sack %s", cache_item->key);
 	g_hash_table_insert (priv->sack_cache, g_strdup (cache_key), cache_item);
 	g_mutex_unlock (&priv->sack_mutex);
