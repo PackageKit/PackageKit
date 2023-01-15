@@ -248,6 +248,7 @@ remove_old_cache_directories (PkBackend *backend, const gchar *release_ver)
 static gboolean
 pk_backend_ensure_default_dnf_context (PkBackend *backend, GError **error)
 {
+	static GMutex dnf_context_new_mutex;
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(DnfContext) context = NULL;
 
@@ -259,7 +260,9 @@ pk_backend_ensure_default_dnf_context (PkBackend *backend, GError **error)
 	g_assert (priv->release_ver != NULL);
 
 	/* set defaults */
+	g_mutex_lock (&dnf_context_new_mutex);
 	context = dnf_context_new ();
+	g_mutex_unlock (&dnf_context_new_mutex);
 	if (!pk_backend_setup_dnf_context (context, priv->conf, priv->release_ver, error))
 		return FALSE;
 
