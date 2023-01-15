@@ -241,6 +241,8 @@ main (int argc, char *argv[])
 		helper.loop = loop;
 		helper.timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, &helper);
 		g_source_set_name_by_id (helper.timer_id, "[PkMain] main poll");
+	} else {
+		helper.timer_id = 0;
 	}
 
 	/* immediatly exit */
