@@ -12,6 +12,7 @@ Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: shared-mime-info
 Requires: systemd
 
+BuildRequires: python3-devel
 BuildRequires: glib2-devel >= 2.46.0
 BuildRequires: xmlto
 BuildRequires: gtk-doc
@@ -199,6 +200,7 @@ popd > /dev/null
 %{_datadir}/PackageKit/helpers/test_spawn/search-name.sh
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
+%pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
 %{_bindir}/pkmon
 %{_bindir}/pkcon
 %exclude %{_libdir}/libpackagekit*.so.*
