@@ -1639,7 +1639,7 @@ main (int argc, char *argv[])
 	g_autofree gchar *filter = NULL;
 	g_autofree gchar *options_help = NULL;
 	g_autofree gchar *summary = NULL;
-	guint bar_padding = 30;
+	guint bar_padding = 40;
 	guint bar_size = 25;
 	struct winsize w;
 
