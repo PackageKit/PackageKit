@@ -182,12 +182,14 @@ main (int argc, char *argv[])
 	syslog (LOG_DAEMON | LOG_DEBUG, "daemon start");
 
 	/* after how long do we timeout? */
-	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", NULL);
+	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", &error);
 	/* THIS COMMENT IS A TSUNAMI STONE
 	 * Before removing the default timeout, please study the git history and
 	 * be sure that you are not regressing Redhat bugzilla #1354074 (again). */
-	if (exit_idle_time == 0)
+	if (error != NULL) {
 		exit_idle_time = 300;
+		g_clear_error(&error);
+	}
 	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
 	/* override the backend name */
