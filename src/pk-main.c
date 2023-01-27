@@ -190,7 +190,7 @@ main (int argc, char *argv[])
          * regressing Redhat bugzilla #1354074 (again). */
 	if (error != NULL) {
 		exit_idle_time = 300;
-		g_clear_error(&error);
+		g_clear_error (&error);
 	}
 	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
 
