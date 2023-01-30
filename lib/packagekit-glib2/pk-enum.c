@@ -263,6 +263,7 @@ static const PkEnumMatch enum_group[] = {
 	{PK_GROUP_ENUM_DESKTOP_GNOME,		"desktop-gnome"},
 	{PK_GROUP_ENUM_DESKTOP_KDE,		"desktop-kde"},
 	{PK_GROUP_ENUM_DESKTOP_XFCE,		"desktop-xfce"},
+	{PK_GROUP_ENUM_DESKTOP_DEEPIN,		"desktop-deepin"},
 	{PK_GROUP_ENUM_DESKTOP_OTHER,		"desktop-other"},
 	{PK_GROUP_ENUM_PUBLISHING,		"publishing"},
 	{PK_GROUP_ENUM_SERVERS,			"servers"},
