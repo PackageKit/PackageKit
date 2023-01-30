@@ -11,6 +11,8 @@ compiz-fusion-kde	desktop-kde
 compiz-gnome		desktop-gnome
 compiz-gtk		desktop-gnome
 compiz-kde		desktop-kde
+deepin			desktop-deepin
+deepin-extra		desktop-deepin
 e17-extra-svn		desktop-other
 e17-libs-svn		desktop-other
 e17-svn			desktop-other

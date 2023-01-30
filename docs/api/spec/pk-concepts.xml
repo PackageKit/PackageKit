@@ -696,6 +696,10 @@
             <entry>KDE</entry>
           </row>
           <row>
+            <entry><literal>desktop-deepin</literal></entry>
+            <entry>Deepin (DDE)</entry>
+          </row>
+          <row>
             <entry><literal>desktop-other</literal></entry>
             <entry>Other desktops</entry>
           </row>
