@@ -573,6 +573,8 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
                 state = PK_INFO_ENUM_SECURITY;
             } else if (ends_with(archive, "-backports")) {
                 state = PK_INFO_ENUM_ENHANCEMENT;
+            } else if (ends_with(archive, "-proposed-updates") || ends_with(archive, "-updates-proposed")) {
+                state = PK_INFO_ENUM_LOW;
             } else if (ends_with(archive, "-updates")) {
                 state = PK_INFO_ENUM_BUGFIX;
             }
@@ -581,7 +583,8 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
             state = PK_INFO_ENUM_ENHANCEMENT;
         }
 
-        stagePackageForEmit(pkgArray, pkgInfo.ver, PK_INFO_ENUM_UNKNOWN, state);
+        // NOTE: Frontends expect us to pass the update urgency as both its state *and* actual urgency value here.
+        stagePackageForEmit(pkgArray, pkgInfo.ver, state, state);
     }
 
     // emit
