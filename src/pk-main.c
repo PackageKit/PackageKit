@@ -192,7 +192,10 @@ main (int argc, char *argv[])
 		exit_idle_time = 300;
 		g_clear_error (&error);
 	}
-	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	if (exit_idle_time > 0)
+		g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	else
+		g_debug ("daemon will not shut down on idle");
 
 	/* override the backend name */
 	if (backend_name != NULL) {
