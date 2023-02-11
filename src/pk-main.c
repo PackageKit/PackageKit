@@ -184,10 +184,10 @@ main (int argc, char *argv[])
 	/* after how long do we timeout? */
 	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", &error);
 	/* THIS COMMENT IS A TSUNAMI STONE
-         * The automatic shutdown timeout is necessary to avoid very high
-         * memory usage with the dnf backend.  If you want to remove this
-         * timeout, please study the git history and be sure that you are not
-         * regressing Redhat bugzilla #1354074 (again). */
+	 * The automatic shutdown timeout prevents memory leaks in some
+	 * backends from getting out of hand.  If you want to remove this
+	 * timeout, please study the git history and be sure that you are not
+	 * regressing Redhat bugzilla #1354074 (again). */
 	if (error != NULL) {
 		exit_idle_time = 300;
 		g_clear_error (&error);
