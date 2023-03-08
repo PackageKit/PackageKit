@@ -5,7 +5,7 @@ cpp_compiler = meson.get_compiler('cpp')
 gstreamer_dep = dependency('gstreamer-1.0')
 gstreamer_base_dep = dependency('gstreamer-base-1.0')
 gstreamer_plugins_base_dep = dependency('gstreamer-plugins-base-1.0')
-appstream_dep = dependency('appstream', version: '>=0.12')
+appstream_dep = dependency('appstream', version: '>=0.16.0')
 apt_pkg_dep = dependency('apt-pkg', version: '>=1.9.2')
 
 # Check whether apt supports ddtp

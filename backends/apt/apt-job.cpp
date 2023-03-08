@@ -1442,34 +1442,47 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 {
     g_autoptr(AsPool) pool = NULL;
     g_autoptr(GError) error = NULL;
-    guint i;
-    vector<string> packages;
+    std::vector<string> pkg_names;
 
     pool = as_pool_new ();
-    as_pool_load (pool, NULL, &error);
-    if (error != NULL) {
-        /* we do not fail here because even with error we might still find metadata */
-        g_warning ("Issue while loading the AppStream metadata pool: %s", error->message);
-        g_error_free (error);
-        error = NULL;
+
+    /* don't monitor cache locations or load Flatpak data */
+    as_pool_remove_flags (pool, AS_POOL_FLAG_MONITOR);
+    as_pool_remove_flags (pool, AS_POOL_FLAG_LOAD_FLATPAK);
+
+    /* try to load the metadata pool */
+    if (!as_pool_load (pool, NULL, &error)) {
+        pk_backend_job_error_code(m_job,
+                                  PK_ERROR_ENUM_INTERNAL_ERROR,
+                                  "Failed to load AppStream metadata: %s", error->message);
+        return;
     }
 
-    for (i = 0; values[i] != NULL; i++) {
+    /* search for mimetypes for all values */
+    for (guint i = 0; values[i] != NULL; i++) {
         g_autoptr(GPtrArray) result = NULL;
-        guint j;
+
         if (m_cancel)
             break;
 
-        result = as_pool_get_components_by_provided_item (pool, AS_PROVIDED_KIND_MIMETYPE, values[i]);
-        for (j = 0; j < result->len; j++) {
+        result = as_pool_get_components_by_provided_item (pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
+        for (guint j = 0; j < result->len; j++) {
+            const gchar *pkgname;
             AsComponent *cpt = AS_COMPONENT (g_ptr_array_index (result, j));
-            /* we only select one package per component - on Debian systems, AppStream components never reference multiple packages */
-            packages.push_back (as_component_get_pkgname (cpt));
+
+            /* sanity check */
+            pkgname = as_component_get_pkgname (cpt);
+            if (pkgname == NULL) {
+                g_warning ("Component %s has no package name (it was ignored in the search).", as_component_get_data_id (cpt));
+                continue;
+            }
+
+            pkg_names.push_back (pkgname);
         }
     }
 
     /* resolve the package names */
-    for (const string &package : packages) {
+    for (const std::string &package : pkg_names) {
         if (m_cancel)
             break;
 
@@ -1481,16 +1494,6 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
             continue;
 
         output.append(ver);
-    }
-
-    /* check if we found nothing because AppStream data is missing completely */
-    if (output.empty()) {
-        g_autoptr(GPtrArray) all_cpts = as_pool_get_components (pool);
-        if (all_cpts->len <= 0) {
-            pk_backend_job_error_code(m_job,
-                                      PK_ERROR_ENUM_INTERNAL_ERROR,
-                                      "No AppStream metadata was found. This means we are unable to find any information for your request.");
-        }
     }
 }
 
