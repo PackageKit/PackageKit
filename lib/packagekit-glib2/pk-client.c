@@ -2120,6 +2120,7 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 	const gchar *dialog = NULL;
 	const gchar *display;
 	const gchar *term;
+	const gchar *home;
 	gboolean ret;
 	guint envpi = 0;
 	gchar **envp;
@@ -2156,6 +2157,12 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 			dialog = "kde";
 		else
 			dialog = "gnome";
+	}
+
+	/* pass through the home directory */
+	home = g_getenv ("HOME");
+	if (home != NULL) {
+		envp[envpi++] = g_strdup_printf ("HOME=%s", home);
 	}
 
 	/* indicate a prefered frontend */
