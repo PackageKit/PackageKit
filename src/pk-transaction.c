@@ -5215,6 +5215,8 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (property_name, "RemainingTime") == 0)
 		return g_variant_new_uint32 (priv->remaining_time);
 
+	g_set_error (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_PROPERTY,
+		     "Unknown transaction property ‘%s’", property_name);
 	return NULL;
 }
 
