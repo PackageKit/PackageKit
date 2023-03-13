@@ -5212,6 +5212,9 @@ pk_transaction_get_property (GDBusConnection *connection_, const gchar *sender,
 		return g_variant_new_uint64 (priv->download_size_remaining);
 	if (g_strcmp0 (property_name, "TransactionFlags") == 0)
 		return g_variant_new_uint64 (priv->cached_transaction_flags);
+	if (g_strcmp0 (property_name, "RemainingTime") == 0)
+		return g_variant_new_uint32 (priv->remaining_time);
+
 	return NULL;
 }
 
