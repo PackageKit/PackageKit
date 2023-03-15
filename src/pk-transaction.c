@@ -5508,6 +5508,9 @@ pk_transaction_dispose (GObject *object)
 	}
 
 	if (transaction->priv->registration_id > 0) {
+		/* We should have emitted ::Finished if the object was ever registered */
+		g_assert (transaction->priv->emitted_finished);
+
 		g_dbus_connection_unregister_object (transaction->priv->connection,
 						     transaction->priv->registration_id);
 		transaction->priv->registration_id = 0;
