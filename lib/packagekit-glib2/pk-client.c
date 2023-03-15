@@ -349,7 +349,12 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable,
 
 	/* dbus method has not yet fired */
 	if (state->proxy == NULL) {
+		g_autoptr(GError) local_error = NULL;
+
 		g_debug ("Cancelled, but no proxy, not sure what to do here");
+		local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+						   "PackageKit transaction disappeared");
+		pk_client_state_finish (state, local_error);
 		return;
 	}
 
@@ -1582,8 +1587,16 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		}
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Destroy") == 0)
+	if (g_strcmp0 (signal_name, "Destroy") == 0) {
+		g_autoptr(GError) local_error = NULL;
+
+		if (state->waiting_for_finished)
+			local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+							   "PackageKit transaction disappeared");
+
+		pk_client_state_finish (state, local_error);
 		return;
+	}
 }
 
 static void
