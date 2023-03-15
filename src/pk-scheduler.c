@@ -585,6 +585,7 @@ pk_scheduler_no_commit_cb (gpointer user_data)
 {
 	PkSchedulerItem *item = (PkSchedulerItem *) user_data;
 	g_warning ("ID %s was not committed in time!", item->tid);
+	pk_transaction_cancel_bg (item->transaction);
 	pk_scheduler_remove_internal (item->scheduler, item);
 
 	/* never repeat */
