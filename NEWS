@@ -4113,7 +4113,7 @@ Backends
  - portage: get-depends filtering output (Mounir Lamouri)
  - portage: Improve get-updates with security updates (Mounir Lamouri)
  - portage: Update the category/group map (Mounir Lamouri)
- - portage: Explicitely let portage backend accept sigkill (Mounir Lamouri)
+ - portage: Explicitly let portage backend accept sigkill (Mounir Lamouri)
  - portage: Cleaning, fixing not-found-error, misc (Mounir Lamouri)
  - portage: Clean remove-packages after portage fixes (Mounir Lamouri)
  - portage: Show a message if try to use remove-packages with autoremove=True (Mounir Lamouri)
