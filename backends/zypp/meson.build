@@ -18,7 +18,6 @@ shared_module(
     gmodule_dep,
   ],
   cpp_args: [
-    '-DPK_COMPILATION=1',
     '-DG_LOG_DOMAIN="PackageKit-Zypp"',
     '-Wall',
     '-Woverloaded-virtual',
