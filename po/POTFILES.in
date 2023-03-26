@@ -1,5 +1,6 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+backends/dnf/pk-backend-dnf-refresh.c
 client/pk-console.c
 client/pk-monitor.c
 client/pk-offline-update.c
