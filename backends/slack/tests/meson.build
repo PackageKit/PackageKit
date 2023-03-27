@@ -10,7 +10,6 @@ pk_slack_test_dependencies = [
 
 pk_slack_test_cpp_args = [
   '-DG_LOG_DOMAIN="PackageKit-Slackware"',
-  '-DPK_COMPILATION=1',
   '-DLOCALSTATEDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('localstatedir'))),
   '-DLIBDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libdir'))),
   '-DSYSCONFDIR="@0@"'.format(get_option('sysconfdir')),

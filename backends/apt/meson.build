@@ -62,7 +62,6 @@ shared_module(
   ],
   c_args: c_args,
   cpp_args: [
-    '-DPK_COMPILATION',
     c_args,
     ddtp_flag,
   ],
