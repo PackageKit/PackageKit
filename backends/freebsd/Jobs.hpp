@@ -44,6 +44,8 @@ public:
 
         PackageView oldPkgView() const { return oldPkg; }
         PackageView newPkgView() const { return newPkg; }
+        pkg* oldPkgHandle() const { return oldPkg; }
+        pkg* newPkgHandle() const { return newPkg; }
         int itemType() const { return type; }
     private:
         pkg_jobs* jobsHandle;
