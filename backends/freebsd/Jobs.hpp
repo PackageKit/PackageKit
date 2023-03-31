@@ -91,6 +91,21 @@ public:
 
     int count() const { return jobsCount; }
 
+    void apply() {
+        int retcode;
+        do {
+            retcode = pkg_jobs_apply(jobsHandle);
+            if (retcode == EPKG_CONFLICT) {
+                g_warning("Conflicts with the existing packages "
+                            "have been found. One more solver "
+                            "iteration is needed to resolve them.");
+            }
+            else if (retcode != EPKG_OK) {
+                g_error ("%s: pkg_jobs_apply failed", context);
+            }
+        } while (retcode != EPKG_OK);
+    }
+
     iterator begin() {
         void *pkgIter = NULL;
         pkg *newPkg, *oldPkg;
