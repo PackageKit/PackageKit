@@ -301,21 +301,12 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
         g_error("install_packages: unexpected transaction_flags %s", pk_transaction_flag_bitfield_to_string(transaction_flags));
 
     PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY);
+    Jobs jobs (PKG_JOBS_INSTALL, pkgDb.handle(), "install_packages");
 
-    struct pkg_jobs	*jobs = NULL;
-    pkg_flags	 jobs_flags = static_cast<pkg_flags> (
-        PKG_FLAG_NONE | PKG_FLAG_PKG_VERSION_TEST);
+    jobs << PKG_FLAG_PKG_VERSION_TEST;
 
     if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
-        jobs_flags = static_cast<pkg_flags>(jobs_flags | PKG_FLAG_SKIP_INSTALL);
-
-    if (pkg_jobs_new(&jobs, PKG_JOBS_INSTALL, pkgDb.handle()) != EPKG_OK) {
-        g_error("install_packages: pkg_jobs_new failed");
-        return;
-    }
-    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
-
-    pkg_jobs_set_flags(jobs, jobs_flags);
+        jobs << PKG_FLAG_SKIP_INSTALL;
 
     guint size = g_strv_length (package_ids);
     std::vector<gchar*> names;
@@ -324,31 +315,24 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
         PackageView pkg(package_ids[i]);
         names.push_back(g_strdup(pkg.nameversion()));
     }
-    names.push_back (nullptr);
     // TODO: this deleter results in an obscure crash on the second "install_packages" invocation
+    //names.push_back (nullptr);
     //auto namesDeleter = deleted_unique_ptr<decltype(names)>(&names, [](auto* names) { g_strfreev (names->data()); });
 
-    if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
-        g_error ("install_packages: pkg_jobs_add failed");
+    jobs.add (MATCH_GLOB, names);
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-    if (pkg_jobs_solve(jobs) != EPKG_OK)
-        g_error ("install_packages: pkg_jobs_solve failed");
+    if (jobs.solve() == 0)
+        return; // nothing can be installed, for example because everything requested is already installed
 
-    if (pkg_jobs_count(jobs) == 0)
-        return;
 
-    void *iter = NULL;
-    struct pkg *new_pkg, *old_pkg;
-    int type;
-    while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
-        if (type == PKG_SOLVED_DELETE) {
+    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+        if (it.itemType() == PKG_SOLVED_DELETE) {
             g_warning ("install_packages: have to remove some packages");
             continue;
         }
-
-        backendJobPackageFromPkg (job, new_pkg, PK_INFO_ENUM_NORMAL);
+        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
     }
 
     if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
@@ -356,19 +340,7 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 
-    int retcode;
-    do {
-        retcode = pkg_jobs_apply(jobs);
-        if (retcode == EPKG_CONFLICT) {
-            g_warning("Conflicts with the existing packages "
-                        "have been found. One more solver "
-                        "iteration is needed to resolve them.");
-            continue;
-        }
-        else if (retcode != EPKG_OK) {
-            g_error ("install_packages: pkg_jobs_apply failed");
-        }
-    } while (retcode == EPKG_CONFLICT);
+    jobs.apply();
 }
 
 void
