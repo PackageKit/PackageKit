@@ -211,7 +211,7 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
         // TODO: handle reponame?
 
         if (jobs.solve() == 0)
-            return; // nothing to do
+            return; // no updates available
 
         std::vector<gchar*> updates;
         std::vector<gchar*> obsoletes;
@@ -270,36 +270,20 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     g_assert (filters == 0);
 
     PackageDatabase pkgDb (job);
+    Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "get_updates");
 
-    struct pkg_jobs	*jobs = NULL;
-    pkg_flags jobs_flags = static_cast<pkg_flags> (
-        PKG_FLAG_NONE
-        | PKG_FLAG_PKG_VERSION_TEST
-        | PKG_FLAG_DRY_RUN);
-
-    if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, pkgDb.handle()) != EPKG_OK)
-        g_error("pkg_jobs_new failed");
-
-    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
-
-    pkg_jobs_set_flags(jobs, jobs_flags);
+    jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
 
     // TODO: handle reponame?
 
-    if (pkg_jobs_solve(jobs) != EPKG_OK)
-        g_error("pkg_jobs_solve failed");
+    if (jobs.solve() == 0)
+        return; // no updates available
 
-    if (pkg_jobs_count(jobs) == 0)
-        return;
-
-    void *iter = NULL;
-    struct pkg *new_pkg, *old_pkg;
-    int type;
-    while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
+    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
         // Do not report packages that will be removed by the upgrade
-        if (type == PKG_SOLVED_UPGRADE_REMOVE)
+        if (it.itemType() == PKG_SOLVED_UPGRADE_REMOVE)
             continue;
-        backendJobPackageFromPkg (job, new_pkg, PK_INFO_ENUM_NORMAL);
+        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
     }
 }
 
