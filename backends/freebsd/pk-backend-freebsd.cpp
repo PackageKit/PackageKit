@@ -41,6 +41,7 @@
 #include "PackageView.hpp"
 #include "PackageDatabase.hpp"
 #include "PKJobFinisher.hpp"
+#include "Jobs.hpp"
 
 // TODO: Research pkg-audit
 // TODO: Implement proper progress reporting everywhere
@@ -193,37 +194,24 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
     PKJobFinisher jf (job);
     PackageDatabase pkgDb (job);
 
-    pkg_flags jobs_flags = static_cast<pkg_flags> (
-        PKG_FLAG_NONE
-        | PKG_FLAG_PKG_VERSION_TEST
-        | PKG_FLAG_DRY_RUN);
-
     guint size = g_strv_length (package_ids);
     for (guint i = 0; i < size; i++) {
         // in this approach we call `pkg upgrade <pkg>` in a loop and present
         // the user an upgrading plan for each invocation
         // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
         // and output a combined plan. TODO: decide which way is better
-        struct pkg_jobs	*jobs = NULL;
-        if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, pkgDb.handle()) != EPKG_OK)
-            g_error("update_detail: pkg_jobs_new failed");
-        auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs);});
+        Jobs jobs(PKG_JOBS_UPGRADE, pkgDb.handle(), "update_detail");
+
+        jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
 
         PackageView pkg (package_ids[i]);
         gchar* pkg_namever = pkg.nameversion();
-
-        if (pkg_jobs_add(jobs, MATCH_GLOB, &pkg_namever, 1) == EPKG_FATAL)
-            g_error("update_detail: pkg_jobs_add failed");
-
-        pkg_jobs_set_flags(jobs, jobs_flags);
+        jobs.add(MATCH_GLOB, &pkg_namever, 1);
 
         // TODO: handle reponame?
 
-        if (pkg_jobs_solve(jobs) != EPKG_OK)
-            g_error("update_detail: pkg_jobs_solve failed");
-
-        if (pkg_jobs_count(jobs) == 0)
-            return;
+        if (jobs.solve() == 0)
+            return; // nothing to do
 
         std::vector<gchar*> updates;
         std::vector<gchar*> obsoletes;
@@ -237,17 +225,16 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
         const gchar	*issued = NULL;
         const gchar	*updated = issued;
 
-        void *iter = NULL;
-        struct pkg *new_pkg, *old_pkg;
-        int type;
-        while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
-            PackageView oldPkg(old_pkg);
-            switch (type) {
+        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+            switch (it.itemType()) {
+            case PKG_SOLVED_INSTALL:
+                updates.push_back(g_strdup(it.newPkgView().packageKitId()));
+                break;
             case PKG_SOLVED_UPGRADE_REMOVE:
-                obsoletes.push_back(g_strdup(oldPkg.packageKitId()));
+                obsoletes.push_back(g_strdup(it.oldPkgView().packageKitId()));
                 break;
             default:
-                updates.push_back(g_strdup(oldPkg.packageKitId()));
+                updates.push_back(g_strdup(it.oldPkgView().packageKitId()));
                 break;
             }
         }
