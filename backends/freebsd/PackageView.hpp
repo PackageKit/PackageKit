@@ -42,6 +42,18 @@ public:
         pk_id_parts = pk_package_id_split (pk_id);
     }
 
+    PackageView(PackageView&& other)
+    : name_el(other.name_el), version_el(other.version_el),
+      arch_el(other.arch_el), reponame_el(other.reponame_el),
+      comment_el(other.comment_el), pk_id(other.pk_id), free_pk_id(other.free_pk_id),
+      pk_id_parts(other.pk_id_parts), pk_namever(other.pk_namever) {
+          other.free_pk_id = false;
+          other.pk_id_parts = nullptr;
+          other.pk_namever = nullptr;
+      }
+
+    PackageView(const PackageView&) = delete;
+
     ~PackageView() {
         if (free_pk_id)
             g_free(pk_id);
