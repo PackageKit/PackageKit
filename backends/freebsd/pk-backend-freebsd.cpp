@@ -446,19 +446,10 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
     g_assert (size > 0);
 
     PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY, PKGDB_DEFAULT);
-
-    struct pkg_jobs	*jobs = NULL;
-    pkg_flags	 jobs_flags = PKG_FLAG_NONE;
-
-    if (pkg_jobs_new(&jobs, PKG_JOBS_DEINSTALL, pkgDb.handle()) != EPKG_OK)
-        g_error("remove_packages: pkg_jobs_new failed");
-
-    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+    Jobs jobs(PKG_JOBS_DEINSTALL, pkgDb.handle(), "remove_packages");
 
     if (allow_deps)
-        jobs_flags = static_cast<pkg_flags>(jobs_flags | PKG_FLAG_RECURSIVE);
-
-    pkg_jobs_set_flags(jobs, jobs_flags);
+        jobs << PKG_FLAG_RECURSIVE;
 
     std::vector<gchar*> names;
     names.reserve (size);
@@ -467,17 +458,15 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
         names.push_back(g_strdup(pkg.nameversion()));
     }
 
-    if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
-        g_error ("remove_packages: pkg_jobs_add failed");
+    jobs.add(MATCH_GLOB, names);
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-    if (pkg_jobs_solve(jobs) != EPKG_OK)
-        g_error ("remove_packages: pkg_jobs_solve failed");
+    jobs.solve();
 
     // TODO: handle locked pkgs
-    g_assert (pkg_jobs_has_lockedpkgs(jobs) == 0);
-    g_assert (pkg_jobs_count(jobs) != 0);
+    g_assert (!jobs.hasLockedPackages());
+    g_assert (jobs.count() != 0);
 
     // TODO: We need https://github.com/freebsd/pkg/issues/1271 to be fixed
     // to support "autoremove"
@@ -487,8 +476,7 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
 
-    if (pkg_jobs_apply (jobs) != EPKG_OK)
-        g_error ("remove_packages: pkg_jobs_apply failed");
+    jobs.apply();
 
     pkgdb_compact (pkgDb.handle());
 }
@@ -588,41 +576,31 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
     std::string cacheDir = "/var/cache/pkg"; // TODO: query this from libpkg
 
     uint i, size;
-    // This is required to convince libpkg to download into an arbitrary directory
-    if (!directory.empty())
-        jobs_flags = PKG_FLAG_FETCH_MIRROR;
 
     size = g_strv_length (package_ids);
     for (i = 0; i < size; i++) {
-        struct pkg_jobs	*jobs = NULL;
-        if (pkg_jobs_new(&jobs, PKG_JOBS_FETCH, pkgDb.handle()) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_new failed");
-
-        auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+        Jobs jobs(PKG_JOBS_FETCH, pkgDb.handle(), "download_packages");
 
         // TODO: set reponame when libpkg start reporting it
         // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
         // 	goto cleanup;
 
-        if (!directory.empty() && pkg_jobs_set_destdir(jobs, directory.c_str()) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_set_destdir failed for %s", directory.c_str());
-
-        pkg_jobs_set_flags(jobs, jobs_flags);
+        if (!directory.empty()) {
+            // This flag is required to convince libpkg to download
+            // into an arbitrary directory
+            jobs << PKG_FLAG_FETCH_MIRROR;
+            jobs.setDestination(directory);
+        }
 
         PackageView pkg (package_ids[i]);
-
         gchar* pkg_namever = pkg.nameversion();
-        if (pkg_jobs_add(jobs, MATCH_EXACT, &pkg_namever, 1) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_add failed for %s", pkg_namever);
 
-        if (pkg_jobs_solve(jobs) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_solve failed");
+        jobs.add(MATCH_EXACT, &pkg_namever, 1);
 
-        if (pkg_jobs_count(jobs) == 0)
-            continue;
+        if (jobs.solve() == 0)
+            continue; // the package doesn't need to be downloaded
 
-        if (pkg_jobs_apply(jobs) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_apply failed");
+        jobs.apply();
 
         std::string filepath = directory.empty()
                              ? cacheDir + "/" + pkg_namever + ".pkg"
