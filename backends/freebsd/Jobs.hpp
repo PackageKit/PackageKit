@@ -68,6 +68,12 @@ public:
 
     void setFlags(pkg_flags flags) { jobsFlags = flags; }
 
+    void setDestination(const std::string& dest) const { setDestination(dest.c_str()); }
+    void setDestination(const char* dest) const {
+        if (pkg_jobs_set_destdir(jobsHandle, dest) != EPKG_OK)
+            g_error("%s: pkg_jobs_add failed", context);
+    }
+
     void add(match_t matchType, char **argv, int argc) {
         if (pkg_jobs_add(jobsHandle, matchType, argv, argc) == EPKG_FATAL)
             g_error("%s: pkg_jobs_add failed", context);
@@ -90,6 +96,8 @@ public:
     }
 
     int count() const { return jobsCount; }
+
+    bool hasLockedPackages() const { return pkg_jobs_has_lockedpkgs(jobsHandle); }
 
     void apply() {
         int retcode;
