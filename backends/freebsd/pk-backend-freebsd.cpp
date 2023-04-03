@@ -267,7 +267,11 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     // TODO: what filters could we possibly get there?
-    g_assert (filters == 0);
+    if (! (filters == 0
+        || filters == pk_bitfield_value(PK_FILTER_ENUM_UNKNOWN)
+        || filters == pk_bitfield_value(PK_FILTER_ENUM_NONE)
+    ))
+        g_error("get_updates: unexpected filters %s", pk_filter_bitfield_to_string(filters));
 
     PackageDatabase pkgDb (job);
     Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "get_updates");
@@ -571,7 +575,6 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 
     PackageDatabase pkgDb (job);
 
-    pkg_flags jobs_flags = PKG_FLAG_NONE;
     std::string directory (directory0);
     std::string cacheDir = "/var/cache/pkg"; // TODO: query this from libpkg
 
@@ -690,8 +693,6 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-
-    //g_error(pk_filter_bitfield_to_string(filters));
 
     // TODO: what can we possibly get in filters?
     // We ignore ~installed as there is no support in libpkg
