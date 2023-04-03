@@ -696,9 +696,12 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 
     // TODO: what can we possibly get in filters?
     // We ignore ~installed as there is no support in libpkg
+    // We ignore arch for now
     if (! (filters == 0
         || pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)
-        || pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED))) {
+        || pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
+        || pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH)
+    )) {
         g_error("freebsd_search: unexpected filters %s", pk_filter_bitfield_to_string(filters));
     }
 
