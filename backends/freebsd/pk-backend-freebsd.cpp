@@ -439,6 +439,9 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
+    PKJobFinisher jf (job);
+
+    // TODO: should we adhere to PK_FILTER_ENUM_INSTALLED and PK_FILTER_ENUM_NOT_INSTALLED?
     g_warning ("resolve filters: %s", pk_filter_bitfield_to_string(filters));
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
@@ -449,18 +452,43 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
         gchar* pkg = packages[i];
 
         if (pk_package_id_check(pkg) == false) {
-            // if pkgid isn't a valid package ID, treat it as regexp suitable for pk_freebsd_search
-            names.push_back(pkg);
-            // TODO: maybe search by glob there?
+            // if pkgid isn't a valid package ID, treat it as glob "pkgname-*"
+            names.push_back(g_strconcat(pkg, "-*", NULL));
         }
         else {
             PackageView pkgView (pkg);
             names.push_back(g_strdup(pkgView.nameversion()));
         }
     }
-    // Null-terminator for GLib-style arrays
-    names.push_back (nullptr);
-    pk_freebsd_search (job, filters, names.data());
+
+    // TODO: we iterate the DB twice to get a distinction between installed packages
+    // and available ones
+    // TODO: deduplicate identical entries
+    {
+        PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_DEFAULT);
+
+        for (auto* name : names) {
+            pkgdb_it* it = pkgdb_query (pkgDb.handle(), name, MATCH_GLOB);
+            struct pkg *pkg = NULL;
+
+            while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+                backendJobPackageFromPkg (job, pkg, PK_INFO_ENUM_INSTALLED);
+            }
+        }
+    }
+
+    {
+        PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_MAYBE_REMOTE);
+
+        for (auto* name : names) {
+            pkgdb_it* it = pkgdb_repo_search (pkgDb.handle(), name, MATCH_GLOB, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
+            struct pkg *pkg = NULL;
+
+            while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+                backendJobPackageFromPkg (job, pkg, PK_INFO_ENUM_AVAILABLE);
+            }
+        }
+    }
 }
 
 void
