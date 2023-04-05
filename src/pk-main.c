@@ -182,8 +182,20 @@ main (int argc, char *argv[])
 	syslog (LOG_DAEMON | LOG_DEBUG, "daemon start");
 
 	/* after how long do we timeout? */
-	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", NULL);
-	g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	exit_idle_time = g_key_file_get_integer (conf, "Daemon", "ShutdownTimeout", &error);
+	/* THIS COMMENT IS A TSUNAMI STONE
+	 * The automatic shutdown timeout prevents memory leaks in some
+	 * backends from getting out of hand.  If you want to remove this
+	 * timeout, please study the Git history and be sure that you are not
+	 * regressing Red Hat bugzilla #1354074 (again). */
+	if (error != NULL) {
+		exit_idle_time = 300;
+		g_clear_error (&error);
+	}
+	if (exit_idle_time > 0)
+		g_debug ("daemon shutdown set to %i seconds", exit_idle_time);
+	else
+		g_debug ("daemon will not shut down on idle");
 
 	/* override the backend name */
 	if (backend_name != NULL) {
