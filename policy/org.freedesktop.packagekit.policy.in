@@ -10,7 +10,7 @@
   -->
 
   <vendor>The PackageKit Project</vendor>
-  <vendor_url>http://www.packagekit.org/</vendor_url>
+  <vendor_url>https://www.freedesktop.org/software/PackageKit/</vendor_url>
   <icon_name>package-x-generic</icon_name>
 
   <action id="org.freedesktop.packagekit.cancel-foreign">
