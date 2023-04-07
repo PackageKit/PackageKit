@@ -169,9 +169,9 @@ Most user just don't have got the technical understanding to handle this well.</
 PackageKit runs a process <code>packagekitd</code> that is a daemon that runs per-system.
 The daemon lets you schedule transactions using either the raw
 <a href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/org.freedesktop.PackageKit.Transaction.xml">
-DBUS methods</a>, or using <a href="http://www.packagekit.org/gtk-doc/PkClient.html">libpackagekit</a>.
+DBUS methods</a>, or using <a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/PkClient.html">libpackagekit</a>.
 The transactions are very fine grained, so an application would have to manage
-<a href="http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html">
+<a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">
 the transaction process</a> itself.
 This would mean handling the EULA and GPG callbacks in each application. This is less than ideal.
 </p>
@@ -186,10 +186,10 @@ managing callbacks to update custom GUIs.
 <p>
 The session helper is implemented in <code>gpk-update-icon</code> on GNOME,
 and is also availble when <code>apper</code> is installed on KDE.
-If you want full integration using <a href="http://www.packagekit.org/img/gpk-added-deps.png">
-custom dialogs</a> without running the extra session process, then use libpackagekit.
+If you want full integration using custom dialogs without running the extra
+session process, then use libpackagekit.
 If you don't care, and just want things to <i>work</i> then
-<a href="http://www.packagekit.org/pk-faq.html#session-methods">use the session interface</a>.
+<a href="https://www.freedesktop.org/software/PackageKit/pk-faq.html#session-methods">use the session interface</a>.
 If you want a demo, you can download <a href="files/session.c">session.c</a> for a
 session example and <a href="files/system.c">system.c</a> as a system example.
 </p>
@@ -207,7 +207,7 @@ gcc -o system -Wall system.c `pkg-config --cflags --libs packagekit-glib`
 Using the shared session interface you can use the following DBUS methods
 to make PackageKit just do the right thing.
 All the additional
-<a href="http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html">
+<a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">
 confirmation, package downloads, GPG and EULA prompting is done automatically.</a>
 </p>
 <p>

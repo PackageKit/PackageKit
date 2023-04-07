@@ -26,7 +26,7 @@
  * A GObject to use for accessing PackageKit asynchronously. If you're
  * using #PkClient to install, remove, or update packages, be prepared that
  * the eula, gpg and trusted callbacks need to be rescheduled manually, as in
- * http://www.packagekit.org/gtk-doc/introduction-ideas-transactions.html
+ * https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html
  */
 
 #include "config.h"
