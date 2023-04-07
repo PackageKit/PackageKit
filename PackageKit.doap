@@ -22,6 +22,5 @@
 
   <license rdf:resource="http://www.gnu.org/licenses/gpl-2.0.txt" />
   <bug-database rdf:resource="http://bugzilla.freedesktop.org/" />
-  <screenshots rdf:resource="http://www.packagekit.org/pk-screenshots.html#gnome" />
 
 </Project>
