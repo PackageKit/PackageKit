@@ -358,7 +358,7 @@ manpage.1: manpage.xml
     <title>SEE ALSO</title>
     <para>pkmon (1).</para>
     <para>
-      The programs are documented fully on http://www.packagekit.org.
+      The programs are documented fully on https://www.freedesktop.org/software/PackageKit.
     </para>
   </refsect1>
   <refsect1>
