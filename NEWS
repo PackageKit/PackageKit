@@ -721,7 +721,7 @@ Backends:
  - portage: use PackagekitProgress as an iterable (Gilles Dartiguelongue)
  - portage: use python idioms (Gilles Dartiguelongue)
  - python: make PackagekitProgress an Iterable (Gilles Dartiguelongue)
- - python: set steps on PackagekitProgress instanciation (Gilles Dartiguelongue)
+ - python: set steps on PackagekitProgress instantiation (Gilles Dartiguelongue)
  - zypp: Raise priority of ZYPP stack updates if a security patch is shadowed (bsc#951592) (Michael Andres)
 
 New Features:
@@ -2271,7 +2271,7 @@ Backends:
  - apt: Raise exceptions in the backend code instead of calling PackageKitBaseBackend.error directly (Sebastian Heinlein)
  - apt: remove encoding mangling - should be handled by packagekit.backend already (Sebastian Heinlein)
  - apt: remove oboslete files (Sebastian Heinlein)
- - apt: Respect the ROOT environement variable (Sebastian Heinlein)
+ - apt: Respect the ROOT environment variable (Sebastian Heinlein)
  - apt: Start with updating the backend on several places (Sebastian Heinlein)
  - apt: Too many API and style fixes to count (Sebastian Heinlein)
  - apt: Use the apt.progress.base.InstallProgress abilities to handle dpkg progress (Sebastian Heinlein)
@@ -6587,7 +6587,7 @@ Released: 2007-11-10
  - Replace the g_strjoinv and use pk_strbuild_va to append a va_list to fix
    a crash on i86_64 (Richard Hughes)
  - Immediate exit has to wait a few cycles for registration (Richard Hughes)
- - Check for existance of apt_pkg python module with apt backend (Tom Parker)
+ - Check for existence of apt_pkg python module with apt backend (Tom Parker)
  - yum: Emit no-cache in resolve if the cache is invalid (Tim Lauridsen)
  - Correct typos and thinkos, and add a few more application notes to the
    developer documentation (Richard Hughes)

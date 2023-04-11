@@ -367,7 +367,7 @@ class PackageKitPortageMixin(object):
         '''
         This function checks files in SRC_URI and look if they are in DESTDIR.
         Missing files are returned. If there is no issue, None is returned.
-        We don't care about digest but only about existance of files.
+        We don't care about digest but only about existence of files.
 
         NOTES:
         - we are assuming the package has RESTRICT='fetch'
