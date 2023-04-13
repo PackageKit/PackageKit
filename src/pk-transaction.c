@@ -4878,6 +4878,22 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		return TRUE;
 	}
 
+	/* details-with-deps-size=true */
+	if (g_strcmp0 (key, "details-with-deps-size") == 0) {
+		if (g_strcmp0 (value, "true") == 0) {
+			pk_backend_job_set_details_with_deps_size (priv->job, TRUE);
+		} else if (g_strcmp0 (value, "false") == 0) {
+			pk_backend_job_set_details_with_deps_size (priv->job, FALSE);
+		} else {
+			g_set_error (error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				      "details-with-deps-size hint expects true or false, not %s", value);
+			return FALSE;
+		}
+		return TRUE;
+	}
+
 	/* Is the plural Packages signal supported? The key’s value is ignored,
 	 * as clients will only send it if it’s true. */
 	if (g_strcmp0 (key, "supports-plural-signals") == 0) {

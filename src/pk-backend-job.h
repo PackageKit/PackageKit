@@ -146,6 +146,11 @@ const gchar	*pk_backend_job_get_pac			(PkBackendJob	*job);
 const gchar	*pk_backend_job_get_locale		(PkBackendJob	*job);
 const gchar	*pk_backend_job_get_frontend_socket	(PkBackendJob	*job);
 guint		 pk_backend_job_get_cache_age		(PkBackendJob	*job);
+gboolean	 pk_backend_job_get_details_with_deps_size
+							(PkBackendJob	*job);
+void		 pk_backend_job_set_details_with_deps_size
+							(PkBackendJob	*job,
+							 gboolean	 details_with_deps_size);
 
 /* transaction vfuncs */
 typedef void	 (*PkBackendJobVFunc)			(PkBackendJob	*job,

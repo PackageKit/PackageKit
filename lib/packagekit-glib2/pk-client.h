@@ -431,6 +431,9 @@ gboolean	 pk_client_get_idle			(PkClient		*client);
 void		 pk_client_set_cache_age		(PkClient		*client,
 							 guint			 cache_age);
 guint		 pk_client_get_cache_age		(PkClient		*client);
+void		 pk_client_set_details_with_deps_size	(PkClient		*client,
+							 gboolean		 details_with_deps_size);
+gboolean	 pk_client_get_details_with_deps_size	(PkClient		*client);
 
 G_END_DECLS
 
