@@ -1878,9 +1878,32 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	/* emit details */
 	for (i = 0; package_ids[i] != NULL; i++) {
+		guint64 download_size;
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
+		download_size = dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg);
+		if (pk_backend_job_get_details_with_deps_size (job) &&
+		    !dnf_package_installed (pkg)) {
+			g_autoptr(DnfReldepList) requires = NULL;
+			requires = dnf_package_get_requires (pkg);
+			if (requires) {
+				g_autoptr(GPtrArray) pkglist_reqs = NULL;
+				HyQuery query = hy_query_create (sack);
+				guint j;
+
+				hy_query_filter_reldep_in (query, HY_PKG_PROVIDES, requires);
+				pkglist_reqs = hy_query_run (query);
+				for (j = 0; pkglist_reqs && j < pkglist_reqs->len; j++) {
+					DnfPackage *pkg_req = g_ptr_array_index (pkglist_reqs, j);
+					if (pkg_req && !dnf_package_installed (pkg_req) &&
+					    !dnf_package_is_downloaded (pkg_req))
+						download_size += dnf_package_get_downloadsize (pkg_req);
+				}
+				hy_query_free (query);
+			}
+		}
+
 		pk_backend_job_details_full (job,
 					     package_ids[i],
 					     dnf_package_get_summary (pkg),
@@ -1889,7 +1912,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 					     dnf_package_get_description (pkg),
 					     dnf_package_get_url (pkg),
 					     (gulong) dnf_package_get_installsize (pkg),
-					     dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
+					     download_size);
 	}
 
 	/* done */
