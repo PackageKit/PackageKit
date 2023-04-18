@@ -228,7 +228,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-    PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_DEFAULT);
+    PackageDatabase pkgDb (job);
 
     guint size = g_strv_length (package_ids);
     for (guint i = 0; i < size; i++) {
@@ -525,7 +525,7 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
     // and available ones
     // TODO: deduplicate identical entries
     {
-        PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_DEFAULT);
+        PackageDatabase pkgDb (job);
 
         for (auto* name : names) {
             pkgdb_it* it = pkgdb_query (pkgDb.handle(), name, MATCH_GLOB);
@@ -538,7 +538,7 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
     }
 
     {
-        PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_MAYBE_REMOTE);
+        PackageDatabase pkgDb (job);
 
         for (auto* name : names) {
             pkgdb_it* it = pkgdb_repo_search (pkgDb.handle(), name, MATCH_GLOB, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
@@ -565,7 +565,7 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
     // TODO: What should happen when remove_packages() is called with an empty package_ids?
     g_assert (size > 0);
 
-    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY, PKGDB_DEFAULT);
+    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY);
     Jobs jobs(PKG_JOBS_DEINSTALL, pkgDb.handle(), "remove_packages");
 
     if (allow_deps)
