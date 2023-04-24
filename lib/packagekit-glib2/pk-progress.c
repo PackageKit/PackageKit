@@ -1157,6 +1157,7 @@ pk_progress_finalize (GObject *object)
 
 	g_free (progress->priv->package_id);
 	g_free (progress->priv->transaction_id);
+	g_free (progress->priv->sender);
 
 	G_OBJECT_CLASS (pk_progress_parent_class)->finalize (object);
 }
