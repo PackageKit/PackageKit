@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <vector>
 #include <memory>
 
 #include <glib.h>
@@ -82,3 +83,13 @@ struct g_strfreev_delete {
 // alias for an unique_ptr with g_strfreev() deleter
 template<typename T>
 using g_strfreev_deleted_unique_ptr = std::unique_ptr<T,g_strfreev_delete>;
+
+// a variant of std::vector that g_free()'s its elements on destruction
+
+class gchar_ptr_vector : public std::vector<gchar*> {
+public:
+  ~gchar_ptr_vector() {
+    for (gchar* ptr : *this)
+      g_free (ptr);
+  }
+};
