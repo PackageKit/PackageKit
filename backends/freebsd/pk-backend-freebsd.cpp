@@ -553,71 +553,80 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
     PKJobFinisher jf (job);
     PackageDatabase pkgDb (job);
 
+    Jobs jobs(PKG_JOBS_UPGRADE, pkgDb.handle(), "update_detail");
+    jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
+
     guint size = g_strv_length (package_ids);
     for (guint i = 0; i < size; i++) {
-        // in this approach we call `pkg upgrade <pkg>` in a loop and present
-        // the user an upgrading plan for each invocation
-        // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
-        // and output a combined plan. TODO: decide which way is better
-        Jobs jobs(PKG_JOBS_UPGRADE, pkgDb.handle(), "update_detail");
-
-        jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
-
         PackageView pkg (package_ids[i]);
         gchar* pkg_namever = pkg.nameversion();
         jobs.add(MATCH_GLOB, &pkg_namever, 1);
+    }
 
-        // TODO: handle reponame?
+    // TODO: handle reponame?
 
-        if (jobs.solve() == 0)
-            return; // no updates available
+    if (jobs.solve() == 0)
+        return; // no updates available
 
-        std::vector<gchar*> updates;
-        std::vector<gchar*> obsoletes;
-        gchar		**vendor_urls = NULL;
-        gchar		**bugzilla_urls = NULL;
-        gchar		**cve_urls = NULL;
-        PkRestartEnum	 restart = PK_RESTART_ENUM_NONE;
-        const gchar	*update_text = NULL;
-        const gchar	*changelog = NULL;
-        PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_UNKNOWN;
-        const gchar	*issued = NULL;
-        const gchar	*updated = issued;
+    gchar_ptr_vector updates;
+    gchar_ptr_vector obsoletes;
+    gchar		**vendor_urls = NULL;
+    gchar		**bugzilla_urls = NULL;
+    gchar		**cve_urls = NULL;
+    PkRestartEnum	 restart = PK_RESTART_ENUM_NONE;
+    const gchar	*update_text = NULL;
+    const gchar	*changelog = NULL;
+    PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_UNKNOWN;
+    const gchar	*issued = NULL;
+    const gchar	*updated = issued;
 
-        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
-            switch (it.itemType()) {
-            case PKG_SOLVED_INSTALL:
-                updates.push_back(g_strdup(it.newPkgView().packageKitId()));
-                break;
-            case PKG_SOLVED_UPGRADE_REMOVE:
-                obsoletes.push_back(g_strdup(it.oldPkgView().packageKitId()));
-                break;
-            default:
-                updates.push_back(g_strdup(it.oldPkgView().packageKitId()));
-                break;
-            }
+#define SAFE_SHOW(str, it) g_warning(str, it.oldPkgHandle() ? it.oldPkgView().nameversion() : "NULL", it.newPkgHandle() ? it.newPkgView().nameversion() : "NULL")
+    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+        switch (it.itemType()) {
+        case PKG_SOLVED_INSTALL:
+            SAFE_SHOW("SOLVED_INSTALL, old: %s, new: %s", it);
+            updates.push_back(g_strdup(it.newPkgView().packageKitId()));
+            break;
+        case PKG_SOLVED_DELETE:
+            SAFE_SHOW("SOLVED_DELETE, old: %s, new: %s", it);
+            obsoletes.push_back(g_strdup(it.oldPkgView().packageKitId()));
+            break;
+        case PKG_SOLVED_UPGRADE:
+            SAFE_SHOW("SOLVED_UPGRADE, old: %s, new: %s", it);
+            updates.push_back(g_strdup(it.oldPkgView().packageKitId()));
+            break;
+        case PKG_SOLVED_UPGRADE_REMOVE:
+            SAFE_SHOW("SOLVED_UPGRADE_REMOVE, old: %s, new: %s", it);
+            obsoletes.push_back(g_strdup(it.oldPkgView().packageKitId()));
+            break;
+        case PKG_SOLVED_FETCH:
+            SAFE_SHOW("SOLVED_FETCH, old: %s, new: %s", it);
+            break;
+        case PKG_SOLVED_UPGRADE_INSTALL:
+            SAFE_SHOW("SOLVED_UPGRADE_INSTALL, old: %s, new: %s", it);
+            updates.push_back(g_strdup(it.oldPkgView().packageKitId()));
+            break;
+        default:
+            break;
         }
+    }
 
-        updates.push_back(nullptr);
-        obsoletes.push_back(nullptr);
+    updates.push_back(nullptr);
+    obsoletes.push_back(nullptr);
 
-        pk_backend_job_update_detail (job, pkg.packageKitId(),
-                                        updates.data(),
-                                        obsoletes.data(),
-                                        vendor_urls,
-                                        bugzilla_urls,
-                                        cve_urls,
-                                        restart,
-                                        update_text,
-                                        changelog,
-                                        state,
-                                        issued,
-                                        updated);
-
-        for (auto* str : updates)
-            g_free (str);
-        for (auto* str : obsoletes)
-            g_free (str);
+    for (guint i = 0; i < size; i++) {
+        pk_backend_job_update_detail (job, package_ids[i],
+                                    updates.data(),
+                                    obsoletes.data(),
+                                    vendor_urls,
+                                    bugzilla_urls,
+                                    cve_urls,
+                                    restart,
+                                    update_text,
+                                    changelog,
+                                    state,
+                                    issued,
+                                    updated);
     }
 }
 
