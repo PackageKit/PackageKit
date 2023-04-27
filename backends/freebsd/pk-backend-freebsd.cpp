@@ -785,33 +785,46 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 {
     PKJobFinisher jf (job);
 
-    // TODO: should we adhere to PK_FILTER_ENUM_INSTALLED and PK_FILTER_ENUM_NOT_INSTALLED?
-    g_warning ("resolve filters: %s", pk_filter_bitfield_to_string(filters));
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
+    match_t match = MATCH_EXACT;
     guint size = g_strv_length (packages);
     std::vector<gchar*> names;
     names.reserve(size+1);
     for (guint i = 0; i < size; i++) {
-        gchar* pkg = packages[i];
+        gchar* package = packages[i];
 
-        if (pk_package_id_check(pkg) == false) {
+        if (pk_package_id_check(package) == false) {
             // if pkgid isn't a valid package ID, treat it as glob "pkgname-*"
-            names.push_back(g_strconcat(pkg, "-*", NULL));
+            names.push_back(g_strconcat(package, "-*", NULL));
+            match = MATCH_GLOB;
         }
         else {
-            PackageView pkgView (pkg);
+            PackageView pkgView (package);
             names.push_back(g_strdup(pkgView.nameversion()));
         }
     }
 
-    PackageDatabase pkgDb (job);
+    pkgdb_t dbType = PKGDB_MAYBE_REMOTE;
+    // save ourselves some work by skipping remote DBs if we only want installed packages
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
+        && !pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
+        dbType = PKGDB_DEFAULT;
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
+        dbType = PKGDB_REMOTE;
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, dbType);
 
     for (auto* name : names) {
-        pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), name, MATCH_GLOB, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
+        pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), name, match, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
         struct pkg *pkg = NULL;
 
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+            // We'll be always getting installed packages from pkgdb_it_next,
+            // but PackageKit sometimes asks only about available ones
+            if (filters && !pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && pkg_type(pkg) == PKG_INSTALLED)
+                continue;
             backendJobPackageFromPkg (job, pkg);
         }
     }
