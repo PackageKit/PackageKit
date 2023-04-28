@@ -513,14 +513,12 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
             PackageView pkgView(pkg);
             PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
-            gchar* description = NULL;
-            gchar* url = NULL;
             pk_backend_job_details (job, package_ids[i],
                                     pkgView.comment(),
                                     pkgView.license(),
                                     group,
-                                    description,
-                                    url,
+                                    pkgView.description(),
+                                    pkgView.url(),
                                     pkgView.flatsize());
 
             if (pk_backend_job_is_cancelled (job))
@@ -656,7 +654,10 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 
     for (auto it = jobs.begin(); it != jobs.end(); ++it) {
         // Do not report packages that will be removed by the upgrade
-        if (it.itemType() == PKG_SOLVED_UPGRADE_REMOVE)
+        // and that are installed for the first time
+        if (it.itemType() == PKG_SOLVED_UPGRADE_REMOVE
+            || it.itemType() == PKG_SOLVED_DELETE
+            || it.itemType() == PKG_SOLVED_INSTALL)
             continue;
         backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
     }
