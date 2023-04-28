@@ -34,6 +34,7 @@ public:
     PackageView(struct pkg* pkg) {
         char* buf;
 
+        // TODO: don't we pull too much from pkg eagerly?
         pkg_asprintf(&buf, "%n", pkg);
         _name = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%v", pkg);
@@ -44,6 +45,10 @@ public:
         _reponame = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%c", pkg);
         _comment = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%e", pkg);
+        _descr = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%w", pkg);
+        _url = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%C%{%Cn%||%}", pkg);
         _categories = g_strfreev_deleted_unique_ptr<gchar*> (g_strsplit(buf, "|", 0));
         free(buf);
@@ -87,6 +92,18 @@ public:
         // comment can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
         return _comment.get();
+    }
+
+    const gchar* description() const {
+        // description can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        return _descr.get();
+    }
+
+    const gchar* url() const {
+        // description can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        return _url.get();
     }
 
     const gchar* arch() const {
@@ -140,7 +157,8 @@ public:
     }
 private:
     free_deleted_unique_ptr<char> _name,
-        _version, _abi, _reponame, _comment, _license;
+        _version, _abi, _reponame, _comment,
+        _descr, _url, _license;
     g_strfreev_deleted_unique_ptr<gchar*> _categories;
     int64_t _flatsize;
     gchar* external_pk_id = nullptr;
