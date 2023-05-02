@@ -633,10 +633,47 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
     }
 }
 
+static void
+pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+    PKJobCanceller jc (job);
+
+    PackageDatabase pkgDb (job);
+    Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "get_updates");
+
+    jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
+
+    // TODO: handle reponame?
+
+    if (jobs.solve() == 0) {
+        // no updates available
+        pk_backend_job_set_percentage (job, 100);
+        return;
+    }
+
+    if (jc.cancelIfRequested())
+        return;
+
+    uint jobNumber = 0;
+    uint jobCount = jobs.count();
+    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+        // Do not report packages that will be removed by the upgrade
+        // and that are installed for the first time
+        if (it.itemType() == PKG_SOLVED_UPGRADE_REMOVE
+            || it.itemType() == PKG_SOLVED_DELETE
+            || it.itemType() == PKG_SOLVED_INSTALL)
+            continue;
+        if (jc.cancelIfRequested())
+            return;
+        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
+        pk_backend_job_set_percentage (job, (jobNumber * 100) / jobCount);
+    }
+}
+
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    PKJobFinisher jf (job);
+    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     // TODO: what filters could we possibly get there?
@@ -647,25 +684,7 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     ))
         g_error("get_updates: unexpected filters %s", pk_filter_bitfield_to_string(filters));
 
-    PackageDatabase pkgDb (job);
-    Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "get_updates");
-
-    jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
-
-    // TODO: handle reponame?
-
-    if (jobs.solve() == 0)
-        return; // no updates available
-
-    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
-        // Do not report packages that will be removed by the upgrade
-        // and that are installed for the first time
-        if (it.itemType() == PKG_SOLVED_UPGRADE_REMOVE
-            || it.itemType() == PKG_SOLVED_DELETE
-            || it.itemType() == PKG_SOLVED_INSTALL)
-            continue;
-        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
-    }
+    pk_backend_job_thread_create (job, pk_backend_get_updates_thread, NULL, NULL);
 }
 
 void
