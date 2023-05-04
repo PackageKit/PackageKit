@@ -513,7 +513,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
         pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
         pkg* pkg = NULL;
 
-        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
+        if (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
             PackageView pkgView(pkg);
             PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
             pk_backend_job_details_full (job, package_ids[i],
@@ -524,10 +524,10 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
                                     pkgView.url(),
                                     pkgView.flatsize(),
                                     pkgView.compressedsize()); // TODO: check if already downloaded
-
-            if (pk_backend_job_is_cancelled (job))
-                break;
         }
+
+        if (pk_backend_job_is_cancelled (job))
+            break;
     }
 }
 
