@@ -59,10 +59,6 @@ public:
 
     void setEventHandler(std::function<void(pkg_event *ev)> handler) { userEventHandler = handler; }
 
-    ~PackageDatabase () {
-        dbHandle = nullptr;
-    }
-
 private:
     static int pkgEventHandler(void* data, pkg_event *ev) {
         PackageDatabase* pkgDB = reinterpret_cast<PackageDatabase*>(data);
@@ -80,8 +76,9 @@ private:
             g_error("pkgdb_open failed"); // TODO: this kills whole daemon, maybe this is too much?
         dbDeleter = deleted_unique_ptr<struct pkgdb>(dbHandle, [](pkgdb* dbHandle) {pkgdb_close (dbHandle); });
 
-        if (pkgdb_obtain_lock(dbHandle, lockType) != EPKG_OK)
-            g_error("Cannot get a lock on the database, it is locked by another process");
+        while (pkgdb_obtain_lock(dbHandle, lockType) != EPKG_OK) {
+            g_warning("Cannot get a lock on the database, it is locked by another process");
+        }
 
         if (lockType != PKGDB_LOCK_READONLY)
             pk_backend_job_set_locked (job, TRUE);
