@@ -951,14 +951,27 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     uint currentJob = 0;
     pkgDb.setEventHandler([job, &jobsCount, &currentJob, &jc](pkg_event* ev) {
         switch (ev->type) {
-            // TODO: in case of single package we can react on PKG_EVENT_PROGRESS_TICK
+            case PKG_EVENT_PROGRESS_TICK:
+            {
+                // if we have only one job, report each tick as percentage
+                if (jobsCount == 1)
+                {
+                    uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                    pk_backend_job_set_percentage (job, progress);
+                }
+                break;
+            }
             case PKG_EVENT_DEINSTALL_FINISHED:
             {
                 pkg* pkg = ev->e_install_finished.pkg;
                 PackageView pkgView(pkg);
-                uint progress = (currentJob * 100) / jobsCount;
-                currentJob++;
-                pk_backend_job_set_percentage (job, progress);
+                // if we have more than one job, report progress based on jobs count
+                if (jobsCount > 1)
+                {
+                    uint progress = (currentJob * 100) / jobsCount;
+                    currentJob++;
+                    pk_backend_job_set_percentage (job, progress);
+                }
                 pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
                 break;
             }
@@ -995,7 +1008,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     if (jobsCount == 0) {
         pk_backend_job_error_code (job,
                         PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
-                        "Requested package(s) aren't not installed");
+                        "Requested package(s) aren't installed");
         return;
     }
 
