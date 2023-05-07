@@ -233,6 +233,15 @@ static const char* unmappedPrimaryCategoriesData[] = {
     "x11-wm"
 };
 
+static uint adjustProgress(uint progress, uint adjustCur, uint adjustMax) {
+    if (adjustMax != 0)
+    {
+        progress /= adjustMax;
+        progress += (100 * adjustCur) / adjustMax;
+    }
+    return progress;
+}
+
 static void InitCategories()
 {
 #define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
@@ -737,25 +746,15 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
                 break;
             case PKG_EVENT_PROGRESS_TICK:
             {
-                // if we have only one job, report each tick as percentage
-                if (jobsCount == 1)
-                {
-                    uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
-                    pk_backend_job_set_percentage (job, progress);
-                }
+                uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                progress = adjustProgress(progress, currentJob, jobsCount);
+                pk_backend_job_set_percentage (job, progress);
                 break;
             }
             case PKG_EVENT_INSTALL_FINISHED:
             {
                 pkg* pkg = ev->e_install_finished.pkg;
                 PackageView pkgView(pkg);
-                // if we have more than one job, report progress based on jobs count
-                if (jobsCount > 1)
-                {
-                    uint progress = (currentJob * 100) / jobsCount;
-                    currentJob++;
-                    pk_backend_job_set_percentage (job, progress);
-                }
                 pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING, pkgView.packageKitId(), pkgView.comment());
                 break;
             }
@@ -864,10 +863,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
             case PKG_EVENT_PROGRESS_TICK:
             {
                 uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
-                progress /= progressStartsPerRepo;
-                progress += (100 * progressStartNumber) / progressStartsPerRepo;
-                progress /= repoCount;
-                progress += (100 * repoNumber) / repoCount;
+                progress = adjustProgress(progress, progressStartNumber, progressStartsPerRepo);
+                progress = adjustProgress(progress, repoNumber, repoCount);
                 pk_backend_job_set_percentage (job, progress);
                 break;
             }
@@ -1013,7 +1010,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     if (autoremove) {
         pk_backend_job_error_code (job,
                         PK_ERROR_ENUM_NOT_SUPPORTED,
-                        "!allow_deps is not supported");
+                        "autoremove is not supported");
         return;
     }
 
@@ -1031,25 +1028,15 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
         switch (ev->type) {
             case PKG_EVENT_PROGRESS_TICK:
             {
-                // if we have only one job, report each tick as percentage
-                if (jobsCount == 1)
-                {
-                    uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
-                    pk_backend_job_set_percentage (job, progress);
-                }
+                uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                progress = adjustProgress(progress, currentJob, jobsCount);
+                pk_backend_job_set_percentage (job, progress);
                 break;
             }
             case PKG_EVENT_DEINSTALL_FINISHED:
             {
                 pkg* pkg = ev->e_install_finished.pkg;
                 PackageView pkgView(pkg);
-                // if we have more than one job, report progress based on jobs count
-                if (jobsCount > 1)
-                {
-                    uint progress = (currentJob * 100) / jobsCount;
-                    currentJob++;
-                    pk_backend_job_set_percentage (job, progress);
-                }
                 pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
                 break;
             }
