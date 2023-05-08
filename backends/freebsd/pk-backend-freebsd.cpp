@@ -663,7 +663,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
         return;
 
     uint jobNumber = 0;
-    uint jobCount = jobs.count();
+    uint jobsCount = jobs.count();
     DedupPackageJobEmitter emitter(job);
     for (auto it = jobs.begin(); it != jobs.end(); ++it) {
         // Do not report packages that will be removed by the upgrade
@@ -677,7 +677,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
 
         emitter.emitPackageJob(it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
 
-        pk_backend_job_set_percentage (job, (jobNumber * 100) / jobCount);
+        pk_backend_job_set_percentage (job, (jobNumber * 100) / jobsCount);
     }
 }
 
@@ -742,7 +742,7 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
             case PKG_EVENT_NOT_FOUND:
                 pk_backend_job_error_code (job,
                         PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-                        "Requested package %s wasn't found in tje repositories", ev->e_not_found.pkg_name);
+                        "Requested package %s wasn't found in the repositories", ev->e_not_found.pkg_name);
                 break;
             case PKG_EVENT_PROGRESS_TICK:
             {
@@ -979,7 +979,6 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)
                     && !pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
                     && pkg_type(pkg) == PKG_INSTALLED) {
-                emitter.markAsEmitted(pkg);
                 continue;
             }
             emitter.emitPackageJob(pkg);
@@ -1138,29 +1137,138 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
     pk_freebsd_search (job, filters, values);
 }
 
-void
-pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+static void
+pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PKJobFinisher jf (job);
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+    PKJobCanceller jc (job);
 
-    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY, PKGDB_REMOTE);
+    PkBitfield transaction_flags;
+    gchar **package_ids = NULL;
+    g_variant_get (params, "(t^a&s)",
+            &transaction_flags,
+            &package_ids);
+
+    pk_backend_job_set_percentage (job, 0);
+
+    pkgdb_lock_t lockType = PKGDB_LOCK_ADVISORY;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        lockType = PKGDB_LOCK_READONLY;
+
+    PackageDatabase pkgDb (job, lockType, PKGDB_REMOTE);
+
+    uint jobsCount;
+    uint currentJob = 0;
+    pkgDb.setEventHandler([job, &jobsCount, &currentJob, &jc](pkg_event* ev) {
+        switch (ev->type) {
+            case PKG_EVENT_FETCH_BEGIN:
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+                pk_backend_job_set_percentage (job, 0);
+                break;
+            case PKG_EVENT_INSTALL_BEGIN:
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+                pk_backend_job_set_percentage (job, 0);
+                break;
+            case PKG_EVENT_UPGRADE_BEGIN:
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+                pk_backend_job_set_percentage (job, 0);
+                break;
+            case PKG_EVENT_FETCH_FINISHED:
+            {
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+                break;
+            }
+            case PKG_EVENT_ALREADY_INSTALLED:
+            {
+                pkg* pkg = ev->e_already_installed.pkg;
+                PackageView pkgView(pkg);
+
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+                        "Requested package %s is already installed", pkgView.nameversion());
+                break;
+            }
+            case PKG_EVENT_NOT_FOUND:
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                        "Requested package %s wasn't found in the repositories", ev->e_not_found.pkg_name);
+                break;
+            case PKG_EVENT_PROGRESS_TICK:
+            {
+                uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                pk_backend_job_set_percentage (job, progress);
+                break;
+            }
+            case PKG_EVENT_INSTALL_FINISHED:
+            {
+                pkg* pkg = ev->e_install_finished.pkg;
+                PackageView pkgView(pkg);
+                pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, pkgView.packageKitId(), pkgView.comment());
+                break;
+            }
+            default:
+                break;
+        }
+        // TODO: libpkg doesn't yet support cancelling
+        //jc.cancelIfRequested();
+        (void) jc;
+    });
 
     Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "update_packages");
     jobs << PKG_FLAG_PKG_VERSION_TEST;
 
-    uint size = g_strv_length (package_ids);
-    for (uint i = 0; i < size; i++) {
-        PackageView pkg (package_ids[i]);
-        gchar* pkg_namever = pkg.nameversion();
+    if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+        jobs << PKG_FLAG_SKIP_INSTALL;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        jobs << PKG_FLAG_DRY_RUN;
 
-        jobs.add (MATCH_EXACT, &pkg_namever, 1);
+    uint size = g_strv_length (package_ids);
+    gchar_ptr_vector names;
+    names.reserve (size+1);
+    for (uint i = 0; i < size; i++) {
+        PackageView pkg(package_ids[i]);
+        names.push_back(g_strdup(pkg.nameversion()));
     }
 
-    if (jobs.solve() == 0)
+    jobs.add (MATCH_EXACT, names);
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
+
+    jobsCount = jobs.solve();
+
+    // give a chance to cancel
+    if (jc.cancelIfRequested())
         return;
 
+    if (!jobsCount)
+        pk_backend_job_error_code (job,
+                                PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
+                                "No updates available");
+
+    // TODO: https://github.com/freebsd/pkg/issues/2137
+    // libpkg ignores PKG_FLAG_DRY_RUN for the upgrade job
+    // we have to iterate over jobs to report results to PackageKit
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+            PackageView pkgView = it.newPkgView();
+
+            if (it.itemType() == PKG_SOLVED_DELETE) {
+                g_warning ("update_packages: have to remove some packages");
+                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                continue;
+            }
+
+            pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, pkgView.packageKitId(), pkgView.comment());
+        }
+        return;
+    }
+
     jobs.apply();
+}
+
+void
+pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+{
+    pk_backend_job_thread_create (job, pk_backend_update_packages_thread, NULL, NULL);
 }
 
 void
@@ -1210,25 +1318,57 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
     pk_freebsd_search (job, filters, values);
 }
 
-void
-pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory0)
+static void
+pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PKJobFinisher jf (job);
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
-    pk_backend_job_set_allow_cancel (job, TRUE);
+    PKJobCanceller jc (job);
+
+    gchar **package_ids = NULL;
+    gchar *directory0 = NULL;
+    g_variant_get (params, "(^ass)", // he he
+            &package_ids,
+            &directory0);
+
+    pk_backend_job_set_percentage (job, 0);
 
     PackageDatabase pkgDb (job);
 
     std::string directory (directory0);
-    std::string cacheDir = "/var/cache/pkg"; // TODO: query this from libpkg
+    static std::string cacheDir = pkg_object_string(pkg_config_get("PKG_CACHEDIR"));
+    uint jobsCount = g_strv_length (package_ids);
+    uint jobNumber = 0;
 
-    uint size = g_strv_length (package_ids);
-    for (uint i = 0; i < size; i++) {
+    pkgDb.setEventHandler([job, &jobsCount, &jobNumber](pkg_event* ev) {
+        switch (ev->type) {
+            case PKG_EVENT_NOT_FOUND:
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                        "Requested package %s wasn't found in the repositories", ev->e_not_found.pkg_name);
+                break;
+            case PKG_EVENT_PROGRESS_TICK:
+            {
+                uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                progress = adjustProgress(progress, jobNumber, jobsCount);
+                pk_backend_job_set_percentage (job, progress);
+                break;
+            }
+            case PKG_EVENT_FETCH_FINISHED:
+            {
+                jobNumber++;
+                break;
+            }
+            default:
+                break;
+        }
+    });
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+
+    for (guint i = 0; i < jobsCount; i++) {
         Jobs jobs(PKG_JOBS_FETCH, pkgDb.handle(), "download_packages");
 
         // TODO: set reponame when libpkg start reporting it
         // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
-        // 	goto cleanup;
 
         if (!directory.empty()) {
             // This flag is required to convince libpkg to download
@@ -1237,27 +1377,32 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
             jobs.setDestination(directory);
         }
 
-        PackageView pkg (package_ids[i]);
+        PackageView pkg(package_ids[i]);
         gchar* pkg_namever = pkg.nameversion();
-
         jobs.add(MATCH_EXACT, &pkg_namever, 1);
 
         if (jobs.solve() == 0)
-            continue; // the package doesn't need to be downloaded
+            continue;
 
         jobs.apply();
 
         std::string filepath = directory.empty()
-                             ? cacheDir + "/" + pkg_namever + ".pkg"
-                             : directory + "/All/" + pkg_namever + ".pkg";
+                    ? cacheDir + "/" + pkg_namever + ".pkg"
+                    : directory + "/All/" + pkg_namever + ".pkg";
 
         gchar* files[] = {NULL, NULL};
         files[0] = const_cast<gchar*>(filepath.c_str());
         pk_backend_job_files(job, pkg.packageKitId(), files);
 
-        if (pk_backend_job_is_cancelled (job))
-            break;
+        if (jc.cancelIfRequested())
+            return;
     }
+}
+
+void
+pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory0)
+{
+    pk_backend_job_thread_create (job, pk_backend_download_packages_thread, NULL, NULL);
 }
 
 // TODO: Do we want "freebsd-update" support here?
