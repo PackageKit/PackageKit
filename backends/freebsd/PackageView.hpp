@@ -153,7 +153,7 @@ public:
         if (pk_id_parts)
             return pk_id_parts.get()[PK_PACKAGE_ID_DATA];
         else
-            return _reponame.get(); // TODO: we get nullptr here in case of local pkg
+            return _reponame.get();
     }
 
     gchar* packageKitId() {

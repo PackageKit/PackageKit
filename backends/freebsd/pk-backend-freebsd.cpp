@@ -484,6 +484,8 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
                 g_free (dep_id);
             }
         }
+        pkgdb_it_free (it);
+        pkg_free (pkg);
     }
 }
 
@@ -560,6 +562,9 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
                                     pkgView.flatsize(),
                                     pkgView.compressedsize()); // TODO: check if already downloaded
         }
+
+        pkgdb_it_free (it);
+        pkg_free(pkg);
     }
 }
 
@@ -1035,6 +1040,9 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
             }
             emitter.emitPackageJob(pkg);
         }
+
+        pkgdb_it_free (it);
+        pkg_free(pkg);
     }
 }
 
@@ -1238,8 +1246,8 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    gchar* values[2] = { (gchar*)(".*"), NULL };
-    pk_freebsd_search (job, filters, values);
+    gchar* values = { NULL };
+    pk_freebsd_search (job, filters, &values);
 }
 
 static void
@@ -1418,6 +1426,9 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 
     switch (pk_backend_job_get_role (job))
     {
+    case PK_ROLE_ENUM_GET_PACKAGES:
+        match_type = MATCH_ALL;
+        break;
     case PK_ROLE_ENUM_SEARCH_DETAILS:
         // TODO: can we search both comment and pkg-descr? https://github.com/freebsd/pkg/issues/2118
         searched_field = FIELD_COMMENT;
@@ -1462,4 +1473,7 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
         if (pk_backend_job_is_cancelled (job))
             break;
     }
+
+    pkgdb_it_free (it);
+    pkg_free (pkg);
 }
