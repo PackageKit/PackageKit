@@ -523,7 +523,6 @@ typedef enum {
  * @PK_GROUP_ENUM_ACCESSORIES: Accessory packages
  * @PK_GROUP_ENUM_ADMIN_TOOLS: Administration tools packages
  * @PK_GROUP_ENUM_COMMUNICATION: Communication packages
- * @PK_GROUP_ENUM_DESKTOP_DDE: DDE packages
  * @PK_GROUP_ENUM_DESKTOP_GNOME: GNOME packages
  * @PK_GROUP_ENUM_DESKTOP_KDE: KDE packages
  * @PK_GROUP_ENUM_DESKTOP_OTHER: Other desktop packages
@@ -554,6 +553,7 @@ typedef enum {
  * @PK_GROUP_ENUM_COLLECTIONS:
  * @PK_GROUP_ENUM_VENDOR: Vendor defined group
  * @PK_GROUP_ENUM_NEWEST: Special group for recently updated packages
+ * @PK_GROUP_ENUM_DESKTOP_DDE: DDE packages
  * @PK_GROUP_ENUM_LAST:
  *
  * The group type
@@ -564,7 +564,6 @@ typedef enum {
 	PK_GROUP_ENUM_ACCESSORIES,
 	PK_GROUP_ENUM_ADMIN_TOOLS,
 	PK_GROUP_ENUM_COMMUNICATION,
-	PK_GROUP_ENUM_DESKTOP_DDE,
 	PK_GROUP_ENUM_DESKTOP_GNOME,
 	PK_GROUP_ENUM_DESKTOP_KDE,
 	PK_GROUP_ENUM_DESKTOP_OTHER,
@@ -595,6 +594,7 @@ typedef enum {
 	PK_GROUP_ENUM_COLLECTIONS,
 	PK_GROUP_ENUM_VENDOR,
 	PK_GROUP_ENUM_NEWEST,
+	PK_GROUP_ENUM_DESKTOP_DDE,
 	PK_GROUP_ENUM_LAST
 } PkGroupEnum;
 
