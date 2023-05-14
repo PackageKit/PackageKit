@@ -1,4 +1,5 @@
 task:
+  name: "build (freebsd)"
   freebsd_instance:
     matrix:
       - image_family: freebsd-13-2-snap
