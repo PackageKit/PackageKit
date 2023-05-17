@@ -919,7 +919,7 @@ pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
 static void
 pk_engine_setup_file_monitors (PkEngine *engine)
 {
-	const gchar *filename = "/etc/PackageKit/PackageKit.conf";
+	const gchar *filename = SYSCONFDIR "/PackageKit/PackageKit.conf";
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GFile) file_binary = NULL;
 	g_autoptr(GFile) file_conf = NULL;
