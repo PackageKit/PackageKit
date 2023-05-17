@@ -35,7 +35,7 @@ public:
                      pkgdb_lock_t _lockType = PKGDB_LOCK_READONLY,
                      pkgdb_t _dbType = PKGDB_MAYBE_REMOTE)
     : job(_job), lockType(_lockType), dbType(_dbType), dbHandle(nullptr) {
-        // TODO: After implementing a proper ref counting, we can probably allow
+        // GOS-395: After implementing a proper ref counting, we can probably allow
         // pk_backend_supports_parallelization() to return true, so that multiple
         // jobs can be executed concurrently.
         // If we go this route remember to adapt pk_backend_get_repo_list() and pk_backend_refresh_cache()

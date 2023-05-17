@@ -415,8 +415,11 @@ pk_backend_get_groups (PkBackend *backend)
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
+    // GOS-397
     return pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED,
         PK_FILTER_ENUM_NOT_INSTALLED,
+        PK_FILTER_ENUM_ARCH,
+        PK_FILTER_ENUM_NOT_ARCH,
         -1);
 }
 
@@ -450,6 +453,7 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 
     pkgdb_t db_type = PKGDB_MAYBE_REMOTE;
     // Open the local DB only when filters require only installed packages
+    // GOS-397: handle more filters
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
         && !pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
         db_type = PKGDB_DEFAULT;
@@ -679,8 +683,6 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
 
     jobs << PKG_FLAG_PKG_VERSION_TEST << PKG_FLAG_DRY_RUN;
 
-    // TODO: handle reponame?
-
     if (jobs.solve() == 0) {
         // no updates available
         pk_backend_job_set_percentage (job, 100);
@@ -715,7 +717,12 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-    // TODO: what filters could we possibly get there?
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check for updates when offline");
+        return;
+    }
+
+    // GOS-397: what filters could we possibly get there?
     if (! (filters == 0
         || filters == pk_bitfield_value(PK_FILTER_ENUM_UNKNOWN)
         || filters == pk_bitfield_value(PK_FILTER_ENUM_NONE)
@@ -741,7 +748,7 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
 
     const char* context = installRole ? "install_packages" : "update_packages";
 
-    // TODO: handle all of these
+    // GOS-397: handle all of these
     if (! (transaction_flags == 0
             || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)
             || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)
@@ -877,6 +884,11 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 {
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
 
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install packages when offline");
+        return;
+    }
+
     pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
 }
 
@@ -897,6 +909,11 @@ static void
 pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PKJobCanceller jc (job);
+
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update repositories when offline");
+        return;
+    }
 
     gboolean force;
     g_variant_get (params, "(b)", &force);
@@ -979,7 +996,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
 
-    /* check network state */
     if (!pk_backend_is_online (backend)) {
         pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
         return;
@@ -1015,6 +1031,7 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 
     pkgdb_t dbType = PKGDB_MAYBE_REMOTE;
     // save ourselves some work by skipping remote DBs if we only want installed packages
+    // GOS-397: Take more filters into account
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
         && !pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
         dbType = PKGDB_DEFAULT;
@@ -1200,6 +1217,11 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline");
+        return;
+    }
+
     pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
 }
 
@@ -1254,6 +1276,13 @@ static void
 pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PKJobCanceller jc (job);
+
+    // GOS-394: Check the cache first
+
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot download packages when offline");
+        return;
+    }
 
     gchar **package_ids = NULL;
     gchar *directory0 = NULL;
@@ -1353,7 +1382,7 @@ void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
     pk_backend_job_finished (job);
-    g_error("pk_backend_repair_system not implemented yet");
+    g_error("pk_backend_repair_system not implemented yet"); // GOS-396
 }
 
 void
@@ -1400,7 +1429,7 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-    // TODO: what can we possibly get in filters?
+    // GOS-397: what can we possibly get in filters?
     // We ignore ~installed as there is no support in libpkg
     // We ignore arch for now
     if (! (filters == 0
