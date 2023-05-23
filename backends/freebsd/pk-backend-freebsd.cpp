@@ -632,7 +632,7 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
             break;
         case PKG_SOLVED_DELETE:
             SAFE_SHOW("SOLVED_DELETE, old: %s, new: %s", it);
-            obsoletes.push_back(g_strdup(it.oldPkgView().packageKitId()));
+            obsoletes.push_back(g_strdup(it.newPkgView().packageKitId()));
             break;
         case PKG_SOLVED_UPGRADE:
             SAFE_SHOW("SOLVED_UPGRADE, old: %s, new: %s", it);
