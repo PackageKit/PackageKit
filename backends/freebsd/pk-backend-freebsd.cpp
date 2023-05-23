@@ -852,10 +852,11 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
     if (jc.cancelIfRequested())
         return;
 
-    if (!installRole && !jobs.count())
-        pk_backend_job_error_code (job,
-                                PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
-                                "No updates available");
+    if (!installRole && !jobs.count()) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_PACKAGES_TO_UPDATE,
+                                   "No updates available");
+        return;
+    }
 
     // TODO: https://github.com/freebsd/pkg/issues/2137
     // libpkg ignores PKG_FLAG_DRY_RUN for the install/upgrade jobs
@@ -876,7 +877,9 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
         return;
     }
 
-    jobs.apply();
+    if (!jobs.apply())
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+                                   "Internal libpkg error");
 }
 
 void
@@ -1169,9 +1172,11 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     }
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
-    jobs.apply();
-
+    if (!jobs.apply())
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR,
+                                   "Internal libpkg error");
     pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
+
     pkgdb_compact (pkgDb.handle());
 
     pk_backend_job_set_percentage (job, 100);
@@ -1345,7 +1350,11 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
         if (jobs.solve() == 0)
             continue;
 
-        jobs.apply();
+        if (!jobs.apply()) {
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED,
+                                       "libpkg fetching error");
+            return;
+        }
 
         std::string filepath = directory.empty()
                     ? cacheDir + "/" + pkg_namever + ".pkg"

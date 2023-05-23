@@ -99,7 +99,7 @@ public:
 
     bool hasLockedPackages() const { return pkg_jobs_has_lockedpkgs(jobsHandle); }
 
-    void apply() {
+    bool apply() {
         int retcode;
         do {
             retcode = pkg_jobs_apply(jobsHandle);
@@ -109,9 +109,13 @@ public:
                             "iteration is needed to resolve them.");
             }
             else if (retcode != EPKG_OK) {
-                g_error ("%s: pkg_jobs_apply failed", context);
+                // libpkg doesn't yet return sensible error codes from pkg_jobs_apply
+                g_warning ("%s: pkg_jobs_apply failed", context);
+                return false;
             }
         } while (retcode != EPKG_OK);
+
+        return true;
     }
 
     iterator begin() {
