@@ -235,6 +235,18 @@ static const char* unmappedPrimaryCategoriesData[] = {
     "x11-wm"
 };
 
+static void handleErrnoEvent(PkBackendJob* job, pkg_event* ev)
+{
+    if (ev->type != PKG_EVENT_ERRNO)
+        return;
+
+    if (ev->e_errno.no == ENETDOWN || ev->e_errno.no == ENETUNREACH || ev->e_errno.no == EHOSTUNREACH)
+    {
+        g_warning("got errno %s", strerror(ev->e_errno.no));
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install or upgrade packages when offline");
+    }
+}
+
 static uint adjustProgress(uint progress, uint adjustCur, uint adjustMax) {
     if (adjustMax != 0)
     {
@@ -819,6 +831,7 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
                 break;
             }
             default:
+                handleErrnoEvent (job, ev);
                 break;
         }
         // TODO: libpkg doesn't yet support cancelling
