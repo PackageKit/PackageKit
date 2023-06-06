@@ -157,7 +157,7 @@ pk_files_class_init (PkFilesClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -167,7 +167,7 @@ pk_files_class_init (PkFilesClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("files", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_FILES, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkFilesPrivate));

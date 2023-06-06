@@ -415,7 +415,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -425,7 +425,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("updates", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UPDATES, pspec);
 
 	/**
@@ -435,7 +435,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("obsoletes", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_OBSOLETES, pspec);
 
 	/**
@@ -445,7 +445,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("vendor-urls", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VENDOR_URLS, pspec);
 
 	/**
@@ -455,7 +455,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("bugzilla-urls", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BUGZILLA_URLS, pspec);
 
 	/**
@@ -465,7 +465,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("cve-urls", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CVE_URLS, pspec);
 
 	/**
@@ -475,7 +475,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_enum ("restart", NULL, NULL,
 				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_RESTART, pspec);
 
 	/**
@@ -485,7 +485,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("update-text", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UPDATE_TEXT, pspec);
 
 	/**
@@ -495,7 +495,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("changelog", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CHANGELOG, pspec);
 
 	/**
@@ -505,7 +505,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_enum ("state", NULL, NULL,
 				   PK_TYPE_UPDATE_STATE_ENUM, PK_UPDATE_STATE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
@@ -515,7 +515,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("issued", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ISSUED, pspec);
 
 	/**
@@ -525,7 +525,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("updated", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UPDATED, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkUpdateDetailPrivate));

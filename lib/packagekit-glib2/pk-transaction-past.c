@@ -357,7 +357,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_string ("tid", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TID, pspec);
 
 	/**
@@ -367,7 +367,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_string ("timespec", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TIMESPEC, pspec);
 
 	/**
@@ -377,7 +377,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("succeeded", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SUCCEEDED, pspec);
 
 	/**
@@ -387,7 +387,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_enum ("role", NULL, NULL,
 				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
@@ -397,7 +397,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_uint ("duration", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DURATION, pspec);
 
 	/**
@@ -407,7 +407,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_string ("data", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DATA, pspec);
 
 	/**
@@ -417,7 +417,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
 				   0, G_MAXUINT, G_MAXUINT,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UID, pspec);
 
 	/**
@@ -427,7 +427,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 	 */
 	pspec = g_param_spec_string ("cmdline", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CMDLINE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkTransactionPastPrivate));

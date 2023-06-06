@@ -178,7 +178,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -188,7 +188,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("repository-name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_REPOSITORY_NAME, pspec);
 
 	/**
@@ -198,7 +198,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("key-url", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_KEY_URL, pspec);
 
 	/**
@@ -208,7 +208,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("key-userid", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_KEY_USERID, pspec);
 
 	/**
@@ -218,7 +218,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("key-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_KEY_ID, pspec);
 
 	/**
@@ -228,7 +228,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("key-fingerprint", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_KEY_FINGERPRINT, pspec);
 
 	/**
@@ -238,7 +238,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("key-timestamp", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_KEY_TIMESTAMP, pspec);
 
 	/**
@@ -248,7 +248,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 	 */
 	pspec = g_param_spec_enum ("type", NULL, NULL,
 				   PK_TYPE_SIG_TYPE_ENUM, PK_SIGTYPE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TYPE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkRepoSignatureRequiredPrivate));

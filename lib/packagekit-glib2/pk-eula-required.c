@@ -211,7 +211,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("eula-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_EULA_ID, pspec);
 
 	/**
@@ -223,7 +223,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -235,7 +235,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("vendor-name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VENDOR_NAME, pspec);
 
 	/**
@@ -247,7 +247,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("license-agreement", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LICENSE_AGREEMENT, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkEulaRequiredPrivate));

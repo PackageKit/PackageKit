@@ -690,7 +690,7 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**
@@ -701,7 +701,7 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("allow-sigkill", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ALLOW_SIGKILL, pspec);
 
 	signals [SIGNAL_EXIT] =

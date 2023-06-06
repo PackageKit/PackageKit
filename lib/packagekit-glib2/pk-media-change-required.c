@@ -133,7 +133,7 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 */
 	pspec = g_param_spec_enum ("media-type", NULL, NULL,
 				   PK_TYPE_MEDIA_TYPE_ENUM, PK_MEDIA_TYPE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_TYPE, pspec);
 
 	/**
@@ -143,7 +143,7 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("media-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_ID, pspec);
 
 	/**
@@ -153,7 +153,7 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 */
 	pspec = g_param_spec_string ("media-text", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_TEXT, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkMediaChangeRequiredPrivate));

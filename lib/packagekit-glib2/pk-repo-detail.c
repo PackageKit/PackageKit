@@ -182,7 +182,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("repo-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_REPO_ID, pspec);
 
 	/**
@@ -192,7 +192,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 */
 	pspec = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
 
 	/**
@@ -202,7 +202,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("enabled", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ENABLED, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkRepoDetailPrivate));

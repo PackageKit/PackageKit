@@ -312,7 +312,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -322,7 +322,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_string ("license", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LICENSE, pspec);
 
 	/**
@@ -332,7 +332,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_enum ("group", NULL, NULL,
 				   PK_TYPE_GROUP_ENUM, PK_GROUP_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_GROUP, pspec);
 
 	/**
@@ -342,7 +342,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
 
 	/**
@@ -352,7 +352,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_string ("url", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_URL, pspec);
 
 	/**
@@ -362,7 +362,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("size", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SIZE, pspec);
 
 	/**
@@ -372,7 +372,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
 	/**
@@ -382,7 +382,7 @@ pk_details_class_init (PkDetailsClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("download-size", NULL, NULL,
 				     0, G_MAXUINT64, G_MAXUINT64,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkDetailsPrivate));
