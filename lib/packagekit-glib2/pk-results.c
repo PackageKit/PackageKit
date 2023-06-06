@@ -846,7 +846,7 @@ pk_results_class_init (PkResultsClass *klass)
 	 */
 	pspec = g_param_spec_enum ("role", NULL, NULL,
 				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
@@ -858,7 +858,7 @@ pk_results_class_init (PkResultsClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_FLAGS, pspec);
 
 	/**
@@ -868,7 +868,7 @@ pk_results_class_init (PkResultsClass *klass)
 	 */
 	pspec = g_param_spec_uint ("inputs", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_INPUTS, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
@@ -881,7 +881,7 @@ pk_results_class_init (PkResultsClass *klass)
 	pspec = g_param_spec_object ("progress", NULL,
 				     "The progress instance",
 				     PK_TYPE_PROGRESS,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
 }
 

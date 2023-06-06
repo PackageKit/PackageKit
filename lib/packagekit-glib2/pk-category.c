@@ -318,7 +318,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	 */
 	pspec = g_param_spec_string ("parent-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PARENT_ID, pspec);
 
 	/**
@@ -328,7 +328,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	 */
 	pspec = g_param_spec_string ("cat-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CAT_ID, pspec);
 
 	/**
@@ -338,7 +338,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	 */
 	pspec = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_NAME, pspec);
 
 	/**
@@ -348,7 +348,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	 */
 	pspec = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
 	/**
@@ -358,7 +358,7 @@ pk_category_class_init (PkCategoryClass *klass)
 	 */
 	pspec = g_param_spec_string ("icon", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ICON, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkCategoryPrivate));

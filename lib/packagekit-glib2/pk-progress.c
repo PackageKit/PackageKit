@@ -946,7 +946,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	pspec = g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -959,7 +959,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	pspec = g_param_spec_string ("transaction-id", NULL,
 				     "The transaction_id, e.g. '/892_deabbbdb_data'",
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
 
 	/**
@@ -971,7 +971,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_int ("percentage", NULL, NULL,
 				  -1, G_MAXINT, -1,
-				  G_PARAM_READWRITE);
+				  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
 
 	/**
@@ -983,7 +983,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("allow-cancel", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ALLOW_CANCEL, pspec);
 
 	/**
@@ -995,7 +995,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("status", NULL, NULL,
 				   0, PK_STATUS_ENUM_LAST, PK_STATUS_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
 	/**
@@ -1007,7 +1007,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("role", NULL, NULL,
 				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
 	/**
@@ -1019,7 +1019,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("caller-active", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CALLER_ACTIVE, pspec);
 
 	/**
@@ -1031,7 +1031,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("elapsed-time", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ELAPSED_TIME, pspec);
 
 	/**
@@ -1043,7 +1043,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("remaining-time", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_REMAINING_TIME, pspec);
 
 	/**
@@ -1055,7 +1055,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("speed", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SPEED, pspec);
 
 	/**
@@ -1067,7 +1067,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE_REMAINING, pspec);
 
 	/**
@@ -1079,7 +1079,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_FLAGS, pspec);
 
 	/**
@@ -1091,7 +1091,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("uid", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UID, pspec);
 
 	/**
@@ -1103,7 +1103,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_string ("sender", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SENDER, pspec);
 
 	/**
@@ -1115,7 +1115,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_object ("package", NULL, NULL,
 				     PK_TYPE_PACKAGE,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE, pspec);
 
 	/**
@@ -1127,7 +1127,7 @@ pk_progress_class_init (PkProgressClass *klass)
 	 */
 	pspec = g_param_spec_object ("item-progress", NULL, NULL,
 				     PK_TYPE_ITEM_PROGRESS,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ITEM_PROGRESS, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkProgressPrivate));

@@ -2581,7 +2581,7 @@ pk_task_class_init (PkTaskClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("simulate", NULL, NULL,
 				      TRUE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SIMULATE, pspec);
 
 	/**
@@ -2593,7 +2593,7 @@ pk_task_class_init (PkTaskClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("only-download", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ONLY_PREPARE, pspec);
 
 	/**
@@ -2605,7 +2605,7 @@ pk_task_class_init (PkTaskClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("only-trusted", NULL, NULL,
 				      TRUE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ONLY_TRUSTED, pspec);
 
 	/**
@@ -2617,7 +2617,7 @@ pk_task_class_init (PkTaskClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("allow-reinstall", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ALLOW_REINSTALL, pspec);
 
 	/**
@@ -2629,7 +2629,7 @@ pk_task_class_init (PkTaskClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("allow-downgrade", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ALLOW_DOWNGRADE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkTaskPrivate));

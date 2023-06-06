@@ -2140,7 +2140,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-major", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
+				   G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VERSION_MAJOR, pspec);
 
 	/**
@@ -2150,7 +2150,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-minor", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
+				   G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VERSION_MINOR, pspec);
 
 	/**
@@ -2160,7 +2160,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint ("version-micro", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READABLE);
+				   G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VERSION_MICRO, pspec);
 
 	/**
@@ -2170,7 +2170,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKEND_NAME, pspec);
 
 	/**
@@ -2180,7 +2180,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-description", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKEND_DESCRIPTION, pspec);
 
 	/**
@@ -2190,7 +2190,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_string ("backend-author", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKEND_AUTHOR, pspec);
 
 	/**
@@ -2200,7 +2200,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("roles", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLES, pspec);
 
 	/**
@@ -2210,7 +2210,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("groups", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_GROUPS, pspec);
 
 	/**
@@ -2220,7 +2220,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("filters", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_FILTERS, pspec);
 
 	/**
@@ -2230,7 +2230,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("provides", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PROVIDES, pspec);
 
 	/**
@@ -2240,7 +2240,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_boxed ("mime-types", NULL, NULL,
 				    G_TYPE_STRV,
-				    G_PARAM_READWRITE);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MIME_TYPES, pspec);
 
 	/**
@@ -2250,7 +2250,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("locked", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LOCKED, pspec);
 
 	/**
@@ -2260,7 +2260,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_enum ("network-state", NULL, NULL,
 				   PK_TYPE_NETWORK_ENUM, PK_NETWORK_ENUM_LAST,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_NETWORK_STATE, pspec);
 
 	/**
@@ -2270,7 +2270,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_string ("distro-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DISTRO_ID, pspec);
 
 	/**
@@ -2280,7 +2280,7 @@ pk_control_class_init (PkControlClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("connected", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CONNECTED, pspec);
 
 	/**

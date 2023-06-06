@@ -186,7 +186,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 */
 	pspec = g_param_spec_enum ("state", NULL, NULL,
 				   PK_TYPE_DISTRO_UPGRADE_ENUM, PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
@@ -196,7 +196,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 */
 	pspec = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_NAME, pspec);
 
 	/**
@@ -206,7 +206,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 */
 	pspec = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkDistroUpgradePrivate));

@@ -124,7 +124,7 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	 */
 	pspec = g_param_spec_enum ("restart", NULL, NULL,
 				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_RESTART, pspec);
 
 	/**
@@ -134,7 +134,7 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkRequireRestartPrivate));

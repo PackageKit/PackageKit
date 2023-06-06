@@ -4699,7 +4699,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_string ("locale", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LOCALE, pspec);
 
 	/**
@@ -4709,7 +4709,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("background", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
 
 	/**
@@ -4719,7 +4719,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("interactive", NULL, NULL,
 				      TRUE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_INTERACTIVE, pspec);
 
 	/**
@@ -4729,7 +4729,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("idle", NULL, "if there are no transactions in progress on this client",
 				      TRUE,
-				      G_PARAM_READABLE);
+				      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_IDLE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkClientPrivate));
@@ -4741,7 +4741,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_uint ("cache-age", NULL, NULL,
 				   0, G_MAXUINT, G_MAXUINT,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CACHE_AGE, pspec);
 
 	/**
@@ -4751,7 +4751,7 @@ pk_client_class_init (PkClientClass *klass)
 	 */
 	pspec = g_param_spec_boolean ("details-with-deps-size", NULL, NULL,
 				      FALSE,
-				      G_PARAM_READWRITE);
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DETAILS_WITH_DEPS_SIZE, pspec);
 }
 

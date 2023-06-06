@@ -158,7 +158,7 @@ pk_error_class_init (PkErrorClass *klass)
 	 */
 	pspec = g_param_spec_enum ("code", NULL, NULL,
 				   PK_TYPE_ERROR_ENUM, PK_ERROR_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CODE, pspec);
 
 	/**
@@ -168,7 +168,7 @@ pk_error_class_init (PkErrorClass *klass)
 	 */
 	pspec = g_param_spec_string ("details", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DETAILS, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkErrorPrivate));

@@ -173,7 +173,7 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 */
 	pspec = g_param_spec_string ("package-id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE);
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
@@ -183,7 +183,7 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("status", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
 	/**
@@ -193,7 +193,7 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 */
 	pspec = g_param_spec_uint ("percentage", NULL, NULL,
 				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE);
+				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
 
 	g_type_class_add_private (klass, sizeof (PkItemProgressPrivate));
