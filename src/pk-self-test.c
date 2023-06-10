@@ -1435,6 +1435,7 @@ main (int argc, char **argv)
 #ifndef PK_BUILD_LOCAL
 	g_warning ("you need to compile with -Dlocal_checkout=true for ninja test support");
 #endif
+	g_assert(0 && "Testing if assertions are enabled");
 
 	/* components */
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
