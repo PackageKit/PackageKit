@@ -57,16 +57,18 @@ public:
         return dbHandle;
     }
 
-    void setEventHandler(std::function<void(pkg_event *ev)> handler) { userEventHandler = handler; }
+    void setEventHandler(std::function<int(pkg_event *ev)> handler) { userEventHandler = handler; }
 
 private:
     static int pkgEventHandler(void* data, pkg_event *ev) {
         PackageDatabase* pkgDB = reinterpret_cast<PackageDatabase*>(data);
 
+        int shouldCancel = 0;
         if (pkgDB->userEventHandler)
-            pkgDB->userEventHandler(ev);
+            shouldCancel = pkgDB->userEventHandler(ev);
 
-        return event_callback(nullptr, ev);
+        shouldCancel += event_callback(nullptr, ev);
+        return shouldCancel;
     }
 
     void open() {
@@ -93,7 +95,7 @@ private:
     pkgdb_lock_t lockType;
     pkgdb_t dbType;
     pkgdb* dbHandle;
-    std::function<void(pkg_event *ev)> userEventHandler;
+    std::function<int(pkg_event *ev)> userEventHandler;
     deleted_unique_ptr<void> libpkgDeleter;
     deleted_unique_ptr<struct pkgdb> dbDeleter;
     deleted_unique_ptr<struct pkgdb> lockDeleter;

@@ -837,6 +837,7 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
         // TODO: libpkg doesn't yet support cancelling
         //jc.cancelIfRequested();
         (void) jc;
+        return 0;
     });
 
     Jobs jobs (installRole ? PKG_JOBS_INSTALL : PKG_JOBS_UPGRADE, pkgDb.handle(), context);
@@ -936,34 +937,31 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 
     PackageDatabase pkgDb(job, PKGDB_LOCK_EXCLUSIVE);
 
-    uint repoCount;
-    int repoNumber = 0;
-    int progressStartNumber = -1;
-    pkgDb.setEventHandler([job, &repoCount, &repoNumber, &progressStartNumber, &jc](pkg_event* ev) {
-        const uint progressStartsPerRepo = 3; // TODO: fix this upstream somehow
+    pkgDb.setEventHandler([job, &jc](pkg_event* ev) {
+        if (jc.cancelIfRequested())
+            return true;
 
         switch (ev->type) {
+            case PKG_EVENT_FETCH_BEGIN:
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
+                break;
+            case PKG_EVENT_INCREMENTAL_UPDATE_BEGIN:
+                pk_backend_job_set_status (job, PK_STATUS_ENUM_LOADING_CACHE);
+                break;
             case PKG_EVENT_PROGRESS_START:
-                progressStartNumber++;
-                if (progressStartNumber == progressStartsPerRepo) {
-                    progressStartNumber = 0;
-                    repoNumber++;
-                }
+                pk_backend_job_set_percentage (job, 0);
                 break;
             case PKG_EVENT_PROGRESS_TICK:
             {
                 uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
-                progress = adjustProgress(progress, progressStartNumber, progressStartsPerRepo);
-                progress = adjustProgress(progress, repoNumber, repoCount);
                 pk_backend_job_set_percentage (job, progress);
                 break;
             }
             default:
                 break;
         }
-        // TODO: libpkg doesn't yet support cancelling
-        //jc.cancelIfRequested();
-        (void) jc;
+
+        return jc.cancelIfRequested();
     });
 
     int ret = pkgdb_access(PKGDB_MODE_WRITE|PKGDB_MODE_CREATE,
@@ -987,9 +985,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 
     pk_backend_job_set_percentage (job, 0);
 
-    repoCount = pkg_repos_activated_count();
-    if (repoCount == 0) {
-        pk_backend_job_set_percentage (job, 100);
+    if (pkg_repos_activated_count() == 0) {
         g_warning("No active remote repositories configured");
         return;
     }
@@ -1010,8 +1006,6 @@ void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
-
     if (!pk_backend_is_online (backend)) {
         pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
         return;
@@ -1138,6 +1132,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
         // TODO: libpkg doesn't yet support cancelling
         //jc.cancelIfRequested();
         (void) jc;
+        return 0;
     });
 
     Jobs jobs(PKG_JOBS_DEINSTALL, pkgDb.handle(), "remove_packages");
@@ -1339,6 +1334,8 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
             default:
                 break;
         }
+
+        return 0;
     });
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
