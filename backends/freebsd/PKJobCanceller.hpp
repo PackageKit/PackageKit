@@ -36,7 +36,7 @@ public:
         pk_backend_job_set_allow_cancel (_job, TRUE);
     }
 
-    bool cancelIfRequested() const {
+    bool cancelIfRequested() {
         // pk_backend_stop_job might destroy our private pointers before
         // this call. Use bool flag to check for that.
         if (aborting)
@@ -44,6 +44,7 @@ public:
         if (g_cancellable_is_cancelled (jobData->cancellable)) {
             pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
                 "The task was stopped successfully");
+            aborting = true;
             return true;
         }
         return false;
