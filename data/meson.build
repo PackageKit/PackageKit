@@ -9,7 +9,7 @@ dbus_config_data.set('libexecdir', join_paths(get_option('prefix'), get_option('
 
 dbus_sys_dir = get_option('dbus_sys')
 if dbus_sys_dir == ''
-  dbus_sys_dir = join_paths(get_option('sysconfdir'), 'dbus-1', 'system.d')
+  dbus_sys_dir = join_paths(get_option('datadir'), 'dbus-1', 'system.d')
 endif
 
 configure_file(
