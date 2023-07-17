@@ -76,6 +76,7 @@ packagekitd_exec = executable(
   ],
   install: true,
   install_dir: get_option('libexecdir'),
+  export_dynamic: true,
   c_args: [
     '-DPK_BUILD_DAEMON=1',
     '-DG_LOG_DOMAIN="PackageKit"',
