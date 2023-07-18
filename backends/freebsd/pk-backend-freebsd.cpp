@@ -237,13 +237,18 @@ static const char* unmappedPrimaryCategoriesData[] = {
 
 static void handleErrnoEvent(PkBackendJob* job, pkg_event* ev)
 {
-    if (ev->type != PKG_EVENT_ERRNO)
+    if (ev->type == PKG_EVENT_ERRNO) { // compat with old pkg
+        if (ev->e_errno.no == ENETDOWN || ev->e_errno.no == ENETUNREACH || ev->e_errno.no == EHOSTUNREACH)
+        {
+            g_warning("got errno %s", strerror(ev->e_errno.no));
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install or upgrade packages when offline");
+        }
         return;
-
-    if (ev->e_errno.no == ENETDOWN || ev->e_errno.no == ENETUNREACH || ev->e_errno.no == EHOSTUNREACH)
-    {
-        g_warning("got errno %s", strerror(ev->e_errno.no));
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install or upgrade packages when offline");
+    }
+    if (ev->type == PKG_EVENT_PKG_ERRNO) {
+        if (ev->e_errno.no == EPKG_NONETWORK)
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install or upgrade packages when offline");
+        return;
     }
 }
 
