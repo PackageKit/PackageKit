@@ -1278,7 +1278,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
         }
 
         if (!search.empty()) {
-            search.append("|");
+            search.append("\\|");
         }
 
         if (value[0] == '/') {
