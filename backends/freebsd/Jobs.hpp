@@ -115,8 +115,8 @@ public:
     }
 
     iterator begin() {
-        void *pkgIter = NULL;
-        pkg *newPkg, *oldPkg;
+        void *pkgIter = nullptr;
+        pkg *newPkg = nullptr, *oldPkg = nullptr;
         int type;
         if (pkg_jobs_iter(jobsHandle, &pkgIter, &newPkg, &oldPkg, &type)) {
             // TODO: I find it stupid that an iterator stores so much information
