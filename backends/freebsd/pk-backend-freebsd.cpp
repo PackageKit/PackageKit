@@ -282,8 +282,10 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
                                         issued,
                                         updated);
 
-        g_strfreev (updates.data());
-        g_strfreev (obsoletes.data());
+        for (auto* str : updates)
+            g_free (str);
+        for (auto* str : obsoletes)
+            g_free (str);
     }
 }
 
@@ -346,9 +348,6 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
         PackageView pkg(package_ids[i]);
         names.push_back(g_strdup(pkg.nameversion()));
     }
-    // TODO: this deleter results in an obscure crash on the second "install_packages" invocation
-    //names.push_back (nullptr);
-    //auto namesDeleter = deleted_unique_ptr<decltype(names)>(&names, [](auto* names) { g_strfreev (names->data()); });
 
     jobs.add (MATCH_GLOB, names);
 
@@ -372,6 +371,9 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
     pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 
     jobs.apply();
+
+    for (auto* str : names)
+        g_free (str);
 }
 
 void
