@@ -356,6 +356,7 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     if (! (filters == 0
         || filters == pk_bitfield_value(PK_FILTER_ENUM_UNKNOWN)
         || filters == pk_bitfield_value(PK_FILTER_ENUM_NONE)
+        || filters == pk_bitfield_value(PK_FILTER_ENUM_NEWEST)
     ))
         g_error("get_updates: unexpected filters %s", pk_filter_bitfield_to_string(filters));
 
@@ -712,10 +713,8 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
     std::string directory (directory0);
     std::string cacheDir = "/var/cache/pkg"; // TODO: query this from libpkg
 
-    uint i, size;
-
-    size = g_strv_length (package_ids);
-    for (i = 0; i < size; i++) {
+    uint size = g_strv_length (package_ids);
+    for (uint i = 0; i < size; i++) {
         Jobs jobs(PKG_JOBS_FETCH, pkgDb.handle(), "download_packages");
 
         // TODO: set reponame when libpkg start reporting it
