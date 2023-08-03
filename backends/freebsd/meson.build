@@ -8,7 +8,10 @@ c_args = [
 
 shared_module(
   'pk_backend_freebsd',
-  'pk-backend-freebsd.cpp',
+  sources: [
+    'pk-backend-freebsd.cpp',
+    'stolen.c'
+  ],
   include_directories: packagekit_src_include,
   dependencies: [
     packagekit_glib2_dep,
