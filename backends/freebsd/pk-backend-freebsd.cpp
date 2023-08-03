@@ -31,7 +31,6 @@
 
 #include <pkg.h>
 
-#include <functional>
 #include <optional>
 #include <string>
 #include <memory>
@@ -628,7 +627,26 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
-    g_error("pk_backend_update_packages not implemented yet");
+    PKJobFinisher jf (job);
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY, PKGDB_REMOTE);
+
+    Jobs jobs (PKG_JOBS_UPGRADE, pkgDb.handle(), "update_packages");
+    jobs << PKG_FLAG_PKG_VERSION_TEST;
+
+    uint size = g_strv_length (package_ids);
+    for (uint i = 0; i < size; i++) {
+        PackageView pkg (package_ids[i]);
+        gchar* pkg_namever = pkg.nameversion();
+
+        jobs.add (MATCH_EXACT, &pkg_namever, 1);
+    }
+
+    if (jobs.solve() == 0)
+        return;
+
+    jobs.apply();
 }
 
 void
