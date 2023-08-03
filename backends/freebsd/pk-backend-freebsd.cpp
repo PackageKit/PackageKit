@@ -269,7 +269,15 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
+    PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
+
+    /* check network state */
+    if (!pk_backend_is_online (backend)) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
+        pk_backend_job_finished (job);
+        return;
+    }
 
     pkg_event_register(&event_callback, nullptr);
 
@@ -305,8 +313,6 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
                 continue;
         pkg_update (r, force);
     }
-
-    pk_backend_job_finished (job);
 }
 
 void
