@@ -93,6 +93,10 @@ private:
     gchar* pk_id;
 };
 
+// TODO: Research pkg-audit
+// TODO: Implement proper progress reporting everywhere
+// TODO: Implement correct job status reporting everywhere
+
 typedef struct {
     gboolean has_signature;
     gboolean repo_enabled_devel;
@@ -1057,16 +1061,17 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
     pk_backend_job_finished (job);
 }
 
-void
-pk_backend_upgrade_system (PkBackend *backend,
-                           PkBackendJob *job,
-                           PkBitfield transaction_flags,
-                           const gchar *distro_id,
-                           PkUpgradeKindEnum upgrade_kind)
-{
-    pk_backend_job_finished (job);
-    g_error("pk_backend_upgrade_system not implemented yet");
-}
+// TODO: Do we want "freebsd-update" support here?
+// void
+// pk_backend_upgrade_system (PkBackend *backend,
+//                            PkBackendJob *job,
+//                            PkBitfield transaction_flags,
+//                            const gchar *distro_id,
+//                            PkUpgradeKindEnum upgrade_kind)
+// {
+//     pk_backend_job_finished (job);
+//     g_error("pk_backend_upgrade_system not implemented yet");
+// }
 
 void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
