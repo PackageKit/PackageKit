@@ -34,6 +34,8 @@ public:
         arch_el = pkg_get_element(pkg, (pkg_attr)XXX_PKG_ARCH); // TODO: Use pkg_asprintf() to get this
         reponame_el = pkg_get_element(pkg, PKG_REPONAME);
         comment_el = pkg_get_element(pkg, PKG_COMMENT);
+        licenses_el = pkg_get_element(pkg, PKG_LICENSES);
+        flatsize_el = pkg_get_element(pkg, PKG_FLATSIZE);
     }
 
     PackageView(gchar* package_id)
@@ -45,7 +47,8 @@ public:
     PackageView(PackageView&& other)
     : name_el(other.name_el), version_el(other.version_el),
       arch_el(other.arch_el), reponame_el(other.reponame_el),
-      comment_el(other.comment_el), pk_id(other.pk_id), free_pk_id(other.free_pk_id),
+      comment_el(other.comment_el), licenses_el(other.licenses_el),
+      flatsize_el(other.flatsize_el), pk_id(other.pk_id), free_pk_id(other.free_pk_id),
       pk_id_parts(other.pk_id_parts), pk_namever(other.pk_namever) {
           other.free_pk_id = false;
           other.pk_id_parts = nullptr;
@@ -98,6 +101,20 @@ public:
             return arch_el->string;
     }
 
+    // TODO: libpkg can return multiple licenses, do we want that?
+    const gchar* license() const {
+        // licenses can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        auto* it = pkg_stringlist_iterator(licenses_el->stringlist);
+        return pkg_stringlist_next(it);
+    }
+
+    int64_t flatsize() const {
+        // flatsize can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        return flatsize_el->integer;
+    }
+
     const gchar* repository() const {
         if (pk_id_parts)
             return pk_id_parts[PK_PACKAGE_ID_DATA];
@@ -116,7 +133,8 @@ public:
 private:
     struct pkg_el* name_el, *version_el,
         // TODO: arch or abi?
-        *arch_el, *reponame_el, *comment_el;
+        *arch_el, *reponame_el, *comment_el,
+        *licenses_el, *flatsize_el;
     gchar* pk_id;
     bool free_pk_id = false;
     gchar** pk_id_parts;
