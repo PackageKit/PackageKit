@@ -41,6 +41,7 @@
 #include <pkg.h>
 
 #include <functional>
+#include <optional>
 #include <memory>
 #include <vector>
 
@@ -133,6 +134,8 @@ event_callback(void *data, struct pkg_event *ev);
 
 template<typename T>
 using deleted_unique_ptr = std::unique_ptr<T,std::function<void(T*)>>;
+
+static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride);
 
 template<typename Func>
 static void withRepo(pkgdb_lock_t lockType, PkBackendJob* job, Func f)
@@ -1166,32 +1169,38 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
         it = pkgdb_repo_search (db, values[0], MATCH_REGEX, searched_field, FIELD_NAMEVER, NULL);
 
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-            gchar* pk_id;
-            struct pkg_el* name_el, *version_el,
-                // TODO: arch or abi?
-                *arch_el, *reponame_el, *comment_el;
+			backendJobPackageFromPkg (job, pkg, std::nullopt);
 
-            // TODO: libpkg reports this incorrectly
-            PkInfoEnum pk_type = pkg_type (pkg) == PKG_INSTALLED
-                                ? PK_INFO_ENUM_INSTALLED
-                                : PK_INFO_ENUM_AVAILABLE;
+			if (pk_backend_job_is_cancelled (job))
+				break;
+		}
+	});
 
-            name_el = pkg_get_element(pkg, PKG_NAME);
-            version_el = pkg_get_element(pkg, PKG_VERSION);
-            arch_el = pkg_get_element(pkg, (pkg_attr)XXX_PKG_ARCH);
-            reponame_el = pkg_get_element(pkg, PKG_REPONAME);
-            pk_id = pk_package_id_build(name_el->string, version_el->string,
-                                        arch_el->string, reponame_el->string);
+	pk_backend_job_finished(job);
+}
 
-            comment_el = pkg_get_element(pkg, PKG_COMMENT);
-            pk_backend_job_package (job, pk_type, pk_id, comment_el->string);
+static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride) {
+	// TODO: libpkg reports this incorrectly
+	PkInfoEnum pk_type = pkg_type (pkg) == PKG_INSTALLED
+						? PK_INFO_ENUM_INSTALLED
+						: PK_INFO_ENUM_AVAILABLE;
 
-            g_free(pk_id);
+	if (typeOverride.has_value())
+		pk_type = typeOverride.value();
 
-            if (pk_backend_job_is_cancelled (job))
-                break;
-        }
-    });
+	struct pkg_el* name_el, *version_el,
+		// TODO: arch or abi?
+		*arch_el, *reponame_el, *comment_el;
+	name_el = pkg_get_element(pkg, PKG_NAME);
+	version_el = pkg_get_element(pkg, PKG_VERSION);
+	arch_el = pkg_get_element(pkg, (pkg_attr)XXX_PKG_ARCH); // TODO: Use pkg_asprintf() to get this
+	reponame_el = pkg_get_element(pkg, PKG_REPONAME);
+	comment_el = pkg_get_element(pkg, PKG_COMMENT);
 
-    pk_backend_job_finished(job);
+	gchar* pk_id = pk_package_id_build(name_el->string, version_el->string,
+										arch_el->string, reponame_el->string);
+
+	pk_backend_job_package (job, pk_type, pk_id, comment_el->string);
+
+	g_free(pk_id);
 }
