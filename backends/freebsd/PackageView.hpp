@@ -21,122 +21,120 @@
 
 #pragma once
 
+#include <functional>
+
 #include <pk-backend.h>
 #include <pkg.h>
+
+#include "Deleters.hpp"
 
 class PackageView
 {
 public:
-    PackageView(struct pkg* pkg)
-    : pk_id(nullptr), pk_id_parts(nullptr), pk_namever(nullptr) {
-        name_el = pkg_get_element(pkg, PKG_NAME);
-        version_el = pkg_get_element(pkg, PKG_VERSION);
-        arch_el = pkg_get_element(pkg, (pkg_attr)XXX_PKG_ARCH); // TODO: Use pkg_asprintf() to get this
-        reponame_el = pkg_get_element(pkg, PKG_REPONAME);
-        comment_el = pkg_get_element(pkg, PKG_COMMENT);
-        licenses_el = pkg_get_element(pkg, PKG_LICENSES);
-        flatsize_el = pkg_get_element(pkg, PKG_FLATSIZE);
+    PackageView(struct pkg* pkg) {
+        char* buf;
+
+        pkg_asprintf(&buf, "%n", pkg);
+        _name = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%v", pkg);
+        _version = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%q", pkg);
+        _abi = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%N", pkg);
+        _reponame = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%c", pkg);
+        _comment = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%L", pkg);
+        _licenses = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%s", pkg);
+        _flatsize = std::atoi(buf);
     }
 
     PackageView(gchar* package_id)
-    : pk_id (package_id), pk_namever(nullptr) {
-        g_assert (pk_package_id_check (pk_id));
-        pk_id_parts = pk_package_id_split (pk_id);
+    : external_pk_id (package_id), pk_namever(nullptr) {
+        g_assert (pk_package_id_check (package_id));
+        pk_id_parts = g_strfreev_deleted_unique_ptr<gchar*> (pk_package_id_split (package_id));
     }
-
-    PackageView(PackageView&& other)
-    : name_el(other.name_el), version_el(other.version_el),
-      arch_el(other.arch_el), reponame_el(other.reponame_el),
-      comment_el(other.comment_el), licenses_el(other.licenses_el),
-      flatsize_el(other.flatsize_el), pk_id(other.pk_id), free_pk_id(other.free_pk_id),
-      pk_id_parts(other.pk_id_parts), pk_namever(other.pk_namever) {
-          other.free_pk_id = false;
-          other.pk_id_parts = nullptr;
-          other.pk_namever = nullptr;
-      }
 
     PackageView(const PackageView&) = delete;
 
-    ~PackageView() {
-        if (free_pk_id)
-            g_free(pk_id);
-        if (pk_id_parts)
-            g_strfreev (pk_id_parts);
-        if (pk_namever)
-            g_free(pk_namever);
-    }
-
     const gchar* name() const {
         if (pk_id_parts)
-            return pk_id_parts[PK_PACKAGE_ID_NAME];
+            return pk_id_parts.get()[PK_PACKAGE_ID_NAME];
         else
-            return name_el->string;
+            return _name.get();
     }
 
     const gchar* version() const {
         if (pk_id_parts)
-            return pk_id_parts[PK_PACKAGE_ID_VERSION];
+            return pk_id_parts.get()[PK_PACKAGE_ID_VERSION];
         else
-            return version_el->string;
+            return _version.get();
     }
 
     gchar* nameversion() {
         if (pk_namever)
-            return pk_namever;
+            return pk_namever.get();
 
-        pk_namever = g_strconcat(name(), "-", version(), NULL);
-        return pk_namever;
+        pk_namever = g_free_deleted_unique_ptr<gchar> (g_strconcat(name(), "-", version(), NULL));
+        return pk_namever.get();
     }
 
     const gchar* comment() const {
         // comment can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
-        return comment_el->string;
+        return _comment.get();
     }
 
     const gchar* arch() const {
         if (pk_id_parts)
-            return pk_id_parts[PK_PACKAGE_ID_ARCH];
-        else
-            return arch_el->string;
+            return pk_id_parts.get()[PK_PACKAGE_ID_ARCH];
+        else {
+            // abi has the form of "FreeBSD:13:amd64"
+            // we want only the last part
+            const gchar* ptr = _abi.get();
+            while (*ptr != ':') ptr++;
+            ptr++;
+            while (*ptr != ':') ptr++;
+            ptr++;
+            return ptr;
+        }
     }
 
-    // TODO: libpkg can return multiple licenses, do we want that?
     const gchar* license() const {
         // licenses can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
-        auto* it = pkg_stringlist_iterator(licenses_el->stringlist);
-        return pkg_stringlist_next(it);
+        return _licenses.get();
     }
 
     int64_t flatsize() const {
         // flatsize can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
-        return flatsize_el->integer;
+        return _flatsize;
     }
 
     const gchar* repository() const {
         if (pk_id_parts)
-            return pk_id_parts[PK_PACKAGE_ID_DATA];
+            return pk_id_parts.get()[PK_PACKAGE_ID_DATA];
         else
-            return reponame_el->string;
+            return _reponame.get(); // TODO: we get nullptr here in case of local pkg
     }
 
     gchar* packageKitId() {
-        if (!pk_id) {
-            pk_id = pk_package_id_build(name_el->string, version_el->string,
-                                        arch_el->string, reponame_el->string);
-            free_pk_id = true;
-        }
-        return pk_id;
+        if (external_pk_id)
+            return external_pk_id;
+
+        if (!built_pk_id)
+            built_pk_id = g_free_deleted_unique_ptr<gchar> (
+                    pk_package_id_build(name(), version(), arch(), repository()));
+        return built_pk_id.get();
     }
 private:
-    struct pkg_el* name_el, *version_el,
-        // TODO: arch or abi?
-        *arch_el, *reponame_el, *comment_el,
-        *licenses_el, *flatsize_el;
-    gchar* pk_id;
-    bool free_pk_id = false;
-    gchar** pk_id_parts;
-    gchar* pk_namever;
+    free_deleted_unique_ptr<char> _name,
+        _version, _abi, _reponame, _comment, _licenses;
+    int64_t _flatsize;
+    gchar* external_pk_id = nullptr;
+    g_free_deleted_unique_ptr<gchar> built_pk_id;
+    g_strfreev_deleted_unique_ptr<gchar*> pk_id_parts;
+    g_free_deleted_unique_ptr<gchar> pk_namever;
 };
