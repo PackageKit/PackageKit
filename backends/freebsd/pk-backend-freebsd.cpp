@@ -388,15 +388,14 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    struct pkg_repo* repo = NULL;
+    PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     g_assert(!pkg_initialized());
-    if (pkg_ini(NULL, NULL, PKG_INIT_FLAG_USE_IPV4) != EPKG_OK) {
-        g_error("pkg_ini failure");
-        goto exit;
-    }
+    if (pkg_ini(NULL, NULL, PKG_INIT_FLAG_USE_IPV4) != EPKG_OK)
+        g_error("get_repo_list: pkg_ini failure");
 
+    pkg_repo* repo = NULL;
     while (pkg_repos(&repo) == EPKG_OK) {
         const gchar* id = pkg_repo_name (repo);
         const gchar* descr = pkg_repo_url (repo);
@@ -406,8 +405,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
     }
 
     pkg_shutdown();
-exit:
-    pk_backend_job_finished (job);
 }
 
 void
