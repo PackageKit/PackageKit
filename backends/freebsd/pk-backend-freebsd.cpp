@@ -819,11 +819,24 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
         return;
     default: break;
     }
+
     // TODO: take filters into account
-    it = pkgdb_repo_search (pkgDb.handle(), values[0], match_type, searched_field, FIELD_NAMEVER, NULL);
+    // TODO: It isn't clear from libpkg documentation, but it seems that we
+    // should use pkgdb_repo_* only on PKGDB_MAYBE_REMOTE repos
+    if (db_type == PKGDB_DEFAULT)
+        it = pkgdb_query (pkgDb.handle(), values[0], match_type);
+    else
+        it = pkgdb_repo_search (pkgDb.handle(), values[0], match_type, searched_field, FIELD_NAMEVER, NULL);
 
     while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-        backendJobPackageFromPkg (job, pkg, std::nullopt);
+        std::optional<PkInfoEnum> typeOverride;
+        // If we are operating on local DB then any package we get is installed
+        // this is a bit of improvement for the libpkg deficiency described in backendJobPackageFromPkg()
+        // TODO: remove this when backendJobPackageFromPkg's TODO is fixed
+        if (db_type == PKGDB_DEFAULT)
+            typeOverride = PK_INFO_ENUM_INSTALLED;
+
+        backendJobPackageFromPkg (job, pkg, typeOverride);
 
         if (pk_backend_job_is_cancelled (job))
             break;
