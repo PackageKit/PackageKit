@@ -167,7 +167,34 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_file
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-    g_error("pk_backend_get_details not implemented yet");
+    PKJobFinisher jf (job);
+    pk_backend_job_set_allow_cancel (job, TRUE);
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, PKGDB_DEFAULT);
+
+    guint size = g_strv_length (package_ids);
+    for (guint i = 0; i < size; i++) {
+        PackageView pkgView(package_ids[i]);
+        pkgdb_it* it = pkgdb_query (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT);
+        pkg* pkg = NULL;
+        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+            PackageView pkgView(pkg);
+            PkGroupEnum group = PK_GROUP_ENUM_UNKNOWN; // TODO: set correct group
+            gchar* description = NULL;
+            gchar* url = NULL;
+            pk_backend_job_details (job, package_ids[i],
+                                    pkgView.comment(),
+                                    pkgView.license(),
+                                    group,
+                                    description,
+                                    url,
+                                    pkgView.flatsize());
+
+            if (pk_backend_job_is_cancelled (job))
+                break;
+        }
+    }
 }
 
 // TODO: This requires pkgbase support
@@ -412,6 +439,7 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
+    g_warning ("resolve filters: %s", pk_filter_bitfield_to_string(filters));
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     guint size = g_strv_length (packages);
