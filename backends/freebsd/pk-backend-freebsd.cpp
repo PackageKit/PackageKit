@@ -657,87 +657,74 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 void
 pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
+    PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 
-    withRepo(PKGDB_LOCK_READONLY, job, [package_ids, directory, job](struct pkgdb* db) {
-        struct pkg_jobs *jobs = NULL;
-        pkg_flags pkg_flags = PKG_FLAG_NONE;
-        const gchar *cache_dir = "/var/cache/pkg"; // TODO: query this from libpkg
-        const gchar *package_id;
-        gchar** package_id_parts;
-        gchar* package_namever;
-        uint i, size;
-        // This is required to convince libpkg to download into an arbitrary directory
-        if (directory != NULL)
-            pkg_flags = PKG_FLAG_FETCH_MIRROR;
+    PackageDatabase pkgDb (job);
 
-        size = g_strv_length (package_ids);
-        for (i = 0; i < size; i++) {
-            bool need_break = 0;
-            const gchar* file, *filename;
-            gchar* files[] = {NULL, NULL};
+    struct pkg_jobs	*jobs = NULL;
+    pkg_flags jobs_flags = PKG_FLAG_NONE;
+    const gchar *cache_dir = "/var/cache/pkg"; // TODO: query this from libpkg
+    const gchar *package_id;
+    gchar** package_id_parts;
+    gchar* package_namever;
+    uint i, size;
+    // This is required to convince libpkg to download into an arbitrary directory
+    if (directory != NULL)
+        jobs_flags = PKG_FLAG_FETCH_MIRROR;
 
-            if (pkg_jobs_new(&jobs, PKG_JOBS_FETCH, db) != EPKG_OK) {
-                g_error("pkg_jobs_new failed");
-                return;
-            }
-            auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+    size = g_strv_length (package_ids);
+    for (i = 0; i < size; i++) {
+        bool need_break = 0;
+        const gchar* file, *filename;
+        gchar* files[] = {NULL, NULL};
 
-            // TODO: set reponame when libpkg start reporting it
-            // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
-            // 	goto cleanup;
+        if (pkg_jobs_new(&jobs, PKG_JOBS_FETCH, pkgDb.handle()) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_new failed");
 
-            if (directory != NULL && pkg_jobs_set_destdir(jobs, directory) != EPKG_OK) {
-                g_error("pkg_jobs_set_destdir failed for %s", directory);
-                goto exit4;
-            }
+        auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
 
-            pkg_jobs_set_flags(jobs, pkg_flags);
+        // TODO: set reponame when libpkg start reporting it
+        // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
+        // 	goto cleanup;
 
-            package_id = package_ids[i];
-            package_id_parts = pk_package_id_split (package_id);
-            package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
+        if (directory != NULL && pkg_jobs_set_destdir(jobs, directory) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_set_destdir failed for %s", directory);
 
-            if (pkg_jobs_add(jobs, MATCH_GLOB, &package_namever, 1) != EPKG_OK) {
-                g_error("pkg_jobs_add failed for %s", package_id);
-                need_break = 1;
-                goto exit4;
-            }
+        pkg_jobs_set_flags(jobs, jobs_flags);
 
-            if (pkg_jobs_solve(jobs) != EPKG_OK) {
-                g_error("pkg_jobs_solve failed");
-                need_break = 1;
-                goto exit4;
-            }
+        package_id = package_ids[i];
+        package_id_parts = pk_package_id_split (package_id);
+        package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
 
-            if (pkg_jobs_count(jobs) == 0)
-                goto exit4;
+        if (pkg_jobs_add(jobs, MATCH_GLOB, &package_namever, 1) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_add failed for %s", package_id);
 
-            if (pkg_jobs_apply(jobs) != EPKG_OK) {
-                g_error("pkg_jobs_apply failed");
-                need_break = 1;
-                goto exit4;
-            }
+        if (pkg_jobs_solve(jobs) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_solve failed");
 
-            filename = g_strconcat(package_namever, ".pkg", NULL);
-            file = directory == NULL
-                ? g_build_path("/", cache_dir, filename, NULL)
-                : g_build_path("/", directory, "All", filename, NULL);
+        if (pkg_jobs_count(jobs) == 0)
+            goto exit4;
 
-            files[0] = (gchar*)file;
-            pk_backend_job_files(job, package_id, files);
+        if (pkg_jobs_apply(jobs) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_apply failed");
 
-            g_free((gchar*)filename);
-            g_free((gchar*)file);
-    exit4:
-            g_free(package_namever);
-            g_strfreev(package_id_parts);
-            if (need_break)
-                break;
-        }
-    });
+        filename = g_strconcat(package_namever, ".pkg", NULL);
+        file = directory == NULL
+            ? g_build_path("/", cache_dir, filename, NULL)
+            : g_build_path("/", directory, "All", filename, NULL);
 
-    pk_backend_job_finished (job);
+        files[0] = (gchar*)file;
+        pk_backend_job_files(job, package_id, files);
+
+        g_free((gchar*)filename);
+        g_free((gchar*)file);
+exit4:
+        g_free(package_namever);
+        g_strfreev(package_id_parts);
+        if (need_break)
+            break;
+    }
 }
 
 // TODO: Do we want "freebsd-update" support here?
