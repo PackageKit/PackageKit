@@ -280,56 +280,44 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    PkBackendFreeBSDJobData *job_data = reinterpret_cast<PkBackendFreeBSDJobData*> (pk_backend_job_get_user_data (job));
+    PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
-    /* check network state */
-    if (!pk_backend_is_online (backend)) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
-        pk_backend_job_finished (job);
+
+    // TODO: what filters could we possibly get there?
+    g_assert (filters == 0);
+
+    PackageDatabase pkgDb (job);
+
+    struct pkg_jobs	*jobs = NULL;
+    pkg_flags jobs_flags = static_cast<pkg_flags> (
+        PKG_FLAG_NONE
+        | PKG_FLAG_PKG_VERSION_TEST
+        | PKG_FLAG_DRY_RUN);
+
+    if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, pkgDb.handle()) != EPKG_OK)
+        g_error("pkg_jobs_new failed");
+
+    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+
+    pkg_jobs_set_flags(jobs, jobs_flags);
+
+    // TODO: handle reponame?
+
+    if (pkg_jobs_solve(jobs) != EPKG_OK)
+        g_error("pkg_jobs_solve failed");
+
+    if (pkg_jobs_count(jobs) == 0)
         return;
+
+    void *iter = NULL;
+    struct pkg *new_pkg, *old_pkg;
+    int type;
+    while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
+        // Do not report packages that will be removed by the upgrade
+        if (type == PKG_SOLVED_UPGRADE_REMOVE)
+            continue;
+        backendJobPackageFromPkg (job, new_pkg, PK_INFO_ENUM_NORMAL);
     }
-
-	// TODO: what filters could we possibly get there?
-	g_assert (filters == 0);
-
-	withRepo(PKGDB_LOCK_READONLY, job, [job](struct pkgdb* db) {
-		struct pkg_jobs	*jobs = NULL;
-		pkg_flags f = static_cast<pkg_flags> (
-			PKG_FLAG_NONE
-			| PKG_FLAG_PKG_VERSION_TEST
-			| PKG_FLAG_DRY_RUN);
-
-		if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, db) != EPKG_OK){
-			g_error("pkg_jobs_new failed");
-			return;
-		}
-		auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
-
-		pkg_jobs_set_flags(jobs, f);
-
-		// TODO: handle reponame?
-
-		if (pkg_jobs_solve(jobs) != EPKG_OK) {
-			g_error("pkg_jobs_solve failed");
-			return;
-		}
-
-		if (pkg_jobs_count(jobs) == 0)
-			return;
-
-		void *iter = NULL;
-		struct pkg *new_pkg, *old_pkg;
-		int type;
-		while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
-			// Do not report packages that will be removed by the upgrade
-			if (type == PKG_SOLVED_UPGRADE_REMOVE)
-				continue;
-			backendJobPackageFromPkg (job, new_pkg, PK_INFO_ENUM_NORMAL);
-		}
-	});
-
-	pk_backend_job_finished (job);
 }
 
 void
