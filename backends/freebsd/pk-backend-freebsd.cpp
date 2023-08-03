@@ -340,6 +340,8 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
             // TODO: we leak package_namever here
         }
     }
+    // Null-terminator for GLib-style arrays
+    names.push_back (nullptr);
     pk_freebsd_search (job, filters, names.data());
 }
 
