@@ -18,7 +18,7 @@ xstring_new(void)
 {
 	xstring *str;
 
-	str = reinterpret_cast<xstring*>(calloc(1, sizeof(*str)));
+	str = calloc(1, sizeof(*str));
 	if (str == NULL)
 		abort();
 	str->fp = open_memstream(&str->buf, &str->size);
