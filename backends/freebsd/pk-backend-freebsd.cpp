@@ -511,7 +511,66 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
                             gboolean allow_deps,
                             gboolean autoremove)
 {
-    g_error("pk_backend_remove_packages not implemented yet");
+    PKJobFinisher jf (job);
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+
+    guint size = g_strv_length (package_ids);
+    // TODO: What should happen when remove_packages() is called with an empty package_ids?
+    g_assert (size > 0);
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY, PKGDB_DEFAULT);
+
+    struct pkg_jobs	*jobs = NULL;
+    pkg_flags	 jobs_flags = PKG_FLAG_NONE;
+
+    if (pkg_jobs_new(&jobs, PKG_JOBS_DEINSTALL, pkgDb.handle()) != EPKG_OK)
+        g_error("remove_packages: pkg_jobs_new failed");
+
+    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+
+    if (allow_deps)
+        jobs_flags = static_cast<pkg_flags>(jobs_flags | PKG_FLAG_RECURSIVE);
+
+    pkg_jobs_set_flags(jobs, jobs_flags);
+
+    std::vector<gchar*> names;
+    names.reserve (size);
+    for (guint i = 0; i < size; i++) {
+        gchar* package_id = package_ids[i];
+
+        // TODO: deduplicate this with similar code in pk_packend_download()
+        gchar** package_id_parts = pk_package_id_split (package_id);
+        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
+        names.push_back(package_namever);
+
+        g_strfreev(package_id_parts);
+        // TODO: we leak package_namever here
+    }
+
+    if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
+        g_error ("remove_packages: pkg_jobs_add failed");
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
+
+    if (pkg_jobs_solve(jobs) != EPKG_OK)
+        g_error ("remove_packages: pkg_jobs_solve failed");
+
+    // TODO: handle locked pkgs
+    g_assert (pkg_jobs_has_lockedpkgs(jobs) == 0);
+    g_assert (pkg_jobs_count(jobs) != 0);
+
+    // TODO: We need https://github.com/freebsd/pkg/issues/1271 to be fixed
+    // to support "autoremove"
+
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        return;
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+
+    if (pkg_jobs_apply (jobs) != EPKG_OK)
+        g_error ("remove_packages: pkg_jobs_apply failed");
+
+    pkgdb_compact (pkgDb.handle());
 }
 
 void
