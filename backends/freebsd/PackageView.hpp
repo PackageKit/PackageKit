@@ -28,7 +28,7 @@ class PackageView
 {
 public:
     PackageView(struct pkg* pkg)
-    : pk_id(nullptr) {
+    : pk_id(nullptr), pk_id_parts(nullptr), pk_namever(nullptr) {
         name_el = pkg_get_element(pkg, PKG_NAME);
         version_el = pkg_get_element(pkg, PKG_VERSION);
         arch_el = pkg_get_element(pkg, (pkg_attr)XXX_PKG_ARCH); // TODO: Use pkg_asprintf() to get this
@@ -36,34 +36,69 @@ public:
         comment_el = pkg_get_element(pkg, PKG_COMMENT);
     }
 
+    PackageView(gchar* package_id)
+    : pk_id (package_id), pk_namever(nullptr) {
+        g_assert (pk_package_id_check (pk_id));
+        pk_id_parts = pk_package_id_split (pk_id);
+    }
+
     ~PackageView() {
-        g_free(pk_id);
+        if (free_pk_id)
+            g_free(pk_id);
+        if (pk_id_parts)
+            g_strfreev (pk_id_parts);
+        if (pk_namever)
+            g_free(pk_namever);
     }
 
     const gchar* name() const {
-        return name_el->string;
+        if (pk_id_parts)
+            return pk_id_parts[PK_PACKAGE_ID_NAME];
+        else
+            return name_el->string;
     }
 
     const gchar* version() const {
-        return version_el->string;
+        if (pk_id_parts)
+            return pk_id_parts[PK_PACKAGE_ID_VERSION];
+        else
+            return version_el->string;
+    }
+
+    gchar* nameversion() {
+        if (pk_namever)
+            return pk_namever;
+
+        pk_namever = g_strconcat(name(), "-", version(), NULL);
+        return pk_namever;
     }
 
     const gchar* comment() const {
+        // comment can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
         return comment_el->string;
     }
 
     const gchar* arch() const {
-        return arch_el->string;
+        if (pk_id_parts)
+            return pk_id_parts[PK_PACKAGE_ID_ARCH];
+        else
+            return arch_el->string;
     }
 
     const gchar* repository() const {
-        return reponame_el->string;
+        if (pk_id_parts)
+            return pk_id_parts[PK_PACKAGE_ID_DATA];
+        else
+            return reponame_el->string;
     }
 
     gchar* packageKitId() {
-        if (!pk_id)
+        if (!pk_id) {
             pk_id = pk_package_id_build(name_el->string, version_el->string,
                                         arch_el->string, reponame_el->string);
+            free_pk_id = true;
+        }
         return pk_id;
     }
 private:
@@ -71,4 +106,7 @@ private:
         // TODO: arch or abi?
         *arch_el, *reponame_el, *comment_el;
     gchar* pk_id;
+    bool free_pk_id = false;
+    gchar** pk_id_parts;
+    gchar* pk_namever;
 };
