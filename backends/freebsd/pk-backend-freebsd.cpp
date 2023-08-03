@@ -323,7 +323,93 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 void
 pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
-    g_error("pk_backend_install_packages not implemented yet");
+    PKJobFinisher jf (job);
+
+    // TODO: handle all of these
+    if (! (transaction_flags == 0
+            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)
+            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)
+            || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+        )
+        g_error("install_packages: unexpected transaction_flags %s", pk_transaction_flag_bitfield_to_string(transaction_flags));
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY);
+
+    struct pkg_jobs	*jobs = NULL;
+    pkg_flags	 jobs_flags = static_cast<pkg_flags> (
+        PKG_FLAG_NONE | PKG_FLAG_PKG_VERSION_TEST);
+
+    if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+        jobs_flags = static_cast<pkg_flags>(jobs_flags | PKG_FLAG_SKIP_INSTALL);
+
+    if (pkg_jobs_new(&jobs, PKG_JOBS_INSTALL, pkgDb.handle()) != EPKG_OK) {
+        g_error("install_packages: pkg_jobs_new failed");
+        return;
+    }
+    auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
+
+    pkg_jobs_set_flags(jobs, jobs_flags);
+
+    guint size = g_strv_length (package_ids);
+    std::vector<gchar*> names;
+    names.reserve (size);
+    for (guint i = 0; i < size; i++) {
+        // in this approach we call `pkg upgrade <pkg>` in a loop and present
+        // the user an upgrading plan for each invocation
+        // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
+        // and output a combined plan. TODO: decide which way is better
+        gchar* package_id = package_ids[i];
+
+        // TODO: deduplicate this with similar code in pk_packend_download()
+        gchar** package_id_parts = pk_package_id_split (package_id);
+        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
+        names.push_back(package_namever);
+
+        g_strfreev(package_id_parts);
+        // TODO: we leak package_namever here
+    }
+
+    if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
+        g_error ("install_packages: pkg_jobs_add failed");
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
+
+    if (pkg_jobs_solve(jobs) != EPKG_OK)
+        g_error ("install_packages: pkg_jobs_solve failed");
+
+    if (pkg_jobs_count(jobs) == 0)
+        return;
+
+    void *iter = NULL;
+    struct pkg *new_pkg, *old_pkg;
+    int type;
+    while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
+        if (type == PKG_SOLVED_DELETE) {
+            g_warning ("install_packages: have to remove some packages");
+            continue;
+        }
+
+        backendJobPackageFromPkg (job, new_pkg, PK_INFO_ENUM_NORMAL);
+    }
+
+    if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        return;
+
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+
+    int retcode;
+    do {
+        retcode = pkg_jobs_apply(jobs);
+        if (retcode == EPKG_CONFLICT) {
+            g_warning("Conflicts with the existing packages "
+                        "have been found. One more solver "
+                        "iteration is needed to resolve them.");
+            continue;
+        }
+        else if (retcode != EPKG_OK) {
+            g_error ("install_packages: pkg_jobs_apply failed");
+        }
+    } while (retcode == EPKG_CONFLICT);
 }
 
 void
