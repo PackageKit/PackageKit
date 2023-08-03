@@ -798,49 +798,69 @@ pk_backend_get_author (PkBackend *backend)
 static void
 pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 {
+    PKJobFinisher jf (job);
+
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     //g_error(pk_filter_bitfield_to_string(filters));
 
-    // TODO: what can we possible get in filters?
+    // TODO: what can we possibly get in filters?
     // We ignore ~installed as there is no support in libpkg
-    if (! (filters == 0 || pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))) {
-        g_error(pk_filter_bitfield_to_string(filters));
+    if (! (filters == 0
+        || pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)
+        || pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED))) {
+        g_error("freebsd_search: unexpected filters %s", pk_filter_bitfield_to_string(filters));
     }
 
-    withRepo(PKGDB_LOCK_READONLY, job, [values, job](struct pkgdb* db) {
-        struct pkgdb_it* it = NULL;
-        struct pkg *pkg = NULL;
-        pkgdb_field searched_field = FIELD_NAMEVER;
+    guint size = g_strv_length (values);
+    // TODO: take all values into account
+    g_assert (size == 1);
 
-        switch (pk_backend_job_get_role (job))
-        {
-        case PK_ROLE_ENUM_SEARCH_DETAILS:
-            // TODO: can we search both?
-            searched_field = FIELD_COMMENT;
-            break;
-        case PK_ROLE_ENUM_SEARCH_GROUP:
-            // TODO: this is the best approximation for non-existing FIELD_CATEGORIES
-            searched_field = FIELD_ORIGIN;
-            break;
-        case PK_ROLE_ENUM_SEARCH_FILE:
-            // TODO: we don't support searching for packages that provide given file
-            return;
-        default: break;
+    pkgdb_t db_type = PKGDB_MAYBE_REMOTE;
+    // Open local DB only when filters require only installed packages
+    // TODO: I don't like it
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
+        && !pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
+        db_type = PKGDB_DEFAULT;
+
+    PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, db_type);
+
+    struct pkgdb_it* it = NULL;
+    struct pkg *pkg = NULL;
+    match_t match_type = MATCH_REGEX;
+    pkgdb_field searched_field = FIELD_NAMEVER;
+
+    switch (pk_backend_job_get_role (job))
+    {
+    case PK_ROLE_ENUM_SEARCH_DETAILS:
+        // TODO: can we search both?
+        searched_field = FIELD_COMMENT;
+        break;
+    case PK_ROLE_ENUM_SEARCH_GROUP:
+        match_type = MATCH_GLOB;
+        searched_field = FIELD_ORIGIN;
+        for (guint i = 0; i < size; i++) {
+            // for each group create a glob in form "group/*"
+            gchar* old_value = values[i];
+            values[i] = g_strconcat (values[i], "/*", NULL);
+            g_free (old_value);
         }
-        // TODO: take filters and all values into account
-        it = pkgdb_repo_search (db, values[0], MATCH_REGEX, searched_field, FIELD_NAMEVER, NULL);
+        break;
+    case PK_ROLE_ENUM_SEARCH_FILE:
+        // TODO: we don't support searching for packages that provide given file
+        return;
+    default: break;
+    }
+    // TODO: take filters into account
+    it = pkgdb_repo_search (pkgDb.handle(), values[0], match_type, searched_field, FIELD_NAMEVER, NULL);
 
-        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-			backendJobPackageFromPkg (job, pkg, std::nullopt);
+    while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+        backendJobPackageFromPkg (job, pkg, std::nullopt);
 
-			if (pk_backend_job_is_cancelled (job))
-				break;
-		}
-	});
-
-	pk_backend_job_finished(job);
+        if (pk_backend_job_is_cancelled (job))
+            break;
+    }
 }
 
 static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride) {
