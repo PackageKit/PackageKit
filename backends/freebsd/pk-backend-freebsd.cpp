@@ -1001,6 +1001,7 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
                 g_error("pkg_jobs_new failed");
                 return;
             }
+            auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs); });
 
             // TODO: set reponame when libpkg start reporting it
             // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
@@ -1045,8 +1046,6 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 
             files[0] = (gchar*)file;
             pk_backend_job_files(job, package_id, files);
-
-            pkg_jobs_free(jobs);
 
             g_free((gchar*)filename);
             g_free((gchar*)file);
