@@ -189,7 +189,92 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-    g_error("pk_backend_get_update_detail not implemented yet");
+    PKJobFinisher jf (job);
+    PackageDatabase pkgDb (job);
+
+    pkg_flags jobs_flags = static_cast<pkg_flags> (
+        PKG_FLAG_NONE
+        | PKG_FLAG_PKG_VERSION_TEST
+        | PKG_FLAG_DRY_RUN);
+
+    guint size = g_strv_length (package_ids);
+    for (guint i = 0; i < size; i++) {
+        // in this approach we call `pkg upgrade <pkg>` in a loop and present
+        // the user an upgrading plan for each invocation
+        // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
+        // and output a combined plan. TODO: decide which way is better
+        gchar* package_id = package_ids[i];
+
+        // TODO: deduplicate this with similar code in pk_packend_download()
+        gchar** package_id_parts = pk_package_id_split (package_id);
+        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
+        g_strfreev(package_id_parts);
+        // TODO: we leak package_namever here
+
+        struct pkg_jobs	*jobs = NULL;
+        if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, pkgDb.handle()) != EPKG_OK)
+            g_error("update_detail: pkg_jobs_new failed");
+        auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs);});
+
+        if (pkg_jobs_add(jobs, MATCH_GLOB, &package_namever, 1) == EPKG_FATAL)
+            g_error("update_detail: pkg_jobs_add failed");
+
+        pkg_jobs_set_flags(jobs, jobs_flags);
+
+        // TODO: handle reponame?
+
+        if (pkg_jobs_solve(jobs) != EPKG_OK)
+            g_error("update_detail: pkg_jobs_solve failed");
+
+        if (pkg_jobs_count(jobs) == 0)
+            return;
+
+        std::vector<gchar*> updates;
+        std::vector<gchar*> obsoletes;
+        gchar		**vendor_urls = NULL;
+        gchar		**bugzilla_urls = NULL;
+        gchar		**cve_urls = NULL;
+        PkRestartEnum	 restart = PK_RESTART_ENUM_NONE;
+        const gchar	*update_text = NULL;
+        const gchar	*changelog = NULL;
+        PkUpdateStateEnum state = PK_UPDATE_STATE_ENUM_UNKNOWN;
+        const gchar	*issued = NULL;
+        const gchar	*updated = issued;
+
+        void *iter = NULL;
+        struct pkg *new_pkg, *old_pkg;
+        int type;
+        while (pkg_jobs_iter(jobs, &iter, &new_pkg, &old_pkg, &type)) {
+            PackageView oldPkg(old_pkg);
+            switch (type) {
+            case PKG_SOLVED_UPGRADE_REMOVE:
+                obsoletes.push_back(g_strdup(oldPkg.packageKitId()));
+                break;
+            default:
+                updates.push_back(g_strdup(oldPkg.packageKitId()));
+                break;
+            }
+        }
+
+        updates.push_back(nullptr);
+        obsoletes.push_back(nullptr);
+
+        pk_backend_job_update_detail (job, package_id,
+                                        updates.data(),
+                                        obsoletes.data(),
+                                        vendor_urls,
+                                        bugzilla_urls,
+                                        cve_urls,
+                                        restart,
+                                        update_text,
+                                        changelog,
+                                        state,
+                                        issued,
+                                        updated);
+
+        g_strfreev (updates.data());
+        g_strfreev (obsoletes.data());
+    }
 }
 
 void
