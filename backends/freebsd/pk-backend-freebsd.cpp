@@ -33,6 +33,7 @@
 
 #include <functional>
 #include <optional>
+#include <string>
 #include <memory>
 #include <vector>
 
@@ -203,20 +204,15 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
         // the user an upgrading plan for each invocation
         // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
         // and output a combined plan. TODO: decide which way is better
-        gchar* package_id = package_ids[i];
-
-        // TODO: deduplicate this with similar code in pk_packend_download()
-        gchar** package_id_parts = pk_package_id_split (package_id);
-        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
-        g_strfreev(package_id_parts);
-        // TODO: we leak package_namever here
-
         struct pkg_jobs	*jobs = NULL;
         if (pkg_jobs_new(&jobs, PKG_JOBS_UPGRADE, pkgDb.handle()) != EPKG_OK)
             g_error("update_detail: pkg_jobs_new failed");
         auto jobsDeleter = deleted_unique_ptr<struct pkg_jobs>(jobs, [](struct pkg_jobs* jobs) { pkg_jobs_free(jobs);});
 
-        if (pkg_jobs_add(jobs, MATCH_GLOB, &package_namever, 1) == EPKG_FATAL)
+        PackageView pkg (package_ids[i]);
+        gchar* pkg_namever = pkg.nameversion();
+
+        if (pkg_jobs_add(jobs, MATCH_GLOB, &pkg_namever, 1) == EPKG_FATAL)
             g_error("update_detail: pkg_jobs_add failed");
 
         pkg_jobs_set_flags(jobs, jobs_flags);
@@ -259,7 +255,7 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
         updates.push_back(nullptr);
         obsoletes.push_back(nullptr);
 
-        pk_backend_job_update_detail (job, package_id,
+        pk_backend_job_update_detail (job, pkg.packageKitId(),
                                         updates.data(),
                                         obsoletes.data(),
                                         vendor_urls,
@@ -352,22 +348,14 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 
     guint size = g_strv_length (package_ids);
     std::vector<gchar*> names;
-    names.reserve (size);
+    names.reserve (size+1);
     for (guint i = 0; i < size; i++) {
-        // in this approach we call `pkg upgrade <pkg>` in a loop and present
-        // the user an upgrading plan for each invocation
-        // an alternative approach is to make only one call `pkg upgrade <pkg1> <pkg2> ...`
-        // and output a combined plan. TODO: decide which way is better
-        gchar* package_id = package_ids[i];
-
-        // TODO: deduplicate this with similar code in pk_packend_download()
-        gchar** package_id_parts = pk_package_id_split (package_id);
-        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
-        names.push_back(package_namever);
-
-        g_strfreev(package_id_parts);
-        // TODO: we leak package_namever here
+        PackageView pkg(package_ids[i]);
+        names.push_back(g_strdup(pkg.nameversion()));
     }
+    names.push_back (nullptr);
+    // TODO: this deleter results in an obscure crash on the second "install_packages" invocation
+    //auto namesDeleter = deleted_unique_ptr<decltype(names)>(&names, [](auto* names) { g_strfreev (names->data()); });
 
     if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
         g_error ("install_packages: pkg_jobs_add failed");
@@ -481,7 +469,7 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 
     guint size = g_strv_length (packages);
     std::vector<gchar*> names;
-    names.reserve(size);
+    names.reserve(size+1);
     for (guint i = 0; i < size; i++) {
         gchar* pkg = packages[i];
 
@@ -491,12 +479,8 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
             // TODO: maybe search by glob there?
         }
         else {
-            // TODO: deduplicate this with similar code in pk_packend_download()
-            gchar** package_id_parts = pk_package_id_split (pkg);
-            gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
-            names.push_back(package_namever);
-            g_strfreev(package_id_parts);
-            // TODO: we leak package_namever here
+            PackageView pkgView (pkg);
+            names.push_back(g_strdup(pkgView.nameversion()));
         }
     }
     // Null-terminator for GLib-style arrays
@@ -536,15 +520,8 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
     std::vector<gchar*> names;
     names.reserve (size);
     for (guint i = 0; i < size; i++) {
-        gchar* package_id = package_ids[i];
-
-        // TODO: deduplicate this with similar code in pk_packend_download()
-        gchar** package_id_parts = pk_package_id_split (package_id);
-        gchar* package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
-        names.push_back(package_namever);
-
-        g_strfreev(package_id_parts);
-        // TODO: we leak package_namever here
+        PackageView pkg(package_ids[i]);
+        names.push_back(g_strdup(pkg.nameversion()));
     }
 
     if (pkg_jobs_add(jobs, MATCH_GLOB, names.data(), size) != EPKG_OK)
@@ -655,30 +632,26 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 }
 
 void
-pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
+pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory0)
 {
     PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+    pk_backend_job_set_allow_cancel (job, TRUE);
 
     PackageDatabase pkgDb (job);
 
-    struct pkg_jobs	*jobs = NULL;
     pkg_flags jobs_flags = PKG_FLAG_NONE;
-    const gchar *cache_dir = "/var/cache/pkg"; // TODO: query this from libpkg
-    const gchar *package_id;
-    gchar** package_id_parts;
-    gchar* package_namever;
+    std::string directory (directory0);
+    std::string cacheDir = "/var/cache/pkg"; // TODO: query this from libpkg
+
     uint i, size;
     // This is required to convince libpkg to download into an arbitrary directory
-    if (directory != NULL)
+    if (!directory.empty())
         jobs_flags = PKG_FLAG_FETCH_MIRROR;
 
     size = g_strv_length (package_ids);
     for (i = 0; i < size; i++) {
-        bool need_break = 0;
-        const gchar* file, *filename;
-        gchar* files[] = {NULL, NULL};
-
+        struct pkg_jobs	*jobs = NULL;
         if (pkg_jobs_new(&jobs, PKG_JOBS_FETCH, pkgDb.handle()) != EPKG_OK)
             g_error("download_packages: pkg_jobs_new failed");
 
@@ -688,41 +661,35 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
         // if (reponame != NULL && pkg_jobs_set_repository(jobs, reponame) != EPKG_OK)
         // 	goto cleanup;
 
-        if (directory != NULL && pkg_jobs_set_destdir(jobs, directory) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_set_destdir failed for %s", directory);
+        if (!directory.empty() && pkg_jobs_set_destdir(jobs, directory.c_str()) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_set_destdir failed for %s", directory.c_str());
 
         pkg_jobs_set_flags(jobs, jobs_flags);
 
-        package_id = package_ids[i];
-        package_id_parts = pk_package_id_split (package_id);
-        package_namever = g_strconcat(package_id_parts[PK_PACKAGE_ID_NAME], "-", package_id_parts[PK_PACKAGE_ID_VERSION], NULL);
+        PackageView pkg (package_ids[i]);
 
-        if (pkg_jobs_add(jobs, MATCH_GLOB, &package_namever, 1) != EPKG_OK)
-            g_error("download_packages: pkg_jobs_add failed for %s", package_id);
+        gchar* pkg_namever = pkg.nameversion();
+        if (pkg_jobs_add(jobs, MATCH_EXACT, &pkg_namever, 1) != EPKG_OK)
+            g_error("download_packages: pkg_jobs_add failed for %s", pkg_namever);
 
         if (pkg_jobs_solve(jobs) != EPKG_OK)
             g_error("download_packages: pkg_jobs_solve failed");
 
         if (pkg_jobs_count(jobs) == 0)
-            goto exit4;
+            continue;
 
         if (pkg_jobs_apply(jobs) != EPKG_OK)
             g_error("download_packages: pkg_jobs_apply failed");
 
-        filename = g_strconcat(package_namever, ".pkg", NULL);
-        file = directory == NULL
-            ? g_build_path("/", cache_dir, filename, NULL)
-            : g_build_path("/", directory, "All", filename, NULL);
+        std::string filepath = directory.empty()
+                             ? cacheDir + "/" + pkg_namever + ".pkg"
+                             : directory + "/All/" + pkg_namever + ".pkg";
 
-        files[0] = (gchar*)file;
-        pk_backend_job_files(job, package_id, files);
+        gchar* files[] = {NULL, NULL};
+        files[0] = const_cast<gchar*>(filepath.c_str());
+        pk_backend_job_files(job, pkg.packageKitId(), files);
 
-        g_free((gchar*)filename);
-        g_free((gchar*)file);
-exit4:
-        g_free(package_namever);
-        g_strfreev(package_id_parts);
-        if (need_break)
+        if (pk_backend_job_is_cancelled (job))
             break;
     }
 }
