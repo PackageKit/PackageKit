@@ -15,6 +15,9 @@ shared_module(
     gmodule_dep,
     libpkg_dep
   ],
+  override_options: [
+    'cpp_std=c++17'
+  ],
   c_args: c_args,
   cpp_args: c_args,
   install: true,
