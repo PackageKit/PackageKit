@@ -912,54 +912,128 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
     }
 }
 
-void
-pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
-                            PkBitfield transaction_flags,
-                            gchar **package_ids,
-                            gboolean allow_deps,
-                            gboolean autoremove)
+static void
+pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PKJobFinisher jf (job);
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+    PKJobCanceller jc (job);
+
+    PkBitfield transaction_flags;
+    gchar **package_ids = NULL;
+    gboolean allow_deps, autoremove;
+    g_variant_get (params, "(t^a&sbb)",
+            &transaction_flags,
+            &package_ids,
+            &allow_deps,
+            &autoremove);
 
     guint size = g_strv_length (package_ids);
     // TODO: What should happen when remove_packages() is called with an empty package_ids?
     g_assert (size > 0);
 
-    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY);
+    // TODO: We need https://github.com/freebsd/pkg/issues/1271 to be fixed
+    // to support "autoremove"
+    if (autoremove) {
+        pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_NOT_SUPPORTED,
+                        "!allow_deps is not supported");
+        return;
+    }
+
+    pk_backend_job_set_percentage (job, 0);
+
+    pkgdb_lock_t lockType = PKGDB_LOCK_ADVISORY;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        lockType = PKGDB_LOCK_READONLY;
+
+    PackageDatabase pkgDb (job, lockType, PKGDB_DEFAULT);
+
+    uint jobsCount;
+    uint currentJob = 0;
+    pkgDb.setEventHandler([job, &jobsCount, &currentJob, &jc](pkg_event* ev) {
+        switch (ev->type) {
+            // TODO: in case of single package we can react on PKG_EVENT_PROGRESS_TICK
+            case PKG_EVENT_DEINSTALL_FINISHED:
+            {
+                pkg* pkg = ev->e_install_finished.pkg;
+                PackageView pkgView(pkg);
+                uint progress = (currentJob * 100) / jobsCount;
+                currentJob++;
+                pk_backend_job_set_percentage (job, progress);
+                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                break;
+            }
+            default:
+                break;
+        }
+        // TODO: libpkg doesn't yet support cancelling
+        //jc.cancelIfRequested();
+        (void) jc;
+    });
+
     Jobs jobs(PKG_JOBS_DEINSTALL, pkgDb.handle(), "remove_packages");
 
-    if (allow_deps)
+    if (allow_deps) // TODO: https://github.com/freebsd/pkg/issues/2124
         jobs << PKG_FLAG_RECURSIVE;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        jobs << PKG_FLAG_DRY_RUN;
 
-    std::vector<gchar*> names;
+    gchar_ptr_vector names;
     names.reserve (size);
     for (guint i = 0; i < size; i++) {
         PackageView pkg(package_ids[i]);
         names.push_back(g_strdup(pkg.nameversion()));
     }
 
-    jobs.add(MATCH_GLOB, names);
+    jobs.add(MATCH_EXACT, names);
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-    jobs.solve();
+    jobsCount = jobs.solve();
 
     // TODO: handle locked pkgs
     g_assert (!jobs.hasLockedPackages());
-    g_assert (jobs.count() != 0);
+    if (jobsCount == 0) {
+        pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_NOT_INSTALLED,
+                        "Requested package(s) aren't not installed");
+        return;
+    }
 
-    // TODO: We need https://github.com/freebsd/pkg/issues/1271 to be fixed
-    // to support "autoremove"
-
-    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+    // give a chance to cancel
+    if (jc.cancelIfRequested())
         return;
 
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+    // TODO: https://github.com/freebsd/pkg/issues/2137
+    // libpkg ignores PKG_FLAG_DRY_RUN for the remove job
+    // we have to iterate over jobs to report results to PackageKit
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+            PackageView pkgView = it.newPkgView();
+            pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+        }
+        return;
+    }
 
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
     jobs.apply();
 
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
     pkgdb_compact (pkgDb.handle());
+
+    pk_backend_job_set_percentage (job, 100);
+}
+
+void
+pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
+                PkBitfield transaction_flags,
+                gchar **package_ids,
+                gboolean allow_deps,
+                gboolean autoremove)
+{
+    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+    pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
 }
 
 void
