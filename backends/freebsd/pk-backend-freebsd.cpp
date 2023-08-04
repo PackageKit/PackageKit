@@ -450,15 +450,9 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
     guint size = g_strv_length (package_ids);
     for (guint i = 0; i < size; i++) {
         PackageView pkgView(package_ids[i]);
-        struct pkgdb_it* it = NULL;
         struct pkg *pkg = NULL;
         // TODO: take filters into account
-        // TODO: It isn't clear from libpkg documentation, but it seems that we
-        // should use pkgdb_repo_* only on PKGDB_MAYBE_REMOTE repos
-        if (db_type == PKGDB_DEFAULT)
-            it = pkgdb_query (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT);
-        else
-            it = pkgdb_repo_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
+        struct pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
 
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_DEPS) == EPKG_OK) {
             PackageView pkgView(pkg);
@@ -513,11 +507,12 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
     guint size = g_strv_length (package_ids);
     for (guint i = 0; i < size; i++) {
         PackageView pkgView(package_ids[i]);
-        pkgdb_it* it = pkgdb_query (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT);
+        pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
         pkg* pkg = NULL;
-        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+
+        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
             PackageView pkgView(pkg);
-            PkGroupEnum group = PK_GROUP_ENUM_UNKNOWN; // TODO: set correct group
+            PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
             gchar* description = NULL;
             gchar* url = NULL;
             pk_backend_job_details (job, package_ids[i],
@@ -801,32 +796,14 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
         }
     }
 
-    // TODO: we iterate the DB twice to get a distinction between installed packages
-    // and available ones
-    // TODO: deduplicate identical entries
-    {
-        PackageDatabase pkgDb (job);
+    PackageDatabase pkgDb (job);
 
-        for (auto* name : names) {
-            pkgdb_it* it = pkgdb_query (pkgDb.handle(), name, MATCH_GLOB);
-            struct pkg *pkg = NULL;
+    for (auto* name : names) {
+        pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), name, MATCH_GLOB, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
+        struct pkg *pkg = NULL;
 
-            while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-                backendJobPackageFromPkg (job, pkg, PK_INFO_ENUM_INSTALLED);
-            }
-        }
-    }
-
-    {
-        PackageDatabase pkgDb (job);
-
-        for (auto* name : names) {
-            pkgdb_it* it = pkgdb_repo_search (pkgDb.handle(), name, MATCH_GLOB, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
-            struct pkg *pkg = NULL;
-
-            while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-                backendJobPackageFromPkg (job, pkg, PK_INFO_ENUM_AVAILABLE);
-            }
+        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+            backendJobPackageFromPkg (job, pkg);
         }
     }
 }
@@ -1165,12 +1142,8 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
     }
 
     // TODO: take filters into account
-    // TODO: It isn't clear from libpkg documentation, but it seems that we
-    // should use pkgdb_repo_* only on PKGDB_MAYBE_REMOTE repos
-    if (db_type == PKGDB_DEFAULT)
-        it = pkgdb_query (pkgDb.handle(), values[0], match_type);
-    else
-        it = pkgdb_repo_search (pkgDb.handle(), values[0], match_type, searched_field, FIELD_NAMEVER, NULL);
+    struct pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pattern.get(), match_type, searched_field, FIELD_NAMEVER, NULL);
+    struct pkg *pkg = NULL;
 
     while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
         // TODO: should we deduplicate two identical items - installed and available one?
