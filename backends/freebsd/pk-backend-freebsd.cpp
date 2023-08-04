@@ -513,13 +513,14 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
             PackageView pkgView(pkg);
             PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
-            pk_backend_job_details (job, package_ids[i],
+            pk_backend_job_details_full (job, package_ids[i],
                                     pkgView.comment(),
                                     pkgView.license(),
                                     group,
                                     pkgView.description(),
                                     pkgView.url(),
-                                    pkgView.flatsize());
+                                    pkgView.flatsize(),
+                                    pkgView.compressedsize()); // TODO: check if already downloaded
 
             if (pk_backend_job_is_cancelled (job))
                 break;
