@@ -35,6 +35,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <unordered_set>
 
 #include "stolen.h"
 #include "PackageView.hpp"
@@ -46,26 +47,330 @@
 // TODO: Implement proper progress reporting everywhere
 // TODO: Implement correct job status reporting everywhere
 
-typedef struct {
-    gboolean has_signature;
-    gboolean repo_enabled_devel;
-    gboolean repo_enabled_fedora;
-    gboolean repo_enabled_livna;
-    gboolean repo_enabled_local;
-    gboolean updated_gtkhtml;
-    gboolean updated_kernel;
-    gboolean updated_powertop;
-    gboolean use_blocked;
-    gboolean use_distro_upgrade;
-    gboolean use_eula;
-    gboolean use_gpg;
-    gboolean use_media;
-    gboolean use_trusted;
-    gchar **package_ids;
-    gchar **values;
-    PkBitfield filters;
-    gboolean fake_db_locked;
-} PkBackendFreeBSDPrivate;
+// These are groups that FreeBSD backend claims to support.
+static PkBitfield advertised_groups;
+static void InitAdvertisedGroups()
+{
+    advertised_groups =
+        pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, //accessibility
+            PK_GROUP_ENUM_COMMUNICATION, //comms
+            PK_GROUP_ENUM_DESKTOP_GNOME, //gnome-* ports
+            PK_GROUP_ENUM_DESKTOP_KDE, //plasma5-* ports
+            PK_GROUP_ENUM_DESKTOP_OTHER, //budgie, enlightenment, etc.
+            PK_GROUP_ENUM_DESKTOP_XFCE, //xfce-* ports
+            PK_GROUP_ENUM_EDUCATION, //edu
+            PK_GROUP_ENUM_FONTS, //x11-fonts
+            PK_GROUP_ENUM_GAMES, //games
+            PK_GROUP_ENUM_GRAPHICS, //graphics
+            PK_GROUP_ENUM_INTERNET, //www
+            PK_GROUP_ENUM_NETWORK, //net
+            PK_GROUP_ENUM_PROGRAMMING, //devel
+            PK_GROUP_ENUM_MULTIMEDIA, //multimedia
+            PK_GROUP_ENUM_SECURITY, //security
+            PK_GROUP_ENUM_SYSTEM, //sysutils
+            PK_GROUP_ENUM_SCIENCE, //science
+            PK_GROUP_ENUM_MAPS, //geography
+            -1);
+}
+
+static std::unordered_set<std::string> portsCategories;
+// These are all available categories (including virtual ones) supported by the
+// Ports infrastructure. This list can be produced by running
+// make -C /usr/ports/ports-mgmt/pkg -V '${VALID_CATEGORIES:O:U:S/^/|/:S/$/|,/:S/|/"/g:ts\n}'
+static const char* portsCategoriesData[] = {
+    "accessibility",
+    "afterstep",
+    "arabic",
+    "archivers",
+    "astro",
+    "audio",
+    "base",
+    "benchmarks",
+    "biology",
+    "budgie",
+    "cad",
+    "chinese",
+    "comms",
+    "converters",
+    "databases",
+    "deskutils",
+    "devel",
+    "dns",
+    "docs",
+    "editors",
+    "education",
+    "elisp",
+    "emulators",
+    "enlightenment",
+    "finance",
+    "french",
+    "ftp",
+    "games",
+    "geography",
+    "german",
+    "gnome",
+    "gnustep",
+    "graphics",
+    "hamradio",
+    "haskell",
+    "hebrew",
+    "hungarian",
+    "irc",
+    "japanese",
+    "java",
+    "kde",
+    "kld",
+    "korean",
+    "lang",
+    "linux",
+    "lisp",
+    "mail",
+    "mate",
+    "math",
+    "mbone",
+    "misc",
+    "multimedia",
+    "net",
+    "net-im",
+    "net-mgmt",
+    "net-p2p",
+    "net-vpn",
+    "news",
+    "parallel",
+    "pear",
+    "perl5",
+    "plan9",
+    "polish",
+    "ports-mgmt",
+    "portuguese",
+    "print",
+    "python",
+    "ruby",
+    "rubygems",
+    "russian",
+    "scheme",
+    "science",
+    "security",
+    "shells",
+    "spanish",
+    "sysutils",
+    "tcl",
+    "textproc",
+    "tk",
+    "ukrainian",
+    "vietnamese",
+    "wayland",
+    "windowmaker",
+    "www",
+    "x11",
+    "x11-clocks",
+    "x11-drivers",
+    "x11-fm",
+    "x11-fonts",
+    "x11-servers",
+    "x11-themes",
+    "x11-toolkits",
+    "x11-wm",
+    "xfce",
+    "zope"
+};
+
+static std::unordered_set<std::string> unmappedPrimaryCategories;
+// These are Ports primary categories that do not correspond to any of the PackageKit ones.
+// The whole list is produced by running
+// ls -m /usr/ports | awk '{split($0,a,", "); for (i in a) printf "\"%s\",\n", a[i]}' | grep '"[a-z]'
+// Then manually remove categories that are mapped to advertised_groups in PortsCategoriesToPKGroup()
+static const char* unmappedPrimaryCategoriesData[] = {
+    "arabic",
+    "archivers",
+    "astro",
+    "audio",
+    "benchmarks",
+    "cad",
+    "chinese",
+    "converters",
+    "databases",
+    "distfiles",
+    "dns",
+    "finance",
+    "french",
+    "ftp",
+    "deskutils",
+    "german",
+    "hebrew",
+    "hungarian",
+    "irc",
+    "japanese",
+    "korean",
+    "lang",
+    "java",
+    "net-im",
+    "news",
+    "polish",
+    "portuguese",
+    "russian",
+    "shells",
+    "ports-mgmt",
+    "textproc",
+    "ukrainian",
+    "vietnamese",
+    "x11",
+    "x11-clocks",
+    "x11-drivers",
+    "x11-fm",
+    "x11-servers",
+    "x11-themes",
+    "x11-toolkits",
+    "x11-wm"
+};
+
+static void InitCategories()
+{
+#define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
+    for (unsigned i = 0; i < NELEMS(portsCategoriesData); i++)
+        portsCategories.insert(portsCategoriesData[i]);
+    for (unsigned i = 0; i < NELEMS(unmappedPrimaryCategoriesData); i++)
+        unmappedPrimaryCategories.insert(unmappedPrimaryCategoriesData[i]);
+#undef NELEMS
+}
+
+static std::unordered_set<const char*> PKGroupToPortsCategories(PkGroupEnum pk_group) {
+    // Is there a way to check this statically?
+    g_assert (pk_bitfield_contain (advertised_groups, pk_group));
+
+    if (portsCategories.empty())
+        InitCategories();
+
+    std::unordered_set<const char*> ret;
+    // Is there a way to check this statically?
+#define CHECKED_INSERT(str) \
+        g_assert (portsCategories.count(str) != 0); \
+        ret.insert (str)
+#define CHECKED_INSERT_BREAK(str) \
+        CHECKED_INSERT (str); \
+        break
+    switch (pk_group) {
+        case PK_GROUP_ENUM_ACCESSIBILITY: CHECKED_INSERT_BREAK("accessibility");
+        case PK_GROUP_ENUM_EDUCATION: CHECKED_INSERT_BREAK("education");
+        case PK_GROUP_ENUM_GAMES: CHECKED_INSERT_BREAK("games");
+        case PK_GROUP_ENUM_GRAPHICS: CHECKED_INSERT_BREAK("graphics");
+        case PK_GROUP_ENUM_INTERNET:
+            CHECKED_INSERT("mail");
+            CHECKED_INSERT_BREAK("www");
+        case PK_GROUP_ENUM_OFFICE:
+            CHECKED_INSERT("editors");
+            CHECKED_INSERT_BREAK("print");
+        case PK_GROUP_ENUM_OTHER: CHECKED_INSERT_BREAK("misc");
+        case PK_GROUP_ENUM_PROGRAMMING:
+            CHECKED_INSERT("devel");
+            CHECKED_INSERT("haskell");
+            CHECKED_INSERT("ruby");
+            CHECKED_INSERT("lisp");
+            CHECKED_INSERT_BREAK("python");
+        case PK_GROUP_ENUM_MULTIMEDIA: CHECKED_INSERT_BREAK("multimedia");
+        case PK_GROUP_ENUM_SYSTEM: CHECKED_INSERT_BREAK("sysutils");
+        case PK_GROUP_ENUM_DESKTOP_GNOME: CHECKED_INSERT_BREAK("gnome");
+        case PK_GROUP_ENUM_DESKTOP_KDE: CHECKED_INSERT_BREAK("kde");
+        case PK_GROUP_ENUM_DESKTOP_XFCE: CHECKED_INSERT_BREAK("xfce");
+        case PK_GROUP_ENUM_DESKTOP_OTHER:
+            CHECKED_INSERT("budgie");
+            CHECKED_INSERT("enlightenment");
+            CHECKED_INSERT_BREAK("mate");
+        case PK_GROUP_ENUM_FONTS: CHECKED_INSERT_BREAK("x11-fonts");
+        case PK_GROUP_ENUM_VIRTUALIZATION:
+            CHECKED_INSERT("linux");
+            CHECKED_INSERT_BREAK("emulators");
+        case PK_GROUP_ENUM_SECURITY: CHECKED_INSERT_BREAK("security");
+        case PK_GROUP_ENUM_COMMUNICATION: CHECKED_INSERT_BREAK("comms");
+        case PK_GROUP_ENUM_NETWORK:
+            CHECKED_INSERT("net");
+            CHECKED_INSERT("net-mgmt");
+            CHECKED_INSERT("net-vpn");
+            CHECKED_INSERT_BREAK("net-p2p");
+        case PK_GROUP_ENUM_MAPS: CHECKED_INSERT_BREAK("geography");
+        case PK_GROUP_ENUM_SCIENCE:
+            CHECKED_INSERT("biology");
+            CHECKED_INSERT("math");
+            CHECKED_INSERT_BREAK("science");
+        default: break;
+    }
+#undef CHECKED_INSERT
+#undef CHECKED_INSERT_BREAK
+    return ret;
+}
+
+static PkGroupEnum PortsCategoriesToPKGroup(gchar** categories)
+{
+    std::unordered_set<std::string> cats;
+
+    guint size = g_strv_length (categories);
+    for (guint i = 0; i < size; i++)
+        cats.insert(categories[i]);
+
+    if (unmappedPrimaryCategories.empty())
+        InitCategories();
+
+    bool isPrimaryCategoryMapped = unmappedPrimaryCategories.count(categories[0]) == 0;
+
+#define RETURN_CHECKED(val) \
+        { \
+        g_assert (pk_bitfield_contain (advertised_groups, val)); \
+        return val; \
+        }
+
+    // hamradio is just probably about comms
+    if (cats.count("hamradio"))
+        RETURN_CHECKED(PK_GROUP_ENUM_COMMUNICATION);
+    if (cats.count("gnome"))
+        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_GNOME);
+    if (cats.count("kde"))
+        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_KDE);
+    if (cats.count("xfce"))
+        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_XFCE);
+    if (cats.count("budgie") || cats.count("enlightenment")
+        || cats.count("mate"))
+        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_OTHER);
+    // Packages with "afterstep" category that also don't fall into advertised_groups
+    if (cats.count("afterstep") && !isPrimaryCategoryMapped)
+        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_OTHER);
+    // Programming language packages with "devel" are probably libraries
+    if (cats.count("devel") && (cats.count("java")
+        || cats.count("haskell") || cats.count("python")
+        || cats.count("ruby") || cats.count("lisp")))
+        RETURN_CHECKED(PK_GROUP_ENUM_PROGRAMMING);
+    // Linux packages without a primary category known to us go to generic VIRTUALIZATION
+    if (cats.count("linux") && !isPrimaryCategoryMapped)
+        RETURN_CHECKED(PK_GROUP_ENUM_VIRTUALIZATION);
+
+    if (cats.count("accessibility"))
+        RETURN_CHECKED(PK_GROUP_ENUM_ACCESSIBILITY);
+    if (cats.count("comms"))
+        RETURN_CHECKED(PK_GROUP_ENUM_COMMUNICATION);
+    if (cats.count("education"))
+        RETURN_CHECKED(PK_GROUP_ENUM_EDUCATION);
+    if (cats.count("multimedia"))
+        RETURN_CHECKED(PK_GROUP_ENUM_MULTIMEDIA);
+    if (cats.count("x11-fonts"))
+        RETURN_CHECKED(PK_GROUP_ENUM_FONTS);
+    if (cats.count("games"))
+        RETURN_CHECKED(PK_GROUP_ENUM_GAMES);
+    if (cats.count("graphics"))
+        RETURN_CHECKED(PK_GROUP_ENUM_GRAPHICS);
+    if (cats.count("mail") || cats.count("www")
+        || cats.count("dns"))
+        RETURN_CHECKED(PK_GROUP_ENUM_INTERNET);
+    if (cats.count("net") || cats.count("net-mgmt")
+        || cats.count("net-vpn") || cats.count("net-p2p"))
+        RETURN_CHECKED(PK_GROUP_ENUM_NETWORK);
+    if (cats.count("geography"))
+        RETURN_CHECKED(PK_GROUP_ENUM_MAPS);
+    if (cats.count("biology") || cats.count("math")
+        || cats.count("science"))
+        RETURN_CHECKED(PK_GROUP_ENUM_SCIENCE);
+
+#undef RETURN_CHECKED
+    return PK_GROUP_ENUM_UNKNOWN;
+}
 
 typedef struct {
     guint progress_percentage;
@@ -85,41 +390,18 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values);
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
-    /* create private area */
-    priv = g_new0 (PkBackendFreeBSDPrivate, 1);
-    priv->repo_enabled_fedora = TRUE;
-    priv->repo_enabled_devel = TRUE;
-    priv->repo_enabled_livna = TRUE;
-    priv->use_trusted = TRUE;
+    InitAdvertisedGroups();
 }
 
 void
 pk_backend_destroy (PkBackend *backend)
 {
-    g_free (priv);
 }
 
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
-    return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSIBILITY, //accessibility
-        PK_GROUP_ENUM_COMMUNICATION, //comms
-        PK_GROUP_ENUM_DESKTOP_GNOME, //gnome-* ports
-        PK_GROUP_ENUM_DESKTOP_KDE, //plasma5-* ports
-        PK_GROUP_ENUM_DESKTOP_OTHER, //budgie, enlightenment, etc.
-        PK_GROUP_ENUM_DESKTOP_XFCE, //xfce-* ports
-        PK_GROUP_ENUM_EDUCATION, //edu
-        PK_GROUP_ENUM_FONTS, //x11-fonts
-        PK_GROUP_ENUM_GAMES, //games
-        PK_GROUP_ENUM_GRAPHICS, //graphics
-        PK_GROUP_ENUM_INTERNET, //www
-        PK_GROUP_ENUM_NETWORK, //net
-        PK_GROUP_ENUM_PROGRAMMING, //devel
-        PK_GROUP_ENUM_MULTIMEDIA, //multimedia
-        PK_GROUP_ENUM_SECURITY, //security
-        PK_GROUP_ENUM_SYSTEM, //sysutils
-        PK_GROUP_ENUM_SCIENCE, //science
-        -1);
+    return advertised_groups;
 }
 
 PkBitfield
