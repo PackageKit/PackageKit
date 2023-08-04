@@ -56,6 +56,10 @@ public:
         _license = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%s", pkg);
         _flatsize = std::atoi(buf);
+        free(buf);
+        pkg_asprintf(&buf, "%x", pkg);
+        _compressedsize = std::atoi(buf);
+        free(buf);
     }
 
     PackageView(gchar* package_id)
@@ -139,6 +143,12 @@ public:
         return _flatsize;
     }
 
+    int64_t compressedsize() const {
+        // flatsize can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        return _compressedsize;
+    }
+
     const gchar* repository() const {
         if (pk_id_parts)
             return pk_id_parts.get()[PK_PACKAGE_ID_DATA];
@@ -160,7 +170,7 @@ private:
         _version, _abi, _reponame, _comment,
         _descr, _url, _license;
     g_strfreev_deleted_unique_ptr<gchar*> _categories;
-    int64_t _flatsize;
+    int64_t _flatsize, _compressedsize;
     gchar* external_pk_id = nullptr;
     g_free_deleted_unique_ptr<gchar> built_pk_id;
     g_strfreev_deleted_unique_ptr<gchar*> pk_id_parts;
