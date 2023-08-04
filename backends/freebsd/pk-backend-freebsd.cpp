@@ -689,10 +689,16 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     pk_backend_job_thread_create (job, pk_backend_get_updates_thread, NULL, NULL);
 }
 
-void
-pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+static void
+pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PKJobFinisher jf (job);
+    PKJobCanceller jc (job);
+
+    PkBitfield transaction_flags;
+    gchar **package_ids = NULL;
+    g_variant_get (params, "(t^a&s)",
+            &transaction_flags,
+            &package_ids);
 
     // TODO: handle all of these
     if (! (transaction_flags == 0
@@ -702,48 +708,120 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
         )
         g_error("install_packages: unexpected transaction_flags %s", pk_transaction_flag_bitfield_to_string(transaction_flags));
 
-    PackageDatabase pkgDb (job, PKGDB_LOCK_ADVISORY);
-    Jobs jobs (PKG_JOBS_INSTALL, pkgDb.handle(), "install_packages");
+    pk_backend_job_set_percentage (job, 0);
 
+    pkgdb_lock_t lockType = PKGDB_LOCK_ADVISORY;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        lockType = PKGDB_LOCK_READONLY;
+
+    PackageDatabase pkgDb (job, lockType, PKGDB_REMOTE);
+
+    uint jobsCount;
+    uint currentJob = 0;
+    pkgDb.setEventHandler([job, &jobsCount, &currentJob, &jc](pkg_event* ev) {
+        switch (ev->type) {
+            case PKG_EVENT_ALREADY_INSTALLED:
+            {
+                pkg* pkg = ev->e_already_installed.pkg;
+                PackageView pkgView(pkg);
+
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+                        "Requested package %s is already installed", pkgView.nameversion());
+                break;
+            }
+            case PKG_EVENT_NOT_FOUND:
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                        "Requested package %s wasn't found in tje repositories", ev->e_not_found.pkg_name);
+                break;
+            case PKG_EVENT_PROGRESS_TICK:
+            {
+                // if we have only one job, report each tick as percentage
+                if (jobsCount == 1)
+                {
+                    uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                    pk_backend_job_set_percentage (job, progress);
+                }
+                break;
+            }
+            case PKG_EVENT_INSTALL_FINISHED:
+            {
+                pkg* pkg = ev->e_install_finished.pkg;
+                PackageView pkgView(pkg);
+                // if we have more than one job, report progress based on jobs count
+                if (jobsCount > 1)
+                {
+                    uint progress = (currentJob * 100) / jobsCount;
+                    currentJob++;
+                    pk_backend_job_set_percentage (job, progress);
+                }
+                pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING, pkgView.packageKitId(), pkgView.comment());
+                break;
+            }
+            default:
+                break;
+        }
+        // TODO: libpkg doesn't yet support cancelling
+        //jc.cancelIfRequested();
+        (void) jc;
+    });
+
+    Jobs jobs (PKG_JOBS_INSTALL, pkgDb.handle(), "install_packages");
     jobs << PKG_FLAG_PKG_VERSION_TEST;
 
     if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
         jobs << PKG_FLAG_SKIP_INSTALL;
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+        jobs << PKG_FLAG_DRY_RUN;
 
     guint size = g_strv_length (package_ids);
-    std::vector<gchar*> names;
+    gchar_ptr_vector names;
     names.reserve (size);
     for (guint i = 0; i < size; i++) {
         PackageView pkg(package_ids[i]);
         names.push_back(g_strdup(pkg.nameversion()));
     }
 
-    jobs.add (MATCH_GLOB, names);
+    jobs.add (MATCH_EXACT, names);
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-    if (jobs.solve() == 0)
-        return; // nothing can be installed, for example because everything requested is already installed
+    jobsCount = jobs.solve();
 
-
-    DedupPackageJobEmitter emitter(job);
-    for (auto it = jobs.begin(); it != jobs.end(); ++it) {
-        if (it.itemType() == PKG_SOLVED_DELETE) {
-            g_warning ("install_packages: have to remove some packages");
-            continue;
-        }
-        emitter.emitPackageJob(it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
-    }
-
-    if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+    // give a chance to cancel
+    if (jc.cancelIfRequested())
         return;
+
+    // TODO: https://github.com/freebsd/pkg/issues/2137
+    // libpkg ignores PKG_FLAG_DRY_RUN for the install job
+    // we have to iterate over jobs to report results to PackageKit
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+        for (auto it = jobs.begin(); it != jobs.end(); ++it) {
+            PackageView pkgView = it.newPkgView();
+
+            if (it.itemType() == PKG_SOLVED_DELETE) {
+                g_warning ("install_packages: have to remove some packages");
+                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                continue;
+            }
+
+            pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING, pkgView.packageKitId(), pkgView.comment());
+        }
+        return;
+    }
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 
     jobs.apply();
+}
 
-    for (auto* str : names)
-        g_free (str);
+void
+pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+{
+    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
+
+    pk_backend_job_thread_create (job, pk_backend_install_packages_thread, NULL, NULL);
 }
 
 void
