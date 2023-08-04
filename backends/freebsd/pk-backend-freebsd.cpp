@@ -37,6 +37,7 @@
 #include <unordered_set>
 
 #include "stolen.h"
+#include "DedupPackageJobEmitter.hpp"
 #include "PackageView.hpp"
 #include "PackageDatabase.hpp"
 #include "PKJobFinisher.hpp"
@@ -380,8 +381,6 @@ static PkGroupEnum PortsCategoriesToPKGroup(gchar** categories)
     return PK_GROUP_ENUM_UNKNOWN;
 }
 
-static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride = std::nullopt);
-
 static void
 pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values);
 
@@ -458,7 +457,7 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
         // TODO: take filters into account
         struct pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
 
-        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_DEPS) == EPKG_OK) {
+        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_DEPS | PKG_LOAD_ANNOTATIONS) == EPKG_OK) {
             PackageView pkgView(pkg);
 
             char* dep_namevers0 = NULL;
@@ -656,6 +655,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
 
     uint jobNumber = 0;
     uint jobCount = jobs.count();
+    DedupPackageJobEmitter emitter(job);
     for (auto it = jobs.begin(); it != jobs.end(); ++it) {
         // Do not report packages that will be removed by the upgrade
         // and that are installed for the first time
@@ -665,7 +665,9 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
             continue;
         if (jc.cancelIfRequested())
             return;
-        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
+
+        emitter.emitPackageJob(it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
+
         pk_backend_job_set_percentage (job, (jobNumber * 100) / jobCount);
     }
 }
@@ -724,12 +726,13 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
         return; // nothing can be installed, for example because everything requested is already installed
 
 
+    DedupPackageJobEmitter emitter(job);
     for (auto it = jobs.begin(); it != jobs.end(); ++it) {
         if (it.itemType() == PKG_SOLVED_DELETE) {
             g_warning ("install_packages: have to remove some packages");
             continue;
         }
-        backendJobPackageFromPkg (job, it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
+        emitter.emitPackageJob(it.newPkgHandle(), PK_INFO_ENUM_NORMAL);
     }
 
     if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
@@ -893,12 +896,13 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
         pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), name, match, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
         struct pkg *pkg = NULL;
 
-        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
+        DedupPackageJobEmitter emitter(job);
+        while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_ANNOTATIONS) == EPKG_OK) {
             // We'll be always getting installed packages from pkgdb_it_next,
             // but PackageKit sometimes asks only about available ones
             if (filters && !pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && pkg_type(pkg) == PKG_INSTALLED)
                 continue;
-            backendJobPackageFromPkg (job, pkg);
+            emitter.emitPackageJob(pkg);
         }
     }
 }
@@ -1225,24 +1229,11 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
     struct pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pattern.get(), match_type, searched_field, FIELD_NAMEVER, NULL);
     struct pkg *pkg = NULL;
 
-    while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-        // TODO: should we deduplicate two identical items - installed and available one?
-        backendJobPackageFromPkg (job, pkg, std::nullopt);
+    DedupPackageJobEmitter emitter(job);
+    while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_ANNOTATIONS) == EPKG_OK) {
+        emitter.emitPackageJob(pkg);
 
         if (pk_backend_job_is_cancelled (job))
             break;
     }
-}
-
-static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride) {
-	PkInfoEnum pk_type = pkg_type (pkg) == PKG_INSTALLED
-						? PK_INFO_ENUM_INSTALLED
-						: PK_INFO_ENUM_AVAILABLE;
-
-	if (typeOverride.has_value())
-		pk_type = typeOverride.value();
-
-    PackageView pkgView(pkg);
-
-	pk_backend_job_package (job, pk_type, pkgView.packageKitId(), pkgView.comment());
 }
