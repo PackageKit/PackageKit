@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include <pk-backend.h>
@@ -42,14 +43,37 @@ public:
         // For now initialize and deinitialize libpkg on each call.
         g_assert(!pkg_initialized());
 
-        // TODO: Use this to report progress from various jobs
-        pkg_event_register(&event_callback, nullptr);
+        pkg_event_register(&pkgEventHandler, this);
 
         if (pkg_ini(NULL, NULL, PKG_INIT_FLAG_USE_IPV4) != EPKG_OK)
             g_error("pkg_ini failure");
         // can't pass nullptr here, unique_ptr won't call the deleter
         libpkgDeleter = deleted_unique_ptr<void>(reinterpret_cast<void*>(0xDEADC0DE), [](void* p) { pkg_shutdown(); });
+    }
 
+    pkgdb* handle() {
+        if (!dbHandle)
+            open();
+        return dbHandle;
+    }
+
+    void setEventHandler(std::function<void(pkg_event *ev)> handler) { userEventHandler = handler; }
+
+    ~PackageDatabase () {
+        dbHandle = nullptr;
+    }
+
+private:
+    static int pkgEventHandler(void* data, pkg_event *ev) {
+        PackageDatabase* pkgDB = reinterpret_cast<PackageDatabase*>(data);
+
+        if (pkgDB->userEventHandler)
+            pkgDB->userEventHandler(ev);
+
+        return event_callback(nullptr, ev);
+    }
+
+    void open() {
         // TODO: call pkgdb_access here?
 
         if (pkgdb_open (&dbHandle, dbType) != EPKG_OK)
@@ -68,19 +92,11 @@ public:
                 pk_backend_job_set_locked (job, FALSE);
         });
     }
-
-    pkgdb* handle() const { return dbHandle; }
-
-    ~PackageDatabase () {
-        dbHandle = nullptr;
-    }
-
-private:
     PkBackendJob* job;
     pkgdb_lock_t lockType;
     pkgdb_t dbType;
-
     pkgdb* dbHandle;
+    std::function<void(pkg_event *ev)> userEventHandler;
     deleted_unique_ptr<void> libpkgDeleter;
     deleted_unique_ptr<struct pkgdb> dbDeleter;
     deleted_unique_ptr<struct pkgdb> lockDeleter;
