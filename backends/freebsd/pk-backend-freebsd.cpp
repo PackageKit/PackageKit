@@ -380,9 +380,7 @@ typedef struct {
     gulong signal_timeout;
 } PkBackendFreeBSDJobData;
 
-static PkBackendFreeBSDPrivate *priv;
-
-static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride);
+static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride = std::nullopt);
 
 static void
 pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values);
@@ -967,9 +965,7 @@ void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
     PkBackendFreeBSDJobData *job_data = reinterpret_cast<PkBackendFreeBSDJobData*> (pk_backend_job_get_user_data (job));
-    priv->values = values;
     //job_data->signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, job);
-    priv->filters = filters;
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_percentage (job, 0);
@@ -1120,11 +1116,7 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
         g_error("freebsd_search: unexpected filters %s", pk_filter_bitfield_to_string(filters));
     }
 
-    guint size = g_strv_length (values);
-    // TODO: take all values into account
-    g_assert (size == 1);
-
-    pkgdb_t db_type = PKGDB_MAYBE_REMOTE;
+    pkgdb_t db_type = PKGDB_REMOTE;
     // Open local DB only when filters require only installed packages
     // TODO: I don't like it
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
@@ -1133,27 +1125,39 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 
     PackageDatabase pkgDb (job, PKGDB_LOCK_READONLY, db_type);
 
-    struct pkgdb_it* it = NULL;
-    struct pkg *pkg = NULL;
+    g_free_deleted_unique_ptr<gchar> pattern = g_free_deleted_unique_ptr<gchar> (g_strjoinv ("|", values));
     match_t match_type = MATCH_REGEX;
     pkgdb_field searched_field = FIELD_NAMEVER;
 
     switch (pk_backend_job_get_role (job))
     {
     case PK_ROLE_ENUM_SEARCH_DETAILS:
-        // TODO: can we search both?
+        // TODO: can we search both comment and pkg-descr? https://github.com/freebsd/pkg/issues/2118
         searched_field = FIELD_COMMENT;
         break;
     case PK_ROLE_ENUM_SEARCH_GROUP:
-        match_type = MATCH_GLOB;
+    {
         searched_field = FIELD_ORIGIN;
+        gchar_ptr_vector sanitizedGroups;
+
+        guint size = g_strv_length (values);
         for (guint i = 0; i < size; i++) {
-            // for each group create a glob in form "group/*"
-            gchar* old_value = values[i];
-            values[i] = g_strconcat (values[i], "/*", NULL);
-            g_free (old_value);
+            PkGroupEnum pk_group = pk_group_enum_from_string (values[i]);
+            if (pk_group != PK_GROUP_ENUM_UNKNOWN)
+                for (const char* category : PKGroupToPortsCategories(pk_group))
+                    sanitizedGroups.push_back(g_strdup (category));
+            else {
+                if (portsCategories.count (values[i]) == 0)
+                    g_warning ("freebsd_search: Unknown group requested: %s", values[i]);
+                sanitizedGroups.push_back(g_strdup (values[i]));
+            }
         }
+
+        // this NULL is for g_strjoinv
+        sanitizedGroups.push_back(NULL);
+        pattern = g_free_deleted_unique_ptr<gchar> (g_strjoinv ("|", sanitizedGroups.data()));
         break;
+    }
     case PK_ROLE_ENUM_SEARCH_FILE:
         // TODO: we don't support searching for packages that provide given file
         return;
@@ -1169,14 +1173,8 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
         it = pkgdb_repo_search (pkgDb.handle(), values[0], match_type, searched_field, FIELD_NAMEVER, NULL);
 
     while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC) == EPKG_OK) {
-        std::optional<PkInfoEnum> typeOverride;
-        // If we are operating on local DB then any package we get is installed
-        // this is a bit of improvement for the libpkg deficiency described in backendJobPackageFromPkg()
-        // TODO: remove this when backendJobPackageFromPkg's TODO is fixed
-        if (db_type == PKGDB_DEFAULT)
-            typeOverride = PK_INFO_ENUM_INSTALLED;
-
-        backendJobPackageFromPkg (job, pkg, typeOverride);
+        // TODO: should we deduplicate two identical items - installed and available one?
+        backendJobPackageFromPkg (job, pkg, std::nullopt);
 
         if (pk_backend_job_is_cancelled (job))
             break;
@@ -1184,7 +1182,6 @@ pk_freebsd_search(PkBackendJob *job, PkBitfield filters, gchar **values)
 }
 
 static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride) {
-	// TODO: libpkg reports this incorrectly
 	PkInfoEnum pk_type = pkg_type (pkg) == PKG_INSTALLED
 						? PK_INFO_ENUM_INSTALLED
 						: PK_INFO_ENUM_AVAILABLE;
