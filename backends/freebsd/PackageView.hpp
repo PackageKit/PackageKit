@@ -44,8 +44,11 @@ public:
         _reponame = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%c", pkg);
         _comment = free_deleted_unique_ptr<char>(buf);
+        pkg_asprintf(&buf, "%C%{%Cn%||%}", pkg);
+        _categories = g_strfreev_deleted_unique_ptr<gchar*> (g_strsplit(buf, "|", 0));
+        free(buf);
         pkg_asprintf(&buf, "%L", pkg);
-        _licenses = free_deleted_unique_ptr<char>(buf);
+        _license = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%s", pkg);
         _flatsize = std::atoi(buf);
     }
@@ -101,10 +104,16 @@ public:
         }
     }
 
+    gchar** categories() const {
+        // licenses can only be obtained from pkg*
+        g_assert (pk_id_parts == nullptr);
+        return _categories.get();
+    }
+
     const gchar* license() const {
         // licenses can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
-        return _licenses.get();
+        return _license.get();
     }
 
     int64_t flatsize() const {
@@ -131,7 +140,8 @@ public:
     }
 private:
     free_deleted_unique_ptr<char> _name,
-        _version, _abi, _reponame, _comment, _licenses;
+        _version, _abi, _reponame, _comment, _license;
+    g_strfreev_deleted_unique_ptr<gchar*> _categories;
     int64_t _flatsize;
     gchar* external_pk_id = nullptr;
     g_free_deleted_unique_ptr<gchar> built_pk_id;
