@@ -687,7 +687,7 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 
     guint size = g_strv_length (package_ids);
     std::vector<gchar*> names;
-    names.reserve (size+1);
+    names.reserve (size);
     for (guint i = 0; i < size; i++) {
         PackageView pkg(package_ids[i]);
         names.push_back(g_strdup(pkg.nameversion()));
@@ -791,8 +791,8 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 
     match_t match = MATCH_EXACT;
     guint size = g_strv_length (packages);
-    std::vector<gchar*> names;
-    names.reserve(size+1);
+    gchar_ptr_vector names;
+    names.reserve(size);
     for (guint i = 0; i < size; i++) {
         gchar* package = packages[i];
 
