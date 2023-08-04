@@ -737,53 +737,101 @@ pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield tran
     g_error("pk_backend_install_files not implemented yet");
 }
 
-void
-pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
+static void
+pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-    PKJobFinisher jf (job);
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
+    PKJobCanceller jc (job);
 
-    /* check network state */
-    if (!pk_backend_is_online (backend)) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
-        pk_backend_job_finished (job);
-        return;
-    }
+    gboolean force;
+    g_variant_get (params, "(b)", &force);
 
-    pkg_event_register(&event_callback, nullptr);
+    PackageDatabase pkgDb(job, PKGDB_LOCK_EXCLUSIVE);
 
-    g_assert(!pkg_initialized());
-    if (pkg_ini(NULL, NULL, PKG_INIT_FLAG_USE_IPV4) != EPKG_OK)
-    {
-        g_error("pkg_ini failure");
-        return;
-    }
-    // can't pass nullptr here, unique_ptr won't call the deleter
-    auto libpkgDeleter = deleted_unique_ptr<void>(reinterpret_cast<void*>(0xDEADC0DE), [](void* p) { pkg_shutdown(); });
+    uint repoCount;
+    int repoNumber = 0;
+    int progressStartNumber = -1;
+    pkgDb.setEventHandler([job, &repoCount, &repoNumber, &progressStartNumber, &jc](pkg_event* ev) {
+        const uint progressStartsPerRepo = 3; // TODO: fix this upstream somehow
+
+        switch (ev->type) {
+            case PKG_EVENT_PROGRESS_START:
+                progressStartNumber++;
+                if (progressStartNumber == progressStartsPerRepo) {
+                    progressStartNumber = 0;
+                    repoNumber++;
+                }
+                break;
+            case PKG_EVENT_PROGRESS_TICK:
+            {
+                uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
+                progress /= progressStartsPerRepo;
+                progress += (100 * progressStartNumber) / progressStartsPerRepo;
+                progress /= repoCount;
+                progress += (100 * repoNumber) / repoCount;
+                pk_backend_job_set_percentage (job, progress);
+                break;
+            }
+            default:
+                break;
+        }
+        // TODO: libpkg doesn't yet support cancelling
+        //jc.cancelIfRequested();
+        (void) jc;
+    });
 
     int ret = pkgdb_access(PKGDB_MODE_WRITE|PKGDB_MODE_CREATE,
                 PKGDB_DB_REPO);
-    if (ret == EPKG_ENOACCESS) {
-        g_error("Insufficient privileges to update the repository catalogue.");
-    } else if (ret != EPKG_OK)
-        g_error("Error");
-
-    if (pkgdb_access(PKGDB_MODE_READ|PKGDB_MODE_WRITE|PKGDB_MODE_CREATE, PKGDB_DB_REPO) == EPKG_ENOACCESS) {
-        g_error("Can't access package DB");
+    switch (ret) {
+        case EPKG_OK:
+            break;
+        case EPKG_ENOACCESS:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,
+                "The package DB directory isn't writable");
+            return;
+        case EPKG_INSECURE:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
+                "The package DB directory is writable by non-root users");
+            return;
+        default:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
+                "General libpkg failure");
+            return;
     }
 
-    if (pkg_repos_total_count() == 0) {
+    pk_backend_job_set_percentage (job, 0);
+
+    repoCount = pkg_repos_activated_count();
+    if (repoCount == 0) {
+        pk_backend_job_set_percentage (job, 100);
         g_warning("No active remote repositories configured");
+        return;
     }
-
-    // TODO: basic progress reporting
 
     struct pkg_repo *r = NULL;
     while (pkg_repos(&r) == EPKG_OK) {
         if (!pkg_repo_enabled(r))
                 continue;
+        if (jc.cancelIfRequested())
+            break;
         pkg_update (r, force);
     }
+
+    pk_backend_job_set_percentage (job, 100);
+}
+
+void
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
+{
+    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_REFRESH_CACHE);
+
+    /* check network state */
+    if (!pk_backend_is_online (backend)) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
+        return;
+    }
+
+    pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
 void
