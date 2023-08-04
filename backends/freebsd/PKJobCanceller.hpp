@@ -30,12 +30,17 @@ public:
 
         jobData = g_new0 (PkBackendFreeBSDJobData, 1);
         jobData->cancellable = g_cancellable_new ();
+        jobData->canceller = this;
 
         pk_backend_job_set_user_data (_job, jobData);
         pk_backend_job_set_allow_cancel (_job, TRUE);
     }
 
     bool cancelIfRequested() const {
+        // pk_backend_stop_job might destroy our private pointers before
+        // this call. Use bool flag to check for that.
+        if (aborting)
+            return true;
         if (g_cancellable_is_cancelled (jobData->cancellable)) {
             pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_CANCELLED,
                 "The task was stopped successfully");
@@ -44,8 +49,11 @@ public:
         return false;
     }
 
+    void abort() { aborting = true; }
+
     // No need in destructor, job_data is destroyed in pk_backend_stop_job
 private:
     PkBackendJob* job;
     PkBackendFreeBSDJobData *jobData;
+    bool aborting = false;
 };

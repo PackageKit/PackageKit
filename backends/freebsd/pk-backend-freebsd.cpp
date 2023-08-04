@@ -24,7 +24,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <gio/gio.h>
-#include <gio/gunixsocketaddress.h>
 
 #include <pk-backend.h>
 #include <pk-backend-job.h>
@@ -42,6 +41,15 @@
 #include "PackageDatabase.hpp"
 #include "PKJobFinisher.hpp"
 #include "Jobs.hpp"
+
+class PKJobCanceller;
+
+typedef struct {
+    GCancellable* cancellable;
+    PKJobCanceller* canceller;
+} PkBackendFreeBSDJobData;
+
+#include "PKJobCanceller.hpp"
 
 // TODO: Research pkg-audit
 // TODO: Implement proper progress reporting everywhere
@@ -372,14 +380,6 @@ static PkGroupEnum PortsCategoriesToPKGroup(gchar** categories)
     return PK_GROUP_ENUM_UNKNOWN;
 }
 
-typedef struct {
-    guint progress_percentage;
-    GSocket *socket;
-    guint socket_listen_id;
-    GCancellable *cancellable;
-    gulong signal_timeout;
-} PkBackendFreeBSDJobData;
-
 static void backendJobPackageFromPkg (PkBackendJob *job, struct pkg* pkg, std::optional<PkInfoEnum> typeOverride = std::nullopt);
 
 static void
@@ -422,7 +422,11 @@ pk_backend_get_mime_types (PkBackend *backend)
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
-    g_error("pk_backend_cancel not implemented yet");
+    PkBackendFreeBSDJobData* job_data = reinterpret_cast<PkBackendFreeBSDJobData*> (pk_backend_job_get_user_data (job));
+
+    if (job_data) {
+        g_cancellable_cancel (job_data->cancellable);
+    }
 }
 
 void
@@ -965,8 +969,6 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *ri
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    PkBackendFreeBSDJobData *job_data = reinterpret_cast<PkBackendFreeBSDJobData*> (pk_backend_job_get_user_data (job));
-    //job_data->signal_timeout = g_timeout_add (200, pk_backend_what_provides_timeout, job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
     pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_percentage (job, 0);
@@ -1052,15 +1054,6 @@ pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
-    PkBackendFreeBSDJobData *job_data;
-
-    /* create private state for this job */
-    job_data = g_new0 (PkBackendFreeBSDJobData, 1);
-    job_data->progress_percentage = 0;
-    job_data->cancellable = g_cancellable_new ();
-
-    /* you can use pk_backend_job_error_code() here too */
-    pk_backend_job_set_user_data (job, job_data);
 }
 
 void
@@ -1068,16 +1061,12 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 {
     PkBackendFreeBSDJobData *job_data = reinterpret_cast<PkBackendFreeBSDJobData*> (pk_backend_job_get_user_data (job));
 
-    /* you *cannot* use pk_backend_job_error_code() here,
-     * unless pk_backend_get_is_error_set() returns FALSE, and
-     * even then it's probably just best to clean up silently */
-
-    /* you cannot do pk_backend_job_finished() here as well as this is
-     * needed to fire the job_stop() vfunc */
-    g_object_unref (job_data->cancellable);
-
-    /* destroy state for this job */
-    g_free (job_data);
+    // only cancellable jobs allocate job_data
+    if (job_data) {
+        reinterpret_cast<PKJobCanceller*>(job_data->canceller)->abort();
+        g_object_unref (job_data->cancellable);
+        g_free (job_data);
+    }
 }
 
 gboolean
