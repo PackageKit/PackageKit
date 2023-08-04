@@ -900,8 +900,13 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_ANNOTATIONS) == EPKG_OK) {
             // We'll be always getting installed packages from pkgdb_it_next,
             // but PackageKit sometimes asks only about available ones
-            if (filters && !pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && pkg_type(pkg) == PKG_INSTALLED)
+            // In this case we don't want to report installed packages as available
+            if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)
+                    && !pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
+                    && pkg_type(pkg) == PKG_INSTALLED) {
+                emitter.markAsEmitted(pkg);
                 continue;
+            }
             emitter.emitPackageJob(pkg);
         }
     }
