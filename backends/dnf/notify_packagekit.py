@@ -24,7 +24,6 @@ Notify packagekitd when packages are installed, updated, or removed.
 
 import dbus
 import dnf
-from dnfpluginscore import _
 
 
 class NotifyPackagekit(dnf.Plugin):
