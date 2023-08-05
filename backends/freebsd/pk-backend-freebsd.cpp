@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <fcntl.h>
+
 #include <gmodule.h>
 #include <glib.h>
 #include <string.h>
@@ -488,7 +490,42 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
-    g_error("pk_backend_get_details_local not implemented yet");
+    PKJobFinisher jf (job);
+    pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+
+    guint size = g_strv_length (files);
+    for (guint i = 0; i < size; i++) {
+        int fd;
+        if ((fd = open(files[i], O_RDONLY)) == -1) {
+            pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_FILE_NOT_FOUND,
+                        "Unable to open file %s", files[i]);
+            return;
+        }
+
+        pkg* pkg = nullptr;
+        if (pkg_open_fd(&pkg, fd, 0) != EPKG_OK) {
+            pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_INVALID_PACKAGE_FILE,
+                        "Invalid or broken package file %s", files[i]);
+            close(fd);
+            return;
+        }
+
+        PackageView pkgView(pkg);
+        PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
+        pk_backend_job_details_full (job, pkgView.packageKitId(),
+                                pkgView.comment(),
+                                pkgView.license(),
+                                group,
+                                pkgView.description(),
+                                pkgView.url(),
+                                pkgView.flatsize(),
+                                pkgView.compressedsize()); // TODO: check if already downloaded
+
+        close(fd);
+        pkg_free(pkg);
+    }
 }
 
 void
