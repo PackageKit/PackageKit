@@ -538,7 +538,6 @@ void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     PKJobFinisher jf (job);
-    pk_backend_job_set_allow_cancel (job, TRUE);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
     PackageDatabase pkgDb (job);
@@ -561,9 +560,6 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
                                     pkgView.flatsize(),
                                     pkgView.compressedsize()); // TODO: check if already downloaded
         }
-
-        if (pk_backend_job_is_cancelled (job))
-            break;
     }
 }
 
