@@ -441,18 +441,13 @@ void
 pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
     PKJobFinisher jf (job);
-    pk_backend_job_set_allow_cancel (job, TRUE);
 
     // TODO
     if (recursive)
         g_warning ("depends_on: recursive is not yet supported");
 
-    // TODO: what filters could we possibly get there?
-    g_warning("depends_on: got filters %s", pk_filter_bitfield_to_string(filters));
-
     pkgdb_t db_type = PKGDB_MAYBE_REMOTE;
-    // Open local DB only when filters require only installed packages
-    // TODO: See below the "pkgdb_query" vs "pkgdb_repo_search" comment
+    // Open the local DB only when filters require only installed packages
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
         && !pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED))
         db_type = PKGDB_DEFAULT;
@@ -463,13 +458,12 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
     for (guint i = 0; i < size; i++) {
         PackageView pkgView(package_ids[i]);
         struct pkg *pkg = NULL;
-        // TODO: take filters into account
         struct pkgdb_it* it = pkgdb_all_search (pkgDb.handle(), pkgView.nameversion(), MATCH_EXACT, FIELD_NAMEVER, FIELD_NAMEVER, NULL);
 
         while (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_DEPS | PKG_LOAD_ANNOTATIONS) == EPKG_OK) {
             PackageView pkgView(pkg);
-
             char* dep_namevers0 = NULL;
+
             pkg_asprintf(&dep_namevers0, "%d%{%dn;%dv;%}", pkg);
             gchar** dep_namevers = g_strsplit (dep_namevers0, ";", 0);
             // delete both pointers by capturing a closure
@@ -478,18 +472,14 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
                 g_strfreev (dep_namevers);
             });
 
-            auto pk_type = db_type == PKGDB_DEFAULT ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+            auto pk_type = pkg_type(pkg) == PKG_INSTALLED ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
             guint size2 = g_strv_length (dep_namevers);
             size2 -= size % 2;
             for (guint j = 0; j < size2; j+=2) {
                 gchar* dep_id = pk_package_id_build (dep_namevers[j], dep_namevers[j+1], pkgView.arch(), pkgView.repository());
-
                 pk_backend_job_package (job, pk_type, dep_id, ""); // TODO: we report an empty string instead of comment here
-
                 g_free (dep_id);
-                if (pk_backend_job_is_cancelled (job))
-                    return;
             }
         }
     }
