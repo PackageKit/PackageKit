@@ -489,6 +489,8 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 
             pkg_asprintf(&dep_namevers0, "%d%{%dn;%dv;%}", pkg);
             gchar** dep_namevers = g_strsplit (dep_namevers0, ";", 0);
+            if (dep_namevers == nullptr)
+                continue;
             // delete both pointers by capturing a closure
             auto deps_deleter = deleted_unique_ptr<void>(reinterpret_cast<void*>(0xDEADC0DE), [dep_namevers0, dep_namevers](void* p) {
                 free (dep_namevers0);
