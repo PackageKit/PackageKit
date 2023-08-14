@@ -50,8 +50,10 @@ public:
         pkg_asprintf(&buf, "%w", pkg);
         _url = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%C%{%Cn%||%}", pkg);
-        _categories = g_strfreev_deleted_unique_ptr<gchar*> (g_strsplit(buf, "|", 0));
-        free(buf);
+        if (buf) {
+            _categories = g_strfreev_deleted_unique_ptr<gchar*> (g_strsplit(buf, "|", 0));
+            free(buf);
+        }
         pkg_asprintf(&buf, "%L", pkg);
         _license = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%s", pkg);
