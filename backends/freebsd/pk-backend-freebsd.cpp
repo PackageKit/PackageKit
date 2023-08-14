@@ -830,7 +830,7 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
             }
             case PKG_EVENT_UPGRADE_FINISHED:
             {
-                pkg* pkg = ev->e_install_finished.pkg;
+                pkg* pkg = ev->e_upgrade_finished.n;
                 PackageView pkgView(pkg);
                 pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, pkgView.packageKitId(), pkgView.comment());
                 break;
