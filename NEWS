@@ -1,3 +1,48 @@
+Version 1.2.7
+~~~~~~~~~~~~~
+Released: 2023-08-26
+
+New Features:
+ * pkclient: Add an option to count download size with dependencies (Milan Crha)
+ * pk-transaction: Add support for getting the RemainingTime property (Philip Withnall)
+
+Backends:
+ * dnf: Notify PackageKit when dnf installs or removes packages (Gordon Messmer)
+ * dnf: Run pk_backend_refresh_repo in a new process to avoid keeping libdnf memory leaks (Gordon Messmer)
+ * dnf: Calculate download size with dependencies, if requested (Milan Crha)
+ * zypp: Fix ambiguous reference to 'filesystem' class (Jonathan Kang)
+ * apt: Display more useful pretty names for repositories (Matthias Klumpp)
+ * apt: Set update urgency as urgency as well as status again (Matthias Klumpp)
+ * apt: Don't crash while resolving mimetypes, modernize mime search code (Matthias Klumpp)
+ * apt: Fix 'search-file' regexp as per BRE pattern (which is the default) (sid)
+ * alpm: add and support deepin group (Wang Zichong)
+
+Bugfixes:
+ * progress: Free the sender value on finalize (Corentin Noël)
+ * Add G_PARAM_STATIC_STRINGS to all properties (Corentin Noël)
+ * pkcon: Widen progressbar text area (Frank Dana)
+ * Use more portable shebang in Python test scripts (Gleb Popov)
+ * Make use of SYSCONFDIR definition when setting a config file watch (Gleb Popov)
+ * Shutdown daemon on idle by default again (yump)
+ * Fix use of potentially uninitialized timer ID (Gordon Messmer)
+ * pk-transaction: Return an error if property name is not known (Philip Withnall)
+ * pk-client: Signal a transaction as finished if it disappears off the bus (Philip Withnall)
+ * pk-transaction: Check that Finished signal is emitted at most once (Philip Withnall)
+ * pk-transaction: Check that Finished signal is emitted at least once (Philip Withnall)
+
+
+Miscellaneous:
+ * Add FreeBSD CI using cirrus (Alexey Yushkin)
+ * packagekitd: Use export_dynamic explicitly (Dominique Leuenberger)
+ * Use the term DDE instead of deepin (Gary Wang)
+ * packagekit-glib2: Use the correct enum for DDE (Neal Gompa)
+ * data/meson.build: Install dbus policy in /usr/share, not /etc (Gioele Barabucci)
+ * Globally pass -DPK_COMPILATION to the C++ compiler (Gleb Popov)
+ * metadata: Remove reference to defunct screenshots URL (Marcus Müller)
+ * metadata: replace defunct www.packagekit.org URL with freedesktop URL (Marcus Müller)
+ * docs: replace defunct www.packagekit.org URL with freedesktop URL (Marcus Müller)
+ * HACKING: Refresh to match current practices (Neal Gompa)
+
 Version 1.2.6
 ~~~~~~~~~~~~~
 Released: 2022-12-01
