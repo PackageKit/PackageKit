@@ -30,7 +30,6 @@ Bugfixes:
  * pk-transaction: Check that Finished signal is emitted at most once (Philip Withnall)
  * pk-transaction: Check that Finished signal is emitted at least once (Philip Withnall)
 
-
 Miscellaneous:
  * Add FreeBSD CI using cirrus (Alexey Yushkin)
  * packagekitd: Use export_dynamic explicitly (Dominique Leuenberger)
