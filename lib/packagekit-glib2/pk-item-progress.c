@@ -69,7 +69,7 @@ G_DEFINE_TYPE (PkItemProgress, pk_item_progress, PK_TYPE_SOURCE)
  *
  * Return value: a #PkStatusEnum
  **/
-guint
+PkStatusEnum
 pk_item_progress_get_status (PkItemProgress *item_progress)
 {
 	return item_progress->priv->status;
