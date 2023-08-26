@@ -8,7 +8,7 @@
 # Christian <Christian.Kirbach@googlemail.com>, 2009,2011
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008
 # 5527760c8f29b02a470a5ee3b26b73e8_231f8d9 <ceb449f1811ff367b2235286902d5d43_32261>, 2012-2013
-# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018,2022
 # Fabian Affolter <fab@fedoraproject.org>, 2008-2009
 # hpeters <hpeters@redhat.com>, 2009
 # Holger Wansing <linux@wansing-online.de>, 2006
@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: German (http://www.transifex.com/freedesktop/packagekit/language/de/)\n"
+"Language-Team: German (http://app.transifex.com/freedesktop/packagekit/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -317,6 +317,9 @@ msgstr "Befehl nicht gefunden, gültige Befehle sind:"
 #. database
 msgid "Committing changes"
 msgstr "Änderungen werden gespeichert"
+
+msgid "Config file was not found."
+msgstr "Konfigurationsdatei wurde nicht gefunden."
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
@@ -1231,6 +1234,11 @@ msgstr "Das folgende Paket stellt diese Datei bereit:"
 msgid "The proxy could not be set"
 msgstr "Der Proxy konnte nicht festgelegt werden"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Die ausgewählten Pakete sind möglicherweise bereits installiert."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "Diese Signatur wurde nicht akzeptiert."
@@ -1276,6 +1284,10 @@ msgstr "Derzeit sind keine Systemaktualisierungen verfügbar."
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Dieses Werkzeug konnte nicht alle Pakete finden: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Dieses Werkzeug konnte kein verfügbares Paket finden."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.

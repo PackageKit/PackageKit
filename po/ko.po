@@ -5,13 +5,13 @@
 # Translators:
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2013
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011
-# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017,2022
 # Shinjo Park <kde@peremen.name>, 2012,2015,2018-2019
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Korean (http://www.transifex.com/freedesktop/packagekit/language/ko/)\n"
+"Language-Team: Korean (http://app.transifex.com/freedesktop/packagekit/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -305,6 +305,9 @@ msgstr "명령이 존재하지 않습니다. 유효한 명령은 다음과 같�
 msgid "Committing changes"
 msgstr "변경 사항 등록 중"
 
+msgid "Config file was not found."
+msgstr "설정 파일이 없습니다."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -467,9 +470,19 @@ msgstr "패키지 설치에 실패했습니다"
 msgid "Failed to launch:"
 msgstr "실행에 실패했습니다:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "설정 파일 불러오기 실패: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "백엔드 불러오기에 실패했습니다"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "백엔드 불러오기 실패: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -482,6 +495,12 @@ msgstr "인자 해석에 실패했습니다"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "명령줄을 해석할 수 없음"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "auto 설정 값 해석 실패: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -1218,6 +1237,11 @@ msgstr "이 파일이 포함된 패키지:"
 msgid "The proxy could not be set"
 msgstr "프록시를 설정할 수 없음"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "선택한 패키지는 이미 설치한 패키지인 것 같습니다."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "서명이 수락되지 않았습니다."
@@ -1263,6 +1287,10 @@ msgstr "현재 사용 가능한 업그레이드가 없습니다."
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "모든 패키지를 찾을 수 없음: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "가용 패키지를 찾을 수 없음."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.

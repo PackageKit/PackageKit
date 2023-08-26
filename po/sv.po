@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019
+# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019,2022
 # Daniel Nylander <po@danielnylander.se>, 2008-2011
 # Josef Andersson <josef.andersson@fripost.org>, 2017-2018
 # Luna Jernberg <bittin@cafe8bitar.se>, 2022
@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Swedish (http://www.transifex.com/freedesktop/packagekit/language/sv/)\n"
+"Language-Team: Swedish (http://app.transifex.com/freedesktop/packagekit/language/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -308,6 +308,9 @@ msgstr "Kommando hittades ej, giltiga kommando är:"
 msgid "Committing changes"
 msgstr "Verkställer ändringar"
 
+msgid "Config file was not found."
+msgstr "Konfigurationsfil hittades inte."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -470,9 +473,19 @@ msgstr "Misslyckades med att installera paket"
 msgid "Failed to launch:"
 msgstr "Misslyckades med att starta:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Misslyckades med att läsa in konfigurationsfil: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "Misslyckades med att läsa in bakänden"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Misslyckades med att läsa in bakänden: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -485,6 +498,12 @@ msgstr "Misslyckades med att tolka argument"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "Misslyckades med att tolka kommandoraden"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Misslyckades med att slå upp auto: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"

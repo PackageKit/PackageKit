@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Polish (http://www.transifex.com/freedesktop/packagekit/language/pl/)\n"
+"Language-Team: Polish (http://app.transifex.com/freedesktop/packagekit/language/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -303,6 +303,9 @@ msgstr "Nie odnaleziono polecenia, prawidłowe polecenia:"
 msgid "Committing changes"
 msgstr "Wprowadzanie zmian"
 
+msgid "Config file was not found."
+msgstr "Nie odnaleziono pliku konfiguracji."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -465,9 +468,19 @@ msgstr "Zainstalowanie pakietów się nie powiodło"
 msgid "Failed to launch:"
 msgstr "Uruchomienie się nie powiodło:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Wczytanie pliku konfiguracji się nie powiodło: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "Wczytanie modułu przetwarzającego się nie powiodło"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Wczytanie modułu przetwarzającego się nie powiodło: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -480,6 +493,12 @@ msgstr "Przetworzenie parametrów się nie powiodło"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "Przetworzenie wiersza poleceń się nie powiodło"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Rozwiązanie „auto” się nie powiodło: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"

@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Green, 2021
+# Green <usergreen@users.osdn.me>, 2021
 # hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
 # Kiyoto Hashida <khashida@redhat.com>, 2009
 # Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, 2022
@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Japanese (http://www.transifex.com/freedesktop/packagekit/language/ja/)\n"
+"Language-Team: Japanese (http://app.transifex.com/freedesktop/packagekit/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -310,6 +310,9 @@ msgstr "コマンドが見つかりません、有効なコマンドは:"
 msgid "Committing changes"
 msgstr "変更を適用中"
 
+msgid "Config file was not found."
+msgstr "設定ファイルが見つかりませんでした。"
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -472,9 +475,19 @@ msgstr "パッケージをインストールできません"
 msgid "Failed to launch:"
 msgstr "起動に失敗:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "設定ファイルのロードに失敗しました: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "バックエンドのロードに失敗しました"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "バックエンドのロードに失敗しました: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -487,6 +500,12 @@ msgstr "引数の解析に失敗しました"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "コマンドラインの解析に失敗しました"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "自動解決が失敗しました:: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"

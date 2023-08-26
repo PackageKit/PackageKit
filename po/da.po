@@ -7,12 +7,12 @@
 # Kris Thomsen <lakristho@gmail.com>, 2009-2013
 # Richard Hughes <richard@hughsie.com>, 2011
 # scootergrisen, 2019
-# scootergrisen, 2019-2020,2022
+# scootergrisen, 2019-2020,2022-2023
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Danish (http://www.transifex.com/freedesktop/packagekit/language/da/)\n"
+"Language-Team: Danish (http://app.transifex.com/freedesktop/packagekit/language/da/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -306,6 +306,9 @@ msgstr "Kommandoen blev ikke fundet, gyldige kommandoer er:"
 msgid "Committing changes"
 msgstr "Indsender ændringer"
 
+msgid "Config file was not found."
+msgstr "Konfigurationsfil blev ikke fundet."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -468,9 +471,19 @@ msgstr "Kunne ikke installere pakker"
 msgid "Failed to launch:"
 msgstr "Kunne ikke starte:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Kunne ikke indlæse konfigurationsfil: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "Kunne ikke indlæse motoren"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Kunne ikke indlæse motoren: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -483,6 +496,12 @@ msgstr "Kunne ikke fortolke parametre"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "Kunne ikke fortolke kommandolinje"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Kunne ikke løse auto: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"

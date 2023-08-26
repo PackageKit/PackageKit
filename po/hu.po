@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Hungarian (http://www.transifex.com/freedesktop/packagekit/language/hu/)\n"
+"Language-Team: Hungarian (http://app.transifex.com/freedesktop/packagekit/language/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -309,6 +309,9 @@ msgstr "Parancs nem található, az érvényes parancsok:"
 msgid "Committing changes"
 msgstr "Módosítások véglegesítése"
 
+msgid "Config file was not found."
+msgstr "A beállítófájl nem található."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -471,9 +474,19 @@ msgstr "Nem sikerült a csomagok telepítése"
 msgid "Failed to launch:"
 msgstr "Az indítás meghiúsult:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "A beállítófájl betöltése sikertelen: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "A háttérprogram betöltése sikertelen"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "A háttérprogram betöltése sikertelen: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -486,6 +499,12 @@ msgstr "Az argumentumok feldolgozása sikertelen"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "A parancssor feldolgozása sikertelen"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Az automata megoldása sikertelen: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"

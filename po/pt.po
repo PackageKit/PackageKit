@@ -5,13 +5,14 @@
 # Translators:
 # Juliano de Souza Camargo <julianosc@protonmail.com>, 2020
 # Pedro Albuquerque <pmra@gmx.com>, 2015
+# Peter J. Mello <admin@petermello.net>, 2023
 # Richard Hughes <richard@hughsie.com>, 2011
 # Rui Gouveia <rui.gouveia@gmail.com>, 2010
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Portuguese (http://www.transifex.com/freedesktop/packagekit/language/pt/)\n"
+"Language-Team: Portuguese (http://app.transifex.com/freedesktop/packagekit/language/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -305,6 +306,9 @@ msgstr "Comando não encontrado, comandos válidos são:"
 msgid "Committing changes"
 msgstr "A aplicar alterações"
 
+msgid "Config file was not found."
+msgstr "O ficheiro de configuração não foi encontrado."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -467,9 +471,19 @@ msgstr "Falhou a instalação dos pacotes"
 msgid "Failed to launch:"
 msgstr "Impossível iniciar:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Falha ao carregar o ficheiro de configuração: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "Falha ao carregar o motor"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Falha ao carregar o backend: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -482,6 +496,12 @@ msgstr "Falha ao processar argumentos"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "Falha ao processar a linha de comando"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Falha ao resolver automaticamente: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -1218,6 +1238,11 @@ msgstr "O pacote que fornece este ficheiro é o:"
 msgid "The proxy could not be set"
 msgstr "Não foi possível definir o proxy"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Os pacotes seleccionados já podem ser instalados."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "A assinatura não foi aceite."
@@ -1263,6 +1288,10 @@ msgstr "Não há atualizações disponíveis neste momento."
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Esta ferramenta não conseguiu encontrar todos os pacotes: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Esta ferramenta não encontrou nenhum pacote disponível."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
