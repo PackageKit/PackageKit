@@ -1,5 +1,5 @@
 task:
-  name: "build (freebsd)"
+  name: "Build & Test (freebsd)"
   freebsd_instance:
     matrix:
       - image_family: freebsd-13-2-snap
@@ -14,7 +14,7 @@ task:
         -Dgstreamer_plugin=false _build
     - cd _build
     - ninja -v all
-  #test_script:
-  #  - cd _build
-  #  - service dbus onestart
-  #  - ninja test
+  test_script:
+    - cd _build
+    - service dbus onestart
+    - ninja test
