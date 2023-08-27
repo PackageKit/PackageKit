@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2014 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -55,7 +56,7 @@ _g_test_hang_check_cb (gpointer user_data)
 static void
 _g_test_loop_run_with_timeout (guint timeout_ms)
 {
-	g_assert (_test_loop_timeout_id == 0);
+	g_assert_true (_test_loop_timeout_id == 0);
 	_test_loop = g_main_loop_new (NULL, FALSE);
 	_test_loop_timeout_id = g_timeout_add (timeout_ms, _g_test_hang_check_cb, &timeout_ms);
 	g_main_loop_run (_test_loop);
@@ -72,7 +73,7 @@ _g_test_hang_wait_cb (gpointer user_data)
 static void
 _g_test_loop_wait (guint timeout_ms)
 {
-	g_assert (_test_loop_timeout_id == 0);
+	g_assert_true (_test_loop_timeout_id == 0);
 	_test_loop = g_main_loop_new (NULL, FALSE);
 	_test_loop_timeout_id = g_timeout_add (timeout_ms, _g_test_hang_wait_cb, &timeout_ms);
 	g_main_loop_run (_test_loop);
@@ -164,27 +165,27 @@ pk_test_backend_func (void)
 	/* get an backend */
 	conf = g_key_file_new ();
 	backend = pk_backend_new (conf);
-	g_assert (backend != NULL);
+	g_assert_true (backend != NULL);
 
 	/* create a config file */
 	filename = "/tmp/dave";
 	ret = g_file_set_contents (filename, "foo", -1, NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* set up a watch file on a config file */
 	ret = pk_backend_watch_file (backend, filename, (PkBackendFileChanged) pk_test_backend_watch_file_cb, NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* change the config file */
 	ret = g_file_set_contents (filename, "bar", -1, NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* wait for config file change */
 	_g_test_loop_run_with_timeout (5000);
 
 	/* delete the config file */
 	ret = g_unlink (filename);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* wait for config file change */
 	_g_test_loop_run_with_timeout (5000);
@@ -207,14 +208,14 @@ pk_test_backend_func (void)
 
 	/* get eula that does not exist */
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* accept eula */
 	pk_backend_accept_eula (backend, "license_foo");
 
 	/* get eula that does exist */
 	ret = pk_backend_is_eula_valid (backend, "license_foo");
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* accept eula (again) */
 	pk_backend_accept_eula (backend, "license_foo");
@@ -223,19 +224,19 @@ pk_test_backend_func (void)
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "invalid");
 	ret = pk_backend_load (backend, &error);
 	g_assert_error (error, 1, 0);
-	g_assert (!ret);
+	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* try to load a valid backend */
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	ret = pk_backend_load (backend, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* load an valid backend again */
 	ret = pk_backend_load (backend, &error);
 	g_assert_error (error, 1, 0);
-	g_assert (!ret);
+	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* get backend name */
@@ -244,29 +245,29 @@ pk_test_backend_func (void)
 
 	/* unlock an valid backend */
 	ret = pk_backend_unload (backend);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* unlock an valid backend again */
 	ret = pk_backend_unload (backend);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* check we are not finished */
 	ret = pk_backend_job_get_is_finished (job);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* check we have no error */
 	ret = pk_backend_job_has_set_error_code (job);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* wait for a thread to return true */
 	ret = pk_backend_load (backend, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	ret = pk_backend_job_thread_create (job,
 					    pk_test_backend_func_true,
 					    GINT_TO_POINTER (999),
 					    NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* wait for Finished */
 	_g_test_loop_wait (2000);
@@ -284,7 +285,7 @@ pk_test_backend_func (void)
 					    pk_test_backend_func_immediate_false,
 					    NULL,
 					    NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* wait for Finished */
 	_g_test_loop_wait (10);
@@ -341,7 +342,7 @@ pk_test_backend_spawn_func (void)
 	conf = g_key_file_new ();
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_spawn");
 	backend_spawn = pk_backend_spawn_new (conf);
-	g_assert (backend_spawn != NULL);
+	g_assert_true (backend_spawn != NULL);
 
 	/* private copy for unref testing */
 	backend = pk_backend_new (conf);
@@ -354,7 +355,7 @@ pk_test_backend_spawn_func (void)
 
 	/* set backend name */
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get backend name */
 	text = pk_backend_spawn_get_name (backend_spawn);
@@ -363,55 +364,55 @@ pk_test_backend_spawn_func (void)
 	/* test pk_backend_spawn_inject_data Percentage1 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t0", &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data Percentage2 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\tbrian", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage3 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t12345", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage4 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data Percentage5 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data NoPercentageUpdates */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "no-percentage-updates", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data failure */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "error\tnot-present-woohoo\tdescription text", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data Status */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "status\tquery", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tdetails about the restart", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate1 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\ttrue", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate2 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\tbrian", NULL);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* convert proxy uri (bare) */
 	uri = pk_backend_convert_uri ("username:password@server:port");
@@ -431,11 +432,11 @@ pk_test_backend_spawn_func (void)
 	/* test pk_backend_spawn_parse_common_out Package */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job,
 		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* manually unlock as we have no engine */
 	ret = pk_backend_unload (backend);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* reset */
 	g_object_unref (backend_spawn);
@@ -445,7 +446,7 @@ pk_test_backend_spawn_func (void)
 
 	/* set backend name */
 	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* so we can spin until we finish */
 	pk_backend_job_set_vfunc (job,
@@ -465,7 +466,7 @@ pk_test_backend_spawn_func (void)
 
 	/* test search-name.sh running */
 	ret = pk_backend_spawn_helper (backend_spawn, job, "search-name.sh", "none", "bar", NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* wait for finished */
 	_g_test_loop_run_with_timeout (10000);
@@ -475,7 +476,7 @@ pk_test_backend_spawn_func (void)
 
 	/* manually unlock as we have no engine */
 	ret = pk_backend_unload (backend);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* done */
 	g_object_unref (backend_spawn);
@@ -487,7 +488,7 @@ pk_test_dbus_func (void)
 	g_autoptr(PkDbus) dbus = NULL;
 
 	dbus = pk_dbus_new ();
-	g_assert (dbus != NULL);
+	g_assert_true (dbus != NULL);
 }
 
 PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
@@ -558,7 +559,7 @@ pk_test_spawn_func (void)
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_error (error, 1, 0);
 	g_strfreev (argv);
-	g_assert (!ret);
+	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* make sure finished wasn't called */
@@ -569,7 +570,7 @@ pk_test_spawn_func (void)
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 
 	/* wait for finished */
@@ -594,7 +595,7 @@ pk_test_spawn_func (void)
 			   "ftp_proxy=username:password@server:port", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 	g_strfreev (envp);
 
@@ -609,7 +610,7 @@ pk_test_spawn_func (void)
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
@@ -630,7 +631,7 @@ pk_test_spawn_func (void)
 		      NULL);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
@@ -648,7 +649,7 @@ pk_test_spawn_func (void)
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-sigquit.py", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 
 	g_timeout_add (1000, cancel_cb, spawn);
@@ -662,7 +663,7 @@ pk_test_spawn_func (void)
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-profiling.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_strfreev (argv);
 
 	/* get new object */
@@ -674,7 +675,7 @@ pk_test_spawn_func (void)
 	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE INTERACTIVE=TRUE UID=500", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* wait 2+2 seconds for the dispatcher */
 	_g_test_loop_wait (4000);
@@ -683,12 +684,12 @@ pk_test_spawn_func (void)
 	g_assert_cmpint (stdout_count, ==, 2);
 
 	/* dispatcher still alive? */
-	g_assert (pk_spawn_is_running (spawn));
+	g_assert_true (pk_spawn_is_running (spawn));
 
 	/* run the dispatcher with new input */
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* this may take a while */
 	_g_test_loop_wait (100);
@@ -701,24 +702,24 @@ pk_test_spawn_func (void)
 
 	/* ask dispatcher to close */
 	ret = pk_spawn_exit (spawn);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* ask dispatcher to close (again, should be closing) */
 	ret = pk_spawn_exit (spawn);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* this may take a while */
 	_g_test_loop_wait (100);
 
 	/* did dispatcher close? */
-	g_assert (!pk_spawn_is_running (spawn));
+	g_assert_true (!pk_spawn_is_running (spawn));
 
 	/* did we get the right exit code */
 	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT);
 
 	/* ask dispatcher to close (again) */
 	ret = pk_spawn_exit (spawn);
-	g_assert (!ret);
+	g_assert_true (!ret);
 }
 
 static void
@@ -731,23 +732,23 @@ pk_test_transaction_func (void)
 	g_autoptr(GKeyFile) conf = NULL;
 
 	introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml", NULL);
-	g_assert (introspection != NULL);
+	g_assert_true (introspection != NULL);
 
 	/* get PkTransaction object */
 	conf = g_key_file_new ();
 	transaction = pk_transaction_new (conf, introspection);
-	g_assert (transaction != NULL);
+	g_assert_true (transaction != NULL);
 
 	/* validate incorrect text */
 	ret = pk_transaction_strvalidate ("richard$\xffhughes", &error);
 	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
-	g_assert (!ret);
+	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* validate correct text */
 	ret = pk_transaction_strvalidate ("richardhughes", &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_clear_error (&error);
 
 	g_dbus_node_info_unref (introspection);
@@ -771,7 +772,7 @@ pk_test_transaction_db_func (void)
 	if (ret) {
 		/* remove old local database */
 		value = g_unlink ("./transactions.db");
-		g_assert (value == 0);
+		g_assert_true (value == 0);
 	}
 #endif
 	/* check we created quickly */
@@ -779,7 +780,7 @@ pk_test_transaction_db_func (void)
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	ms = g_test_timer_elapsed ();
 	g_assert_cmpfloat (ms, <, 1.5);
 	g_object_unref (db);
@@ -789,7 +790,7 @@ pk_test_transaction_db_func (void)
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 	ms = g_test_timer_elapsed ();
 	g_assert_cmpfloat (ms, <, 0.1);
 
@@ -813,7 +814,7 @@ pk_test_transaction_db_func (void)
 
 	/* set the correct time */
 	ret = pk_transaction_db_action_time_reset (db, PK_ROLE_ENUM_REFRESH_CACHE);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* do the deferred write */
 	g_test_timer_start ();
@@ -832,7 +833,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* can we set the proxies (overwrite) */
 	ret = pk_transaction_db_set_proxy (db, 500, "session1",
@@ -842,7 +843,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* can we get the proxies (non-existant user) */
 	ret = pk_transaction_db_get_proxy (db, 501, "session1",
@@ -852,7 +853,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
@@ -864,7 +865,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_assert_cmpstr (proxy_http, ==, NULL);
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
@@ -876,7 +877,7 @@ pk_test_transaction_db_func (void)
 					   NULL,
 					   NULL,
 					   NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 	g_assert_cmpstr (proxy_http, ==, "127.0.0.1:80");
 	g_assert_cmpstr (proxy_ftp, ==, "127.0.0.1:21");
 }
@@ -902,7 +903,7 @@ pk_test_scheduler_create_transaction (PkScheduler *tlist)
 	/* create PkTransaction instance */
 	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	return tid;
 }
@@ -930,14 +931,14 @@ pk_test_scheduler_func (void)
 		/* remove old local database */
 		g_debug ("Removing %s", "./transactions.db");
 		size = g_unlink ("./transactions.db");
-		g_assert (size == 0);
+		g_assert_true (size == 0);
 	}
 #endif
 
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* try to load a valid backend */
 	conf = g_key_file_new ();
@@ -945,25 +946,25 @@ pk_test_scheduler_func (void)
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	ret = pk_backend_load (backend, NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get a transaction list object */
 	tlist = pk_scheduler_new (conf);
-	g_assert (tlist != NULL);
+	g_assert_true (tlist != NULL);
 
 	/* make sure we get a valid tid */
 	pk_scheduler_set_backend (tlist, backend);
 	tid = pk_transaction_db_generate_id (db);
-	g_assert (tid != NULL);
+	g_assert_true (tid != NULL);
 
 	/* create a transaction object */
 	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* make sure we get the right object back */
 	transaction = pk_scheduler_get_transaction (tlist, tid);
-	g_assert (transaction != NULL);
+	g_assert_true (transaction != NULL);
 	g_assert_cmpint (pk_transaction_get_state (transaction), ==, PK_TRANSACTION_STATE_NEW);
 
 	/* get size one we have in queue */
@@ -979,12 +980,12 @@ pk_test_scheduler_func (void)
 	/* add again the same tid (should fail) */
 	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
 	g_assert_error (error, 1, 0);
-	g_assert (!ret);
+	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* remove without ever committing */
 	ret = pk_scheduler_remove (tlist, tid);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get size none we have in queue */
 	size = pk_scheduler_get_size (tlist);
@@ -997,11 +998,11 @@ pk_test_scheduler_func (void)
 	/* create another transaction */
 	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get from db */
 	transaction = pk_scheduler_get_transaction (tlist, tid);
-	g_assert (transaction != NULL);
+	g_assert_true (transaction != NULL);
 	g_signal_connect (transaction, "finished",
 			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
 
@@ -1017,11 +1018,11 @@ pk_test_scheduler_func (void)
 
 	/* get present role */
 	ret = pk_scheduler_role_present (tlist, PK_ROLE_ENUM_GET_UPDATES);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get non-present role */
 	ret = pk_scheduler_role_present (tlist, PK_ROLE_ENUM_SEARCH_NAME);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* get size we have in queue */
 	size = pk_scheduler_get_size (tlist);
@@ -1048,7 +1049,7 @@ pk_test_scheduler_func (void)
 
 	/* remove already removed */
 	ret = pk_scheduler_remove (tlist, tid);
-	g_assert (!ret);
+	g_assert_true (!ret);
 
 	/* wait for Cleanup */
 	_g_test_loop_wait (10000);
@@ -1237,7 +1238,7 @@ pk_test_scheduler_parallel_func (void)
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* try to load a valid backend */
 	conf = g_key_file_new ();
@@ -1245,11 +1246,11 @@ pk_test_scheduler_parallel_func (void)
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	backend = pk_backend_new (conf);
 	ret = pk_backend_load (backend, NULL);
-	g_assert (ret);
+	g_assert_true (ret);
 
 	/* get a transaction list object */
 	tlist = pk_scheduler_new (conf);
-	g_assert (tlist != NULL);
+	g_assert_true (tlist != NULL);
 
 	pk_scheduler_set_backend (tlist, backend);
 
