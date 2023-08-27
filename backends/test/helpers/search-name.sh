@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 #
@@ -22,4 +22,3 @@ echo -e "package\tinstalled\tgtk2;gtk2-2.11.6-6.fc8;i386;fedora\tGTK+ Libraries 
 sleep 1
 echo -e "percentage\t100"
 exit 0
-

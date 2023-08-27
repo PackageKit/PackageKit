@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Copyright (C) 2007 Richard Hughes <richard@hughsie.com>
 # Licensed under the GNU General Public License Version 2
 # This program is free software; you can redistribute it and/or modify
@@ -35,4 +35,3 @@ echo -e "percentage\t90"
 echo -e "package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software"
 sleep ${time}
 echo -e "percentage\t100"
-
