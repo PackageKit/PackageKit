@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build Test
 
 on: [push, pull_request]
 
@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: docker build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
-      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=dnf
+      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build-and-test.sh -Dpackaging_backend=dnf
         if: ${{ matrix.distro == 'fedora' }}
-      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build_and_test.sh -Dpackaging_backend=apt
+      - run: docker run -t -v `pwd`:/build packagekit-${{ matrix.distro }} ./tests/ci/build-and-test.sh -Dpackaging_backend=apt
         if: ${{ matrix.distro == 'debian' }}
