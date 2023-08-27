@@ -16,5 +16,6 @@ ninja -C build
 DESTDIR=/tmp/install_root/ ninja -C build install
 
 # Run tests
+mkdir -p /run/dbus/
 dbus-daemon --system --print-address
 meson test -C build -v --print-errorlogs
