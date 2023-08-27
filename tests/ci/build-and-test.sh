@@ -4,12 +4,17 @@ set -e
 if [ -d "build" ]; then
   rm build -rf
 fi
+set -x
+
 meson build \
     -Dlocal_checkout=true \
     -Ddaemon_tests=true \
     $@
 
-# Build, Test & Install
+# Build & Install
 ninja -C build
-meson test -C build --print-errorlogs
 DESTDIR=/tmp/install_root/ ninja -C build install
+
+# Run tests
+dbus-daemon --system --print-address
+meson test -C build -v --print-errorlogs
