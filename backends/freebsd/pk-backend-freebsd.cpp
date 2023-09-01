@@ -622,7 +622,7 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
     for (guint i = 0; i < size; i++) {
         PackageView pkg (package_ids[i]);
         gchar* pkg_namever = pkg.nameversion();
-        jobs.add(MATCH_GLOB, &pkg_namever, 1);
+        jobs.add(MATCH_EXACT, &pkg_namever, 1);
     }
 
     // TODO: handle reponame?
