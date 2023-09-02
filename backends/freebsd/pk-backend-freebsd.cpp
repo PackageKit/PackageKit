@@ -784,38 +784,24 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
     PackageDatabase pkgDb (job, lockType, PKGDB_REMOTE);
 
     pkgDb.setEventHandler([job, &jc](pkg_event* ev) {
+        if (jc.cancelIfRequested())
+            return true;
+
         switch (ev->type) {
             case PKG_EVENT_FETCH_BEGIN:
                 pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
                 pk_backend_job_set_percentage (job, 0);
+                jc.allowCancel();
                 break;
             case PKG_EVENT_INSTALL_BEGIN:
                 pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
                 pk_backend_job_set_percentage (job, 0);
+                jc.disallowCancel();
                 break;
             case PKG_EVENT_UPGRADE_BEGIN:
                 pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
                 pk_backend_job_set_percentage (job, 0);
-                break;
-            case PKG_EVENT_FETCH_FINISHED:
-            {
-                pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
-                break;
-            }
-            case PKG_EVENT_ALREADY_INSTALLED:
-            {
-                pkg* pkg = ev->e_already_installed.pkg;
-                PackageView pkgView(pkg);
-
-                pk_backend_job_error_code (job,
-                        PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
-                        "Requested package %s is already installed", pkgView.nameversion());
-                break;
-            }
-            case PKG_EVENT_NOT_FOUND:
-                pk_backend_job_error_code (job,
-                        PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-                        "Requested package %s wasn't found in the repositories", ev->e_not_found.pkg_name);
+                jc.disallowCancel();
                 break;
             case PKG_EVENT_PROGRESS_TICK:
             {
@@ -837,14 +823,27 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
                 pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, pkgView.packageKitId(), pkgView.comment());
                 break;
             }
+            case PKG_EVENT_ALREADY_INSTALLED:
+            {
+                pkg* pkg = ev->e_already_installed.pkg;
+                PackageView pkgView(pkg);
+
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+                        "Requested package %s is already installed", pkgView.nameversion());
+                break;
+            }
+            case PKG_EVENT_NOT_FOUND:
+                pk_backend_job_error_code (job,
+                        PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                        "Requested package %s wasn't found in the repositories", ev->e_not_found.pkg_name);
+                break;
             default:
                 handleErrnoEvent (job, ev);
                 break;
         }
-        // TODO: libpkg doesn't yet support cancelling
-        //jc.cancelIfRequested();
-        (void) jc;
-        return 0;
+
+        return jc.cancelIfRequested();
     });
 
     Jobs jobs (installRole ? PKG_JOBS_INSTALL : PKG_JOBS_UPGRADE, pkgDb.handle(), context);
