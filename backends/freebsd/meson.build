@@ -1,6 +1,6 @@
 add_languages('cpp')
 
-libpkg_dep = dependency('pkg')
+libpkg_dep = dependency('pkg', version : '>=1.20.99')
 
 c_args = [
     '-DG_LOG_DOMAIN="PackageKit-FreeBSD"',
