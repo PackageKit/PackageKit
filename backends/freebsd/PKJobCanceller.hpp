@@ -33,7 +33,7 @@ public:
         jobData->canceller = this;
 
         pk_backend_job_set_user_data (_job, jobData);
-        pk_backend_job_set_allow_cancel (_job, TRUE);
+        allowCancel ();
     }
 
     bool cancelIfRequested() {
@@ -49,6 +49,9 @@ public:
         }
         return false;
     }
+
+    void allowCancel() const { pk_backend_job_set_allow_cancel (job, TRUE); }
+    void disallowCancel() const { pk_backend_job_set_allow_cancel (job, FALSE); }
 
     void abort() { aborting = true; }
 
