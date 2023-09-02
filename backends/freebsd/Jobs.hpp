@@ -108,6 +108,10 @@ public:
                             "have been found. One more solver "
                             "iteration is needed to resolve them.");
             }
+            else if (retcode == EPKG_CANCEL) {
+                g_message ("%s: pkg_jobs_apply cancelled", context);
+                return true;
+            }
             else if (retcode != EPKG_OK) {
                 // libpkg doesn't yet return sensible error codes from pkg_jobs_apply
                 g_warning ("%s: pkg_jobs_apply failed", context);
