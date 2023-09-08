@@ -1,3 +1,6 @@
+// This file is borrowed from https://github.com/freebsd/pkg/blob/master/libpkg/xstring.h
+// It will go away at some point together with stolen.{c,h}
+
 #ifndef __XSTRING_H_
 #define __XSTRING_H_
 

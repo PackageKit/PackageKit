@@ -1,7 +1,39 @@
-// stolen from pkg/src/event.c
+// stolen from https://github.com/freebsd/pkg/tree/master/src/event.c
 // required as some libpkg internals calls out to pkg_emit_event and expect
 // a handler ("event_callback" in this case) to call the callback, which does the
 // actual work.
+// this file will go away at some point
+
+/*-
+ * Copyright (c) 2011-2014 Baptiste Daroussin <bapt@FreeBSD.org>
+ * Copyright (c) 2011-2012 Julien Laffaye <jlaffaye@FreeBSD.org>
+ * Copyright (c) 2011 Will Andrews <will@FreeBSD.org>
+ * Copyright (c) 2011-2012 Marin Atanasov Nikolov <dnaeon@gmail.com>
+ * Copyright (c) 2014 Vsevolod Stakhov <vsevolod@FreeBSD.org>
+ * Copyright (c) 2015 Matthew Seaman <matthew@FreeBSD.org>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer
+ *    in this position and unchanged.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR(S) ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
@@ -28,7 +60,6 @@ static void drop_privileges(void);
 static xstring *msg_buf = NULL;
 static xstring *messages = NULL;
 static xstring *conflicts = NULL;
-static bool progress_debit = false;
 
 int event_callback(void *data, struct pkg_event *ev)
 {
@@ -47,39 +78,6 @@ int event_callback(void *data, struct pkg_event *ev)
 		break;
 	case PKG_EVENT_ERROR:
 		g_warning("libpkg: %s", ev->e_pkg_error.msg);
-		break;
-	case PKG_EVENT_NOTICE:
-		//g_warning("libpkg: %s\n", ev->e_pkg_notice.msg);
-		break;
-	case PKG_EVENT_DEVELOPER_MODE:
-		g_warning("libpkg: DEVELOPER_MODE: %s", ev->e_pkg_error.msg);
-		break;
-	case PKG_EVENT_UPDATE_ADD:
-		if (!isatty(STDOUT_FILENO))
-			break;
-		g_warning("libpkg: Pushing new entries %d/%d", ev->e_upd_add.done, ev->e_upd_add.total);
-		break;
-	case PKG_EVENT_UPDATE_REMOVE:
-		if (!isatty(STDOUT_FILENO))
-			break;
-		g_warning("libpkg: Removing entries %d/%d", ev->e_upd_remove.done, ev->e_upd_remove.total);
-		break;
-	case PKG_EVENT_FETCH_BEGIN:
-		break;
-	case PKG_EVENT_FETCH_FINISHED:
-		progress_debit = false;
-		break;
-	case PKG_EVENT_INSTALL_BEGIN:
-		break;
-	case PKG_EVENT_INSTALL_FINISHED:
-		break;
-	case PKG_EVENT_EXTRACT_BEGIN:
-		break;
-	case PKG_EVENT_EXTRACT_FINISHED:
-		break;
-	case PKG_EVENT_ADD_DEPS_BEGIN:
-		break;
-	case PKG_EVENT_ADD_DEPS_FINISHED:
 		break;
 	case PKG_EVENT_INTEGRITYCHECK_BEGIN:
 		g_warning("libpkg: Checking integrity...");
@@ -113,12 +111,6 @@ int event_callback(void *data, struct pkg_event *ev)
 		fflush(msg_buf->fp);
 		g_warning("libpkg: %s", msg_buf->buf);
 		break;
-	case PKG_EVENT_DEINSTALL_FINISHED:
-		break;
-	case PKG_EVENT_DELETE_FILES_BEGIN:
-		break;
-	case PKG_EVENT_DELETE_FILES_FINISHED:
-		break;
 	case PKG_EVENT_UPGRADE_BEGIN:
 		pkg_new = ev->e_upgrade_begin.n;
 		pkg_old = ev->e_upgrade_begin.o;
@@ -140,8 +132,6 @@ int event_callback(void *data, struct pkg_event *ev)
 		fflush(msg_buf->fp);
 		g_warning("libpkg: %s", msg_buf->buf);
 		break;
-	case PKG_EVENT_UPGRADE_FINISHED:
-		break;
 	case PKG_EVENT_LOCKED:
 		pkg = ev->e_locked.pkg;
 		// TODO:
@@ -151,12 +141,6 @@ int event_callback(void *data, struct pkg_event *ev)
 		pkg = ev->e_required.pkg;
 		// TODO:
 		//pkg_printf("\n%n-%v is required by: %r%{%rn-%rv%| %}", pkg, pkg, pkg);
-		break;
-	case PKG_EVENT_ALREADY_INSTALLED:
-		pkg = ev->e_already_installed.pkg;
-		//TODO:
-		//pkg_printf("the most recent version of %n-%v is already installed\n",
-		//		pkg, pkg);
 		break;
 	case PKG_EVENT_NOT_FOUND:
 		g_warning("libpkg: Package '%s' was not found in "
@@ -200,19 +184,10 @@ int event_callback(void *data, struct pkg_event *ev)
 		    pkg_plugin_get(ev->e_plugin_error.plugin, PKG_PLUGIN_NAME),
 		    ev->e_plugin_error.msg);
 		break;
-	case PKG_EVENT_PLUGIN_INFO:
-		g_warning("libpkg: %s: %s\n",
-		    pkg_plugin_get(ev->e_plugin_info.plugin, PKG_PLUGIN_NAME),
-		    ev->e_plugin_info.msg);
-		break;
 	case PKG_EVENT_INCREMENTAL_UPDATE:
-		g_warning("libpkg: %s repository update completed. %d packages processed.\n",
+		g_message("libpkg: %s repository update completed. %d packages processed.\n",
 			ev->e_incremental_update.reponame,
 			ev->e_incremental_update.processed);
-		break;
-	case PKG_EVENT_DEBUG:
-		// fprintf(stderr, "DBG(%d)[%d]> %s\n", ev->e_debug.level,
-		// 	(int)getpid(), ev->e_debug.msg);
 		break;
 	case PKG_EVENT_QUERY_YESNO:
 		g_error("libpkg: Asking for yes/no");
@@ -236,47 +211,16 @@ int event_callback(void *data, struct pkg_event *ev)
 				ev->e_sandbox_call_str.len,
 				ev->e_sandbox_call_str.userdata) );
 		break;
-	case PKG_EVENT_PROGRESS_START:
-		//progressbar_start(ev->e_progress_start.msg);
-		break;
-	case PKG_EVENT_PROGRESS_TICK:
-		// progressbar_tick(ev->e_progress_tick.current,
-		//     ev->e_progress_tick.total);
-		break;
 	case PKG_EVENT_BACKUP:
-		fprintf(msg_buf->fp, "Backing up");
+		g_message("libpkg: Backing up");
 		break;
 	case PKG_EVENT_RESTORE:
-		fprintf(msg_buf->fp, "Restoring");
-		break;
-	case PKG_EVENT_NEW_ACTION:
+		g_message("libpkg: Restoring");
 		break;
 	case PKG_EVENT_MESSAGE:
 		if (messages == NULL)
 			messages = xstring_new();
 		fprintf(messages->fp, "%s", ev->e_pkg_message.msg);
-		break;
-	case PKG_EVENT_CLEANUP_CALLBACK_REGISTER:
-		// if (!signal_handler_installed) {
-		// 	signal(SIGINT, cleanup_handler);
-		// 	signal_handler_installed = true;
-		// }
-		// evtmp = malloc(sizeof(struct cleanup));
-		// evtmp->cb = ev->e_cleanup_callback.cleanup_cb;
-		// evtmp->data = ev->e_cleanup_callback.data;
-		// tll_push_back(cleanup_list, evtmp);
-		break;
-	case PKG_EVENT_CLEANUP_CALLBACK_UNREGISTER:
-		// if (!signal_handler_installed)
-		// 	break;
-		// tll_foreach(cleanup_list, it) {
-		// 	evtmp = it->item;
-		// 	if (evtmp->cb == ev->e_cleanup_callback.cleanup_cb &&
-		// 	    evtmp->data == ev->e_cleanup_callback.data) {
-		// 		tll_remove(cleanup_list, it);
-		// 		break;
-		// 	}
-		// }
 		break;
 	case PKG_EVENT_CONFLICTS:
 		if (conflicts == NULL) {
@@ -301,9 +245,9 @@ int event_callback(void *data, struct pkg_event *ev)
 		break;
 	case PKG_EVENT_TRIGGER:
 		if (ev->e_trigger.cleanup)
-			g_warning("libpkg: ==> Cleaning up trigger: %s\n", ev->e_trigger.name);
+			g_message("libpkg: ==> Cleaning up trigger: %s\n", ev->e_trigger.name);
 		else
-			g_warning("libpkg: ==> Running trigger: %s\n", ev->e_trigger.name);
+			g_message("libpkg: ==> Running trigger: %s\n", ev->e_trigger.name);
 		break;
 	default:
 		break;
