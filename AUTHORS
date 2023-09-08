@@ -13,6 +13,9 @@ Backend: dnf
     Richard Hughes <richard@hughsie.com>
     Neal Gompa <ngompa13@gmail.com>
 
+Backend: freebsd
+    Gleb Popov <arrowd@FreeBSD.org>
+
 Backend: pisi
     S.Çağlar Onur <caglar@pardus.org.tr>
 
