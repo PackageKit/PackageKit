@@ -220,12 +220,14 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		return;
 
 	/* force finished (if not already set) so clients can update the UI's */
-	ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
-	if (ret && state->progress_callback != NULL) {
-		state->progress_callback (state->progress,
-					  PK_PROGRESS_TYPE_STATUS,
-					  state->progress_user_data);
-		state->progress_callback = NULL;
+	if (state->progress != NULL) {
+		ret = pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
+		if (ret && state->progress_callback != NULL) {
+			state->progress_callback (state->progress,
+						  PK_PROGRESS_TYPE_STATUS,
+						  state->progress_user_data);
+			state->progress_callback = NULL;
+		}
 	}
 
 	if (state->cancellable_id > 0) {
@@ -288,7 +290,7 @@ pk_client_state_finalize (GObject *object)
 	g_strfreev (state->package_ids);
 	/* results will not exist if the CreateTransaction fails */
 	g_clear_object (&state->results);
-	g_object_unref (state->progress);
+	g_clear_object (&state->progress);
 	g_clear_object (&state->res);
 	g_object_unref (state->client);
 
@@ -349,7 +351,9 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable,
 		return;
 	}
 
-	/* dbus method has not yet fired */
+	/* D-Bus method has not yet fired. This can happen, for example, when
+	 * pk_client_state_new() is called with a #GCancellable which has
+	 * already been cancelled. */
 	if (state->proxy == NULL) {
 		g_autoptr(GError) local_error = NULL;
 
