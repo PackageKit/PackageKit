@@ -230,14 +230,6 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 		}
 	}
 
-	if (state->cancellable_id > 0) {
-		g_cancellable_disconnect (state->cancellable_client,
-					  state->cancellable_id);
-		state->cancellable_id = 0;
-	}
-	g_clear_object (&state->cancellable);
-	g_clear_object (&state->cancellable_client);
-
 	pk_client_state_unset_proxy (state);
 
 	if (state->proxy_props != NULL)
@@ -268,6 +260,22 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 	g_clear_object (&state->res);
 
 	g_object_unref (state);
+}
+
+static void
+pk_client_state_dispose (GObject *object)
+{
+	PkClientState *state = PK_CLIENT_STATE (object);
+
+	if (state->cancellable_id > 0) {
+		g_cancellable_disconnect (state->cancellable_client,
+					  state->cancellable_id);
+		state->cancellable_id = 0;
+	}
+	g_clear_object (&state->cancellable);
+	g_clear_object (&state->cancellable_client);
+
+	G_OBJECT_CLASS (pk_client_state_parent_class)->dispose (object);
 }
 
 static void
@@ -302,6 +310,7 @@ pk_client_state_class_init (PkClientStateClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+	object_class->dispose = pk_client_state_dispose;
 	object_class->finalize = pk_client_state_finalize;
 }
 
