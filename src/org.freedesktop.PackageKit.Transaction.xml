@@ -294,7 +294,7 @@
               directory.
             </doc:para>
             <doc:para>
-              See <doc:ulink url="http://packagekit.org/gtk-doc/introduction-ideas-transactions.html">
+              See <doc:ulink url="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">
               the developer docs</doc:ulink> for more details on how
               this is supposed to work.
             </doc:para>
