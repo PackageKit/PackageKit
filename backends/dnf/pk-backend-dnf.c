@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <string.h>
-#include <appstream-glib.h>
 
 #include <pk-backend.h>
 #include <packagekit-glib2/pk-common-private.h>

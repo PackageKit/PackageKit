@@ -26,7 +26,6 @@
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <string.h>
-#include <appstream-glib.h>
 #include <unistd.h>
 #include <stdlib.h>
 
