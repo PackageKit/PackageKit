@@ -37,7 +37,7 @@ BuildRequires: bash-completion
 
 %if !0%{?rhel}
 BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: libappstream-glib-devel
+BuildRequires: appstream-devel
 BuildRequires: librepo-devel >= 1.1.5
 BuildRequires: libsolv-devel
 BuildRequires: libdnf-devel >= 0.7.0
