@@ -49,13 +49,8 @@
 
 #include <pkg.h>
 #include <xstring.h>
-#define HAVE_CAPSICUM
 
 #include "stolen.h"
-
-static int event_sandboxed_call(pkg_sandbox_cb func, int fd, void *ud);
-static int event_sandboxed_get_string(pkg_sandbox_cb func, char **result, int64_t *len, void *ud);
-static void drop_privileges(void);
 
 static xstring *msg_buf = NULL;
 static xstring *messages = NULL;
@@ -201,12 +196,12 @@ int event_callback(void *data, struct pkg_event *ev)
 		// 	ev->e_query_select.ncnt, ev->e_query_select.deft);
 		break;
 	case PKG_EVENT_SANDBOX_CALL:
-		return ( event_sandboxed_call(ev->e_sandbox_call.call,
+		return ( pkg_handle_sandboxed_call(ev->e_sandbox_call.call,
 				ev->e_sandbox_call.fd,
 				ev->e_sandbox_call.userdata) );
 		break;
 	case PKG_EVENT_SANDBOX_GET_STRING:
-		return ( event_sandboxed_get_string(ev->e_sandbox_call_str.call,
+		return ( pkg_handle_sandboxed_get_string(ev->e_sandbox_call_str.call,
 				ev->e_sandbox_call_str.result,
 				ev->e_sandbox_call_str.len,
 				ev->e_sandbox_call_str.userdata) );
@@ -254,191 +249,4 @@ int event_callback(void *data, struct pkg_event *ev)
 	}
 
 	return 0;
-}
-
-static
-int event_sandboxed_call(pkg_sandbox_cb func, int fd, void *ud)
-{
-	pid_t pid;
-	int status, ret;
-	struct rlimit rl_zero;
-
-	ret = -1;
-	pid = fork();
-
-	switch(pid) {
-	case -1:
-		g_warning("libpkg: fork failed");
-		return (EPKG_FATAL);
-		break;
-	case 0:
-		break;
-	default:
-		/* Parent process */
-		while (waitpid(pid, &status, 0) == -1) {
-			if (errno != EINTR) {
-				g_warning("libpkg: Sandboxed process pid=%d", (int)pid);
-				ret = -1;
-				break;
-			}
-		}
-
-		if (WIFEXITED(status)) {
-			ret = WEXITSTATUS(status);
-		}
-		if (WIFSIGNALED(status)) {
-			/* Process got some terminating signal, hence stop the loop */
-			g_warning("libpkg: Sandboxed process pid=%d terminated abnormally by signal: %d\n",
-					(int)pid, WTERMSIG(status));
-			ret = -1;
-		}
-		return (ret);
-	}
-
-	rl_zero.rlim_cur = rl_zero.rlim_max = 0;
-	if (setrlimit(RLIMIT_NPROC, &rl_zero) == -1)
-		g_error("libpkg: Unable to setrlimit(RLIMIT_NPROC)");
-
-	/* Here comes child process */
-#ifdef HAVE_CAPSICUM
-#ifndef PKG_COVERAGE
-	if (cap_enter() < 0 && errno != ENOSYS) {
-		g_error("libpkg: cap_enter() failed");
-		_exit(EXIT_FAILURE);
-	}
-#endif
-#endif
-
-	ret = func(fd, ud);
-
-	_exit(ret);
-}
-
-static
-int event_sandboxed_get_string(pkg_sandbox_cb func, char **result, int64_t *len,
-		void *ud)
-{
-	pid_t pid;
-	struct rlimit rl_zero;
-	int	status, ret = EPKG_OK;
-	int pair[2], r, allocated_len = 0, off = 0;
-	char *buf = NULL;
-
-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair) == -1) {
-		g_warning("libpkg: socketpair failed");
-		return (EPKG_FATAL);
-	}
-
-	pid = fork();
-
-	switch(pid) {
-	case -1:
-		g_warning("libpkg: fork failed");
-		return (EPKG_FATAL);
-		break;
-	case 0:
-		break;
-	default:
-		/* Parent process */
-		close(pair[0]);
-		/*
-		 * We use blocking IO here as if the child is terminated we would have
-		 * EINTR here
-		 */
-		buf = malloc(BUFSIZ);
-		if (buf == NULL) {
-			g_warning("libpkg: malloc failed");
-			return (EPKG_FATAL);
-		}
-		allocated_len = BUFSIZ;
-		do {
-			if (off >= allocated_len) {
-				allocated_len *= 2;
-				buf = realloc(buf, allocated_len);
-				if (buf == NULL) {
-					g_warning("libpkg: realloc failed");
-					return (EPKG_FATAL);
-				}
-			}
-
-			r = read(pair[1], buf + off, allocated_len - off);
-			if (r == -1 && errno != EINTR) {
-				free(buf);
-				g_warning("libpkg: read failed");
-				return (EPKG_FATAL);
-			}
-			else if (r > 0) {
-				off += r;
-			}
-		} while (r > 0);
-
-		/* Fill the result buffer */
-		*len = off;
-		*result = buf;
-		if (*result == NULL) {
-			g_warning("libpkg: malloc failed");
-			kill(pid, SIGTERM);
-			ret = EPKG_FATAL;
-		}
-		while (waitpid(pid, &status, 0) == -1) {
-			if (errno != EINTR) {
-				g_warning("libpkg: Sandboxed process pid=%d", (int)pid);
-				ret = -1;
-				break;
-			}
-		}
-
-		if (WIFEXITED(status)) {
-			ret = WEXITSTATUS(status);
-		}
-		if (WIFSIGNALED(status)) {
-			/* Process got some terminating signal, hence stop the loop */
-			g_warning("libpkg: Sandboxed process pid=%d terminated abnormally by signal: %d\n",
-					(int)pid, WTERMSIG(status));
-			ret = -1;
-		}
-		return (ret);
-	}
-
-	/* Here comes child process */
-	close(pair[1]);
-
-	drop_privileges();
-
-	rl_zero.rlim_cur = rl_zero.rlim_max = 0;
-	if (setrlimit(RLIMIT_NPROC, &rl_zero) == -1)
-		g_error("libpkg: Unable to setrlimit(RLIMIT_NPROC)");
-
-#ifdef HAVE_CAPSICUM
-#ifndef PKG_COVERAGE
-	if (cap_enter() < 0 && errno != ENOSYS) {
-		g_warning("libpkg: cap_enter() failed");
-		return (EPKG_FATAL);
-	}
-#endif
-#endif
-
-	ret = func(pair[0], ud);
-
-	close(pair[0]);
-
-	_exit(ret);
-}
-
-static
-void drop_privileges(void)
-{
-	struct passwd *nobody;
-
-	if (geteuid() == 0) {
-		nobody = getpwnam("nobody");
-		if (nobody == NULL)
-			g_error("libpkg: Unable to drop privileges: no 'nobody' user");
-		setgroups(1, &nobody->pw_gid);
-		/* setgid also sets egid and setuid also sets euid */
-		if (setgid(nobody->pw_gid) == -1)
-			g_error("libpkg: Unable to setgid");
-		if (setuid(nobody->pw_uid) == -1)
-			g_error("libpkg: Unable to setuid");
-	}
 }
