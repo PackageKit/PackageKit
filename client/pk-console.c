@@ -40,6 +40,7 @@
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
 #define PK_EXIT_CODE_CANNOT_SETUP	6
 #define PK_EXIT_CODE_TRANSACTION_FAILED	7
+#define PK_EXIT_CODE_INTERNAL_ERROR	8
 
 #define PK_CONSOLE_ERROR	1
 
@@ -664,15 +665,20 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to get any results, which is pretty
 		 * fatal in my book */
-		g_print ("%s: %s\n", _("Fatal error"), error->message);
-		switch (error->code - 0xff) {
-		case PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED:
-		case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
-			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
-			break;
-		default:
-			ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
-			break;
+		if (error != NULL) {
+			g_print ("%s: %s\n", _("Fatal error"), error->message);
+			switch (error->code - 0xff) {
+			case PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED:
+			case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
+				ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
+				break;
+			default:
+				ctx->retval = PK_EXIT_CODE_TRANSACTION_FAILED;
+				break;
+			}
+		} else {
+			g_print ("%s: %s\n", _("Fatal error"), _("Internal error"));
+			ctx->retval = PK_EXIT_CODE_INTERNAL_ERROR;
 		}
 		goto out;
 	}
