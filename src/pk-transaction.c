@@ -2778,7 +2778,7 @@ pk_transaction_authorize_actions (PkTransaction *transaction,
 
 	flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE;
 	if (pk_backend_job_get_interactive (priv->job))
-		pk_bitfield_add (flags, POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION);
+		flags |= POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION;
 
 	g_debug ("authorizing action %s", action_id);
 	/* do authorization async */

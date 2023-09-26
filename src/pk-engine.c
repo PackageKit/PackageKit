@@ -651,8 +651,8 @@ get_polkit_flags_for_dbus_invocation (GDBusMethodInvocation *invocation)
 	PolkitCheckAuthorizationFlags flags = POLKIT_CHECK_AUTHORIZATION_FLAGS_NONE;
 	GDBusMessage *message = g_dbus_method_invocation_get_message (invocation);
 
-	if (pk_bitfield_contain (g_dbus_message_get_flags (message), G_DBUS_MESSAGE_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION))
-		pk_bitfield_add (flags, POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION);
+	if (g_dbus_message_get_flags (message) & G_DBUS_MESSAGE_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION)
+		flags |= POLKIT_CHECK_AUTHORIZATION_FLAGS_ALLOW_USER_INTERACTION;
 
 	return flags;
 }
