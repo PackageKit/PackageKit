@@ -17,7 +17,8 @@ Backend: freebsd
     Gleb Popov <arrowd@FreeBSD.org>
 
 Backend: pisi
-    S.Çağlar Onur <caglar@pardus.org.tr>
+    Pisilinux Team <admin@pisilinux.org>
+    Erkan IŞIK <erkanisik@pisilinux.org>
 
 Backend: poldek
     Marcin Banasiak <megabajt@pld-linux.org>
