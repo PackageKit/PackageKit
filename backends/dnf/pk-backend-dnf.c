@@ -1706,6 +1706,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	/* invalidate the sack cache after downloading new metadata */
 	pk_backend_sack_cache_invalidate (backend, "downloaded new metadata");
 
+	/* We just downloaded our cache, avoid doing so again */
+	pk_backend_job_set_cache_age(job, G_MAXUINT);
+
 	/* regenerate the libsolv metadata */
 	state_local = dnf_state_get_child (job_data->state);
 	sack = dnf_utils_create_sack_for_filters (job, 0,
