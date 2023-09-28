@@ -5526,6 +5526,7 @@ pk_transaction_dispose (GObject *object)
 	if (transaction->priv->registration_id > 0) {
 		/* We should have emitted ::Finished if the object was ever registered and committed */
 		if (transaction->priv->state != PK_TRANSACTION_STATE_UNKNOWN &&
+		    transaction->priv->state != PK_TRANSACTION_STATE_ERROR &&
 		    transaction->priv->state != PK_TRANSACTION_STATE_NEW)
 			g_assert (transaction->priv->emitted_finished);
 
