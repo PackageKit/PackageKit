@@ -2421,10 +2421,18 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	}
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   50, /* download */
-				   50, /* install/remove */
-				   -1);
+	if (pk_bitfield_contain (job_data->transaction_flags,
+	                         PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		ret = dnf_state_set_steps (state, error,
+		                           90, /* download */
+		                           10, /* transaction test */
+		                           -1);
+	} else {
+		ret = dnf_state_set_steps (state, error,
+		                           50, /* download */
+		                           50, /* install/remove */
+		                           -1);
+	}
 	if (!ret)
 		return FALSE;
 
