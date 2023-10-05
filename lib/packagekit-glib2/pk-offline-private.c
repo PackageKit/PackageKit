@@ -462,20 +462,34 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
+		gboolean not_exists;
+		const gchar *package_id;
 		g_autoptr(GString) string = NULL;
+		g_autoptr(GHashTable) table = g_hash_table_new (g_str_hash, g_str_equal);
+		/* We use array to preserve the package transaction order */
+		g_autoptr(GPtrArray) updated_packages = g_ptr_array_new ();
+
 		string = g_string_new ("");
 		for (i = 0; i < packages->len; i++) {
 			package = g_ptr_array_index (packages, i);
 			switch (pk_package_get_info (package)) {
 			case PK_INFO_ENUM_UPDATING:
 			case PK_INFO_ENUM_INSTALLING:
-				g_string_append_printf (string, "%s,",
-							pk_package_get_id (package));
+				package_id = pk_package_get_id (package);
+				not_exists = g_hash_table_insert (table, (gpointer) package_id, NULL);
+				if (not_exists)
+					g_ptr_array_add (updated_packages, (gpointer) package_id);
 				break;
 			default:
 				break;
 			}
 		}
+
+		for (i = 0; i < updated_packages->len; i++) {
+			package_id = (gchar *) g_ptr_array_index (updated_packages, i);
+			g_string_append_printf (string, "%s,", package_id);
+		}
+
 		if (string->len > 0)
 			g_string_set_size (string, string->len - 1);
 		g_key_file_set_string (key_file,
