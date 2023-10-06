@@ -4605,7 +4605,8 @@ pk_client_get_idle (PkClient *client)
 /**
  * pk_client_set_cache_age:
  * @client: a valid #PkClient instance
- * @cache_age: the cache age to set, where %G_MAXUINT means "never"
+ * @cache_age: the cache age to set in seconds, where %G_MAXUINT
+ * means cache "never expires"
  *
  * Sets the maximum cache age value for the client.
  *
@@ -4736,6 +4737,9 @@ pk_client_class_init (PkClientClass *klass)
 
 	/**
 	 * PkClient:cache-age:
+	 *
+	 * The cache age in seconds, where %G_MAXUINT means cache
+	 * "never expires"
 	 *
 	 * Since: 0.6.10
 	 */
