@@ -1671,7 +1671,7 @@ main (int argc, char *argv[])
 			_("Print to screen a machine readable output, rather than using animated widgets"), NULL},
 		{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &cache_age,
 			/* TRANSLATORS: command line argument, just output without fancy formatting */
-			_("The maximum metadata cache age. Use -1 for 'never'."), NULL},
+			_("The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."), NULL},
 		{ "allow-untrusted", '\0', 0, G_OPTION_ARG_NONE, &allow_untrusted,
 			/* command line argument, do we ask questions */
 			_("Allow untrusted packages to be installed."), NULL },
