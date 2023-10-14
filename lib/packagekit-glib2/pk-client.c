@@ -246,6 +246,13 @@ pk_client_state_finish (PkClientState *state, const GError *error)
 							   g_object_ref (state->results),
 							   g_object_unref);
 	} else {
+		g_autoptr(GError) internal_error = NULL;
+		if (error == NULL) {
+			internal_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+							      "PackageKit internal error");
+			error = internal_error;
+		}
+
 		g_simple_async_result_set_from_error (state->res, error);
 	}
 
@@ -1596,13 +1603,14 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Destroy") == 0) {
-		g_autoptr(GError) local_error = NULL;
+		if (state->waiting_for_finished) {
+			g_autoptr(GError) local_error = NULL;
 
-		if (state->waiting_for_finished)
 			local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
 							   "PackageKit transaction disappeared");
 
-		pk_client_state_finish (state, local_error);
+			pk_client_state_finish (state, local_error);
+		}
 		return;
 	}
 }
