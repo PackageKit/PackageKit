@@ -77,10 +77,38 @@ private:
                                                    ev->e_sandbox_call_str.result,
                                                    ev->e_sandbox_call_str.len,
                                                    ev->e_sandbox_call_str.userdata);
+        // handle cleanup callbacks
+        else if (ev->type == PKG_EVENT_CLEANUP_CALLBACK_REGISTER) {
+            auto* cleanup = new cleanup_cb;
+            cleanup->cb = ev->e_cleanup_callback.cleanup_cb;
+            cleanup->data = ev->e_cleanup_callback.data;
+            pkgDB->cleanupCallbacks.push_back(cleanup);
+            return 0;
+        }
+        else if (ev->type == PKG_EVENT_CLEANUP_CALLBACK_UNREGISTER) {
+            auto it = std::find_if(
+                pkgDB->cleanupCallbacks.begin(),
+                pkgDB->cleanupCallbacks.end(),
+                [ev](cleanup_cb* cleanup) {
+                    return cleanup->cb == ev->e_cleanup_callback.cleanup_cb
+                        && cleanup->data == ev->e_cleanup_callback.data;
+            });
+
+            if (it != pkgDB->cleanupCallbacks.end()) {
+                delete *it;
+                pkgDB->cleanupCallbacks.erase(it);
+            }
+        }
 
         // otherwise pass the event for the job's handling
-        if (pkgDB->userEventHandler)
-            return pkgDB->userEventHandler(ev);
+        if (pkgDB->userEventHandler) {
+            bool shouldCancel = pkgDB->userEventHandler(ev);
+            if (shouldCancel) {
+                for (auto* cleanup : pkgDB->cleanupCallbacks)
+                    cleanup->cb(cleanup->data);
+                return 1;
+            }
+        }
 
         return 0;
     }
@@ -220,11 +248,19 @@ private:
                 pk_backend_job_set_locked (job, FALSE);
         });
     }
+
+    struct cleanup_cb
+    {
+        void *data;
+        void (*cb)(void *);
+    };
+
     PkBackendJob* job;
     pkgdb_lock_t lockType;
     pkgdb_t dbType;
     pkgdb* dbHandle;
     std::function<int(pkg_event *ev)> userEventHandler;
+    std::vector<cleanup_cb*> cleanupCallbacks;
     deleted_unique_ptr<void> libpkgDeleter;
     deleted_unique_ptr<struct pkgdb> dbDeleter;
     deleted_unique_ptr<struct pkgdb> lockDeleter;
