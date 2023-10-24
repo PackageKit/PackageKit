@@ -38,7 +38,6 @@
 #include <vector>
 #include <unordered_set>
 
-#include "stolen.h"
 #include "DedupPackageJobEmitter.hpp"
 #include "PackageView.hpp"
 #include "PackageDatabase.hpp"

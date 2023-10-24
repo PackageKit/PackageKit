@@ -63,12 +63,141 @@ private:
     static int pkgEventHandler(void* data, pkg_event *ev) {
         PackageDatabase* pkgDB = reinterpret_cast<PackageDatabase*>(data);
 
-        int shouldCancel = 0;
-        if (pkgDB->userEventHandler)
-            shouldCancel = pkgDB->userEventHandler(ev);
+        // if the event is purely informational just log it and return
+        if (handleInformationalEvents(ev))
+            return 0;
 
-        shouldCancel += event_callback(nullptr, ev);
-        return shouldCancel;
+        // use default libpkg implementations for sandboxed calls
+        if (ev->type == PKG_EVENT_SANDBOX_CALL)
+            return pkg_handle_sandboxed_call(ev->e_sandbox_call.call,
+                                             ev->e_sandbox_call.fd,
+                                             ev->e_sandbox_call.userdata);
+        else if (ev->type == PKG_EVENT_SANDBOX_GET_STRING)
+            return pkg_handle_sandboxed_get_string(ev->e_sandbox_call_str.call,
+                                                   ev->e_sandbox_call_str.result,
+                                                   ev->e_sandbox_call_str.len,
+                                                   ev->e_sandbox_call_str.userdata);
+
+        // otherwise pass the event for the job's handling
+        if (pkgDB->userEventHandler)
+            return pkgDB->userEventHandler(ev);
+
+        return 0;
+    }
+
+    static bool handleInformationalEvents(pkg_event *ev) {
+        switch(ev->type) {
+            case PKG_EVENT_ERRNO:
+                g_warning("libpkg: %s(%s): %s", ev->e_errno.func, ev->e_errno.arg,
+                          strerror(ev->e_errno.no));
+                return true;
+            case PKG_EVENT_ERROR:
+                g_warning("libpkg: %s", ev->e_pkg_error.msg);
+                return true;
+            case PKG_EVENT_INTEGRITYCHECK_BEGIN:
+                g_message("libpkg: Checking integrity...");
+                return true;
+            case PKG_EVENT_INTEGRITYCHECK_FINISHED:
+                g_message("libpkg: done checking integrity (%d conflicting)", ev->e_integrity_finished.conflicting);
+                return true;
+            case PKG_EVENT_INTEGRITYCHECK_CONFLICT:
+            {
+                g_warning("libpkg: Conflict found on path '%s' between '%s' and ...",
+                          ev->e_integrity_conflict.pkg_path,
+                          ev->e_integrity_conflict.pkg_uid);
+                pkg_event_conflict* cur_conflict = ev->e_integrity_conflict.conflicts;
+                while (cur_conflict) {
+                    g_warning("libpkg: '%s'", cur_conflict->uid);
+                    cur_conflict = cur_conflict->next;
+                }
+                return true;
+            }
+            case PKG_EVENT_LOCKED:
+            {
+                PackageView pkgView(ev->e_locked.pkg);
+                g_warning("libpkg: '%s' is locked and may not be modified", pkgView.nameversion());
+                return true;
+            }
+            case PKG_EVENT_REQUIRED:
+            {
+                PackageView pkgView(ev->e_required.pkg);
+                g_warning("libpkg: '%s' is required by other packages", pkgView.nameversion());
+                return true;
+            }
+            case PKG_EVENT_NOT_FOUND:
+                // this probably should never happen
+                g_warning("libpkg: '%s' was not found in the repositories",
+                          ev->e_not_found.pkg_name);
+                return true;
+            case PKG_EVENT_MISSING_DEP:
+                // this probably should never happen
+                g_warning("libpkg: Missing dependency '%s'",
+                          pkg_dep_name(ev->e_missing_dep.dep));
+                return true;
+            case PKG_EVENT_NOREMOTEDB:
+                g_warning("libpkg: Unable to open remote database %s",
+                          ev->e_remotedb.repo);
+                return true;
+            case PKG_EVENT_NOLOCALDB:
+                g_warning("libpkg: Local package database does not exist");
+                return true;
+            case PKG_EVENT_NEWPKGVERSION:
+                g_warning("libpkg: New version of pkg detected; it needs to be installed first");
+                return true;
+            case PKG_EVENT_FILE_MISMATCH:
+            {
+                PackageView pkgView(ev->e_file_mismatch.pkg);
+                g_warning("libpkg: '%s': checksum mismatch", pkgView.nameversion());
+                return true;
+            }
+            case PKG_EVENT_FILE_MISSING:
+            {
+                PackageView pkgView(ev->e_file_missing.pkg);
+                g_warning("libpkg: '%s': missing some files", pkgView.nameversion());
+                return true;
+            }
+            case PKG_EVENT_PLUGIN_ERRNO:
+                g_warning("libpkg: '%s' plugin: %s(%s): %s",
+                          pkg_plugin_get(ev->e_plugin_errno.plugin, PKG_PLUGIN_NAME),
+                          ev->e_plugin_errno.func, ev->e_plugin_errno.arg,
+                          strerror(ev->e_plugin_errno.no));
+                return true;
+            case PKG_EVENT_PLUGIN_ERROR:
+                g_warning("libpkg: '%s' plugin: %s",
+                          pkg_plugin_get(ev->e_plugin_error.plugin, PKG_PLUGIN_NAME),
+                          ev->e_plugin_error.msg);
+                return true;
+            case PKG_EVENT_INCREMENTAL_UPDATE:
+                g_message("libpkg: %s repository update completed. %d packages processed.\n",
+                    ev->e_incremental_update.reponame,
+                    ev->e_incremental_update.processed);
+                return true;
+            case PKG_EVENT_QUERY_YESNO:
+                // this should never happen, so use g_error
+                g_error("libpkg: asking for yes/no");
+                return true;
+            case PKG_EVENT_QUERY_SELECT:
+                // this should never happen, so use g_error
+                g_error("libpkg: queries for selection");
+                return true;
+            case PKG_EVENT_TRIGGER:
+                if (ev->e_trigger.cleanup)
+                    g_message("libpkg: cleaning up trigger %s", ev->e_trigger.name);
+                else
+                    g_message("libpkg: running trigger %s", ev->e_trigger.name);
+                return true;
+            case PKG_EVENT_BACKUP:
+                g_message("libpkg: backing up");
+                return true;
+            case PKG_EVENT_RESTORE:
+                g_message("libpkg: restoring");
+                return true;
+            case PKG_EVENT_MESSAGE:
+                g_message("libpkg: %s", ev->e_pkg_message.msg);
+                return true;
+            default:
+                return false;
+        }
     }
 
     void open() {
