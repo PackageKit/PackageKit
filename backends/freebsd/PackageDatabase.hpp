@@ -50,6 +50,10 @@ public:
         // can't pass nullptr here, unique_ptr won't call the deleter
         libpkgDeleter = deleted_unique_ptr<void>(reinterpret_cast<void*>(0xDEADC0DE), [](void* p) { pkg_shutdown(); });
     }
+    ~PackageDatabase() {
+        for (auto* cb : cleanupCallbacks)
+            delete cb;
+    }
 
     pkgdb* handle() {
         if (!dbHandle)
