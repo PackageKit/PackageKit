@@ -38,7 +38,6 @@
 #include <vector>
 #include <unordered_set>
 
-#include "stolen.h"
 #include "DedupPackageJobEmitter.hpp"
 #include "PackageView.hpp"
 #include "PackageDatabase.hpp"
@@ -1114,31 +1113,36 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
     PackageDatabase pkgDb (job, lockType, PKGDB_DEFAULT);
 
-    uint jobsCount;
-    uint currentJob = 0;
-    pkgDb.setEventHandler([job, &jobsCount, &currentJob, &jc](pkg_event* ev) {
+    pkgDb.setEventHandler([job, &jc](pkg_event* ev) {
+        if (jc.cancelIfRequested())
+            return true;
+
         switch (ev->type) {
             case PKG_EVENT_PROGRESS_TICK:
             {
                 uint progress = (ev->e_progress_tick.current * 100) / ev->e_progress_tick.total;
-                progress = adjustProgress(progress, currentJob, jobsCount);
                 pk_backend_job_set_percentage (job, progress);
+                break;
+            }
+            case PKG_EVENT_DEINSTALL_BEGIN:
+            {
+                pkg* pkg = ev->e_deinstall_begin.pkg;
+                PackageView pkgView(pkg);
+                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                pk_backend_job_set_percentage (job, 0);
                 break;
             }
             case PKG_EVENT_DEINSTALL_FINISHED:
             {
-                pkg* pkg = ev->e_install_finished.pkg;
-                PackageView pkgView(pkg);
-                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                pk_backend_job_set_percentage (job, 100);
                 break;
             }
             default:
+                handleErrnoEvent (job, ev);
                 break;
         }
-        // TODO: libpkg doesn't yet support cancelling
-        //jc.cancelIfRequested();
-        (void) jc;
-        return 0;
+
+        return jc.cancelIfRequested();
     });
 
     Jobs jobs(PKG_JOBS_DEINSTALL, pkgDb.handle(), "remove_packages");
@@ -1159,7 +1163,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
     pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
-    jobsCount = jobs.solve();
+    uint jobsCount = jobs.solve();
 
     // TODO: handle locked pkgs
     g_assert (!jobs.hasLockedPackages());
@@ -1192,8 +1196,6 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
 
     pkgdb_compact (pkgDb.handle());
-
-    pk_backend_job_set_percentage (job, 100);
 }
 
 void

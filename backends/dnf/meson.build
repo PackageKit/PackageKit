@@ -1,4 +1,4 @@
-appstream_dep = dependency('appstream-glib')
+appstream_dep = dependency('appstream', version: '>=0.14.0')
 dnf_dep = dependency('libdnf', version: '>=0.43.1')
 rpm_dep = dependency('rpm')
 c_args = ['-DG_LOG_DOMAIN="PackageKit-DNF"']

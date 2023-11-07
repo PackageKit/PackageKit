@@ -1460,16 +1460,25 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
     /* search for mimetypes for all values */
     for (guint i = 0; values[i] != NULL; i++) {
+#if AS_CHECK_VERSION(1,0,0)
+        g_autoptr(AsComponentBox) result = NULL;
+#else
         g_autoptr(GPtrArray) result = NULL;
-
+#endif
         if (m_cancel)
             break;
 
+#if AS_CHECK_VERSION(1,0,0)
+        result = as_pool_get_components_by_provided_item (pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
+        for (guint j = 0; j < as_component_box_len (result); j++) {
+            const gchar *pkgname;
+            AsComponent *cpt = as_component_box_index (result, j);
+#else
         result = as_pool_get_components_by_provided_item (pool, AS_PROVIDED_KIND_MEDIATYPE, values[i]);
         for (guint j = 0; j < result->len; j++) {
             const gchar *pkgname;
             AsComponent *cpt = AS_COMPONENT (g_ptr_array_index (result, j));
-
+#endif
             /* sanity check */
             pkgname = as_component_get_pkgname (cpt);
             if (pkgname == NULL) {

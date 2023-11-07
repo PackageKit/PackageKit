@@ -23,7 +23,7 @@
 
 #include <gmodule.h>
 #include <glib.h>
-#include <appstream-glib.h>
+#include <appstream.h>
 #include <libdnf/libdnf.h>
 
 #include "pk-shared.h"
@@ -92,18 +92,15 @@ dnf_utils_refresh_repo_appstream (DnfRepo *repo, GError **error)
 	const gchar *as_basenames[] = { "appstream", "appstream-icons", NULL };
 	for (guint i = 0; as_basenames[i] != NULL; i++) {
 		const gchar *tmp = dnf_repo_get_filename_md (repo, as_basenames[i]);
-		if (tmp != NULL) {
-#if AS_CHECK_VERSION(0,3,4)
-			if (!as_utils_install_filename (AS_UTILS_LOCATION_CACHE,
-							tmp,
-							dnf_repo_get_id (repo),
-							NULL,
-							error)) {
-				return FALSE;
-			}
-#else
-			g_warning ("need to install AppStream metadata %s", tmp);
-#endif
+		if (tmp == NULL)
+			continue;
+
+		if (!as_utils_install_metadata_file (AS_METADATA_LOCATION_CACHE,
+						     tmp,
+						     dnf_repo_get_id (repo),
+						     NULL,
+						     error)) {
+			return FALSE;
 		}
 	}
 	return TRUE;

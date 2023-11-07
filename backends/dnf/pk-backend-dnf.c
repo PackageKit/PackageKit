@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <string.h>
-#include <appstream-glib.h>
 
 #include <pk-backend.h>
 #include <packagekit-glib2/pk-common-private.h>
@@ -1706,6 +1705,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	/* invalidate the sack cache after downloading new metadata */
 	pk_backend_sack_cache_invalidate (backend, "downloaded new metadata");
 
+	/* We just downloaded our cache, avoid doing so again */
+	pk_backend_job_set_cache_age(job, G_MAXUINT);
+
 	/* regenerate the libsolv metadata */
 	state_local = dnf_state_get_child (job_data->state);
 	sack = dnf_utils_create_sack_for_filters (job, 0,
@@ -2419,10 +2421,18 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	}
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   50, /* download */
-				   50, /* install/remove */
-				   -1);
+	if (pk_bitfield_contain (job_data->transaction_flags,
+	                         PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		ret = dnf_state_set_steps (state, error,
+		                           90, /* download */
+		                           10, /* transaction test */
+		                           -1);
+	} else {
+		ret = dnf_state_set_steps (state, error,
+		                           50, /* download */
+		                           50, /* install/remove */
+		                           -1);
+	}
 	if (!ret)
 		return FALSE;
 
