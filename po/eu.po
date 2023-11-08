@@ -1,9 +1,9 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-#
+# 
 # Translators:
-# assar <asier.sarasua@gmail.com>, 2015-2016,2019
+# assar <asier.sarasua@gmail.com>, 2015-2016,2019,2023
 # assar <asier.sarasua@gmail.com>, 2013-2015
 # assar <asier.sarasua@gmail.com>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -11,6 +11,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-08 21:31+0100\n"
+"PO-Revision-Date: 2010-12-13 12:37+0000\n"
+"Last-Translator: assar <asier.sarasua@gmail.com>, 2015-2016,2019,2023\n"
 "Language-Team: Basque (http://app.transifex.com/freedesktop/packagekit/language/eu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,574 +21,1472 @@ msgstr ""
 "Language: eu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
+msgid "Config file was not found."
+msgstr "Ez da konfigurazio-fitxategia aurkitu."
+
+#. TRANSLATORS: The placeholder is an error message
+#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Huts egin du konfigurazio-fitxategiaren kargak: %s"
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+#: client/pk-console.c:165 client/pk-console.c:560
+msgid "Transaction"
+msgstr "Transakzioa"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+#: client/pk-console.c:167
+msgid "System time"
+msgstr "Sistemaren ordua"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+#: client/pk-console.c:169
+msgid "Succeeded"
+msgstr "Arrakasta"
+
+#: client/pk-console.c:169
+msgid "True"
+msgstr "Egia"
+
+#: client/pk-console.c:169
+msgid "False"
+msgstr "Gezurra"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+#: client/pk-console.c:171
+msgid "Role"
+msgstr "Eginkizuna"
+
+#. TRANSLATORS: this is The duration of the transaction
+#: client/pk-console.c:176
+msgid "Duration"
+msgstr "Iraupena"
+
+#: client/pk-console.c:176
 msgid "(seconds)"
 msgstr "(segundo)"
 
+#. TRANSLATORS: this is The command line used to do the action
+#: client/pk-console.c:180
+msgid "Command line"
+msgstr "Komando-lerroa"
+
+#. TRANSLATORS: this is the user ID of the user that started the action
+#: client/pk-console.c:182
+msgid "User ID"
+msgstr "Erabiltzaile-IDa"
+
+#. TRANSLATORS: this is the username, e.g. hughsie
+#: client/pk-console.c:189
+msgid "Username"
+msgstr "Erabiltzaile-izena"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+#: client/pk-console.c:193
+msgid "Real name"
+msgstr "Benetako izena"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:201
+msgid "Affected packages:"
+msgstr "Aldatuko diren paketeak:"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:204
+msgid "Affected packages: None"
+msgstr "Aldatuko diren paketeak: Bat ere ez"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+#: client/pk-console.c:230
+msgid "Distribution"
+msgstr "Banaketa"
+
+#. TRANSLATORS: this is type of update, stable or testing
+#: client/pk-console.c:232
+msgid "Type"
+msgstr "Mota"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: client/pk-console.c:234 client/pk-console.c:267
+msgid "Summary"
+msgstr "Laburpena"
+
+#. TRANSLATORS: this is the group category name
+#: client/pk-console.c:256
+msgid "Category"
+msgstr "Kategoria"
+
+#. TRANSLATORS: this is group identifier
+#: client/pk-console.c:258
+msgid "ID"
+msgstr "IDa"
+
+#. TRANSLATORS: this is the parent group
+#: client/pk-console.c:261
+msgid "Parent"
+msgstr "Gurasoa"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+#: client/pk-console.c:264 client/pk-console.c:2286
+msgid "Name"
+msgstr "Izena"
+
+#. TRANSLATORS: this is preferred icon for the group
+#: client/pk-console.c:270
+msgid "Icon"
+msgstr "Ikonoa"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: client/pk-console.c:308
+msgid "Details about the update:"
+msgstr "Eguneraketari buruzko xehetasunak:"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: client/pk-console.c:314 client/pk-console.c:579
+#: lib/packagekit-glib2/pk-task-text.c:123
+#: lib/packagekit-glib2/pk-task-text.c:198
+msgid "Package"
+msgstr "Paketea"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+#: client/pk-console.c:319
+msgid "Updates"
+msgstr "Eguneraketak"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+#: client/pk-console.c:326
+msgid "Obsoletes"
+msgstr "Zaharkituak"
+
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:201
+msgid "Vendor"
+msgstr "Hornitzailea"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+#: client/pk-console.c:338
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+#: client/pk-console.c:344
+msgid "CVE"
+msgstr "CVE"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+#: client/pk-console.c:350
+msgid "Restart"
+msgstr "Berrabiarazi"
+
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+#: client/pk-console.c:355
+msgid "Update text"
+msgstr "Eguneraketa-testua"
+
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+#: client/pk-console.c:360
+msgid "Changes"
+msgstr "Aldaketak"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+#: client/pk-console.c:365
+msgid "State"
+msgstr "Egoera"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+#: client/pk-console.c:370
+msgid "Issued"
+msgstr "Igorria"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+#: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1087
+msgid "Updated"
+msgstr "Eguneratua"
+
+#. TRANSLATORS: if the repo is enabled
+#: client/pk-console.c:397
+msgid "Enabled"
+msgstr "Gaitua"
+
+#. TRANSLATORS: if the repo is disabled
+#: client/pk-console.c:400
+msgid "Disabled"
+msgstr "Desgaitua"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#: client/pk-console.c:429
+msgid "System restart required by:"
+msgstr "Sistema berrabiaraztea eskatu du honek:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#: client/pk-console.c:432
+msgid "Session restart required:"
+msgstr "Sistema berrabiaraztea eskatua:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+#: client/pk-console.c:436
+msgid "System restart (security) required by:"
+msgstr "Sistema berrabiaraztea (segurtasunagatik) eskatu du honek:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+#: client/pk-console.c:440
+msgid "Session restart (security) required:"
+msgstr "Sistema berrabiaraztea (seguratasunagatik) eskatua:"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: client/pk-console.c:443
+msgid "Application restart required by:"
+msgstr "Aplikazioa berrabiaraztea eskatu du honek:"
+
+#. TRANSLATORS: This a list of details about the package
+#: client/pk-console.c:474
+msgid "Package description"
+msgstr "Paketearen deskribapena"
+
+#. TRANSLATORS: This where the package has no files
+#: client/pk-console.c:494
+msgid "No files"
+msgstr "Fitxategirik ez"
+
+#. TRANSLATORS: This a list files contained in the package
+#: client/pk-console.c:499
+msgid "Package files"
+msgstr "Pakete-fitxategiak"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: client/pk-console.c:595
+msgid "Percentage"
+msgstr "Ehunekoa"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: client/pk-console.c:618
+msgid "Status"
+msgstr "Egoera"
+
+#. TRANSLATORS: the results from the transaction
+#: client/pk-console.c:659
+msgid "Results:"
+msgstr "Emaitzak:"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+#: client/pk-console.c:667 client/pk-console.c:827
+msgid "Fatal error"
+msgstr "Errore larria"
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+#: client/pk-console.c:692
+msgid "There are no packages to update."
+msgstr "Ez da paketerik eguneratu behar."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: client/pk-console.c:696
+#: contrib/command-not-found/pk-command-not-found.c:670
+msgid "The transaction failed"
+msgstr "Transakzioak huts egin du"
+
+#. TRANSLATORS: print a message when there are no updates
+#: client/pk-console.c:725
+msgid "There are no updates available at this time."
+msgstr "Ez dago eguneraketarik uneotan."
+
+#: client/pk-console.c:748
+msgid "There are no upgrades available at this time."
+msgstr "Ez dago bertsio-berritzerik uneotan."
+
+#. TRANSLATORS: a package needs to restart their system
+#: client/pk-console.c:810
+msgid "Please restart the computer to complete the update."
+msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko."
+
+#. TRANSLATORS: a package needs to restart the session
+#: client/pk-console.c:813
+msgid "Please logout and login to complete the update."
+msgstr "Amaitu saioa eta hasi saioa eguneraketa osatzeko."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: client/pk-console.c:816
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: client/pk-console.c:819
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr "Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pk-console.c:897
+msgid "More than one package matches:"
+msgstr "Pakete bat baino gehiago dator bat:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pk-console.c:909
+msgid "Please choose the correct package: "
+msgstr "Hautatu pakete zuzena: "
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+#: client/pk-console.c:946
+msgid "Package not found"
+msgstr "Paketea ez da aurkitu"
+
+#. TRANSLATORS: we couldn't find anything
+#: client/pk-console.c:964
+msgid "No packages were found"
+msgstr "Ez da paketerik aurkitu"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#: client/pk-console.c:989
+#, c-format
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr "Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-local %s' erabiltzen."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#: client/pk-console.c:1024
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pk-console.c:1041
+msgid "This tool could not find any available package."
+msgstr "Tresna honek ez du aurkitu pakete erabilgarririk."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+#: client/pk-console.c:1050
+msgid "The selected packages may already be installed."
+msgstr "Hautatutako paketeak agian instalatuta daude."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1078
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Tresna honek ez du aurkitu instalatutako paketea: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1107 client/pk-console.c:1138
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Tresna honek ez du aurkitu paketea: %s"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+#: client/pk-console.c:1183
+msgid "No packages require updating to newer versions."
+msgstr "Ez dago bertsio berrietara eguneratzerik behar duen paketerik."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#: client/pk-console.c:1221 client/pk-console.c:1250 client/pk-console.c:1289
+#: client/pk-console.c:1348 client/pk-console.c:1376
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Tresna honek ez du aurkitu pakete guztiak: %s"
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pk-console.c:1403
+msgid "The daemon crashed mid-transaction!"
+msgstr "Deabruak huts egin du transakzioaren erdian!"
+
+#. TRANSLATORS: This is the header to the --help menu
+#: client/pk-console.c:1425
+msgid "PackageKit Console Interface"
+msgstr "PackageKit-en kontsola-interfazea"
+
+#. these are commands we can use with pkcon
+#: client/pk-console.c:1427
+msgid "Subcommands:"
+msgstr "Azpikomandoak:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pk-console.c:1514
+msgid "Failed to get the time since this action was last completed"
+msgstr "Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pk-console.c:1518
+msgid "Time since"
+msgstr "Igarotako denbora"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+#: client/pk-console.c:1538
+msgid "Prepared updates:"
+msgstr "Prest dauden eguneraketak:"
+
+#. TRANSLATORS: The network settings could not be sent
+#: client/pk-console.c:1607
+msgid "The proxy could not be set"
+msgstr "Ezin izan da proxy-a ezarri"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pk-console.c:1649 client/pk-monitor.c:324
+msgid "Show the program version and exit"
+msgstr "Erakutsi programaren bertsioa eta irten"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pk-console.c:1652
+msgid "Set the filter, e.g. installed"
+msgstr "Ezarri iragazkia, adib. 'instalatua'"
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1655
+msgid "Install the packages without asking for confirmation"
+msgstr "Instalatu paketeak baieztapena eskatu gabe"
+
+#. command line argument, do we just download or apply changes
+#: client/pk-console.c:1658
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Prestatu transakzioa paketeak deskargatuz soilik"
+
+#. command line argument, do we allow package downgrades
+#: client/pk-console.c:1661
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
+
+#: client/pk-console.c:1663
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
+
+#: client/pk-console.c:1665
+msgid "Automatically remove unused dependencies"
+msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pk-console.c:1668
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1671
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili ordez"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1674
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr ""
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1677
+msgid "Allow untrusted packages to be installed."
+msgstr "Onartu fidagarriak ez diren paketeak instalatzea transakzioan zehar"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1715
+msgid "Failed to parse command line"
+msgstr "Ezin izan da komando-lerroa analizatu"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1725
+msgid "Failed to contact PackageKit"
+msgstr "Ezin izan da PackageKit-ekin kontaktatau"
+
 #. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Eginkizun zuzena behar da"
+#. * an incorrect filter
+#: client/pk-console.c:1788
+msgid "The filter specified was invalid"
+msgstr "Adierazitako iragazkia baliogabea da"
 
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Helburu-direktorio bat eta pakete-izenak behar dira deskargarako"
-
-msgid "A filename is required"
-msgstr "Fitxategi-izena behar da"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Fitxategi-izen bat behar da instalaziorako"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Lizentzia-identifikatzaile bat (eula-id) behar da"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Pakete-izen bat behar da"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Pakete-izen bat behar da instalaziorako"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Pakete-izen bat behar da kendua izateko"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Pakete-izen bat behar da ebatzia izateko"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Pakete-eskaintzaren kate bat behar da"
-
-msgid "A repo id and autoremove required"
-msgstr "Biltegi baten IDa eta kentze automatikoa derrigorrezkoak"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Biltegi-izen bat, parametro bat eta balio bat behar dira"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Biltegi-izen bat behar da"
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+#: client/pk-console.c:1814
+msgid "A search type is required, e.g. name"
+msgstr "Bilaketa-mota behar da, adib. izena"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
+#: client/pk-console.c:1824 client/pk-console.c:1841 client/pk-console.c:1858
+#: client/pk-console.c:1875
 msgid "A search term is required"
 msgstr "Bilaketa-hitza behar da"
 
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Bilaketa-mota behar da, adib. izena"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1901
+msgid "A package name to install is required"
+msgstr "Pakete-izen bat behar da instalaziorako"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1915
+msgid "A filename to install is required"
+msgstr "Fitxategi-izen bat behar da instalaziorako"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
+#: client/pk-console.c:1931
 msgid "A type, key_id and package_id are required"
 msgstr "Mota bat, key_id bat eta package_id bat behar dira"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Onartu EULA"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+#: client/pk-console.c:1949
+msgid "A package name to remove is required"
+msgstr "Pakete-izen bat behar da kendua izateko"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "EULA onartzen"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+#: client/pk-console.c:1962
+msgid "A destination directory and the package names to download are required"
+msgstr "Helburu-direktorio bat eta pakete-izenak behar dira deskargarako"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages:"
-msgstr "Aldatuko diren paketeak:"
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+#: client/pk-console.c:1972
+msgid "Directory not found"
+msgstr "Ez da direktorioa aurkitu"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages: None"
-msgstr "Aldatuko diren paketeak: Bat ere ez"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pk-console.c:1987
+msgid "A licence identifier (eula-id) is required"
+msgstr "Lizentzia-identifikatzaile bat (eula-id) behar da"
 
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Lizentzia-kontratua"
+#. TRANSLATORS: The user did not
+#. * specify a package name
+#: client/pk-console.c:2013
+msgid "A package name to resolve is required"
+msgstr "Pakete-izen bat behar da ebatzia izateko"
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Aliasetik %s-ra"
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+#: client/pk-console.c:2030 client/pk-console.c:2047
+msgid "A repository name is required"
+msgstr "Biltegi-izen bat behar da"
 
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
+#: client/pk-console.c:2063
+msgid "A repo name, parameter and value are required"
+msgstr "Biltegi-izen bat, parametro bat eta balio bat behar dira"
 
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Onartu fidagarriak ez diren paketeak instalatzea transakzioan zehar"
+#: client/pk-console.c:2080
+msgid "A repo id and autoremove required"
+msgstr "Biltegi baten IDa eta kentze automatikoa derrigorrezkoak"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
+#: client/pk-console.c:2107
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Ekintza bat, adib. 'update-packages', derrigorrezkoa da"
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Aplikazioa berrabiaraztea eskatu du honek:"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pk-console.c:2117
+msgid "A correct role is required"
+msgstr "Eginkizun zuzena behar da"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Autentifikazioa behar da EULA bat onartzeko"
+#. TRANSLATORS: The user did not
+#. * provide a package name
+#: client/pk-console.c:2137 client/pk-console.c:2154 client/pk-console.c:2166
+#: client/pk-console.c:2196 client/pk-console.c:2229
+msgid "A package name is required"
+msgstr "Pakete-izen bat behar da"
 
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan behera uzteko"
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+#: client/pk-console.c:2180
+msgid "A package provide string is required"
+msgstr "Pakete-eskaintzaren kate bat behar da"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Autentifikazioa behar da software-biltegien parametroak aldatzeko"
+#: client/pk-console.c:2207 client/pk-console.c:2218
+msgid "A filename is required"
+msgstr "Fitxategi-izena behar da"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketa-mezuak garbitzeko"
-
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Autentifikazioa behar da softwarea sinatzeko erabilitako gakoa fidagarrizat hartzeko"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Autentifikazioa behar da softwarearen bertsio zaharrak instalatzeko"
-
-msgid "Authentication is required to install software"
-msgstr "Autentifikazioa behar da softwarea instalatzeko"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Autentifikazioa behar da fidagarria ez den softwarea instalatzeko"
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Autentifikazioa behar da sistemaren biltegiak freskatzeko"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Autentifikazioa behar da softwarea berrinstalatzeko"
-
-msgid "Authentication is required to remove software"
-msgstr "Autentifikazioa behar da softwarea kentzeko"
-
-msgid "Authentication is required to repair the installed software"
-msgstr "Autentifikatzea derrigorrezkoa da instalatutako softwarea konpontzeko"
-
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Autentifikazioa behar da softwarea deskargatzeko erabiliko den sare-proxya ezartzeko"
-
-msgid "Authentication is required to trigger offline updates"
-msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketak abiarazteko"
-
-msgid "Authentication is required to update software"
-msgstr "Autentifikazioa behar da softwarea eguneratzeko"
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Autentifikazioa behar da sistema eragilea bertsioz berritzeko"
+#. TRANSLATORS: this is the description of the backend
+#: client/pk-console.c:2290
+msgid "Description"
+msgstr "Deskribapena"
 
 #. TRANSLATORS: this is the author of the backend
+#: client/pk-console.c:2294
 msgid "Author"
 msgstr "Egilea"
 
-msgid "Automatically remove unused dependencies"
-msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
+#. TRANSLATORS: The user did not provide a distro name
+#: client/pk-console.c:2364
+msgid "You need to specify a list file to create"
+msgstr "Sortuko den zerrenda-fitxategi bat adierazi behar duzu"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Eskuragarri"
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#: client/pk-console.c:2377
+#, c-format
+msgid "File already exists: %s"
+msgstr "Fitxategia jadanik existitzen da: %s"
 
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokeatua"
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#: client/pk-console.c:2395
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "'%s' aukera ez dago onartuta"
 
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Akats-konponketa "
+#. TRANSLATORS: Generic failure of what they asked to do
+#: client/pk-console.c:2405
+msgid "Command failed"
+msgstr "Komandoak huts egin du"
 
-#. TRANSLATORS: details about the update, the bugzilla URLs
-msgid "Bugzilla"
-msgstr "Bugzilla"
+#: client/pk-monitor.c:261
+msgid "Failed to get daemon state"
+msgstr "Ezin izan da deabruaren egoera ezagutu"
 
-#. TRANSLATORS: details about the update, the CVE URLs
-msgid "CVE"
-msgstr "CVE"
+#: client/pk-monitor.c:304
+msgid "Failed to get properties"
+msgstr "Ezin izan da propietateak eskuratu"
 
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Utzi zeregin arrotza"
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: client/pk-monitor.c:335
+msgid "PackageKit Monitor"
+msgstr "PackageKit monitorea"
 
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:157
+msgid "Installing System Upgrade"
+msgstr "Sistemaren bertsio-berritzea instalatzen"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:161
+msgid "Installing Updates"
+msgstr "Eguneraketak instalatzen"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:197
+msgid "Rebooting after installing updates…"
+msgstr "Berrabiarazten eguneraketak instalatu ondoren..."
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:239
+msgid "Shutting down after installing updates…"
+msgstr "Itzaltzen eguneraketak instalatu ondoren..."
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:380
+msgid "Installing updates; this could take a while..."
+msgstr "Eguneraketak instalatzen; denbora-tartetxo bat behar du horrek..."
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:417
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Sistemaren bertsio-berritzea instalatzen; horrek denbora behar du..."
+
+#. TRANSLATORS: downloading repo data so we can search
+#: contrib/command-not-found/pk-command-not-found.c:427
+msgid "Downloading details about the software repositories."
+msgstr "Software-biltegiei buruzko xehetasunak deskargatzen."
+
+#. TRANSLATORS: downloading file lists so we can search
+#: contrib/command-not-found/pk-command-not-found.c:431
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan dezake)."
+
+#. TRANSLATORS: waiting for native lock
+#: contrib/command-not-found/pk-command-not-found.c:435
+msgid "Waiting for package manager lock."
+msgstr "Itxaroten pakete-kudeatzailearen blokeoa."
+
+#. TRANSLATORS: loading package cache so we can search
+#: contrib/command-not-found/pk-command-not-found.c:439
+msgid "Loading list of packages."
+msgstr "Paketeen zerrenda kargatzen."
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+#: contrib/command-not-found/pk-command-not-found.c:499
+msgid "Failed to search for file"
+msgstr "Fitxategiaren bilaketak huts egin du"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: contrib/command-not-found/pk-command-not-found.c:511
+msgid "Getting the list of files failed"
+msgstr "Huts egin duten fitxategien zerrenda eskuratzen"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+#: contrib/command-not-found/pk-command-not-found.c:643
+msgid "Failed to launch:"
+msgstr "Abioak huts egin du:"
+
+#. TRANSLATORS: we failed to install the package
+#: contrib/command-not-found/pk-command-not-found.c:662
+msgid "Failed to install packages"
+msgstr "Paketeen instalazioak huts egin du"
+
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+#: contrib/command-not-found/pk-command-not-found.c:781
+msgid "command not found"
+msgstr "ez da komandoa aurkitu"
+
+#. TRANSLATORS: tell the user what we think the command is
+#: contrib/command-not-found/pk-command-not-found.c:802
+msgid "Similar command is:"
+msgstr "Antzeko komandoa:"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+#: contrib/command-not-found/pk-command-not-found.c:815
+msgid "Run similar command:"
+msgstr "Exekutatu antzeko komandoa:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+#: contrib/command-not-found/pk-command-not-found.c:827
+#: contrib/command-not-found/pk-command-not-found.c:836
+msgid "Similar commands are:"
+msgstr "Antzeko komandoak:"
+
+#. TRANSLATORS: ask the user to choose a file to run
+#: contrib/command-not-found/pk-command-not-found.c:843
+msgid "Please choose a command to run"
+msgstr "Hautatu exekutatuko den komandoa"
+
+#. TRANSLATORS: tell the user what package provides the command
+#: contrib/command-not-found/pk-command-not-found.c:863
+msgid "The package providing this file is:"
+msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#: contrib/command-not-found/pk-command-not-found.c:870
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Instalatu  '%s' paketea  '%s' komandoaz hornitzeko?"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+#: contrib/command-not-found/pk-command-not-found.c:893
+msgid "Packages providing this file are:"
+msgstr "Fitxategi honetaz hornitzen duten paketeak hauek dira:"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+#: contrib/command-not-found/pk-command-not-found.c:903
+msgid "Suitable packages are:"
+msgstr "Pakete egokiak hauek dira:"
+
+#. TRANSLATORS: ask the user to choose a file to install
+#: contrib/command-not-found/pk-command-not-found.c:911
+msgid "Please choose a package to install"
+msgstr "Hautatu instalatuko den paketea"
+
+#: contrib/command-not-found/pk-command-not-found.c:913
+msgid "User aborted selection"
+msgstr "Erabiltzaileak bertan behera utzitako hautapena"
+
+#: lib/packagekit-glib2/pk-console-shared.c:73
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Sartu 1etik %i-(e)ra arteko zenbaki bat: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: lib/packagekit-glib2/pk-console-shared.c:202
+msgid "Unknown state"
+msgstr "Egoera ezezaguna"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: lib/packagekit-glib2/pk-console-shared.c:206
+msgid "Starting"
+msgstr "Abiarazten"
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+#: lib/packagekit-glib2/pk-console-shared.c:210
+msgid "Waiting in queue"
+msgstr "Ilaran itxaroten"
+
+#. TRANSLATORS: transaction state, just started
+#: lib/packagekit-glib2/pk-console-shared.c:214
+msgid "Running"
+msgstr "Exekutatzen"
+
+#. TRANSLATORS: transaction state, is querying data
+#: lib/packagekit-glib2/pk-console-shared.c:218
+msgid "Querying"
+msgstr "Kontsultatzen"
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:222
+msgid "Getting information"
+msgstr "Informazioa eskuratzen"
+
+#. TRANSLATORS: transaction state, removing packages
+#: lib/packagekit-glib2/pk-console-shared.c:226
+msgid "Removing packages"
+msgstr "Paketeak kentzen"
+
+#. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Uzten"
+#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-enum.c:1238
+msgid "Downloading packages"
+msgstr "Paketeak deskargatzen"
+
+#. TRANSLATORS: transaction state, installing packages
+#: lib/packagekit-glib2/pk-console-shared.c:234
+msgid "Installing packages"
+msgstr "Paketeak instalatzen"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: lib/packagekit-glib2/pk-console-shared.c:238
+msgid "Refreshing software list"
+msgstr "Software-zerrenda freskatzen"
+
+#. TRANSLATORS: transaction state, installing updates
+#: lib/packagekit-glib2/pk-console-shared.c:242
+msgid "Installing updates"
+msgstr "Eguneraketak instalatzen"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+#: lib/packagekit-glib2/pk-console-shared.c:246
+msgid "Cleaning up packages"
+msgstr "Paketeak garbitzen"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: lib/packagekit-glib2/pk-console-shared.c:250
+msgid "Obsoleting packages"
+msgstr "Paketeak zaharkitzen"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: lib/packagekit-glib2/pk-console-shared.c:254
+msgid "Resolving dependencies"
+msgstr "Mendekotasunak ebazten"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+#: lib/packagekit-glib2/pk-console-shared.c:258
+msgid "Checking signatures"
+msgstr "Sinadurak egiaztatzen"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: lib/packagekit-glib2/pk-console-shared.c:262
+msgid "Testing changes"
+msgstr "Aldaketak probatzen"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+#: lib/packagekit-glib2/pk-console-shared.c:266
+msgid "Committing changes"
+msgstr "Aldaketak aplikatzen"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:270
+msgid "Requesting data"
+msgstr "Datuak eskatzen"
+
+#. TRANSLATORS: transaction state, all done!
+#: lib/packagekit-glib2/pk-console-shared.c:274
+msgid "Finished"
+msgstr "Amaitua"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
+#: lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Cancelling"
 msgstr "Uzten"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategoria"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:282
+msgid "Downloading repository information"
+msgstr "Biltegi-informazioa deskargatzen"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Aldatu software-biltegien parametroak"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:286
+msgid "Downloading list of packages"
+msgstr "Pakete-zerrenda deskargatzen"
 
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-msgid "Changes"
-msgstr "Aldaketak"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:290
+msgid "Downloading file lists"
+msgstr "Fitxategi-zerrendak deskargatzen"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:294
+msgid "Downloading lists of changes"
+msgstr "Aldaketa-zerrenda deskargatzen"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:298
+msgid "Downloading groups"
+msgstr "Taldeak deskargatzen"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:302
+msgid "Downloading update information"
+msgstr "Eguneraketa-informazioa deskargatzen"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: lib/packagekit-glib2/pk-console-shared.c:306
+msgid "Repackaging files"
+msgstr "Fitxategiak berriro paketatzen"
+
+#. TRANSLATORS: transaction state, loading databases
+#: lib/packagekit-glib2/pk-console-shared.c:310
+msgid "Loading cache"
+msgstr "Cachea kargatzen"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: lib/packagekit-glib2/pk-console-shared.c:314
+msgid "Scanning applications"
+msgstr "Aplikazioak eskaneatzen"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+#: lib/packagekit-glib2/pk-console-shared.c:318
+msgid "Generating package lists"
+msgstr "Pakete-zerrenda sortzen"
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+#: lib/packagekit-glib2/pk-console-shared.c:322
+msgid "Waiting for package manager lock"
+msgstr "Pakete-kudeatzailearen blokeoa itxaroten"
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: lib/packagekit-glib2/pk-console-shared.c:326
+msgid "Waiting for authentication"
+msgstr "Autentifikaziorako itxaroten"
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: lib/packagekit-glib2/pk-console-shared.c:330
+msgid "Updating running applications"
+msgstr "Abioan dauden aplikazioak eguneratzen"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
+#: lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Checking applications in use"
 msgstr "Abioan dauden aplikazioak egiaztatzen"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
+#: lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Checking libraries in use"
 msgstr "Erabiltzen ari diren liburutegiak egiaztatzen"
 
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Sinadurak egiaztatzen"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Garbitua"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Garbitzen"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Paketeak garbitzen"
-
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Komandoak huts egin du"
-
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Komando-lerroa"
-
-msgid "Command not found, valid commands are:"
-msgstr "Komandoa ez da aurkitu, baliozko komandoak honakoak dira:"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Aldaketak aplikatzen"
-
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
+#: lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Copying files"
 msgstr "Fitxategiak kopiatzen"
 
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+#: lib/packagekit-glib2/pk-console-shared.c:346
+msgid "Running hooks"
+msgstr "Kakoak exekutatzen"
+
+#. TRANSLATORS: turn on all debugging
+#: lib/packagekit-glib2/pk-debug.c:142
+msgid "Show debugging information for all files"
+msgstr "Erakutsi fitxategi guztien arazketa-informazioa"
+
+#: lib/packagekit-glib2/pk-debug.c:216
 msgid "Debugging Options"
 msgstr "Arazketa-aukerak"
 
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Deskribapena"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Eguneraketari buruzko xehetasunak:"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Ez da direktorioa aurkitu"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Desgaitu inaktibitate-kronometroa"
-
-#. TRANSLATORS: if the repo is disabled
-msgid "Disabled"
-msgstr "Desgaitua"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Banaketa"
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Ez instalatu pakete hauek hori egitea segurua dela egiaztatu arte."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Ez instalatu pakete hau hori egitea segurua dela egiaztatu arte."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Ez eguneratu pakete hauek hori egitea segurua dela egiaztatu arte."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Ez eguneratu pakete hau hori egitea segurua dela egiaztatu arte."
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Onartzen al duzu kontratu hau?"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Onartzen al duzu sinadura hau?"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Sinatu gabeko softwarea instala dadin baimendu nahi duzu?"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Ez garbitu ingurunea abioan"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Deskargatua"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Deskargatzen"
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Software-biltegiei buruzko xehetasunak deskargatzen."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Fitxategi-zerrendak deskargatzen"
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan dezake)."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Taldeak deskargatzen"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Pakete-zerrenda deskargatzen"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Aldaketa-zerrenda deskargatzen"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Paketeak deskargatzen"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Biltegi-informazioa deskargatzen"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Eguneraketa-informazioa deskargatzen"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Iraupena"
-
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Gaitua"
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Azken erabiltzailearen lizentzia-kontratua behar da"
+#: lib/packagekit-glib2/pk-debug.c:216
+msgid "Show debugging options"
+msgstr "Erakutsi arazketa-aukerak"
 
 #. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:971
+msgid "Trivial"
+msgstr "Arina"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:975
+msgid "Normal"
+msgstr "Normala"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:979
+msgid "Important"
+msgstr "Garrantzitsua"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:983
+msgid "Security"
+msgstr "Segurtasuna"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:987
+msgid "Bug fix"
+msgstr "Akats-konponketa "
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:991
 msgid "Enhancement"
 msgstr "Hobekuntza"
 
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Irten atzerapen txiki baten ondoren"
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:995
+msgid "Blocked"
+msgstr "Blokeatua"
 
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Irten motorra kargatu ondoren"
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1000 lib/packagekit-glib2/pk-enum.c:1091
+msgid "Installed"
+msgstr "Instalatua"
 
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-local %s' erabiltzen."
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1005
+msgid "Available"
+msgstr "Eskuragarri"
 
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Ezin izan da PackageKit-ekin kontaktatau"
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1009
+msgid "Unavailable"
+msgstr "Ez dago eskuragarri"
 
-msgid "Failed to get daemon state"
-msgstr "Ezin izan da deabruaren egoera ezagutu"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1034
+msgid "Downloading"
+msgstr "Deskargatzen"
 
-msgid "Failed to get properties"
-msgstr "Ezin izan da propietateak eskuratu"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1038
+msgid "Updating"
+msgstr "Eguneratzen"
 
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1042 lib/packagekit-glib2/pk-enum.c:1177
+msgid "Installing"
+msgstr "Instalatzen"
 
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Paketeen instalazioak huts egin du"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1046 lib/packagekit-glib2/pk-enum.c:1173
+msgid "Removing"
+msgstr "Kentzen"
 
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Abioak huts egin du:"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1050
+msgid "Cleaning up"
+msgstr "Garbitzen"
 
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Atzealdekoa kargatzeak huts egin du"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1054
+msgid "Obsoleting"
+msgstr "Zaharkitutzat hartzen"
 
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Konfigurazio-fitxategia kargatzeak huts egin du"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1058
+msgid "Reinstalling"
+msgstr "Berriro instalatzen"
 
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Argumentuen analisiak huts egin du"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1083
+msgid "Downloaded"
+msgstr "Deskargatua"
 
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Ezin izan da komando-lerroa analizatu"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1095
+msgid "Removed"
+msgstr "Kendua"
 
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Fitxategiaren bilaketak huts egin du"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1099
+msgid "Cleaned up"
+msgstr "Garbitua"
 
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Atzealdekoa deskargatzeak huts egin du"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1103
+msgid "Obsoleted"
+msgstr "Zaharkitua"
 
-msgid "False"
-msgstr "Gezurra"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-msgid "Fatal error"
-msgstr "Errore larria"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Fitxategia jadanik existitzen da: %s"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Amaitua"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Pakete-zerrenda sortzen"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1107
+msgid "Reinstalled"
+msgstr "Berrinstalatua"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Kategoriak eskuratzen"
+#: lib/packagekit-glib2/pk-enum.c:1132
+msgid "Unknown role type"
+msgstr "Eginkizun-mota ezezaguna"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1136
 msgid "Getting dependencies"
 msgstr "Mendekotasunak eskuratzen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Xehetasunak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Fitxategi-zerrenda eskuratzen"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Informazioa eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Paketeak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Hornitzaileak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Biltegiak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Betebeharrak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Sistemaren bertsio-berritzeak eskuratzen"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Huts egin duten fitxategien zerrenda eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Transakzioak eskuratzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1140
 msgid "Getting update details"
 msgstr "Eguneraketa-xehetasunak eskuratzen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1145
+msgid "Getting details"
+msgstr "Xehetasunak eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1149
+msgid "Getting requires"
+msgstr "Betebeharrak eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1153
 msgid "Getting updates"
 msgstr "Eguneraketak eskuratzen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1157
+msgid "Searching by details"
+msgstr "Xehetasunen arabera bilatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1161
+msgid "Searching by file"
+msgstr "Fitxategien arabera bilatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1165
+msgid "Searching groups"
+msgstr "Taldeetan bilaketak egiten"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1169
+msgid "Searching by name"
+msgstr "Izenaren arabera bilatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1181
+msgid "Installing files"
+msgstr "Fitxategiak instalatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1185
+msgid "Refreshing cache"
+msgstr "Cachea freskatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1189
+msgid "Updating packages"
+msgstr "Paketeak eguneratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1193
+msgid "Canceling"
+msgstr "Uzten"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1197
+msgid "Getting repositories"
+msgstr "Biltegiak eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1201
+msgid "Modifying repository"
+msgstr "Biltegia aldatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1205
+msgid "Setting data"
+msgstr "Data ezartzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1209
+msgid "Removing repository"
+msgstr "Biltegia kentzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1213
+msgid "Resolving"
+msgstr "Ebazten"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1218
+msgid "Getting file list"
+msgstr "Fitxategi-zerrenda eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1222
+msgid "Getting provides"
+msgstr "Hornitzaileak eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1226
+msgid "Installing signature"
+msgstr "Sinadura instalatzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1230
+msgid "Getting packages"
+msgstr "Paketeak eskuratzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1234
+msgid "Accepting EULA"
+msgstr "EULA onartzen"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1242
 msgid "Getting upgrades"
 msgstr "Bertsio-berritzeak eskuratzen"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "IDa"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1246
+msgid "Getting categories"
+msgstr "Kategoriak eskuratzen"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikonoa"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1250
+msgid "Getting transactions"
+msgstr "Transakzioak eskuratzen"
 
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Garrantzitsua"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1254
+msgid "Getting system upgrades"
+msgstr "Sistemaren bertsio-berritzeak eskuratzen"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+#: lib/packagekit-glib2/pk-task-text.c:66
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Sinatu gabeko softwarea instala dadin baimendu nahi duzu?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:71
+msgid "The unsigned software will not be installed."
+msgstr "Sinatu gabeko softwarea ez da instalatuko."
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+#: lib/packagekit-glib2/pk-task-text.c:120
+msgid "Software source signature required"
+msgstr "Software-jatorriaren sinadura behar da"
+
+#. TRANSLATORS: the package repository name
+#: lib/packagekit-glib2/pk-task-text.c:126
+msgid "Software source name"
+msgstr "Software-jatorriaren izena"
+
+#. TRANSLATORS: the key URL
+#: lib/packagekit-glib2/pk-task-text.c:129
+msgid "Key URL"
+msgstr "Gako URLa"
+
+#. TRANSLATORS: the username of the key
+#: lib/packagekit-glib2/pk-task-text.c:132
+msgid "Key user"
+msgstr "Gako erabiltzailea"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: lib/packagekit-glib2/pk-task-text.c:135
+msgid "Key ID"
+msgstr "Gako IDa"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: lib/packagekit-glib2/pk-task-text.c:138
+msgid "Key fingerprint"
+msgstr "Gako hatz-marka"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: lib/packagekit-glib2/pk-task-text.c:141
+msgid "Key Timestamp"
+msgstr "Gako data-zigilua"
+
+#. TRANSLATORS: ask the user if they want to import
+#: lib/packagekit-glib2/pk-task-text.c:154
+msgid "Do you accept this signature?"
+msgstr "Onartzen al duzu sinadura hau?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:159
+msgid "The signature was not accepted."
+msgstr "Sinadura ez da onartu."
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+#: lib/packagekit-glib2/pk-task-text.c:195
+msgid "End user licence agreement required"
+msgstr "Azken erabiltzailearen lizentzia-kontratua behar da"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: lib/packagekit-glib2/pk-task-text.c:204
+msgid "Agreement"
+msgstr "Lizentzia-kontratua"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: lib/packagekit-glib2/pk-task-text.c:208
+msgid "Do you accept this agreement?"
+msgstr "Onartzen al duzu kontratu hau?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:213
+msgid "The agreement was not accepted."
+msgstr "Kontratua ez da onartu."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: lib/packagekit-glib2/pk-task-text.c:252
+msgid "Media change required"
+msgstr "Euskarria aldatu behar da"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: lib/packagekit-glib2/pk-task-text.c:255
+msgid "Media type"
+msgstr "Euskarri-mota"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: lib/packagekit-glib2/pk-task-text.c:258
+msgid "Media label"
+msgstr "Euskarri-etiketa"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: lib/packagekit-glib2/pk-task-text.c:261
+msgid "Text"
+msgstr "Testua"
+
+#. TRANSLATORS: ask the user to insert the media
+#: lib/packagekit-glib2/pk-task-text.c:267
+msgid "Please insert the correct media"
+msgstr "Sartu euskarri zuzena"
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: lib/packagekit-glib2/pk-task-text.c:272
+msgid "The correct media was not inserted."
+msgstr "Ez da euskarri zuzena sartu."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:287
+msgid "The following packages have to be removed:"
+msgstr "Hurrengo paketeak kendu behar dira:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:292
+msgid "The following packages have to be installed:"
+msgstr "Hurrengo paketeak instalatu behar dira:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:297
+msgid "The following packages have to be updated:"
+msgstr "Hurrengo paketeak eguneratu behar dira:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:302
+msgid "The following packages have to be reinstalled:"
+msgstr "Hurrengo paketeak berriro instalatu behar dira:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:307
+msgid "The following packages have to be downgraded:"
+msgstr "Hurrengo paketeen bertsio zaharragoa instalatu behar da:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:312
+msgid "The following packages have to be obsoleted:"
+msgstr "Honako paketeak zaharkitutzat hartu behar dira:"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: lib/packagekit-glib2/pk-task-text.c:317
+msgid "The following packages are untrusted:"
+msgstr "Hurrengo paketeak ez dira fidagarriak:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: lib/packagekit-glib2/pk-task-text.c:421
+msgid "Proceed with changes?"
+msgstr "Aldaketekin jarraitu?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: lib/packagekit-glib2/pk-task-text.c:426
+msgid "The transaction did not proceed."
+msgstr "Transakzioa ez da burutu."
+
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+#: policy/org.freedesktop.packagekit.policy.in:22
+msgid "Cancel foreign task"
+msgstr "Utzi zeregin arrotza"
+
+#: policy/org.freedesktop.packagekit.policy.in:23
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan behera uzteko"
+
+#. SECURITY:
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
+#: policy/org.freedesktop.packagekit.policy.in:39
+msgid "Install signed package"
+msgstr "Instalatu sinatutako paketea"
+
+#: policy/org.freedesktop.packagekit.policy.in:40
+msgid "Authentication is required to install software"
+msgstr "Autentifikazioa behar da softwarea instalatzeko"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:56
+msgid "Install untrusted local file"
+msgstr "Instalatu fidagarria ez den fitxategi lokala"
+
+#: policy/org.freedesktop.packagekit.policy.in:57
+msgid "Authentication is required to install untrusted software"
+msgstr "Autentifikazioa behar da fidagarria ez den softwarea instalatzeko"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -593,8 +1494,13 @@ msgstr "Garrantzitsua"
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "Instalatu berriro lehendik instalatuta dagoen paketea"
+
+#: policy/org.freedesktop.packagekit.policy.in:76
+msgid "Authentication is required to reinstall software"
+msgstr "Autentifikazioa behar da softwarea berrinstalatzeko"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -602,327 +1508,41 @@ msgstr "Instalatu berriro lehendik instalatuta dagoen paketea"
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "Instalatu lehendik instalatuta dagoen paketearen bertsio zaharragoa"
 
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Instalatu paketea"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Instalatu  '%s' paketea  '%s' komandoaz hornitzeko?"
+#: policy/org.freedesktop.packagekit.policy.in:94
+msgid "Authentication is required to downgrade software"
+msgstr "Autentifikazioa behar da softwarearen bertsio zaharrak instalatzeko"
 
 #. SECURITY:
-#. - Normal users need authentication to install signed packages
-#. from signed repositories, because otherwise the system is
-#. only as secure as the least-secure package available in the
-#. repositories.
-msgid "Install signed package"
-msgstr "Instalatu sinatutako paketea"
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:111
+msgid "Trust a key used for signing software"
+msgstr "Fidatu softwarea sinatzeko erabili den gako batez"
 
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Instalatu paketeak baieztapena eskatu gabe"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Instalatu fidagarria ez den fitxategi lokala"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Instalatua"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Instalatzen"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Sistemaren bertsio-berritzea instalatzen"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Eguneraketak instalatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Fitxategiak instalatzen"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Paketeak instalatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Sinadura instalatzen"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Sistemaren bertsio-berritzea instalatzen; horrek denbora behar du..."
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Eguneraketak instalatzen"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Eguneraketak instalatzen; denbora-tartetxo bat behar du horrek..."
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Igorria"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "Gako IDa"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Gako data-zigilua"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "Gako URLa"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Gako hatz-marka"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Gako erabiltzailea"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Cachea kargatzen"
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Paketeen zerrenda kargatzen."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Euskarria aldatu behar da"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Euskarri-etiketa"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Euskarri-mota"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Biltegia aldatzen"
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Pakete bat baino gehiago dator bat:"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Izena"
-
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Fitxategirik ez"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Ez dago bertsio berrietara eguneratzerik behar duen paketerik."
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Ez da paketerik aurkitu"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Normala"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Zaharkitua"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Zaharkituak"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Zaharkitutzat hartzen"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Paketeak zaharkitzen"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "'%s' aukera ez dago onartuta"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Paketea"
-
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Paketearen deskribapena"
-
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Pakete-fitxategiak"
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Paketea ez da aurkitu"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKit-en kontsola-interfazea"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "PackageKit monitorea"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "PackageKit zerbitzua"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Fitxategi honetaz hornitzen duten paketeak hauek dira:"
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Erabiliko den paketatze-motorra, adib. dummy"
-
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Gurasoa"
-
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Ehunekoa"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Hautatu exekutatuko den komandoa"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Hautatu instalatuko den paketea"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Hautatu pakete zuzena: "
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Sartu 1etik %i-(e)ra arteko zenbaki bat: "
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Sartu euskarri zuzena"
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Amaitu saioa eta hasi saioa eguneraketa osatzeko."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
-
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko."
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Prestatu transakzioa paketeak deskargatuz soilik"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Prest dauden eguneraketak:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili ordez"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Aldaketekin jarraitu?"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Kontsultatzen"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Benetako izena"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Berrabiarazten eguneraketak instalatu ondoren..."
+#: policy/org.freedesktop.packagekit.policy.in:112
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr "Autentifikazioa behar da softwarea sinatzeko erabilitako gakoa fidagarrizat hartzeko"
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Freskatu sistemaren biltegiak"
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#: policy/org.freedesktop.packagekit.policy.in:128
+msgid "Accept EULA"
+msgstr "Onartu EULA"
 
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Freskatu cachea"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Freskatu cachea (behartua)"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Cachea freskatzen"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Software-zerrenda freskatzen"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Berrinstalatua"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Berriro instalatzen"
+#: policy/org.freedesktop.packagekit.policy.in:129
+msgid "Authentication is required to accept a EULA"
+msgstr "Autentifikazioa behar da EULA bat onartzeko"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -933,364 +1553,87 @@ msgstr "Berriro instalatzen"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
+#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
 msgid "Remove package"
 msgstr "Kendu paketea"
 
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Kendua"
+#: policy/org.freedesktop.packagekit.policy.in:149
+msgid "Authentication is required to remove software"
+msgstr "Autentifikazioa behar da softwarea kentzeko"
 
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Kentzen"
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+#: policy/org.freedesktop.packagekit.policy.in:167
+msgid "Update software"
+msgstr "Eguneratu softwarea"
 
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Paketeak kentzen"
+#: policy/org.freedesktop.packagekit.policy.in:168
+msgid "Authentication is required to update software"
+msgstr "Autentifikazioa behar da softwarea eguneratzeko"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Biltegia kentzen"
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+#: policy/org.freedesktop.packagekit.policy.in:183
+msgid "Change software repository parameters"
+msgstr "Aldatu software-biltegien parametroak"
 
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Fitxategiak berriro paketatzen"
+#: policy/org.freedesktop.packagekit.policy.in:184
+msgid "Authentication is required to change software repository parameters"
+msgstr "Autentifikazioa behar da software-biltegien parametroak aldatzeko"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#: policy/org.freedesktop.packagekit.policy.in:198
+msgid "Refresh system repositories"
+msgstr "Freskatu sistemaren biltegiak"
+
+#: policy/org.freedesktop.packagekit.policy.in:199
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Autentifikazioa behar da sistemaren biltegiak freskatzeko"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#: policy/org.freedesktop.packagekit.policy.in:213
+msgid "Set network proxy"
+msgstr "Ezarri sarearen proxy-a"
+
+#: policy/org.freedesktop.packagekit.policy.in:214
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr "Autentifikazioa behar da softwarea deskargatzeko erabiliko den sare-proxya ezartzeko"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#: policy/org.freedesktop.packagekit.policy.in:229
+msgid "Upgrade System"
+msgstr "Eguneratu sistema"
+
+#: policy/org.freedesktop.packagekit.policy.in:230
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Autentifikazioa behar da sistema eragilea bertsioz berritzeko"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "Konpondu sistema"
 
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Datuak eskatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Ebazten"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Mendekotasunak ebazten"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Berrabiarazi"
-
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Emaitzak:"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Eginkizuna"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Exekutatu antzeko komandoa:"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Exekutatzen"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Kakoak exekutatzen"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Aplikazioak eskaneatzen"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Bilatu xehetasunen arabera"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Bilatu fitxategien arabera"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Bilatu izenen arabera"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Xehetasunen arabera bilatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Fitxategien arabera bilatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Izenaren arabera bilatzen"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Taldeetan bilaketak egiten"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Segurtasuna"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Sistema berrabiaraztea (seguratasunagatik) eskatua:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Sistema berrabiaraztea eskatua:"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Ezarri sarearen proxy-a"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Ezarri biltegi-aukerak"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Ezarri iragazkia, adib. 'instalatua'"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Data ezartzen"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Erakutsi fitxategi guztien arazketa-informazioa"
-
-msgid "Show debugging options"
-msgstr "Erakutsi arazketa-aukerak"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Erakutsi programaren bertsioa eta irten"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Erakutsi bertsioa eta irten"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Itzaltzen eguneraketak instalatu ondoren..."
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Antzeko komandoa:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Antzeko komandoak:"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Software-jatorriaren izena"
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Software-jatorriaren sinadura behar da"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Abiarazten"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Egoera"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Egoera"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Azpikomandoak:"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Arrakasta"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Pakete egokiak hauek dira:"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Laburpena"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Sistema berrabiaraztea (segurtasunagatik) eskatu du honek:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Sistema berrabiaraztea eskatu du honek:"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Sistemaren ordua"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Aldaketak probatzen"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Testua"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Kontratua ez da onartu."
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Ez da euskarri zuzena sartu."
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Deabruak huts egin du transakzioaren erdian!"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Adierazitako iragazkia baliogabea da"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Hurrengo paketeak ez dira fidagarriak:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Hurrengo paketeen bertsio zaharragoa instalatu behar da:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Hurrengo paketeak instalatu behar dira:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Honako paketeak zaharkitutzat hartu behar dira:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Hurrengo paketeak berriro instalatu behar dira:"
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Hurrengo paketeak kendu behar dira:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Hurrengo paketeak eguneratu behar dira:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age. Use -1 for 'never'."
-msgstr "Metadata-cachearen adin maximoa. Erabili -1 'inoiz ez' adierazteko."
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Ezin izan da proxy-a ezarri"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Sinadura ez da onartu."
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Softwarea ez da jatorri fidagarri batekoa."
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Transakzioa ez da burutu."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "The transaction failed"
-msgstr "Transakzioak huts egin du"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Sinatu gabeko softwarea ez da instalatuko."
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Ez da paketerik eguneratu behar."
-
-#. TRANSLATORS: print a message when there are no updates
-msgid "There are no updates available at this time."
-msgstr "Ez dago eguneraketarik uneotan."
-
-msgid "There are no upgrades available at this time."
-msgstr "Ez dago bertsio-berritzerik uneotan."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Tresna honek ez du aurkitu pakete guztiak: %s"
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Tresna honek ez du aurkitu instalatutako paketea: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Tresna honek ez du aurkitu paketea: %s"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr "Igarotako denbora"
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Transakzioa"
+#: policy/org.freedesktop.packagekit.policy.in:246
+msgid "Authentication is required to repair the installed software"
+msgstr "Autentifikatzea derrigorrezkoa da instalatutako softwarea konpontzeko"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1299,124 +1642,162 @@ msgstr "Transakzioa"
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:260
+#: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "Abiarazi lineaz kanpoko eguneraketak"
 
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "Arina"
-
-msgid "True"
-msgstr "Egia"
+#: policy/org.freedesktop.packagekit.policy.in:261
+#: policy/org.freedesktop.packagekit.policy.in:277
+msgid "Authentication is required to trigger offline updates"
+msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketak abiarazteko"
 
 #. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr "Fidatu softwarea sinatzeko erabili den gako batez"
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+#: policy/org.freedesktop.packagekit.policy.in:291
+msgid "Clear offline update message"
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Mota"
+#: policy/org.freedesktop.packagekit.policy.in:292
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketa-mezuak garbitzeko"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Ez dago eskuragarri"
+#. TRANSLATORS: this is a command alias
+#: src/pk-direct.c:99
+#, c-format
+msgid "Alias to %s"
+msgstr "Aliasetik %s-ra"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Eginkizun-mota ezezaguna"
+#: src/pk-direct.c:168
+msgid "Command not found, valid commands are:"
+msgstr "Komandoa ez da aurkitu, baliozko komandoak honakoak dira:"
 
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Egoera ezezaguna"
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+#: src/pk-direct.c:408 src/pk-main.c:117
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Erabiliko den paketatze-motorra, adib. dummy"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr "Eguneratu softwarea"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:424
+msgid "Refresh the cache"
+msgstr "Freskatu cachea"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Eguneraketa-testua"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:428
+msgid "Refresh the cache (forced)"
+msgstr "Freskatu cachea (behartua)"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Eguneratua"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:432
+msgid "Search by names"
+msgstr "Bilatu izenen arabera"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Eguneraketak"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:436
+msgid "Search by details"
+msgstr "Bilatu xehetasunen arabera"
 
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Eguneratzen"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:440
+msgid "Search by files"
+msgstr "Bilatu fitxategien arabera"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Paketeak eguneratzen"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:444
+msgid "Install package"
+msgstr "Instalatu paketea"
 
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Abioan dauden aplikazioak eguneratzen"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:452
+msgid "Set repository options"
+msgstr "Ezarri biltegi-aukerak"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr "Eguneratu sistema"
+#. TRANSLATORS: program name
+#: src/pk-direct.c:465
+msgid "PackageKit"
+msgstr "PackageKit"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Erabiltzaile-IDa"
+#. TRANSLATORS: the user didn't read the man page
+#: src/pk-direct.c:471
+msgid "Failed to parse arguments"
+msgstr "Argumentuen analisiak huts egin du"
 
-msgid "User aborted selection"
-msgstr "Erabiltzaileak bertan behera utzitako hautapena"
+#. TRANSLATORS: probably not yet installed
+#: src/pk-direct.c:482
+msgid "Failed to load the config file"
+msgstr "Konfigurazio-fitxategia kargatzeak huts egin du"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Erabiltzaile-izena"
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-direct.c:515
+msgid "Failed to load the backend"
+msgstr "Atzealdekoa kargatzeak huts egin du"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Hornitzailea"
+#. TRANSLATORS: cannot unload the backend the user specified
+#: src/pk-direct.c:555
+msgid "Failed to unload the backend"
+msgstr "Atzealdekoa deskargatzeak huts egin du"
 
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Autentifikaziorako itxaroten"
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+#: src/pk-main.c:120
+msgid "Disable the idle timer"
+msgstr "Desgaitu inaktibitate-kronometroa"
 
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Pakete-kudeatzailearen blokeoa itxaroten"
+#. TRANSLATORS: show version
+#: src/pk-main.c:123
+msgid "Show version and exit"
+msgstr "Erakutsi bertsioa eta irten"
 
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Itxaroten pakete-kudeatzailearen blokeoa."
+#. TRANSLATORS: exit after we've started up, used for user profiling
+#: src/pk-main.c:126
+msgid "Exit after a small delay"
+msgstr "Irten atzerapen txiki baten ondoren"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Ilaran itxaroten"
+#. TRANSLATORS: exit straight away, used for automatic profiling
+#: src/pk-main.c:129
+msgid "Exit after the engine has loaded"
+msgstr "Irten motorra kargatu ondoren"
 
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Sortuko den zerrenda-fitxategi bat adierazi behar duzu"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+#: src/pk-main.c:132
+msgid "Don't clear environment on startup"
+msgstr "Ez garbitu ingurunea abioan"
 
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "ez da komandoa aurkitu"
+#. TRANSLATORS: describing the service that is running
+#: src/pk-main.c:146
+msgid "PackageKit service"
+msgstr "PackageKit zerbitzua"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#: src/pk-main.c:215
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Huts egin du automatikoak ebazteak: %s"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-main.c:239
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Huts egin du motorra kargatzeak: %s"
+
+#. TRANSLATORS: is not GPG signed
+#: src/pk-transaction.c:2734
+msgid "The software is not from a trusted source."
+msgstr "Softwarea ez da jatorri fidagarri batekoa."
+
+#: src/pk-transaction.c:2742
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Ez eguneratu pakete hau hori egitea segurua dela egiaztatu arte."
+
+#: src/pk-transaction.c:2743
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Ez eguneratu pakete hauek hori egitea segurua dela egiaztatu arte."
+
+#: src/pk-transaction.c:2753
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Ez instalatu pakete hau hori egitea segurua dela egiaztatu arte."
+
+#: src/pk-transaction.c:2754
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Ez instalatu pakete hauek hori egitea segurua dela egiaztatu arte."
