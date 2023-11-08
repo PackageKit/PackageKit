@@ -15,12 +15,12 @@
     </p>
     <p>
       The work is done by backends which make use of the package manager shipped by the corresponding distribution.
-      The main benefits are:
+      Its main benefits are:
     </p>
     <ul>
-      <li>unified interface on several distributions</li>
-      <li>fine grained privileges by using PolicyKit</li>
-      <li>independence from a running desktop session during processing</li>
+      <li>Unified developer and user interface on many distributions</li>
+      <li>Fine-grained permission control via PolicyKit</li>
+      <li>On-demand installation of missing system components</li>
     </ul>
   </description>
 
