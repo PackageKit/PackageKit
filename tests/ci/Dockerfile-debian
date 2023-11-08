@@ -11,7 +11,7 @@ RUN apt-get install -yq build-essential
 
 # install PackageKit dependencies
 RUN apt-get build-dep -yq packagekit
-RUN apt-get install -yq meson
+RUN apt-get install -yq meson appstream
 
 # finish
 RUN mkdir /build

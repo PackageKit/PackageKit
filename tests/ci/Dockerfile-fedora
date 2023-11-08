@@ -9,6 +9,7 @@ RUN dnf -y install \
 	gcc \
 	ninja-build \
 	dbus-daemon \
+	appstream \
 	appstream-devel
 RUN dnf -y builddep PackageKit
 
