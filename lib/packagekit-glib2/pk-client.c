@@ -4365,9 +4365,6 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 
 	/* remove from list */
 	pk_client_state_remove (state->client, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
 }
 
 /*
