@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-# 
+#
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sergiu Bivol <sergiu@cip.md>, 2020
@@ -9,9 +9,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-08 21:31+0100\n"
-"PO-Revision-Date: 2010-12-13 12:37+0000\n"
-"Last-Translator: Sergiu Bivol <sergiu@cip.md>, 2020\n"
 "Language-Team: Romanian (http://app.transifex.com/freedesktop/packagekit/language/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,1472 +16,574 @@ msgstr ""
 "Language: ro\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
-msgid "Config file was not found."
-msgstr ""
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr ""
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-#: client/pk-console.c:165 client/pk-console.c:560
-msgid "Transaction"
-msgstr "Tranzacție"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-#: client/pk-console.c:167
-msgid "System time"
-msgstr "Ora sistemului"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pk-console.c:169
-msgid "Succeeded"
-msgstr "Reușit"
-
-#: client/pk-console.c:169
-msgid "True"
-msgstr "Adevărat"
-
-#: client/pk-console.c:169
-msgid "False"
-msgstr "Fals"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pk-console.c:171
-msgid "Role"
-msgstr "Rol"
-
-#. TRANSLATORS: this is The duration of the transaction
-#: client/pk-console.c:176
-msgid "Duration"
-msgstr "Durată"
-
-#: client/pk-console.c:176
 msgid "(seconds)"
 msgstr "(secunde)"
 
-#. TRANSLATORS: this is The command line used to do the action
-#: client/pk-console.c:180
-msgid "Command line"
-msgstr "Linia de comandă"
-
-#. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pk-console.c:182
-msgid "User ID"
-msgstr "ID utilizator"
-
-#. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pk-console.c:189
-msgid "Username"
-msgstr "Nume de utilizator"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pk-console.c:193
-msgid "Real name"
-msgstr "Nume real"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pk-console.c:201
-msgid "Affected packages:"
-msgstr "Pachete afectate:"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pk-console.c:204
-msgid "Affected packages: None"
-msgstr "Pachete afectate: Niciunul"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pk-console.c:230
-msgid "Distribution"
-msgstr "Distribuție"
-
-#. TRANSLATORS: this is type of update, stable or testing
-#: client/pk-console.c:232
-msgid "Type"
-msgstr "Tip"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: client/pk-console.c:234 client/pk-console.c:267
-msgid "Summary"
-msgstr "Sumar"
-
-#. TRANSLATORS: this is the group category name
-#: client/pk-console.c:256
-msgid "Category"
-msgstr "Categorie"
-
-#. TRANSLATORS: this is group identifier
-#: client/pk-console.c:258
-msgid "ID"
-msgstr "ID"
-
-#. TRANSLATORS: this is the parent group
-#: client/pk-console.c:261
-msgid "Parent"
-msgstr "Părinte"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-#: client/pk-console.c:264 client/pk-console.c:2286
-msgid "Name"
-msgstr "Denumire"
-
-#. TRANSLATORS: this is preferred icon for the group
-#: client/pk-console.c:270
-msgid "Icon"
-msgstr "Pictogramă"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-#: client/pk-console.c:308
-msgid "Details about the update:"
-msgstr "Detalii despre actualizare:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-#: client/pk-console.c:314 client/pk-console.c:579
-#: lib/packagekit-glib2/pk-task-text.c:123
-#: lib/packagekit-glib2/pk-task-text.c:198
-msgid "Package"
-msgstr "Pachet"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-#: client/pk-console.c:319
-msgid "Updates"
-msgstr "Actualizează"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-#: client/pk-console.c:326
-msgid "Obsoletes"
-msgstr "Învechește"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:201
-msgid "Vendor"
-msgstr "Vânzător"
-
-#. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pk-console.c:338
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-#. TRANSLATORS: details about the update, the CVE URLs
-#: client/pk-console.c:344
-msgid "CVE"
-msgstr "CVE"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-#: client/pk-console.c:350
-msgid "Restart"
-msgstr "Repornește"
-
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-#: client/pk-console.c:355
-msgid "Update text"
-msgstr "Textul actualizării"
-
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-#: client/pk-console.c:360
-msgid "Changes"
-msgstr "Modificări"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-#: client/pk-console.c:365
-msgid "State"
-msgstr "Stare"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-#: client/pk-console.c:370
-msgid "Issued"
-msgstr "Emis"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-#: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1087
-msgid "Updated"
-msgstr "Actualizat"
-
-#. TRANSLATORS: if the repo is enabled
-#: client/pk-console.c:397
-msgid "Enabled"
-msgstr "Activat"
-
-#. TRANSLATORS: if the repo is disabled
-#: client/pk-console.c:400
-msgid "Disabled"
-msgstr "Dezactivat"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#: client/pk-console.c:429
-msgid "System restart required by:"
-msgstr "Repornirea sistemului este cerută de:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#: client/pk-console.c:432
-msgid "Session restart required:"
-msgstr "Este necesară repornirea sesiunii:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-#: client/pk-console.c:436
-msgid "System restart (security) required by:"
-msgstr "Repornirea sistemului (securitate) este cerută de:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-#: client/pk-console.c:440
-msgid "Session restart (security) required:"
-msgstr "Repornirea sesiunii (securitate) cerută:"
-
-#. TRANSLATORS: a package requires the application to be restarted
-#: client/pk-console.c:443
-msgid "Application restart required by:"
-msgstr "Repornirea aplicației este cerută de:"
-
-#. TRANSLATORS: This a list of details about the package
-#: client/pk-console.c:474
-msgid "Package description"
-msgstr "Descriere pachet"
-
-#. TRANSLATORS: This where the package has no files
-#: client/pk-console.c:494
-msgid "No files"
-msgstr "Niciun fișier"
-
-#. TRANSLATORS: This a list files contained in the package
-#: client/pk-console.c:499
-msgid "Package files"
-msgstr "Fișiere din pachet"
-
-#. TRANSLATORS: the percentage complete of the transaction
-#: client/pk-console.c:595
-msgid "Percentage"
-msgstr "Procentaj"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pk-console.c:618
-msgid "Status"
-msgstr "Stare"
-
-#. TRANSLATORS: the results from the transaction
-#: client/pk-console.c:659
-msgid "Results:"
-msgstr "Rezultate:"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-#: client/pk-console.c:667 client/pk-console.c:827
-msgid "Fatal error"
-msgstr "Eroare fatală"
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-#: client/pk-console.c:692
-msgid "There are no packages to update."
-msgstr "Nu sunt pachete de actualizat."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pk-console.c:696
-#: contrib/command-not-found/pk-command-not-found.c:670
-msgid "The transaction failed"
-msgstr "Tranzacția a eșuat"
-
-#. TRANSLATORS: print a message when there are no updates
-#: client/pk-console.c:725
-msgid "There are no updates available at this time."
-msgstr "Nu sunt actualizări disponibile în acest moment."
-
-#: client/pk-console.c:748
-msgid "There are no upgrades available at this time."
-msgstr "Nu sunt înnoiri disponibile în acest moment."
-
-#. TRANSLATORS: a package needs to restart their system
-#: client/pk-console.c:810
-msgid "Please restart the computer to complete the update."
-msgstr "Reporniți calculatorul pentru a completa actualizarea."
-
-#. TRANSLATORS: a package needs to restart the session
-#: client/pk-console.c:813
-msgid "Please logout and login to complete the update."
-msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a completa actualizarea."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pk-console.c:816
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pk-console.c:819
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pk-console.c:897
-msgid "More than one package matches:"
-msgstr "Mai mult de un pachet se potrivește:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pk-console.c:909
-msgid "Please choose the correct package: "
-msgstr "Alegeți pachetul corect: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-#: client/pk-console.c:946
-msgid "Package not found"
-msgstr "Pachetul nu a fost găsit"
-
-#. TRANSLATORS: we couldn't find anything
-#: client/pk-console.c:964
-msgid "No packages were found"
-msgstr "Nu a fost găsit niciun pachet"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#: client/pk-console.c:989
-#, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "Se aștepta denumire de pachet, dar s-a primit fișier. Încercați să folosiți „pkcon install-local %s” în loc."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#: client/pk-console.c:1024
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Această unealtă nu a putut găsi niciun pachet disponibil: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pk-console.c:1041
-msgid "This tool could not find any available package."
-msgstr ""
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-#: client/pk-console.c:1050
-msgid "The selected packages may already be installed."
-msgstr ""
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pk-console.c:1078
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Această unealtă nu a putut găsi pachetul instalat: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pk-console.c:1107 client/pk-console.c:1138
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Această unealtă nu a putut găsi pachetul: %s"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-#: client/pk-console.c:1183
-msgid "No packages require updating to newer versions."
-msgstr "Niciun pachet nu se cere actualizat la versiuni mai noi."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#: client/pk-console.c:1221 client/pk-console.c:1250 client/pk-console.c:1289
-#: client/pk-console.c:1348 client/pk-console.c:1376
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Această unealtă nu a putut găsi toate pachetele: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pk-console.c:1403
-msgid "The daemon crashed mid-transaction!"
-msgstr "Demonul a eșuat în mijlocul tranzacției!"
-
-#. TRANSLATORS: This is the header to the --help menu
-#: client/pk-console.c:1425
-msgid "PackageKit Console Interface"
-msgstr "Interfață PackageKit pentru consolă"
-
-#. these are commands we can use with pkcon
-#: client/pk-console.c:1427
-msgid "Subcommands:"
-msgstr "Subcomenzi:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pk-console.c:1514
-msgid "Failed to get the time since this action was last completed"
-msgstr "A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pk-console.c:1518
-msgid "Time since"
-msgstr "Timp trecut"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-#: client/pk-console.c:1538
-msgid "Prepared updates:"
-msgstr "Actualizări pregătite:"
-
-#. TRANSLATORS: The network settings could not be sent
-#: client/pk-console.c:1607
-msgid "The proxy could not be set"
-msgstr "Proxy-ul nu a putut fi definit"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pk-console.c:1649 client/pk-monitor.c:324
-msgid "Show the program version and exit"
-msgstr "Arată versiunea programului și ieși"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pk-console.c:1652
-msgid "Set the filter, e.g. installed"
-msgstr "Definiți filtrul, de ex. instalat"
-
-#. command line argument, do we ask questions
-#: client/pk-console.c:1655
-msgid "Install the packages without asking for confirmation"
-msgstr "Instalează pachetele fără a cere confirmare"
-
-#. command line argument, do we just download or apply changes
-#: client/pk-console.c:1658
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Pregătește tranzacția doar prin descărcarea pachetelor"
-
-#. command line argument, do we allow package downgrades
-#: client/pk-console.c:1661
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Permite retrogradarea pachetelor în timpul tranzacției"
-
-#: client/pk-console.c:1663
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Permite reinstalarea pachetelor în timpul tranzacției"
-
-#: client/pk-console.c:1665
-msgid "Automatically remove unused dependencies"
-msgstr "Elimină automat dependențele nefolosite"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pk-console.c:1668
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pk-console.c:1671
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "În locul utilizării unor controale animate, afișează pe ecran o ieșire ce poate fi interpretată ușor de un program"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pk-console.c:1674
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-
-#. command line argument, do we ask questions
-#: client/pk-console.c:1677
-msgid "Allow untrusted packages to be installed."
-msgstr "Permite instalarea pachetelor fără încredere acordată."
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pk-console.c:1715
-msgid "Failed to parse command line"
-msgstr "Parcurgerea liniei de comandă a eșuat"
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pk-console.c:1725
-msgid "Failed to contact PackageKit"
-msgstr "Nu s-a putut contacta PackageKit"
-
 #. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pk-console.c:1788
-msgid "The filter specified was invalid"
-msgstr "Filtrul specificat a fost nevalid"
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "Este necesar un rol corect"
 
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-#: client/pk-console.c:1814
-msgid "A search type is required, e.g. name"
-msgstr "Este necesar un tip de căutare, de ex.: denumire"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "Sunt necesare un dosar de destinație și denumirile pachetelor de descărcat"
 
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-#: client/pk-console.c:1824 client/pk-console.c:1841 client/pk-console.c:1858
-#: client/pk-console.c:1875
-msgid "A search term is required"
-msgstr "Este necesar un termen de căutare"
+msgid "A filename is required"
+msgstr "Este necesară o denumire de fișier"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: client/pk-console.c:1901
-msgid "A package name to install is required"
-msgstr "Este necesară o denumire de pachet de instalat"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pk-console.c:1915
 msgid "A filename to install is required"
 msgstr "Este necesară o denumire de fișier de instalat"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: client/pk-console.c:1931
-msgid "A type, key_id and package_id are required"
-msgstr "Sunt necesare un tip, key_id și package_id"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-#: client/pk-console.c:1949
-msgid "A package name to remove is required"
-msgstr "Este necesară o denumire de pachet de eliminat"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-#: client/pk-console.c:1962
-msgid "A destination directory and the package names to download are required"
-msgstr "Sunt necesare un dosar de destinație și denumirile pachetelor de descărcat"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-#: client/pk-console.c:1972
-msgid "Directory not found"
-msgstr "Dosarul nu a fost găsit"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pk-console.c:1987
 msgid "A licence identifier (eula-id) is required"
 msgstr "Este necesar un identificator de licență (eula-id)"
 
 #. TRANSLATORS: The user did not
-#. * specify a package name
-#: client/pk-console.c:2013
-msgid "A package name to resolve is required"
-msgstr "Este necesară o denumire de pachet de rezolvat"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-#: client/pk-console.c:2030 client/pk-console.c:2047
-msgid "A repository name is required"
-msgstr "Este necesară o denumire de depozit"
-
-#: client/pk-console.c:2063
-msgid "A repo name, parameter and value are required"
-msgstr "Trebuiesc o denumire de depozit, parametru și valoare"
-
-#: client/pk-console.c:2080
-msgid "A repo id and autoremove required"
-msgstr "Trebuiesc un identificator de depozit și „autoremove”"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pk-console.c:2107
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Trebuie o acțiune, cum ar fi „update-packages”"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pk-console.c:2117
-msgid "A correct role is required"
-msgstr "Este necesar un rol corect"
-
-#. TRANSLATORS: The user did not
 #. * provide a package name
-#: client/pk-console.c:2137 client/pk-console.c:2154 client/pk-console.c:2166
-#: client/pk-console.c:2196 client/pk-console.c:2229
 msgid "A package name is required"
 msgstr "Este necesară o denumire de pachet"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "Este necesară o denumire de pachet de instalat"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "Este necesară o denumire de pachet de eliminat"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "Este necesară o denumire de pachet de rezolvat"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: client/pk-console.c:2180
 msgid "A package provide string is required"
 msgstr "Este necesar un șir de furnizori de pachete"
 
-#: client/pk-console.c:2207 client/pk-console.c:2218
-msgid "A filename is required"
-msgstr "Este necesară o denumire de fișier"
-
-#. TRANSLATORS: this is the description of the backend
-#: client/pk-console.c:2290
-msgid "Description"
-msgstr "Descriere"
-
-#. TRANSLATORS: this is the author of the backend
-#: client/pk-console.c:2294
-msgid "Author"
-msgstr "Autor"
-
-#. TRANSLATORS: The user did not provide a distro name
-#: client/pk-console.c:2364
-msgid "You need to specify a list file to create"
-msgstr "Trebuie să specificați un fișier cu listă de creat"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#: client/pk-console.c:2377
-#, c-format
-msgid "File already exists: %s"
-msgstr "Fișierul există deja: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#: client/pk-console.c:2395
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Opțiunea „%s” nu este susținută"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#: client/pk-console.c:2405
-msgid "Command failed"
-msgstr "Comandă eșuată"
-
-#: client/pk-monitor.c:261
-msgid "Failed to get daemon state"
-msgstr "Obținerea stării demonului a eșuat"
-
-#: client/pk-monitor.c:304
-msgid "Failed to get properties"
-msgstr "Obținerea proprietăților a eșuat"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pk-monitor.c:335
-msgid "PackageKit Monitor"
-msgstr "Monitor PackageKit"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:157
-msgid "Installing System Upgrade"
-msgstr "Se instalează înnoirea sistemului"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:161
-msgid "Installing Updates"
-msgstr "Se instalează actualizări"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:197
-msgid "Rebooting after installing updates…"
-msgstr "Se repornește după instalarea actualizărilor..."
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:239
-msgid "Shutting down after installing updates…"
-msgstr "Se oprește după instalarea actualizărilor..."
-
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:380
-msgid "Installing updates; this could take a while..."
-msgstr "Se instalează actualizări, aceasta ar putea dura..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:417
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
-
-#. TRANSLATORS: downloading repo data so we can search
-#: contrib/command-not-found/pk-command-not-found.c:427
-msgid "Downloading details about the software repositories."
-msgstr "Se descarcă detalii despre depozitele cu programe."
-
-#. TRANSLATORS: downloading file lists so we can search
-#: contrib/command-not-found/pk-command-not-found.c:431
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
-
-#. TRANSLATORS: waiting for native lock
-#: contrib/command-not-found/pk-command-not-found.c:435
-msgid "Waiting for package manager lock."
-msgstr "Se așteaptă lacătul gestionarului de pachete."
-
-#. TRANSLATORS: loading package cache so we can search
-#: contrib/command-not-found/pk-command-not-found.c:439
-msgid "Loading list of packages."
-msgstr "Se încarcă listă de pachete."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: contrib/command-not-found/pk-command-not-found.c:499
-msgid "Failed to search for file"
-msgstr "Eroare la căutarea fișierului"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: contrib/command-not-found/pk-command-not-found.c:511
-msgid "Getting the list of files failed"
-msgstr "Nu s-a putut obține lista de fișiere"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-#: contrib/command-not-found/pk-command-not-found.c:643
-msgid "Failed to launch:"
-msgstr "Pornirea a eșuat:"
-
-#. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:662
-msgid "Failed to install packages"
-msgstr "Instalarea pachetelor a eșuat"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:781
-msgid "command not found"
-msgstr "comanda nu a fost găsită"
-
-#. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:802
-msgid "Similar command is:"
-msgstr "Comanda similară este:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:815
-msgid "Run similar command:"
-msgstr "Rulează comanda similară:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:827
-#: contrib/command-not-found/pk-command-not-found.c:836
-msgid "Similar commands are:"
-msgstr "Comenzile similare sunt:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:843
-msgid "Please choose a command to run"
-msgstr "Alegeți o comandă pe care să o rulați"
-
-#. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:863
-msgid "The package providing this file is:"
-msgstr "Pachetul care furnizează fișierul acesta este:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#: contrib/command-not-found/pk-command-not-found.c:870
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Instalează pachetul „%s” pentru a furniza comanda „%s”?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:893
-msgid "Packages providing this file are:"
-msgstr "Pachetele care furnizează fișierul acesta sunt:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-#: contrib/command-not-found/pk-command-not-found.c:903
-msgid "Suitable packages are:"
-msgstr "Pachetele compatibile sunt:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:911
-msgid "Please choose a package to install"
-msgstr "Alege un pachet pentru a fi instalat"
-
-#: contrib/command-not-found/pk-command-not-found.c:913
-msgid "User aborted selection"
-msgstr "Utilizatorul a abandonat alegerea"
-
-#: lib/packagekit-glib2/pk-console-shared.c:73
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Introduceți un număr între 1 și %i: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-shared.c:202
-msgid "Unknown state"
-msgstr "Stare necunoscută"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-shared.c:206
-msgid "Starting"
-msgstr "Se pornește"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-#: lib/packagekit-glib2/pk-console-shared.c:210
-msgid "Waiting in queue"
-msgstr "Se așteaptă în coadă"
-
-#. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-shared.c:214
-msgid "Running"
-msgstr "Se rulează"
-
-#. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-shared.c:218
-msgid "Querying"
-msgstr "Se interoghează"
-
-#. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:222
-msgid "Getting information"
-msgstr "Se obțin informații"
-
-#. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-shared.c:226
-msgid "Removing packages"
-msgstr "Se elimină pachete"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-shared.c:230
-#: lib/packagekit-glib2/pk-enum.c:1238
-msgid "Downloading packages"
-msgstr "Se descarcă pachete"
-
-#. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-shared.c:234
-msgid "Installing packages"
-msgstr "Se instalează pachete"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-shared.c:238
-msgid "Refreshing software list"
-msgstr "Se împrospătează lista de programe"
-
-#. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-shared.c:242
-msgid "Installing updates"
-msgstr "Se instalează actualizări"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-#: lib/packagekit-glib2/pk-console-shared.c:246
-msgid "Cleaning up packages"
-msgstr "Se curăță pachete"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-shared.c:250
-msgid "Obsoleting packages"
-msgstr "Se învechesc pachete"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-shared.c:254
-msgid "Resolving dependencies"
-msgstr "Se rezolvă dependențe"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-#: lib/packagekit-glib2/pk-console-shared.c:258
-msgid "Checking signatures"
-msgstr "Se verifică semnături"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-shared.c:262
-msgid "Testing changes"
-msgstr "Se testează modificările"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-#: lib/packagekit-glib2/pk-console-shared.c:266
-msgid "Committing changes"
-msgstr "Se comit modificările"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:270
-msgid "Requesting data"
-msgstr "Se cer date"
-
-#. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-shared.c:274
-msgid "Finished"
-msgstr "Încheiat"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-shared.c:278
-msgid "Cancelling"
-msgstr "Se renunță"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:282
-msgid "Downloading repository information"
-msgstr "Se descarcă informații din depozit"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:286
-msgid "Downloading list of packages"
-msgstr "Se descarcă lista de pachete"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:290
-msgid "Downloading file lists"
-msgstr "Se descarcă listele cu fișiere"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:294
-msgid "Downloading lists of changes"
-msgstr "Se descarcă listele cu modificări"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:298
-msgid "Downloading groups"
-msgstr "Se descarcă grupuri"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:302
-msgid "Downloading update information"
-msgstr "Se descarcă informații despre actualizări"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-shared.c:306
-msgid "Repackaging files"
-msgstr "Se reîmpachetează fișiere"
-
-#. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-shared.c:310
-msgid "Loading cache"
-msgstr "Se încarcă cache-ul"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-shared.c:314
-msgid "Scanning applications"
-msgstr "Se citesc aplicațiile"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-#: lib/packagekit-glib2/pk-console-shared.c:318
-msgid "Generating package lists"
-msgstr "Se generează liste de pachete"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-#: lib/packagekit-glib2/pk-console-shared.c:322
-msgid "Waiting for package manager lock"
-msgstr "Se așteaptă lacătul gestionarului de pachete"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-shared.c:326
-msgid "Waiting for authentication"
-msgstr "Se așteaptă autentificarea"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-shared.c:330
-msgid "Updating running applications"
-msgstr "Se actualizează aplicațiile ce rulează"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-#: lib/packagekit-glib2/pk-console-shared.c:334
-msgid "Checking applications in use"
-msgstr "Se verifică aplicațiile în uz"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-#: lib/packagekit-glib2/pk-console-shared.c:338
-msgid "Checking libraries in use"
-msgstr "Se verifică bibliotecile în uz"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:342
-msgid "Copying files"
-msgstr "Se copiază fișiere"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-#: lib/packagekit-glib2/pk-console-shared.c:346
-msgid "Running hooks"
-msgstr "Se execută rutinele"
-
-#. TRANSLATORS: turn on all debugging
-#: lib/packagekit-glib2/pk-debug.c:142
-msgid "Show debugging information for all files"
-msgstr "Arată informații de depanare pentru toate fișierele"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Debugging Options"
-msgstr "Opțiuni de depanare"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Show debugging options"
-msgstr "Arată opțiuni de depanare"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:971
-msgid "Trivial"
-msgstr "Trivială"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:975
-msgid "Normal"
-msgstr "Normală"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:979
-msgid "Important"
-msgstr "Importantă"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:983
-msgid "Security"
-msgstr "Securitate"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:987
-msgid "Bug fix"
-msgstr "Corecție de erori"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:991
-msgid "Enhancement"
-msgstr "Îmbunătățire"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:995
-msgid "Blocked"
-msgstr "Blocată"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1000 lib/packagekit-glib2/pk-enum.c:1091
-msgid "Installed"
-msgstr "Instalat"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1005
-msgid "Available"
-msgstr "Disponibil"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1009
-msgid "Unavailable"
-msgstr "Indisponibil"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1034
-msgid "Downloading"
-msgstr "Se descarcă"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1038
-msgid "Updating"
-msgstr "Se actualizează"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1042 lib/packagekit-glib2/pk-enum.c:1177
-msgid "Installing"
-msgstr "Se instalează"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1046 lib/packagekit-glib2/pk-enum.c:1173
-msgid "Removing"
-msgstr "Se elimină"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1050
-msgid "Cleaning up"
-msgstr "Se curăță"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1054
-msgid "Obsoleting"
-msgstr "Se învechește"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1058
-msgid "Reinstalling"
-msgstr "Se reinstalează"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1083
-msgid "Downloaded"
-msgstr "Descărcat"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1095
-msgid "Removed"
-msgstr "Eliminat"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1099
-msgid "Cleaned up"
-msgstr "Curățat"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1103
-msgid "Obsoleted"
-msgstr "Învechit"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1107
-msgid "Reinstalled"
-msgstr "Reinstalat"
+msgid "A repo id and autoremove required"
+msgstr "Trebuiesc un identificator de depozit și „autoremove”"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Trebuiesc o denumire de depozit, parametru și valoare"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "Este necesară o denumire de depozit"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "Este necesar un termen de căutare"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "Este necesar un tip de căutare, de ex.: denumire"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "Sunt necesare un tip, key_id și package_id"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "Acceptă EULA"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1132
-msgid "Unknown role type"
-msgstr "Tip de rol necunoscut"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1136
-msgid "Getting dependencies"
-msgstr "Se obțin dependențele"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1140
-msgid "Getting update details"
-msgstr "Se obțin detaliile actualizării"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1145
-msgid "Getting details"
-msgstr "Se obțin detaliile"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1149
-msgid "Getting requires"
-msgstr "Se obțin cerințele"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1153
-msgid "Getting updates"
-msgstr "Se obțin actualizări"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1157
-msgid "Searching by details"
-msgstr "Se caută după detalii"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1161
-msgid "Searching by file"
-msgstr "Se caută după fișier"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1165
-msgid "Searching groups"
-msgstr "Se caută grupuri"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1169
-msgid "Searching by name"
-msgstr "Se caută după denumire"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1181
-msgid "Installing files"
-msgstr "Se instalează fișiere"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1185
-msgid "Refreshing cache"
-msgstr "Se împrospătează cache-ul"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1189
-msgid "Updating packages"
-msgstr "Se actualizează pachete"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1193
-msgid "Canceling"
-msgstr "Se renunță"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1197
-msgid "Getting repositories"
-msgstr "Se obțin depozitele"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1201
-msgid "Modifying repository"
-msgstr "Se modifică depozitul"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1205
-msgid "Setting data"
-msgstr "Se stabilesc date"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1209
-msgid "Removing repository"
-msgstr "Se elimină depozitul"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1213
-msgid "Resolving"
-msgstr "Se rezolvă"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1218
-msgid "Getting file list"
-msgstr "Se obține lista de fișiere"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1222
-msgid "Getting provides"
-msgstr "Se obțin furnizările"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1226
-msgid "Installing signature"
-msgstr "Se instalează semnătura"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1230
-msgid "Getting packages"
-msgstr "Se obțin pachetele"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1234
 msgid "Accepting EULA"
 msgstr "Se acceptă EULA"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1242
-msgid "Getting upgrades"
-msgstr "Se obțin înnoirile"
+#. TRANSLATORS: these are packages touched by the transaction
+msgid "Affected packages:"
+msgstr "Pachete afectate:"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1246
-msgid "Getting categories"
-msgstr "Se obțin categoriile"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1250
-msgid "Getting transactions"
-msgstr "Se obțin tranzacțiile"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1254
-msgid "Getting system upgrades"
-msgstr "Se obțin înnoirile de sistem"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-#: lib/packagekit-glib2/pk-task-text.c:66
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Doriți să permiteți instalarea programelor nesemnate?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:71
-msgid "The unsigned software will not be installed."
-msgstr "Programul nesemnat nu va fi instalat."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-#: lib/packagekit-glib2/pk-task-text.c:120
-msgid "Software source signature required"
-msgstr "Este necesară semnătura sursei de programe"
-
-#. TRANSLATORS: the package repository name
-#: lib/packagekit-glib2/pk-task-text.c:126
-msgid "Software source name"
-msgstr "Denumirea sursei de programe"
-
-#. TRANSLATORS: the key URL
-#: lib/packagekit-glib2/pk-task-text.c:129
-msgid "Key URL"
-msgstr "URL cheie"
-
-#. TRANSLATORS: the username of the key
-#: lib/packagekit-glib2/pk-task-text.c:132
-msgid "Key user"
-msgstr "Utilizator cheie"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-#: lib/packagekit-glib2/pk-task-text.c:135
-msgid "Key ID"
-msgstr "ID cheie"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-#: lib/packagekit-glib2/pk-task-text.c:138
-msgid "Key fingerprint"
-msgstr "Amprentă cheie"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: lib/packagekit-glib2/pk-task-text.c:141
-msgid "Key Timestamp"
-msgstr "Amprentă temporală cheie"
-
-#. TRANSLATORS: ask the user if they want to import
-#: lib/packagekit-glib2/pk-task-text.c:154
-msgid "Do you accept this signature?"
-msgstr "Acceptați această semnătură?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:159
-msgid "The signature was not accepted."
-msgstr "Semnătura nu a fost acceptată."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-#: lib/packagekit-glib2/pk-task-text.c:195
-msgid "End user licence agreement required"
-msgstr "Acordul de licență cu utilizatorul final e necesar"
+#. TRANSLATORS: these are packages touched by the transaction
+msgid "Affected packages: None"
+msgstr "Pachete afectate: Niciunul"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: lib/packagekit-glib2/pk-task-text.c:204
 msgid "Agreement"
 msgstr "Acord"
 
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: lib/packagekit-glib2/pk-task-text.c:208
-msgid "Do you accept this agreement?"
-msgstr "Acceptați acest acord?"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "Alias pentru %s"
 
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:213
-msgid "The agreement was not accepted."
-msgstr "Acordul nu a fost acceptat."
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Permite retrogradarea pachetelor în timpul tranzacției"
 
-#. TRANSLATORS: the user needs to change media inserted into the computer
-#: lib/packagekit-glib2/pk-task-text.c:252
-msgid "Media change required"
-msgstr "Este necesară schimbarea suportului"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Permite reinstalarea pachetelor în timpul tranzacției"
 
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: lib/packagekit-glib2/pk-task-text.c:255
-msgid "Media type"
-msgstr "Tip suport"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Permite instalarea pachetelor fără încredere acordată."
 
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: lib/packagekit-glib2/pk-task-text.c:258
-msgid "Media label"
-msgstr "Etichetă suport"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Trebuie o acțiune, cum ar fi „update-packages”"
 
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: lib/packagekit-glib2/pk-task-text.c:261
-msgid "Text"
-msgstr "Text"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "Repornirea aplicației este cerută de:"
 
-#. TRANSLATORS: ask the user to insert the media
-#: lib/packagekit-glib2/pk-task-text.c:267
-msgid "Please insert the correct media"
-msgstr "Introduceți suportul corect"
+msgid "Authentication is required to accept a EULA"
+msgstr "Este necesară autentificarea pentru a accepta EULA"
 
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: lib/packagekit-glib2/pk-task-text.c:272
-msgid "The correct media was not inserted."
-msgstr "Suportul corect nu a fost introdus."
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită de tine"
 
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:287
-msgid "The following packages have to be removed:"
-msgstr "Următoarele pachete trebuiesc eliminate:"
+msgid "Authentication is required to change software repository parameters"
+msgstr "Este necesară autentificarea pentru a schimba parametrii depozitului de programe"
 
-#. TRANSLATORS: When processing, we might have to install other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:292
-msgid "The following packages have to be installed:"
-msgstr "Următoarele pachete trebuiesc instalate:"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Este necesară autentificarea pentru a curăța mesajul despre actualizări offline"
 
-#. TRANSLATORS: When processing, we might have to update other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:297
-msgid "The following packages have to be updated:"
-msgstr "Următoarele pachete trebuiesc actualizate:"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Este necesară autentificarea pentru a acorda încredere unei chei folosite la semnarea programelor"
 
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:302
-msgid "The following packages have to be reinstalled:"
-msgstr "Următoarele pachete trebuiesc reinstalate:"
+msgid "Authentication is required to downgrade software"
+msgstr "Este necesară autentificarea pentru a retrograda programe"
 
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:307
-msgid "The following packages have to be downgraded:"
-msgstr "Următoarele pachete trebuiesc retrogradate:"
+msgid "Authentication is required to install software"
+msgstr "Este necesară autentificarea pentru a instala programe"
 
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:312
-msgid "The following packages have to be obsoleted:"
-msgstr "Următoarele pachete trebuiesc învechite:"
+msgid "Authentication is required to install untrusted software"
+msgstr "Este necesară autentificarea pentru a instala programe fără încredere"
 
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-#: lib/packagekit-glib2/pk-task-text.c:317
-msgid "The following packages are untrusted:"
-msgstr "Următoarele pachete nu sunt de încredere:"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Este necesară autentificarea pentru a împrospăta depozitele sistemului"
 
-#. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:421
-msgid "Proceed with changes?"
-msgstr "Continuați cu modificările?"
+msgid "Authentication is required to reinstall software"
+msgstr "Este necesară autentificarea pentru a reinstala programe"
 
-#. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:426
-msgid "The transaction did not proceed."
-msgstr "Tranzacția nu a continuat."
+msgid "Authentication is required to remove software"
+msgstr "Este necesară autentificarea pentru a elimina programe"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "Este necesară autentificarea pentru a repara programele instalate"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la descărcarea programelor"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "Este necesară autentificarea pentru a declanșa actualizări offline"
+
+msgid "Authentication is required to update software"
+msgstr "Este necesară autentificarea pentru a actualiza programe"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Este necesară autentificarea pentru a înnoi sistemul de operare"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "Autor"
+
+msgid "Automatically remove unused dependencies"
+msgstr "Elimină automat dependențele nefolosite"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "Disponibil"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "Blocată"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Corecție de erori"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+msgid "CVE"
+msgstr "CVE"
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#: policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
 msgstr "Întrerupe sarcina străină"
 
-#: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită de tine"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "Se renunță"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "Se renunță"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "Categorie"
 
 #. SECURITY:
-#. - Normal users need authentication to install signed packages
-#. from signed repositories, because otherwise the system is
-#. only as secure as the least-secure package available in the
-#. repositories.
-#: policy/org.freedesktop.packagekit.policy.in:39
-msgid "Install signed package"
-msgstr "Instalează pachet semnat"
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Schimbă parametrii depozitului de programe"
 
-#: policy/org.freedesktop.packagekit.policy.in:40
-msgid "Authentication is required to install software"
-msgstr "Este necesară autentificarea pentru a instala programe"
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+msgid "Changes"
+msgstr "Modificări"
+
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "Se verifică aplicațiile în uz"
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "Se verifică bibliotecile în uz"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "Se verifică semnături"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Cleaned up"
+msgstr "Curățat"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "Se curăță"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "Se curăță pachete"
 
 #. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:56
-msgid "Install untrusted local file"
-msgstr "Instalează pachet local fără încredere"
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "Curăță mesajul despre actualizare offline"
 
-#: policy/org.freedesktop.packagekit.policy.in:57
-msgid "Authentication is required to install untrusted software"
-msgstr "Este necesară autentificarea pentru a instala programe fără încredere"
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "Comandă eșuată"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "Linia de comandă"
+
+msgid "Command not found, valid commands are:"
+msgstr "Comanda nu a fost găsită, comenzi valide sunt:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "Se comit modificările"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "Se copiază fișiere"
+
+msgid "Debugging Options"
+msgstr "Opțiuni de depanare"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "Descriere"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "Detalii despre actualizare:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "Dosarul nu a fost găsit"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "Dezactivează cronometrul de inactivitate"
+
+#. TRANSLATORS: if the repo is disabled
+msgid "Disabled"
+msgstr "Dezactivat"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "Distribuție"
+
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că e sigur să faceți asta."
+
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Nu instalați acest pachet decât dacă aveți certitudinea că e sigur să faceți asta."
+
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Nu actualizați aceste pachete decât dacă aveți certitudinea că e sigur să faceți asta."
+
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Nu actualizați acest pachet decât dacă aveți certitudinea că e sigur să faceți asta."
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "Acceptați acest acord?"
+
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "Acceptați această semnătură?"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Doriți să permiteți instalarea programelor nesemnate?"
+
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "Nu curăța mediul la pornire"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "Descărcat"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "Se descarcă"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Se descarcă detalii despre depozitele cu programe."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "Se descarcă listele cu fișiere"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "Se descarcă grupuri"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "Se descarcă lista de pachete"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "Se descarcă listele cu modificări"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "Se descarcă pachete"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "Se descarcă informații din depozit"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "Se descarcă informații despre actualizări"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "Durată"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "Activat"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "Acordul de licență cu utilizatorul final e necesar"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "Îmbunătățire"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "Ieși după o mică întârziere"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "Ieși după ce motorul a fost încărcat"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Se aștepta denumire de pachet, dar s-a primit fișier. Încercați să folosiți „pkcon install-local %s” în loc."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "Nu s-a putut contacta PackageKit"
+
+msgid "Failed to get daemon state"
+msgstr "Obținerea stării demonului a eșuat"
+
+msgid "Failed to get properties"
+msgstr "Obținerea proprietăților a eșuat"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "Instalarea pachetelor a eșuat"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "Pornirea a eșuat:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "Încărcarea platformei a eșuat"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Încărcarea fișierului de configurare a eșuat"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Parcurgerea argumentelor a eșuat"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "Parcurgerea liniei de comandă a eșuat"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "Eroare la căutarea fișierului"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "Descărcarea platformei a eșuat"
+
+msgid "False"
+msgstr "Fals"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+msgid "Fatal error"
+msgstr "Eroare fatală"
+
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "Fișierul există deja: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "Încheiat"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "Se generează liste de pachete"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "Se obțin categoriile"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "Se obțin dependențele"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "Se obțin detaliile"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "Se obține lista de fișiere"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "Se obțin informații"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "Se obțin pachetele"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "Se obțin furnizările"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "Se obțin depozitele"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "Se obțin cerințele"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "Se obțin înnoirile de sistem"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "Nu s-a putut obține lista de fișiere"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "Se obțin tranzacțiile"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "Se obțin detaliile actualizării"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "Se obțin actualizări"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "Se obțin înnoirile"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "Pictogramă"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "Importantă"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1492,13 +591,8 @@ msgstr "Este necesară autentificarea pentru a instala programe fără încreder
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "Instalează pachet deja instalat din nou"
-
-#: policy/org.freedesktop.packagekit.policy.in:76
-msgid "Authentication is required to reinstall software"
-msgstr "Este necesară autentificarea pentru a reinstala programe"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1506,41 +600,327 @@ msgstr "Este necesară autentificarea pentru a reinstala programe"
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "Instalează versiune mai veche a pachetului instalat"
 
-#: policy/org.freedesktop.packagekit.policy.in:94
-msgid "Authentication is required to downgrade software"
-msgstr "Este necesară autentificarea pentru a retrograda programe"
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "Instalează pachetul"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Instalează pachetul „%s” pentru a furniza comanda „%s”?"
 
 #. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:111
-msgid "Trust a key used for signing software"
-msgstr "Acordă încredere unei chei folosite la semnarea programelor"
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
+msgid "Install signed package"
+msgstr "Instalează pachet semnat"
 
-#: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "Este necesară autentificarea pentru a acorda încredere unei chei folosite la semnarea programelor"
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "Instalează pachetele fără a cere confirmare"
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-#: policy/org.freedesktop.packagekit.policy.in:128
-msgid "Accept EULA"
-msgstr "Acceptă EULA"
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "Instalează pachet local fără încredere"
 
-#: policy/org.freedesktop.packagekit.policy.in:129
-msgid "Authentication is required to accept a EULA"
-msgstr "Este necesară autentificarea pentru a accepta EULA"
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "Instalat"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "Se instalează"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "Se instalează înnoirea sistemului"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "Se instalează actualizări"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "Se instalează fișiere"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "Se instalează pachete"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "Se instalează semnătura"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "Se instalează actualizări"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "Se instalează actualizări, aceasta ar putea dura..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "Emis"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "ID cheie"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "Amprentă temporală cheie"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "URL cheie"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "Amprentă cheie"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "Utilizator cheie"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "Se încarcă cache-ul"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "Se încarcă listă de pachete."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "Este necesară schimbarea suportului"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "Etichetă suport"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "Tip suport"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Se modifică depozitul"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "Mai mult de un pachet se potrivește:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "Denumire"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "Niciun fișier"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "Niciun pachet nu se cere actualizat la versiuni mai noi."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "Nu a fost găsit niciun pachet"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "Normală"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "Învechit"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "Învechește"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "Se învechește"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "Se învechesc pachete"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Opțiunea „%s” nu este susținută"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "Pachet"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "Descriere pachet"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "Fișiere din pachet"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "Pachetul nu a fost găsit"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "PackageKit"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "Interfață PackageKit pentru consolă"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "Monitor PackageKit"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "Serviciul PackageKit"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "Pachetele care furnizează fișierul acesta sunt:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Platforma de împachetare de folosit, de ex.: dummy"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "Părinte"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "Procentaj"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "Alegeți o comandă pe care să o rulați"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "Alege un pachet pentru a fi instalat"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "Alegeți pachetul corect: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Introduceți un număr între 1 și %i: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "Introduceți suportul corect"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a completa actualizarea."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "Reporniți calculatorul pentru a completa actualizarea."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Pregătește tranzacția doar prin descărcarea pachetelor"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "Actualizări pregătite:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "În locul utilizării unor controale animate, afișează pe ecran o ieșire ce poate fi interpretată ușor de un program"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "Continuați cu modificările?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "Se interoghează"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "Nume real"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "Se repornește după instalarea actualizărilor..."
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Împrospătează depozitele sistemului"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Împrospătează cache-ul"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Împrospătează cache-ul (forțat)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "Se împrospătează cache-ul"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "Se împrospătează lista de programe"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "Reinstalat"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "Se reinstalează"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1551,87 +931,360 @@ msgstr "Este necesară autentificarea pentru a accepta EULA"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
 msgid "Remove package"
 msgstr "Elimină un pachet"
 
-#: policy/org.freedesktop.packagekit.policy.in:149
-msgid "Authentication is required to remove software"
-msgstr "Este necesară autentificarea pentru a elimina programe"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "Eliminat"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-#: policy/org.freedesktop.packagekit.policy.in:167
-msgid "Update software"
-msgstr "Actualizează programe"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "Se elimină"
 
-#: policy/org.freedesktop.packagekit.policy.in:168
-msgid "Authentication is required to update software"
-msgstr "Este necesară autentificarea pentru a actualiza programe"
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "Se elimină pachete"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-#: policy/org.freedesktop.packagekit.policy.in:183
-msgid "Change software repository parameters"
-msgstr "Schimbă parametrii depozitului de programe"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Se elimină depozitul"
 
-#: policy/org.freedesktop.packagekit.policy.in:184
-msgid "Authentication is required to change software repository parameters"
-msgstr "Este necesară autentificarea pentru a schimba parametrii depozitului de programe"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-#: policy/org.freedesktop.packagekit.policy.in:198
-msgid "Refresh system repositories"
-msgstr "Împrospătează depozitele sistemului"
-
-#: policy/org.freedesktop.packagekit.policy.in:199
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Este necesară autentificarea pentru a împrospăta depozitele sistemului"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-#: policy/org.freedesktop.packagekit.policy.in:213
-msgid "Set network proxy"
-msgstr "Definește proxy de rețea"
-
-#: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la descărcarea programelor"
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#: policy/org.freedesktop.packagekit.policy.in:229
-msgid "Upgrade System"
-msgstr "Înnoiește sistemul"
-
-#: policy/org.freedesktop.packagekit.policy.in:230
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Este necesară autentificarea pentru a înnoi sistemul de operare"
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "Se reîmpachetează fișiere"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "Repară sistemul"
 
-#: policy/org.freedesktop.packagekit.policy.in:246
-msgid "Authentication is required to repair the installed software"
-msgstr "Este necesară autentificarea pentru a repara programele instalate"
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "Se cer date"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "Se rezolvă"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "Se rezolvă dependențe"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "Repornește"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "Rezultate:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "Rol"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "Rulează comanda similară:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "Se rulează"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Se execută rutinele"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "Se citesc aplicațiile"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Caută după detalii"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Caută după fișiere"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Caută după denumiri"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "Se caută după detalii"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "Se caută după fișier"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "Se caută după denumire"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "Se caută grupuri"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "Securitate"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "Repornirea sesiunii (securitate) cerută:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "Este necesară repornirea sesiunii:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "Definește proxy de rețea"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Stabilește opțiunile depozitului"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "Definiți filtrul, de ex. instalat"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "Se stabilesc date"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "Arată informații de depanare pentru toate fișierele"
+
+msgid "Show debugging options"
+msgstr "Arată opțiuni de depanare"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "Arată versiunea programului și ieși"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "Arată versiunea și ieși"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "Se oprește după instalarea actualizărilor..."
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "Comanda similară este:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "Comenzile similare sunt:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "Denumirea sursei de programe"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "Este necesară semnătura sursei de programe"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "Se pornește"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "Stare"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "Stare"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "Subcomenzi:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "Reușit"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "Pachetele compatibile sunt:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "Sumar"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "Repornirea sistemului (securitate) este cerută de:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "Repornirea sistemului este cerută de:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "Ora sistemului"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "Se testează modificările"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "Text"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "Acordul nu a fost acceptat."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "Suportul corect nu a fost introdus."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "Demonul a eșuat în mijlocul tranzacției!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "Filtrul specificat a fost nevalid"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "Următoarele pachete nu sunt de încredere:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "Următoarele pachete trebuiesc retrogradate:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "Următoarele pachete trebuiesc instalate:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Următoarele pachete trebuiesc învechite:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "Următoarele pachete trebuiesc reinstalate:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "Următoarele pachete trebuiesc eliminate:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "Următoarele pachete trebuiesc actualizate:"
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "Pachetul care furnizează fișierul acesta este:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "Proxy-ul nu a putut fi definit"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "Semnătura nu a fost acceptată."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "Programul nu este dintr-o sursă de încredere."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "Tranzacția nu a continuat."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "The transaction failed"
+msgstr "Tranzacția a eșuat"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "Programul nesemnat nu va fi instalat."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "Nu sunt pachete de actualizat."
+
+#. TRANSLATORS: print a message when there are no updates
+msgid "There are no updates available at this time."
+msgstr "Nu sunt actualizări disponibile în acest moment."
+
+msgid "There are no upgrades available at this time."
+msgstr "Nu sunt înnoiri disponibile în acest moment."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Această unealtă nu a putut găsi toate pachetele: %s"
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Această unealtă nu a putut găsi niciun pachet disponibil: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Această unealtă nu a putut găsi pachetul instalat: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Această unealtă nu a putut găsi pachetul: %s"
+
+#. TRANSLATORS: this is the time since this role was used
+msgid "Time since"
+msgstr "Timp trecut"
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "Tranzacție"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1640,162 +1293,124 @@ msgstr "Este necesară autentificarea pentru a repara programele instalate"
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:260
-#: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "Declanșează actualizări offline"
 
-#: policy/org.freedesktop.packagekit.policy.in:261
-#: policy/org.freedesktop.packagekit.policy.in:277
-msgid "Authentication is required to trigger offline updates"
-msgstr "Este necesară autentificarea pentru a declanșa actualizări offline"
+#. TRANSLATORS: The type of update
+msgid "Trivial"
+msgstr "Trivială"
+
+msgid "True"
+msgstr "Adevărat"
 
 #. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-#: policy/org.freedesktop.packagekit.policy.in:291
-msgid "Clear offline update message"
-msgstr "Curăță mesajul despre actualizare offline"
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+msgid "Trust a key used for signing software"
+msgstr "Acordă încredere unei chei folosite la semnarea programelor"
 
-#: policy/org.freedesktop.packagekit.policy.in:292
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Este necesară autentificarea pentru a curăța mesajul despre actualizări offline"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "Tip"
 
-#. TRANSLATORS: this is a command alias
-#: src/pk-direct.c:99
-#, c-format
-msgid "Alias to %s"
-msgstr "Alias pentru %s"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Indisponibil"
 
-#: src/pk-direct.c:168
-msgid "Command not found, valid commands are:"
-msgstr "Comanda nu a fost găsită, comenzi valide sunt:"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "Tip de rol necunoscut"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:408 src/pk-main.c:117
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Platforma de împachetare de folosit, de ex.: dummy"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "Stare necunoscută"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:424
-msgid "Refresh the cache"
-msgstr "Împrospătează cache-ul"
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+msgid "Update software"
+msgstr "Actualizează programe"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:428
-msgid "Refresh the cache (forced)"
-msgstr "Împrospătează cache-ul (forțat)"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "Textul actualizării"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:432
-msgid "Search by names"
-msgstr "Caută după denumiri"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "Actualizat"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:436
-msgid "Search by details"
-msgstr "Caută după detalii"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "Actualizează"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:440
-msgid "Search by files"
-msgstr "Caută după fișiere"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "Se actualizează"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:444
-msgid "Install package"
-msgstr "Instalează pachetul"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "Se actualizează pachete"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:452
-msgid "Set repository options"
-msgstr "Stabilește opțiunile depozitului"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "Se actualizează aplicațiile ce rulează"
 
-#. TRANSLATORS: program name
-#: src/pk-direct.c:465
-msgid "PackageKit"
-msgstr "PackageKit"
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "Înnoiește sistemul"
 
-#. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:471
-msgid "Failed to parse arguments"
-msgstr "Parcurgerea argumentelor a eșuat"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "ID utilizator"
 
-#. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:482
-msgid "Failed to load the config file"
-msgstr "Încărcarea fișierului de configurare a eșuat"
+msgid "User aborted selection"
+msgstr "Utilizatorul a abandonat alegerea"
 
-#. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:515
-msgid "Failed to load the backend"
-msgstr "Încărcarea platformei a eșuat"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "Nume de utilizator"
 
-#. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:555
-msgid "Failed to unload the backend"
-msgstr "Descărcarea platformei a eșuat"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "Vânzător"
 
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:120
-msgid "Disable the idle timer"
-msgstr "Dezactivează cronometrul de inactivitate"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "Se așteaptă autentificarea"
 
-#. TRANSLATORS: show version
-#: src/pk-main.c:123
-msgid "Show version and exit"
-msgstr "Arată versiunea și ieși"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "Se așteaptă lacătul gestionarului de pachete"
 
-#. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:126
-msgid "Exit after a small delay"
-msgstr "Ieși după o mică întârziere"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "Se așteaptă lacătul gestionarului de pachete."
 
-#. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:129
-msgid "Exit after the engine has loaded"
-msgstr "Ieși după ce motorul a fost încărcat"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "Se așteaptă în coadă"
 
-#. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:132
-msgid "Don't clear environment on startup"
-msgstr "Nu curăța mediul la pornire"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "Trebuie să specificați un fișier cu listă de creat"
 
-#. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:146
-msgid "PackageKit service"
-msgstr "Serviciul PackageKit"
-
-#. TRANSLATORS: The placeholder is an error message.
-#. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:215
-#, c-format
-msgid "Failed to resolve auto: %s"
-msgstr ""
-
-#. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:239
-#, c-format
-msgid "Failed to load the backend: %s"
-msgstr ""
-
-#. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2734
-msgid "The software is not from a trusted source."
-msgstr "Programul nu este dintr-o sursă de încredere."
-
-#: src/pk-transaction.c:2742
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Nu actualizați acest pachet decât dacă aveți certitudinea că e sigur să faceți asta."
-
-#: src/pk-transaction.c:2743
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Nu actualizați aceste pachete decât dacă aveți certitudinea că e sigur să faceți asta."
-
-#: src/pk-transaction.c:2753
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Nu instalați acest pachet decât dacă aveți certitudinea că e sigur să faceți asta."
-
-#: src/pk-transaction.c:2754
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că e sigur să faceți asta."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "comanda nu a fost găsită"

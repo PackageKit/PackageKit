@@ -1,15 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-# 
+#
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-08 21:31+0100\n"
-"PO-Revision-Date: 2010-12-13 12:37+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Sinhala (http://app.transifex.com/freedesktop/packagekit/language/si/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,1472 +14,574 @@ msgstr ""
 "Language: si\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
-msgid "Config file was not found."
-msgstr ""
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr ""
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-#: client/pk-console.c:165 client/pk-console.c:560
-msgid "Transaction"
-msgstr "ගනුදෙනුව"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-#: client/pk-console.c:167
-msgid "System time"
-msgstr "පද්ධති කාලය"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pk-console.c:169
-msgid "Succeeded"
-msgstr "සාර්ථක විය"
-
-#: client/pk-console.c:169
-msgid "True"
-msgstr "සැබෑ"
-
-#: client/pk-console.c:169
-msgid "False"
-msgstr "බොරු"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pk-console.c:171
-msgid "Role"
-msgstr "කාර්යභාරය"
-
-#. TRANSLATORS: this is The duration of the transaction
-#: client/pk-console.c:176
-msgid "Duration"
-msgstr "කාල සීමාව"
-
-#: client/pk-console.c:176
 msgid "(seconds)"
 msgstr "(තත්පර)"
 
-#. TRANSLATORS: this is The command line used to do the action
-#: client/pk-console.c:180
-msgid "Command line"
-msgstr "විධාන රේඛාව"
-
-#. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pk-console.c:182
-msgid "User ID"
-msgstr "පරිශීලක ID"
-
-#. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pk-console.c:189
-msgid "Username"
-msgstr "පරිශීලක නාමය"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pk-console.c:193
-msgid "Real name"
-msgstr "සැබෑ නම"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pk-console.c:201
-msgid "Affected packages:"
-msgstr "බලපෑමට ලක් වූ පැකේජ:"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pk-console.c:204
-msgid "Affected packages: None"
-msgstr "බලපෑමට ලක් වූ පැකේජ: කිසිවක් නැත"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pk-console.c:230
-msgid "Distribution"
-msgstr "බෙදා හැරීම"
-
-#. TRANSLATORS: this is type of update, stable or testing
-#: client/pk-console.c:232
-msgid "Type"
-msgstr "ටයිප් කරන්න"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: client/pk-console.c:234 client/pk-console.c:267
-msgid "Summary"
-msgstr "සාරාංශය"
-
-#. TRANSLATORS: this is the group category name
-#: client/pk-console.c:256
-msgid "Category"
-msgstr "වර්ගය"
-
-#. TRANSLATORS: this is group identifier
-#: client/pk-console.c:258
-msgid "ID"
-msgstr "හැඳුනුම්පත"
-
-#. TRANSLATORS: this is the parent group
-#: client/pk-console.c:261
-msgid "Parent"
-msgstr "දෙමාපිය"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-#: client/pk-console.c:264 client/pk-console.c:2286
-msgid "Name"
-msgstr "නම"
-
-#. TRANSLATORS: this is preferred icon for the group
-#: client/pk-console.c:270
-msgid "Icon"
-msgstr "නිරූපකය"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-#: client/pk-console.c:308
-msgid "Details about the update:"
-msgstr "යාවත්කාලීන කිරීම පිළිබඳ විස්තර:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-#: client/pk-console.c:314 client/pk-console.c:579
-#: lib/packagekit-glib2/pk-task-text.c:123
-#: lib/packagekit-glib2/pk-task-text.c:198
-msgid "Package"
-msgstr "පැකේජය"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-#: client/pk-console.c:319
-msgid "Updates"
-msgstr "යාවත්කාලීන"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-#: client/pk-console.c:326
-msgid "Obsoletes"
-msgstr "යල් පැන ගිය ඒවා"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:201
-msgid "Vendor"
-msgstr "වෙළෙන්දා"
-
-#. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pk-console.c:338
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-#. TRANSLATORS: details about the update, the CVE URLs
-#: client/pk-console.c:344
-msgid "CVE"
-msgstr "CVE"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-#: client/pk-console.c:350
-msgid "Restart"
-msgstr "යළි අරඹන්න"
-
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-#: client/pk-console.c:355
-msgid "Update text"
-msgstr "පෙළ යාවත්කාලීන කරන්න"
-
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-#: client/pk-console.c:360
-msgid "Changes"
-msgstr "වෙනස්කම්"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-#: client/pk-console.c:365
-msgid "State"
-msgstr "රජයේ"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-#: client/pk-console.c:370
-msgid "Issued"
-msgstr "නිකුත් කළ"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-#: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1087
-msgid "Updated"
-msgstr "යාවත්කාලීන කරන ලදී"
-
-#. TRANSLATORS: if the repo is enabled
-#: client/pk-console.c:397
-msgid "Enabled"
-msgstr "සබල කර ඇත"
-
-#. TRANSLATORS: if the repo is disabled
-#: client/pk-console.c:400
-msgid "Disabled"
-msgstr "ආබාධිතයි"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#: client/pk-console.c:429
-msgid "System restart required by:"
-msgstr "පද්ධතිය නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#: client/pk-console.c:432
-msgid "Session restart required:"
-msgstr "සැසිය නැවත ආරම්භ කිරීම අවශ්‍යයි:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-#: client/pk-console.c:436
-msgid "System restart (security) required by:"
-msgstr "පද්ධතිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වන්නේ:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-#: client/pk-console.c:440
-msgid "Session restart (security) required:"
-msgstr "සැසිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වේ:"
-
-#. TRANSLATORS: a package requires the application to be restarted
-#: client/pk-console.c:443
-msgid "Application restart required by:"
-msgstr "යෙදුම නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
-
-#. TRANSLATORS: This a list of details about the package
-#: client/pk-console.c:474
-msgid "Package description"
-msgstr "පැකේජ විස්තරය"
-
-#. TRANSLATORS: This where the package has no files
-#: client/pk-console.c:494
-msgid "No files"
-msgstr "ගොනු නැත"
-
-#. TRANSLATORS: This a list files contained in the package
-#: client/pk-console.c:499
-msgid "Package files"
-msgstr "පැකේජ ගොනු"
-
-#. TRANSLATORS: the percentage complete of the transaction
-#: client/pk-console.c:595
-msgid "Percentage"
-msgstr "ප්රතිශතය"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pk-console.c:618
-msgid "Status"
-msgstr "තත්ත්වය"
-
-#. TRANSLATORS: the results from the transaction
-#: client/pk-console.c:659
-msgid "Results:"
-msgstr "ප්රතිපල:"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-#: client/pk-console.c:667 client/pk-console.c:827
-msgid "Fatal error"
-msgstr "මාරාන්තික දෝෂයක්"
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-#: client/pk-console.c:692
-msgid "There are no packages to update."
-msgstr "යාවත්කාලීන කිරීමට පැකේජ නොමැත."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pk-console.c:696
-#: contrib/command-not-found/pk-command-not-found.c:670
-msgid "The transaction failed"
-msgstr "ගනුදෙනුව අසාර්ථක විය"
-
-#. TRANSLATORS: print a message when there are no updates
-#: client/pk-console.c:725
-msgid "There are no updates available at this time."
-msgstr "මෙම අවස්ථාවේදී යාවත්කාලීන කිසිවක් නොමැත."
-
-#: client/pk-console.c:748
-msgid "There are no upgrades available at this time."
-msgstr "මෙම අවස්ථාවේදී ලබා ගත හැකි වැඩිදියුණු කිරීම් නොමැත."
-
-#. TRANSLATORS: a package needs to restart their system
-#: client/pk-console.c:810
-msgid "Please restart the computer to complete the update."
-msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
-
-#. TRANSLATORS: a package needs to restart the session
-#: client/pk-console.c:813
-msgid "Please logout and login to complete the update."
-msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pk-console.c:816
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr "වැදගත් ආරක්ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pk-console.c:819
-msgid ""
-"Please logout and login to complete the update as important security updates"
-" have been installed."
-msgstr "වැදගත් ආරක්‍ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pk-console.c:897
-msgid "More than one package matches:"
-msgstr "පැකේජ එකකට වඩා ගැලපේ:"
-
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pk-console.c:909
-msgid "Please choose the correct package: "
-msgstr "කරුණාකර නිවැරදි පැකේජය තෝරන්න: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-#: client/pk-console.c:946
-msgid "Package not found"
-msgstr "පැකේජය හමු නොවීය"
-
-#. TRANSLATORS: we couldn't find anything
-#: client/pk-console.c:964
-msgid "No packages were found"
-msgstr "පැකේජ කිසිවක් හමු නොවීය"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#: client/pk-console.c:989
-#, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s'"
-" instead."
-msgstr "අපේක්ෂිත පැකේජයේ නම, ඇත්ත වශයෙන්ම ගොනුව ලැබී ඇත. ඒ වෙනුවට 'pkcon install-local %s' භාවිතා කිරීමට උත්සාහ කරන්න."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#: client/pk-console.c:1024
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයාගත නොහැකි විය: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pk-console.c:1041
-msgid "This tool could not find any available package."
-msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයා ගත නොහැකි විය."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-#: client/pk-console.c:1050
-msgid "The selected packages may already be installed."
-msgstr "තෝරාගත් පැකේජ දැනටමත් ස්ථාපනය කර තිබිය හැක."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pk-console.c:1078
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "මෙම මෙවලම ස්ථාපිත පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pk-console.c:1107 client/pk-console.c:1138
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "මෙම මෙවලම පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-#: client/pk-console.c:1183
-msgid "No packages require updating to newer versions."
-msgstr "කිසිදු පැකේජයක් නව අනුවාදවලට යාවත්කාලීන කිරීම අවශ්‍ය නොවේ."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#: client/pk-console.c:1221 client/pk-console.c:1250 client/pk-console.c:1289
-#: client/pk-console.c:1348 client/pk-console.c:1376
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "මෙම මෙවලමට සියලුම පැකේජ සොයා ගැනීමට නොහැකි විය: %s"
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pk-console.c:1403
-msgid "The daemon crashed mid-transaction!"
-msgstr "ඩීමන් ගනුදෙනුව මැද කඩා වැටුණි!"
-
-#. TRANSLATORS: This is the header to the --help menu
-#: client/pk-console.c:1425
-msgid "PackageKit Console Interface"
-msgstr "PackageKit කොන්සෝල අතුරුමුහුණත"
-
-#. these are commands we can use with pkcon
-#: client/pk-console.c:1427
-msgid "Subcommands:"
-msgstr "උප විධාන:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pk-console.c:1514
-msgid "Failed to get the time since this action was last completed"
-msgstr "මෙම ක්‍රියාව අවසන් වරට සම්පූර්ණ කළ දින සිට කාලය ලබා ගැනීමට අපොහොසත් විය"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pk-console.c:1518
-msgid "Time since"
-msgstr "ඉඳලා කාලය"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-#: client/pk-console.c:1538
-msgid "Prepared updates:"
-msgstr "සූදානම් කළ යාවත්කාලීන:"
-
-#. TRANSLATORS: The network settings could not be sent
-#: client/pk-console.c:1607
-msgid "The proxy could not be set"
-msgstr "ප්‍රොක්සිය සැකසිය නොහැක"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pk-console.c:1649 client/pk-monitor.c:324
-msgid "Show the program version and exit"
-msgstr "වැඩසටහනේ අනුවාදය පෙන්වන්න සහ පිටවන්න"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pk-console.c:1652
-msgid "Set the filter, e.g. installed"
-msgstr "පෙරහන සකසන්න, උදා: ස්ථාපනය කර ඇත"
-
-#. command line argument, do we ask questions
-#: client/pk-console.c:1655
-msgid "Install the packages without asking for confirmation"
-msgstr "තහවුරු කිරීමකින් තොරව පැකේජ ස්ථාපනය කරන්න"
-
-#. command line argument, do we just download or apply changes
-#: client/pk-console.c:1658
-msgid "Prepare the transaction by downloading packages only"
-msgstr "පැකේජ බාගත කිරීමෙන් පමණක් ගනුදෙනුව සූදානම් කරන්න"
-
-#. command line argument, do we allow package downgrades
-#: client/pk-console.c:1661
-msgid "Allow packages to be downgraded during transaction"
-msgstr "ගනුදෙනුව අතරතුර පැකේජ පහත හෙලීමට ඉඩ දෙන්න"
-
-#: client/pk-console.c:1663
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "ගනුදෙනුව අතරතුර පැකේජ නැවත ස්ථාපනය කිරීමට ඉඩ දෙන්න"
-
-#: client/pk-console.c:1665
-msgid "Automatically remove unused dependencies"
-msgstr "භාවිතයට නොගත් පරායත්තතා ස්වයංක්‍රීයව ඉවත් කරන්න"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pk-console.c:1668
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "idle network bandwidth භාවිතයෙන් සහ අඩු බලයක් භාවිතා කරමින් විධානය ක්‍රියාත්මක කරන්න"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pk-console.c:1671
-msgid ""
-"Print to screen a machine readable output, rather than using animated "
-"widgets"
-msgstr "සජීවිකරණ විජට් භාවිතා කරනවාට වඩා යන්ත්‍රයෙන් කියවිය හැකි ප්‍රතිදානයක් තිරගත කිරීමට මුද්‍රණය කරන්න"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pk-console.c:1674
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-
-#. command line argument, do we ask questions
-#: client/pk-console.c:1677
-msgid "Allow untrusted packages to be installed."
-msgstr "විශ්වාස නොකළ පැකේජ ස්ථාපනය කිරීමට ඉඩ දෙන්න."
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pk-console.c:1715
-msgid "Failed to parse command line"
-msgstr "විධාන රේඛාව විග්‍රහ කිරීමට අසමත් විය"
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pk-console.c:1725
-msgid "Failed to contact PackageKit"
-msgstr "PackageKit සම්බන්ධ කර ගැනීමට අසමත් විය"
-
 #. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pk-console.c:1788
-msgid "The filter specified was invalid"
-msgstr "සඳහන් කළ පෙරහන වලංගු නොවේ"
+#. * an invalid action
+msgid "A correct role is required"
+msgstr "නිවැරදි භූමිකාවක් අවශ්ය වේ"
 
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-#: client/pk-console.c:1814
-msgid "A search type is required, e.g. name"
-msgstr "සෙවුම් වර්ගයක් අවශ්‍ය වේ, උදා: නම"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+msgid "A destination directory and the package names to download are required"
+msgstr "ගමනාන්ත නාමාවලියක් සහ බාගත කිරීමට පැකේජ නම් අවශ්‍ය වේ"
 
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-#: client/pk-console.c:1824 client/pk-console.c:1841 client/pk-console.c:1858
-#: client/pk-console.c:1875
-msgid "A search term is required"
-msgstr "සෙවුම් පදයක් අවශ්‍ය වේ"
+msgid "A filename is required"
+msgstr "ගොනු නාමයක් අවශ්ය වේ"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: client/pk-console.c:1901
-msgid "A package name to install is required"
-msgstr "ස්ථාපනය කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pk-console.c:1915
 msgid "A filename to install is required"
 msgstr "ස්ථාපනය කිරීමට ගොනු නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: client/pk-console.c:1931
-msgid "A type, key_id and package_id are required"
-msgstr "වර්ගයක්, key_id සහ pack_id අවශ්‍ය වේ"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-#: client/pk-console.c:1949
-msgid "A package name to remove is required"
-msgstr "ඉවත් කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-#: client/pk-console.c:1962
-msgid "A destination directory and the package names to download are required"
-msgstr "ගමනාන්ත නාමාවලියක් සහ බාගත කිරීමට පැකේජ නම් අවශ්‍ය වේ"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-#: client/pk-console.c:1972
-msgid "Directory not found"
-msgstr "නාමාවලිය හමු නොවීය"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pk-console.c:1987
 msgid "A licence identifier (eula-id) is required"
 msgstr "බලපත්‍ර හැඳුනුම්කාරකයක් (eula-id) අවශ්‍ය වේ"
 
 #. TRANSLATORS: The user did not
-#. * specify a package name
-#: client/pk-console.c:2013
-msgid "A package name to resolve is required"
-msgstr "විසඳීමට පැකේජ නාමයක් අවශ්‍ය වේ"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-#: client/pk-console.c:2030 client/pk-console.c:2047
-msgid "A repository name is required"
-msgstr "ගබඩා නාමයක් අවශ්‍ය වේ"
-
-#: client/pk-console.c:2063
-msgid "A repo name, parameter and value are required"
-msgstr "Repo නමක්, පරාමිතියක් සහ අගයක් අවශ්‍ය වේ"
-
-#: client/pk-console.c:2080
-msgid "A repo id and autoremove required"
-msgstr "repo id සහ autoremove අවශ්‍යයි"
-
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pk-console.c:2107
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "ක්‍රියාවක්, උදා: 'යාවත්කාලීන-පැකේජ' අවශ්‍ය වේ"
-
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pk-console.c:2117
-msgid "A correct role is required"
-msgstr "නිවැරදි භූමිකාවක් අවශ්ය වේ"
-
-#. TRANSLATORS: The user did not
 #. * provide a package name
-#: client/pk-console.c:2137 client/pk-console.c:2154 client/pk-console.c:2166
-#: client/pk-console.c:2196 client/pk-console.c:2229
 msgid "A package name is required"
 msgstr "පැකේජයේ නමක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+msgid "A package name to install is required"
+msgstr "ස්ථාපනය කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+msgid "A package name to remove is required"
+msgstr "ඉවත් කිරීමට පැකේජ නාමයක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+msgid "A package name to resolve is required"
+msgstr "විසඳීමට පැකේජ නාමයක් අවශ්‍ය වේ"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: client/pk-console.c:2180
 msgid "A package provide string is required"
 msgstr "තන්තුවක් සපයන පැකේජයක් අවශ්‍ය වේ"
 
-#: client/pk-console.c:2207 client/pk-console.c:2218
-msgid "A filename is required"
-msgstr "ගොනු නාමයක් අවශ්ය වේ"
-
-#. TRANSLATORS: this is the description of the backend
-#: client/pk-console.c:2290
-msgid "Description"
-msgstr "විස්තර"
-
-#. TRANSLATORS: this is the author of the backend
-#: client/pk-console.c:2294
-msgid "Author"
-msgstr "කර්තෘ"
-
-#. TRANSLATORS: The user did not provide a distro name
-#: client/pk-console.c:2364
-msgid "You need to specify a list file to create"
-msgstr "නිර්මාණය කිරීමට ඔබ ලැයිස්තු ගොනුවක් සඳහන් කළ යුතුය"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#: client/pk-console.c:2377
-#, c-format
-msgid "File already exists: %s"
-msgstr "ගොනුව දැනටමත් පවතී: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#: client/pk-console.c:2395
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "'%s' විකල්පය සහය නොදක්වයි"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#: client/pk-console.c:2405
-msgid "Command failed"
-msgstr "විධානය අසාර්ථක විය"
-
-#: client/pk-monitor.c:261
-msgid "Failed to get daemon state"
-msgstr "ඩීමන් තත්වය ලබා ගැනීමට අසමත් විය"
-
-#: client/pk-monitor.c:304
-msgid "Failed to get properties"
-msgstr "දේපල ලබා ගැනීමට අපොහොසත් විය"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pk-monitor.c:335
-msgid "PackageKit Monitor"
-msgstr "PackageKit මොනිටරය"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:157
-msgid "Installing System Upgrade"
-msgstr "පද්ධති උත්ශ්‍රේණි කිරීම ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:161
-msgid "Installing Updates"
-msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:197
-msgid "Rebooting after installing updates…"
-msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු නැවත ආරම්භ කිරීම"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:239
-msgid "Shutting down after installing updates…"
-msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු වසා දැමීම"
-
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:380
-msgid "Installing updates; this could take a while..."
-msgstr "යාවත්කාලීන ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:417
-msgid "Installing system upgrade; this could take a while..."
-msgstr "පද්ධතිය වැඩිදියුණු කිරීම ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
-
-#. TRANSLATORS: downloading repo data so we can search
-#: contrib/command-not-found/pk-command-not-found.c:427
-msgid "Downloading details about the software repositories."
-msgstr "මෘදුකාංග ගබඩා පිළිබඳ විස්තර බාගත කිරීම."
-
-#. TRANSLATORS: downloading file lists so we can search
-#: contrib/command-not-found/pk-command-not-found.c:431
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "ගොනු ලැයිස්තු බාගැනීම (මෙය සම්පූර්ණ කිරීමට යම් කාලයක් ගත විය හැක)."
-
-#. TRANSLATORS: waiting for native lock
-#: contrib/command-not-found/pk-command-not-found.c:435
-msgid "Waiting for package manager lock."
-msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්."
-
-#. TRANSLATORS: loading package cache so we can search
-#: contrib/command-not-found/pk-command-not-found.c:439
-msgid "Loading list of packages."
-msgstr "පැකේජ ලැයිස්තුව පූරණය වේ."
-
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: contrib/command-not-found/pk-command-not-found.c:499
-msgid "Failed to search for file"
-msgstr "ගොනුව සෙවීමට අසමත් විය"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: contrib/command-not-found/pk-command-not-found.c:511
-msgid "Getting the list of files failed"
-msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම අසාර්ථක විය"
-
-#. TRANSLATORS: we failed to launch the executable, the error follows
-#: contrib/command-not-found/pk-command-not-found.c:643
-msgid "Failed to launch:"
-msgstr "දියත් කිරීමට අසමත් විය:"
-
-#. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:662
-msgid "Failed to install packages"
-msgstr "පැකේජ ස්ථාපනය කිරීමට අසමත් විය"
-
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:781
-msgid "command not found"
-msgstr "විධානය සොයාගත නොහැකි"
-
-#. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:802
-msgid "Similar command is:"
-msgstr "සමාන විධානය වන්නේ:"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:815
-msgid "Run similar command:"
-msgstr "සමාන විධානයක් ක්‍රියාත්මක කරන්න:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:827
-#: contrib/command-not-found/pk-command-not-found.c:836
-msgid "Similar commands are:"
-msgstr "සමාන විධාන වන්නේ:"
-
-#. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:843
-msgid "Please choose a command to run"
-msgstr "කරුණාකර ධාවනය කිරීමට විධානයක් තෝරන්න"
-
-#. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:863
-msgid "The package providing this file is:"
-msgstr "මෙම ගොනුව සපයන පැකේජය වන්නේ:"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#: contrib/command-not-found/pk-command-not-found.c:870
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%s' විධානය ලබා දීමට '%s' පැකේජය ස්ථාපනය කරන්නද?"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:893
-msgid "Packages providing this file are:"
-msgstr "මෙම ගොනුව සපයන පැකේජ:"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-#: contrib/command-not-found/pk-command-not-found.c:903
-msgid "Suitable packages are:"
-msgstr "සුදුසු පැකේජ නම්:"
-
-#. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:911
-msgid "Please choose a package to install"
-msgstr "කරුණාකර ස්ථාපනය කිරීමට පැකේජයක් තෝරන්න"
-
-#: contrib/command-not-found/pk-command-not-found.c:913
-msgid "User aborted selection"
-msgstr "පරිශීලක තේරීම නවත්වන ලදී"
-
-#: lib/packagekit-glib2/pk-console-shared.c:73
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "කරුණාකර 1 සිට %iදක්වා අංකයක් ඇතුළු කරන්න: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-shared.c:202
-msgid "Unknown state"
-msgstr "නොදන්නා තත්වය"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-shared.c:206
-msgid "Starting"
-msgstr "පටන් ගන්නවා"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-#: lib/packagekit-glib2/pk-console-shared.c:210
-msgid "Waiting in queue"
-msgstr "පෝලිමේ බලාගෙන ඉන්නවා"
-
-#. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-shared.c:214
-msgid "Running"
-msgstr "දුවනවා"
-
-#. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-shared.c:218
-msgid "Querying"
-msgstr "විමසනවා"
-
-#. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:222
-msgid "Getting information"
-msgstr "තොරතුරු ලබා ගැනීම"
-
-#. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-shared.c:226
-msgid "Removing packages"
-msgstr "පැකේජ ඉවත් කිරීම"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-shared.c:230
-#: lib/packagekit-glib2/pk-enum.c:1238
-msgid "Downloading packages"
-msgstr "පැකේජ බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-shared.c:234
-msgid "Installing packages"
-msgstr "පැකේජ ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-shared.c:238
-msgid "Refreshing software list"
-msgstr "මෘදුකාංග ලැයිස්තුව නැවුම් කිරීම"
-
-#. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-shared.c:242
-msgid "Installing updates"
-msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-#: lib/packagekit-glib2/pk-console-shared.c:246
-msgid "Cleaning up packages"
-msgstr "පැකේජ පිරිසිදු කිරීම"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-shared.c:250
-msgid "Obsoleting packages"
-msgstr "යල් පැන ගිය පැකේජ"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-shared.c:254
-msgid "Resolving dependencies"
-msgstr "පරායත්තතා විසඳීම"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-#: lib/packagekit-glib2/pk-console-shared.c:258
-msgid "Checking signatures"
-msgstr "අත්සන් පරීක්ෂා කිරීම"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-shared.c:262
-msgid "Testing changes"
-msgstr "පරීක්ෂණ වෙනස්කම්"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-#: lib/packagekit-glib2/pk-console-shared.c:266
-msgid "Committing changes"
-msgstr "වෙනස්කම් සිදු කිරීම"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:270
-msgid "Requesting data"
-msgstr "දත්ත ඉල්ලා සිටීම"
-
-#. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-shared.c:274
-msgid "Finished"
-msgstr "අවසන්"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-shared.c:278
-msgid "Cancelling"
-msgstr "අවලංගු කරනවා"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:282
-msgid "Downloading repository information"
-msgstr "ගබඩා තොරතුරු බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:286
-msgid "Downloading list of packages"
-msgstr "පැකේජ ලැයිස්තුව බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:290
-msgid "Downloading file lists"
-msgstr "ගොනු ලැයිස්තු බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:294
-msgid "Downloading lists of changes"
-msgstr "වෙනස්කම් ලැයිස්තුව බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:298
-msgid "Downloading groups"
-msgstr "කණ්ඩායම් බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:302
-msgid "Downloading update information"
-msgstr "යාවත්කාලීන තොරතුරු බාගත කිරීම"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-shared.c:306
-msgid "Repackaging files"
-msgstr "ගොනු නැවත ඇසුරුම් කිරීම"
-
-#. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-shared.c:310
-msgid "Loading cache"
-msgstr "හැඹිලිය පූරණය වේ"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-shared.c:314
-msgid "Scanning applications"
-msgstr "යෙදුම් ස්කෑන් කිරීම"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-#: lib/packagekit-glib2/pk-console-shared.c:318
-msgid "Generating package lists"
-msgstr "පැකේජ ලැයිස්තු උත්පාදනය කිරීම"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-#: lib/packagekit-glib2/pk-console-shared.c:322
-msgid "Waiting for package manager lock"
-msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-shared.c:326
-msgid "Waiting for authentication"
-msgstr "සත්‍යාපනය සඳහා රැඳී සිටිමින්"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-shared.c:330
-msgid "Updating running applications"
-msgstr "ධාවනය වන යෙදුම් යාවත්කාලීන කිරීම"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently
-#. in use
-#: lib/packagekit-glib2/pk-console-shared.c:334
-msgid "Checking applications in use"
-msgstr "භාවිතයේ ඇති යෙදුම් පරීක්ෂා කිරීම"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in
-#. use
-#: lib/packagekit-glib2/pk-console-shared.c:338
-msgid "Checking libraries in use"
-msgstr "භාවිතයේ ඇති පුස්තකාල පරීක්ෂා කිරීම"
-
-#. TRANSLATORS: transaction state, we are copying package files before or
-#. after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:342
-msgid "Copying files"
-msgstr "ගොනු පිටපත් කිරීම"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-#: lib/packagekit-glib2/pk-console-shared.c:346
-msgid "Running hooks"
-msgstr "ධාවන කොකු"
-
-#. TRANSLATORS: turn on all debugging
-#: lib/packagekit-glib2/pk-debug.c:142
-msgid "Show debugging information for all files"
-msgstr "සියලුම ගොනු සඳහා නිදොස් කිරීමේ තොරතුරු පෙන්වන්න"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Debugging Options"
-msgstr "දෝශ නිරාකරණ විකල්ප"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Show debugging options"
-msgstr "නිදොස් කිරීමේ විකල්ප පෙන්වන්න"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:971
-msgid "Trivial"
-msgstr "සුළු සුළුය"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:975
-msgid "Normal"
-msgstr "සාමාන්යයි"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:979
-msgid "Important"
-msgstr "වැදගත්"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:983
-msgid "Security"
-msgstr "ආරක්ෂක"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:987
-msgid "Bug fix"
-msgstr "දෝෂ නිවැරදි කිරීම"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:991
-msgid "Enhancement"
-msgstr "වැඩිදියුණු කිරීම"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:995
-msgid "Blocked"
-msgstr "අවහිර කර ඇත"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1000 lib/packagekit-glib2/pk-enum.c:1091
-msgid "Installed"
-msgstr "ස්ථාපනය කර ඇත"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1005
-msgid "Available"
-msgstr "පවතින"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1009
-msgid "Unavailable"
-msgstr "ලබා ගත නොහැක"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1034
-msgid "Downloading"
-msgstr "බාගත කිරීම"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1038
-msgid "Updating"
-msgstr "යාවත්කාලීන කිරීම"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1042 lib/packagekit-glib2/pk-enum.c:1177
-msgid "Installing"
-msgstr "ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1046 lib/packagekit-glib2/pk-enum.c:1173
-msgid "Removing"
-msgstr "ඉවත් කිරීම"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1050
-msgid "Cleaning up"
-msgstr "සුද්ද කරනවා"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1054
-msgid "Obsoleting"
-msgstr "යල්පැන යනවා"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1058
-msgid "Reinstalling"
-msgstr "නැවත ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1083
-msgid "Downloaded"
-msgstr "බාගත කර ඇත"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1095
-msgid "Removed"
-msgstr "ඉවත් කරන ලදී"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1099
-msgid "Cleaned up"
-msgstr "සුද්ද කළා"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1103
-msgid "Obsoleted"
-msgstr "යල් පැන ගිය"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1107
-msgid "Reinstalled"
-msgstr "නැවත ස්ථාපනය කරන ලදී"
+msgid "A repo id and autoremove required"
+msgstr "repo id සහ autoremove අවශ්‍යයි"
+
+msgid "A repo name, parameter and value are required"
+msgstr "Repo නමක්, පරාමිතියක් සහ අගයක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+msgid "A repository name is required"
+msgstr "ගබඩා නාමයක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+msgid "A search term is required"
+msgstr "සෙවුම් පදයක් අවශ්‍ය වේ"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+msgid "A search type is required, e.g. name"
+msgstr "සෙවුම් වර්ගයක් අවශ්‍ය වේ, උදා: නම"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+msgid "A type, key_id and package_id are required"
+msgstr "වර්ගයක්, key_id සහ pack_id අවශ්‍ය වේ"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+msgid "Accept EULA"
+msgstr "EULA පිළිගන්න"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1132
-msgid "Unknown role type"
-msgstr "නොදන්නා භූමිකාවේ වර්ගය"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1136
-msgid "Getting dependencies"
-msgstr "පරායත්තතා ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1140
-msgid "Getting update details"
-msgstr "යාවත්කාලීන විස්තර ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1145
-msgid "Getting details"
-msgstr "විස්තර ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1149
-msgid "Getting requires"
-msgstr "ලබා ගැනීම අවශ්ය වේ"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1153
-msgid "Getting updates"
-msgstr "යාවත්කාලීන ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1157
-msgid "Searching by details"
-msgstr "විස්තර අනුව සොයනවා"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1161
-msgid "Searching by file"
-msgstr "ගොනුව අනුව සෙවීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1165
-msgid "Searching groups"
-msgstr "කණ්ඩායම් සෙවීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1169
-msgid "Searching by name"
-msgstr "නමින් සොයනවා"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1181
-msgid "Installing files"
-msgstr "ගොනු ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1185
-msgid "Refreshing cache"
-msgstr "නැවුම් හැඹිලිය"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1189
-msgid "Updating packages"
-msgstr "පැකේජ යාවත්කාලීන කිරීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1193
-msgid "Canceling"
-msgstr "අවලංගු කරනවා"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1197
-msgid "Getting repositories"
-msgstr "ගබඩා ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1201
-msgid "Modifying repository"
-msgstr "ගබඩාව වෙනස් කිරීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1205
-msgid "Setting data"
-msgstr "දත්ත සැකසීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1209
-msgid "Removing repository"
-msgstr "ගබඩාව ඉවත් කිරීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1213
-msgid "Resolving"
-msgstr "විසඳනවා"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1218
-msgid "Getting file list"
-msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1222
-msgid "Getting provides"
-msgstr "ලබා ගැනීම සපයයි"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1226
-msgid "Installing signature"
-msgstr "අත්සන ස්ථාපනය කිරීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1230
-msgid "Getting packages"
-msgstr "පැකේජ ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1234
 msgid "Accepting EULA"
 msgstr "EULA පිළිගැනීම"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1242
-msgid "Getting upgrades"
-msgstr "උසස්වීම් ලබා ගැනීම"
+#. TRANSLATORS: these are packages touched by the transaction
+msgid "Affected packages:"
+msgstr "බලපෑමට ලක් වූ පැකේජ:"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1246
-msgid "Getting categories"
-msgstr "කාණ්ඩ ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1250
-msgid "Getting transactions"
-msgstr "ගනුදෙනු ලබා ගැනීම"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1254
-msgid "Getting system upgrades"
-msgstr "පද්ධති වැඩිදියුණු කිරීම් ලබා ගැනීම"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-#: lib/packagekit-glib2/pk-task-text.c:66
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "ඔබට අත්සන් නොකළ මෘදුකාංග ස්ථාපනය කිරීමට ඉඩ දීමට අවශ්‍යද?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:71
-msgid "The unsigned software will not be installed."
-msgstr "අත්සන් නොකළ මෘදුකාංගය ස්ථාපනය නොකෙරේ."
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-#: lib/packagekit-glib2/pk-task-text.c:120
-msgid "Software source signature required"
-msgstr "මෘදුකාංග මූලාශ්‍ර අත්සන අවශ්‍යයි"
-
-#. TRANSLATORS: the package repository name
-#: lib/packagekit-glib2/pk-task-text.c:126
-msgid "Software source name"
-msgstr "මෘදුකාංග මූලාශ්‍ර නාමය"
-
-#. TRANSLATORS: the key URL
-#: lib/packagekit-glib2/pk-task-text.c:129
-msgid "Key URL"
-msgstr "ප්රධාන URL"
-
-#. TRANSLATORS: the username of the key
-#: lib/packagekit-glib2/pk-task-text.c:132
-msgid "Key user"
-msgstr "ප්රධාන පරිශීලක"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-#: lib/packagekit-glib2/pk-task-text.c:135
-msgid "Key ID"
-msgstr "යතුරු හැඳුනුම්පත"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-#: lib/packagekit-glib2/pk-task-text.c:138
-msgid "Key fingerprint"
-msgstr "යතුරු ඇඟිලි සලකුණ"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: lib/packagekit-glib2/pk-task-text.c:141
-msgid "Key Timestamp"
-msgstr "ප්රධාන කාල මුද්රාව"
-
-#. TRANSLATORS: ask the user if they want to import
-#: lib/packagekit-glib2/pk-task-text.c:154
-msgid "Do you accept this signature?"
-msgstr "ඔබ මෙම අත්සන පිළිගන්නවාද?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:159
-msgid "The signature was not accepted."
-msgstr "අත්සන පිළිගත්තේ නැත."
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-#: lib/packagekit-glib2/pk-task-text.c:195
-msgid "End user licence agreement required"
-msgstr "අවසාන පරිශීලක බලපත්‍ර ගිවිසුම අවශ්‍යයි"
+#. TRANSLATORS: these are packages touched by the transaction
+msgid "Affected packages: None"
+msgstr "බලපෑමට ලක් වූ පැකේජ: කිසිවක් නැත"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: lib/packagekit-glib2/pk-task-text.c:204
 msgid "Agreement"
 msgstr "ගිවිසුම"
 
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: lib/packagekit-glib2/pk-task-text.c:208
-msgid "Do you accept this agreement?"
-msgstr "ඔබ මෙම ගිවිසුම පිළිගන්නවාද?"
+#. TRANSLATORS: this is a command alias
+#, c-format
+msgid "Alias to %s"
+msgstr "අන්වර්ථ නාමය %s"
 
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:213
-msgid "The agreement was not accepted."
-msgstr "ගිවිසුම පිළිගත්තේ නැත."
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "ගනුදෙනුව අතරතුර පැකේජ පහත හෙලීමට ඉඩ දෙන්න"
 
-#. TRANSLATORS: the user needs to change media inserted into the computer
-#: lib/packagekit-glib2/pk-task-text.c:252
-msgid "Media change required"
-msgstr "මාධ්‍ය වෙනසක් අවශ්‍යයි"
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "ගනුදෙනුව අතරතුර පැකේජ නැවත ස්ථාපනය කිරීමට ඉඩ දෙන්න"
 
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: lib/packagekit-glib2/pk-task-text.c:255
-msgid "Media type"
-msgstr "මාධ්ය වර්ගය"
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "විශ්වාස නොකළ පැකේජ ස්ථාපනය කිරීමට ඉඩ දෙන්න."
 
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: lib/packagekit-glib2/pk-task-text.c:258
-msgid "Media label"
-msgstr "මාධ්ය ලේබලය"
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "ක්‍රියාවක්, උදා: 'යාවත්කාලීන-පැකේජ' අවශ්‍ය වේ"
 
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: lib/packagekit-glib2/pk-task-text.c:261
-msgid "Text"
-msgstr "පෙළ"
+#. TRANSLATORS: a package requires the application to be restarted
+msgid "Application restart required by:"
+msgstr "යෙදුම නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
 
-#. TRANSLATORS: ask the user to insert the media
-#: lib/packagekit-glib2/pk-task-text.c:267
-msgid "Please insert the correct media"
-msgstr "කරුණාකර නිවැරදි මාධ්‍ය ඇතුලත් කරන්න"
+msgid "Authentication is required to accept a EULA"
+msgstr "EULA එකක් පිළිගැනීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: lib/packagekit-glib2/pk-task-text.c:272
-msgid "The correct media was not inserted."
-msgstr "නිවැරදි මාධ්‍ය ඇතුළත් කළේ නැහැ."
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "ඔබ විසින් ආරම්භ නොකළ කාර්යයක් අවලංගු කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:287
-msgid "The following packages have to be removed:"
-msgstr "පහත පැකේජ ඉවත් කළ යුතුය:"
+msgid "Authentication is required to change software repository parameters"
+msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to install other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:292
-msgid "The following packages have to be installed:"
-msgstr "පහත පැකේජ ස්ථාපනය කළ යුතුය:"
+msgid "Authentication is required to clear the offline updates message"
+msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to update other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:297
-msgid "The following packages have to be updated:"
-msgstr "පහත පැකේජ යාවත්කාලීන කළ යුතුය:"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාසදායක ලෙස සලකා බැලීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:302
-msgid "The following packages have to be reinstalled:"
-msgstr "පහත පැකේජ නැවත ස්ථාපනය කළ යුතුය:"
+msgid "Authentication is required to downgrade software"
+msgstr "මෘදුකාංගය පහත හෙලීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:307
-msgid "The following packages have to be downgraded:"
-msgstr "පහත පැකේජ පහත හෙලීමට සිදුවේ:"
+msgid "Authentication is required to install software"
+msgstr "මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:312
-msgid "The following packages have to be obsoleted:"
-msgstr "පහත පැකේජ යල්පැනීමට සිදුවේ:"
+msgid "Authentication is required to install untrusted software"
+msgstr "විශ්වාස නොකළ මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-#: lib/packagekit-glib2/pk-task-text.c:317
-msgid "The following packages are untrusted:"
-msgstr "පහත පැකේජ විශ්වාස කළ නොහැක:"
+msgid "Authentication is required to refresh the system repositories"
+msgstr "පද්ධති ගබඩාවන් නැවුම් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:421
-msgid "Proceed with changes?"
-msgstr "වෙනස්කම් සමඟ ඉදිරියට යන්නද?"
+msgid "Authentication is required to reinstall software"
+msgstr "මෘදුකාංග නැවත ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
-#. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:426
-msgid "The transaction did not proceed."
-msgstr "ගනුදෙනුව ඉදිරියට ගියේ නැත."
+msgid "Authentication is required to remove software"
+msgstr "මෘදුකාංග ඉවත් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+
+msgid "Authentication is required to repair the installed software"
+msgstr "ස්ථාපිත මෘදුකාංගය අලුත්වැඩියා කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "මෘදුකාංග බාගත කිරීම සඳහා භාවිතා කරන ජාල ප්‍රොක්සි සැකසීමට සත්‍යාපනය අවශ්‍ය වේ"
+
+msgid "Authentication is required to trigger offline updates"
+msgstr "නොබැඳි යාවත්කාලීන ක්‍රියාරම්භ කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+
+msgid "Authentication is required to update software"
+msgstr "මෘදුකාංග යාවත්කාලීන කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+
+msgid "Authentication is required to upgrade the operating system"
+msgstr "මෙහෙයුම් පද්ධතිය උත්ශ්‍රේණි කිරීම සඳහා සත්‍යාපනය අවශ්‍ය වේ"
+
+#. TRANSLATORS: this is the author of the backend
+msgid "Author"
+msgstr "කර්තෘ"
+
+msgid "Automatically remove unused dependencies"
+msgstr "භාවිතයට නොගත් පරායත්තතා ස්වයංක්‍රීයව ඉවත් කරන්න"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Available"
+msgstr "පවතින"
+
+#. TRANSLATORS: The type of update
+msgid "Blocked"
+msgstr "අවහිර කර ඇත"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "දෝෂ නිවැරදි කිරීම"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+msgid "CVE"
+msgstr "CVE"
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#: policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
 msgstr "විදේශීය කාර්යය අවලංගු කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr "ඔබ විසින් ආරම්භ නොකළ කාර්යයක් අවලංගු කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Canceling"
+msgstr "අවලංගු කරනවා"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+msgid "Cancelling"
+msgstr "අවලංගු කරනවා"
+
+#. TRANSLATORS: this is the group category name
+msgid "Category"
+msgstr "වර්ගය"
 
 #. SECURITY:
-#. - Normal users need authentication to install signed packages
-#. from signed repositories, because otherwise the system is
-#. only as secure as the least-secure package available in the
-#. repositories.
-#: policy/org.freedesktop.packagekit.policy.in:39
-msgid "Install signed package"
-msgstr "අත්සන් කළ පැකේජය ස්ථාපනය කරන්න"
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:40
-msgid "Authentication is required to install software"
-msgstr "මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+msgid "Changes"
+msgstr "වෙනස්කම්"
+
+#. TRANSLATORS: transaction state, we are checking executable files currently
+#. in use
+msgid "Checking applications in use"
+msgstr "භාවිතයේ ඇති යෙදුම් පරීක්ෂා කිරීම"
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in
+#. use
+msgid "Checking libraries in use"
+msgstr "භාවිතයේ ඇති පුස්තකාල පරීක්ෂා කිරීම"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+msgid "Checking signatures"
+msgstr "අත්සන් පරීක්ෂා කිරීම"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Cleaned up"
+msgstr "සුද්ද කළා"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Cleaning up"
+msgstr "සුද්ද කරනවා"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+msgid "Cleaning up packages"
+msgstr "පැකේජ පිරිසිදු කිරීම"
 
 #. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:56
-msgid "Install untrusted local file"
-msgstr "විශ්වාස නොකළ දේශීය ගොනුව ස්ථාපනය කරන්න"
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+msgid "Clear offline update message"
+msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:57
-msgid "Authentication is required to install untrusted software"
-msgstr "විශ්වාස නොකළ මෘදුකාංග ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: Generic failure of what they asked to do
+msgid "Command failed"
+msgstr "විධානය අසාර්ථක විය"
+
+#. TRANSLATORS: this is The command line used to do the action
+msgid "Command line"
+msgstr "විධාන රේඛාව"
+
+msgid "Command not found, valid commands are:"
+msgstr "විධානය හමු නොවීය, වලංගු විධාන වන්නේ:"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+msgid "Committing changes"
+msgstr "වෙනස්කම් සිදු කිරීම"
+
+#. TRANSLATORS: transaction state, we are copying package files before or
+#. after the transaction
+msgid "Copying files"
+msgstr "ගොනු පිටපත් කිරීම"
+
+msgid "Debugging Options"
+msgstr "දෝශ නිරාකරණ විකල්ප"
+
+#. TRANSLATORS: this is the description of the backend
+msgid "Description"
+msgstr "විස්තර"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+msgid "Details about the update:"
+msgstr "යාවත්කාලීන කිරීම පිළිබඳ විස්තර:"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+msgid "Directory not found"
+msgstr "නාමාවලිය හමු නොවීය"
+
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+msgid "Disable the idle timer"
+msgstr "idle timer එක disable කරන්න"
+
+#. TRANSLATORS: if the repo is disabled
+msgid "Disabled"
+msgstr "ආබාධිතයි"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+msgid "Distribution"
+msgstr "බෙදා හැරීම"
+
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "මෙම පැකේජ ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
+
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "මෙම පැකේජය ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
+
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජ යාවත්කාලීන නොකරන්න."
+
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "මෙම පැකේජය එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජය යාවත්කාලීන නොකරන්න."
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+msgid "Do you accept this agreement?"
+msgstr "ඔබ මෙම ගිවිසුම පිළිගන්නවාද?"
+
+#. TRANSLATORS: ask the user if they want to import
+msgid "Do you accept this signature?"
+msgstr "ඔබ මෙම අත්සන පිළිගන්නවාද?"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "ඔබට අත්සන් නොකළ මෘදුකාංග ස්ථාපනය කිරීමට ඉඩ දීමට අවශ්‍යද?"
+
+#. TRANSLATORS: don't unset environment variables, used for debugging
+msgid "Don't clear environment on startup"
+msgstr "ආරම්භයේදී පරිසරය පිරිසිදු නොකරන්න"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Downloaded"
+msgstr "බාගත කර ඇත"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Downloading"
+msgstr "බාගත කිරීම"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "මෘදුකාංග ගබඩා පිළිබඳ විස්තර බාගත කිරීම."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading file lists"
+msgstr "ගොනු ලැයිස්තු බාගත කිරීම"
+
+#. TRANSLATORS: downloading file lists so we can search
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "ගොනු ලැයිස්තු බාගැනීම (මෙය සම්පූර්ණ කිරීමට යම් කාලයක් ගත විය හැක)."
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading groups"
+msgstr "කණ්ඩායම් බාගත කිරීම"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading list of packages"
+msgstr "පැකේජ ලැයිස්තුව බාගත කිරීම"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading lists of changes"
+msgstr "වෙනස්කම් ලැයිස්තුව බාගත කිරීම"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Downloading packages"
+msgstr "පැකේජ බාගත කිරීම"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading repository information"
+msgstr "ගබඩා තොරතුරු බාගත කිරීම"
+
+#. TRANSLATORS: transaction state, downloading metadata
+msgid "Downloading update information"
+msgstr "යාවත්කාලීන තොරතුරු බාගත කිරීම"
+
+#. TRANSLATORS: this is The duration of the transaction
+msgid "Duration"
+msgstr "කාල සීමාව"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "සබල කර ඇත"
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+msgid "End user licence agreement required"
+msgstr "අවසාන පරිශීලක බලපත්‍ර ගිවිසුම අවශ්‍යයි"
+
+#. TRANSLATORS: The type of update
+msgid "Enhancement"
+msgstr "වැඩිදියුණු කිරීම"
+
+#. TRANSLATORS: exit after we've started up, used for user profiling
+msgid "Exit after a small delay"
+msgstr "කුඩා ප්‍රමාදයකින් පසු පිටවන්න"
+
+#. TRANSLATORS: exit straight away, used for automatic profiling
+msgid "Exit after the engine has loaded"
+msgstr "එන්ජිම පූරණය වූ පසු පිටවන්න"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#, c-format
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "අපේක්ෂිත පැකේජයේ නම, ඇත්ත වශයෙන්ම ගොනුව ලැබී ඇත. ඒ වෙනුවට 'pkcon install-local %s' භාවිතා කිරීමට උත්සාහ කරන්න."
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to contact PackageKit"
+msgstr "PackageKit සම්බන්ධ කර ගැනීමට අසමත් විය"
+
+msgid "Failed to get daemon state"
+msgstr "ඩීමන් තත්වය ලබා ගැනීමට අසමත් විය"
+
+msgid "Failed to get properties"
+msgstr "දේපල ලබා ගැනීමට අපොහොසත් විය"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+msgid "Failed to get the time since this action was last completed"
+msgstr "මෙම ක්‍රියාව අවසන් වරට සම්පූර්ණ කළ දින සිට කාලය ලබා ගැනීමට අපොහොසත් විය"
+
+#. TRANSLATORS: we failed to install the package
+msgid "Failed to install packages"
+msgstr "පැකේජ ස්ථාපනය කිරීමට අසමත් විය"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+msgid "Failed to launch:"
+msgstr "දියත් කිරීමට අසමත් විය:"
+
+#. TRANSLATORS: cannot load the backend the user specified
+msgid "Failed to load the backend"
+msgstr "පසු අන්තය පූරණය කිරීමට අසමත් විය"
+
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "වින්‍යාස ගොනුව පූරණය කිරීමට අසමත් විය"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "තර්ක විග්‍රහ කිරීමට අසමත් විය"
+
+#. TRANSLATORS: we failed to contact the daemon
+msgid "Failed to parse command line"
+msgstr "විධාන රේඛාව විග්‍රහ කිරීමට අසමත් විය"
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+msgid "Failed to search for file"
+msgstr "ගොනුව සෙවීමට අසමත් විය"
+
+#. TRANSLATORS: cannot unload the backend the user specified
+msgid "Failed to unload the backend"
+msgstr "පසුපෙළ ගොඩබෑම අසාර්ථක විය"
+
+msgid "False"
+msgstr "බොරු"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+msgid "Fatal error"
+msgstr "මාරාන්තික දෝෂයක්"
+
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#, c-format
+msgid "File already exists: %s"
+msgstr "ගොනුව දැනටමත් පවතී: %s"
+
+#. TRANSLATORS: transaction state, all done!
+msgid "Finished"
+msgstr "අවසන්"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+msgid "Generating package lists"
+msgstr "පැකේජ ලැයිස්තු උත්පාදනය කිරීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting categories"
+msgstr "කාණ්ඩ ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting dependencies"
+msgstr "පරායත්තතා ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting details"
+msgstr "විස්තර ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting file list"
+msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම"
+
+#. TRANSLATORS: transaction state, getting data from a server
+msgid "Getting information"
+msgstr "තොරතුරු ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting packages"
+msgstr "පැකේජ ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting provides"
+msgstr "ලබා ගැනීම සපයයි"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting repositories"
+msgstr "ගබඩා ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting requires"
+msgstr "ලබා ගැනීම අවශ්ය වේ"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting system upgrades"
+msgstr "පද්ධති වැඩිදියුණු කිරීම් ලබා ගැනීම"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "Getting the list of files failed"
+msgstr "ගොනු ලැයිස්තුව ලබා ගැනීම අසාර්ථක විය"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting transactions"
+msgstr "ගනුදෙනු ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting update details"
+msgstr "යාවත්කාලීන විස්තර ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting updates"
+msgstr "යාවත්කාලීන ලබා ගැනීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Getting upgrades"
+msgstr "උසස්වීම් ලබා ගැනීම"
+
+#. TRANSLATORS: this is group identifier
+msgid "ID"
+msgstr "හැඳුනුම්පත"
+
+#. TRANSLATORS: this is preferred icon for the group
+msgid "Icon"
+msgstr "නිරූපකය"
+
+#. TRANSLATORS: The type of update
+msgid "Important"
+msgstr "වැදගත්"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1490,13 +589,8 @@ msgstr "විශ්වාස නොකළ මෘදුකාංග ස්ථා
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "දැනටමත් ස්ථාපනය කර ඇති පැකේජය නැවත ස්ථාපනය කරන්න"
-
-#: policy/org.freedesktop.packagekit.policy.in:76
-msgid "Authentication is required to reinstall software"
-msgstr "මෘදුකාංග නැවත ස්ථාපනය කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1504,41 +598,327 @@ msgstr "මෘදුකාංග නැවත ස්ථාපනය කිරී
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "ස්ථාපිත පැකේජයේ පැරණි අනුවාදය ස්ථාපනය කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:94
-msgid "Authentication is required to downgrade software"
-msgstr "මෘදුකාංගය පහත හෙලීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: command description
+msgid "Install package"
+msgstr "පැකේජය ස්ථාපනය කරන්න"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "'%s' විධානය ලබා දීමට '%s' පැකේජය ස්ථාපනය කරන්නද?"
 
 #. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:111
-msgid "Trust a key used for signing software"
-msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාස කරන්න"
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
+msgid "Install signed package"
+msgstr "අත්සන් කළ පැකේජය ස්ථාපනය කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාසදායක ලෙස සලකා බැලීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. command line argument, do we ask questions
+msgid "Install the packages without asking for confirmation"
+msgstr "තහවුරු කිරීමකින් තොරව පැකේජ ස්ථාපනය කරන්න"
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-#: policy/org.freedesktop.packagekit.policy.in:128
-msgid "Accept EULA"
-msgstr "EULA පිළිගන්න"
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+msgid "Install untrusted local file"
+msgstr "විශ්වාස නොකළ දේශීය ගොනුව ස්ථාපනය කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:129
-msgid "Authentication is required to accept a EULA"
-msgstr "EULA එකක් පිළිගැනීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Installed"
+msgstr "ස්ථාපනය කර ඇත"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing"
+msgstr "ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+msgid "Installing System Upgrade"
+msgstr "පද්ධති උත්ශ්‍රේණි කිරීම ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+msgid "Installing Updates"
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing files"
+msgstr "ගොනු ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: transaction state, installing packages
+msgid "Installing packages"
+msgstr "පැකේජ ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Installing signature"
+msgstr "අත්සන ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+msgid "Installing system upgrade; this could take a while..."
+msgstr "පද්ධතිය වැඩිදියුණු කිරීම ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
+
+#. TRANSLATORS: transaction state, installing updates
+msgid "Installing updates"
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
+
+#. TRANSLATORS: we've started doing offline updates
+msgid "Installing updates; this could take a while..."
+msgstr "යාවත්කාලීන ස්ථාපනය කිරීම; මෙයට ටික කාලයක් ගත විය හැක..."
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+msgid "Issued"
+msgstr "නිකුත් කළ"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+msgid "Key ID"
+msgstr "යතුරු හැඳුනුම්පත"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+msgid "Key Timestamp"
+msgstr "ප්රධාන කාල මුද්රාව"
+
+#. TRANSLATORS: the key URL
+msgid "Key URL"
+msgstr "ප්රධාන URL"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+msgid "Key fingerprint"
+msgstr "යතුරු ඇඟිලි සලකුණ"
+
+#. TRANSLATORS: the username of the key
+msgid "Key user"
+msgstr "ප්රධාන පරිශීලක"
+
+#. TRANSLATORS: transaction state, loading databases
+msgid "Loading cache"
+msgstr "හැඹිලිය පූරණය වේ"
+
+#. TRANSLATORS: loading package cache so we can search
+msgid "Loading list of packages."
+msgstr "පැකේජ ලැයිස්තුව පූරණය වේ."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+msgid "Media change required"
+msgstr "මාධ්‍ය වෙනසක් අවශ්‍යයි"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+msgid "Media label"
+msgstr "මාධ්ය ලේබලය"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+msgid "Media type"
+msgstr "මාධ්ය වර්ගය"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "ගබඩාව වෙනස් කිරීම"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+msgid "More than one package matches:"
+msgstr "පැකේජ එකකට වඩා ගැලපේ:"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+msgid "Name"
+msgstr "නම"
+
+#. TRANSLATORS: This where the package has no files
+msgid "No files"
+msgstr "ගොනු නැත"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+msgid "No packages require updating to newer versions."
+msgstr "කිසිදු පැකේජයක් නව අනුවාදවලට යාවත්කාලීන කිරීම අවශ්‍ය නොවේ."
+
+#. TRANSLATORS: we couldn't find anything
+msgid "No packages were found"
+msgstr "පැකේජ කිසිවක් හමු නොවීය"
+
+#. TRANSLATORS: The type of update
+msgid "Normal"
+msgstr "සාමාන්යයි"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Obsoleted"
+msgstr "යල් පැන ගිය"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+msgid "Obsoletes"
+msgstr "යල් පැන ගිය ඒවා"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Obsoleting"
+msgstr "යල්පැන යනවා"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+msgid "Obsoleting packages"
+msgstr "යල් පැන ගිය පැකේජ"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "'%s' විකල්පය සහය නොදක්වයි"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+msgid "Package"
+msgstr "පැකේජය"
+
+#. TRANSLATORS: This a list of details about the package
+msgid "Package description"
+msgstr "පැකේජ විස්තරය"
+
+#. TRANSLATORS: This a list files contained in the package
+msgid "Package files"
+msgstr "පැකේජ ගොනු"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "පැකේජය හමු නොවීය"
+
+#. TRANSLATORS: program name
+msgid "PackageKit"
+msgstr "පැකේජ කට්ටලය"
+
+#. TRANSLATORS: This is the header to the --help menu
+msgid "PackageKit Console Interface"
+msgstr "PackageKit කොන්සෝල අතුරුමුහුණත"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+msgid "PackageKit Monitor"
+msgstr "PackageKit මොනිටරය"
+
+#. TRANSLATORS: describing the service that is running
+msgid "PackageKit service"
+msgstr "PackageKit සේවාව"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+msgid "Packages providing this file are:"
+msgstr "මෙම ගොනුව සපයන පැකේජ:"
+
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "භාවිතා කිරීමට ඇසුරුම් පසුබිම, උදා: ව්යාජ"
+
+#. TRANSLATORS: this is the parent group
+msgid "Parent"
+msgstr "දෙමාපිය"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "ප්රතිශතය"
+
+#. TRANSLATORS: ask the user to choose a file to run
+msgid "Please choose a command to run"
+msgstr "කරුණාකර ධාවනය කිරීමට විධානයක් තෝරන්න"
+
+#. TRANSLATORS: ask the user to choose a file to install
+msgid "Please choose a package to install"
+msgstr "කරුණාකර ස්ථාපනය කිරීමට පැකේජයක් තෝරන්න"
+
+#. TRANSLATORS: This finds out which package in the list to use
+msgid "Please choose the correct package: "
+msgstr "කරුණාකර නිවැරදි පැකේජය තෝරන්න: "
+
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "කරුණාකර 1 සිට %iදක්වා අංකයක් ඇතුළු කරන්න: "
+
+#. TRANSLATORS: ask the user to insert the media
+msgid "Please insert the correct media"
+msgstr "කරුණාකර නිවැරදි මාධ්‍ය ඇතුලත් කරන්න"
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "වැදගත් ආරක්‍ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
+
+#. TRANSLATORS: a package needs to restart the session
+msgid "Please logout and login to complete the update."
+msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "වැදගත් ආරක්ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
+
+#. TRANSLATORS: a package needs to restart their system
+msgid "Please restart the computer to complete the update."
+msgstr "යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "පැකේජ බාගත කිරීමෙන් පමණක් ගනුදෙනුව සූදානම් කරන්න"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+msgid "Prepared updates:"
+msgstr "සූදානම් කළ යාවත්කාලීන:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "සජීවිකරණ විජට් භාවිතා කරනවාට වඩා යන්ත්‍රයෙන් කියවිය හැකි ප්‍රතිදානයක් තිරගත කිරීමට මුද්‍රණය කරන්න"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+msgid "Proceed with changes?"
+msgstr "වෙනස්කම් සමඟ ඉදිරියට යන්නද?"
+
+#. TRANSLATORS: transaction state, is querying data
+msgid "Querying"
+msgstr "විමසනවා"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+msgid "Real name"
+msgstr "සැබෑ නම"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Rebooting after installing updates…"
+msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු නැවත ආරම්භ කිරීම"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "පද්ධති ගබඩාවන් නැවුම් කරන්න"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "හැඹිලිය නැවුම් කරන්න"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "හැඹිලිය නැවුම් කරන්න (බලහත්කාරයෙන්)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Refreshing cache"
+msgstr "නැවුම් හැඹිලිය"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+msgid "Refreshing software list"
+msgstr "මෘදුකාංග ලැයිස්තුව නැවුම් කිරීම"
+
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Reinstalled"
+msgstr "නැවත ස්ථාපනය කරන ලදී"
+
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Reinstalling"
+msgstr "නැවත ස්ථාපනය කිරීම"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1549,87 +929,369 @@ msgstr "EULA එකක් පිළිගැනීමට සත්‍යාප�
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
 msgid "Remove package"
 msgstr "පැකේජය ඉවත් කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:149
-msgid "Authentication is required to remove software"
-msgstr "මෘදුකාංග ඉවත් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Removed"
+msgstr "ඉවත් කරන ලදී"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-#: policy/org.freedesktop.packagekit.policy.in:167
-msgid "Update software"
-msgstr "මෘදුකාංග යාවත්කාලීන කරන්න"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing"
+msgstr "ඉවත් කිරීම"
 
-#: policy/org.freedesktop.packagekit.policy.in:168
-msgid "Authentication is required to update software"
-msgstr "මෘදුකාංග යාවත්කාලීන කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: transaction state, removing packages
+msgid "Removing packages"
+msgstr "පැකේජ ඉවත් කිරීම"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-#: policy/org.freedesktop.packagekit.policy.in:183
-msgid "Change software repository parameters"
-msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කරන්න"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "ගබඩාව ඉවත් කිරීම"
 
-#: policy/org.freedesktop.packagekit.policy.in:184
-msgid "Authentication is required to change software repository parameters"
-msgstr "මෘදුකාංග ගබඩා පරාමිතීන් වෙනස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-#: policy/org.freedesktop.packagekit.policy.in:198
-msgid "Refresh system repositories"
-msgstr "පද්ධති ගබඩාවන් නැවුම් කරන්න"
-
-#: policy/org.freedesktop.packagekit.policy.in:199
-msgid "Authentication is required to refresh the system repositories"
-msgstr "පද්ධති ගබඩාවන් නැවුම් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-#: policy/org.freedesktop.packagekit.policy.in:213
-msgid "Set network proxy"
-msgstr "ජාල ප්‍රොක්සි සකසන්න"
-
-#: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr "මෘදුකාංග බාගත කිරීම සඳහා භාවිතා කරන ජාල ප්‍රොක්සි සැකසීමට සත්‍යාපනය අවශ්‍ය වේ"
-
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-#: policy/org.freedesktop.packagekit.policy.in:229
-msgid "Upgrade System"
-msgstr "පද්ධතිය උත්ශ්‍රේණි කරන්න"
-
-#: policy/org.freedesktop.packagekit.policy.in:230
-msgid "Authentication is required to upgrade the operating system"
-msgstr "මෙහෙයුම් පද්ධතිය උත්ශ්‍රේණි කිරීම සඳහා සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: transaction state, repackaging delta files
+msgid "Repackaging files"
+msgstr "ගොනු නැවත ඇසුරුම් කිරීම"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "අලුත්වැඩියා පද්ධතිය"
 
-#: policy/org.freedesktop.packagekit.policy.in:246
-msgid "Authentication is required to repair the installed software"
-msgstr "ස්ථාපිත මෘදුකාංගය අලුත්වැඩියා කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: transaction state, requesting data from a server
+msgid "Requesting data"
+msgstr "දත්ත ඉල්ලා සිටීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Resolving"
+msgstr "විසඳනවා"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+msgid "Resolving dependencies"
+msgstr "පරායත්තතා විසඳීම"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+msgid "Restart"
+msgstr "යළි අරඹන්න"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "ප්රතිපල:"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+msgid "Role"
+msgstr "කාර්යභාරය"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+msgid "Run similar command:"
+msgstr "සමාන විධානයක් ක්‍රියාත්මක කරන්න:"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "idle network bandwidth භාවිතයෙන් සහ අඩු බලයක් භාවිතා කරමින් විධානය ක්‍රියාත්මක කරන්න"
+
+#. TRANSLATORS: transaction state, just started
+msgid "Running"
+msgstr "දුවනවා"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "ධාවන කොකු"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+msgid "Scanning applications"
+msgstr "යෙදුම් ස්කෑන් කිරීම"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "විස්තර අනුව සොයන්න"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "ගොනු අනුව සොයන්න"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "නම් අනුව සොයන්න"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by details"
+msgstr "විස්තර අනුව සොයනවා"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by file"
+msgstr "ගොනුව අනුව සෙවීම"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching by name"
+msgstr "නමින් සොයනවා"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Searching groups"
+msgstr "කණ්ඩායම් සෙවීම"
+
+#. TRANSLATORS: The type of update
+msgid "Security"
+msgstr "ආරක්ෂක"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+msgid "Session restart (security) required:"
+msgstr "සැසිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වේ:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+msgid "Session restart required:"
+msgstr "සැසිය නැවත ආරම්භ කිරීම අවශ්‍යයි:"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+msgid "Set network proxy"
+msgstr "ජාල ප්‍රොක්සි සකසන්න"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "ගබඩා විකල්ප සකසන්න"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+msgid "Set the filter, e.g. installed"
+msgstr "පෙරහන සකසන්න, උදා: ස්ථාපනය කර ඇත"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Setting data"
+msgstr "දත්ත සැකසීම"
+
+#. TRANSLATORS: turn on all debugging
+msgid "Show debugging information for all files"
+msgstr "සියලුම ගොනු සඳහා නිදොස් කිරීමේ තොරතුරු පෙන්වන්න"
+
+msgid "Show debugging options"
+msgstr "නිදොස් කිරීමේ විකල්ප පෙන්වන්න"
+
+#. TRANSLATORS: command line argument, just show the version string
+msgid "Show the program version and exit"
+msgstr "වැඩසටහනේ අනුවාදය පෙන්වන්න සහ පිටවන්න"
+
+#. TRANSLATORS: show version
+msgid "Show version and exit"
+msgstr "අනුවාදය පෙන්වන්න සහ පිටවන්න"
+
+#. TRANSLATORS: we've finished doing offline updates
+msgid "Shutting down after installing updates…"
+msgstr "යාවත්කාලීන…ස්ථාපනය කිරීමෙන් පසු වසා දැමීම"
+
+#. TRANSLATORS: tell the user what we think the command is
+msgid "Similar command is:"
+msgstr "සමාන විධානය වන්නේ:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+msgid "Similar commands are:"
+msgstr "සමාන විධාන වන්නේ:"
+
+#. TRANSLATORS: the package repository name
+msgid "Software source name"
+msgstr "මෘදුකාංග මූලාශ්‍ර නාමය"
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+msgid "Software source signature required"
+msgstr "මෘදුකාංග මූලාශ්‍ර අත්සන අවශ්‍යයි"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+msgid "Starting"
+msgstr "පටන් ගන්නවා"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+msgid "State"
+msgstr "රජයේ"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "තත්ත්වය"
+
+#. these are commands we can use with pkcon
+msgid "Subcommands:"
+msgstr "උප විධාන:"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+msgid "Succeeded"
+msgstr "සාර්ථක විය"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+msgid "Suitable packages are:"
+msgstr "සුදුසු පැකේජ නම්:"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+msgid "Summary"
+msgstr "සාරාංශය"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+msgid "System restart (security) required by:"
+msgstr "පද්ධතිය නැවත ආරම්භ කිරීම (ආරක්ෂාව) අවශ්‍ය වන්නේ:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+msgid "System restart required by:"
+msgstr "පද්ධතිය නැවත ආරම්භ කිරීම අවශ්‍ය වන්නේ:"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+msgid "System time"
+msgstr "පද්ධති කාලය"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+msgid "Testing changes"
+msgstr "පරීක්ෂණ වෙනස්කම්"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+msgid "Text"
+msgstr "පෙළ"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The agreement was not accepted."
+msgstr "ගිවිසුම පිළිගත්තේ නැත."
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+msgid "The correct media was not inserted."
+msgstr "නිවැරදි මාධ්‍ය ඇතුළත් කළේ නැහැ."
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+msgid "The daemon crashed mid-transaction!"
+msgstr "ඩීමන් ගනුදෙනුව මැද කඩා වැටුණි!"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+msgid "The filter specified was invalid"
+msgstr "සඳහන් කළ පෙරහන වලංගු නොවේ"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+msgid "The following packages are untrusted:"
+msgstr "පහත පැකේජ විශ්වාස කළ නොහැක:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+msgid "The following packages have to be downgraded:"
+msgstr "පහත පැකේජ පහත හෙලීමට සිදුවේ:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+msgid "The following packages have to be installed:"
+msgstr "පහත පැකේජ ස්ථාපනය කළ යුතුය:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "පහත පැකේජ යල්පැනීමට සිදුවේ:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+msgid "The following packages have to be reinstalled:"
+msgstr "පහත පැකේජ නැවත ස්ථාපනය කළ යුතුය:"
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+msgid "The following packages have to be removed:"
+msgstr "පහත පැකේජ ඉවත් කළ යුතුය:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+msgid "The following packages have to be updated:"
+msgstr "පහත පැකේජ යාවත්කාලීන කළ යුතුය:"
+
+#. TRANSLATORS: tell the user what package provides the command
+msgid "The package providing this file is:"
+msgstr "මෙම ගොනුව සපයන පැකේජය වන්නේ:"
+
+#. TRANSLATORS: The network settings could not be sent
+msgid "The proxy could not be set"
+msgstr "ප්‍රොක්සිය සැකසිය නොහැක"
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "තෝරාගත් පැකේජ දැනටමත් ස්ථාපනය කර තිබිය හැක."
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The signature was not accepted."
+msgstr "අත්සන පිළිගත්තේ නැත."
+
+#. TRANSLATORS: is not GPG signed
+msgid "The software is not from a trusted source."
+msgstr "මෘදුකාංගය විශ්වාසදායක මූලාශ්‍රයකින් නොවේ."
+
+#. TRANSLATORS: tell the user we didn't do anything
+msgid "The transaction did not proceed."
+msgstr "ගනුදෙනුව ඉදිරියට ගියේ නැත."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+msgid "The transaction failed"
+msgstr "ගනුදෙනුව අසාර්ථක විය"
+
+#. TRANSLATORS: tell the user we've not done anything
+msgid "The unsigned software will not be installed."
+msgstr "අත්සන් නොකළ මෘදුකාංගය ස්ථාපනය නොකෙරේ."
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+msgid "There are no packages to update."
+msgstr "යාවත්කාලීන කිරීමට පැකේජ නොමැත."
+
+#. TRANSLATORS: print a message when there are no updates
+msgid "There are no updates available at this time."
+msgstr "මෙම අවස්ථාවේදී යාවත්කාලීන කිසිවක් නොමැත."
+
+msgid "There are no upgrades available at this time."
+msgstr "මෙම අවස්ථාවේදී ලබා ගත හැකි වැඩිදියුණු කිරීම් නොමැත."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "මෙම මෙවලමට සියලුම පැකේජ සොයා ගැනීමට නොහැකි විය: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයා ගත නොහැකි විය."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "මෙම මෙවලමට පවතින පැකේජයක් සොයාගත නොහැකි විය: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "මෙම මෙවලම ස්ථාපිත පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "මෙම මෙවලම පැකේජය සොයා ගැනීමට නොහැකි විය: %s"
+
+#. TRANSLATORS: this is the time since this role was used
+msgid "Time since"
+msgstr "ඉඳලා කාලය"
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+msgid "Transaction"
+msgstr "ගනුදෙනුව"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1638,162 +1300,124 @@ msgstr "ස්ථාපිත මෘදුකාංගය අලුත්වැ�
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:260
-#: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "නොබැඳි යාවත්කාලීන ක්‍රියාරම්භ කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:261
-#: policy/org.freedesktop.packagekit.policy.in:277
-msgid "Authentication is required to trigger offline updates"
-msgstr "නොබැඳි යාවත්කාලීන ක්‍රියාරම්භ කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: The type of update
+msgid "Trivial"
+msgstr "සුළු සුළුය"
+
+msgid "True"
+msgstr "සැබෑ"
 
 #. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-#: policy/org.freedesktop.packagekit.policy.in:291
-msgid "Clear offline update message"
-msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කරන්න"
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+msgid "Trust a key used for signing software"
+msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාස කරන්න"
 
-#: policy/org.freedesktop.packagekit.policy.in:292
-msgid "Authentication is required to clear the offline updates message"
-msgstr "නොබැඳි යාවත්කාලීන පණිවිඩය හිස් කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
+#. TRANSLATORS: this is type of update, stable or testing
+msgid "Type"
+msgstr "ටයිප් කරන්න"
 
-#. TRANSLATORS: this is a command alias
-#: src/pk-direct.c:99
-#, c-format
-msgid "Alias to %s"
-msgstr "අන්වර්ථ නාමය %s"
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "ලබා ගත නොහැක"
 
-#: src/pk-direct.c:168
-msgid "Command not found, valid commands are:"
-msgstr "විධානය හමු නොවීය, වලංගු විධාන වන්නේ:"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Unknown role type"
+msgstr "නොදන්නා භූමිකාවේ වර්ගය"
 
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:408 src/pk-main.c:117
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "භාවිතා කිරීමට ඇසුරුම් පසුබිම, උදා: ව්යාජ"
+#. TRANSLATORS: This is when the transaction status is not known
+msgid "Unknown state"
+msgstr "නොදන්නා තත්වය"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:424
-msgid "Refresh the cache"
-msgstr "හැඹිලිය නැවුම් කරන්න"
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+msgid "Update software"
+msgstr "මෘදුකාංග යාවත්කාලීන කරන්න"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:428
-msgid "Refresh the cache (forced)"
-msgstr "හැඹිලිය නැවුම් කරන්න (බලහත්කාරයෙන්)"
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+msgid "Update text"
+msgstr "පෙළ යාවත්කාලීන කරන්න"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:432
-msgid "Search by names"
-msgstr "නම් අනුව සොයන්න"
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "යාවත්කාලීන කරන ලදී"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:436
-msgid "Search by details"
-msgstr "විස්තර අනුව සොයන්න"
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+msgid "Updates"
+msgstr "යාවත්කාලීන"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:440
-msgid "Search by files"
-msgstr "ගොනු අනුව සොයන්න"
+#. TRANSLATORS: The action of the package, in present tense
+msgid "Updating"
+msgstr "යාවත්කාලීන කිරීම"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:444
-msgid "Install package"
-msgstr "පැකේජය ස්ථාපනය කරන්න"
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Updating packages"
+msgstr "පැකේජ යාවත්කාලීන කිරීම"
 
-#. TRANSLATORS: command description
-#: src/pk-direct.c:452
-msgid "Set repository options"
-msgstr "ගබඩා විකල්ප සකසන්න"
+#. TRANSLATORS: transaction state, we are updating the list of processes
+msgid "Updating running applications"
+msgstr "ධාවනය වන යෙදුම් යාවත්කාලීන කිරීම"
 
-#. TRANSLATORS: program name
-#: src/pk-direct.c:465
-msgid "PackageKit"
-msgstr "පැකේජ කට්ටලය"
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+msgid "Upgrade System"
+msgstr "පද්ධතිය උත්ශ්‍රේණි කරන්න"
 
-#. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:471
-msgid "Failed to parse arguments"
-msgstr "තර්ක විග්‍රහ කිරීමට අසමත් විය"
+#. TRANSLATORS: this is the user ID of the user that started the action
+msgid "User ID"
+msgstr "පරිශීලක ID"
 
-#. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:482
-msgid "Failed to load the config file"
-msgstr "වින්‍යාස ගොනුව පූරණය කිරීමට අසමත් විය"
+msgid "User aborted selection"
+msgstr "පරිශීලක තේරීම නවත්වන ලදී"
 
-#. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:515
-msgid "Failed to load the backend"
-msgstr "පසු අන්තය පූරණය කිරීමට අසමත් විය"
+#. TRANSLATORS: this is the username, e.g. hughsie
+msgid "Username"
+msgstr "පරිශීලක නාමය"
 
-#. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:555
-msgid "Failed to unload the backend"
-msgstr "පසුපෙළ ගොඩබෑම අසාර්ථක විය"
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+msgid "Vendor"
+msgstr "වෙළෙන්දා"
 
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:120
-msgid "Disable the idle timer"
-msgstr "idle timer එක disable කරන්න"
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+msgid "Waiting for authentication"
+msgstr "සත්‍යාපනය සඳහා රැඳී සිටිමින්"
 
-#. TRANSLATORS: show version
-#: src/pk-main.c:123
-msgid "Show version and exit"
-msgstr "අනුවාදය පෙන්වන්න සහ පිටවන්න"
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+msgid "Waiting for package manager lock"
+msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්"
 
-#. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:126
-msgid "Exit after a small delay"
-msgstr "කුඩා ප්‍රමාදයකින් පසු පිටවන්න"
+#. TRANSLATORS: waiting for native lock
+msgid "Waiting for package manager lock."
+msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්."
 
-#. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:129
-msgid "Exit after the engine has loaded"
-msgstr "එන්ජිම පූරණය වූ පසු පිටවන්න"
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+msgid "Waiting in queue"
+msgstr "පෝලිමේ බලාගෙන ඉන්නවා"
 
-#. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:132
-msgid "Don't clear environment on startup"
-msgstr "ආරම්භයේදී පරිසරය පිරිසිදු නොකරන්න"
+#. TRANSLATORS: The user did not provide a distro name
+msgid "You need to specify a list file to create"
+msgstr "නිර්මාණය කිරීමට ඔබ ලැයිස්තු ගොනුවක් සඳහන් කළ යුතුය"
 
-#. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:146
-msgid "PackageKit service"
-msgstr "PackageKit සේවාව"
-
-#. TRANSLATORS: The placeholder is an error message.
-#. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:215
-#, c-format
-msgid "Failed to resolve auto: %s"
-msgstr ""
-
-#. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:239
-#, c-format
-msgid "Failed to load the backend: %s"
-msgstr ""
-
-#. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2734
-msgid "The software is not from a trusted source."
-msgstr "මෘදුකාංගය විශ්වාසදායක මූලාශ්‍රයකින් නොවේ."
-
-#: src/pk-transaction.c:2742
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "මෙම පැකේජය එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජය යාවත්කාලීන නොකරන්න."
-
-#: src/pk-transaction.c:2743
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජ යාවත්කාලීන නොකරන්න."
-
-#: src/pk-transaction.c:2753
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "මෙම පැකේජය ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
-
-#: src/pk-transaction.c:2754
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "මෙම පැකේජ ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+msgid "command not found"
+msgstr "විධානය සොයාගත නොහැකි"
