@@ -417,7 +417,6 @@ pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **err
 gboolean
 pk_offline_auth_set_results (PkResults *results, GError **error)
 {
-	guint i;
 	PkPackage *package;
 	PkRoleEnum role;
 	g_autoptr(GError) error_local = NULL;
@@ -462,32 +461,25 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
-		gboolean not_exists;
-		const gchar *package_id;
 		g_autoptr(GString) string = NULL;
-		g_autoptr(GHashTable) table = g_hash_table_new (g_str_hash, g_str_equal);
-		/* We use array to preserve the package transaction order */
-		g_autoptr(GPtrArray) updated_packages = g_ptr_array_new ();
+		g_autoptr(GHashTable) known_pkgids = g_hash_table_new (g_str_hash, g_str_equal);
 
 		string = g_string_new ("");
-		for (i = 0; i < packages->len; i++) {
+		for (guint i = 0; i < packages->len; i++) {
+			const gchar *pkgid;
 			package = g_ptr_array_index (packages, i);
 			switch (pk_package_get_info (package)) {
 			case PK_INFO_ENUM_UPDATING:
 			case PK_INFO_ENUM_INSTALLING:
-				package_id = pk_package_get_id (package);
-				not_exists = g_hash_table_insert (table, (gpointer) package_id, NULL);
-				if (not_exists)
-					g_ptr_array_add (updated_packages, (gpointer) package_id);
+				pkgid = pk_package_get_id (package);
+
+				/* deduplicate entries in case the backend has emitted them multiple times */
+				if (g_hash_table_add (known_pkgids, (gpointer) pkgid))
+					g_string_append_printf (string, "%s,", pkgid);
 				break;
 			default:
 				break;
 			}
-		}
-
-		for (i = 0; i < updated_packages->len; i++) {
-			package_id = (gchar *) g_ptr_array_index (updated_packages, i);
-			g_string_append_printf (string, "%s,", package_id);
 		}
 
 		if (string->len > 0)
