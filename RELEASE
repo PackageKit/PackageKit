@@ -2,10 +2,10 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog v1.2.7.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog v1.2.8.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.2.8
+Version 1.3.0
 ~~~~~~~~~~~~~
 Released: 2023-xx-xx
 
@@ -35,8 +35,8 @@ git add ../po/*.po
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.2.8"
-export release_tag="v1.2.8"
+export release_version="1.3.0"
+export release_tag="v1.3.0"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
@@ -45,7 +45,7 @@ git push
 git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
 git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
-5. run 'ninja dist'
+5. run 'meson dist'
 
 5a. Generate the additon verification metadata
 
@@ -67,7 +67,7 @@ git push
 9. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.2.8 released!
+PackageKit 1.3.0 released!
 
 Tarballs available here: https://www.freedesktop.org/software/PackageKit/releases/
 
