@@ -1,3 +1,34 @@
+Version 1.2.8
+~~~~~~~~~~~~~
+Released: 2023-11-08
+
+Libraries:
+ * offline-updates: Make package update list deduplication more efficient (Matthias Klumpp)
+ * offline-updates: Add only one entry per package to 'offline-update-competed' file (sid)
+ * PkClient: Replace the GSimpleAsyncResult with the GTask API (Corentin Noël)
+ * pk-client: Fix use-before-set of PkProgress on cancellation (Philip Withnall)
+ * pk-client: Move cancellable disconnect to dispose (Philip Withnall)
+ * pk-client: Rework refcounting for PkClientState (Philip Withnall)
+
+Backends:
+ * apt/dnf: Adjust for upcoming AppStream 1.0 API (Matthias Klumpp)
+ * dnf: Avoid downloading caches multiple times in one call (Alessandro Astone)
+ * dnf: Better weigh the progress of download-only transactions (Alessandro Astone)
+ * dnf: Remove unused import from backends/dnf/notify_packagekit.py (Gordon Messmer)
+ * Revive PiSi backend (Erkan IŞIK)
+ * freebsd: Add new FreeBSD backend (Gleb Popov)
+
+Bugfixes:
+ * tests: Exclusively use g_assert_true (Matthias Klumpp)
+ * tests: Avoid bashisms in sh by using bash (Matthias Klumpp)
+ * transaction: We only need to emit finished when we were committed (Matthias Klumpp)
+
+Miscellaneous:
+ * tests: Restructure, enable daemon tests on CI (Matthias Klumpp)
+ * ci: Modernize & launch dbus-daemon (Matthias Klumpp)
+ * transaction: replace defunct www.packagekit.org URL with freedesktop URL (Corentin Noël)
+ * docs: Update outdated offline-updates.txt (sid)
+
 Version 1.2.7
 ~~~~~~~~~~~~~
 Released: 2023-08-26
