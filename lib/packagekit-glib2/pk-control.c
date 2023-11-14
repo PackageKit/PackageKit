@@ -105,23 +105,6 @@ static gpointer pk_control_object = NULL;
 
 G_DEFINE_TYPE (PkControl, pk_control, G_TYPE_OBJECT)
 
-typedef struct {
-	gboolean		 ret;
-	gchar			*tid;
-	gchar			**transaction_list;
-	gchar			*daemon_state;
-	guint			 time;
-	gulong			 cancellable_id;
-	GCancellable		*call;
-	GCancellable		*cancellable;
-	GSimpleAsyncResult	*res;
-	PkAuthorizeEnum		 authorize;
-	PkControl		*control;
-	PkNetworkEnum		 network;
-	GVariant		*parameters;
-	GDBusProxy		*proxy;
-} PkControlState;
-
 /**
  * pk_control_error_quark:
  *
@@ -378,70 +361,36 @@ pk_control_signal_cb (GDBusProxy *proxy,
  * pk_control_proxy_connect:
  **/
 static void
-pk_control_proxy_connect (PkControlState *state)
+pk_control_proxy_connect (PkControl *control,
+			  GDBusProxy *proxy)
 {
 	guint i;
 	g_auto(GStrv) props = NULL;
 
 	/* coldplug properties */
-	props = g_dbus_proxy_get_cached_property_names (state->proxy);
+	props = g_dbus_proxy_get_cached_property_names (proxy);
 	for (i = 0; props != NULL && props[i] != NULL; i++) {
 		g_autoptr(GVariant) value_tmp = NULL;
-		value_tmp = g_dbus_proxy_get_cached_property (state->proxy, props[i]);
-		pk_control_set_property_value (state->control,
+		value_tmp = g_dbus_proxy_get_cached_property (proxy, props[i]);
+		pk_control_set_property_value (control,
 					       props[i],
 					       value_tmp);
 	}
 
 	/* connect up signals */
-	g_signal_connect (state->proxy, "g-properties-changed",
+	g_signal_connect (proxy, "g-properties-changed",
 			  G_CALLBACK (pk_control_properties_changed_cb),
-			  state->control);
-	g_signal_connect (state->proxy, "g-signal",
+			  control);
+	g_signal_connect (proxy, "g-signal",
 			  G_CALLBACK (pk_control_signal_cb),
-			  state->control);
+			  control);
 
 	/* if we have no generic system wide proxy, then use this */
-	if (state->control->priv->proxy == NULL)
-		state->control->priv->proxy = g_object_ref (state->proxy);
+	if (control->priv->proxy == NULL)
+		control->priv->proxy = g_object_ref (proxy);
 }
 
 /**********************************************************************/
-
-/*
- * pk_control_get_tid_state_finish:
- **/
-static void
-pk_control_get_tid_state_finish (PkControlState *state, const GError *error)
-{
-	/* get result */
-	if (state->tid != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res,
-							   g_strdup (state->tid),
-							   g_free);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_free (state->tid);
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_get_tid_cb:
@@ -452,40 +401,48 @@ pk_control_get_tid_cb (GObject *source_object,
 		       gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
+	gchar *tid = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		pk_control_get_tid_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* save results */
-	g_variant_get (value, "(o)", &state->tid);
+	g_variant_get (value, "(o)", &tid);
 
 	/* we're done */
-	pk_control_get_tid_state_finish (state, NULL);
+	g_task_return_pointer (task, g_steal_pointer (&tid), g_free);
 }
 
 /*
  * pk_control_get_tid_internal:
  **/
 static void
-pk_control_get_tid_internal (PkControlState *state)
+pk_control_get_tid_internal (PkControl *control,
+			     GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "CreateTransaction",
 			   NULL,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_get_tid_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -496,16 +453,19 @@ pk_control_get_tid_proxy_cb (GObject *source_object,
 			     GAsyncResult *res,
 			     gpointer user_data)
 {
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_get_tid_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_get_tid_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_get_tid_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -525,36 +485,28 @@ pk_control_get_tid_async (PkControl *control,
 			  GAsyncReadyCallback callback,
 			  gpointer user_data)
 {
-	PkControlState *state;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_get_tid_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_get_tid_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_get_tid_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_get_tid_async);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_get_tid_internal (state);
+		pk_control_get_tid_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -564,11 +516,8 @@ pk_control_get_tid_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_get_tid_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -588,60 +537,15 @@ pk_control_get_tid_finish (PkControl *control,
 			   GAsyncResult *res,
 			   GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (g_task_is_valid (res, control), NULL);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_tid_async), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_tid_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
+	return g_task_propagate_pointer (G_TASK (res), error);
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_suggest_daemon_quit_state_finish:
- **/
-static void
-pk_control_suggest_daemon_quit_state_finish (PkControlState *state,
-					     const GError *error)
-{
-	/* get result */
-	if (state->ret) {
-		g_simple_async_result_set_op_res_gboolean (state->res,
-							   state->ret);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_suggest_daemon_quit_cb:
@@ -652,38 +556,42 @@ pk_control_suggest_daemon_quit_cb (GObject *source_object,
 				   gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
-		pk_control_suggest_daemon_quit_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
-	/* save data */
-	state->ret = TRUE;
-
 	/* we're done */
-	pk_control_suggest_daemon_quit_state_finish (state, NULL);
+	g_task_return_boolean (task, TRUE);
 }
 
 /*
  * pk_control_suggest_daemon_quit_internal:
  **/
 static void
-pk_control_suggest_daemon_quit_internal (PkControlState *state)
+pk_control_suggest_daemon_quit_internal (PkControl *control,
+					 GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "SuggestDaemonQuit",
 			   NULL,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_suggest_daemon_quit_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -694,16 +602,19 @@ pk_control_suggest_daemon_quit_proxy_cb (GObject *source_object,
 					 GAsyncResult *res,
 					 gpointer user_data)
 {
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
 	g_autoptr(GError) error = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_suggest_daemon_quit_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_suggest_daemon_quit_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_suggest_daemon_quit_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -723,36 +634,28 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 				      GAsyncReadyCallback callback,
 				      gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_suggest_daemon_quit_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_suggest_daemon_quit_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_suggest_daemon_quit_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_suggest_daemon_quit_async);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_suggest_daemon_quit_internal (state);
+		pk_control_suggest_daemon_quit_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -762,11 +665,8 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_suggest_daemon_quit_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -784,60 +684,15 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 gboolean
 pk_control_suggest_daemon_quit_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (g_task_is_valid (res, control), FALSE);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_suggest_daemon_quit_async), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_suggest_daemon_quit_async, FALSE);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
+	return g_task_propagate_boolean (G_TASK (res), error);
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_get_daemon_state_state_finish:
- **/
-static void
-pk_control_get_daemon_state_state_finish (PkControlState *state, const GError *error)
-{
-	/* get result */
-	if (state->daemon_state != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res,
-							   g_strdup (state->daemon_state), g_free);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_free (state->daemon_state);
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_get_daemon_state_cb:
@@ -848,40 +703,48 @@ pk_control_get_daemon_state_cb (GObject *source_object,
 				   gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr (GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
+	gchar *daemon_state = NULL;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		pk_control_get_daemon_state_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* save results */
-	g_variant_get (value, "(s)", &state->daemon_state);
+	g_variant_get (value, "(s)", &daemon_state);
 
 	/* we're done */
-	pk_control_get_daemon_state_state_finish (state, NULL);
+	g_task_return_pointer (task, g_steal_pointer (&daemon_state), g_free);
 }
 
 /*
  * pk_control_get_daemon_state_internal:
  **/
 static void
-pk_control_get_daemon_state_internal (PkControlState *state)
+pk_control_get_daemon_state_internal (PkControl *control,
+				      GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "GetDaemonState",
 			   NULL,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_get_daemon_state_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -893,15 +756,18 @@ pk_control_get_daemon_state_proxy_cb (GObject *source_object,
 			     gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_get_daemon_state_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_get_daemon_state_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_get_daemon_state_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -921,36 +787,28 @@ pk_control_get_daemon_state_async (PkControl *control,
 				   GAsyncReadyCallback callback,
 				   gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_get_daemon_state_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_get_daemon_state_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_get_daemon_state_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_get_daemon_state_async);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_get_daemon_state_internal (state);
+		pk_control_get_daemon_state_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -960,11 +818,8 @@ pk_control_get_daemon_state_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_get_daemon_state_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -984,61 +839,15 @@ pk_control_get_daemon_state_finish (PkControl *control,
 				    GAsyncResult *res,
 				    GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (g_task_is_valid (res, control), NULL);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_daemon_state_async), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_daemon_state_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_strdup (g_simple_async_result_get_op_res_gpointer (simple));
+	return g_task_propagate_pointer (G_TASK (res), error);
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_set_proxy_state_finish:
- **/
-static void
-pk_control_set_proxy_state_finish (PkControlState *state,
-				   const GError *error)
-{
-	/* get result */
-	if (state->ret) {
-		g_simple_async_result_set_op_res_gboolean (state->res,
-							   state->ret);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_variant_unref (state->parameters);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_set_proxy_cb:
@@ -1049,7 +858,7 @@ pk_control_set_proxy_cb (GObject *source_object,
 				   gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
@@ -1057,31 +866,37 @@ pk_control_set_proxy_cb (GObject *source_object,
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		g_warning ("failed to set proxy: %s", error->message);
-		pk_control_set_proxy_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
-	/* save data */
-	state->ret = TRUE;
-
 	/* we're done */
-	pk_control_set_proxy_state_finish (state, NULL);
+	g_task_return_boolean (task, TRUE);
 }
 
 /*
  * pk_control_set_proxy_internal:
  **/
 static void
-pk_control_set_proxy_internal (PkControlState *state)
+pk_control_set_proxy_internal (PkControl *control,
+			       GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+	GVariant *parameters;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	parameters = g_task_get_task_data (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "SetProxy",
-			   state->parameters,
+			   parameters,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_set_proxy_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -1093,15 +908,18 @@ pk_control_set_proxy_proxy_cb (GObject *source_object,
 			     gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_set_proxy_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_set_proxy_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_set_proxy_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -1133,44 +951,39 @@ pk_control_set_proxy2_async (PkControl *control,
 			     GAsyncReadyCallback callback,
 			     gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
+	GVariant *parameters = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_set_proxy_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	state->parameters = g_variant_new ("(ssssss)",
-					   proxy_http ? proxy_http : "",
-					   proxy_https ? proxy_https : "",
-					   proxy_ftp ? proxy_ftp : "",
-					   proxy_socks ? proxy_socks : "",
-					   no_proxy ? no_proxy : "",
-					   pac ? pac : "");
-	g_variant_ref_sink (state->parameters);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_set_proxy_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_set_proxy_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	/* save state */
+	parameters = g_variant_new ("(ssssss)",
+				    proxy_http ? proxy_http : "",
+				    proxy_https ? proxy_https : "",
+				    proxy_ftp ? proxy_ftp : "",
+				    proxy_socks ? proxy_socks : "",
+				    no_proxy ? no_proxy : "",
+				    pac ? pac : "");
+
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_set_proxy_async);
+	g_task_set_task_data (task, g_variant_ref_sink (parameters), (GDestroyNotify) g_variant_unref);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_set_proxy_internal (state);
+		pk_control_set_proxy_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -1180,11 +993,8 @@ pk_control_set_proxy2_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_set_proxy_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -1240,61 +1050,15 @@ pk_control_set_proxy_finish (PkControl *control,
 			     GAsyncResult *res,
 			     GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (g_task_is_valid (res, control), FALSE);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_set_proxy_async), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_set_proxy_async, FALSE);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
+	return g_task_propagate_boolean (G_TASK (res), error);
 }
 
 /**********************************************************************/
-
-/*
- * pk_control_get_transaction_list_state_finish:
- **/
-static void
-pk_control_get_transaction_list_state_finish (PkControlState *state,
-					      const GError *error)
-{
-	/* get result */
-	if (state->transaction_list != NULL) {
-		g_simple_async_result_set_op_res_gpointer (state->res,
-							   g_strdupv (state->transaction_list),
-							   (GDestroyNotify) g_strfreev);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_strfreev (state->transaction_list);
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_get_transaction_list_cb:
@@ -1306,7 +1070,7 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 {
 	const gchar **tlist_tmp = NULL;
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
 
@@ -1315,37 +1079,42 @@ pk_control_get_transaction_list_cb (GObject *source_object,
 	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		pk_control_get_transaction_list_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* unwrap data */
 	g_variant_get (value, "(^a&o)", &tlist_tmp);
-	if (tlist_tmp == NULL) {
-		state->transaction_list = g_new0 (gchar *, 1);
-	} else {
-		state->transaction_list = g_strdupv ((gchar **)tlist_tmp);
-	}
-	g_assert (state->transaction_list != NULL);
 
 	/* we're done */
-	pk_control_get_transaction_list_state_finish (state, NULL);
+	if (tlist_tmp == NULL) {
+		g_task_return_pointer (task, g_new0 (gchar *, 1), g_free);
+	} else {
+		g_task_return_pointer (task, g_strdupv ((gchar **)tlist_tmp), (GDestroyNotify) g_strfreev);
+	}
 }
 
 /*
  * pk_control_get_transaction_list_internal:
  **/
 static void
-pk_control_get_transaction_list_internal (PkControlState *state)
+pk_control_get_transaction_list_internal (PkControl *control,
+					  GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "GetTransactionList",
 			   NULL,
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_get_transaction_list_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -1357,15 +1126,18 @@ pk_control_get_transaction_list_proxy_cb (GObject *source_object,
 					  gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_get_transaction_list_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_get_transaction_list_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_get_transaction_list_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -1385,36 +1157,28 @@ pk_control_get_transaction_list_async (PkControl *control,
 				       GAsyncReadyCallback callback,
 				       gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_get_transaction_list_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_get_transaction_list_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_get_transaction_list_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_get_transaction_list_async);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_get_transaction_list_internal (state);
+		pk_control_get_transaction_list_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -1424,11 +1188,8 @@ pk_control_get_transaction_list_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_get_transaction_list_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -1448,60 +1209,15 @@ pk_control_get_transaction_list_finish (PkControl *control,
 					GAsyncResult *res,
 					GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), NULL);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), NULL);
+	g_return_val_if_fail (g_task_is_valid (res, control), NULL);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_transaction_list_async), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_transaction_list_async, NULL);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return NULL;
-
-	return g_strdupv (g_simple_async_result_get_op_res_gpointer (simple));
+	return g_task_propagate_pointer (G_TASK (res), error);
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_get_time_since_action_state_finish:
- **/
-static void
-pk_control_get_time_since_action_state_finish (PkControlState *state,
-					       const GError *error)
-{
-	/* get result */
-	if (state->time != 0) {
-		g_simple_async_result_set_op_res_gssize (state->res, state->time);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_variant_unref (state->parameters);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_get_time_since_action_cb:
@@ -1512,45 +1228,56 @@ pk_control_get_time_since_action_cb (GObject *source_object,
 				     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GVariant) value = NULL;
 	g_autoptr(GError) error = NULL;
+	guint time = 0;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		pk_control_get_time_since_action_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* save data */
-	g_variant_get (value, "(u)", &state->time);
-	if (state->time == 0) {
-		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get time");
-		pk_control_get_time_since_action_state_finish (state, error);
+	g_variant_get (value, "(u)", &time);
+	if (time == 0) {
+		g_task_return_new_error (task,
+					 PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED,
+					 "could not get time");
 		return;
 	}
 
 	/* we're done */
-	pk_control_get_time_since_action_state_finish (state, NULL);
+	g_task_return_pointer (task, GUINT_TO_POINTER (time), NULL);
 }
 
 /*
  * pk_control_get_time_since_action_internal:
  **/
 static void
-pk_control_get_time_since_action_internal (PkControlState *state)
+pk_control_get_time_since_action_internal (PkControl *control,
+					   GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+	guint role;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	role = GPOINTER_TO_UINT (g_task_get_task_data (task));
+	g_dbus_proxy_call (control->priv->proxy,
 			   "GetTimeSinceAction",
-			   state->parameters,
+			   g_variant_new ("(u)", role),
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_get_time_since_action_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -1562,15 +1289,18 @@ pk_control_get_time_since_action_proxy_cb (GObject *source_object,
 					   gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_get_time_since_action_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_get_time_since_action_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_get_time_since_action_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -1593,38 +1323,29 @@ pk_control_get_time_since_action_async (PkControl *control,
 					GAsyncReadyCallback callback,
 					gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_get_time_since_action_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	state->parameters = g_variant_new ("(u)", role);
-	g_variant_ref_sink (state->parameters);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_get_time_since_action_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_get_time_since_action_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_get_time_since_action_async);
+	g_task_set_task_data (task, GUINT_TO_POINTER ((guint) role), NULL);
+
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_get_time_since_action_internal (state);
+		pk_control_get_time_since_action_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -1634,11 +1355,8 @@ pk_control_get_time_since_action_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_get_time_since_action_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -1658,59 +1376,15 @@ pk_control_get_time_since_action_finish (PkControl *control,
 					 GAsyncResult *res,
 					 GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), 0);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), 0);
+	g_return_val_if_fail (g_task_is_valid (res, control), 0);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_transaction_list_async), 0);
 	g_return_val_if_fail (error == NULL || *error == NULL, 0);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_time_since_action_async, 0);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return 0;
-
-	return (guint) g_simple_async_result_get_op_res_gssize (simple);
+	return GPOINTER_TO_UINT(g_task_propagate_pointer (G_TASK (res), error));
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_can_authorize_state_finish:
- **/
-static void
-pk_control_can_authorize_state_finish (PkControlState *state, const GError *error)
-{
-	/* get result */
-	if (state->authorize != PK_AUTHORIZE_ENUM_UNKNOWN) {
-		g_simple_async_result_set_op_res_gssize (state->res, state->authorize);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_variant_unref (state->parameters);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_can_authorize_cb:
@@ -1721,45 +1395,56 @@ pk_control_can_authorize_cb (GObject *source_object,
 			     gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GVariant) value = NULL;
+	guint authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
 
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
 		/* fix up the D-Bus error */
 		pk_control_fixup_dbus_error (error);
-		pk_control_can_authorize_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* save data */
-	g_variant_get (value, "(u)", &state->authorize);
-	if (state->authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
-		error = g_error_new (PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED, "could not get state");
-		pk_control_can_authorize_state_finish (state, error);
+	g_variant_get (value, "(u)", &authorize);
+	if (authorize == PK_AUTHORIZE_ENUM_UNKNOWN) {
+		g_task_return_new_error (task,
+					 PK_CONTROL_ERROR, PK_CONTROL_ERROR_FAILED,
+					 "could not get state");
 		return;
 	}
 
 	/* we're done */
-	pk_control_can_authorize_state_finish (state, NULL);
+	g_task_return_pointer (task, GUINT_TO_POINTER (authorize), NULL);
 }
 
 /*
  * pk_control_can_authorize_internal:
  **/
 static void
-pk_control_can_authorize_internal (PkControlState *state)
+pk_control_can_authorize_internal (PkControl *control,
+				   GTask *task)
 {
-	g_dbus_proxy_call (state->control->priv->proxy,
+	GCancellable *cancellable;
+	const gchar *action_id;
+
+	g_assert (PK_IS_CONTROL (control));
+	g_assert (G_IS_TASK (task));
+
+	cancellable = g_task_get_cancellable (task);
+	action_id = g_task_get_task_data (task);
+	g_dbus_proxy_call (control->priv->proxy,
 			   "CanAuthorize",
-			   state->parameters,
+			   g_variant_new ("(s)", action_id),
 			   G_DBUS_CALL_FLAGS_NONE,
 			   PK_CONTROL_DBUS_METHOD_TIMEOUT,
-			   state->cancellable,
+			   cancellable,
 			   pk_control_can_authorize_cb,
-			   state);
+			   g_steal_pointer (&task));
 }
 
 /*
@@ -1771,15 +1456,18 @@ pk_control_can_authorize_proxy_cb (GObject *source_object,
 				   gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_can_authorize_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
-	pk_control_proxy_connect (state);
-	pk_control_can_authorize_internal (state);
+
+	pk_control_proxy_connect (control, proxy);
+	pk_control_can_authorize_internal (control, g_steal_pointer (&task));
 }
 
 /**
@@ -1802,39 +1490,29 @@ pk_control_can_authorize_async (PkControl *control,
 				GAsyncReadyCallback callback,
 				gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_can_authorize_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	state->parameters = g_variant_new ("(s)", action_id);
-	g_variant_ref_sink (state->parameters);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_can_authorize_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_can_authorize_async,
+				     g_steal_pointer (&error));
 		return;
 	}
-	state->authorize = PK_AUTHORIZE_ENUM_UNKNOWN;
+
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_can_authorize_async);
+	g_task_set_task_data (task, g_strdup (action_id), g_free);
 
 	/* skip straight to the D-Bus method if already connection */
 	if (control->priv->proxy != NULL) {
-		pk_control_can_authorize_internal (state);
+		pk_control_can_authorize_internal (control, g_steal_pointer (&task));
 	} else {
 		g_dbus_proxy_new_for_bus (G_BUS_TYPE_SYSTEM,
 					  G_DBUS_PROXY_FLAGS_NONE,
@@ -1844,11 +1522,8 @@ pk_control_can_authorize_async (PkControl *control,
 					  PK_DBUS_INTERFACE,
 					  control->priv->cancellable,
 					  pk_control_can_authorize_proxy_cb,
-					  state);
+					  g_steal_pointer (&task));
 	}
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
 }
 
 /**
@@ -1866,58 +1541,20 @@ pk_control_can_authorize_async (PkControl *control,
 PkAuthorizeEnum
 pk_control_can_authorize_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
+	gpointer result;
 
 	g_return_val_if_fail (PK_IS_CONTROL (control), PK_AUTHORIZE_ENUM_UNKNOWN);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), PK_AUTHORIZE_ENUM_UNKNOWN);
+	g_return_val_if_fail (g_task_is_valid (res, control), PK_AUTHORIZE_ENUM_UNKNOWN);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_can_authorize_async), PK_AUTHORIZE_ENUM_UNKNOWN);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_can_authorize_async, PK_AUTHORIZE_ENUM_UNKNOWN);
-
-	if (g_simple_async_result_propagate_error (simple, error))
+	result = g_task_propagate_pointer (G_TASK (res), error);
+	if (!result)
 		return PK_AUTHORIZE_ENUM_UNKNOWN;
 
-	return (PkAuthorizeEnum) g_simple_async_result_get_op_res_gssize (simple);
+	return (PkAuthorizeEnum) GPOINTER_TO_UINT(result);
 }
 
 /**********************************************************************/
-
-
-/*
- * pk_control_get_properties_state_finish:
- **/
-static void
-pk_control_get_properties_state_finish (PkControlState *state, const GError *error)
-{
-	/* get result */
-	if (state->ret) {
-		g_simple_async_result_set_op_res_gboolean (state->res,
-							   state->ret);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* remove from list */
-	g_ptr_array_remove (state->control->priv->calls, state);
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL) {
-		g_cancellable_disconnect (state->cancellable,
-					  state->cancellable_id);
-		g_object_unref (state->cancellable);
-	}
-	g_object_unref (state->res);
-	g_object_unref (state->control);
-	if (state->proxy != NULL)
-		g_object_unref (state->proxy);
-	g_slice_free (PkControlState, state);
-}
 
 /*
  * pk_control_get_properties_cb:
@@ -1927,23 +1564,21 @@ pk_control_get_properties_cb (GObject *source_object,
 			      GAsyncResult *res,
 			      gpointer user_data)
 {
-	PkControlState *state = (PkControlState *) user_data;
+	g_autoptr(GTask) task = G_TASK (user_data);
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusProxy) proxy = NULL;
+	PkControl *control = g_task_get_source_object (task);
 
-	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL) {
-		pk_control_get_properties_state_finish (state, error);
+	proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
+	if (proxy == NULL) {
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
-	/* connect up proxy */
-	pk_control_proxy_connect (state);
-
-	/* save data */
-	state->ret = TRUE;
+	pk_control_proxy_connect (control, proxy);
 
 	/* we're done */
-	pk_control_get_properties_state_finish (state, NULL);
+	g_task_return_boolean (task, TRUE);
 }
 
 /**
@@ -1963,37 +1598,28 @@ pk_control_get_properties_async (PkControl *control,
 				 GAsyncReadyCallback callback,
 				 gpointer user_data)
 {
-	PkControlState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
 	g_return_if_fail (PK_IS_CONTROL (control));
 	g_return_if_fail (callback != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
-	res = g_simple_async_result_new (G_OBJECT (control),
-					 callback,
-					 user_data,
-					 pk_control_get_properties_async);
-
-	/* save state */
-	state = g_slice_new0 (PkControlState);
-	state->res = g_object_ref (res);
-	state->control = g_object_ref (control);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-
 	/* check not already cancelled */
 	if (cancellable != NULL &&
 	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_control_get_properties_state_finish (state, error);
+		g_task_report_error (control, callback, user_data,
+				     pk_control_get_properties_async,
+				     g_steal_pointer (&error));
 		return;
 	}
 
+	task = g_task_new (control, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_control_get_properties_async);
+
 	/* already done */
 	if (control->priv->proxy != NULL) {
-		state->ret = TRUE;
-		pk_control_get_properties_state_finish (state, NULL);
+		g_task_return_boolean (task, TRUE);
 		return;
 	}
 
@@ -2006,10 +1632,7 @@ pk_control_get_properties_async (PkControl *control,
 				  PK_DBUS_INTERFACE,
 				  control->priv->cancellable,
 				  pk_control_get_properties_cb,
-				  state);
-
-	/* track state */
-	g_ptr_array_add (control->priv->calls, state);
+				  g_steal_pointer (&task));
 }
 
 /**
@@ -2027,22 +1650,12 @@ pk_control_get_properties_async (PkControl *control,
 gboolean
 pk_control_get_properties_finish (PkControl *control, GAsyncResult *res, GError **error)
 {
-	GSimpleAsyncResult *simple;
-	gpointer source_tag;
-
 	g_return_val_if_fail (PK_IS_CONTROL (control), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (g_task_is_valid (res, control), FALSE);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_properties_async), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	source_tag = g_simple_async_result_get_source_tag (simple);
-
-	g_return_val_if_fail (source_tag == pk_control_get_properties_async, FALSE);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
+	return g_task_propagate_boolean (G_TASK (res), error);
 }
 
 /**********************************************************************/
@@ -2407,7 +2020,6 @@ pk_control_init (PkControl *control)
 	control->priv->version_minor = G_MAXUINT;
 	control->priv->version_micro = G_MAXUINT;
 	control->priv->cancellable = g_cancellable_new ();
-	control->priv->calls = g_ptr_array_new ();
 	control->priv->watch_id = g_bus_watch_name (G_BUS_TYPE_SYSTEM,
 						    PK_DBUS_SERVICE,
 						    G_BUS_NAME_WATCHER_FLAGS_NONE,
@@ -2439,7 +2051,6 @@ pk_control_finalize (GObject *object)
 	g_free (priv->backend_author);
 	g_strfreev (priv->mime_types);
 	g_free (priv->distro_id);
-	g_ptr_array_unref (priv->calls);
 	g_object_unref (priv->cancellable);
 
 	G_OBJECT_CLASS (pk_control_parent_class)->finalize (object);
