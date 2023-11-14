@@ -699,45 +699,15 @@ pk_package_sack_get_package_ids (PkPackageSack *sack)
 	return package_ids;
 }
 
-typedef struct {
-	PkPackageSack		*sack;
-	GCancellable		*cancellable;
-	gboolean		 ret;
-	GSimpleAsyncResult	*res;
-} PkPackageSackState;
-
 /***************************************************************************************************/
-
-/*
- * pk_package_sack_merge_bool_state_finish:
- **/
-static void
-pk_package_sack_merge_bool_state_finish (PkPackageSackState *state, const GError *error)
-{
-	/* get result */
-	if (state->ret) {
-		g_simple_async_result_set_op_res_gboolean (state->res, state->ret);
-	} else {
-		g_simple_async_result_set_from_error (state->res, error);
-	}
-
-	/* complete */
-	g_simple_async_result_complete_in_idle (state->res);
-
-	/* deallocate */
-	if (state->cancellable != NULL)
-		g_object_unref (state->cancellable);
-	g_object_unref (state->res);
-	g_object_unref (state->sack);
-	g_slice_free (PkPackageSackState, state);
-}
 
 /*
  * pk_package_sack_resolve_cb:
  **/
 static void
-pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
+	g_autoptr(GTask) task = G_TASK (user_data);
 	PkClient *client = PK_CLIENT (source_object);
 	PkPackage *item;
 	guint i;
@@ -746,21 +716,24 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) packages = NULL;
+	PkPackageSack *sack;
+
+	sack = g_task_get_source_object (task);
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to resolve: %s", error->message);
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* get the packages */
 	packages = pk_results_get_package_array (results);
 	if (packages->len == 0) {
-		g_warning ("%i", state->ret);
-		error = g_error_new (1, 0, "no packages found!");
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_new_error (task,
+					 G_IO_ERROR, G_IO_ERROR_FAILED,
+					 "no packages found!");
 		return;
 	}
 
@@ -768,7 +741,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 	for (i = 0; i < packages->len; i++) {
 		item = g_ptr_array_index (packages, i);
 		package_id = pk_package_get_id (item);
-		package = pk_package_sack_find_by_id (state->sack, package_id);
+		package = pk_package_sack_find_by_id (sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
 			continue;
@@ -782,11 +755,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, PkPackage
 		g_object_unref (package);
 	}
 
-	/* all okay */
-	state->ret = TRUE;
-
-	/* we're done */
-	pk_package_sack_merge_bool_state_finish (state, error);
+	g_task_return_boolean (task, TRUE);
 }
 
 /**
@@ -807,29 +776,21 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_resolve_async);
-
-	/* save state */
-	state = g_slice_new0 (PkPackageSackState);
-	state->res = g_object_ref (res);
-	state->sack = g_object_ref (sack);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->ret = FALSE;
+	task = g_task_new (sack, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_package_sack_resolve_async);
 
 	/* start resolve async */
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_resolve_async (sack->priv->client,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids,
 				 cancellable, progress_callback, progress_user_data,
-				 (GAsyncReadyCallback) pk_package_sack_resolve_cb, state);
+				 pk_package_sack_resolve_cb, g_steal_pointer (&task));
 }
 
 /**
@@ -847,18 +808,11 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 gboolean
 pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GError **error)
 {
-	GSimpleAsyncResult *simple;
-
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (g_task_is_valid (res, sack), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-
-	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
-
-	return g_simple_async_result_get_op_res_gboolean (simple);
+	return g_task_propagate_boolean (G_TASK (res), error);
 }
 
 /***************************************************************************************************/
@@ -867,8 +821,9 @@ pk_package_sack_merge_generic_finish (PkPackageSack *sack, GAsyncResult *res, GE
  * pk_package_sack_get_details_cb:
  **/
 static void
-pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
+	g_autoptr(GTask) task = G_TASK (user_data);
 	PkClient *client = PK_CLIENT (source_object);
 	PkDetails *item;
 	guint i;
@@ -876,20 +831,24 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) details = NULL;
+	PkPackageSack *sack;
+
+	sack = g_task_get_source_object (task);
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to details: %s", error->message);
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* get the details */
 	details = pk_results_get_details_array (results);
 	if (details->len == 0) {
-		error = g_error_new (1, 0, "no details found!");
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_new_error (task,
+					 G_IO_ERROR, G_IO_ERROR_FAILED,
+					 "no details found!");
 		return;
 	}
 
@@ -902,7 +861,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 			      NULL);
 
 		/* get package, and set data */
-		package = pk_package_sack_find_by_id (state->sack, package_id);
+		package = pk_package_sack_find_by_id (sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
 			continue;
@@ -919,11 +878,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, PkPac
 		g_object_unref (package);
 	}
 
-	/* all okay */
-	state->ret = TRUE;
-
-	/* we're done */
-	pk_package_sack_merge_bool_state_finish (state, error);
+	g_task_return_boolean (task, TRUE);
 }
 
 /**
@@ -942,28 +897,20 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_get_details_async);
-
-	/* save state */
-	state = g_slice_new0 (PkPackageSackState);
-	state->res = g_object_ref (res);
-	state->sack = g_object_ref (sack);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->ret = FALSE;
+	task = g_task_new (sack, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_package_sack_get_details_async);
 
 	/* start details async */
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_details_async (sack->priv->client, package_ids,
 				     cancellable, progress_callback, progress_user_data,
-				     (GAsyncReadyCallback) pk_package_sack_get_details_cb, state);
+				     pk_package_sack_get_details_cb, task);
 }
 
 /***************************************************************************************************/
@@ -972,8 +919,9 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
  * pk_package_sack_get_update_detail_cb:
  **/
 static void
-pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res, PkPackageSackState *state)
+pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
+	g_autoptr(GTask) task = G_TASK (user_data);
 	PkClient *client = PK_CLIENT (source_object);
 	PkUpdateDetail *item;
 	guint i;
@@ -981,20 +929,24 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) update_details = NULL;
+	PkPackageSack *sack;
+
+	sack = g_task_get_source_object (task);
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	if (results == NULL) {
 		g_warning ("failed to update_detail: %s", error->message);
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
 
 	/* get the update_details */
 	update_details = pk_results_get_update_detail_array (results);
 	if (update_details->len == 0) {
-		error = g_error_new (1, 0, "no update details found!");
-		pk_package_sack_merge_bool_state_finish (state, error);
+		g_task_return_new_error (task,
+					 G_IO_ERROR, G_IO_ERROR_FAILED,
+					 "no update details found!");
 		return;
 	}
 
@@ -1030,7 +982,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 			      NULL);
 
 		/* get package, and set data */
-		package = pk_package_sack_find_by_id (state->sack, package_id);
+		package = pk_package_sack_find_by_id (sack, package_id);
 		if (package == NULL) {
 			g_warning ("failed to find %s", package_id);
 			continue;
@@ -1053,11 +1005,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 		g_object_unref (package);
 	}
 
-	/* all okay */
-	state->ret = TRUE;
-
-	/* we're done */
-	pk_package_sack_merge_bool_state_finish (state, error);
+	g_task_return_boolean (task, TRUE);
 }
 
 /**
@@ -1078,28 +1026,20 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 					 PkProgressCallback progress_callback, gpointer progress_user_data,
 					 GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackState *state;
-	g_autoptr(GSimpleAsyncResult) res = NULL;
+	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 	g_return_if_fail (callback != NULL);
 
-	res = g_simple_async_result_new (G_OBJECT (sack), callback, user_data, pk_package_sack_get_update_detail_async);
-
-	/* save state */
-	state = g_slice_new0 (PkPackageSackState);
-	state->res = g_object_ref (res);
-	state->sack = g_object_ref (sack);
-	if (cancellable != NULL)
-		state->cancellable = g_object_ref (cancellable);
-	state->ret = FALSE;
+	task = g_task_new (sack, cancellable, callback, user_data);
+	g_task_set_source_tag (task, pk_package_sack_get_update_detail_async);
 
 	/* start update_detail async */
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_update_detail_async (sack->priv->client, package_ids,
 					   cancellable, progress_callback, progress_user_data,
-					   (GAsyncReadyCallback) pk_package_sack_get_update_detail_cb, state);
+					   pk_package_sack_get_update_detail_cb, task);
 }
 
 /***************************************************************************************************/
