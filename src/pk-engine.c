@@ -686,7 +686,7 @@ pk_engine_set_proxy (PkEngine *engine,
 
 	/* check length of http */
 	len = pk_strlen (proxy_http, 1024);
-	if (len == 1024) {
+	if (len >= 1024) {
 		error = g_error_new_literal (PK_ENGINE_ERROR,
 					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "http proxy was too long");
@@ -696,7 +696,7 @@ pk_engine_set_proxy (PkEngine *engine,
 
 	/* check length of ftp */
 	len = pk_strlen (proxy_ftp, 1024);
-	if (len == 1024) {
+	if (len >= 1024) {
 		error = g_error_new_literal (PK_ENGINE_ERROR,
 					     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
 					     "ftp proxy was too long");
