@@ -1,6 +1,8 @@
 appstream_dep = dependency('appstream', version: '>=0.14.0')
 dnf_dep = dependency('libdnf', version: '>=0.43.1')
+dnf5_dep = dependency('libdnf5').partial_dependency(includes: true, compile_args: true)
 rpm_dep = dependency('rpm')
+sdbus_cpp_dep = dependency('sdbus-c++')
 c_args = ['-DG_LOG_DOMAIN="PackageKit-DNF"']
 
 if meson.get_compiler('c').has_function('hy_query_get_advisory_pkgs', prefix: '#include <libdnf/hy-query.h>', dependencies: dnf_dep)
@@ -18,6 +20,26 @@ python_package_dir = join_paths(python_package_dir, 'dnf-plugins')
 install_data(
   'notify_packagekit.py',
   install_dir: join_paths(python_package_dir),
+)
+
+add_languages('cpp')
+shared_module(
+  'notify_packagekit',
+  'notify_packagekit.cpp',
+  cpp_args: '-std=c++20',
+  include_directories: packagekit_glib2_includes,
+  dependencies: [
+    dnf5_dep,
+    sdbus_cpp_dep,
+  ],
+  name_prefix: '',
+  install: true,
+  install_dir: get_option('libdir') / 'libdnf5/plugins/',
+)
+
+install_data(
+  'notify_packagekit.conf',
+  install_dir: get_option('sysconfdir') / 'dnf/libdnf5-plugins/'
 )
 
 shared_module(
