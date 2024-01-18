@@ -1,14 +1,17 @@
-FROM fedora:38
+FROM fedora:40
 
 RUN dnf -y update
 RUN dnf -y install \
 	dnf-plugins-core \
 	libdnf-devel \
+	libdnf5-devel \
 	redhat-rpm-config \
 	meson \
 	gcc \
+	gcc-c++ \
 	ninja-build \
 	dbus-daemon \
+	sdbus-cpp-devel \
 	appstream \
 	appstream-devel
 RUN dnf -y builddep PackageKit
