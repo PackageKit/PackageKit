@@ -485,7 +485,7 @@ string SourcesList::SourceRecord::niceName()
     if (g_pattern_match_simple ("*.debian.org/*", uri_info.c_str()))
         return "Debian " + ret;
     if (g_pattern_match_simple ("*.ubuntu.com/*", uri_info.c_str()))
-        return "Debian " + ret;
+        return "Ubuntu " + ret;
     if (g_pattern_match_simple ("*.pureos.net/*", uri_info.c_str()))
         return "PureOS " + ret;
 

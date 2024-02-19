@@ -566,8 +566,9 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
         std::string origin  = vf.File().Origin() == NULL ? "" : vf.File().Origin();
         std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
         std::string label   = vf.File().Label() == NULL ? "" : vf.File().Label();
+
         if (origin.compare("Debian") == 0 ||
-                origin.compare("Ubuntu") == 0) {
+            origin.compare("Ubuntu") == 0) {
             if (ends_with(archive, "-security") ||
                     label.compare("Debian-Security") == 0) {
                 state = PK_INFO_ENUM_SECURITY;
