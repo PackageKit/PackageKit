@@ -993,7 +993,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 	if (state->exit_enum == PK_EXIT_ENUM_CANCELLED_PRIORITY) {
 		state->retry_id = g_timeout_add (PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT,
 						 pk_task_retry_cancelled_transaction_cb,
-						 g_steal_pointer (&task));
+						 g_steal_pointer (&gtask));
 		return;
 	}
 
