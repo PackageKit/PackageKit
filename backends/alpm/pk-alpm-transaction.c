@@ -865,16 +865,19 @@ pk_alpm_conflict_build_list (const alpm_list_t *i)
 		alpm_conflict_t *conflict = (alpm_conflict_t *) i->data;
 		alpm_depend_t *depend = conflict->reason;
 
-		if (g_strcmp0 (conflict->package1, depend->name) == 0 ||
-		    g_strcmp0 (conflict->package2, depend->name) == 0) {
+		const char *package_name1 = alpm_pkg_get_name (conflict->package1);
+		const char *package_name2 = alpm_pkg_get_name (conflict->package2);
+
+		if (g_strcmp0 (package_name1, depend->name) == 0 ||
+		    g_strcmp0 (package_name2, depend->name) == 0) {
 			g_string_append_printf (list, "%s <-> %s, ",
-						conflict->package1,
-						conflict->package2);
+						package_name1,
+						package_name2);
 		} else {
 			char *reason = alpm_dep_compute_string (depend);
 			g_string_append_printf (list, "%s <-> %s (%s), ",
-						conflict->package1,
-						conflict->package2, reason);
+						package_name1,
+						package_name2, reason);
 			free (reason);
 		}
 	}
