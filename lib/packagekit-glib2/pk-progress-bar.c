@@ -22,6 +22,8 @@
 #include "config.h"
 
 #include <glib.h>
+#include <glib/gi18n.h>
+#include <locale.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -131,10 +133,13 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 	for (i = 0; i < self->priv->size - section; i++)
 		g_string_append (str, " ");
 	g_string_append (str, "] ");
-	if (percentage >= 0 && percentage < 100)
-		g_string_append_printf (str, "(%i%%)  ", percentage);
-	else
+	if (percentage >= 0 && percentage < 100) {
+		/* TRANSLATORS: this is a percentage value we use in messages, e.g. "90%. */
+		g_string_append_printf (str, _("(%i%%)"), percentage);
+		g_string_append_printf (str, "  ");
+	} else {
 		g_string_append (str, "        ");
+	}
 	pk_progress_bar_console (self, str->str);
 	g_string_free (str, TRUE);
 	return TRUE;
@@ -172,10 +177,13 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	for (i = 0; i < (gint) (self->priv->size - self->priv->pulse_state.position - 1); i++)
 		g_string_append (str, " ");
 	g_string_append (str, "] ");
-	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID)
-		g_string_append_printf (str, "(%i%%)  ", self->priv->percentage);
-	else
+	if (self->priv->percentage >= 0 && self->priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID) {
+		/* TRANSLATORS: this is a percentage value we use in messages, e.g. "90%. */
+		g_string_append_printf (str, _("(%i%%)"), self->priv->percentage);
+		g_string_append_printf (str, "  ");
+	} else {
 		g_string_append (str, "        ");
+	}
 	pk_progress_bar_console (self, str->str);
 	g_string_free (str, TRUE);
 
