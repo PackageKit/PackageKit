@@ -145,12 +145,13 @@ pk_offline_update_progress_cb (PkProgress *progress,
 				  pk_package_get_data (pkg));
 		break;
 	case PK_PROGRESS_TYPE_PERCENTAGE:
+		g_autofree gchar *tmp_perc = NULL;
+
 		g_object_get (progress, "percentage", &percentage, NULL);
 		if (percentage < 0)
 			return;
 		sd_journal_print (LOG_INFO, "percentage %i%%", percentage);
 
-		g_autofree gchar *tmp_perc = NULL;
 		/* TRANSLATORS: this is a percentage value we use in messages, e.g. "90%" */
 		tmp_perc = g_strdup_printf (_("%i%%"), percentage);
 

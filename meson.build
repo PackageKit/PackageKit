@@ -106,11 +106,12 @@ package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
-# work both in C and C++
+# default compiler flags for C and C++
 add_project_arguments(
   '-Wall',
-  '-Wcast-align', '-Wno-uninitialized',
-  '-Wmissing-declarations',
+  '-Wcast-align',
+  '-Wno-uninitialized',
+  '-Werror=missing-declarations',
   '-Wredundant-decls',
   '-Wpointer-arith',
   '-Wcast-align',
@@ -131,11 +132,21 @@ add_project_arguments(
   language: ['c', 'cpp']
 )
 
-# work only in C
+# default compiler flags for C only
 add_project_arguments(
+  '-Werror=shadow',
+  '-Werror=empty-body',
+  '-Werror=strict-prototypes',
+  '-Werror=missing-prototypes',
+  '-Werror=implicit-function-declaration',
+  '-Werror=return-type',
+  '-Werror=int-conversion',
+  '-Werror=incompatible-pointer-types',
+  '-Werror=misleading-indentation',
+  '-Werror=missing-include-dirs',
+  '-Werror=declaration-after-statement',
+  '-Werror=format-security',
   '-Waggregate-return',
-  '-Wdeclaration-after-statement',
-  '-Wshadow',
   '-Wno-strict-aliasing',
   '-Winline',
   '-Wmissing-parameter-type',
