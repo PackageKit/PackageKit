@@ -8,6 +8,7 @@ contrib/command-not-found/pk-command-not-found.c
 lib/packagekit-glib2/pk-console-shared.c
 lib/packagekit-glib2/pk-debug.c
 lib/packagekit-glib2/pk-enum.c
+lib/packagekit-glib2/pk-progress-bar.c
 lib/packagekit-glib2/pk-task-text.c
 policy/org.freedesktop.packagekit.policy.in
 src/pk-direct.c
