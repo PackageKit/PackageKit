@@ -24,7 +24,6 @@ if [ "$1x" = "x" ]; then
 else
     BACKEND=$1
 fi
-cd src/
 export G_DEBUG=fatal_criticals
 killall packagekitd
-./packagekitd --verbose --disable-timer --keep-environment --backend=$BACKEND
+./src/packagekitd --verbose --disable-timer --keep-environment --backend=$BACKEND
