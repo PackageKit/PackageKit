@@ -618,33 +618,33 @@ typedef enum {
 
 /**
  * PkInfoEnum:
- * @PK_INFO_ENUM_UNKNOWN: Package status is unknown
- * @PK_INFO_ENUM_INSTALLED: Package is installed
- * @PK_INFO_ENUM_AVAILABLE: Package is available to be installed
- * @PK_INFO_ENUM_LOW:
- * @PK_INFO_ENUM_ENHANCEMENT:
- * @PK_INFO_ENUM_NORMAL:
- * @PK_INFO_ENUM_BUGFIX:
- * @PK_INFO_ENUM_IMPORTANT:
- * @PK_INFO_ENUM_SECURITY:
- * @PK_INFO_ENUM_BLOCKED: Package is blocked
- * @PK_INFO_ENUM_DOWNLOADING: Package is downloading
- * @PK_INFO_ENUM_UPDATING: Package is updating
- * @PK_INFO_ENUM_INSTALLING: Package is being installed
- * @PK_INFO_ENUM_REMOVING: Package is being removed
- * @PK_INFO_ENUM_CLEANUP: Package is running cleanup
- * @PK_INFO_ENUM_OBSOLETING:
+ * @PK_INFO_ENUM_UNKNOWN: 	Package status is unknown
+ * @PK_INFO_ENUM_INSTALLED: 	Package is installed
+ * @PK_INFO_ENUM_AVAILABLE: 	Package is available to be installed
+ * @PK_INFO_ENUM_LOW:		Package update has a low priority
+ * @PK_INFO_ENUM_ENHANCEMENT:	Package update is an enhancement
+ * @PK_INFO_ENUM_NORMAL:	Package update has normal priority
+ * @PK_INFO_ENUM_BUGFIX:	Package update fixes bugs
+ * @PK_INFO_ENUM_IMPORTANT:	Package update is important
+ * @PK_INFO_ENUM_SECURITY:	Package update contains a security fix
+ * @PK_INFO_ENUM_BLOCKED: 	Package is blocked
+ * @PK_INFO_ENUM_DOWNLOADING: 	Package is being downloaded
+ * @PK_INFO_ENUM_UPDATING: 	Package is updating
+ * @PK_INFO_ENUM_INSTALLING:	Package is being installed
+ * @PK_INFO_ENUM_REMOVING: 	Package is being removed
+ * @PK_INFO_ENUM_CLEANUP:	Package is running cleanup
+ * @PK_INFO_ENUM_OBSOLETING:	Package is being obsoleted
  * @PK_INFO_ENUM_COLLECTION_INSTALLED:
  * @PK_INFO_ENUM_COLLECTION_AVAILABLE:
  * @PK_INFO_ENUM_FINISHED:
- * @PK_INFO_ENUM_REINSTALLING: Package is being reinstalled
- * @PK_INFO_ENUM_DOWNGRADING: Package is being downgraded
- * @PK_INFO_ENUM_PREPARING: Package is preparing for installation/removal
+ * @PK_INFO_ENUM_REINSTALLING: 	Package is being reinstalled
+ * @PK_INFO_ENUM_DOWNGRADING: 	Package is being downgraded
+ * @PK_INFO_ENUM_PREPARING: 	Package is preparing for installation/removal
  * @PK_INFO_ENUM_DECOMPRESSING: Package is decompressing
  * @PK_INFO_ENUM_UNTRUSTED:
  * @PK_INFO_ENUM_TRUSTED:
- * @PK_INFO_ENUM_UNAVAILABLE: Package is unavailable
- * @PK_INFO_ENUM_CRITICAL: Update severity is critical; Since: 1.2.4
+ * @PK_INFO_ENUM_UNAVAILABLE:	Package is unavailable
+ * @PK_INFO_ENUM_CRITICAL: 	Package update severity is critical; Since: 1.2.4
  * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific
