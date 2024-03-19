@@ -8,12 +8,12 @@
 # (at your option) any later version.
 
 # check some important things are installed systemwide
-if [ ! -e "/etc/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
-    echo "You need to install the DBus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /etc/dbus-1/system.d"
+if [ ! -e "/usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
+    echo "You need to install the DBus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /usr/share/dbus-1/system.d/"
     exit 1
 fi
 if [ ! -e "/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy" ]; then
-    echo "You need to install the PolicyKit rules. Use sudo cp ../policy/org.freedesktop.packagekit.policy /usr/share/polkit-1/actions"
+    echo "You need to install the PolicyKit rules. Use sudo cp ../policy/org.freedesktop.packagekit.policy /usr/share/polkit-1/actions/"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ if [ "$1x" = "x" ]; then
 else
     BACKEND=$1
 fi
+cd src/
 export G_DEBUG=fatal_criticals
 killall packagekitd
 ./packagekitd --verbose --disable-timer --keep-environment --backend=$BACKEND
-
