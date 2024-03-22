@@ -113,6 +113,7 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	PkStatusEnum status;
 	gint percentage;
 	g_autofree gchar *msg = NULL;
+	g_autofree gchar *tmp_perc = NULL;
 	g_autoptr(PkPackage) pkg = NULL;
 
 	switch (type) {
@@ -145,8 +146,6 @@ pk_offline_update_progress_cb (PkProgress *progress,
 				  pk_package_get_data (pkg));
 		break;
 	case PK_PROGRESS_TYPE_PERCENTAGE:
-		g_autofree gchar *tmp_perc = NULL;
-
 		g_object_get (progress, "percentage", &percentage, NULL);
 		if (percentage < 0)
 			return;
