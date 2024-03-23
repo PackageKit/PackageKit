@@ -158,11 +158,11 @@ pk_offline_update_progress_cb (PkProgress *progress,
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			/* TRANSLATORS: this is the message we send plymouth to
 			 * advise of the new percentage completion when installing system upgrades */
-			msg = g_strdup_printf ("%s – %s", _("Installing System Upgrade"), tmp_perc);
+			msg = g_strdup_printf ("%s — %s", _("Installing System Upgrade"), tmp_perc);
 		} else {
 			/* TRANSLATORS: this is the message we send plymouth to
 			 * advise of the new percentage completion when installing updates */
-			msg = g_strdup_printf ("%s – %s", _("Installing Updates"), tmp_perc);
+			msg = g_strdup_printf ("%s — %s", _("Installing Updates"), tmp_perc);
 		}
 		if (percentage > 10)
 			pk_offline_update_set_plymouth_msg (msg);
