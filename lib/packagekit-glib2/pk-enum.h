@@ -644,7 +644,11 @@ typedef enum {
  * @PK_INFO_ENUM_UNTRUSTED:
  * @PK_INFO_ENUM_TRUSTED:
  * @PK_INFO_ENUM_UNAVAILABLE:	Package is unavailable
- * @PK_INFO_ENUM_CRITICAL: 	Package update severity is critical; Since: 1.2.4
+ * @PK_INFO_ENUM_CRITICAL: 	Package update severity is critical. Since: 1.2.4
+ * @PK_INFO_ENUM_INSTALL:	Package is intended for installation. Since 1.3.0
+ * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
+ * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
+ * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
  * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific
@@ -677,7 +681,11 @@ typedef enum {
 	PK_INFO_ENUM_UNTRUSTED,
 	PK_INFO_ENUM_TRUSTED,
 	PK_INFO_ENUM_UNAVAILABLE,
-	PK_INFO_ENUM_CRITICAL,	/* Since: 1.2.4 */
+	PK_INFO_ENUM_CRITICAL,
+	PK_INFO_ENUM_INSTALL,
+	PK_INFO_ENUM_REMOVE,
+	PK_INFO_ENUM_OBSOLETE,
+	PK_INFO_ENUM_DOWNGRADE,
 	PK_INFO_ENUM_LAST
 } PkInfoEnum;
 

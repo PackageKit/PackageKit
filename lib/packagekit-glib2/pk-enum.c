@@ -320,9 +320,13 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
 	{PK_INFO_ENUM_PREPARING,		"preparing"},
 	{PK_INFO_ENUM_DECOMPRESSING,		"decompressing"},
-	{PK_INFO_ENUM_UNTRUSTED,			"untrusted"},
-	{PK_INFO_ENUM_TRUSTED,				"trusted"},
+	{PK_INFO_ENUM_UNTRUSTED,		"untrusted"},
+	{PK_INFO_ENUM_TRUSTED,			"trusted"},
 	{PK_INFO_ENUM_CRITICAL,			"critical"},
+	{PK_INFO_ENUM_INSTALL,			"install"},
+	{PK_INFO_ENUM_REMOVE,			"remove"},
+	{PK_INFO_ENUM_OBSOLETE,			"obsolete"},
+	{PK_INFO_ENUM_DOWNGRADE,		"downgrade"},
 	{0, NULL}
 };
 
@@ -1007,6 +1011,22 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 	case PK_INFO_ENUM_UNAVAILABLE:
 		/* TRANSLATORS: The state of a package, i.e. not installed */
 		text = dgettext("PackageKit", "Unavailable");
+		break;
+	case PK_INFO_ENUM_INSTALL:
+		/* TRANSLATORS: The state of a package: to be installed with the next action */
+		text = dgettext("PackageKit", "Install");
+		break;
+	case PK_INFO_ENUM_REMOVE:
+		/* TRANSLATORS: The state of a package: to be removed with the next action */
+		text = dgettext("PackageKit", "Remove");
+		break;
+	case PK_INFO_ENUM_OBSOLETE:
+		/* TRANSLATORS: The state of a package: package is obsolete */
+		text = dgettext("PackageKit", "Obsolete");
+		break;
+	case PK_INFO_ENUM_DOWNGRADE:
+		/* TRANSLATORS: The state of a package: package is to be downgraded */
+		text = dgettext("PackageKit", "Downgrade");
 		break;
 	default:
 		g_warning ("info unrecognised: %s", pk_info_enum_to_string (info));
