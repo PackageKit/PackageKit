@@ -799,8 +799,10 @@ pk_package_class_init (PkPackageClass *klass)
 	/**
 	 * PkPackage:update-severity:
 	 *
-	 * Can be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL,
-	 * %PK_INFO_ENUM_IMPORTANT or %PK_INFO_ENUM_CRITICAL.
+	 * Can be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
+	 * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
+	 * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
+	 * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
 	 *
 	 * Since: 1.2.4
 	 */
@@ -888,9 +890,11 @@ pk_package_new (void)
  * pk_package_get_update_severity:
  * @package: a #PkPackage
  *
- * Returns the @package update severity. Can be one of %PK_INFO_ENUM_UNKNOWN,
- * %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL, %PK_INFO_ENUM_IMPORTANT or
- * %PK_INFO_ENUM_CRITICAL.
+ * Returns the @package update severity. Can be one of
+ * %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
+ * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
+ * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
+ * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
  *
  * Returns: the @package update severity, if known.
  *
@@ -909,9 +913,11 @@ pk_package_get_update_severity (PkPackage *package)
  * @package: a #PkPackage
  * @update_severity: a #PkInfoEnum
  *
- * Set an update severity for the @package. The @update_severity can be
- * one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW, %PK_INFO_ENUM_NORMAL,
- * %PK_INFO_ENUM_IMPORTANT or %PK_INFO_ENUM_CRITICAL.
+ * Set an update severity for the @package. The @update_severity can
+ * be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
+ * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
+ * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
+ * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
  *
  * Since: 1.2.4
  **/
@@ -922,8 +928,11 @@ pk_package_set_update_severity (PkPackage *package,
 	g_return_if_fail (PK_IS_PACKAGE (package));
 	g_return_if_fail (update_severity == PK_INFO_ENUM_UNKNOWN ||
 			  update_severity == PK_INFO_ENUM_LOW ||
+			  update_severity == PK_INFO_ENUM_ENHANCEMENT ||
 			  update_severity == PK_INFO_ENUM_NORMAL ||
+			  update_severity == PK_INFO_ENUM_BUGFIX ||
 			  update_severity == PK_INFO_ENUM_IMPORTANT ||
+			  update_severity == PK_INFO_ENUM_SECURITY ||
 			  update_severity == PK_INFO_ENUM_CRITICAL);
 
 	if (package->priv->update_severity == update_severity)
