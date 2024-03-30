@@ -21,6 +21,9 @@
 
 #include "pkg-list.h"
 
+#include <apt-pkg/pkgsystem.h>
+#include <apt-pkg/version.h>
+
 #include <algorithm>
 
 // compare...uses the candidate version of each package.
@@ -35,7 +38,12 @@ public:
         const pkgCache::VerIterator &viB = b.ver;
         int ret = strcmp(viA.ParentPkg().Name(), viB.ParentPkg().Name());
         if (ret == 0) {
-            ret = strcmp(viA.VerStr(), viB.VerStr());
+            if (_system != 0)
+                ret = _system->VS->DoCmpVersion(viA.VerStr(), viA.VerStr() + strlen(viA.VerStr()),
+                                                viB.VerStr(), viB.VerStr() + strlen(viB.VerStr()));
+            else
+                ret = strcmp(viA.VerStr(), viB.VerStr());
+
             if (ret == 0) {
                 ret = strcmp(viA.Arch(), viB.Arch());
                 if (ret == 0) {
