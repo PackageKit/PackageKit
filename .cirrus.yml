@@ -2,7 +2,7 @@ task:
   name: "Build (freebsd)"
   freebsd_instance:
     matrix:
-      - image_family: freebsd-13-2-snap
+      - image_family: freebsd-13-3-snap
   deps_script:
     - env ASSUME_ALWAYS_YES=yes pkg update -f
     - env ASSUME_ALWAYS_YES=yes pkg install -y docbook-xsl vala libxslt fontconfig polkit consolekit2
@@ -11,7 +11,7 @@ task:
   build_script:
     - meson --auto-features=enabled -Db_colorout=never --buildtype debug -Dlocal_checkout=true -Dlocalstatedir=/var
         -Dsystemd=false -Doffline_update=false  -Dbash_completion=false -Dbash_command_not_found=false
-        -Dgstreamer_plugin=false _build
+        -Dgstreamer_plugin=false -Dpackaging_backend=freebsd _build
     - cd _build
     - ninja -v all
   #test_script:
