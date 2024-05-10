@@ -637,7 +637,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 }
 
 static void
-pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
+pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError *finish_error)
 {
 	const gchar *filename;
 	gboolean ret;
@@ -645,11 +645,8 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	PkPackageSack *sack;
 	PkRestartEnum restart;
 	PkRoleEnum role;
-	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(PkError) error_code = NULL;
-	g_autoptr(PkResults) results = NULL;
 
 	/* no more progress */
 	if (ctx->is_console) {
@@ -659,13 +656,11 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		g_print ("%s\n", _("Results:"));
 	}
 
-	/* get the results */
-	results = pk_task_generic_finish (PK_TASK (ctx->task), res, &error);
 	if (results == NULL) {
 		/* TRANSLATORS: we failed to get any results, which is pretty
 		 * fatal in my book */
-		g_print ("%s: %s\n", _("Fatal error"), error->message);
-		switch (error->code - 0xff) {
+		g_print ("%s: %s\n", _("Fatal error"), finish_error->message);
+		switch (finish_error->code - 0xff) {
 		case PK_ERROR_ENUM_ALL_PACKAGES_ALREADY_INSTALLED:
 		case PK_ERROR_ENUM_REPO_NOT_AVAILABLE:
 			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
@@ -821,6 +816,7 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 
 	/* write the sack to disk */
 	if (role == PK_ROLE_ENUM_GET_PACKAGES && filename != NULL) {
+		g_autoptr(GError) error = NULL;
 		file = g_file_new_for_path (filename);
 		ret = pk_package_sack_to_file (sack, file, &error);
 		if (!ret) {
@@ -831,6 +827,30 @@ pk_console_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	}
 out:
 	g_main_loop_quit (ctx->loop);
+}
+
+static void
+pk_console_client_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
+
+	results = pk_client_generic_finish (PK_CLIENT (ctx->task), res, &error);
+
+	pk_console_process_results (results, ctx, error);
+}
+
+static void
+pk_console_task_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	PkConsoleCtx *ctx = (PkConsoleCtx *) data;
+
+	results = pk_task_generic_finish (PK_TASK (ctx->task), res, &error);
+
+	pk_console_process_results (results, ctx, error);
 }
 
 static gchar *
@@ -1057,7 +1077,7 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	pk_task_install_packages_async (PK_TASK (ctx->task),
 					package_ids, ctx->cancellable,
 					pk_console_progress_cb, ctx,
-					pk_console_finished_cb, ctx);
+					pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1086,7 +1106,7 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autore
 				       TRUE, autoremove,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
-				       pk_console_finished_cb, ctx);
+				       pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1115,7 +1135,7 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 					 directory,
 					 ctx->cancellable,
 					 pk_console_progress_cb, ctx,
-					 pk_console_finished_cb, ctx);
+					 pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1145,7 +1165,7 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				       package_ids,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
-				       pk_console_finished_cb, ctx);
+				       pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1188,7 +1208,7 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 				       package_ids,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
-				       pk_console_finished_cb, ctx);
+				       pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1200,7 +1220,7 @@ pk_console_upgrade_system (PkConsoleCtx *ctx, const gchar *distro_id, const gcha
 				      pk_upgrade_kind_enum_from_string (upgrade_kind),
 				      ctx->cancellable,
 				      pk_console_progress_cb, ctx,
-				      pk_console_finished_cb, ctx);
+				      pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1230,7 +1250,7 @@ pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				    TRUE,
 				    ctx->cancellable,
 				    pk_console_progress_cb, ctx,
-				    pk_console_finished_cb, ctx);
+				    pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1259,7 +1279,7 @@ pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				   FALSE,
 				   ctx->cancellable,
 				   pk_console_progress_cb, ctx,
-				   pk_console_finished_cb, ctx);
+				   pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1275,7 +1295,7 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 						   packages,
 						   ctx->cancellable,
 						   pk_console_progress_cb, ctx,
-						   pk_console_finished_cb, ctx);
+						   pk_console_client_finished_cb, ctx);
 		return TRUE;
 	}
 
@@ -1296,7 +1316,7 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				   package_ids,
 				   ctx->cancellable,
 				   pk_console_progress_cb, ctx,
-				   pk_console_finished_cb, ctx);
+				   pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1307,7 +1327,7 @@ pk_console_get_details_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 					   files,
 					   ctx->cancellable,
 					   pk_console_progress_cb, ctx,
-					   pk_console_finished_cb, ctx);
+					   pk_console_client_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1318,7 +1338,7 @@ pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 					 files,
 					 ctx->cancellable,
 					 pk_console_progress_cb, ctx,
-					 pk_console_finished_cb, ctx);
+					 pk_console_client_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1334,7 +1354,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 						   packages,
 						   ctx->cancellable,
 						   pk_console_progress_cb, ctx,
-						   pk_console_finished_cb, ctx);
+						   pk_console_client_finished_cb, ctx);
 		return TRUE;
 	}
 
@@ -1355,7 +1375,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 				 package_ids,
 				 ctx->cancellable,
 				 pk_console_progress_cb, ctx,
-				 pk_console_finished_cb, ctx);
+				 pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1383,7 +1403,7 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 					 package_ids,
 					 ctx->cancellable,
 					 pk_console_progress_cb, ctx,
-					 pk_console_finished_cb, ctx);
+					 pk_console_task_finished_cb, ctx);
 	return TRUE;
 }
 
@@ -1830,7 +1850,7 @@ main (int argc, char *argv[])
 						    argv + 3,
 						    ctx->cancellable,
 						    pk_console_progress_cb, ctx,
-						    pk_console_finished_cb, ctx);
+						    pk_console_task_finished_cb, ctx);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
@@ -1847,7 +1867,7 @@ main (int argc, char *argv[])
 						      argv + 3,
 						      ctx->cancellable,
 						      pk_console_progress_cb, ctx,
-						      pk_console_finished_cb, ctx);
+						      pk_console_task_finished_cb, ctx);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
@@ -1864,7 +1884,7 @@ main (int argc, char *argv[])
 						     argv + 3,
 						     ctx->cancellable,
 						     pk_console_progress_cb, ctx,
-						     pk_console_finished_cb, ctx);
+						     pk_console_task_finished_cb, ctx);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
@@ -1881,7 +1901,7 @@ main (int argc, char *argv[])
 						    argv + 3,
 						    ctx->cancellable,
 						    pk_console_progress_cb, ctx,
-						    pk_console_finished_cb, ctx);
+						    pk_console_task_finished_cb, ctx);
 		} else {
 			/* fallback to a generic search */
 			pk_task_search_details_async (PK_TASK (ctx->task),
@@ -1889,7 +1909,7 @@ main (int argc, char *argv[])
 						      argv + 2,
 						      ctx->cancellable,
 						      pk_console_progress_cb, ctx,
-						      pk_console_finished_cb, ctx);
+						      pk_console_task_finished_cb, ctx);
 		}
 
 	} else if (strcmp (mode, "install") == 0) {
@@ -1920,7 +1940,7 @@ main (int argc, char *argv[])
 					     argv + 2,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1938,7 +1958,7 @@ main (int argc, char *argv[])
 						   parameter,
 						   ctx->cancellable,
 						   pk_console_progress_cb, ctx,
-						   pk_console_finished_cb, ctx);
+						   pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
@@ -1992,7 +2012,7 @@ main (int argc, char *argv[])
 					     value,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
@@ -2019,7 +2039,7 @@ main (int argc, char *argv[])
 				       argv + 2,
 				       ctx->cancellable,
 				       pk_console_progress_cb, ctx,
-				       pk_console_finished_cb, ctx);
+				       pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -2036,7 +2056,7 @@ main (int argc, char *argv[])
 					   TRUE,
 					   ctx->cancellable,
 					   pk_console_progress_cb, ctx,
-					   pk_console_finished_cb, ctx);
+					   pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
@@ -2053,7 +2073,7 @@ main (int argc, char *argv[])
 					   FALSE,
 					   ctx->cancellable,
 					   pk_console_progress_cb, ctx,
-					   pk_console_finished_cb, ctx);
+					   pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -2070,7 +2090,7 @@ main (int argc, char *argv[])
 					       parameter,
 					       ctx->cancellable,
 					       pk_console_progress_cb, ctx,
-					       pk_console_finished_cb, ctx);
+					       pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-remove") == 0) {
 		if (value == NULL || details == NULL) {
@@ -2088,14 +2108,14 @@ main (int argc, char *argv[])
 					     atoi (details),
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
 		pk_task_get_repo_list_async (PK_TASK (ctx->task),
 					     ctx->filters,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
@@ -2144,7 +2164,7 @@ main (int argc, char *argv[])
 		pk_client_get_distro_upgrades_async (PK_CLIENT (ctx->task),
 						     ctx->cancellable,
 						     pk_console_progress_cb, ctx,
-						     pk_console_finished_cb, ctx);
+						     pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
@@ -2186,7 +2206,7 @@ main (int argc, char *argv[])
 					     argv + 2,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
@@ -2237,20 +2257,20 @@ main (int argc, char *argv[])
 					   ctx->filters,
 					   ctx->cancellable,
 					   pk_console_progress_cb, ctx,
-					   pk_console_finished_cb, ctx);
+					   pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
 		pk_task_get_categories_async (PK_TASK (ctx->task),
 					      ctx->cancellable,
 					      pk_console_progress_cb, ctx,
-					      pk_console_finished_cb, ctx);
+					      pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
 		pk_task_get_packages_async (PK_TASK (ctx->task),
 					    ctx->filters,
 					    ctx->cancellable,
 					    pk_console_progress_cb, ctx,
-					    pk_console_finished_cb, ctx);
+					    pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "upgrade-system") == 0) {
 		/* do the system upgrade */
@@ -2341,7 +2361,7 @@ main (int argc, char *argv[])
 						      10,
 						      ctx->cancellable,
 						      pk_console_progress_cb, ctx,
-						      pk_console_finished_cb, ctx);
+						      pk_console_client_finished_cb, ctx);
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		gboolean force = (value != NULL && g_strcmp0 (value, "force") == 0);
@@ -2349,12 +2369,12 @@ main (int argc, char *argv[])
 					     force,
 					     ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "repair") == 0) {
 		pk_task_repair_system_async (PK_TASK (ctx->task), ctx->cancellable,
 					     pk_console_progress_cb, ctx,
-					     pk_console_finished_cb, ctx);
+					     pk_console_task_finished_cb, ctx);
 
 	} else if (strcmp (mode, "list-create") == 0) {
 		if (value == NULL) {
@@ -2386,7 +2406,7 @@ main (int argc, char *argv[])
 					g_free);
 		pk_task_get_packages_async (PK_TASK (ctx->task), ctx->filters, ctx->cancellable,
 					    pk_console_progress_cb, ctx,
-					    pk_console_finished_cb, ctx);
+					    pk_console_task_finished_cb, ctx);
 	} else {
 		error = g_error_new (PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
