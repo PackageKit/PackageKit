@@ -227,7 +227,8 @@ string fetchChangelogData(AptCacheFile &CacheFile,
                 // display old changelog information
                 if (_system != 0  &&
                         _system->VS->DoCmpVersion(version, version + strlen(version),
-                                                  currver.VerStr(), currver.VerStr() + strlen(currver.VerStr())) <= 0) {
+                                                  currver.SourceVerStr(),
+                                                  currver.SourceVerStr() + strlen(currver.SourceVerStr())) <= 0) {
                     g_free (version);
                     break;
                 } else {
