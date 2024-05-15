@@ -80,6 +80,7 @@ static void InitAdvertisedGroups()
             PK_GROUP_ENUM_SYSTEM, //sysutils
             PK_GROUP_ENUM_SCIENCE, //science
             PK_GROUP_ENUM_MAPS, //geography
+            PK_GROUP_ENUM_VIRTUALIZATION, // emulators
             -1);
 }
 
