@@ -47,6 +47,9 @@ public:
 
         if (pkg_ini(NULL, NULL, PKG_INIT_FLAG_USE_IPV4) != EPKG_OK)
             g_error("pkg_ini failure");
+
+        pkg_plugins_init();
+
         // can't pass nullptr here, unique_ptr won't call the deleter
         libpkgDeleter = deleted_unique_ptr<void>(reinterpret_cast<void*>(0xDEADC0DE), [](void* p) { pkg_shutdown(); });
     }
