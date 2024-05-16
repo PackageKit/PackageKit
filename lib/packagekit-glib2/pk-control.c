@@ -929,7 +929,7 @@ pk_control_set_proxy_proxy_cb (GObject *source_object,
 }
 
 /**
- * pk_control_set_proxy2_async:
+ * pk_control_set_proxy2_async: (finish-func pk_control_set_proxy_finish):
  * @control: a valid #PkControl instance
  * @proxy_http: a HTTP proxy string such as "username:password@server.lan:8080", or %NULL
  * @proxy_https: a HTTPS proxy string such as "username:password@server.lan:8080", or %NULL

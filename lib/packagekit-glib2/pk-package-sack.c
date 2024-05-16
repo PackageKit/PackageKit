@@ -759,7 +759,7 @@ pk_package_sack_resolve_cb (GObject *source_object, GAsyncResult *res, gpointer 
 }
 
 /**
- * pk_package_sack_resolve_async:
+ * pk_package_sack_resolve_async: (finish-func pk_client_generic_finish):
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -882,7 +882,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, gpoin
 }
 
 /**
- * pk_package_sack_get_details_async:
+ * pk_package_sack_get_details_async: (finish-func pk_client_generic_finish):
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -1009,7 +1009,7 @@ pk_package_sack_get_update_detail_cb (GObject *source_object, GAsyncResult *res,
 }
 
 /**
- * pk_package_sack_get_update_detail_async:
+ * pk_package_sack_get_update_detail_async: (finish-func pk_client_generic_finish):
  * @sack: a valid #PkPackageSack instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes

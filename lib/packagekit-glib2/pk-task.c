@@ -1002,7 +1002,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 }
 
 /**
- * pk_task_install_packages_async:
+ * pk_task_install_packages_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1059,7 +1059,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 }
 
 /**
- * pk_task_update_packages_async:
+ * pk_task_update_packages_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1108,7 +1108,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 }
 
 /**
- * pk_task_upgrade_system_async:
+ * pk_task_upgrade_system_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @distro_id: a distro ID such as "fedora-14"
  * @upgrade_kind: a #PkUpgradeKindEnum such as %PK_UPGRADE_KIND_ENUM_COMPLETE
@@ -1166,7 +1166,7 @@ pk_task_upgrade_system_async (PkTask *task,
 }
 
 /**
- * pk_task_remove_packages_async:
+ * pk_task_remove_packages_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @allow_deps: if other dependent packages are allowed to be removed from the computer
@@ -1220,7 +1220,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 }
 
 /**
- * pk_task_install_files_async:
+ * pk_task_install_files_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
  * @cancellable: a #GCancellable or %NULL
@@ -1273,7 +1273,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 }
 
 /**
- * pk_task_resolve_async:
+ * pk_task_resolve_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @packages: (array zero-terminated=1): package names to find
@@ -1327,7 +1327,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 }
 
 /**
- * pk_task_search_names_async:
+ * pk_task_search_names_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: (array zero-terminated=1): search values
@@ -1374,7 +1374,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 }
 
 /**
- * pk_task_search_details_async:
+ * pk_task_search_details_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: (array zero-terminated=1): search values
@@ -1421,7 +1421,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 }
 
 /**
- * pk_task_search_groups_async:
+ * pk_task_search_groups_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: (array zero-terminated=1): search values
@@ -1468,7 +1468,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 }
 
 /**
- * pk_task_search_files_async:
+ * pk_task_search_files_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: (array zero-terminated=1): search values
@@ -1515,7 +1515,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 }
 
 /**
- * pk_task_get_details_async:
+ * pk_task_get_details_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1560,7 +1560,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 }
 
 /**
- * pk_task_get_update_detail_async:
+ * pk_task_get_update_detail_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1605,7 +1605,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 }
 
 /**
- * pk_task_download_packages_async:
+ * pk_task_download_packages_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the destination directory
@@ -1652,7 +1652,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 }
 
 /**
- * pk_task_get_updates_async:
+ * pk_task_get_updates_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
@@ -1697,7 +1697,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 }
 
 /**
- * pk_task_depends_on_async:
+ * pk_task_depends_on_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1746,7 +1746,7 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 }
 
 /**
- * pk_task_get_packages_async:
+ * pk_task_get_packages_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
@@ -1791,7 +1791,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 }
 
 /**
- * pk_task_required_by_async:
+ * pk_task_required_by_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -1840,7 +1840,7 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 }
 
 /**
- * pk_task_what_provides_async:
+ * pk_task_what_provides_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @values: (array zero-terminated=1): values to search for
@@ -1888,7 +1888,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 }
 
 /**
- * pk_task_get_files_async:
+ * pk_task_get_files_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -1933,7 +1933,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 }
 
 /**
- * pk_task_get_categories_async:
+ * pk_task_get_categories_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -1976,7 +1976,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 }
 
 /**
- * pk_task_refresh_cache_async:
+ * pk_task_refresh_cache_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @force: if the metadata should be deleted and re-downloaded even if it is correct
  * @cancellable: a #GCancellable or %NULL
@@ -2021,7 +2021,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 }
 
 /**
- * pk_task_get_repo_list_async:
+ * pk_task_get_repo_list_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @filters: a bitfield of filters that can be used to limit the results
  * @cancellable: a #GCancellable or %NULL
@@ -2066,7 +2066,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 }
 
 /**
- * pk_task_repo_enable_async:
+ * pk_task_repo_enable_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @repo_id: The software repository ID
  * @enabled: %TRUE or %FALSE
@@ -2113,7 +2113,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 }
 
 /**
- * pk_task_repair_system_async:
+ * pk_task_repair_system_async: (finish-func pk_task_generic_finish):
  * @task: a valid #PkTask instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
