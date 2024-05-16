@@ -2396,7 +2396,7 @@ pk_client_generic_finish (PkClient *client, GAsyncResult *res, GError **error)
 }
 
 /**
- * pk_client_resolve_async:
+ * pk_client_resolve_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @packages: (array zero-terminated=1): an array of package names to resolve, e.g. "gnome-system-tools"
@@ -2451,7 +2451,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 }
 
 /**
- * pk_client_search_names_async:
+ * pk_client_search_names_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
@@ -2505,7 +2505,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 }
 
 /**
- * pk_client_search_details_async:
+ * pk_client_search_details_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): free text to search for, for instance, "power"
@@ -2560,7 +2560,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 }
 
 /**
- * pk_client_search_groups_async:
+ * pk_client_search_groups_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a group enum to search for, for instance, "system-tools"
@@ -2613,7 +2613,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 }
 
 /**
- * pk_client_search_files_async:
+ * pk_client_search_files_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): file to search for, for instance, "/sbin/service"
@@ -2666,7 +2666,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 }
 
 /**
- * pk_client_get_details_async:
+ * pk_client_get_details_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -2719,7 +2719,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 }
 
 /**
- * pk_client_get_details_local_async:
+ * pk_client_get_details_local_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @files: (array zero-terminated=1): a null terminated array of filenames
  * @cancellable: a #GCancellable or %NULL
@@ -2776,7 +2776,7 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 }
 
 /**
- * pk_client_get_files_local_async:
+ * pk_client_get_files_local_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @files: (array zero-terminated=1): a null terminated array of filenames
  * @cancellable: a #GCancellable or %NULL
@@ -2833,7 +2833,7 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 }
 
 /**
- * pk_client_get_update_detail_async:
+ * pk_client_get_update_detail_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -2886,7 +2886,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 }
 
 /**
- * pk_client_download_packages_async:
+ * pk_client_download_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @directory: the location where packages are to be downloaded
@@ -2940,7 +2940,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 }
 
 /**
- * pk_client_get_updates_async:
+ * pk_client_get_updates_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_DEVELOPMENT or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -2991,7 +2991,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 }
 
 /**
- * pk_client_get_old_transactions_async:
+ * pk_client_get_old_transactions_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @number: the number of past transactions to return, or 0 for all
  * @cancellable: a #GCancellable or %NULL
@@ -3042,7 +3042,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 }
 
 /**
- * pk_client_depends_on_async:
+ * pk_client_depends_on_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3098,7 +3098,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 }
 
 /**
- * pk_client_get_packages_async:
+ * pk_client_get_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -3149,7 +3149,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 }
 
 /**
- * pk_client_required_by_async:
+ * pk_client_required_by_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3205,7 +3205,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 }
 
 /**
- * pk_client_what_provides_async:
+ * pk_client_what_provides_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
  * @values: (array zero-terminated=1): a search term such as "sound/mp3"
@@ -3263,7 +3263,7 @@ pk_client_what_provides_async (PkClient *client,
 }
 
 /**
- * pk_client_get_distro_upgrades_async:
+ * pk_client_get_distro_upgrades_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -3313,7 +3313,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 }
 
 /**
- * pk_client_get_files_async:
+ * pk_client_get_files_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
  * @cancellable: a #GCancellable or %NULL
@@ -3365,7 +3365,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 }
 
 /**
- * pk_client_get_categories_async:
+ * pk_client_get_categories_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
@@ -3414,7 +3414,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 }
 
 /**
- * pk_client_remove_packages_async:
+ * pk_client_remove_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3481,7 +3481,7 @@ pk_client_remove_packages_async (PkClient *client,
 }
 
 /**
- * pk_client_refresh_cache_async:
+ * pk_client_refresh_cache_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @force: if we should aggressively drop caches
  * @cancellable: a #GCancellable or %NULL
@@ -3535,7 +3535,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 }
 
 /**
- * pk_client_install_packages_async:
+ * pk_client_install_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3589,7 +3589,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 }
 
 /**
- * pk_client_install_signature_async:
+ * pk_client_install_signature_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @type: the signature type, e.g. %PK_SIGTYPE_ENUM_GPG
  * @key_id: a key ID such as "0df23df"
@@ -3644,7 +3644,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 }
 
 /**
- * pk_client_update_packages_async:
+ * pk_client_update_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3780,7 +3780,7 @@ pk_client_copy_non_native_then_get_tid (PkClientState *state)
 }
 
 /**
- * pk_client_install_files_async:
+ * pk_client_install_files_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @files: (array zero-terminated=1): a file such as "/home/hughsie/Desktop/hal-devel-0.10.0.rpm"
@@ -3863,7 +3863,7 @@ pk_client_install_files_async (PkClient *client,
 }
 
 /**
- * pk_client_accept_eula_async:
+ * pk_client_accept_eula_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @eula_id: the <literal>eula_id</literal> we are agreeing to
  * @cancellable: a #GCancellable or %NULL
@@ -3914,7 +3914,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 }
 
 /**
- * pk_client_get_repo_list_async:
+ * pk_client_get_repo_list_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_DEVELOPMENT or %PK_FILTER_ENUM_NONE
  * @cancellable: a #GCancellable or %NULL
@@ -3965,7 +3965,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 }
 
 /**
- * pk_client_repo_enable_async:
+ * pk_client_repo_enable_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @repo_id: a repo_id structure such as "livna-devel"
  * @enabled: if we should enable the repository
@@ -4018,7 +4018,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 }
 
 /**
- * pk_client_repo_set_data_async:
+ * pk_client_repo_set_data_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @repo_id: a repo_id structure such as "livna-devel"
  * @parameter: the parameter to change
@@ -4074,7 +4074,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 }
 
 /**
- * pk_client_repo_remove_async:
+ * pk_client_repo_remove_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: transaction flags
  * @repo_id: a repo_id structure such as "livna-devel"
@@ -4135,7 +4135,7 @@ pk_client_repo_remove_async (PkClient *client,
 }
 
 /**
- * pk_client_upgrade_system_async:
+ * pk_client_upgrade_system_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @distro_id: a distro ID such as "fedora-14"
@@ -4197,7 +4197,7 @@ pk_client_upgrade_system_async (PkClient *client,
 }
 
 /**
- * pk_client_repair_system_async:
+ * pk_client_repair_system_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @cancellable: a #GCancellable or %NULL
@@ -4279,7 +4279,7 @@ pk_client_adopt_get_proxy_cb (GObject *object,
 }
 
 /**
- * pk_client_adopt_async:
+ * pk_client_adopt_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_id: a transaction ID such as "/21_ebcbdaae_data"
  * @cancellable: a #GCancellable or %NULL
