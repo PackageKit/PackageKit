@@ -375,7 +375,11 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 	/* get the list of packages to update */
 	package_ids = pk_offline_get_prepared_ids (error);
 	if (package_ids == NULL) {
-		g_prefix_error (error, "failed to read %s: ", PK_OFFLINE_PREPARED_FILENAME);
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_FAILED,
+			     "failed to read %s",
+			     PK_OFFLINE_PREPARED_FILENAME);
 		return FALSE;
 	}
 
@@ -408,7 +412,10 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 	/* get the version to upgrade to */
 	version = pk_offline_get_prepared_upgrade_version (error);
 	if (version == NULL) {
-	        g_prefix_error (error, "failed to get prepared system upgrade version: ");
+		g_set_error (error,
+			     PK_OFFLINE_ERROR,
+			     PK_OFFLINE_ERROR_FAILED,
+			     "failed to get prepared system upgrade version");
 	        return FALSE;
 	}
 
