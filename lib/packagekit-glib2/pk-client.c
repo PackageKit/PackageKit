@@ -194,6 +194,8 @@ pk_client_state_unset_proxy (PkClientState *state)
 						      state);
 		g_clear_object (&state->proxy);
 	}
+
+	g_object_unref (state);
 }
 
 static void
@@ -1656,6 +1658,8 @@ pk_client_proxy_connect (PkClientState *state)
 {
 	guint i;
 	g_auto(GStrv) props = NULL;
+
+	g_object_ref (state);
 
 	/* coldplug properties */
 	props = g_dbus_proxy_get_cached_property_names (state->proxy);
