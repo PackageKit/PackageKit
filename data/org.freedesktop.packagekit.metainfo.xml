@@ -27,6 +27,16 @@
   <url type="homepage">https://www.freedesktop.org/software/PackageKit</url>
 
   <launchable type="service">packagekit.service</launchable>
+
+  <compulsory_for_desktop>Cinnamon</compulsory_for_desktop>
+  <compulsory_for_desktop>GNOME</compulsory_for_desktop>
+  <compulsory_for_desktop>KDE</compulsory_for_desktop>
+  <compulsory_for_desktop>LXQt</compulsory_for_desktop>
+  <compulsory_for_desktop>MATE</compulsory_for_desktop>
+  <compulsory_for_desktop>Pantheon</compulsory_for_desktop>
+  <compulsory_for_desktop>Unity</compulsory_for_desktop>
+  <compulsory_for_desktop>XFCE</compulsory_for_desktop>
+
   <categories>
     <category>System</category>
   </categories>
