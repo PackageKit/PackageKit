@@ -1238,7 +1238,7 @@ pk_progress_finalize (GObject *object)
 	PkProgress *progress = PK_PROGRESS (object);
 	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
 
-	g_clear_pointer (&priv->item_progress, g_free);
+	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->transaction_id, g_free);
 	g_clear_pointer (&priv->sender, g_free);
 
