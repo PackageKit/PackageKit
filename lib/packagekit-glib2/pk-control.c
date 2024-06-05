@@ -1384,7 +1384,7 @@ pk_control_get_time_since_action_finish (PkControl *control,
 {
 	g_return_val_if_fail (PK_IS_CONTROL (control), 0);
 	g_return_val_if_fail (g_task_is_valid (res, control), 0);
-	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_transaction_list_async), 0);
+	g_return_val_if_fail (g_async_result_is_tagged (res, pk_control_get_time_since_action_async), 0);
 	g_return_val_if_fail (error == NULL || *error == NULL, 0);
 
 	return GPOINTER_TO_UINT(g_task_propagate_pointer (G_TASK (res), error));
