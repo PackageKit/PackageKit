@@ -3766,6 +3766,7 @@ pk_backend_what_provides_decompose (PkBackendJob *job, gchar **values)
 		g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("language(%s)", values[i]));
 	}
 	search = pk_ptr_array_to_strv (array);
 	for (i = 0; search[i] != NULL; i++)
