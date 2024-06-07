@@ -873,6 +873,7 @@ pk_backend_what_provides_decompose (gchar **values, GError **error)
 		g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
 		g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("language(%s)", values[i]));
 	}
 	g_ptr_array_add (array, NULL);
 	return (gchar **) g_ptr_array_free (array, FALSE);
