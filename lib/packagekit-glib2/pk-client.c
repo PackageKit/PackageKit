@@ -164,7 +164,7 @@ struct _PkClientState
 	GCancellable			*cancellable_client;
 	GTask				*res;
 	PkBitfield			 filters;
-	PkClient			*client;
+	PkClient			*client;  /* (not nullable) (not owned) */
 	PkProgress			*progress;
 	PkResults			*results;
 	PkRoleEnum			 role;
@@ -295,7 +295,7 @@ pk_client_state_finalize (GObject *object)
 	g_clear_object (&state->results);
 	g_clear_object (&state->progress);
 	g_clear_object (&state->res);
-	g_object_unref (state->client);
+	state->client = NULL;
 
 	G_OBJECT_CLASS (pk_client_state_parent_class)->finalize (object);
 }
@@ -392,7 +392,7 @@ pk_client_state_new (PkClient *client,
 	state->role = role;
 	state->cancellable = g_cancellable_new ();
 	state->res = g_task_new (client, state->cancellable, callback_ready, user_data);
-	state->client = g_object_ref (client);
+	state->client = client;
 	g_task_set_source_tag (state->res, source_tag);
 
 	if (cancellable != NULL) {
