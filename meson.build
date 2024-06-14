@@ -11,7 +11,7 @@ pkg = import('pkgconfig')
 
 source_root = meson.project_source_root()
 
-glib_dep = dependency('glib-2.0', version: '>=2.62')
+glib_dep = dependency('glib-2.0', version: '>=2.76')
 gobject_dep = dependency('gobject-2.0')
 gio_dep = dependency('gio-2.0')
 gio_unix_dep = dependency('gio-unix-2.0', version: '>=2.16.1')
