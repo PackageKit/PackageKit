@@ -58,7 +58,7 @@ static void     pk_client_finalize	(GObject     *object);
 struct _PkClientPrivate
 {
 	GDBusConnection		*connection;
-	GPtrArray		*calls;
+	GPtrArray		*calls;  /* (element-type PkClientState) (owned) */
 	PkControl		*control;
 	gchar			*locale;
 	gboolean		 background;
@@ -201,6 +201,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 	gboolean is_idle;
 
 	g_ptr_array_remove (priv->calls, state);
+	/* state may have been finalised after this point */
 
 	/* has the idle state changed? */
 	is_idle = (priv->calls->len == 0);
@@ -247,11 +248,13 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		g_object_unref (state->client_helper);
 	}
 
-	/* remove from list */
-	pk_client_state_remove (state->client, state);
-
 	/* mark the state as finished */
 	g_clear_object (&state->res);
+
+	/* remove from list */
+	pk_client_state_remove (state->client, state);
+	/* state may have been finalised after this point */
+
 }
 
 static void
@@ -781,7 +784,7 @@ pk_client_state_add (PkClient *client, PkClientState *state)
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
 	gboolean is_idle;
 
-	g_ptr_array_add (priv->calls, state);
+	g_ptr_array_add (priv->calls, g_object_ref (state));
 
 	/* has the idle state changed? */
 	is_idle = (priv->calls->len == 0);
@@ -4221,6 +4224,7 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 
 	/* remove from list */
 	pk_client_state_remove (state->client, state);
+	/* state may have been finalised after this point */
 }
 
 /*
@@ -4661,7 +4665,7 @@ pk_client_init (PkClient *client)
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
 
 	client->priv = priv;
-	priv->calls = g_ptr_array_new ();
+	priv->calls = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->background = FALSE;
 	priv->interactive = TRUE;
 	priv->idle = TRUE;
