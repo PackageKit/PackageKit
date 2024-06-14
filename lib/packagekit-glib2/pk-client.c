@@ -2236,7 +2236,7 @@ pk_client_get_proxy_cb (GObject *object,
 			   g_object_ref (state));
 
 	/* track state */
-	g_ptr_array_add (priv->calls, state);
+	pk_client_state_add (state->client, state);
 }
 
 /*
