@@ -4318,10 +4318,12 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
 	const PkClientState *state;
 	guint i;
-	GPtrArray *array;
+	g_autoptr(GPtrArray) array = NULL;
 
-	/* just cancel the call */
-	array = priv->calls;
+	/* just cancel the call; cancelling is synchronous so this should result
+	 * in pk_client_state_remove() being called, which will modify the array,
+	 * so take a copy of the array first */
+	array = g_ptr_array_new_from_array (priv->calls->pdata, priv->calls->len, NULL, NULL, NULL);
 	for (i = 0; i < array->len; i++) {
 		state = g_ptr_array_index (array, i);
 		if (state->proxy == NULL)
@@ -4688,11 +4690,13 @@ pk_client_finalize (GObject *object)
 	PkClient *client = PK_CLIENT (object);
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
 
-	/* ensure we cancel any in-flight DBus calls */
+	/* ensure we cancel any in-flight D-Bus calls */
 	pk_client_cancel_all_dbus_methods (client);
 
 	g_clear_pointer (&priv->locale, g_free);
 	g_clear_object (&priv->control);
+
+	g_assert (priv->calls->len == 0);
 	g_clear_pointer (&priv->calls, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (pk_client_parent_class)->finalize (object);
