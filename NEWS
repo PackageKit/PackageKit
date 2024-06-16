@@ -1,3 +1,47 @@
+Version 1.3.0
+~~~~~~~~~~~~~
+Released: 2023-06-16
+
+New Features:
+ * Expand PkInfoEnum to contain package target states for updates (Matthias Klumpp)
+ * lib: Notify when installed database changed (Milan Crha)
+
+Backends:
+ * freebsd: Initialize libpkg plugins when doing work (Gleb Popov)
+ * freebsd: Advertise PK_GROUP_ENUM_VIRTUALIZATION package group (Gleb Popov)
+ * dnf: Free DNF sacks when they are unused for 10 minutes (Gordon Messmer)
+ * dnf5: Add dnf5 posttrans notify plugin (Alessandro Astone)
+ * dnf/zypp: Add support for language(ll_CC) to what-provides queries (Philip Withnall)
+ * alpm: add compatibility with libalpm 14 (Jelle van der Waa)
+ * apt: Don't accidentally identify Ubuntu as Debian (Matthias Klumpp)
+ * apt: Don't limit by-repo-name update classification to Debian and Ubuntu (Matthias Klumpp)
+ * apt: debconf-helper: Cleanup properly when exiting (Matthias Klumpp)
+ * apt: Use the correct version number when parsing changelogs (Matthias Klumpp)
+ * apt: Prefer deb version comparison to strcmp (sid)
+
+Bugfixes:
+ * Apply i18n for percentage values (Emir SARI)
+ * metainfo: Mark PK as compulsory for most desktops (Matthias Klumpp)
+ * pk-progress: Fix a leak of package ID (Philip Withnall)
+ * Check string length correctly to prevent memory over-consumption [RHEL-19527] (Thibault Guittet)
+ * pk-offline-update: Fix crash due to invalid g_auto declaration in switch / case (sid)
+ * PkPackage: Handle all cases for 'update-severity' property (sid)
+ * pkcon: Use appropriate callbacks for client / task async calls (sid)
+ * Fix 'g-ir-scanner' matching async / finish warning (sid)
+ * pk-offline-update: Fix crash during error cases (sid)
+ * PkControl: Fix crash with 'get-time' transaction (sid)
+ * PkTask: Fix invalid cast from 'GsPackagekitTask' to 'GTask' (sidt4)
+
+Miscellaneous:
+ * PkPackageSack: Replace the GSimpleAsyncResult with the GTask API (Corentin Noël)
+ * PkControl: Replace the GSimpleAsyncResult with the GTask API (Corentin Noël)
+ * PkTask: Replace the GSimpleAsyncResult with the GTask API (Corentin Noël)
+ * PkClient, PkProgress, PkCategory: Use a more modern GObject style (Corentin Noël)
+ * Enable building FreeBSD backend on FreeBSD CI (Gleb Popov)
+ * Convert README to Markdown (Matthias Klumpp)
+ * pk-matrix.html: Document which backends support InstalledChanged signal (Milan Crha)
+ * docs: Update real-time chat room to point to the new Matrix room (Neal Gompa)
+
 Version 1.2.8
 ~~~~~~~~~~~~~
 Released: 2023-11-08
