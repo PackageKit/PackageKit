@@ -45,10 +45,8 @@ git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
 
 5. run 'meson dist'
 
-5a. Generate the additon verification metadata
+5a. Sign the release
 
-sha1sum meson-dist/PackageKit-${release_version}.tar.xz > meson-dist/PackageKit-${release_version}.tar.xz.sha1
-sha256sum meson-dist/PackageKit-${release_version}.tar.xz > meson-dist/PackageKit-${release_version}.tar.xz.sha256
 gpg -b -a meson-dist/PackageKit-${release_version}.tar.xz
 
 6. Upload tarball to:
