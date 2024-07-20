@@ -257,12 +257,6 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 		goto out;
 	}
 
-	/* no ConsoleKit? */
-	if (dbus->priv->proxy_session == NULL) {
-		g_warning ("no ConsoleKit, so cannot get session");
-		goto out;
-	}
-
 	/* get pid */
 	pid = pk_dbus_get_pid (dbus, sender);
 	if (pid == G_MAXUINT) {
@@ -276,6 +270,11 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	if (session == NULL)
 		g_warning ("failed to get session for pid %u", pid);
 #else
+	/* no ConsoleKit? */
+	if (dbus->priv->proxy_session == NULL) {
+		g_warning ("no ConsoleKit, so cannot get session");
+		goto out;
+	}
 	/* get session from ConsoleKit */
 	value = g_dbus_proxy_call_sync (dbus->priv->proxy_session,
 					"GetSessionForUnixProcess",
