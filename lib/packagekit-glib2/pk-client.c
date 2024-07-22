@@ -1616,11 +1616,11 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	if (g_strcmp0 (signal_name, "Destroy") == 0) {
 		g_autoptr(GError) local_error = NULL;
 
-		if (state->waiting_for_finished)
+		if (state->waiting_for_finished) {
 			local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
 							   "PackageKit transaction disappeared");
-
-		pk_client_state_finish (state, g_steal_pointer (&local_error));
+			pk_client_state_finish (state, g_steal_pointer (&local_error));
+		}
 		return;
 	}
 }
