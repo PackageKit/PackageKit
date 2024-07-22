@@ -1751,7 +1751,7 @@ pk_engine_proxy_logind_cb (GObject *source_object,
 	PkEngine *engine = PK_ENGINE (user_data);
 
 	engine->priv->logind_proxy = g_dbus_proxy_new_finish (res, &error);
-	if (engine->priv->logind_proxy == NULL)
+	if (g_dbus_proxy_get_name_owner (engine->priv->logind_proxy) == NULL) // https://gitlab.gnome.org/GNOME/glib/-/issues/879
 		g_warning ("failed to connect to logind: %s", error->message);
 }
 #endif
