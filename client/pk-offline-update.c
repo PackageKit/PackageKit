@@ -32,7 +32,13 @@
 #include <packagekit-glib2/pk-offline-private.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_SYSTEMD_SD_JOURNAL_H
 #include <systemd/sd-journal.h>
+#else
+#define LOG_INFO STDERR_FILENO
+#define LOG_WARNING STDERR_FILENO
+#define sd_journal_print dprintf
+#endif
 
 static void
 pk_offline_update_set_plymouth_msg (const gchar *msg)
