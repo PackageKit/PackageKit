@@ -2168,7 +2168,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		MIL << package_ids[i] << endl;
 
 		if (zypp_package_is_local(package_ids[i])) {
-			pk_backend_job_details (job, package_ids[i], "", "", PK_GROUP_ENUM_UNKNOWN, "", "", (gulong)0);
+			pk_backend_job_details_full (job, package_ids[i], "", "", PK_GROUP_ENUM_UNKNOWN, "", "", (gulong)0, (gulong)0);
 			return;
 		}
 
@@ -2192,25 +2192,27 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			Package::constPtr pkg = make<Package>( solv );	// or NULL if not a Package
 			Patch::constPtr patch = make<Patch>( solv );	// or NULL if not a Patch
 
-			ByteCount size;
+			ByteCount size, download_size;
 			if ( patch ) {
 				Patch::Contents contents( patch->contents() );
 				for_( it, contents.begin(), contents.end() ) {
-					size += make<ResObject>(*it)->downloadSize();
+					download_size += make<ResObject>(*it)->downloadSize();
 				}
 			}
 			else {
-				size = obj->isSystem() ? obj->installSize() : obj->downloadSize();
+				size = obj->installSize();
+				download_size = obj->downloadSize();
 			}
 
-			pk_backend_job_details (job,
+			pk_backend_job_details_full (job,
 				package_ids[i],				// package_id
 				(pkg ? pkg->summary().c_str() : "" ),   // Package summary
 				(pkg ? pkg->license().c_str() : "" ),	// license is Package attribute
 				get_enum_group(pkg ? pkg->group() : ""),// PkGroupEnum
 				obj->description().c_str(),		// description is common attibute
 				(pkg ? pkg->url().c_str() : "" ),	// url is Package attribute
-				(gulong)size);
+				(gulong)size,
+				(gulong)download_size);
 		} catch (const Exception &ex) {
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString ().c_str ());
@@ -2262,14 +2264,15 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 					"local",
 					NULL);
 
-		pk_backend_job_details (job,
+		pk_backend_job_details_full (job,
 			package_id,
 			rpmHeader->tag_summary ().c_str (),
 			rpmHeader->tag_license ().c_str (),
 			get_enum_group (rpmHeader->tag_group ()),
 			rpmHeader->tag_description ().c_str (),
 			rpmHeader->tag_url ().c_str (),
-			(gulong)rpmHeader->tag_size ().blocks (zypp::ByteCount::B));
+			(gulong)rpmHeader->tag_size ().blocks (zypp::ByteCount::B),	// Installed size
+			(gulong)0);							// Download size should be local file size
 
 		g_free (package_id);
 	}
