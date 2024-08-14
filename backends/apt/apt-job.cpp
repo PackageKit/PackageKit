@@ -825,14 +825,15 @@ void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
     }
 
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
-    pk_backend_job_details(m_job,
-                           package_id,
-                           m_cache->getShortDescription(ver).c_str(),
-                           "unknown",
-                           get_enum_group(section),
-                           m_cache->getLongDescriptionParsed(ver).c_str(),
-                           rec.Homepage().c_str(),
-                           size);
+    pk_backend_job_details_full (m_job,
+                                 package_id,
+                                 m_cache->getShortDescription(ver).c_str(),
+                                 "unknown",
+                                 get_enum_group(section),
+                                 m_cache->getLongDescriptionParsed(ver).c_str(),
+                                 rec.Homepage().c_str(),
+                                 ver->InstalledSize,
+                                 ver->Size);
 }
 
 void AptJob::emitDetails(PkgList &pkgs)
