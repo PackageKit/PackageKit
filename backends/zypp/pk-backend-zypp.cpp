@@ -3569,7 +3569,6 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 	}
 
 	ResPool pool = zypp_build_pool (zypp, TRUE);
-	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 	PoolStatusSaver saver;
 
 	if (is_tumbleweed ()) {
