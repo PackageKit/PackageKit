@@ -3839,7 +3839,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 			for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
 				if (it->isSystem ())
 					g_hash_table_insert (installed_hash,
-							     (const gpointer) make<ResObject>(*it)->summary().c_str (),
+							     (gpointer) make<ResObject>(*it)->summary().c_str (),
 							     GUINT_TO_POINTER (1));
 			}
 
