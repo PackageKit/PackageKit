@@ -1792,6 +1792,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 /**
   * helper to simplify returning errors
   */
+G_GNUC_PRINTF (3, 4)
 static void
 zypp_backend_finished_error (PkBackendJob  *job, PkErrorEnum err_code,
 			     const char *format, ...)
@@ -1931,7 +1932,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			}
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-				problem.c_str());
+				"%s", problem.c_str());
 			return;
 		}
 
@@ -2128,11 +2129,11 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		pk_backend_job_set_percentage (job, 100);
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -2212,7 +2213,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 				(gulong)size);
 		} catch (const Exception &ex) {
 			zypp_backend_finished_error (
-				job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+				job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString ().c_str ());
 			return;
 		}
 	}
@@ -2594,7 +2595,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString ().c_str ());
 		return;
 	}
 
@@ -2866,7 +2867,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -2982,11 +2983,11 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -3276,11 +3277,11 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 		repos = list<RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 
@@ -3331,11 +3332,11 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid,
 
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 
@@ -3953,7 +3954,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 		}
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
