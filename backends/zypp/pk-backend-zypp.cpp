@@ -863,6 +863,7 @@ zypp_get_packages_by_name (const gchar *package_name,
 /**
  * Returns a list of packages that owns the specified file.
  */
+G_GNUC_UNUSED
 static void
 zypp_get_packages_by_file (ZYpp::Ptr zypp,
 			   const gchar *search_file,
