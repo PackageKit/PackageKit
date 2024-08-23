@@ -15,6 +15,6 @@ shared_module(
 
 install_data(
   'portageBackend.py',
-  install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'portage')
+  install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'portage'),
   install_mode: 'rwxr--r--'
 )

@@ -15,6 +15,6 @@ shared_module(
 
 install_data(
   'entropyBackend.py',
-  install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'entropy')
+  install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'entropy'),
   install_mode: 'rwxr--r--'
 )
