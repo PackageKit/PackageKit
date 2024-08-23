@@ -633,7 +633,7 @@ ZyppJob::get_zypp()
 /**
   * Enable and rotate zypp logging
   */
-gboolean
+static gboolean
 zypp_logging ()
 {
 	gchar *file = g_strdup ("/var/log/pk_backend_zypp");
@@ -679,7 +679,7 @@ namespace {
 	}
 }
 
-gboolean
+static gboolean
 zypp_is_development_repo (RepoInfo repo)
 {
 	return ( name_ends_or_contains( repo.alias(), "-debuginfo" )
@@ -688,7 +688,7 @@ zypp_is_development_repo (RepoInfo repo)
 	      || name_ends_or_contains( repo.alias(), "-development" ) );
 }
 
-gboolean
+static gboolean
 zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
 {
 
@@ -709,7 +709,7 @@ zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.
  */
-ResPool
+static ResPool
 zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 {
 	static gboolean repos_loaded = FALSE;
@@ -770,7 +770,7 @@ zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 /**
   * Return the rpmHeader of a package
   */
-target::rpm::RpmHeader::constPtr
+static target::rpm::RpmHeader::constPtr
 zypp_get_rpmHeader (const string &name, Edition edition)
 {
 	target::rpm::librpmDb::db_const_iterator it;
@@ -786,7 +786,7 @@ zypp_get_rpmHeader (const string &name, Edition edition)
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum
+static PkGroupEnum
 get_enum_group (const string &group_)
 {
 	string group(str::toLower(group_));
@@ -841,7 +841,7 @@ get_enum_group (const string &group_)
 /**
  * Returns a list of packages that match the specified package_name.
  */
-void
+static void
 zypp_get_packages_by_name (const gchar *package_name,
 			   const ResKind kind,
 			   vector<sat::Solvable> &result,
@@ -863,7 +863,7 @@ zypp_get_packages_by_name (const gchar *package_name,
 /**
  * Returns a list of packages that owns the specified file.
  */
-void
+static void
 zypp_get_packages_by_file (ZYpp::Ptr zypp,
 			   const gchar *search_file,
 			   vector<sat::Solvable> &ret)
@@ -895,7 +895,7 @@ zypp_get_packages_by_file (ZYpp::Ptr zypp,
 /**
  * Return the package is from a local file or not.
  */
-bool
+static bool
 zypp_package_is_local (const gchar *package_id)
 {
 	MIL << package_id << endl;
@@ -916,7 +916,7 @@ zypp_package_is_local (const gchar *package_id)
  * Returns the Resolvable for the specified package_id.
  * e.g. gnome-packagekit;3.6.1-132.1;x86_64;G:F
 */
-sat::Solvable
+static sat::Solvable
 zypp_get_package_by_id (const gchar *package_id)
 {
 	MIL << package_id << endl;
@@ -981,7 +981,7 @@ zypp_get_package_by_id (const gchar *package_id)
 	return package;
 }
 
-RepoInfo
+static RepoInfo
 zypp_get_Repository (PkBackendJob *job, const gchar *alias)
 {
 	RepoInfo info;
@@ -1171,7 +1171,7 @@ zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
  * we don't notify the client that the package is also available, since
  * PK doesn't handle re-installs (by some quirk).
  */
-void
+static void
 zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, const vector<sat::Solvable> &v)
 {
 	typedef vector<sat::Solvable>::const_iterator sat_it_t;
