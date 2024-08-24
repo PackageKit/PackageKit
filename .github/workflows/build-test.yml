@@ -25,6 +25,11 @@ jobs:
              ./tests/ci/build-and-test.sh -Dpackaging_backend=dnf
         if: ${{ matrix.distro == 'fedora' }}
 
+      - name: Build & Test [ALPM]
+        run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
+             ./tests/ci/build-and-test.sh -Dpackaging_backend=alpm
+        if: ${{ matrix.distro == 'fedora' }}
+
       - name: Build & Test [APT]
         run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
              ./tests/ci/build-and-test.sh -Dpackaging_backend=apt
