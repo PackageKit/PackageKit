@@ -6,7 +6,7 @@ if [ -d "build" ]; then
 fi
 set -x
 
-meson build \
+meson setup build \
     -Dlocal_checkout=true \
     -Ddaemon_tests=true \
     $@
