@@ -361,7 +361,7 @@ pk_alpm_transaction_conv_cb (void *ctx, alpm_question_t *question)
 }
 
 static void
-pk_alpm_transaction_output_end ()
+pk_alpm_transaction_output_end (void)
 {
 	tpkg = NULL;
 
