@@ -282,6 +282,7 @@ pk_alpm_refresh_databases (PkBackendJob *job, gint force, alpm_list_t *dbs, GErr
 static gboolean
 pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
 {
+	int ret;
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	alpm_list_t *i;
@@ -293,7 +294,7 @@ pk_alpm_update_databases (PkBackendJob *job, gint force, GError **error)
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST);
 
 	i = alpm_get_syncdbs (priv->alpm);
-	int ret = pk_alpm_refresh_databases(job, force, i, error);
+	ret = pk_alpm_refresh_databases(job, force, i, error);
 
 	if (i == NULL)
 		return pk_alpm_transaction_end (job, error);
@@ -355,9 +356,10 @@ static int dep_vercmp(const char *version1, alpm_depmod_t mod,
 alpm_pkg_t *
 pk_alpm_pkg_replaces (alpm_db_t *db, alpm_pkg_t *pkg)
 {
+	gboolean ret = FALSE;
+
 	g_return_val_if_fail (db != NULL, FALSE);
 	g_return_val_if_fail (pkg != NULL, FALSE);
-	gboolean ret = FALSE;
 
 	for (alpm_list_t *list = alpm_pkg_get_replaces (pkg); list != NULL && !ret; list = list->next) {
 		alpm_depend_t *depend = list->data;
