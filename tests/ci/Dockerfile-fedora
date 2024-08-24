@@ -19,5 +19,8 @@ RUN dnf -y builddep PackageKit
 # install dependencies for 'alpm' backend
 RUN dnf -y install libalpm-devel
 
+# install dependencies for 'zypp' backend
+RUN dnf -y install libzypp-devel
+
 RUN mkdir /build
 WORKDIR /build
