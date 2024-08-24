@@ -16,6 +16,10 @@ RUN apt-get install -yq meson appstream
 # install dependencies for 'zypp' backend
 RUN apt-get install -yq libzypp-dev
 
+# install dependencies for 'alpm' backend
+RUN apt-get install -yq libalpm-dev
+RUN apt-get build-dep -yq pacman-package-manager
+
 # finish
 RUN mkdir /build
 WORKDIR /build
