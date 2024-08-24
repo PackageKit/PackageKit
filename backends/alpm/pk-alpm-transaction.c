@@ -864,9 +864,15 @@ pk_alpm_conflict_build_list (const alpm_list_t *i)
 	for (; i != NULL; i = i->next) {
 		alpm_conflict_t *conflict = (alpm_conflict_t *) i->data;
 		alpm_depend_t *depend = conflict->reason;
+		const char *package_name1, *package_name2;
 
-		const char *package_name1 = alpm_pkg_get_name (conflict->package1);
-		const char *package_name2 = alpm_pkg_get_name (conflict->package2);
+#ifdef HAVE_LIBALPM_14
+		package_name1 = alpm_pkg_get_name (conflict->package1);
+		package_name2 = alpm_pkg_get_name (conflict->package2);
+#else
+		package_name1 = conflict->package1;
+		package_name2 = conflict->package2;
+#endif
 
 		if (g_strcmp0 (package_name1, depend->name) == 0 ||
 		    g_strcmp0 (package_name2, depend->name) == 0) {
