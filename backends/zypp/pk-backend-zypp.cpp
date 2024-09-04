@@ -3524,11 +3524,6 @@ backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 				zypp_backend_finished_error (job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "Package %s is not installed", package_ids[i]);
 				return;
 			}
-			item = sel->updateCandidateObj();
-			if (!item) {
-				 zypp_backend_finished_error(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "There is no update candidate for %s", sel->installedObj().satSolvable().asString().c_str());
-				return;
-			}
 		}
 
 		item.status ().setToBeInstalled (ResStatus::USER);
