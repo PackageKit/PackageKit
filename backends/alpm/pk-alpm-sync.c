@@ -44,6 +44,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 		g_auto(GStrv) package = pk_package_id_split (*packages);
 		gchar *repo = package[PK_PACKAGE_ID_DATA];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
+		alpm_pkg_t *dep_to_remove;
 
 		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm);
 		alpm_pkg_t *pkg;
@@ -61,7 +62,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
-		alpm_pkg_t *dep_to_remove = pk_alpm_pkg_replaces(priv->localdb, pkg);
+		dep_to_remove = pk_alpm_pkg_replaces(priv->localdb, pkg);
 		if (dep_to_remove) {
 			g_debug("scheduling to remove %s for %s", alpm_pkg_get_name(dep_to_remove), name);
 			alpm_remove_pkg(priv->alpm, dep_to_remove);
