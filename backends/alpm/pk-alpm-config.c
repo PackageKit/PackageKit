@@ -605,18 +605,24 @@ pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
 			continue;
 		}
 
-		if (g_strcmp0 (key, "Usage") == 0 && str != NULL) {
-			/* Ignore "Usage" key instead of crashing */
+		/* ignore these instead of crashing */
+		if (g_strcmp0 (key, "CacheServer") == 0 && str != NULL) {
+			continue;
+		}
+
+		if (g_strcmp0 (key, "DisableSandbox") == 0) {
+			continue;
+		}
+
+		if (g_strcmp0 (key, "DownloadUser") == 0 && str != NULL) {
 			continue;
 		}
 
 		if (g_strcmp0 (key, "ParallelDownloads") == 0 && str != NULL) {
-			/* Ignore "ParallelDownloads" key instead of crashing */
 			continue;
 		}
 
-		if (g_strcmp0 (key, "CacheServer") == 0 && str != NULL) {
-			/* Ignore "CacheServer" key instead of crashing */
+		if (g_strcmp0 (key, "Usage") == 0 && str != NULL) {
 			continue;
 		}
 
