@@ -373,7 +373,6 @@ static alpm_pkg_t *
 pk_alpm_pkg_find_update (alpm_pkg_t *pkg, const alpm_list_t *dbs)
 {
 	const gchar *name;
-	const alpm_list_t *i;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
