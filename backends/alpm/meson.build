@@ -1,4 +1,17 @@
-alpm_dep = dependency('libalpm', version: '>=14.0.0')
+alpm_dep = dependency('libalpm', version: '>=13.0.0')
+
+c_args = [
+  '-DPK_LOG_PREFIX="PACKAGEKIT"',
+  '-DG_LOG_DOMAIN="PackageKit-alpm"',
+  '-DPK_BACKEND_CONFIG_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'pacman.conf')),
+  '-DPK_BACKEND_GROUP_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'groups.list')),
+  '-DPK_BACKEND_REPO_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'repos.list')),
+  '-DPK_BACKEND_DEFAULT_PATH="/bin:/usr/bin:/sbin:/usr/sbin"',
+]
+
+if alpm_dep.version().version_compare('>=14.0.0')
+  c_args += '-DHAVE_LIBALPM_14=1'
+endif
 
 shared_module(
   'pk_backend_alpm',
@@ -31,14 +44,7 @@ shared_module(
     alpm_dep,
     gmodule_dep,
   ],
-  c_args: [
-    '-DPK_LOG_PREFIX="PACKAGEKIT"',
-    '-DG_LOG_DOMAIN="PackageKit-alpm"',
-    '-DPK_BACKEND_CONFIG_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'pacman.conf')),
-    '-DPK_BACKEND_GROUP_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'groups.list')),
-    '-DPK_BACKEND_REPO_FILE="@0@"'.format(join_paths(get_option('sysconfdir'), 'PackageKit', 'alpm.d', 'repos.list')),
-    '-DPK_BACKEND_DEFAULT_PATH="/bin:/usr/bin:/sbin:/usr/sbin"',
-  ],
+  c_args: c_args,
   install: true,
   install_dir: pk_plugin_dir,
 )
