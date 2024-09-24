@@ -483,7 +483,7 @@ pk_offline_get_prepared_ids (GError **error)
 		return NULL;
 
 	/* return raw package ids */
-	return g_strsplit (prepared_ids, ",", -1);
+	return g_strsplit (prepared_ids, "|", -1);
 }
 
 /**
@@ -725,7 +725,7 @@ pk_offline_get_results (GError **error)
 	data = g_key_file_get_string (file, PK_OFFLINE_RESULTS_GROUP,
 				      "Packages", NULL);
 	if (data != NULL) {
-		package_ids = g_strsplit (data, ",", -1);
+		package_ids = g_strsplit (data, "|", -1);
 		for (i = 0; package_ids[i] != NULL; i++) {
 			g_autoptr(PkPackage) pkg = NULL;
 			pkg = pk_package_new ();

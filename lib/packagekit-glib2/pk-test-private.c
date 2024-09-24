@@ -623,7 +623,7 @@ pk_test_offline_func (void)
 	const gchar *results_success =
 			"[PackageKit Offline Update Results]\n"
 			"Success=true\n"
-			"Packages=upower;0.9.16-1.fc17;x86_64;updates,"
+			"Packages=upower;0.9.16-1.fc17;x86_64;updates|"
 				 "zif;0.3.0-1.fc17;x86_64;updates\n";
 
 	/* cleanup */

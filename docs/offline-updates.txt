@@ -47,7 +47,7 @@ For success, the file will contain the following:
 [PackageKit Offline Update Results]
 Success=true
 Role=update-packages
-Packages=gimp;2.10.34-1.fc38;x86_64;updates,bash;5.2.15-3.fc38;x86_64;updates
+Packages=gimp;2.10.34-1.fc38;x86_64;updates|bash;5.2.15-3.fc38;x86_64;updates
 """
 
 ________________________________________________________________________
