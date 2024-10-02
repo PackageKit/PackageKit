@@ -3,6 +3,7 @@
 
 #include <libdnf5/base/base.hpp>
 #include <libdnf5/common/exception.hpp>
+#include <libdnf5/plugin/iplugin.hpp>
 
 #include <sdbus-c++/sdbus-c++.h>
 
@@ -25,7 +26,11 @@ constexpr const char * attrs_value[]{"Alessandro Astone", "ales.astone@gmail.com
 
 class NotifyPackagekitPlugin : public plugin::IPlugin {
 public:
+#if LIBDNF5_VERSION_MAJOR >= 5 && LIBDNF5_VERSION_MINOR >= 2
+    NotifyPackagekitPlugin(libdnf5::plugin::IPluginData & data, libdnf5::ConfigParser &) : IPlugin(data) {}
+#else
     NotifyPackagekitPlugin(libdnf5::Base & base, libdnf5::ConfigParser &) : IPlugin(base) {}
+#endif
 
     const char * get_name() const noexcept override { return PLUGIN_NAME; }
 
@@ -78,7 +83,13 @@ plugin::Version libdnf_plugin_get_version(void) {
 
 /// Return the instance of the implemented plugin.
 plugin::IPlugin * libdnf_plugin_new_instance(
-    [[maybe_unused]] LibraryVersion library_version, libdnf5::Base & base, libdnf5::ConfigParser & parser) try {
+    [[maybe_unused]] LibraryVersion library_version,
+#if LIBDNF5_VERSION_MAJOR >= 5 && LIBDNF5_VERSION_MINOR >= 2
+    libdnf5::plugin::IPluginData & base,
+#else
+    libdnf5::Base & base,
+#endif
+    libdnf5::ConfigParser & parser) try {
     return new NotifyPackagekitPlugin(base, parser);
 } catch (...) {
     return nullptr;
