@@ -1,6 +1,7 @@
 appstream_dep = dependency('appstream', version: '>=0.14.0')
 dnf_dep = dependency('libdnf', version: '>=0.43.1')
 dnf5_dep = dependency('libdnf5').partial_dependency(includes: true, compile_args: true)
+libdnf5_version = dnf5_dep.version().split('.')
 rpm_dep = dependency('rpm')
 sdbus_cpp_dep = dependency('sdbus-c++')
 c_args = ['-DG_LOG_DOMAIN="PackageKit-DNF"']
@@ -26,7 +27,12 @@ add_languages('cpp')
 shared_module(
   'notify_packagekit',
   'notify_packagekit.cpp',
-  cpp_args: '-std=c++20',
+  cpp_args: [
+    '-std=c++20',
+    '-DLIBDNF5_VERSION_MAJOR=' + libdnf5_version[0],
+    '-DLIBDNF5_VERSION_MINOR=' + libdnf5_version[1],
+    '-DLIBDNF5_VERSION_PATCH=' + libdnf5_version[2],
+  ],
   include_directories: packagekit_glib2_includes,
   dependencies: [
     dnf5_dep,
