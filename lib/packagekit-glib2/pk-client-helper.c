@@ -207,7 +207,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	g_debug ("child has input to push to the socket: %s", data);
 	status = g_io_channel_write_chars (child->socket_channel, data, len, &written, &error);
 	if (status != G_IO_STATUS_NORMAL) {
-		g_warning ("failed to write to socket: %s", error->message);
+		g_warning ("failed to write to socket: %s", error ?  error->message : "Unknown error");
 		return G_SOURCE_REMOVE;
 	}
 	if (written != len) {
@@ -278,7 +278,7 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 	g_debug ("socket has data to push to child: '%s'", data);
 	status = g_io_channel_write_chars (child->stdin_channel, data, len, &written, &error);
 	if (status != G_IO_STATUS_NORMAL) {
-		g_warning ("failed to write to stdin: %s", error->message);
+		g_warning ("failed to write to stdin: %s", error ? error->message : "Unknown error");
 		return G_SOURCE_REMOVE;
 	}
 	if (written != len) {
