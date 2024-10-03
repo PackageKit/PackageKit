@@ -2159,6 +2159,8 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 {
 	const gchar *dialog = NULL;
 	const gchar *display;
+	const gchar *wayland_display;
+	const gchar *xauthority;
 	const gchar *term;
 	gboolean ret;
 	guint envpi = 0;
@@ -2174,7 +2176,7 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 	*argv = g_new0 (gchar *, 2);
 	*argv[0] = g_strdup ("/usr/bin/debconf-communicate");
 
-	*envp_out = g_new0 (gchar *, 8);
+	*envp_out = g_new0 (gchar *, 11);
 	envp = *envp_out;
 	envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
 	envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
@@ -2192,6 +2194,17 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 	display = g_getenv ("DISPLAY");
 	if (display != NULL) {
 		envp[envpi++] = g_strdup_printf ("DISPLAY=%s", display);
+	}
+	xauthority = g_getenv ("XAUTHORITY");
+	if (xauthority != NULL) {
+		envp[envpi++] = g_strdup_printf ("XAUTHORITY=%s", xauthority);
+	}
+	wayland_display = g_getenv ("WAYLAND_DISPLAY");
+	if (wayland_display != NULL) {
+		envp[envpi++] = g_strdup_printf ("WAYLAND_DISPLAY=%s", wayland_display);
+		envp[envpi++] = g_strdup_printf ("XDG_RUNTIME_DIR=%s", g_get_user_runtime_dir ());
+	}
+	if (display != NULL || wayland_display != NULL) {
 		if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
 			dialog = "kde";
 		else
