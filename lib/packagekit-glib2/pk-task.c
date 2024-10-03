@@ -759,7 +759,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_accepted_idle_cb), g_object_ref (gtask), g_object_unref);
+	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_accepted_idle_cb), g_object_ref (gtask), NULL);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
@@ -817,7 +817,7 @@ pk_task_user_declined (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_declined_idle_cb), g_object_ref (gtask), g_object_unref);
+	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_declined_idle_cb), g_object_ref (gtask), NULL);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
