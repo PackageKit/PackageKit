@@ -517,7 +517,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 static void
 pk_task_install_signatures (GTask *given_gtask)
 {
-	g_autoptr(GTask) gtask = given_gtask;
+	GTask *gtask = given_gtask;
 	PkTask *task = g_task_get_source_object (gtask);
 	PkTaskState *state = g_task_get_task_data (gtask);
 	PkRepoSignatureRequired *item;
@@ -560,7 +560,7 @@ pk_task_install_signatures (GTask *given_gtask)
 	cancellable = g_task_get_cancellable (gtask);
 	pk_client_install_signature_async (PK_CLIENT(task), type, key_id, package_id,
 					   cancellable, state->progress_callback, state->progress_user_data,
-					   pk_task_install_signatures_ready_cb, g_steal_pointer (&gtask));
+					   pk_task_install_signatures_ready_cb, g_object_ref (gtask));
 }
 
 /*
@@ -610,7 +610,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, gpoint
 static void
 pk_task_accept_eulas (GTask *given_gtask)
 {
-	g_autoptr(GTask) gtask = given_gtask;
+	GTask *gtask = given_gtask;
 	PkTask *task = g_task_get_source_object (gtask);
 	PkTaskState *state = g_task_get_task_data (gtask);
 	PkEulaRequired *item;
@@ -647,7 +647,7 @@ pk_task_accept_eulas (GTask *given_gtask)
 	cancellable = g_task_get_cancellable (gtask);
 	pk_client_accept_eula_async (PK_CLIENT(task), eula_id,
 				     cancellable, state->progress_callback, state->progress_user_data,
-				     pk_task_accept_eulas_ready_cb, g_steal_pointer (&gtask));
+				     pk_task_accept_eulas_ready_cb, g_object_ref (gtask));
 }
 
 /*
@@ -697,20 +697,20 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, gpointer use
 static gboolean
 pk_task_user_accepted_idle_cb (gpointer user_data)
 {
-	g_autoptr(GTask) gtask = user_data;
+	GTask *gtask = user_data;
 	PkTaskState *state = g_task_get_task_data (gtask);
 
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_KEY_REQUIRED) {
 		g_debug ("need to do install-sig");
-		pk_task_install_signatures (g_steal_pointer (&gtask));
+		pk_task_install_signatures (gtask);
 		return FALSE;
 	}
 
 	/* this needs another step in the dance */
 	if (state->exit_enum == PK_EXIT_ENUM_EULA_REQUIRED) {
 		g_debug ("need to do accept-eula");
-		pk_task_accept_eulas (g_steal_pointer (&gtask));
+		pk_task_accept_eulas (gtask);
 		return FALSE;
 	}
 
@@ -724,13 +724,13 @@ pk_task_user_accepted_idle_cb (gpointer user_data)
 					       cancellable,
 					       state->progress_callback,
 					       state->progress_user_data,
-					       (GAsyncReadyCallback) pk_task_repair_ready_cb, g_steal_pointer (&gtask));
+					       (GAsyncReadyCallback) pk_task_repair_ready_cb, g_object_ref (gtask));
 		return FALSE;
 	}
 
 	/* doing task */
 	g_debug ("continuing with request %i", state->request);
-	pk_task_do_async_action (g_steal_pointer (&gtask));
+	pk_task_do_async_action (g_object_ref (gtask));
 	return FALSE;
 }
 
@@ -771,7 +771,7 @@ pk_task_user_accepted (PkTask *task, guint request)
 static gboolean
 pk_task_user_declined_idle_cb (gpointer user_data)
 {
-	g_autoptr(GTask) gtask = user_data;
+	GTask *gtask = user_data;
 	PkTaskState *state;
 
 	state = g_task_get_task_data (gtask);
