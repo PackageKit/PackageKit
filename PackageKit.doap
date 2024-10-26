@@ -15,8 +15,15 @@
 
   <maintainer>
     <foaf:Person>
-      <foaf:name>Richard Hughes</foaf:name>
-      <foaf:homepage rdf:resource="http://www.hughsie.com/" />
+      <foaf:name>Neal Gompa</foaf:name>
+      <foaf:homepage rdf:resource="https://neal.gompa.dev/" />
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Matthias Klumpp</foaf:name>
+      <foaf:homepage rdf:resource="https://tenstral.net/" />
     </foaf:Person>
   </maintainer>
 
