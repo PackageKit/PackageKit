@@ -1016,6 +1016,15 @@ _g_variant_new_maybe_string (const gchar *value)
 	return g_variant_new_string (value);
 }
 
+static gboolean
+pk_engine_offline_is_triggered (const gchar *filename)
+{
+	/* look at the symlink target */
+	g_autofree gchar *link = NULL;
+	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	return g_strcmp0 (link, filename) == 0;
+}
+
 static GVariant *
 pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sender,
 				const gchar *object_path, const gchar *interface_name,
@@ -1046,18 +1055,12 @@ pk_engine_offline_get_property (GDBusConnection *connection_, const gchar *sende
 		return g_variant_new_boolean (ret);
 	}
 
-	/* look at the symlink target */
 	if (g_strcmp0 (property_name, "UpdateTriggered") == 0) {
-		g_autofree gchar *link = NULL;
-		link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
-		return g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) == 0);
+		return g_variant_new_boolean (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_FILENAME));
 	}
 
-	/* look at the symlink target */
 	if (g_strcmp0 (property_name, "UpgradeTriggered") == 0) {
-		g_autofree gchar *link = NULL;
-		link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
-		return g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0);
+		return g_variant_new_boolean (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME));
 	}
 
 	if (g_strcmp0 (property_name, "PreparedUpgrade") == 0) {
@@ -1672,6 +1675,15 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 							       tmp);
 			return;
 		}
+		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_FILENAME)) {
+			/* already triggered, just update the action without authentication */
+			if (pk_offline_auth_set_action (action, &error))
+				g_dbus_method_invocation_return_value (invocation, NULL);
+			else
+				g_dbus_method_invocation_return_gerror (invocation, error);
+			return;
+		}
+
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
@@ -1699,6 +1711,15 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 							       tmp);
 			return;
 		}
+		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME)) {
+			/* already triggered, just update the action without authentication */
+			if (pk_offline_auth_set_action (action, &error))
+				g_dbus_method_invocation_return_value (invocation, NULL);
+			else
+				g_dbus_method_invocation_return_gerror (invocation, error);
+			return;
+		}
+
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE;
