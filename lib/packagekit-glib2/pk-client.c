@@ -160,7 +160,6 @@ struct _PkClientState
 	guint				 number;
 	gulong				 cancellable_id;
 	GDBusProxy			*proxy;
-	GDBusProxy			*proxy_props;
 	GCancellable			*cancellable;
 	GCancellable			*cancellable_client;
 	GTask				*res;
@@ -237,9 +236,6 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	}
 
 	pk_client_state_unset_proxy (state);
-
-	if (state->proxy_props != NULL)
-		g_object_unref (G_OBJECT (state->proxy_props));
 
 	if (state->ret) {
 		g_task_return_pointer (state->res,
@@ -4401,9 +4397,6 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 	g_clear_object (&state->cancellable_client);
 
 	pk_client_state_unset_proxy (state);
-
-	if (state->proxy_props != NULL)
-		g_object_unref (G_OBJECT (state->proxy_props));
 
 	if (state->ret) {
 		g_task_return_pointer (state->res,
