@@ -172,7 +172,7 @@ struct _PkClientState
 	PkRoleEnum			 role;
 	PkSigTypeEnum			 type;
 	PkUpgradeKindEnum		 upgrade_kind;
-	guint				 refcount;
+	gint				 remaining_files_to_copy;
 	PkClientHelper			*client_helper;
 	gboolean			 waiting_for_finished;
 };
@@ -214,7 +214,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 
 /*
  * pk_client_state_finish:
- * @state: (transfer full): the #PkClientState
+ * @state: (transfer none): the #PkClientState
  * @error: (transfer full): the #GError
  **/
 static void
@@ -999,10 +999,11 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
  * pk_client_copy_downloaded_finished_cb:
  */
 static void
-pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientState *state)
+pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, gpointer user_data)
 {
 	g_autofree gchar *path = NULL;
 	g_autoptr(GError) error = NULL;
+	g_autoptr(PkClientState) state = user_data;
 
 	/* debug */
 	path = g_file_get_path (file);
@@ -1015,7 +1016,7 @@ pk_client_copy_downloaded_finished_cb (GFile *file, GAsyncResult *res, PkClientS
 	}
 
 	/* no more copies pending? */
-	if (--state->refcount == 0) {
+	if (g_atomic_int_dec_and_test (&state->remaining_files_to_copy)) {
 		pk_client_copy_finished_remove_old_files (state);
 		state->ret = TRUE;
 		pk_client_state_finish (state, NULL);
@@ -1085,7 +1086,7 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
 	g_file_copy_async (source, destination, G_FILE_COPY_OVERWRITE,
 			   G_PRIORITY_DEFAULT, state->cancellable,
 			   (GFileProgressCallback) pk_client_copy_progress_cb, state,
-			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb, state);
+			   (GAsyncReadyCallback) pk_client_copy_downloaded_finished_cb, g_object_ref (state));
 
 	/* Add the result (as a GStrv) to the results set */
 	files = g_strsplit (path, ",", -1);
@@ -1126,7 +1127,7 @@ pk_client_copy_downloaded (PkClientState *state)
 	/* get the number of files to copy */
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		state->refcount += g_strv_length (pk_files_get_files (item));
+		g_atomic_int_add (&state->remaining_files_to_copy, g_strv_length (pk_files_get_files (item)));
 	}
 
 	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
@@ -3731,7 +3732,7 @@ pk_client_copy_native_finished_cb (GFile *file, GAsyncResult *res, gpointer user
 	}
 
 	/* no more copies pending? */
-	if (--state->refcount == 0) {
+	if (g_atomic_int_dec_and_test (&state->remaining_files_to_copy)) {
 		PkClientPrivate *client_priv = pk_client_get_instance_private (state->client);
 		/* now get tid and continue on our merry way */
 		pk_control_get_tid_async (client_priv->control,
@@ -3858,11 +3859,11 @@ pk_client_install_files_async (PkClient *client,
 		ret = pk_client_is_file_native (state->files[i]);
 		/* on a FUSE mount (probably created by gvfs) and not readable by packagekitd */
 		if (!ret)
-			state->refcount++;
+			g_atomic_int_inc (&state->remaining_files_to_copy);
 	}
 
 	/* nothing to copy, common case */
-	if (state->refcount == 0) {
+	if (g_atomic_int_get (&state->remaining_files_to_copy) == 0) {
 		/* just get tid */
 		pk_control_get_tid_async (priv->control,
 					  cancellable,
