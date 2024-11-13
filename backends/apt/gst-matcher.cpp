@@ -71,17 +71,21 @@ GstMatcher::GstMatcher(gchar **values)
                 if (!opt.empty()) {
                     size_t start_pos = 0;
                     // This is hardcoded in pk-gstreamer-install, so we also hardcode it here
-                    const string x86_64 = "()(64bit";
+                    const string x86_64 = ")(64bit";
 
                     if (ends_with(opt.c_str(), x86_64.c_str())) {
                             // We hardcode 64bit -> amd64 here
                             arch = "amd64";
-                            // -1 -> remove the last )
-                            opt.erase(opt.end() - x86_64.length() - 1, opt.end());
+                            opt.erase(opt.end() - x86_64.length(), opt.end());
                     }
 
                     // Replace all ")(" with "," - convert from input to serialized caps format
                     while ((start_pos = opt.find(")(", start_pos)) != string::npos) {
+                        if (start_pos == opt.length()-2) {
+                            // Avoid trailing comma
+                            opt.erase(start_pos, 2);
+                            break;
+                        }
                         opt.replace(start_pos, 2, ",");
                         start_pos++;
                     }
