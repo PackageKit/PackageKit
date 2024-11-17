@@ -1435,11 +1435,21 @@ pk_console_sigint_cb (gpointer user_data)
 	return FALSE;
 }
 
+static int
+cmp_strings (gconstpointer a,
+             gconstpointer b)
+{
+  const char **aa = (const char **)a;
+  const char **bb = (const char **)b;
+
+  return g_strcmp0 (*aa, *bb);
+}
+
 static gchar *
 pk_console_get_summary (PkConsoleCtx *ctx)
 {
-	GString *string;
-	string = g_string_new ("");
+	GString *string = g_string_new ("");
+	g_autoptr(GPtrArray) cmds = g_ptr_array_sized_new (30);
 
 	/* TRANSLATORS: This is the header to the --help menu */
 	g_string_append_printf (string, "%s\n\n%s\n", _("PackageKit Console Interface"),
@@ -1447,75 +1457,86 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 				_("Subcommands:"));
 
 	/* always */
-	g_string_append_printf (string, "  %s\n", "backend-details");
-	g_string_append_printf (string, "  %s\n", "get-roles");
-	g_string_append_printf (string, "  %s\n", "get-groups");
-	g_string_append_printf (string, "  %s\n", "get-filters");
-	g_string_append_printf (string, "  %s\n", "get-transactions");
-	g_string_append_printf (string, "  %s\n", "get-time");
+	g_ptr_array_add (cmds, (gchar *) "backend-details");
+	g_ptr_array_add (cmds, (gchar *) "get-roles");
+	g_ptr_array_add (cmds, (gchar *) "get-groups");
+	g_ptr_array_add (cmds, (gchar *) "get-filters");
+	g_ptr_array_add (cmds, (gchar *) "get-transactions");
+	g_ptr_array_add (cmds, (gchar *) "get-time");
 
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_SEARCH_NAME) ||
 	    pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_SEARCH_DETAILS) ||
 	    pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_SEARCH_GROUP) ||
 	    pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_SEARCH_FILE))
-		g_string_append_printf (string, "  %s\n", "search [name|details|group|file] [data]");
+		g_ptr_array_add (cmds, (gchar *) "search [name|details|group|file] [data]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_INSTALL_PACKAGES))
-		g_string_append_printf (string, "  %s\n", "install [packages]");
+		g_ptr_array_add (cmds, (gchar *) "install [packages]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_INSTALL_FILES))
-		g_string_append_printf (string, "  %s\n", "install-local [files]");
+		g_ptr_array_add (cmds, (gchar *) "install-local [files]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES))
-		g_string_append_printf (string, "  %s\n", "download [directory] [packages]");
+		g_ptr_array_add (cmds, (gchar *) "download [directory] [packages]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_INSTALL_SIGNATURE))
-		g_string_append_printf (string, "  %s\n", "install-sig [type] [key_id] [package_id]");
+		g_ptr_array_add (cmds, (gchar *) "install-sig [type] [key_id] [package_id]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REMOVE_PACKAGES))
-		g_string_append_printf (string, "  %s\n", "remove [package]");
+		g_ptr_array_add (cmds, (gchar *) "remove [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_UPDATE_PACKAGES))
-		g_string_append_printf (string, "  %s\n", "update [package]");
+		g_ptr_array_add (cmds, (gchar *) "update [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REFRESH_CACHE))
-		g_string_append_printf (string, "  %s\n", "refresh [force]");
+		g_ptr_array_add (cmds, (gchar *) "refresh [force]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_RESOLVE))
-		g_string_append_printf (string, "  %s\n", "resolve [package]");
+		g_ptr_array_add (cmds, (gchar *) "resolve [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_UPDATES))
-		g_string_append_printf (string, "  %s\n", "get-updates");
+		g_ptr_array_add (cmds, (gchar *) "get-updates");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_DEPENDS_ON))
-		g_string_append_printf (string, "  %s\n", "depends-on [package]");
+		g_ptr_array_add (cmds, (gchar *) "depends-on [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REQUIRED_BY))
-		g_string_append_printf (string, "  %s\n", "required-by [package]");
+		g_ptr_array_add (cmds, (gchar *) "required-by [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DETAILS))
-		g_string_append_printf (string, "  %s\n", "get-details [package]");
+		g_ptr_array_add (cmds, (gchar *) "get-details [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES))
-		g_string_append_printf (string, "  %s\n", "get-distro-upgrades");
+		g_ptr_array_add (cmds, (gchar *) "get-distro-upgrades");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_FILES))
-		g_string_append_printf (string, "  %s\n", "get-files [package]");
+		g_ptr_array_add (cmds, (gchar *) "get-files [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL))
-		g_string_append_printf (string, "  %s\n", "get-update-detail [package]");
+		g_ptr_array_add (cmds, (gchar *) "get-update-detail [package]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_PACKAGES))
-		g_string_append_printf (string, "  %s\n", "get-packages");
+		g_ptr_array_add (cmds, (gchar *) "get-packages");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_REPO_LIST))
-		g_string_append_printf (string, "  %s\n", "repo-list");
+		g_ptr_array_add (cmds, (gchar *) "repo-list");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_ENABLE)) {
-		g_string_append_printf (string, "  %s\n", "repo-enable [repo_id]");
-		g_string_append_printf (string, "  %s\n", "repo-disable [repo_id]");
+		g_ptr_array_add (cmds, (gchar *) "repo-enable [repo_id]");
+		g_ptr_array_add (cmds, (gchar *) "repo-disable [repo_id]");
 	}
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_SET_DATA))
-		g_string_append_printf (string, "  %s\n", "repo-set-data [repo_id] [parameter] [value]");
+		g_ptr_array_add (cmds, (gchar *) "repo-set-data [repo_id] [parameter] [value]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPO_REMOVE))
-		g_string_append_printf (string, "  %s\n", "repo-remove [repo_id] [autoremove]");
+		g_ptr_array_add (cmds, (gchar *) "repo-remove [repo_id] [autoremove]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_WHAT_PROVIDES))
-		g_string_append_printf (string, "  %s\n", "what-provides [search]");
+		g_ptr_array_add (cmds, (gchar *) "what-provides [search]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_ACCEPT_EULA))
-		g_string_append_printf (string, "  %s\n", "accept-eula [eula-id]");
+		g_ptr_array_add (cmds, (gchar *) "accept-eula [eula-id]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_CATEGORIES))
-		g_string_append_printf (string, "  %s\n", "get-categories");
+		g_ptr_array_add (cmds, (gchar *) "get-categories");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_UPGRADE_SYSTEM))
-		g_string_append_printf (string, "  %s\n", "upgrade-system [distro-name] [minimal|default|complete]");
+		g_ptr_array_add (cmds, (gchar *) "upgrade-system [distro-name] [minimal|default|complete]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
-		g_string_append_printf (string, "  %s\n", "repair");
-	g_string_append_printf (string, "  %s\n", "offline-get-prepared");
-	g_string_append_printf (string, "  %s\n", "offline-trigger");
-	g_string_append_printf (string, "  %s\n", "offline-cancel");
-	g_string_append_printf (string, "  %s\n", "offline-status");
-	g_string_append_printf (string, "  %s\n", "quit");
+		g_ptr_array_add (cmds, (gchar *) "repair");
+
+	// offline update commands
+	g_ptr_array_add (cmds, (gchar *) "offline-get-prepared");
+	g_ptr_array_add (cmds, (gchar *) "offline-trigger");
+	g_ptr_array_add (cmds, (gchar *) "offline-cancel");
+	g_ptr_array_add (cmds, (gchar *) "offline-status");
+
+	// sort all commands
+	g_ptr_array_sort (cmds, (GCompareFunc) cmp_strings);
+
+	for (guint i = 0; i < cmds->len; i++)
+		g_string_append_printf (string, "  %s\n", (gchar *) cmds->pdata[i]);
+
+	// 'quit' as last command
+	g_string_append_printf (string, "  %s", "quit");
+
 	return g_string_free (string, FALSE);
 }
 
