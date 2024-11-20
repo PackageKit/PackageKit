@@ -1,7 +1,7 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 # allow fetching source packages
-RUN echo "deb-src http://deb.debian.org/debian/ bookworm main" >> /etc/apt/sources.list
+RUN echo "deb-src http://deb.debian.org/debian/ trixie main" >> /etc/apt/sources.list
 
 # prepare
 RUN apt-get update -qq
@@ -12,6 +12,13 @@ RUN apt-get install -yq build-essential
 # install PackageKit dependencies
 RUN apt-get build-dep -yq packagekit
 RUN apt-get install -yq meson appstream
+
+# install dependencies for 'zypp' backend
+RUN apt-get install -yq libzypp-dev
+
+# install dependencies for 'alpm' backend
+RUN apt-get install -yq libalpm-dev
+RUN apt-get build-dep -yq pacman-package-manager
 
 # finish
 RUN mkdir /build
