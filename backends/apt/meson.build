@@ -29,7 +29,7 @@ c_args = ['-DG_LOG_DOMAIN="PackageKit-APT"',
           '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
 ]
 
-shared_module(
+packagekit_backend_apt_module = shared_module(
   'pk_backend_apt',
   'pk-backend-apt.cpp',
   'acqpkitstatus.cpp',
@@ -116,3 +116,5 @@ if get_option('systemd')
     install_dir: systemd_user_unit_dir,
   )
 endif
+
+subdir('tests')
