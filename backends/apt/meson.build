@@ -29,7 +29,7 @@ c_args = ['-DG_LOG_DOMAIN="PackageKit-APT"',
           '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
 ]
 
-packagekit_backend_apt_module = shared_module(
+packagekit_backend_apt_module = shared_library(
   'pk_backend_apt',
   'pk-backend-apt.cpp',
   'acqpkitstatus.cpp',
@@ -69,6 +69,7 @@ packagekit_backend_apt_module = shared_module(
     '-lutil',
   ],
   override_options: [
+    'b_lundef=false',
     'c_std=c11',
     'cpp_std=c++17'
   ],
