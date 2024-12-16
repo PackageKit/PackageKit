@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <cstdlib>
 #include <functional>
 
 #include <pk-backend.h>
@@ -57,10 +58,10 @@ public:
         pkg_asprintf(&buf, "%L", pkg);
         _license = free_deleted_unique_ptr<char>(buf);
         pkg_asprintf(&buf, "%s", pkg);
-        _flatsize = std::atoi(buf);
+        _flatsize = std::strtoul(buf, nullptr, 10);
         free(buf);
         pkg_asprintf(&buf, "%x", pkg);
-        _compressedsize = std::atoi(buf);
+        _compressedsize = std::strtoull(buf, nullptr, 10);
         free(buf);
     }
 
@@ -139,13 +140,13 @@ public:
         return _license.get();
     }
 
-    int64_t flatsize() const {
+    gulong flatsize() const {
         // flatsize can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
         return _flatsize;
     }
 
-    int64_t compressedsize() const {
+    guint64 compressedsize() const {
         // flatsize can only be obtained from pkg*
         g_assert (pk_id_parts == nullptr);
         return _compressedsize;
@@ -172,7 +173,8 @@ private:
         _version, _abi, _reponame, _comment,
         _descr, _url, _license;
     g_strfreev_deleted_unique_ptr<gchar*> _categories;
-    int64_t _flatsize, _compressedsize;
+    gulong _flatsize;
+    guint64 _compressedsize;
     gchar* external_pk_id = nullptr;
     g_free_deleted_unique_ptr<gchar> built_pk_id;
     g_strfreev_deleted_unique_ptr<gchar*> pk_id_parts;
