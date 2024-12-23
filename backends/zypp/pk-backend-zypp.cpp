@@ -633,7 +633,7 @@ ZyppJob::get_zypp()
 /**
   * Enable and rotate zypp logging
   */
-gboolean
+static gboolean
 zypp_logging ()
 {
 	gchar *file = g_strdup ("/var/log/pk_backend_zypp");
@@ -679,7 +679,7 @@ namespace {
 	}
 }
 
-gboolean
+static gboolean
 zypp_is_development_repo (RepoInfo repo)
 {
 	return ( name_ends_or_contains( repo.alias(), "-debuginfo" )
@@ -688,7 +688,7 @@ zypp_is_development_repo (RepoInfo repo)
 	      || name_ends_or_contains( repo.alias(), "-development" ) );
 }
 
-gboolean
+static gboolean
 zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
 {
 
@@ -709,7 +709,7 @@ zypp_is_valid_repo (PkBackendJob *job, RepoInfo repo)
  * Build and return a ResPool that contains all local resolvables
  * and ones found in the enabled repositories.
  */
-ResPool
+static ResPool
 zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 {
 	static gboolean repos_loaded = FALSE;
@@ -770,7 +770,7 @@ zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 /**
   * Return the rpmHeader of a package
   */
-target::rpm::RpmHeader::constPtr
+static target::rpm::RpmHeader::constPtr
 zypp_get_rpmHeader (const string &name, Edition edition)
 {
 	target::rpm::librpmDb::db_const_iterator it;
@@ -786,7 +786,7 @@ zypp_get_rpmHeader (const string &name, Edition edition)
 /**
   * Return the PkEnumGroup of the given PoolItem.
   */
-PkGroupEnum
+static PkGroupEnum
 get_enum_group (const string &group_)
 {
 	string group(str::toLower(group_));
@@ -841,7 +841,7 @@ get_enum_group (const string &group_)
 /**
  * Returns a list of packages that match the specified package_name.
  */
-void
+static void
 zypp_get_packages_by_name (const gchar *package_name,
 			   const ResKind kind,
 			   vector<sat::Solvable> &result,
@@ -863,7 +863,8 @@ zypp_get_packages_by_name (const gchar *package_name,
 /**
  * Returns a list of packages that owns the specified file.
  */
-void
+G_GNUC_UNUSED
+static void
 zypp_get_packages_by_file (ZYpp::Ptr zypp,
 			   const gchar *search_file,
 			   vector<sat::Solvable> &ret)
@@ -895,7 +896,7 @@ zypp_get_packages_by_file (ZYpp::Ptr zypp,
 /**
  * Return the package is from a local file or not.
  */
-bool
+static bool
 zypp_package_is_local (const gchar *package_id)
 {
 	MIL << package_id << endl;
@@ -916,7 +917,7 @@ zypp_package_is_local (const gchar *package_id)
  * Returns the Resolvable for the specified package_id.
  * e.g. gnome-packagekit;3.6.1-132.1;x86_64;G:F
 */
-sat::Solvable
+static sat::Solvable
 zypp_get_package_by_id (const gchar *package_id)
 {
 	MIL << package_id << endl;
@@ -981,7 +982,7 @@ zypp_get_package_by_id (const gchar *package_id)
 	return package;
 }
 
-RepoInfo
+static RepoInfo
 zypp_get_Repository (PkBackendJob *job, const gchar *alias)
 {
 	RepoInfo info;
@@ -1171,7 +1172,7 @@ zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
  * we don't notify the client that the package is also available, since
  * PK doesn't handle re-installs (by some quirk).
  */
-void
+static void
 zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, const vector<sat::Solvable> &v)
 {
 	typedef vector<sat::Solvable>::const_iterator sat_it_t;
@@ -1791,6 +1792,7 @@ zypp_refresh_cache (PkBackendJob *job, ZYpp::Ptr zypp, gboolean force)
 /**
   * helper to simplify returning errors
   */
+G_GNUC_PRINTF (3, 4)
 static void
 zypp_backend_finished_error (PkBackendJob  *job, PkErrorEnum err_code,
 			     const char *format, ...)
@@ -1930,7 +1932,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			}
 			zypp_backend_finished_error (
 				job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-				problem.c_str());
+				"%s", problem.c_str());
 			return;
 		}
 
@@ -2127,11 +2129,11 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		pk_backend_job_set_percentage (job, 100);
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -2211,7 +2213,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 				(gulong)size);
 		} catch (const Exception &ex) {
 			zypp_backend_finished_error (
-				job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+				job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString ().c_str ());
 			return;
 		}
 	}
@@ -2593,7 +2595,7 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString ().c_str ());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString ().c_str ());
 		return;
 	}
 
@@ -2865,7 +2867,7 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -2981,11 +2983,11 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
@@ -3275,11 +3277,11 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 		repos = list<RepoInfo>(manager.repoBegin(),manager.repoEnd());
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 
@@ -3330,11 +3332,11 @@ pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid,
 
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_REPO_NOT_FOUND, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_REPO_NOT_FOUND, "%s", ex.asUserString().c_str());
 		return;
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_INTERNAL_ERROR, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", ex.asUserString().c_str());
 		return;
 	}
 
@@ -3568,7 +3570,6 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 	}
 
 	ResPool pool = zypp_build_pool (zypp, TRUE);
-	PkRestartEnum restart = PK_RESTART_ENUM_NONE;
 	PoolStatusSaver saver;
 
 	if (is_tumbleweed ()) {
@@ -3839,7 +3840,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 			for (sat::WhatProvides::const_iterator it = prov.begin (); it != prov.end (); ++it) {
 				if (it->isSystem ())
 					g_hash_table_insert (installed_hash,
-							     (const gpointer) make<ResObject>(*it)->summary().c_str (),
+							     (gpointer) make<ResObject>(*it)->summary().c_str (),
 							     GUINT_TO_POINTER (1));
 			}
 
@@ -3953,7 +3954,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 		}
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (
-			job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, ex.asUserString().c_str());
+			job, PK_ERROR_ENUM_PACKAGE_DOWNLOAD_FAILED, "%s", ex.asUserString().c_str());
 		return;
 	}
 }
