@@ -40,8 +40,6 @@
 
 static void     pk_package_finalize	(GObject     *object);
 
-#define PK_PACKAGE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_PACKAGE, PkPackagePrivate))
-
 /**
  * PkPackagePrivate:
  *
@@ -105,7 +103,9 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
-G_DEFINE_TYPE (PkPackage, pk_package, PK_TYPE_SOURCE)
+static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
+
+G_DEFINE_TYPE_WITH_PRIVATE (PkPackage, pk_package, PK_TYPE_SOURCE)
 
 /**
  * pk_package_equal:
@@ -114,18 +114,22 @@ G_DEFINE_TYPE (PkPackage, pk_package, PK_TYPE_SOURCE)
  *
  * Do the #PkPackage's have the same ID.
  *
- * Return value: %TRUE if the packages have the same package_id, info and summary.
+ * Returns: %TRUE if the packages have the same package_id, info and summary.
  *
  * Since: 0.5.4
  **/
 gboolean
 pk_package_equal (PkPackage *package1, PkPackage *package2)
 {
+	PkPackagePrivate *priv1 = pk_package_get_instance_private (package1);
+	PkPackagePrivate *priv2 = pk_package_get_instance_private (package2);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
-	return (g_strcmp0 (package1->priv->summary, package2->priv->summary) == 0 &&
-	        g_strcmp0 (package1->priv->package_id, package2->priv->package_id) == 0 &&
-	        package1->priv->info == package2->priv->info);
+
+	return (g_strcmp0 (priv1->summary, priv2->summary) == 0 &&
+	        g_strcmp0 (priv1->package_id, priv2->package_id) == 0 &&
+	        priv1->info == priv2->info);
 }
 
 /**
@@ -135,16 +139,20 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
  *
  * Do the #PkPackage's have the same ID.
  *
- * Return value: %TRUE if the packages have the same package_id.
+ * Returns: %TRUE if the packages have the same package_id.
  *
  * Since: 0.5.4
  **/
 gboolean
 pk_package_equal_id (PkPackage *package1, PkPackage *package2)
 {
+	PkPackagePrivate *priv1 = pk_package_get_instance_private (package1);
+	PkPackagePrivate *priv2 = pk_package_get_instance_private (package2);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
-	return (g_strcmp0 (package1->priv->package_id, package2->priv->package_id) == 0);
+
+	return (g_strcmp0 (priv1->package_id, priv2->package_id) == 0);
 }
 
 /**
@@ -155,20 +163,22 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
  *
  * Sets the package object to have the given ID
  *
- * Return value: %TRUE if the package_id was set
+ * Returns: %TRUE if the package_id was set
  *
  * Since: 0.5.4
  **/
 gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 {
-	PkPackagePrivate *priv = package->priv;
-	gboolean ret;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
 	guint cnt = 0;
 	guint i;
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (g_strcmp0 (priv->package_id, package_id) == 0)
+		return TRUE;
 
 	/* free old data */
 	g_free (priv->package_id);
@@ -178,7 +188,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	 * and reference the pointers in the const gchar * array */
 	priv->package_id = g_strdup (package_id);
 	priv->package_id_data = g_strdup (package_id);
-	priv->package_id_split[0] = priv->package_id_data;
+	priv->package_id_split[PK_PACKAGE_ID_NAME] = priv->package_id_data;
 	for (i = 0; priv->package_id_data[i] != '\0'; i++) {
 		if (package_id[i] == ';') {
 			if (++cnt > 3)
@@ -188,19 +198,27 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 		}
 	}
 	if (cnt != 3) {
-		ret = FALSE;
 		g_set_error (error, 1, 0, "invalid number of sections %i", cnt);
 		goto out;
 	}
 
 	/* name has to be valid */
-	ret = (priv->package_id_split[0][0] != '\0');
-	if (!ret) {
+	if (priv->package_id_split[PK_PACKAGE_ID_NAME][0] == '\0') {
 		g_set_error_literal (error, 1, 0, "name invalid");
 		goto out;
 	}
+
+	g_object_notify_by_pspec (G_OBJECT(package), obj_properties[PROP_PACKAGE_ID]);
+	return TRUE;
+
 out:
-	return ret;
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->package_id_data, g_free);
+	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
+	return FALSE;
 }
 
 /**
@@ -211,7 +229,7 @@ out:
  *
  * Parses the data to populate the #PkPackage.
  *
- * Return value: %TRUE if the data was parsed correcty
+ * Returns: %TRUE if the data was parsed correctly
  *
  * Since: 0.8.11
  **/
@@ -231,11 +249,11 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 	}
 
 	/* parse object */
-	package->priv->info = pk_info_enum_from_string (sections[0]);
+	pk_package_set_info (package, pk_info_enum_from_string (sections[0]));
 	if (!pk_package_set_id (package, sections[1], error))
 		return FALSE;
-	g_free (package->priv->summary);
-	package->priv->summary = g_strdup (sections[2]);
+
+	pk_package_set_summary (package, sections[2]);
 	return TRUE;
 }
 
@@ -245,15 +263,18 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
  *
  * Gets the package object ID
  *
- * Return value: the #PkInfoEnum
+ * Returns: the #PkInfoEnum
  *
  * Since: 0.5.4
  **/
 PkInfoEnum
 pk_package_get_info (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
-	return package->priv->info;
+
+	return priv->info;
 }
 
 /**
@@ -268,8 +289,15 @@ pk_package_get_info (PkPackage *package)
 void
 pk_package_set_info (PkPackage *package, PkInfoEnum info)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_if_fail (PK_IS_PACKAGE (package));
-	package->priv->info = info;
+
+	if (priv->info == info)
+		return;
+
+	priv->info = info;
+	g_object_notify_by_pspec (G_OBJECT(package), obj_properties[PROP_INFO]);
 }
 
 /**
@@ -284,9 +312,16 @@ pk_package_set_info (PkPackage *package, PkInfoEnum info)
 void
 pk_package_set_summary (PkPackage *package, const gchar *summary)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_if_fail (PK_IS_PACKAGE (package));
-	g_free (package->priv->summary);
-	package->priv->summary = g_strdup (summary);
+
+	if (g_strcmp0 (priv->summary, summary) == 0)
+		return;
+
+	g_free (priv->summary);
+	priv->summary = g_strdup (summary);
+	g_object_notify_by_pspec (G_OBJECT(package), obj_properties[PROP_SUMMARY]);
 }
 
 /**
@@ -295,15 +330,18 @@ pk_package_set_summary (PkPackage *package, const gchar *summary)
  *
  * Gets the package object ID
  *
- * Return value: the ID, or %NULL if unset
+ * Returns: (nullable): the ID, or %NULL if unset
  *
  * Since: 0.5.4
  **/
 const gchar *
 pk_package_get_id (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->package_id;
+
+	return priv->package_id;
 }
 
 /**
@@ -312,15 +350,18 @@ pk_package_get_id (PkPackage *package)
  *
  * Gets the package object ID
  *
- * Return value: the summary, or %NULL if unset
+ * Returns: (nullable): the summary, or %NULL if unset
  *
  * Since: 0.5.4
  **/
 const gchar *
 pk_package_get_summary (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->summary;
+
+	return priv->summary;
 }
 
 /**
@@ -329,15 +370,18 @@ pk_package_get_summary (PkPackage *package)
  *
  * Gets the package name.
  *
- * Return value: the name, or %NULL if unset
+ * Returns: (nullable): the name, or %NULL if unset
  *
  * Since: 0.6.4
  **/
 const gchar *
 pk_package_get_name (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->package_id_split[PK_PACKAGE_ID_NAME];
+
+	return priv->package_id_split[PK_PACKAGE_ID_NAME];
 }
 
 /**
@@ -346,15 +390,18 @@ pk_package_get_name (PkPackage *package)
  *
  * Gets the package version.
  *
- * Return value: the version, or %NULL if unset
+ * Returns: (nullable): the version, or %NULL if unset
  *
  * Since: 0.6.4
  **/
 const gchar *
 pk_package_get_version (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->package_id_split[PK_PACKAGE_ID_VERSION];
+
+	return priv->package_id_split[PK_PACKAGE_ID_VERSION];
 }
 
 /**
@@ -363,15 +410,18 @@ pk_package_get_version (PkPackage *package)
  *
  * Gets the package arch.
  *
- * Return value: the arch, or %NULL if unset
+ * Returns: (nullable): the arch, or %NULL if unset
  *
  * Since: 0.6.4
  **/
 const gchar *
 pk_package_get_arch (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->package_id_split[PK_PACKAGE_ID_ARCH];
+
+	return priv->package_id_split[PK_PACKAGE_ID_ARCH];
 }
 
 /**
@@ -382,15 +432,18 @@ pk_package_get_arch (PkPackage *package)
  * package. Special ID's include "installed" for installed packages, and "local"
  * for local packages that exist on disk but not in a repository.
  *
- * Return value: the data, or %NULL if unset
+ * Returns: (nullable): the data, or %NULL if unset
  *
  * Since: 0.6.4
  **/
 const gchar *
 pk_package_get_data (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
-	return package->priv->package_id_split[PK_PACKAGE_ID_DATA];
+
+	return priv->package_id_split[PK_PACKAGE_ID_DATA];
 }
 
 /**
@@ -404,14 +457,16 @@ pk_package_get_data (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	PkPackagePrivate *priv = package->priv;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_if_fail (PK_IS_PACKAGE (package));
+
 	g_print ("%s-%s.%s\t%s\t%s\n",
 		 priv->package_id_split[PK_PACKAGE_ID_NAME],
 		 priv->package_id_split[PK_PACKAGE_ID_VERSION],
 		 priv->package_id_split[PK_PACKAGE_ID_ARCH],
 		 priv->package_id_split[PK_PACKAGE_ID_DATA],
-		 package->priv->summary);
+		 priv->summary);
 }
 
 /*
@@ -421,7 +476,7 @@ static void
 pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = package->priv;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -497,40 +552,41 @@ static void
 pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = package->priv;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
 
 	switch (prop_id) {
 	case PROP_INFO:
-		pk_package_set_info (package, g_value_get_enum (value));
+		priv->info = g_value_get_enum (value);
 		break;
 	case PROP_SUMMARY:
-		pk_package_set_summary (package, g_value_get_string (value));
+		g_free (priv->summary);
+		priv->summary = g_value_dup_string (value);
 		break;
 	case PROP_LICENSE:
 		g_free (priv->license);
-		priv->license = g_strdup (g_value_get_string (value));
+		priv->license = g_value_dup_string (value);
 		break;
 	case PROP_GROUP:
 		priv->group = g_value_get_enum (value);
 		break;
 	case PROP_DESCRIPTION:
 		g_free (priv->description);
-		priv->description = g_strdup (g_value_get_string (value));
+		priv->description = g_value_dup_string (value);
 		break;
 	case PROP_URL:
 		g_free (priv->url);
-		priv->url = g_strdup (g_value_get_string (value));
+		priv->url = g_value_dup_string (value);
 		break;
 	case PROP_SIZE:
 		priv->size = g_value_get_uint64 (value);
 		break;
 	case PROP_UPDATE_UPDATES:
 		g_free (priv->update_updates);
-		priv->update_updates = g_strdup (g_value_get_string (value));
+		priv->update_updates = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_OBSOLETES:
 		g_free (priv->update_obsoletes);
-		priv->update_obsoletes = g_strdup (g_value_get_string (value));
+		priv->update_obsoletes = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_VENDOR_URLS:
 		g_strfreev (priv->update_vendor_urls);
@@ -549,22 +605,22 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_UPDATE_UPDATE_TEXT:
 		g_free (priv->update_text);
-		priv->update_text = g_strdup (g_value_get_string (value));
+		priv->update_text = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_CHANGELOG:
 		g_free (priv->update_changelog);
-		priv->update_changelog = g_strdup (g_value_get_string (value));
+		priv->update_changelog = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_STATE:
 		priv->update_state = g_value_get_enum (value);
 		break;
 	case PROP_UPDATE_ISSUED:
 		g_free (priv->update_issued);
-		priv->update_issued = g_strdup (g_value_get_string (value));
+		priv->update_issued = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_UPDATED:
 		g_free (priv->update_updated);
-		priv->update_updated = g_strdup (g_value_get_string (value));
+		priv->update_updated = g_value_dup_string (value);
 		break;
 	case PROP_UPDATE_SEVERITY:
 		pk_package_set_update_severity (package, g_value_get_enum (value));
@@ -581,7 +637,6 @@ pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GP
 static void
 pk_package_class_init (PkPackageClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->get_property = pk_package_get_property;
 	object_class->set_property = pk_package_set_property;
@@ -592,209 +647,209 @@ pk_package_class_init (PkPackageClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("info", NULL,
+	obj_properties[PROP_INFO] =
+		g_param_spec_enum ("info", NULL,
 				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
 				   PK_TYPE_INFO_ENUM, PK_INFO_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_INFO, pspec);
 
 	/**
 	 * PkPackage:package-id:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("package-id", NULL,
+	obj_properties[PROP_PACKAGE_ID] =
+		g_param_spec_string ("package-id", NULL,
 				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
 				     NULL,
 				     G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
 
 	/**
 	 * PkPackage:summary:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("summary", NULL,
+	obj_properties[PROP_SUMMARY] =
+		g_param_spec_string ("summary", NULL,
 				     "The package summary",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
 	/**
 	 * PkPackage:license:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("license", NULL,
+	obj_properties[PROP_LICENSE] =
+		g_param_spec_string ("license", NULL,
 				     "The package license",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_LICENSE, pspec);
 
 	/**
 	 * PkPackage:group:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("group", NULL,
+	obj_properties[PROP_GROUP] =
+		g_param_spec_enum ("group", NULL,
 				   "The package group",
 				   PK_TYPE_GROUP_ENUM, PK_GROUP_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_GROUP, pspec);
 
 	/**
 	 * PkPackage:description:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("description", NULL,
+	obj_properties[PROP_DESCRIPTION] =
+		g_param_spec_string ("description", NULL,
 				     "The package description",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
 
 	/**
 	 * PkPackage:url:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("url", NULL,
+	obj_properties[PROP_URL] =
+		g_param_spec_string ("url", NULL,
 				     "The package homepage URL",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_URL, pspec);
 
 	/**
 	 * PkPackage:size:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_uint64 ("size", NULL,
+	obj_properties[PROP_SIZE] =
+		g_param_spec_uint64 ("size", NULL,
 				     "The package size",
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_SIZE, pspec);
 
 	/**
 	 * PkPackage:update-updates:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-updates", NULL,
+	obj_properties[PROP_UPDATE_UPDATES] =
+		g_param_spec_string ("update-updates", NULL,
 				     "The update packages",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_UPDATES, pspec);
 
 	/**
 	 * PkPackage:update-obsoletes:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-obsoletes", NULL,
+	obj_properties[PROP_UPDATE_OBSOLETES] =
+		g_param_spec_string ("update-obsoletes", NULL,
 				     "The update packages that are obsoleted",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_OBSOLETES, pspec);
 
 	/**
 	 * PkPackage:update-vendor-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_boxed ("update-vendor-urls", NULL,
+	obj_properties[PROP_UPDATE_VENDOR_URLS] =
+		g_param_spec_boxed ("update-vendor-urls", NULL,
 				    "The update vendor URLs",
 				    G_TYPE_STRV,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_VENDOR_URLS, pspec);
 
 	/**
 	 * PkPackage:update-bugzilla-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_boxed ("update-bugzilla-urls", NULL,
+	obj_properties[PROP_UPDATE_BUGZILLA_URLS] =
+		g_param_spec_boxed ("update-bugzilla-urls", NULL,
 				    "The update bugzilla URLs",
 				    G_TYPE_STRV,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_BUGZILLA_URLS, pspec);
 
 	/**
 	 * PkPackage:update-cve-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_boxed ("update-cve-urls", NULL,
+	obj_properties[PROP_UPDATE_CVE_URLS] =
+		g_param_spec_boxed ("update-cve-urls", NULL,
 				    "The update CVE URLs",
 				    G_TYPE_STRV,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_CVE_URLS, pspec);
 
 	/**
 	 * PkPackage:update-restart:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("update-restart", NULL,
+	obj_properties[PROP_UPDATE_RESTART] =
+		g_param_spec_enum ("update-restart", NULL,
 				   "The update restart type",
 				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_RESTART, pspec);
 
 	/**
 	 * PkPackage:update-text:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-text", NULL,
+	obj_properties[PROP_UPDATE_UPDATE_TEXT] =
+		g_param_spec_string ("update-text", NULL,
 				     "The update description",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_UPDATE_TEXT, pspec);
 
 	/**
 	 * PkPackage:update-changelog:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-changelog", NULL,
+	obj_properties[PROP_UPDATE_CHANGELOG] =
+		g_param_spec_string ("update-changelog", NULL,
 				     "The update ChangeLog",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_CHANGELOG, pspec);
 
 	/**
 	 * PkPackage:update-state:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("update-state", NULL,
+	obj_properties[PROP_UPDATE_STATE] =
+		g_param_spec_enum ("update-state", NULL,
 				   "The update state",
 				   PK_TYPE_UPDATE_STATE_ENUM, PK_UPDATE_STATE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_STATE, pspec);
 
 	/**
 	 * PkPackage:update-issued:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-issued", NULL,
+	obj_properties[PROP_UPDATE_ISSUED] =
+		g_param_spec_string ("update-issued", NULL,
 				     "When the update was issued",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_ISSUED, pspec);
 
 	/**
 	 * PkPackage:update-updated:
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("update-updated", NULL,
+	obj_properties[PROP_UPDATE_UPDATED] =
+		g_param_spec_string ("update-updated", NULL,
 				     "When the update was last updated",
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_UPDATED, pspec);
 
 	/**
 	 * PkPackage:update-severity:
@@ -806,11 +861,13 @@ pk_package_class_init (PkPackageClass *klass)
 	 *
 	 * Since: 1.2.4
 	 */
-	pspec = g_param_spec_enum ("update-severity", NULL,
+	obj_properties[PROP_UPDATE_SEVERITY] =
+		g_param_spec_enum ("update-severity", NULL,
 				   "Package update severity",
 				    PK_TYPE_INFO_ENUM, PK_INFO_ENUM_UNKNOWN,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-	g_object_class_install_property (object_class, PROP_UPDATE_SEVERITY, pspec);
+				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+
+	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 
 	/**
 	 * PkPackage::changed:
@@ -824,8 +881,6 @@ pk_package_class_init (PkPackageClass *klass)
 			      G_STRUCT_OFFSET (PkPackageClass, changed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-
-	g_type_class_add_private (klass, sizeof (PkPackagePrivate));
 }
 
 /*
@@ -835,11 +890,12 @@ pk_package_class_init (PkPackageClass *klass)
 static void
 pk_package_init (PkPackage *package)
 {
-	package->priv = PK_PACKAGE_GET_PRIVATE (package);
-	package->priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
-	package->priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
-	package->priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
-	package->priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
+	package->priv = priv;
 }
 
 /*
@@ -850,23 +906,23 @@ static void
 pk_package_finalize (GObject *object)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = package->priv;
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
 
-	g_free (priv->package_id);
-	g_free (priv->summary);
-	g_free (priv->license);
-	g_free (priv->description);
-	g_free (priv->url);
-	g_free (priv->update_updates);
-	g_free (priv->update_obsoletes);
-	g_strfreev (priv->update_vendor_urls);
-	g_strfreev (priv->update_bugzilla_urls);
-	g_strfreev (priv->update_cve_urls);
-	g_free (priv->update_text);
-	g_free (priv->update_changelog);
-	g_free (priv->update_issued);
-	g_free (priv->update_updated);
-	g_free (priv->package_id_data);
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->summary, g_free);
+	g_clear_pointer (&priv->license, g_free);
+	g_clear_pointer (&priv->description, g_free);
+	g_clear_pointer (&priv->url, g_free);
+	g_clear_pointer (&priv->update_updates, g_free);
+	g_clear_pointer (&priv->update_obsoletes, g_free);
+	g_clear_pointer (&priv->update_vendor_urls, g_strfreev);
+	g_clear_pointer (&priv->update_bugzilla_urls, g_strfreev);
+	g_clear_pointer (&priv->update_cve_urls, g_strfreev);
+	g_clear_pointer (&priv->update_text, g_free);
+	g_clear_pointer (&priv->update_changelog, g_free);
+	g_clear_pointer (&priv->update_issued, g_free);
+	g_clear_pointer (&priv->update_updated, g_free);
+	g_clear_pointer (&priv->package_id_data, g_free);
 
 	G_OBJECT_CLASS (pk_package_parent_class)->finalize (object);
 }
@@ -874,7 +930,7 @@ pk_package_finalize (GObject *object)
 /**
  * pk_package_new:
  *
- * Return value: a new #PkPackage object.
+ * Returns: a new #PkPackage object.
  *
  * Since: 0.5.4
  **/
@@ -903,9 +959,11 @@ pk_package_new (void)
 PkInfoEnum
 pk_package_get_update_severity (PkPackage *package)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_INFO_ENUM_UNKNOWN);
 
-	return package->priv->update_severity;
+	return priv->update_severity;
 }
 
 /**
@@ -925,6 +983,8 @@ void
 pk_package_set_update_severity (PkPackage *package,
 				PkInfoEnum update_severity)
 {
+	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+
 	g_return_if_fail (PK_IS_PACKAGE (package));
 	g_return_if_fail (update_severity == PK_INFO_ENUM_UNKNOWN ||
 			  update_severity == PK_INFO_ENUM_LOW ||
@@ -935,10 +995,9 @@ pk_package_set_update_severity (PkPackage *package,
 			  update_severity == PK_INFO_ENUM_SECURITY ||
 			  update_severity == PK_INFO_ENUM_CRITICAL);
 
-	if (package->priv->update_severity == update_severity)
+	if (priv->update_severity == update_severity)
 		return;
 
-	package->priv->update_severity = update_severity;
-
-	g_object_notify (G_OBJECT (package), "update-severity");
+	priv->update_severity = update_severity;
+	g_object_notify_by_pspec (G_OBJECT(package), obj_properties[PROP_UPDATE_SEVERITY]);
 }
