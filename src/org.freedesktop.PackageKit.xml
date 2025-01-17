@@ -592,6 +592,76 @@
     </property>
 
     <!--*********************************************************************-->
+    <method name="GetResults">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            If the last offline action was completed successfully, returns a list
+            of packages that were processed, a type of the action done and the
+            unix timestamp when the action was finished.
+            Otherwise returns an error code and error description.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+      <arg type="b" name="success" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A boolean value representing success.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="as" name="package_ids" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="role" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The role enum, e.g. <doc:tt>update-system</doc:tt>
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="t" name="time_finished" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              The unix timestamp when the operation was completed.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="u" name="error_code" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A PackageKit error code. The value of this argument is undefined
+              if the "success" argument returned true.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="s" name="error_description" direction="out">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              A detailed error description. The value of this argument is undefined
+              if the "success" argument returned true.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
+    <!--*********************************************************************-->
     <method name="ClearResults">
       <doc:doc>
         <doc:description>

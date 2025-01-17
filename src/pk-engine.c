@@ -1755,6 +1755,53 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
 	}
+	if (g_strcmp0 (method_name, "GetResults") == 0) {
+		g_autoptr(PkResults) results = NULL;
+		g_autoptr(PkPackageSack) results_sack = NULL;
+		gboolean success = FALSE;
+		PkErrorEnum error_code = PK_ERROR_ENUM_UNKNOWN;
+		g_autofree gchar *error_msg = NULL;
+		g_autoptr(PkError) pk_error = NULL;
+		GVariant *value = NULL;
+
+		results = pk_offline_get_results (&error);
+		if (results == NULL) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		pk_error = pk_results_get_error_code (results);
+		success = pk_results_get_exit_code (results) == PK_EXIT_ENUM_SUCCESS;
+		if (!success) {
+			pk_error = pk_results_get_error_code (results);
+			if (pk_error == NULL) {
+				error_code = PK_ERROR_ENUM_UNKNOWN;
+				error_msg = g_strdup ("Offline update failed without error_code set");
+			} else {
+				error_code = pk_error_get_code (pk_error),
+				error_msg = g_strdup (pk_error_get_details (pk_error));
+			}
+		}
+
+		results_sack = pk_results_get_package_sack (results);
+
+		if (error_msg == NULL)
+			error_msg = g_strdup("");
+
+		value = g_variant_new ("(b^asutus)",
+				       success,
+				       pk_package_sack_get_ids (results_sack),
+				       pk_results_get_role (results),
+				       pk_offline_get_results_mtime (&error),
+				       error_code,
+				       error_msg);
+
+		g_dbus_method_invocation_return_value (invocation, value);
+		return;
+	}
 }
 
 static void
