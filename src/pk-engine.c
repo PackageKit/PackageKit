@@ -1755,6 +1755,63 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
 	}
+	if (g_strcmp0 (method_name, "GetResult") == 0) {
+		g_autoptr(PkResults) results = NULL;
+
+		results = pk_offline_get_results (&error);
+		if (results == NULL) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		g_dbus_method_invocation_return_value (invocation, g_variant_new ("(b)", pk_results_get_exit_code (results) == PK_EXIT_ENUM_SUCCESS));
+		return;
+	}
+	if (g_strcmp0 (method_name, "GetResultPackages") == 0) {
+		g_autoptr(PkResults) results = NULL;
+		GVariant *value = NULL;
+
+		results = pk_offline_get_results (&error);
+		if (results == NULL) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		value = g_variant_new ("(^as)", pk_package_sack_get_ids (pk_results_get_package_sack (results)));
+
+		g_dbus_method_invocation_return_value (invocation, value);
+		return;
+	}
+	if (g_strcmp0 (method_name, "GetResultError") == 0) {
+		g_autoptr(PkResults) results = NULL;
+		g_autoptr(PkError) pk_error = NULL;
+		GVariant *value = NULL;
+
+		results = pk_offline_get_results (&error);
+		if (results == NULL) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		pk_error = pk_results_get_error_code (results);
+
+		if (pk_error != NULL) {
+			value = g_variant_new ("(ss)", pk_error_enum_to_string (pk_error_get_code (pk_error)), pk_error_get_details (pk_error));
+		} else {
+			value = g_variant_new ("(ss)", "", "");
+		}
+		g_dbus_method_invocation_return_value (invocation, value);
+		return;
+	}
 }
 
 static void
