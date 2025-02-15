@@ -747,7 +747,7 @@ bool AptJob::getArchive(pkgAcquire *Owner,
         StoreFilename = QuoteString(Version.ParentPkg().Name(),"_:") + '_' +
                 QuoteString(Version.VerStr(),"_:") + '_' +
                 QuoteString(Version.Arch(),"_:.") +
-                "." + flExtension(Parse.FileName());
+                "." + std::string{flExtension(Parse.FileName())};
     }
 
     for (; Vf.end() == false; Vf++) {
@@ -776,7 +776,7 @@ bool AptJob::getArchive(pkgAcquire *Owner,
                                  Version.ParentPkg().Name());
         }
 
-        string DestFile = directory + "/" + flNotDir(StoreFilename);
+        string DestFile = directory + "/" + std::string{flNotDir(StoreFilename)};
 
         // Create the item
         new pkgAcqFile(Owner,

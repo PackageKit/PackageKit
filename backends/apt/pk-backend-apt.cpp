@@ -528,7 +528,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
                 }
 
                 gchar **files = (gchar **) g_malloc(2 * sizeof(gchar *));
-                files[0] = g_strdup_printf("%s/%s", directory.c_str(), flNotDir(storeFileName).c_str());
+                files[0] = g_strdup_printf("%s/%s", directory.c_str(), std::string{flNotDir(storeFileName)}.c_str());
                 files[1] = NULL;
                 pk_backend_job_files(job, pi, files);
                 g_strfreev(files);
