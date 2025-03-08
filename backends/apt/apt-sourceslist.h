@@ -26,6 +26,10 @@
 #ifndef APT_SOURCESLIST_H
 #define APT_SOURCESLIST_H
 
+#include <apt-pkg/fileutl.h>
+#include <apt-pkg/tagfile.h>
+#include <apt-pkg/metaindex.h>
+
 #include <string>
 #include <list>
 
@@ -85,6 +89,12 @@ public:
 private:
     SourceRecord *AddSourceNode(SourceRecord &);
     VendorRecord *AddVendorNode(VendorRecord &);
+    bool OpenConfigurationFileFd(std::string const &File, FileFd &Fd);
+    bool FixupURI(string &URI) const;
+    bool ParseStanza(const char*Type,
+                     pkgTagSection &Tags,
+                     unsigned int const i,
+                     FileFd &Fd);
 
 public:
     SourceRecord *AddSource(RecType Type,
@@ -96,6 +106,8 @@ public:
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);
     void SwapSources( SourceRecord *&, SourceRecord *& );
+    bool ReadSourceDeb822(string listpath);
+    bool ReadSourceOneLine(string listpath);
     bool ReadSourcePart(string listpath);
     bool ReadSourceDir(string Dir);
     bool ReadSources();

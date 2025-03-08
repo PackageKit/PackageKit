@@ -34,12 +34,26 @@
 #include <apt-pkg/sourcelist.h>
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/error.h>
+#include <apt-pkg/tagfile.h>
+#include <apt-pkg/indexfile.h>
+#include <apt-pkg/metaindex.h>
 #include <algorithm>
 #include <fstream>
+#include <fcntl.h>
 
 #include "apt-utils.h"
 
 #include "config.h"
+
+static std::vector<std::string> FindMultiValue(pkgTagSection &Tags, char const *const Field)
+{
+   auto values = Tags.FindS(Field);
+   // we ignore duplicate spaces by removing empty values
+   std::replace_if(values.begin(), values.end(), isspace_ascii, ' ');
+   auto vect = VectorizeString(values, ' ');
+   vect.erase(std::remove_if(vect.begin(), vect.end(), [](std::string const &s) { return s.empty(); }), vect.end());
+   return vect;
+}
 
 SourcesList::~SourcesList()
 {
@@ -61,9 +75,176 @@ SourcesList::SourceRecord *SourcesList::AddSourceNode(SourceRecord &rec)
     return newrec;
 }
 
-bool SourcesList::ReadSourcePart(string listpath)
+bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd) /*{{{*/
 {
-    //cout << "SourcesList::ReadSourcePart() "<< listpath  << endl;
+   int const fd = open(File.c_str(), O_RDONLY | O_CLOEXEC | O_NOCTTY);
+   if (fd == -1)
+      return _error->WarningE("open", "Unable to read %s", File.c_str());
+   APT::Configuration::Compressor none(".", "", "", nullptr, nullptr, 0);
+   if (Fd.OpenDescriptor(fd, FileFd::ReadOnly, none, true) == false)
+      return false;
+   Fd.SetFileName(File);
+   return true;
+}
+
+bool SourcesList::FixupURI(string &URI) const
+{
+   if (URI.empty() == true)
+      return false;
+
+   if (URI.find(':') == string::npos)
+      return false;
+
+   URI = ::URI{SubstVar(URI, "$(ARCH)", _config->Find("APT::Architecture"))};
+
+   // Make sure that the URI is / postfixed
+   if (URI.back() != '/')
+      URI.push_back('/');
+
+   return true;
+}
+
+bool SourcesList::ParseStanza(const char*Type,
+                              pkgTagSection &Tags,
+                              unsigned int const i,
+                              FileFd &Fd)
+{
+    map<string, string> Options;
+
+    string Enabled = Tags.FindS("Enabled");
+
+    std::map<char const * const, std::pair<char const * const, bool> > mapping;
+#define APT_PLUSMINUS(X, Y) \
+    mapping.insert(std::make_pair(X, std::make_pair(Y, true))); \
+    mapping.insert(std::make_pair(X "-Add", std::make_pair(Y "+", true))); \
+    mapping.insert(std::make_pair(X "-Remove", std::make_pair(Y "-", true)))
+    APT_PLUSMINUS("Architectures", "arch");
+    APT_PLUSMINUS("Languages", "lang");
+    APT_PLUSMINUS("Targets", "target");
+#undef APT_PLUSMINUS
+    mapping.insert(std::make_pair("Trusted", std::make_pair("trusted", false)));
+    mapping.insert(std::make_pair("Check-Valid-Until", std::make_pair("check-valid-until", false)));
+    mapping.insert(std::make_pair("Valid-Until-Min", std::make_pair("valid-until-min", false)));
+    mapping.insert(std::make_pair("Valid-Until-Max", std::make_pair("valid-until-max", false)));
+    mapping.insert(std::make_pair("Check-Date", std::make_pair("check-date", false)));
+    mapping.insert(std::make_pair("Date-Max-Future", std::make_pair("date-max-future", false)));
+    mapping.insert(std::make_pair("Snapshot", std::make_pair("snapshot", false)));
+    mapping.insert(std::make_pair("Signed-By", std::make_pair("signed-by", false)));
+    mapping.insert(std::make_pair("PDiffs", std::make_pair("pdiffs", false)));
+    mapping.insert(std::make_pair("By-Hash", std::make_pair("by-hash", false)));
+
+    for (std::map<char const * const, std::pair<char const * const, bool> >::const_iterator m = mapping.begin(); m != mapping.end(); ++m)
+        if (Tags.Exists(m->first)) {
+            if (m->second.second) {
+                auto const values = FindMultiValue(Tags, m->first);
+                Options[m->second.first] = APT::String::Join(values, ",");
+            } else {
+                Options[m->second.first] = Tags.FindS(m->first);
+            }
+        }
+
+    {
+        std::string entry;
+        strprintf(entry, "%s:%i", Fd.Name().c_str(), i);
+        Options["sourceslist-entry"] = entry;
+    }
+
+    Options["sourceslist-entry-is-deb822"] = "true";
+
+    // now create one item per suite/section
+    auto const list_uris = FindMultiValue(Tags, "URIs");
+    auto const list_comp = FindMultiValue(Tags, "Components");
+    auto list_suite = FindMultiValue(Tags, "Suites");
+    {
+        auto const nativeArch = _config->Find("APT::Architecture");
+        std::transform(list_suite.begin(), list_suite.end(), list_suite.begin(),
+                       [&](std::string const &suite) { return SubstVar(suite, "$(ARCH)", nativeArch); });
+    }
+
+    if (list_uris.empty())
+        // TRANSLATOR: %u is a line number, the first %s is a filename of a file with the extension "second %s" and the third %s is a unique identifier for bugreports
+        return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "URI");
+
+    if (list_suite.empty())
+        return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "Suite");
+
+    for (auto URI : list_uris) {
+        if (FixupURI(URI) == false)
+            return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "URI parse");
+
+        for (auto const &S : list_suite) {
+            if (S.empty() == false && S[S.size() - 1] == '/') {
+                if (list_comp.empty() == false)
+                    return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "absolute Suite Component");
+
+                SourceRecord rec = SourceRecord ();
+                rec.SourceFile = Fd.Name();
+                if (!rec.SetType(Type)) {
+                    _error->Error("Unknown type %s", Type);
+                    return false;
+                }
+
+                if (Enabled.empty() == false && StringToBool(Enabled) == false)
+                    rec.Type |= SourcesList::Disabled;
+                rec.SetURI(URI);
+                rec.Dist = S;
+                rec.NumSections = 0;
+                rec.Sections = nullptr;
+                AddSourceNode(rec);
+             } else {
+                if (list_comp.empty())
+                return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "Component");
+
+                SourceRecord rec = SourceRecord ();
+                rec.SourceFile = Fd.Name();
+                if (!rec.SetType(Type)) {
+                    _error->Error("Unknown type %s", Type);
+                    return false;
+                }
+                if (Enabled.empty() == false && StringToBool(Enabled) == false)
+                    rec.Type |= SourcesList::Disabled;
+
+                rec.SetURI(URI);
+                rec.Dist = S;
+                rec.NumSections = list_comp.size();
+                rec.Sections = new string[rec.NumSections];
+                std::copy(list_comp.begin(), list_comp.end(), rec.Sections);
+                AddSourceNode(rec);
+            }
+        }
+    }
+
+    return true;
+}
+
+
+bool SourcesList::ReadSourceDeb822(string listpath)
+{
+    FileFd Fd;
+    if (OpenConfigurationFileFd(listpath, Fd) == false)
+        return false;
+
+    pkgTagFile Sources(&Fd, pkgTagFile::SUPPORT_COMMENTS);
+    if (Fd.IsOpen() == false || Fd.Failed())
+        return _error->Error("Malformed stanza %u in source list %s (type)", 0, listpath.c_str());
+
+    // read step by step
+    pkgTagSection Tags;
+    for (guint i = 0; Sources.Step(Tags); i++) {
+        if(Tags.Exists("Types") == false)
+            return _error->Error("Malformed stanza %u in source list %s (type)", i, listpath.c_str());
+
+        for (auto const &type : FindMultiValue(Tags, "Types")) {
+            if (!ParseStanza(type.c_str(), Tags, i, Fd))
+                return false;
+        }
+    }
+
+    return true;
+}
+
+bool SourcesList::ReadSourceOneLine(string listpath)
+{
     char buf[512];
     const char *p;
     ifstream ifs(listpath.c_str(), ios::in);
@@ -176,6 +357,15 @@ bool SourcesList::ReadSourcePart(string listpath)
     return record_ok;
 }
 
+bool SourcesList::ReadSourcePart(string listpath)
+{
+    if (g_str_has_suffix (listpath.c_str(), ".sources")) {
+        return ReadSourceDeb822(listpath);
+    } else {
+        return ReadSourceOneLine(listpath);
+    }
+}
+
 bool SourcesList::ReadSourceDir(string Dir)
 {
     //cout << "SourcesList::ReadSourceDir() " << Dir  << endl;
@@ -204,7 +394,8 @@ bool SourcesList::ReadSourceDir(string Dir)
         }
 
         // Only look at files ending in .list to skip .rpmnew etc files
-        if (strcmp(Ent->d_name + strlen(Ent->d_name) - 5, ".list") != 0) {
+        if (!g_str_has_suffix (Ent->d_name, ".list") &&
+            !g_str_has_suffix (Ent->d_name, ".sources")) {
             continue;
         }
 
