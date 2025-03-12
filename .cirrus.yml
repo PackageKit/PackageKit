@@ -2,7 +2,7 @@ task:
   name: "Build & Test (freebsd)"
   freebsd_instance:
     matrix:
-      - image_family: freebsd-13-3-snap
+      - image_family: freebsd-14-2
   deps_script:
     - env ASSUME_ALWAYS_YES=yes pkg update -f
     - env ASSUME_ALWAYS_YES=yes pkg install -y docbook-xsl vala libxslt fontconfig polkit consolekit2
