@@ -97,8 +97,8 @@ config_dep = declare_dependency(
   include_directories: include_directories('.')
 )
 
-pk_db_dir = join_paths(get_option('localstatedir'), 'lib', 'PackageKit')
 local_state_dir = get_option('localstatedir')
+pk_db_dir = join_paths(local_state_dir, get_option('dbdir'))
 test_data_dir = join_paths(meson.source_root(), 'tests', 'data')
 package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')

@@ -81,5 +81,5 @@ endif
 
 install_data(
   'transactions.db',
-  install_dir: join_paths(get_option('localstatedir'), 'lib', 'PackageKit'),
+  install_dir: pk_db_dir,
 )
