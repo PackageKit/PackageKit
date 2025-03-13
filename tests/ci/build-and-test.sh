@@ -6,14 +6,20 @@ if [ -d "build" ]; then
 fi
 set -x
 
-meson build \
+meson setup build \
     -Dlocal_checkout=true \
     -Ddaemon_tests=true \
     $@
 
 # Build & Install
 ninja -C build
-DESTDIR=/tmp/install_root/ ninja -C build install
+INSTALL_DIR=/tmp/install_root/
+
+if [ -d "$INSTALL_DIR" ]; then
+  rm $INSTALL_DIR -rf
+fi
+
+DESTDIR=$INSTALL_DIR ninja -C build install
 
 # Run tests
 mkdir -p /run/dbus/
