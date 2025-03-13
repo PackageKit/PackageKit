@@ -1755,6 +1755,38 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
 	}
+	if (g_strcmp0 (method_name, "GetResults") == 0) {
+		g_autoptr(PkResults) results = NULL;
+		gboolean success = FALSE;
+		g_autoptr(PkError) pk_error = NULL;
+		const gchar *err_descr = "";
+		GVariant *value = NULL;
+
+		results = pk_offline_get_results (&error);
+		if (results == NULL || pk_results_get_exit_code (results) != PK_EXIT_ENUM_SUCCESS) {
+			g_dbus_method_invocation_return_error (invocation,
+							       PK_ENGINE_ERROR,
+							       PK_ENGINE_ERROR_INVALID_STATE,
+							       "%s", error->message);
+			return;
+		}
+
+		pk_error = pk_results_get_error_code (results);
+		success = pk_error == NULL;
+		if (success)
+			pk_error = pk_error_new ();
+		else
+			err_descr = pk_error_get_details (pk_error);
+
+		value = g_variant_new ("(b^asus)",
+				       success,
+				       pk_package_sack_get_ids (pk_results_get_package_sack (results)),
+				       pk_error_get_code (pk_error),
+				       err_descr);
+
+		g_dbus_method_invocation_return_value (invocation, value);
+		return;
+	}
 }
 
 static void
