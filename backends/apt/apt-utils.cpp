@@ -28,7 +28,9 @@
 #include <apt-pkg/acquire-item.h>
 #include <glib/gstdio.h>
 
+#include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <regex>
 
 PkGroupEnum get_enum_group(string group)
@@ -242,28 +244,27 @@ string fetchChangelogData(AptCacheFile &CacheFile,
                 }
             }
             g_match_info_free (match_info);
-        } else if (starts_with(str, " ")) {
-            // update descritption
-            update_text->append("\n");
-            update_text->append(str);
         } else if (starts_with(str, " --")) {
             // Parse the text to know when the update was issued,
             // and when it got updated
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                g_autoptr(GDateTime) dateTime = NULL;
-                g_autofree gchar *date = NULL;
-                date = g_match_info_fetch_named(match_info, "date");
-                time_t time;
-                g_warn_if_fail(RFC1123StrToTime(date, time));
-                dateTime = g_date_time_new_from_unix_local(time);
-
-                *issued = g_date_time_format_iso8601(dateTime);
-                if (updated->empty()) {
-                    *updated = g_date_time_format_iso8601(dateTime);
+                const string date = g_match_info_fetch_named(match_info, "date");
+                const string date_iso = changelogDateToIso8601(date);
+                if (!date_iso.empty()) {
+                    *issued = date_iso;
+                    if (updated->empty()) {
+                        *updated = date_iso;
+                    }
                 }
             }
             g_match_info_free(match_info);
+
+            update_text->append("\n\n");
+            update_text->append(str);
+        } else {
+            update_text->append("\n");
+            update_text->append(str);
         }
 
         changelog.append(str);
@@ -444,4 +445,37 @@ const char *toUtf8(const char *str)
     _str = NULL;
     _str = g_locale_to_utf8(str, -1, NULL, NULL, NULL);
     return _str;
+}
+
+string changelogDateToIso8601 (const string &date) {
+    if (date.empty()) {
+        return {};
+    }
+
+    std::istringstream date_ss(date);
+    date_ss.imbue(std::locale("C"));  // Dates are always in English locale
+    tm time = {};
+    date_ss >> get_time(&time, "%a, %d %b %Y %H:%M:%S ");
+    if (date_ss.fail()) {
+        return {};
+    }
+
+    // Timezone is not parsed by get_time(), so it remains at the end of the stream
+    string tz_str;
+    date_ss >> tz_str;
+    g_autoptr(GTimeZone) tz = g_time_zone_new_identifier(tz_str.c_str());
+    if (!tz) {
+        tz = g_time_zone_new_utc();
+    }
+
+    g_autoptr(GDateTime) dateTime = g_date_time_new(
+        tz,
+        time.tm_year + 1900, time.tm_mon + 1, time.tm_mday,
+        time.tm_hour, time.tm_min, time.tm_sec);
+
+    if (dateTime == NULL) {
+        return {};
+    }
+
+    return string(g_date_time_format_iso8601(dateTime));
 }
