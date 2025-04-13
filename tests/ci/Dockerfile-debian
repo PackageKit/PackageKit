@@ -1,17 +1,33 @@
 FROM debian:trixie
 
-# allow fetching source packages
-RUN echo "deb-src http://deb.debian.org/debian/ trixie main" >> /etc/apt/sources.list
-
 # prepare
 RUN apt-get update -qq
 
-# install build essentials
-RUN apt-get install -yq build-essential
+# install essentials
+RUN apt-get install -yq eatmydata build-essential
 
-# install PackageKit dependencies
-RUN apt-get build-dep -yq packagekit
-RUN apt-get install -yq meson appstream
+# install build dependencies
+RUN eatmydata apt-get install -yq --no-install-recommends \
+	bash-completion \
+	gir1.2-glib-2.0 \
+	gobject-introspection \
+	gtk-doc-tools \
+	libappstream-dev \
+	libapt-pkg-dev \
+	libarchive-dev \
+	libgirepository1.0-dev \
+	libglib2.0-dev \
+	libgstreamer-plugins-base1.0-dev \
+	libgtk-3-dev \
+	libplymouth-dev \
+	libpolkit-gobject-1-dev \
+	libsqlite3-dev \
+	libsystemd-dev \
+	meson \
+	pkgconf \
+	polkitd \
+	systemd-dev \
+	valac
 
 # finish
 RUN mkdir /build
