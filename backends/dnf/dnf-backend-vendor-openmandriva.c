@@ -29,7 +29,7 @@ dnf_validate_supported_repo (const gchar *id)
 	guint i, j, k, l, m;
 
 	const gchar *valid_sourcesect[] = { "",
-					  "-unsupported",
+					  "-extra",
 					  "-restricted",
 					  "-non-free",
 					  NULL };
@@ -44,6 +44,7 @@ dnf_validate_supported_repo (const gchar *id)
 				      "i686",
 				      "aarch64",
 				      "armv7hnl",
+				      "riscv64",
 				      NULL };
 
 	const gchar *valid_stage[] = {  "",
