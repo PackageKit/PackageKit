@@ -4,7 +4,7 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022-2023
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -1222,6 +1222,10 @@ msgstr "Наведені нижче пакунки буде вилучено:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Слід оновити такі пакунки:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Максимальний вік кешу метаданих (у секундах). Скористайтеся -1, щоб використовувати лише кешовані дані; 1 — перезавантажити кеш."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

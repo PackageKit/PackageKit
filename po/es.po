@@ -3,15 +3,15 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Adolfo Jayme-Barrientos, 2014
-# Adolfo Jayme-Barrientos, 2013
-# Adolfo Jayme-Barrientos, 2019
-# Adolfo Jayme-Barrientos, 2015
-# Adolfo Jayme-Barrientos, 2014
+# Adolfo Jayme Barrientos, 2014
+# Adolfo Jayme Barrientos, 2013
+# Adolfo Jayme Barrientos, 2019
+# Adolfo Jayme Barrientos, 2015
+# Adolfo Jayme Barrientos, 2014
 # Daniel Cabrera <logan@fedoraproject.org>, 2011, 2012
 # 0f759dd1ea6c4c76cedc299039ca4f23_7584d04 <454cc45058db9632179dc8079c0c1af3_5311>, 2012-2013
 # Fernando Gonzalez Blanco <fgonz@fedoraproject.org>, 2009
-# Francisco Serrador, 2022-2023
+# Francisco Serrador, 2022-2024
 # Javier Alejandro Castro <javier.alejandro.castro@gmail.com>, 2008
 # Jorge González <aloriel@gmail.com>, 2011
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -139,10 +139,10 @@ msgstr "Alias a %s"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Permitir desactualizar paquetes durante la operación"
+msgstr "Permitir degradar paquetes durante la transacción"
 
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Permitir reinstalar paquetes durante la operación"
+msgstr "Permitir reinstalar paquetes durante la transacción"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
@@ -604,7 +604,7 @@ msgstr "Obteniendo versiones nuevas"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "Id"
+msgstr "ID"
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
@@ -713,7 +713,7 @@ msgstr "Emitido"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 msgid "Key ID"
-msgstr "Identificador de la clave"
+msgstr "ID de la clave"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 msgid "Key Timestamp"
@@ -1014,7 +1014,7 @@ msgstr "Resultados:"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 msgid "Role"
-msgstr "Función"
+msgstr "Rol"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
 msgid "Run similar command:"
@@ -1090,7 +1090,7 @@ msgstr "Establecer opciones del repositorio"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Establecer el filtro, p. ej. instalado"
+msgstr "Establecer el filtro, p.ej. instalado"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1232,6 +1232,10 @@ msgstr "Los paquetes siguientes deben desinstalarse:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Los paquetes siguientes deben actualizarse:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "La edad del caché de metadatos máximo (en segundos). Utilice -1 para utilizar solamente caché, 1 para recargar caché."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

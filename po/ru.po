@@ -9,6 +9,7 @@
 # Misha Shnurapet <shnurapet@fedoraproject.org>, 2011-2012
 # Misha Shnurapet <zayzayats@yandex.ru>, 2010
 # Richard Hughes <richard@hughsie.com>, 2011
+# Sergej A. <Ser82-png@yandex.ru>, 2023
 # Serge Vylekzhanin <vylekzhanin@mail.ru>, 2014-2018
 # Sergej A. <Ser82-png@yandex.ru>, 2022
 # Sergej A. <Ser82-png@yandex.ru>, 2022
@@ -1234,6 +1235,10 @@ msgstr "Следующие пакеты должны быть удалены:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Следующие пакеты должны быть обновлены:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Максимальный возраст кэша метаданных (в секундах). Значение -1 для использования только кэшированных данных; значение 1 - перезагрузка кэша."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

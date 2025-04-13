@@ -10,6 +10,7 @@
 # fri, 2011
 # Jozef Mlích <jmlich83@gmail.com>, 2015
 # Marek Černocký <marek@manet.cz>, 2013-2016,2018
+# Pavel Borecki <pavel.borecki@gmail.com>, 2024
 # Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Vojtech Smejkal <smejkalv@gmail.com>, 2008
@@ -247,7 +248,7 @@ msgstr "Ruší se"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
-msgstr "Skupina"
+msgstr "Kategorie"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -312,7 +313,7 @@ msgid "Committing changes"
 msgstr "Zařazjí se změny"
 
 msgid "Config file was not found."
-msgstr "Soubor s nastavením nebyl nalezen."
+msgstr "Soubor s nastaveními nebyl nalezen."
 
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
@@ -328,7 +329,7 @@ msgstr "Popis"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 msgid "Details about the update:"
-msgstr "Podrobnosti k aktualizaci:"
+msgstr "Podrobnosti o aktualizaci:"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -479,7 +480,7 @@ msgstr "Selhalo spuštění:"
 #. TRANSLATORS: The placeholder is an error message
 #, c-format
 msgid "Failed to load config file: %s"
-msgstr "Selhalo načtení souboru s nastavením: %s"
+msgstr "Nezdařilo se načtení souboru s nastaveními: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
@@ -602,7 +603,7 @@ msgstr "Získávají se povýšení"
 
 #. TRANSLATORS: this is group identifier
 msgid "ID"
-msgstr "ID"
+msgstr "Identif."
 
 #. TRANSLATORS: this is preferred icon for the group
 msgid "Icon"
@@ -848,7 +849,7 @@ msgstr "Výkonná část, která se má použít, např. dummy"
 
 #. TRANSLATORS: this is the parent group
 msgid "Parent"
-msgstr "Nadřazený"
+msgstr "Nadřazené"
 
 #. TRANSLATORS: the percentage complete of the transaction
 msgid "Percentage"
@@ -1231,6 +1232,10 @@ msgstr "Následující balíčky musí být odebrány:"
 msgid "The following packages have to be updated:"
 msgstr "Následující balíčky musí být aktualizovány:"
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Nejdelší umožněné stáří mezipaměti metadat (v sekundách). Pokud má být používána pouze mezipaměť, použijte -1 (pokud má být mezipaměť přenačtena znovu, pak 1)."
+
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
 msgstr "Balíček poskytující tento soubor je:"
@@ -1409,7 +1414,7 @@ msgstr "Povýšení systému"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 msgid "User ID"
-msgstr "ID uživatele"
+msgstr "Identif. uživatele"
 
 msgid "User aborted selection"
 msgstr "Uživatel přerušil výběr"

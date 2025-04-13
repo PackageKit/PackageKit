@@ -3,10 +3,10 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019,2022
+# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019,2022-2023
 # Daniel Nylander <po@danielnylander.se>, 2008-2011
-# Josef Andersson <josef.andersson@fripost.org>, 2017-2018
-# Luna Jernberg <bittin@cafe8bitar.se>, 2022
+# Josef Andersson <janderssonse@proton.me>, 2017-2018
+# Luna Jernberg <droidbittin@gmail.com>, 2022
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sebastian Rasmussen <sebras@gmail.com>, 2015
 # Sebastian Rasmussen <sebras@gmail.com>, 2015-2016
@@ -1227,6 +1227,10 @@ msgstr "Följande paket måste tas bort:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Följande paket måste uppdateras:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Maximal cacheålder för metadata (i sekunder). Använd -1 för att endast använda cache, 1 för att läsa in cache igen."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

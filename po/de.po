@@ -8,7 +8,7 @@
 # Christian <Christian.Kirbach@googlemail.com>, 2009,2011
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008
 # 5527760c8f29b02a470a5ee3b26b73e8_231f8d9 <ceb449f1811ff367b2235286902d5d43_32261>, 2012-2013
-# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018,2022-2023
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018,2022-2024
 # Fabian Affolter <fab@fedoraproject.org>, 2008-2009
 # hpeters <hpeters@redhat.com>, 2009
 # Holger Wansing <linux@wansing-online.de>, 2006
@@ -1237,6 +1237,10 @@ msgstr "Die folgenden Pakete müssen entfernt werden:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Die folgenden Pakete müssen aktualisiert werden:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Das maximale Alter des Metadaten-Caches (in Sekunden). -1 verwenden, um nur den Cache zu verwenden, 1, um den Cache neu zu laden."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

@@ -4,12 +4,14 @@
 #
 # Translators:
 # Green <usergreen@users.osdn.me>, 2021
+# Green <usergreen@users.osdn.me>, 2024
 # hyuugabaru <hyu_gabaru@yahoo.co.jp>, 2009
 # Kiyoto Hashida <khashida@redhat.com>, 2009
 # Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, 2022
 # Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2015
 # Ooyama Yosiyuki <qqke6wd9k@apricot.ocn.ne.jp>, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
+# Ryo Nakano, 2024
 # Takuro Onoue <kusanaginoturugi@gmail.com>, 2021
 # e93ed3aa97dec2eb31063731872555fc_1460a05 <71305a0095156d8e18373a5b7cfeb79e_8587>, 2011-2013
 msgid ""
@@ -35,7 +37,7 @@ msgstr "正しいロールが必要です"
 #. * specify anything about what to
 #. * download or where
 msgid "A destination directory and the package names to download are required"
-msgstr "ダウンロードする宛先ディレクトリーとパッケージ名が必要です"
+msgstr "ダウンロード先のディレクトリとパッケージ名が必要です"
 
 msgid "A filename is required"
 msgstr "ファイル名は必須です"
@@ -81,12 +83,12 @@ msgid "A repo id and autoremove required"
 msgstr "リポジトリIDと自動削除が必要です"
 
 msgid "A repo name, parameter and value are required"
-msgstr "リポジトリー名と、パラメーター、値が必要です"
+msgstr "リポジトリ名と、パラメータ、値が必要です"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 msgid "A repository name is required"
-msgstr "リポジトリー名が必要です"
+msgstr "リポジトリ名が必要です"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -143,7 +145,7 @@ msgstr "トランザクション中にパッケージを再インストールで
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "信頼できないパッケージのインストールを許可します。"
+msgstr "信頼できないパッケージのインストールを許可する。"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -207,7 +209,7 @@ msgid "Author"
 msgstr "著者"
 
 msgid "Automatically remove unused dependencies"
-msgstr "未使用の依存関係を自動的に削除します"
+msgstr "未使用の依存関係を自動的に削除する"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
@@ -246,7 +248,7 @@ msgstr "キャンセル中"
 
 #. TRANSLATORS: this is the group category name
 msgid "Category"
-msgstr "カテゴリー"
+msgstr "カテゴリ"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -319,7 +321,7 @@ msgid "Copying files"
 msgstr "ファイル複写中"
 
 msgid "Debugging Options"
-msgstr "デバッギングオプション"
+msgstr "デバッグオプション"
 
 #. TRANSLATORS: this is the description of the backend
 msgid "Description"
@@ -332,7 +334,7 @@ msgstr "更新の詳細:"
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 msgid "Directory not found"
-msgstr "ディレクトリーが見つかりません"
+msgstr "ディレクトリが見つかりません"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 msgid "Disable the idle timer"
@@ -347,29 +349,29 @@ msgid "Distribution"
 msgstr "ディストリビューション"
 
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群をインストールしないで下さい。"
+msgstr "安全だという確証がない限り、これらのパッケージ群をインストールしないでください。"
 
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージをインストールしないで下さい。"
+msgstr "安全だという確証がない限り、このパッケージをインストールしないでください。"
 
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこれらのパッケージ群を更新しないで下さい。"
+msgstr "安全だという確証がない限り、これらのパッケージ群を更新しないでください。"
 
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "実行が安全なことを確信できない限りはこのパッケージを更新しないで下さい。"
+msgstr "安全だという確証がない限り、このパッケージを更新しないでください。"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 msgid "Do you accept this agreement?"
-msgstr "この同意書を承認しますか？"
+msgstr "この同意書を承認しますか?"
 
 #. TRANSLATORS: ask the user if they want to import
 msgid "Do you accept this signature?"
-msgstr "この署名を承認しますか？"
+msgstr "この署名を承認しますか?"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure
 #. packages
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "署名無しのソフトウェアのインストールを許可しますか？"
+msgstr "署名無しのソフトウェアのインストールを許可しますか?"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 msgid "Don't clear environment on startup"
@@ -414,7 +416,7 @@ msgstr "パッケージをダウンロード中"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading repository information"
-msgstr "レポジトリ情報をダウンロード中"
+msgstr "リポジトリ情報をダウンロード中"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading update information"
@@ -431,7 +433,7 @@ msgstr "有効"
 #. TRANSLATORS: this is another name for a software licence that has to be
 #. read before installing
 msgid "End user licence agreement required"
-msgstr "エンドユーザーライセンス同意書が必要です"
+msgstr "エンドユーザーライセンスに同意が必要です"
 
 #. TRANSLATORS: The type of update
 msgid "Enhancement"
@@ -450,11 +452,11 @@ msgstr "エンジンがロードされてから終了"
 #. * 'pkcon install-local dave.rpm'
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "予期されるパッケージ名は実際にはファイルを持ちます。代わりに 'pkcon install-local %s' を 試して下さい。"
+msgstr "パッケージ名が想定される箇所で、ファイルが入力されました。代わりに 'pkcon install-local %s' を使用してみてください。"
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit への接触に失敗"
+msgstr "PackageKit への接続に失敗"
 
 msgid "Failed to get daemon state"
 msgstr "デーモンの状態を得るのに失敗しました"
@@ -649,7 +651,7 @@ msgstr "署名付きのパッケージをインストール"
 
 #. command line argument, do we ask questions
 msgid "Install the packages without asking for confirmation"
-msgstr "確認を要求せずにパッケージをインストール"
+msgstr "確認を要求せずにパッケージをインストールする"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -827,11 +829,11 @@ msgstr "PackageKit"
 
 #. TRANSLATORS: This is the header to the --help menu
 msgid "PackageKit Console Interface"
-msgstr "PackageKit コンソールインターフェース"
+msgstr "PackageKit コンソールインタフェース"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 msgid "PackageKit Monitor"
-msgstr "PackageKit モニター"
+msgstr "PackageKit モニタ"
 
 #. TRANSLATORS: describing the service that is running
 msgid "PackageKit service"
@@ -863,35 +865,35 @@ msgstr "インストールするパッケージを選んでください"
 
 #. TRANSLATORS: This finds out which package in the list to use
 msgid "Please choose the correct package: "
-msgstr "現在のパッケージを選択して下さい: "
+msgstr "適切なパッケージを選択してください: "
 
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "1 から %i までの数字を１つ入力して下さい: "
+msgstr "1 から %i までの数字を 1 つ入力してください: "
 
 #. TRANSLATORS: ask the user to insert the media
 msgid "Please insert the correct media"
-msgstr "適切なメディアを挿入して下さい"
+msgstr "適切なメディアを挿入してください"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにログアウトとログインを行って下さい。"
+msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するために再ログインしてください。"
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
-msgstr "更新を完了するためにログアウトし、ログインしてください。"
+msgstr "更新を完了するために再ログインしてください。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティー更新がインストールされたので、更新を完了するためにコンピューターを再起動してください。"
+msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するためにコンピュータを再起動してください。"
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
-msgstr "更新を完了するためにコンピューターを再起動してください。"
+msgstr "更新を完了するためにコンピュータを再起動してください。"
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "パッケージをダウンロードのみ実行することにより、トランザクションを準備します"
+msgstr "パッケージをダウンロードのみ実行することにより、トランザクションを準備する"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -900,11 +902,11 @@ msgstr "準備されたアップデート:"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "動画のウィジェットの使用ではなく、マシン可読の出力を画面に表示"
+msgstr "アニメーション表示の代わりに、マシンリーダブルな出力を画面に表示する"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 msgid "Proceed with changes?"
-msgstr "変更したまま継続しますか？"
+msgstr "変更を適用しますか?"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
@@ -1019,7 +1021,7 @@ msgstr "よく似たコマンドを実行:"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "遊休のネットワークバンド幅とより少ない電力を使用してコマンドを実行"
+msgstr "アイドル状態のネットワーク帯域幅とより少ない電力を使用してコマンドを実行する"
 
 #. TRANSLATORS: transaction state, just started
 msgid "Running"
@@ -1064,12 +1066,12 @@ msgstr "グループ検索中"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr "セキュリティー"
+msgstr "セキュリティ"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "セッション再起動 (セキュリティー) が必要:"
+msgstr "セッション再起動 (セキュリティ) が必要:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
@@ -1087,7 +1089,7 @@ msgstr "リポジトリオプションの設定"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "インストール済などのフィルターを設定"
+msgstr "フィルタを設定する (例: installed)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1095,14 +1097,14 @@ msgstr "データを設定中"
 
 #. TRANSLATORS: turn on all debugging
 msgid "Show debugging information for all files"
-msgstr "全てのファイル用にデバッグ情報を表示"
+msgstr "すべてのファイルに対してデバッグ情報を表示する"
 
 msgid "Show debugging options"
 msgstr "デバッグオプションを表示"
 
 #. TRANSLATORS: command line argument, just show the version string
 msgid "Show the program version and exit"
-msgstr "プログラムのバージョンを表示して終了"
+msgstr "プログラムのバージョンを表示して終了する"
 
 #. TRANSLATORS: show version
 msgid "Show version and exit"
@@ -1110,7 +1112,7 @@ msgstr "バージョンを表示して終了"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr "更新のインストール後にシャットダウン…"
+msgstr "更新をインストールしたのでシャットダウンします…"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -1164,7 +1166,7 @@ msgstr "概要"
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 msgid "System restart (security) required by:"
-msgstr "以下によりシステム再起動 (セキュリティー) が必要です:"
+msgstr "以下によりシステム再起動 (セキュリティ) が必要です:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 msgid "System restart required by:"
@@ -1199,7 +1201,7 @@ msgstr "トランザクション中にデーモンがクラッシュしました
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 msgid "The filter specified was invalid"
-msgstr "指定されたフィルターは無効です"
+msgstr "指定されたフィルタは無効です"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be
 #. encountered
@@ -1230,13 +1232,17 @@ msgstr "以下のパッケージは削除されるべきものです:"
 msgid "The following packages have to be updated:"
 msgstr "以下のパッケージは更新されるべきものです:"
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "メタデータ・キャッシュの最大保存期間 (秒) です。キャッシュのみを使用する場合は -1、キャッシュをリロードする場合は 1 を使用します。"
+
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
 msgstr "このファイルを提供しているパッケージは:"
 
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
-msgstr "プロキシーを設定できませんでした。"
+msgstr "プロキシを設定できませんでした。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
@@ -1253,7 +1259,7 @@ msgstr "ソフトウェアは信頼できるソースのものではありませ
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "トランザクションは進展しませんでした。"
+msgstr "トランザクションは実行されませんでした。"
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -1429,11 +1435,11 @@ msgstr "認証を待ち受け中"
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "パッケージマネージャロックを待ち受け中"
+msgstr "パッケージマネージャのロックを待ち受け中"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "パッケージマネージャーのロックを待っています。"
+msgstr "パッケージマネージャのロックを待っています。"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete

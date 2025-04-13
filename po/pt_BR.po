@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# F Bausch, 2024
 # Igor Pires Soares <igor@projetofedora.org>, 2008-2010
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2012-2014
 # Rafael Fontenelle <rafaelff@gnome.org>, 2017
@@ -308,6 +309,9 @@ msgstr "Comando não encontrado, comandos válidos são:"
 msgid "Committing changes"
 msgstr "Submetendo alterações"
 
+msgid "Config file was not found."
+msgstr "O arquivo de configuração não foi encontrado."
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -470,9 +474,19 @@ msgstr "Falha ao instalar pacotes"
 msgid "Failed to launch:"
 msgstr "Falha ao executar:"
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Falha ao carregar o arquivo de configuração: %s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "Falha ao carregar o backend"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Falha ao carregar o backend: %s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -485,6 +499,12 @@ msgstr "Falha ao analisar argumentos"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "Falha ao processar a linha de comando"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Falha ao resolver auto: %s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -1208,6 +1228,10 @@ msgstr "Os seguintes pacotes têm que ser removidos:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Os seguintes pacotes têm que ser atualizados:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "A idade máxima do cache de metadados (em segundos). Use -1 para usar somente o cache, 1 para recarregar o cache."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

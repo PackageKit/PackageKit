@@ -4,6 +4,7 @@
 #
 # Translators:
 # Cheng-Chia Tseng <pswo10680@gmail.com>, 2011-2015,2017-2018
+# Kisaragi Hiu <flyingfeather1501@gmail.com>, 2024
 # Richard Hughes <richard@hughsie.com>, 2011
 # Terry Chuang <tchuang@redhat.com>, 2008-2009
 msgid ""
@@ -304,6 +305,9 @@ msgstr "找不到指令，有效的指令為："
 msgid "Committing changes"
 msgstr "正在遞交變更"
 
+msgid "Config file was not found."
+msgstr "找不到組態檔。"
+
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
 msgid "Copying files"
@@ -466,9 +470,19 @@ msgstr "軟體包安裝失敗"
 msgid "Failed to launch:"
 msgstr "啟動失敗："
 
+#. TRANSLATORS: The placeholder is an error message
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "載入組態檔失敗：%s"
+
 #. TRANSLATORS: cannot load the backend the user specified
 msgid "Failed to load the backend"
 msgstr "載入後端失敗"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "載入後端失敗：%s"
 
 #. TRANSLATORS: probably not yet installed
 msgid "Failed to load the config file"
@@ -481,6 +495,12 @@ msgstr "引數解析失敗"
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
 msgstr "無法解析指令列"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "解析 auto 失敗：%s"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -1205,6 +1225,10 @@ msgstr "下列軟體包必須移除："
 msgid "The following packages have to be updated:"
 msgstr "下列軟體包必須更新："
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "中繼資料快取年歲上限（單位為秒）。使用 -1 來只用快取，1 來重新載入快取。"
+
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
 msgstr "提供此檔案的軟體包為："
@@ -1212,6 +1236,11 @@ msgstr "提供此檔案的軟體包為："
 #. TRANSLATORS: The network settings could not be sent
 msgid "The proxy could not be set"
 msgstr "無法設定代理"
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "所選的軟體包可能皆已安裝。"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
@@ -1258,6 +1287,10 @@ msgstr "此刻尚無升級可用。"
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "此工具無法找到所有軟體包：%s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "此工具沒有找到任何可用的軟體包。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.

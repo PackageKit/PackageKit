@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# zayed <zayed.alsaidi@gmail.com>, 2022
+# zayed <zayed.alsaidi@gmail.com>, 2022,2024
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -69,6 +69,42 @@ msgstr "المؤلف"
 
 msgid "Automatically remove unused dependencies"
 msgstr "أزل الاعتماديات غير المستعملة بشكل آلي"
+
+#. TRANSLATORS: if the repo is disabled
+msgid "Disabled"
+msgstr "معطلة"
+
+#. TRANSLATORS: if the repo is enabled
+msgid "Enabled"
+msgstr "ممكنة"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+msgid "Fatal error"
+msgstr "خطأ فادح"
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+msgid "Package not found"
+msgstr "الحزمة غير موجودة"
+
+#. TRANSLATORS: the percentage complete of the transaction
+msgid "Percentage"
+msgstr "النسبة"
+
+#. TRANSLATORS: the results from the transaction
+msgid "Results:"
+msgstr "النتيجة:"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+msgid "Status"
+msgstr "الحالة"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+msgid "Updated"
+msgstr "محدثة"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 msgid "Waiting for authentication"

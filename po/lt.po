@@ -8,6 +8,7 @@
 # Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
 # Mantas Kriaučiūnas Baltix <mantas@akl.lt>, 2011,2014
 # Moo, 2021-2022
+# Moo, 2023-2024
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
@@ -123,6 +124,17 @@ msgstr "Paveikti paketai: nėra"
 msgid "Agreement"
 msgstr "Sutikimas"
 
+#. command line argument, do we allow package downgrades
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Leisti operacijos metu sendinti paketus į senesnes versijas"
+
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Leisti operacijos metu diegti paketus iš naujo"
+
+#. command line argument, do we ask questions
+msgid "Allow untrusted packages to be installed."
+msgstr "Leisti diegti nepatikimus paketus"
+
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
@@ -151,6 +163,9 @@ msgstr "Atnaujinimams atsijungus sukelti būtina patvirtinti tapatybę"
 msgid "Author"
 msgstr "Autorius"
 
+msgid "Automatically remove unused dependencies"
+msgstr "Automatiškai šalinti nenaudojamas priklausomybes"
+
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
 msgstr "Prieinamas"
@@ -158,6 +173,10 @@ msgstr "Prieinamas"
 #. TRANSLATORS: The type of update
 msgid "Blocked"
 msgstr "Blokuotas"
+
+#. TRANSLATORS: The type of update
+msgid "Bug fix"
+msgstr "Klaidų pataisymas"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -185,6 +204,13 @@ msgstr "Atšaukiama"
 #. TRANSLATORS: this is the group category name
 msgid "Category"
 msgstr "Kategorija"
+
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+msgid "Change software repository parameters"
+msgstr "Keisti programinės įrangos saugyklos parametrus"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -232,6 +258,9 @@ msgstr "Komandos įvykdyti nepavyko"
 #. TRANSLATORS: this is The command line used to do the action
 msgid "Command line"
 msgstr "Komandų eilutė"
+
+msgid "Command not found, valid commands are:"
+msgstr "Komanda nerasta. Tinkamos komandos yra:"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package
 #. database
@@ -310,6 +339,10 @@ msgstr "Atsiųstas"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
 msgstr "Atsiunčiamas"
+
+#. TRANSLATORS: downloading repo data so we can search
+msgid "Downloading details about the software repositories."
+msgstr "Atsiunčiama išsamesnė informacija apie programinės įrangos saugyklas."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -404,9 +437,17 @@ msgstr "Nepavyko paleisti:"
 msgid "Failed to load config file: %s"
 msgstr "Nepavyko įkelti konfigūracijos failo: %s"
 
+#. TRANSLATORS: probably not yet installed
+msgid "Failed to load the config file"
+msgstr "Nepavyko įkelti konfigūracijos failo"
+
+#. TRANSLATORS: the user didn't read the man page
+msgid "Failed to parse arguments"
+msgstr "Nepavyko išnagrinėti argumentų"
+
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to parse command line"
-msgstr "Nepavyko perskaityti komandų eilutės"
+msgstr "Nepavyko išnagrinėti komandų eilutės"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 msgid "Failed to search for file"
@@ -507,6 +548,24 @@ msgstr "Piktograma"
 #. TRANSLATORS: The type of update
 msgid "Important"
 msgstr "Svarbus"
+
+#. SECURITY
+#. - Normal users require admin authentication to reinstall packages.
+#. - Authorization to install packages does not imply permissions to
+#. reinstall them and vice versa.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install already installed package again"
+msgstr "Dar kartą įdiegti jau įdiegtą paketą"
+
+#. SECURITY
+#. - Normal users require admin authentication to downgrade packages.
+#. - User authorized to downgrade signed packages is authorized to install
+#. them as well.
+#. - If a package in question is not trusted, user's permission to install
+#. untrusted package will be checked as well.
+msgid "Install older version of installed package"
+msgstr "Įdiegti senesnę įdiegto paketo versiją"
 
 #. TRANSLATORS: command description
 msgid "Install package"
@@ -626,6 +685,10 @@ msgstr "Laikmenos etiketė"
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 msgid "Media type"
 msgstr "Laikmenos tipas"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Modifying repository"
+msgstr "Modifikuojama saugykla"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -758,11 +821,15 @@ msgstr "Atnaujinimui užbaigti, atsijunkite ir vėl prisijunkite."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo - buvo įdiegta svarbių saugumo atnaujinimų."
+msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo – buvo įdiegta svarbių saugumo atnaujinimų."
 
 #. TRANSLATORS: a package needs to restart their system
 msgid "Please restart the computer to complete the update."
 msgstr "Atnaujinimui užbaigti, paleiskite sistemą iš naujo."
+
+#. command line argument, do we just download or apply changes
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Paruošti operaciją tik atsiunčiant paketus"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -787,7 +854,21 @@ msgstr "Tikrasis vardas"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "Perleidžiama po atnaujinimų diegimo…"
+msgstr "Paleidžiama iš naujo po atnaujinimų diegimo…"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+msgid "Refresh system repositories"
+msgstr "Įkelti sistemos saugyklas iš naujo"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache"
+msgstr "Įkelti podėlį iš naujo"
+
+#. TRANSLATORS: command description
+msgid "Refresh the cache (forced)"
+msgstr "Įkelti podėlį iš naujo (priverstinai)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Refreshing cache"
@@ -829,6 +910,10 @@ msgstr "Šalinamas"
 #. TRANSLATORS: transaction state, removing packages
 msgid "Removing packages"
 msgstr "Šalinami paketai"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+msgid "Removing repository"
+msgstr "Šalinama saugykla"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 msgid "Repackaging files"
@@ -878,9 +963,26 @@ msgstr "Paleisti komandą naudojant laisvą tinklo ryšį ir naudojant mažiau e
 msgid "Running"
 msgstr "Vykdoma"
 
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+msgid "Running hooks"
+msgstr "Vykdomos gaudyklės"
+
 #. TRANSLATORS: transaction state, scanning for running processes
 msgid "Scanning applications"
 msgstr "Apžvelgiamos programos"
+
+#. TRANSLATORS: command description
+msgid "Search by details"
+msgstr "Ieškoti pagal išsamesnę informaciją"
+
+#. TRANSLATORS: command description
+msgid "Search by files"
+msgstr "Ieškoti pagal failus"
+
+#. TRANSLATORS: command description
+msgid "Search by names"
+msgstr "Ieškoti pagal pavadinimus"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Searching by details"
@@ -905,17 +1007,21 @@ msgstr "Saugumo"
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 msgid "Session restart (security) required:"
-msgstr "Paleisti seansą iš naujo (saugumo sumetimais) reikalauja:"
+msgstr "Reikia paleisti seansą iš naujo (saugumo sumetimais):"
 
 #. TRANSLATORS: a package requires the session to be restarted
 msgid "Session restart required:"
-msgstr "Paleisti seansą iš naujo reikalauja:"
+msgstr "Reikia paleisti seansą iš naujo:"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 msgid "Set network proxy"
 msgstr "Nustatyti įgaliotąjį tinklo serverį"
+
+#. TRANSLATORS: command description
+msgid "Set repository options"
+msgstr "Nustatyti saugyklos parinktis"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
@@ -1026,7 +1132,7 @@ msgstr "Tinkama laikmena nebuvo įdėta."
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Tarnyba nulūžo atliekant operaciją!"
+msgstr "Tarnyba užstrigo atliekant operaciją!"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -1045,6 +1151,10 @@ msgstr "Šie paketai turi būti pasendinti į senesnes versijas:"
 #. TRANSLATORS: When processing, we might have to install other dependencies
 msgid "The following packages have to be installed:"
 msgstr "Šie paketai turi būti įdiegti:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+msgid "The following packages have to be obsoleted:"
+msgstr "Šie paketai turės tapti pasenę:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"
@@ -1066,6 +1176,11 @@ msgstr "Paketas, suteikiantis šį failą yra:"
 msgid "The proxy could not be set"
 msgstr "Nepavyko nustatyti įgaliotosios programos"
 
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+msgid "The selected packages may already be installed."
+msgstr "Gali būti, kad pasirinkti paketai jau yra įdiegti."
+
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The signature was not accepted."
 msgstr "Parašas nepriimtas."
@@ -1076,7 +1191,7 @@ msgstr "Ši programinė įranga nėra iš patikimos saugyklos."
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
-msgstr "Operacija neprasidėjo."
+msgstr "Operacija nebuvo tęsiama."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -1111,6 +1226,10 @@ msgstr "Šiuo metu nėra atnaujinimų."
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "Šiai priemonei nepavyko rasti visų paketų: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+msgid "This tool could not find any available package."
+msgstr "Šiam įrankiui nepavyko rasti jokių prieinamų paketų."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -1153,9 +1272,21 @@ msgstr "Kasdienis"
 msgid "True"
 msgstr "Teigiama"
 
+#. SECURITY:
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+msgid "Trust a key used for signing software"
+msgstr "Pasitikėti programinės įrangos pasirašymui naudojamu raktu"
+
 #. TRANSLATORS: this is type of update, stable or testing
 msgid "Type"
 msgstr "Tipas"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+msgid "Unavailable"
+msgstr "Neprieinamas"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"

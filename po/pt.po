@@ -4,7 +4,8 @@
 #
 # Translators:
 # Juliano de Souza Camargo <julianosc@protonmail.com>, 2020
-# Pedro Albuquerque <pmra@gmx.com>, 2015
+# Luis Filipe Teixeira <lufilte@gmail.com>, 2025
+# Pedro Albuquerque <pmra@protonmail.com>, 2015
 # Peter J. Mello <admin@petermello.net>, 2023
 # Richard Hughes <richard@hughsie.com>, 2011
 # Rui Gouveia <rui.gouveia@gmail.com>, 2010
@@ -1225,6 +1226,10 @@ msgstr "Os seguintes pacotes precisam de ser removidos:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Os seguintes pacotes precisam de ser atualizados:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "A duração máxima da cache de metadados (em segundos). Utilize -1 para utilizar apenas a cache, 1 para recarregar a cache."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

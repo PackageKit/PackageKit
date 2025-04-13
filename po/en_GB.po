@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Andi Chandler <andi@gowling.com>, 2014-2017,2022-2023
+# Andi Chandler <andi@gowling.com>, 2014-2017,2022-2024
 # Bruce Cowan <bruce@bcowan.me.uk>, 2012-2013,2018
 # Chris  Leonard <cjl@laptop.org>, 2012
 # Richard Hughes <richard@hughsie.com>, 2011
@@ -1225,6 +1225,10 @@ msgstr "The following packages have to be removed:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "The following packages have to be updated:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

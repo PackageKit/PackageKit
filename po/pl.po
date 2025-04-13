@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Piotr Drąg <piotrdrag@gmail.com>, 2011-2018,2022
+# Piotr Drąg <piotrdrag@gmail.com>, 2011-2018,2022-2023
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
@@ -1222,6 +1222,10 @@ msgstr "Następujące pakiety muszą zostać usunięte:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "Następujące pakiety muszą zostać zaktualizowane:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej (w sekundach). Wartość -1 oznacza używanie wyłącznie pamięci podręcznej, wartość 1 spowoduje ponowne wczytanie pamięci podręcznej."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"

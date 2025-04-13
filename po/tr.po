@@ -8,7 +8,7 @@
 # Muhammet Kara <muhammetk@gmail.com>, 2014
 # Necdet Yücel <necdetyucel@gmail.com>, 2012,2015-2016
 # Richard Hughes <richard@hughsie.com>, 2011
-# Sabri Ünal <libreajans@gmail.com>, 2023
+# b83946de5835331df42b9ffcc43e6a33_05e65cd <73a30e0a984b2291d4915f37112ad292_814039>, 2023-2024
 # Serdar Sağlam <teknomobil@msn.com>, 2020
 # yunus kaba <yunuskaba@gmail.com>, 2019
 msgid ""
@@ -97,7 +97,7 @@ msgstr "Bir arama terimi gerekiyor"
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 msgid "A search type is required, e.g. name"
-msgstr "Bir arama türü gerekiyor; örn. ad"
+msgstr "Bir arama türü gerekiyor; örneğin, ad"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -142,7 +142,7 @@ msgstr "İşlem sırasında paketlerin yeniden kurulmasına izin ver"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "Güvenilmeyen paketlerin kurulmasına izin verin."
+msgstr "Güvenilmeyen paketlerin kurulmasına izin ver."
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
@@ -384,7 +384,7 @@ msgstr "İndiriliyor"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr "Yazılım depolarıyla ilgili ayrıntıları indir."
+msgstr "Yazılım depolarıyla ilgili ayrıntılar indiriliyor."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -442,7 +442,7 @@ msgstr "Küçük bir gecikme sonrasında çık"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 msgid "Exit after the engine has loaded"
-msgstr "İşletke yüklendikten sonra çık"
+msgstr "Motor yüklendikten sonra çık"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -527,7 +527,7 @@ msgstr "Onulmaz hata"
 #. * The filename follows
 #, c-format
 msgid "File already exists: %s"
-msgstr "Böyle bir dosya halihazırda var: %s"
+msgstr "Dosya zaten var: %s"
 
 #. TRANSLATORS: transaction state, all done!
 msgid "Finished"
@@ -754,7 +754,7 @@ msgstr "Depo değiştiriliyor"
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
 msgid "More than one package matches:"
-msgstr "Birden fazla paket eşleşiyor:"
+msgstr "Birden çok paket eşleşiyor:"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
@@ -779,7 +779,7 @@ msgstr "Normal"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
-msgstr "Gereksiz Yapıldı"
+msgstr "Gereksiz yapıldı"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
@@ -874,7 +874,7 @@ msgstr "Lütfen doğru ortamı yerleştirin"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen çıkış yapın ve tekrar oturum açın."
+msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen oturumunuzu kapatın ve yeniden oturum açın."
 
 #. TRANSLATORS: a package needs to restart the session
 msgid "Please logout and login to complete the update."
@@ -890,7 +890,7 @@ msgstr "Lütfen güncelleme işlemini tamamlamak için bilgisayarınızı yenide
 
 #. command line argument, do we just download or apply changes
 msgid "Prepare the transaction by downloading packages only"
-msgstr "İletimi sadece paketleri indirecek biçimde ayarla"
+msgstr "İşlemi yalnızca paketleri indirecek biçimde ayarla"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -941,11 +941,11 @@ msgstr "Yazılım listesi yenileniyor"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Reinstalled"
-msgstr "Yeniden Kuruldu"
+msgstr "Yeniden kuruldu"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Yeniden Kuruluyor"
+msgstr "Yeniden kuruluyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1086,7 +1086,7 @@ msgstr "Depo seçeneklerini ayarla"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 msgid "Set the filter, e.g. installed"
-msgstr "Süzgeci ayarla; örn. kurulu"
+msgstr "Süzgeci ayarla; örneğin, kurulu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Setting data"
@@ -1229,6 +1229,10 @@ msgstr "Aşağıdaki paketler kaldırılmalıdır:"
 msgid "The following packages have to be updated:"
 msgstr "Aşağıdaki paketler yükseltilmelidir:"
 
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "En büyük üst veri önbelleği yaşı (saniye türünden). Yalnızca önbelleği kullanmak için -1, önbelleği yeniden yüklemek için 1 kullanın."
+
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
 msgstr "Bu dosyayı içeren paket:"
@@ -1258,7 +1262,7 @@ msgstr "İşlem sürdürülemedi."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 msgid "The transaction failed"
-msgstr "İletim başarısız"
+msgstr "İşlem başarısız"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
@@ -1432,7 +1436,7 @@ msgstr "Paket yöneticisi kilidi bekleniyor"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Paket yöneticisinin kilitlenmesi bekleniyor."
+msgstr "Paket yöneticisi kilidi bekleniyor."
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete

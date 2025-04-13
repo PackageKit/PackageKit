@@ -5,7 +5,7 @@
 # Translators:
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2013
 # Seong-ho Cho <darkcircle.0426@gmail.com>, 2011
-# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017,2022
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2011,2013-2017,2022,2024
 # Shinjo Park <kde@peremen.name>, 2012,2015,2018-2019
 msgid ""
 msgstr ""
@@ -1224,6 +1224,10 @@ msgstr "다음 패키지를 제거해야 합니다:"
 #. TRANSLATORS: When processing, we might have to update other dependencies
 msgid "The following packages have to be updated:"
 msgstr "다음 패키지를 갱신해야 합니다:"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "메타데이터 최대 캐시 기한(초 단위)입니다. 캐시만 사용하려면 -1 값을, 캐시를 다시 불러오려면 1을 설정하십시오."
 
 #. TRANSLATORS: tell the user what package provides the command
 msgid "The package providing this file is:"
