@@ -36,4 +36,3 @@ PkProgress *pk_progress_new_with_callback	(PkProgressCallback	 callback,
 G_END_DECLS
 
 #endif /* __PK_PROGRESS_PRIVATE_H */
-

@@ -110,6 +110,7 @@ packagekitprivate_sources = files(
   'pk-common-private.h',
   'pk-console-shared.c',
   'pk-console-shared.h',
+  'pk-progress-private.h',
   'pk-progress-bar.c',
   'pk-progress-bar.h',
   'pk-task-text.c',

@@ -175,4 +175,3 @@ PkPackage	*pk_progress_get_package		(PkProgress		*progress);
 G_END_DECLS
 
 #endif /* __PK_PROGRESS_H */
-
