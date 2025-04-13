@@ -38,9 +38,9 @@ dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
-		info = dnf_package_get_info (pkg);
+		info = (PkInfoEnum) dnf_package_get_info (pkg);
 	if (info == PK_INFO_ENUM_UNKNOWN)
-		info = dnf_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+		info = (PkInfoEnum) dnf_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 	pk_backend_job_package_full (job,
 				     info,
 				     dnf_package_get_package_id (pkg),
@@ -69,9 +69,9 @@ dnf_emit_package_list (PkBackendJob *job,
 
 		package_info = info;
 		if (package_info == PK_INFO_ENUM_UNKNOWN)
-			package_info = dnf_package_get_info (dnf_package);
+			package_info = (PkInfoEnum) dnf_package_get_info (dnf_package);
 		if (package_info == PK_INFO_ENUM_UNKNOWN)
-			package_info = dnf_package_installed (dnf_package) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+			package_info = (PkInfoEnum) dnf_package_installed (dnf_package) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
 
 		/* check we are valid */
 		pk_package = pk_package_new ();
@@ -132,12 +132,12 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 
 		/* a lower cost package */
 		if (dnf_package_get_cost (pkg) < dnf_package_get_cost (found)) {
-			dnf_package_set_info (found, PK_INFO_ENUM_BLOCKED);
+			dnf_package_set_info (found, (DnfPackageInfo) PK_INFO_ENUM_BLOCKED);
 			g_hash_table_replace (hash_cost,
 					      g_strdup (dnf_package_get_nevra (pkg)),
 					      (gpointer) pkg);
 		} else {
-			dnf_package_set_info (pkg, PK_INFO_ENUM_BLOCKED);
+			dnf_package_set_info (pkg, (DnfPackageInfo) PK_INFO_ENUM_BLOCKED);
 		}
 	}
 
@@ -163,7 +163,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 			continue;
 		if (dnf_repo_get_enabled (repo) != DNF_REPO_ENABLED_METADATA)
 			continue;
-		dnf_package_set_info (pkg, PK_INFO_ENUM_UNAVAILABLE);
+		dnf_package_set_info (pkg, (DnfPackageInfo) PK_INFO_ENUM_UNAVAILABLE);
 	}
 
 	for (i = 0; i < pkglist->len; i++) {

@@ -339,9 +339,9 @@ pk_backend_state_action_changed_cb (DnfState *state,
 {
 	if (action != DNF_STATE_ACTION_UNKNOWN) {
 		g_debug ("got state %s with hint %s",
-			 pk_status_enum_to_string (action),
+			 pk_status_enum_to_string ((PkStatusEnum) action),
 			 action_hint);
-		pk_backend_job_set_status (job, action);
+		pk_backend_job_set_status (job, (PkStatusEnum) action);
 	}
 
 	switch (action) {
@@ -1118,7 +1118,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 				dnf_advisory_free (advisory);
 #endif
 				info_enum = dnf_advisory_kind_to_info_enum (kind);
-				dnf_package_set_info (pkg, info_enum);
+				dnf_package_set_info (pkg, (DnfPackageInfo) info_enum);
 			}
 		}
 	}
