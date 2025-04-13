@@ -1,4 +1,4 @@
-add_languages('cpp')
+add_languages('cpp', native: false)
 
 libpkg_dep = dependency('pkg', version : '>=1.20.99')
 

@@ -1,4 +1,4 @@
-add_languages('cpp')
+add_languages('cpp', native: false)
 
 curl_dep = meson.get_compiler('c').find_library('curl')
 bzip2_dep = dependency('bzip2')

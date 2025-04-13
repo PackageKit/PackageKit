@@ -23,7 +23,7 @@ install_data(
   install_dir: join_paths(python_package_dir),
 )
 
-add_languages('cpp')
+add_languages('cpp', native: false)
 shared_module(
   'notify_packagekit',
   'notify_packagekit.cpp',

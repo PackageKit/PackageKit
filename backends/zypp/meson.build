@@ -1,4 +1,4 @@
-add_languages('cpp')
+add_languages('cpp', native: false)
 
 zypp_dep = dependency('libzypp', version: '>=17.31.0')
 

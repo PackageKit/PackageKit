@@ -1,4 +1,4 @@
-add_languages('cpp')
+add_languages('cpp', native: false)
 
 cpp_compiler = meson.get_compiler('cpp')
 

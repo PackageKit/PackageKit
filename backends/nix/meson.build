@@ -1,4 +1,4 @@
-add_languages('cpp')
+add_languages('cpp', native: false)
 
 nix_expr_dep = dependency('nix-expr', version: '>=2.9')
 nix_main_dep = dependency('nix-main', version: '>=2.9')
