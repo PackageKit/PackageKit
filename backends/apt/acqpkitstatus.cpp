@@ -22,6 +22,7 @@
 
 #include "apt-job.h"
 
+#include <math.h>
 #include <apt-pkg/acquire-worker.h>
 #include <apt-pkg/error.h>
 
@@ -183,8 +184,7 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
     }
 
     // calculate the overall speed
-    if (CurrentCPS != m_lastCPS)
-    {
+    if (fabs(CurrentCPS - m_lastCPS) > 0) {
         m_lastCPS = CurrentCPS;
         pk_backend_job_set_speed(m_job, static_cast<uint>(m_lastCPS));
     }
