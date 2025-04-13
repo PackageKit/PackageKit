@@ -8,7 +8,9 @@ RUN apt-get install -yq eatmydata build-essential
 
 # install build dependencies
 RUN eatmydata apt-get install -yq --no-install-recommends \
+	appstream \
 	bash-completion \
+	gettext \
 	gir1.2-glib-2.0 \
 	gobject-introspection \
 	gtk-doc-tools \
