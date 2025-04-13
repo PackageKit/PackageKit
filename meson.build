@@ -2,7 +2,7 @@ project('PackageKit', 'c',
   version : '1.3.1',
   license : 'LGPL-2.1+',
   meson_version : '>=1.0',
-  default_options : ['warning_level=2', 'c_std=c99'],
+  default_options : ['warning_level=2', 'c_std=gnu11'],
 )
 
 gnome = import('gnome')
