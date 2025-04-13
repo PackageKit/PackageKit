@@ -806,7 +806,6 @@ void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
         return;
     }
 
-    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
     std::string section = ver.Section() == NULL ? "" : ver.Section();
 
     size_t found;
@@ -815,14 +814,6 @@ void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
 
     pkgCache::VerFileIterator vf = ver.FileList();
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(vf);
-
-    long size;
-    if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver) {
-        // if the package is installed emit the installed size
-        size = ver->InstalledSize;
-    } else {
-        size = ver->Size;
-    }
 
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
     pk_backend_job_details_full (m_job,

@@ -170,14 +170,15 @@ pk_backend_job_get_proxy_http (PkBackendJob *job)
 }
 
 void
-pk_backend_job_details (PkBackendJob *job,
-                        const gchar *package_id,
-                        const gchar *summary,
-                        const gchar *license,
-                        PkGroupEnum group,
-                        const gchar *description,
-                        const gchar *url,
-                        gulong size)
+pk_backend_job_details_full (PkBackendJob *job,
+                             const gchar *package_id,
+                             const gchar *summary,
+                             const gchar *license,
+                             PkGroupEnum group,
+                             const gchar *description,
+                             const gchar *url,
+                             gulong size,
+                             guint64 download_size)
 {
 }
 
