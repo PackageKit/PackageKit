@@ -1044,6 +1044,15 @@ pk_progress_set_property (GObject *object, guint prop_id, const GValue *value, G
 	case PROP_ITEM_PROGRESS:
 		pk_progress_set_item_progress (progress, g_value_get_object (value));
 		break;
+	case PROP_SENDER:
+		pk_progress_set_sender (progress, g_value_get_string (value));
+		break;
+	case PROP_DOWNLOAD_SIZE_REMAINING:
+		pk_progress_set_download_size_remaining (progress, g_value_get_uint64 (value));
+		break;
+	case PROP_TRANSACTION_FLAGS:
+		pk_progress_set_transaction_flags (progress, g_value_get_uint64 (value));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
