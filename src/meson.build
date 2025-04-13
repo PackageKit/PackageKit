@@ -2,7 +2,7 @@ packagekit_src_include = include_directories('.')
 
 pk_resources = gnome.compile_resources(
   'pk-resources', 'packagekit.gresource.xml',
-  source_dir: join_paths(meson.source_root(), 'data'),
+  source_dir: join_paths(source_root, 'data'),
   c_name: 'pk'
 )
 
@@ -119,7 +119,7 @@ pk_self_test_exec = executable(
     '-DTESTDATADIR="@0@"'.format(test_data_dir),
     '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
     '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
-    '-DSOURCEROOTDIR="@0@"'.format(meson.source_root()),
+    '-DSOURCEROOTDIR="@0@"'.format(source_root),
   ]
 )
 
@@ -128,7 +128,7 @@ test(
   pk_self_test_exec,
   depends: packagekit_test_py,
   env: [
-  'PYTHONPATH=@0@'.format(join_paths(meson.build_root(), 'lib', 'python')),
+  'PYTHONPATH=@0@'.format(join_paths(meson.project_build_root(), 'lib', 'python')),
   ],
   timeout: 360,
 )

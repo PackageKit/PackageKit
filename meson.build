@@ -1,13 +1,15 @@
 project('PackageKit', 'c',
   version : '1.3.1',
   license : 'LGPL-2.1+',
-  meson_version : '>=0.50',
+  meson_version : '>=1.0',
   default_options : ['warning_level=2', 'c_std=c99'],
 )
 
 gnome = import('gnome')
 i18n = import('i18n')
 pkg = import('pkgconfig')
+
+source_root = meson.project_source_root()
 
 glib_dep = dependency('glib-2.0', version: '>=2.62')
 gobject_dep = dependency('gobject-2.0')
@@ -29,10 +31,10 @@ if get_option('systemd')
     systemd = dependency('systemd')
   endif
   if systemd_system_unit_dir == ''
-    systemd_system_unit_dir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
+    systemd_system_unit_dir = systemd.get_variable(pkgconfig: 'systemdsystemunitdir')
   endif
   if systemd_user_unit_dir == ''
-    systemd_user_unit_dir = systemd.get_pkgconfig_variable('systemduserunitdir')
+    systemd_user_unit_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
   endif
 
   add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
@@ -99,7 +101,7 @@ config_dep = declare_dependency(
 
 pk_db_dir = join_paths(get_option('localstatedir'), 'lib', 'PackageKit')
 local_state_dir = get_option('localstatedir')
-test_data_dir = join_paths(meson.source_root(), 'tests', 'data')
+test_data_dir = join_paths(source_root, 'tests', 'data')
 package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')

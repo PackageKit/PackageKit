@@ -6,5 +6,5 @@ i18n.merge_file(
   install: true,
   install_dir: join_paths(get_option('datadir'), 'polkit-1', 'actions') ,
   type: 'xml',
-  po_dir: join_paths(meson.source_root(), 'po')
+  po_dir: join_paths(source_root, 'po')
 )

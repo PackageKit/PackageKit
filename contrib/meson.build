@@ -14,7 +14,9 @@ if get_option('bash_completion')
   bash_completion_dep = dependency('bash-completion', version: '>=2.0')
   install_data(
     'pkcon',
-    install_dir: bash_completion_dep.get_pkgconfig_variable('completionsdir', define_variable: ['prefix', get_option('prefix')])
+    install_dir: bash_completion_dep.get_variable(
+                    pkgconfig: 'completionsdir',
+                    pkgconfig_define: ['prefix', get_option('prefix')])
   )
 endif
 
