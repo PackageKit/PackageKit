@@ -108,51 +108,82 @@ pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagek
 
 # default compiler flags for C and C++
 add_project_arguments(
-  '-Wall',
-  '-Wcast-align',
-  '-Wno-uninitialized',
-  '-Werror=missing-declarations',
-  '-Wredundant-decls',
-  '-Wpointer-arith',
-  '-Wcast-align',
-  '-Wwrite-strings',
-  '-Winit-self',
-  '-Wreturn-type',
-  '-Wformat-nonliteral',
-  '-Wformat-security',
-  '-Wmissing-include-dirs',
-  '-Wmissing-format-attribute',
-  '-Wclobbered',
-  '-Wempty-body',
-  '-Wignored-qualifiers',
-  '-Wsign-compare',
-  '-Wtype-limits',
-  '-Wuninitialized',
-  '-Wno-unused-parameter',
+    '-Wcast-align',
+    '-Wno-uninitialized',
+    '-Werror=missing-declarations',
+    '-Wredundant-decls',
+    '-Wpointer-arith',
+    '-Wcast-align',
+    '-Wwrite-strings',
+    '-Winit-self',
+    '-Wreturn-type',
+    '-Wformat-nonliteral',
+    '-Wformat-security',
+    '-Wmissing-include-dirs',
+    '-Wmissing-format-attribute',
+    '-Wclobbered',
+    '-Wempty-body',
+    '-Wignored-qualifiers',
+    '-Wsign-compare',
+    '-Wtype-limits',
+    '-Wuninitialized',
+    '-Wno-unused-parameter',
+    '-Wno-error=unused-parameter',
+    '-Werror=misleading-indentation',
+    '-Werror=return-type',
+    '-Werror=format-security',
+    '-Werror=missing-declarations',
+    '-Werror=pointer-arith',
+    '-Werror=empty-body',
+
   language: ['c', 'cpp']
 )
 
-# default compiler flags for C only
+# default compiler warning/error flags for C only
 add_project_arguments(
-  '-Werror=shadow',
-  '-Werror=empty-body',
-  '-Werror=strict-prototypes',
-  '-Werror=missing-prototypes',
-  '-Werror=implicit-function-declaration',
-  '-Werror=return-type',
-  '-Werror=int-conversion',
-  '-Werror=incompatible-pointer-types',
-  '-Werror=misleading-indentation',
-  '-Werror=missing-include-dirs',
-  '-Werror=declaration-after-statement',
-  '-Werror=format-security',
-  '-Waggregate-return',
-  '-Wno-strict-aliasing',
-  '-Winline',
-  '-Wmissing-parameter-type',
-  '-Woverride-init',
+  cc.get_supported_arguments([
+    '-Werror=shadow',
+    '-Werror=strict-prototypes',
+    '-Werror=missing-prototypes',
+    '-Werror=implicit-function-declaration',
+    '-Werror=int-conversion',
+    '-Werror=incompatible-pointer-types',
+    '-Werror=missing-include-dirs',
+    '-Werror=declaration-after-statement',
+    '-Waggregate-return',
+    '-Wno-strict-aliasing',
+    '-Winline',
+    '-Wmissing-parameter-type',
+    '-Woverride-init',
+  ]),
   language: 'c'
 )
+
+# default warning flags for C++ only
+add_project_arguments(
+  '-Werror=init-self',
+  language: 'cpp'
+)
+
+# maintainer mode is even stricter
+if get_option('maintainer')
+    add_project_arguments(
+        '-Werror',
+        '-Wall',
+        '-Wextra',
+        '-Wcast-align',
+        '-Wno-uninitialized',
+        '-Wempty-body',
+        '-Winit-self',
+        '-Wnull-dereference',
+        '-Wfloat-equal',
+        '-Winline',
+        '-Wno-error=comment',
+        '-Werror=format-security',
+
+        language: ['c', 'cpp']
+    )
+endif
 
 subdir('po')
 subdir('policy')

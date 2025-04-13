@@ -8,6 +8,7 @@ set -x
 
 meson build \
     -Dlocal_checkout=true \
+    -Dmaintainer=true \
     -Ddaemon_tests=true \
     $@
 
