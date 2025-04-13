@@ -57,7 +57,9 @@ pk_alpm_logcb (void *ctx, alpm_loglevel_t level, const gchar *format, va_list ar
 
 	if (format == NULL || format[0] == '\0')
 		return;
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 	output = g_strdup_vprintf (format, args);
+#pragma GCC diagnostic pop
 
 	/* report important output to PackageKit */
 	switch (level) {
