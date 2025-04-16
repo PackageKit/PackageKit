@@ -128,13 +128,19 @@ default_compiler_flags = [
     '-Wno-error=unused-parameter',
     '-Werror=misleading-indentation',
     '-Werror=return-type',
-    '-Werror=format-security',
+    ['-Werror=format-security', '-Wformat'],
     '-Werror=missing-declarations',
     '-Werror=pointer-arith',
     '-Werror=empty-body',
 ]
 
-supported_compiler_flags = cc.get_supported_arguments(default_compiler_flags, checked: 'warn')
+supported_compiler_flags = []
+foreach arg: default_compiler_flags
+  if cc.has_multi_arguments(arg)
+    supported_compiler_flags += arg
+  endif
+endforeach
+
 
 # if a common compiler flag is not supported by 'c', then it should
 # apply to c++ too. So, we don't need a double check here.
