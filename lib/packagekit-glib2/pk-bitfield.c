@@ -49,7 +49,6 @@ gint
 pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 {
 	va_list args;
-	guint i;
 	gint value_temp;
 	gint retval = -1;
 
@@ -59,7 +58,7 @@ pk_bitfield_contain_priority (PkBitfield values, gint value, ...)
 
 	/* process the valist */
 	va_start (args, value);
-	for (i = 0;; i++) {
+	while (TRUE) {
 		value_temp = va_arg (args, gint);
 		/* do we have this one? */
 		if (pk_bitfield_contain (values, value_temp)) {
@@ -90,7 +89,6 @@ PkBitfield
 pk_bitfield_from_enums (gint value, ...)
 {
 	va_list args;
-	guint i;
 	gint value_temp;
 	PkBitfield values;
 
@@ -99,7 +97,7 @@ pk_bitfield_from_enums (gint value, ...)
 
 	/* process the valist */
 	va_start (args, value);
-	for (i = 0;; i++) {
+	while (TRUE) {
 		value_temp = va_arg (args, gint);
 		if (value_temp == -1)
 			break;

@@ -806,7 +806,6 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 {
 	GPtrArray *ptr_array;
 	gchar *value_temp;
-	guint i;
 
 	g_return_val_if_fail (args != NULL, NULL);
 	g_return_val_if_fail (string_first != NULL, NULL);
@@ -823,7 +822,7 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 	g_ptr_array_add (ptr_array, g_strdup (string_first));
 
 	/* process all the va_list entries */
-	for (i = 0;; i++) {
+	while (TRUE) {
 		value_temp = va_arg (*args, gchar *);
 		if (value_temp == NULL)
 			break;

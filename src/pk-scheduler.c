@@ -855,9 +855,7 @@ pk_scheduler_get_state (PkScheduler *scheduler)
 {
 	guint i;
 	guint length;
-	guint running = 0;
 	guint waiting = 0;
-	guint no_commit = 0;
 	PkRoleEnum role;
 	PkSchedulerItem *item;
 	PkTransactionState state;
@@ -872,12 +870,8 @@ pk_scheduler_get_state (PkScheduler *scheduler)
 	for (i = 0; i < length; i++) {
 		item = (PkSchedulerItem *) g_ptr_array_index (scheduler->priv->array, i);
 		state = pk_transaction_get_state (item->transaction);
-		if (state == PK_TRANSACTION_STATE_RUNNING)
-			running++;
 		if (state == PK_TRANSACTION_STATE_READY)
 			waiting++;
-		if (state == PK_TRANSACTION_STATE_NEW)
-			no_commit++;
 
 		role = pk_transaction_get_role (item->transaction);
 		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] "
