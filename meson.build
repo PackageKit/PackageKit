@@ -192,7 +192,6 @@ if get_option('maintainer')
         '-Wfloat-equal',
         '-Winline',
         '-Wno-error=comment',
-        '-Werror=format-security',
 
         language: ['c', 'cpp']
     )
