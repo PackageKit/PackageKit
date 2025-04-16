@@ -182,20 +182,25 @@ add_project_arguments(
 
 # maintainer mode is even stricter
 if get_option('maintainer')
-    add_project_arguments(
-        '-Werror',
-        '-Wall',
-        '-Wextra',
-        '-Wcast-align',
-        '-Wno-uninitialized',
-        '-Wempty-body',
-        '-Winit-self',
-        '-Wnull-dereference',
-        '-Wfloat-equal',
-        '-Winline',
-        '-Wno-error=comment',
+  maintainer_compiler_flags = [
+    '-Werror',
+    '-Wall',
+    '-Wextra',
+    '-Wcast-align',
+    '-Wno-uninitialized',
+    '-Wempty-body',
+    '-Winit-self',
+    '-Wnull-dereference',
+    '-Wfloat-equal',
+    '-Winline',
+    '-Wno-error=comment',
+  ]
 
-        language: ['c', 'cpp']
+  supported_maintainer_flags = cc.get_supported_arguments(maintainer_compiler_flags, checked: 'warn')
+
+  add_project_arguments(
+    supported_maintainer_flags,
+      language: ['c', 'cpp']
     )
 endif
 
