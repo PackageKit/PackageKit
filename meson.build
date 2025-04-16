@@ -104,7 +104,7 @@ package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'lo
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
 # default compiler flags for C and C++
-add_project_arguments(
+default_compiler_flags = [
     '-Wcast-align',
     '-Wno-uninitialized',
     '-Werror=missing-declarations',
@@ -132,7 +132,14 @@ add_project_arguments(
     '-Werror=missing-declarations',
     '-Werror=pointer-arith',
     '-Werror=empty-body',
+]
 
+supported_compiler_flags = cc.get_supported_arguments(default_compiler_flags, checked: 'warn')
+
+# if a common compiler flag is not supported by 'c', then it should
+# apply to c++ too. So, we don't need a double check here.
+add_project_arguments(
+  supported_compiler_flags,
   language: ['c', 'cpp']
 )
 
