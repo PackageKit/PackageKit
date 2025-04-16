@@ -328,7 +328,7 @@ main (int argc, char *argv[])
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			_("Show the program version and exit"), NULL},
-		{ NULL}
+		G_OPTION_ENTRY_NULL
 	};
 
 	setlocale (LC_ALL, "");

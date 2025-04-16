@@ -406,7 +406,7 @@ main (int argc, char *argv[])
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
-		{ NULL }
+		G_OPTION_ENTRY_NULL
 	};
 
 	setlocale (LC_ALL, "");

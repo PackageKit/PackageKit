@@ -130,7 +130,7 @@ main (int argc, char *argv[])
 		{ "keep-environment", '\0', 0, G_OPTION_ARG_NONE, &keep_environment,
 		  /* TRANSLATORS: don't unset environment variables, used for debugging */
 		  _("Don't clear environment on startup"), NULL },
-		{ NULL }
+		G_OPTION_ENTRY_NULL
 	};
 
 	setlocale (LC_ALL, "");
