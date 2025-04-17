@@ -2,6 +2,7 @@
  *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
+*            (c) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
  *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -40,14 +41,8 @@ public:
     enum RecType {
         Deb = 1 << 0,
         DebSrc = 1 << 1,
-        Rpm = 1 << 2,
-        RpmSrc = 1 << 3,
-        Disabled = 1 << 4,
-        Comment = 1 << 5,
-        RpmDir = 1 << 6,
-        RpmSrcDir = 1 << 7,
-        Repomd = 1 << 8,
-        RepomdSrc = 1 << 9
+        Disabled = 1 << 2,
+        Comment = 1 << 3,
     };
 
     struct SourceRecord {
