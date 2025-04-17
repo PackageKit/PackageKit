@@ -1526,6 +1526,7 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	g_ptr_array_add (cmds, (gchar *) "offline-get-prepared");
 	g_ptr_array_add (cmds, (gchar *) "offline-trigger");
 	g_ptr_array_add (cmds, (gchar *) "offline-cancel");
+	g_ptr_array_add (cmds, (gchar *) "offline-clear");
 	g_ptr_array_add (cmds, (gchar *) "offline-status");
 
 	// sort all commands
@@ -2367,6 +2368,13 @@ main (int argc, char *argv[])
 
 		run_mainloop = FALSE;
 		ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+		if (!ret)
+			ctx->retval = error->code;
+
+	} else if (strcmp (mode, "offline-clear") == 0) {
+
+		run_mainloop = FALSE;
+		ret = pk_offline_clear_results_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 		if (!ret)
 			ctx->retval = error->code;
 
