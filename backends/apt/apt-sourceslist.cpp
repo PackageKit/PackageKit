@@ -3,6 +3,7 @@
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
  *           (c) 2016 Daniel Nicoletti <dantti12@gmail.com>
+ *           (c) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
  *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -312,7 +313,7 @@ bool SourcesList::ReadSourceOneLine(string listpath)
                 //return _error->Error("Syntax error in line %s", buf);
             }
         }
-#ifndef HAVE_RPM
+
         // check for absolute dist
         if (rec.Dist.empty() == false && rec.Dist[rec.Dist.size() - 1] == '/') {
             // make sure there's no section
@@ -325,7 +326,6 @@ bool SourcesList::ReadSourceOneLine(string listpath)
             AddSourceNode(rec);
             continue;
         }
-#endif
 
         const char *tmp = p;
         rec.NumSections = 0;
@@ -393,7 +393,7 @@ bool SourcesList::ReadSourceDir(string Dir)
             continue;
         }
 
-        // Only look at files ending in .list to skip .rpmnew etc files
+        // Only look at files ending in .list and .sources, skip .dpkg-new/.bak/.save etc.
         if (!g_str_has_suffix (Ent->d_name, ".list") &&
             !g_str_has_suffix (Ent->d_name, ".sources")) {
             continue;
@@ -444,11 +444,7 @@ bool SourcesList::ReadSources()
 SourcesList::SourceRecord *SourcesList::AddEmptySource()
 {
     SourceRecord rec;
-#ifdef HAVE_RPM
-    rec.Type = Rpm;
-#else
     rec.Type = Deb;
-#endif
     rec.VendorID = "";
     rec.SourceFile = _config->FindFile("Dir::Etc::sourcelist");
     rec.Dist = "";
@@ -557,23 +553,10 @@ bool SourcesList::SourceRecord::SetType(string S)
         Type |= Deb;
     } else if (S == "deb-src") {
         Type |= DebSrc;
-    } else if (S == "rpm") {
-        Type |= Rpm;
-    } else if (S == "rpm-src") {
-        Type |= RpmSrc;
-    } else if (S == "rpm-dir") {
-        Type |= RpmDir;
-    } else if (S == "rpm-src-dir") {
-        Type |= RpmSrcDir;
-    } else if (S == "repomd") {
-        Type |= Repomd;
-    } else if (S == "repomd-src") {
-        Type |= RepomdSrc;
     } else {
         return false;
     }
 
-    //cout << S << " settype " << (Type | Repomd) << endl;
     return true;
 }
 
@@ -583,21 +566,8 @@ string SourcesList::SourceRecord::GetType()
         return "deb";
     } else if ((Type & DebSrc) != 0) {
         return "deb-src";
-    } else if ((Type & Rpm) != 0) {
-        return "rpm";
-    } else if ((Type & RpmSrc) != 0) {
-        return "rpm-src";
-    } else if ((Type & RpmDir) != 0) {
-        return "rpm-dir";
-    } else if ((Type & RpmSrcDir) != 0) {
-        return "rpm-src-dir";
-    } else if ((Type & Repomd) != 0) {
-        return "repomd";
-    } else if ((Type & RepomdSrc) != 0) {
-        return "repomd-src";
     }
 
-    //cout << "type " << (Type & Repomd) << endl;
     return "unknown";
 }
 
@@ -834,24 +804,6 @@ ostream &operator<<(ostream &os, const SourcesList::SourceRecord &rec)
     }
     if ((rec.Type & SourcesList::DebSrc) != 0) {
         os << "DebSrc";
-    }
-    if ((rec.Type & SourcesList::Rpm) != 0) {
-        os << "Rpm";
-    }
-    if ((rec.Type & SourcesList::RpmSrc) != 0) {
-        os << "RpmSrc";
-    }
-    if ((rec.Type & SourcesList::RpmDir) != 0) {
-        os << "RpmDir";
-    }
-    if ((rec.Type & SourcesList::RpmSrcDir) != 0) {
-        os << "RpmSrcDir";
-    }
-    if ((rec.Type & SourcesList::Repomd) != 0) {
-        os << "Repomd";
-    }
-    if ((rec.Type & SourcesList::RepomdSrc) != 0) {
-        os << "RepomdSrc";
     }
     os << endl;
     os << "SourceFile: " << rec.SourceFile << endl;

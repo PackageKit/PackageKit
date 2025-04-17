@@ -2,7 +2,8 @@
  *
  * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
- *               2016 Harald Sitter <sitter@kde.org>
+ * Copyright (C) 2016 Harald Sitter <sitter@kde.org>
+ * Copyright (C) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -911,10 +912,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-                    (souceRecord->Type & SourcesList::DebSrc ||
-                     souceRecord->Type & SourcesList::RpmSrc ||
-                     souceRecord->Type & SourcesList::RpmSrcDir ||
-                     souceRecord->Type & SourcesList::RepomdSrc)) {
+                    (souceRecord->Type & SourcesList::DebSrc)) {
                 continue;
             }
 
