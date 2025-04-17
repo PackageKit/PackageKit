@@ -1,4 +1,4 @@
-/* apt-sourceslist.cpp - access the sources.list file
+/* apt-sourceslist.cpp - read & write APT repository sources
  *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
@@ -36,8 +36,6 @@
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
-#include <apt-pkg/indexfile.h>
-#include <apt-pkg/metaindex.h>
 #include <algorithm>
 #include <fstream>
 #include <fcntl.h>
@@ -244,7 +242,7 @@ bool SourcesList::ReadSourceDeb822(string listpath)
     return true;
 }
 
-bool SourcesList::ReadSourceOneLine(string listpath)
+bool SourcesList::ReadSourceLegacy(string listpath)
 {
     char buf[512];
     const char *p;
@@ -362,7 +360,7 @@ bool SourcesList::ReadSourcePart(string listpath)
     if (g_str_has_suffix (listpath.c_str(), ".sources")) {
         return ReadSourceDeb822(listpath);
     } else {
-        return ReadSourceOneLine(listpath);
+        return ReadSourceLegacy(listpath);
     }
 }
 

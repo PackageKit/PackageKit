@@ -1,4 +1,7 @@
-apt_tests = executable(
+
+apt_test_data_dir = meson.current_source_dir() / 'testdata'
+
+apt_tests_exe = executable(
   'apt-tests',
   'apt-tests.cpp',
   'definitions.cpp',
@@ -12,6 +15,7 @@ apt_tests = executable(
   dependencies: [
     packagekit_glib2_dep,
     gstreamer_dep,
+    apt_pkg_dep,
   ],
   build_by_default: true,
   install: false,
@@ -19,5 +23,6 @@ apt_tests = executable(
 
 test(
   'apt-backend-tests',
-  apt_tests
+  apt_tests_exe,
+  args: [apt_test_data_dir],
 )
