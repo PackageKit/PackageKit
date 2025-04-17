@@ -1,4 +1,30 @@
+/*
+ * Copyright (c) 2024 Alessandro Astone
+ * Copyright (c) 2024-2025 Matthias Klumpp <matthias@tenstral.net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include <apt-pkg/configuration.h>
+
+#include "apt-sourceslist.h"
 #include "gst-matcher.h"
+
+
+static std::string testdata_dir = "";
 
 const char *gst_plugins_bad_pkg = R"(Package: gstreamer1.0-plugins-bad
 Architecture: amd64
@@ -173,9 +199,62 @@ apt_test_gst_matcher_bad_caps (void)
     }
 }
 
+static void
+apt_test_sources_read (void)
+{
+    SourcesList sourcesList;
+    std::string testSourcesDir = testdata_dir + "/sources";
+    g_assert_true (sourcesList.ReadSourceDir(testSourcesDir));
+
+    static const set<string> expectedSources = {
+        testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ experimental main contrib non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
+        testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
+        testSourcesDir + "/debian.sources:deb-src http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
+        testSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
+        testSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla-disabled main | main | packages.mozilla.org/apt - Mozilla disabled (main) | disabled"
+    };
+
+    set<string> foundSources;
+    for (SourcesList::SourceRecord *souceRecord : sourcesList.SourceRecords) {
+        if (souceRecord->Type & SourcesList::Comment)
+            continue;
+
+        string srcRecordStr = souceRecord->repoId() + " | " + souceRecord->joinedSections() + " | " + souceRecord->niceName() + " | " +
+                        ((souceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
+        foundSources.insert(srcRecordStr);
+    }
+
+    // compare results
+    if (foundSources != expectedSources) {
+        g_test_message("Mismatch in source entries:");
+
+        for (const string &line : foundSources) {
+            if (expectedSources.find(line) == expectedSources.end())
+                g_test_message("  Unexpected: %s", line.c_str());
+        }
+
+        for (const string &line : expectedSources) {
+            if (foundSources.find(line) == foundSources.end())
+                g_test_message("  Missing:    %s", line.c_str());
+        }
+
+        g_assert_not_reached();
+    }
+}
+
 int
 main (int argc, char **argv)
 {
+    if (argc == 0)
+        g_error ("No test directory specified!");
+
+    g_assert_nonnull (argv[1]);
+    testdata_dir = std::string (argv[1]);
+    if (!testdata_dir.empty() && testdata_dir.back() == '/')
+        testdata_dir.pop_back();
+    g_assert_true (g_file_test (testdata_dir.c_str(), G_FILE_TEST_EXISTS));
+
+    g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
     g_test_init (&argc, &argv, NULL);
 
     /* tests go here */
@@ -183,6 +262,7 @@ main (int argc, char **argv)
     g_test_add_func ("/apt/gst-matcher/with-caps", apt_test_gst_matcher_with_caps);
     g_test_add_func ("/apt/gst-matcher/without-caps", apt_test_gst_matcher_without_caps);
     g_test_add_func ("/apt/gst-matcher/bad-caps", apt_test_gst_matcher_bad_caps);
+    g_test_add_func ("/apt/sources/read", apt_test_sources_read);
 
     return g_test_run();
 }
