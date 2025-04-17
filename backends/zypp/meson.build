@@ -22,10 +22,10 @@ shared_module(
     '-Wall',
     '-Woverloaded-virtual',
     '-Wnon-virtual-dtor',
+    '-Wno-error=deprecated-declarations',
     '-std=c++1z'
   ],
   c_args: [
-    '-Wno-deprecated',
     '-D_FILE_OFFSET_BITS=64',
   ],
   install: true,
