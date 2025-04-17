@@ -108,6 +108,30 @@ package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
+# maintainer mode is even stricter
+if get_option('maintainer')
+  maintainer_compiler_flags = [
+    '-Werror',
+    '-Wall',
+    '-Wextra',
+    '-Wcast-align',
+    '-Wno-uninitialized',
+    '-Wempty-body',
+    '-Winit-self',
+    '-Wnull-dereference',
+    '-Wfloat-equal',
+    '-Winline',
+    '-Wno-error=comment',
+  ]
+
+  supported_maintainer_flags = cc.get_supported_arguments(maintainer_compiler_flags, checked: 'warn')
+
+  add_project_arguments(
+    supported_maintainer_flags,
+      language: ['c', 'cpp']
+    )
+endif
+
 # default compiler flags for C and C++
 default_compiler_flags = [
     '-Wcast-align',
@@ -179,30 +203,6 @@ add_project_arguments(
   '-Werror=init-self',
   language: 'cpp'
 )
-
-# maintainer mode is even stricter
-if get_option('maintainer')
-  maintainer_compiler_flags = [
-    '-Werror',
-    '-Wall',
-    '-Wextra',
-    '-Wcast-align',
-    '-Wno-uninitialized',
-    '-Wempty-body',
-    '-Winit-self',
-    '-Wnull-dereference',
-    '-Wfloat-equal',
-    '-Winline',
-    '-Wno-error=comment',
-  ]
-
-  supported_maintainer_flags = cc.get_supported_arguments(maintainer_compiler_flags, checked: 'warn')
-
-  add_project_arguments(
-    supported_maintainer_flags,
-      language: ['c', 'cpp']
-    )
-endif
 
 subdir('po')
 subdir('policy')
