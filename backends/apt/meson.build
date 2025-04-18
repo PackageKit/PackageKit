@@ -44,6 +44,8 @@ packagekit_backend_apt_module = shared_library(
   'apt-sourceslist.h',
   'apt-utils.cpp',
   'apt-utils.h',
+  'deb822.cpp',
+  'deb822.h',
   'deb-file.cpp',
   'deb-file.h',
   'gst-matcher.cpp',
