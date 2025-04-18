@@ -90,6 +90,8 @@ private:
                      pkgTagSection &Tags,
                      unsigned int const i,
                      FileFd &Fd);
+    bool UpdateSourceLegacy(const std::string &filename);
+    bool UpdateSourceDeb822(const std::string &filename);
 
 public:
     SourceRecord *AddSource(RecType Type,

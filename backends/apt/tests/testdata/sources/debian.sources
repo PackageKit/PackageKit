@@ -4,6 +4,7 @@ Suites: testing
 Components: main contrib non-free-firmware non-free
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
 
+# I am a comment!
 Types: deb
 URIs: http://deb.debian.org/debian/
 Suites: experimental

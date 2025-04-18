@@ -18,11 +18,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <filesystem>
 #include <apt-pkg/configuration.h>
 
+#include "deb822.h"
 #include "apt-sourceslist.h"
 #include "gst-matcher.h"
 
+namespace fs = std::filesystem;
 
 static std::string testdata_dir = "";
 
@@ -200,13 +203,102 @@ apt_test_gst_matcher_bad_caps (void)
 }
 
 static void
-apt_test_sources_read (void)
+apt_test_deb822 (void)
+{
+    const std::string input = R"(# Comment
+Package: testpkg
+Version: 1.0
+# Intermediate comment
+Description: This is a test
+ for multiline
+ field.
+
+# Another comment
+
+Package: packagekit
+Version: 1.4
+)";
+
+    const std::string expectedOutput = R"(# Comment
+Package: testpkg
+Version: 2.0.0
+# Intermediate comment
+Description: This is a test
+NewField: hello
+ world
+
+# Another comment
+
+Package: packagekit
+Version: 1.4
+AnotherNewField: Yay: Hurray!
+)";
+
+    Deb822File deb;
+    g_assert_true(deb.loadFromString(input));
+
+    // read field
+    auto version = deb.getFieldValue(0, "Version");
+    g_assert_true(version.has_value());
+    g_assert_cmpstr(version.value().c_str(), ==, "1.0");
+
+    auto desc = deb.getFieldValue(0, "Description");
+    g_assert_true(desc.has_value());
+    g_assert_cmpstr(desc.value().c_str(), ==, "This is a test\n for multiline\n field.");
+
+    auto value = deb.getFieldValue(1, "Package");
+    g_assert_true(value.has_value());
+    g_assert_cmpstr(value.value().c_str(), ==, "packagekit");
+
+    // modify/add fields
+    g_assert_true(deb.modifyField(0, "Version", "2.0.0"));
+    g_assert_true(deb.modifyField(0, "NewField", "hello\nworld"));
+    g_assert_true(deb.modifyField(1, "AnotherNewField", "Yay: Hurray!"));
+
+    // get modified fields
+    auto newField = deb.getFieldValue(0, "NewField");
+    g_assert_true(newField.has_value());
+    g_assert_cmpstr(newField.value().c_str(), ==, "hello\nworld");
+    newField = deb.getFieldValue(1, "AnotherNewField");
+    g_assert_true(newField.has_value());
+    g_assert_cmpstr(newField.value().c_str(), ==, "Yay: Hurray!");
+
+    auto output = deb.toString();
+    g_assert_cmpstr(output.c_str(), ==, expectedOutput.c_str());
+
+    // Check string contains expected lines
+    g_assert_true(output.find("Version: 2.0.0") != std::string::npos);
+    g_assert_true(output.find("NewField: hello\n world") != std::string::npos);
+}
+
+static bool
+_test_string_sets_equal(const set<string> &expected, const set<string> &testSet)
+{
+    if (expected == testSet)
+        return true;
+
+    g_test_message("Mismatch in sets:");
+
+    for (const string &line : testSet) {
+        if (expected.find(line) == expected.end())
+            g_test_message("  Unexpected: %s", line.c_str());
+    }
+
+    for (const string &line : expected) {
+        if (testSet.find(line) == testSet.end())
+            g_test_message("  Missing:    %s", line.c_str());
+    }
+
+    return false;
+}
+
+static bool
+_test_sample_sources(const std::string &testSourcesDir)
 {
     SourcesList sourcesList;
-    std::string testSourcesDir = testdata_dir + "/sources";
     g_assert_true (sourcesList.ReadSourceDir(testSourcesDir));
 
-    static const set<string> expectedSources = {
+    const set<string> expectedSources = {
         testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ experimental main contrib non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
         testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
         testSourcesDir + "/debian.sources:deb-src http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
@@ -215,31 +307,45 @@ apt_test_sources_read (void)
     };
 
     set<string> foundSources;
-    for (SourcesList::SourceRecord *souceRecord : sourcesList.SourceRecords) {
-        if (souceRecord->Type & SourcesList::Comment)
+    for (SourcesList::SourceRecord *sourceRecord : sourcesList.SourceRecords) {
+        if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
-        string srcRecordStr = souceRecord->repoId() + " | " + souceRecord->joinedSections() + " | " + souceRecord->niceName() + " | " +
-                        ((souceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
+        string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
+                        ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
         foundSources.insert(srcRecordStr);
     }
 
     // compare results
-    if (foundSources != expectedSources) {
-        g_test_message("Mismatch in source entries:");
+    return _test_string_sets_equal(expectedSources, foundSources);
+}
 
-        for (const string &line : foundSources) {
-            if (expectedSources.find(line) == expectedSources.end())
-                g_test_message("  Unexpected: %s", line.c_str());
-        }
+static void
+apt_test_sources_read (void)
+{
+    std::string testSourcesDir = testdata_dir + "/sources";
+    g_assert_true (_test_sample_sources(testSourcesDir));
+}
 
-        for (const string &line : expectedSources) {
-            if (foundSources.find(line) == foundSources.end())
-                g_test_message("  Missing:    %s", line.c_str());
-        }
+static void
+apt_test_sources_write (void)
+{
+    std::string origSampleSourcesDir = testdata_dir + "/sources";
+    std::string wtestSourcesDir = testdata_dir + "/sources.tmp";
 
-        g_assert_not_reached();
-    }
+    // create pristine directory to work in
+    if (fs::exists(wtestSourcesDir) && fs::is_directory(wtestSourcesDir))
+        fs::remove_all(wtestSourcesDir);
+    fs::copy(origSampleSourcesDir, wtestSourcesDir, fs::copy_options::recursive);
+
+    // read data and write it back, ensure we do not change anything
+    SourcesList sourcesList;
+    g_assert_true (sourcesList.ReadSourceDir(wtestSourcesDir));
+    g_assert_true (sourcesList.UpdateSources());
+    g_assert_true (_test_sample_sources(wtestSourcesDir));
+
+    // cleanup
+    fs::remove_all(wtestSourcesDir);
 }
 
 int
@@ -262,7 +368,9 @@ main (int argc, char **argv)
     g_test_add_func ("/apt/gst-matcher/with-caps", apt_test_gst_matcher_with_caps);
     g_test_add_func ("/apt/gst-matcher/without-caps", apt_test_gst_matcher_without_caps);
     g_test_add_func ("/apt/gst-matcher/bad-caps", apt_test_gst_matcher_bad_caps);
+    g_test_add_func ("/apt/deb822/readwrite", apt_test_deb822);
     g_test_add_func ("/apt/sources/read", apt_test_sources_read);
+    g_test_add_func ("/apt/sources/write", apt_test_sources_write);
 
     return g_test_run();
 }

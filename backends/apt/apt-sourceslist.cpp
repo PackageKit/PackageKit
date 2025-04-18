@@ -36,6 +36,7 @@
 #include <apt-pkg/strutl.h>
 #include <apt-pkg/error.h>
 #include <apt-pkg/tagfile.h>
+#include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <fcntl.h>
@@ -108,47 +109,7 @@ bool SourcesList::ParseStanza(const char*Type,
                               unsigned int const i,
                               FileFd &Fd)
 {
-    map<string, string> Options;
-
     string Enabled = Tags.FindS("Enabled");
-
-    std::map<char const * const, std::pair<char const * const, bool> > mapping;
-#define APT_PLUSMINUS(X, Y) \
-    mapping.insert(std::make_pair(X, std::make_pair(Y, true))); \
-    mapping.insert(std::make_pair(X "-Add", std::make_pair(Y "+", true))); \
-    mapping.insert(std::make_pair(X "-Remove", std::make_pair(Y "-", true)))
-    APT_PLUSMINUS("Architectures", "arch");
-    APT_PLUSMINUS("Languages", "lang");
-    APT_PLUSMINUS("Targets", "target");
-#undef APT_PLUSMINUS
-    mapping.insert(std::make_pair("Trusted", std::make_pair("trusted", false)));
-    mapping.insert(std::make_pair("Check-Valid-Until", std::make_pair("check-valid-until", false)));
-    mapping.insert(std::make_pair("Valid-Until-Min", std::make_pair("valid-until-min", false)));
-    mapping.insert(std::make_pair("Valid-Until-Max", std::make_pair("valid-until-max", false)));
-    mapping.insert(std::make_pair("Check-Date", std::make_pair("check-date", false)));
-    mapping.insert(std::make_pair("Date-Max-Future", std::make_pair("date-max-future", false)));
-    mapping.insert(std::make_pair("Snapshot", std::make_pair("snapshot", false)));
-    mapping.insert(std::make_pair("Signed-By", std::make_pair("signed-by", false)));
-    mapping.insert(std::make_pair("PDiffs", std::make_pair("pdiffs", false)));
-    mapping.insert(std::make_pair("By-Hash", std::make_pair("by-hash", false)));
-
-    for (std::map<char const * const, std::pair<char const * const, bool> >::const_iterator m = mapping.begin(); m != mapping.end(); ++m)
-        if (Tags.Exists(m->first)) {
-            if (m->second.second) {
-                auto const values = FindMultiValue(Tags, m->first);
-                Options[m->second.first] = APT::String::Join(values, ",");
-            } else {
-                Options[m->second.first] = Tags.FindS(m->first);
-            }
-        }
-
-    {
-        std::string entry;
-        strprintf(entry, "%s:%i", Fd.Name().c_str(), i);
-        Options["sourceslist-entry"] = entry;
-    }
-
-    Options["sourceslist-entry-is-deb822"] = "true";
 
     // now create one item per suite/section
     auto const list_uris = FindMultiValue(Tags, "URIs");
@@ -264,9 +225,8 @@ bool SourcesList::ReadSourceLegacy(string listpath)
         ifs.getline(buf, sizeof(buf));
 
         rec.SourceFile = listpath;
-        while (isspace(*p)) {
+        while (isspace(*p))
             p++;
-        }
 
         if (*p == '#') {
             rec.Type = Disabled;
@@ -494,6 +454,73 @@ void SourcesList::SwapSources( SourceRecord *&rec_one, SourceRecord *&rec_two )
     SourceRecords.erase( rec_n );
 }
 
+bool SourcesList::UpdateSourceLegacy(const string &filename)
+{
+    if (std::filesystem::path(filename).extension().string() != ".list") {
+        g_warning("Tried to update APT source file '%s' as legacy file, but filename has wrong extension.",
+            filename.c_str());
+        return false;
+    }
+
+    ofstream ofs(filename.c_str(), ios::out);
+    if (!ofs != 0) {
+        return false;
+    }
+
+    for (SourceRecord *sr : SourceRecords) {
+        if (filename != sr->SourceFile) {
+            continue;
+        }
+
+        string S;
+        if ((sr->Type & Comment) != 0) {
+            S = sr->Comment;
+        } else if (sr->URI.empty() || sr->Dist.empty()) {
+            continue;
+        } else {
+            if ((sr->Type & Disabled) != 0)
+                S = "# ";
+
+            S += sr->GetType() + " ";
+
+            if (sr->VendorID.empty() == false)
+                S += "[" + sr->VendorID + "] ";
+
+            S += sr->URI + " ";
+            S += sr->Dist + " ";
+
+            for (unsigned int J = 0; J < sr->NumSections; ++J) {
+                S += sr->Sections[J] + " ";
+            }
+        }
+        ofs << S << endl;
+    }
+    ofs.close();
+
+    return true;
+}
+
+bool SourcesList::UpdateSourceDeb822(const std::string &filename)
+{
+    if (std::filesystem::path(filename).extension().string() != ".sources") {
+        g_warning("Tried to update APT source file '%s' in Deb822 format, but filename has wrong extension.",
+            filename.c_str());
+        return false;
+    }
+
+    ofstream ofs(filename.c_str(), ios::out);
+    if (!ofs != 0)
+        return false;
+
+    for (SourceRecord *sr : SourceRecords) {
+        if (filename != sr->SourceFile)
+            continue;
+    }
+    ofs.close();
+
+    return true;
+}
+
 bool SourcesList::UpdateSources()
 {
     list<string> filenames;
@@ -507,41 +534,22 @@ bool SourcesList::UpdateSources()
     filenames.unique();
 
     for (const string &filename : filenames) {
-        ofstream ofs(filename.c_str(), ios::out);
-        if (!ofs != 0) {
-            return false;
+        const auto fileExt = std::filesystem::path(filename).extension().string();
+        if (fileExt == ".sources") {
+            // TODO
+            //if (!UpdateSourceDeb822(filename))
+            //    return false;
+
+        } else if (fileExt == ".list") {
+            if (!UpdateSourceLegacy(filename))
+                return false;
+
+        } else {
+            g_warning("Tried to update APT source file '%s', but could not determine file type.",
+                filename.c_str());
         }
-
-        for (SourceRecord *sr : SourceRecords) {
-            if (filename != sr->SourceFile) {
-                continue;
-            }
-
-            string S;
-            if ((sr->Type & Comment) != 0) {
-                S = sr->Comment;
-            } else if (sr->URI.empty() || sr->Dist.empty()) {
-                continue;
-            } else {
-                if ((sr->Type & Disabled) != 0)
-                    S = "# ";
-
-                S += sr->GetType() + " ";
-
-                if (sr->VendorID.empty() == false)
-                    S += "[" + sr->VendorID + "] ";
-
-                S += sr->URI + " ";
-                S += sr->Dist + " ";
-
-                for (unsigned int J = 0; J < sr->NumSections; ++J) {
-                    S += sr->Sections[J] + " ";
-                }
-            }
-            ofs << S << endl;
-        }
-        ofs.close();
     }
+
     return true;
 }
 
