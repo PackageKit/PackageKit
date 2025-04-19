@@ -36,6 +36,7 @@ G_BEGIN_DECLS
  * '|': used as the filename separator
  * '~': conary
  * '@': conary
+ * ',': may be a part of version string in some OSes
  *
  * If this has to be changed, also change:
  * - backends/urpmi/helpers/urpmi-dispatched-backend.pl
