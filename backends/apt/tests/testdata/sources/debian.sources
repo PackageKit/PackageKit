@@ -4,10 +4,14 @@ Suites: testing
 Components: main contrib non-free-firmware non-free
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
 
+#
+# Just a comment block
+#
+
 # I am a comment!
 Types: deb
 URIs: http://deb.debian.org/debian/
 Suites: experimental
 Components: main contrib non-free
 Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
-Enabled: false
+Enabled: no

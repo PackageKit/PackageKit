@@ -19,6 +19,7 @@
  */
 
 #include <filesystem>
+#include <memory>
 #include <apt-pkg/configuration.h>
 
 #include "deb822.h"
@@ -219,7 +220,7 @@ Package: packagekit
 Version: 1.4
 )";
 
-    const std::string expectedOutput = R"(# Comment
+    const std::string expectedOutputModify = R"(# Comment
 Package: testpkg
 Version: 2.0.0
 # Intermediate comment
@@ -231,6 +232,34 @@ NewField: hello
 
 Package: packagekit
 Version: 1.4
+AnotherNewField: Yay: Hurray!
+)";
+
+    const std::string expectedOutputDelete = R"(# Another comment
+
+Package: packagekit
+Version: 1.4
+AnotherNewField: Yay: Hurray!
+)";
+
+    const std::string expectedOutputDuplicate = R"(# Another comment
+
+Package: packagekit
+Version: 1.4
+AnotherNewField: Yay: Hurray!
+
+Package: packagekit
+Version: 1.6
+AnotherNewField: Yay: Hurray!
+)";
+
+    const std::string expectedOutputFieldDelete = R"(# Another comment
+
+Version: 1.4
+AnotherNewField: Yay: Hurray!
+
+Package: packagekit
+Version: 1.6
 AnotherNewField: Yay: Hurray!
 )";
 
@@ -251,9 +280,9 @@ AnotherNewField: Yay: Hurray!
     g_assert_cmpstr(value.value().c_str(), ==, "packagekit");
 
     // modify/add fields
-    g_assert_true(deb.modifyField(0, "Version", "2.0.0"));
-    g_assert_true(deb.modifyField(0, "NewField", "hello\nworld"));
-    g_assert_true(deb.modifyField(1, "AnotherNewField", "Yay: Hurray!"));
+    g_assert_true(deb.updateField(0, "Version", "2.0.0"));
+    g_assert_true(deb.updateField(0, "NewField", "hello\nworld"));
+    g_assert_true(deb.updateField(1, "AnotherNewField", "Yay: Hurray!"));
 
     // get modified fields
     auto newField = deb.getFieldValue(0, "NewField");
@@ -264,11 +293,28 @@ AnotherNewField: Yay: Hurray!
     g_assert_cmpstr(newField.value().c_str(), ==, "Yay: Hurray!");
 
     auto output = deb.toString();
-    g_assert_cmpstr(output.c_str(), ==, expectedOutput.c_str());
+    g_assert_cmpstr(output.c_str(), ==, expectedOutputModify.c_str());
 
-    // Check string contains expected lines
-    g_assert_true(output.find("Version: 2.0.0") != std::string::npos);
-    g_assert_true(output.find("NewField: hello\n world") != std::string::npos);
+    // test stanza deletion
+    g_assert_cmpuint(deb.stanzaCount(), ==, 2);
+    g_assert_true(deb.deleteStanza(0));
+    g_assert_cmpuint(deb.stanzaCount(), ==, 1);
+
+    output = deb.toString();
+    g_assert_cmpstr(output.c_str(), ==, expectedOutputDelete.c_str());
+
+    // test stanza duplication
+    int newIndex = deb.duplicateStanza(0);
+    g_assert_cmpint(newIndex, >=, 0);
+    g_assert_true(deb.updateField(newIndex, "Version", "1.6"));
+    output = deb.toString();
+    g_assert_cmpstr(output.c_str(), ==, expectedOutputDuplicate.c_str());
+
+    // test field deletion
+    g_assert_true(deb.deleteField(0, "Package"));
+    g_assert_false(deb.getFieldValue(0, "Package").has_value());
+    output = deb.toString();
+    g_assert_cmpstr(output.c_str(), ==, expectedOutputFieldDelete.c_str());
 }
 
 static bool
@@ -338,10 +384,66 @@ apt_test_sources_write (void)
         fs::remove_all(wtestSourcesDir);
     fs::copy(origSampleSourcesDir, wtestSourcesDir, fs::copy_options::recursive);
 
+    const set<string> expectedSourcesDisabled = {
+        wtestSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ experimental main contrib non-free | main contrib non-free | Debian Experimental (main contrib non-free) | enabled",
+        wtestSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | disabled",
+        wtestSourcesDir + "/debian.sources:deb-src http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
+        wtestSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
+        wtestSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla-disabled main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled"
+    };
+
     // read data and write it back, ensure we do not change anything
-    SourcesList sourcesList;
-    g_assert_true (sourcesList.ReadSourceDir(wtestSourcesDir));
-    g_assert_true (sourcesList.UpdateSources());
+    auto sourcesList = std::make_unique<SourcesList>();
+    g_assert_true (sourcesList->ReadSourceDir(wtestSourcesDir));
+    g_assert_true (sourcesList->UpdateSources());
+    g_assert_true (_test_sample_sources(wtestSourcesDir));
+
+    // enable/disable some stuff
+    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+        if (sourceRecord->Type & SourcesList::Comment)
+            continue;
+
+        if (sourceRecord->niceName() == "Debian Testing (main contrib non-free-firmware non-free)")
+            sourceRecord->Type |= SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "Debian Experimental (main contrib non-free)")
+            sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "packages.mozilla.org/apt - Mozilla disabled (main)")
+            sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
+    }
+    g_assert_true (sourcesList->UpdateSources());
+
+    // full reload
+    sourcesList = std::make_unique<SourcesList>();
+    g_assert_true (sourcesList->ReadSourceDir(wtestSourcesDir));
+
+    set<string> foundSources;
+    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+        if (sourceRecord->Type & SourcesList::Comment)
+            continue;
+
+        string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
+                        ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
+        foundSources.insert(srcRecordStr);
+    }
+
+    // compare results
+    g_assert_true (_test_string_sets_equal(expectedSourcesDisabled, foundSources));
+
+    // restore previous state
+    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+        if (sourceRecord->Type & SourcesList::Comment)
+            continue;
+
+        if (sourceRecord->niceName() == "Debian Testing (main contrib non-free-firmware non-free)")
+            sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "Debian Experimental (main contrib non-free)")
+            sourceRecord->Type |= SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "packages.mozilla.org/apt - Mozilla disabled (main)")
+            sourceRecord->Type |= SourcesList::Disabled;
+    }
+    g_assert_true (sourcesList->UpdateSources());
+
+    // check if state was restored
     g_assert_true (_test_sample_sources(wtestSourcesDir));
 
     // cleanup

@@ -900,35 +900,35 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
         return;
     }
 
-    for (SourcesList::SourceRecord *souceRecord : sourcesList.SourceRecords) {
+    for (SourcesList::SourceRecord *sourceRecord : sourcesList.SourceRecords) {
 
-        if (souceRecord->Type & SourcesList::Comment) {
+        if (sourceRecord->Type & SourcesList::Comment) {
             continue;
         }
 
-        string sections = souceRecord->joinedSections();
+        string sections = sourceRecord->joinedSections();
 
-        string repoId = souceRecord->repoId();
+        string repoId = sourceRecord->repoId();
 
         if (role == PK_ROLE_ENUM_GET_REPO_LIST) {
             if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
-                    (souceRecord->Type & SourcesList::DebSrc)) {
+                    (sourceRecord->Type & SourcesList::DebSrc)) {
                 continue;
             }
 
             pk_backend_job_repo_detail(job,
                                        repoId.c_str(),
-                                       souceRecord->niceName().c_str(),
-                                       !(souceRecord->Type & SourcesList::Disabled));
+                                       sourceRecord->niceName().c_str(),
+                                       !(sourceRecord->Type & SourcesList::Disabled));
         } else if (repoId.compare(repo_id) == 0) {
             // Found the repo to enable/disable
             found = true;
 
             if (role == PK_ROLE_ENUM_REPO_ENABLE) {
                 if (enabled) {
-                    souceRecord->Type = souceRecord->Type & ~SourcesList::Disabled;
+                    sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
                 } else {
-                    souceRecord->Type |= SourcesList::Disabled;
+                    sourceRecord->Type |= SourcesList::Disabled;
                 }
 
                 // Commit changes
@@ -944,7 +944,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         return;
                     }
 
-                    PkgList removePkgs = apt->getPackagesFromRepo(souceRecord);
+                    PkgList removePkgs = apt->getPackagesFromRepo(sourceRecord);
                     if (removePkgs.size() > 0) {
                         // Install/Update/Remove packages, or just simulate
                         bool ret;
@@ -964,7 +964,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
                 // Now if we are not simulating remove the repository
                 if (!pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-                    sourcesList.RemoveSource(souceRecord);
+                    sourcesList.RemoveSource(sourceRecord);
 
                     // Commit changes
                     if (!sourcesList.UpdateSources()) {
