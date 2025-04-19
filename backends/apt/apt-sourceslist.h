@@ -48,22 +48,27 @@ public:
     struct SourceRecord {
         unsigned int Type;
         string VendorID;
-        string URI;
+        string PrimaryURI;
+        std::vector<std::string> URIs;
         string Dist;
         string *Sections;
         unsigned short NumSections;
+        string Comment;
+
+        string SourceFile;
+        uint Deb822StanzaIdx;
+
         string joinedSections();
         string niceName();
         string repoId();
         bool hasSection(const char *component);
-        string Comment;
-        string SourceFile;
 
         bool SetType(string);
         string GetType();
         bool SetURI(string);
+        bool SetURIs(const std::vector<std::string> &newURIs);
 
-        SourceRecord():Type(0), Sections(0), NumSections(0) {}
+        SourceRecord():Type(0), Sections(0), NumSections(0), Deb822StanzaIdx(0) {}
         ~SourceRecord() {
             if (Sections) {
                 delete [] Sections;
@@ -85,11 +90,10 @@ private:
     SourceRecord *AddSourceNode(SourceRecord &);
     VendorRecord *AddVendorNode(VendorRecord &);
     bool OpenConfigurationFileFd(std::string const &File, FileFd &Fd);
-    bool FixupURI(string &URI) const;
-    bool ParseStanza(const char*Type,
-                     pkgTagSection &Tags,
-                     unsigned int const i,
-                     FileFd &Fd);
+    bool ParseDeb822Stanza(const char*Type,
+                           pkgTagSection &Tags,
+                           unsigned int const stanzaIdx,
+                           FileFd &Fd);
     bool UpdateSourceLegacy(const std::string &filename);
     bool UpdateSourceDeb822(const std::string &filename);
 

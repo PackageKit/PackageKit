@@ -41,6 +41,7 @@
 #include <fstream>
 #include <fcntl.h>
 
+#include "deb822.h"
 #include "apt-utils.h"
 
 #include "config.h"
@@ -87,26 +88,9 @@ bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd) /
    return true;
 }
 
-bool SourcesList::FixupURI(string &URI) const
-{
-   if (URI.empty() == true)
-      return false;
-
-   if (URI.find(':') == string::npos)
-      return false;
-
-   URI = ::URI{SubstVar(URI, "$(ARCH)", _config->Find("APT::Architecture"))};
-
-   // Make sure that the URI is / postfixed
-   if (URI.back() != '/')
-      URI.push_back('/');
-
-   return true;
-}
-
-bool SourcesList::ParseStanza(const char*Type,
+bool SourcesList::ParseDeb822Stanza(const char *Type,
                               pkgTagSection &Tags,
-                              unsigned int const i,
+                              unsigned int const stanzaIdx,
                               FileFd &Fd)
 {
     string Enabled = Tags.FindS("Enabled");
@@ -115,6 +99,7 @@ bool SourcesList::ParseStanza(const char*Type,
     auto const list_uris = FindMultiValue(Tags, "URIs");
     auto const list_comp = FindMultiValue(Tags, "Components");
     auto list_suite = FindMultiValue(Tags, "Suites");
+
     {
         auto const nativeArch = _config->Find("APT::Architecture");
         std::transform(list_suite.begin(), list_suite.end(), list_suite.begin(),
@@ -122,55 +107,52 @@ bool SourcesList::ParseStanza(const char*Type,
     }
 
     if (list_uris.empty())
-        // TRANSLATOR: %u is a line number, the first %s is a filename of a file with the extension "second %s" and the third %s is a unique identifier for bugreports
-        return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "URI");
+        return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI");
 
     if (list_suite.empty())
-        return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "Suite");
+        return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Suite");
 
-    for (auto URI : list_uris) {
-        if (FixupURI(URI) == false)
-            return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "URI parse");
+    for (auto const &S : list_suite) {
+        SourceRecord rec = SourceRecord ();
+        rec.Deb822StanzaIdx = stanzaIdx;
 
-        for (auto const &S : list_suite) {
-            if (S.empty() == false && S[S.size() - 1] == '/') {
-                if (list_comp.empty() == false)
-                    return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "absolute Suite Component");
+        if (!rec.SetURIs(list_uris))
+            return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI parse");
 
-                SourceRecord rec = SourceRecord ();
-                rec.SourceFile = Fd.Name();
-                if (!rec.SetType(Type)) {
-                    _error->Error("Unknown type %s", Type);
-                    return false;
-                }
+        if (S.empty() == false && S[S.size() - 1] == '/') {
+            if (list_comp.empty() == false)
+                return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "absolute Suite Component");
 
-                if (Enabled.empty() == false && StringToBool(Enabled) == false)
-                    rec.Type |= SourcesList::Disabled;
-                rec.SetURI(URI);
-                rec.Dist = S;
-                rec.NumSections = 0;
-                rec.Sections = nullptr;
-                AddSourceNode(rec);
-             } else {
-                if (list_comp.empty())
-                return _error->Error("Malformed entry %u in %s file %s (%s)", i, "sources", Fd.Name().c_str(), "Component");
-
-                SourceRecord rec = SourceRecord ();
-                rec.SourceFile = Fd.Name();
-                if (!rec.SetType(Type)) {
-                    _error->Error("Unknown type %s", Type);
-                    return false;
-                }
-                if (Enabled.empty() == false && StringToBool(Enabled) == false)
-                    rec.Type |= SourcesList::Disabled;
-
-                rec.SetURI(URI);
-                rec.Dist = S;
-                rec.NumSections = list_comp.size();
-                rec.Sections = new string[rec.NumSections];
-                std::copy(list_comp.begin(), list_comp.end(), rec.Sections);
-                AddSourceNode(rec);
+            rec.SourceFile = Fd.Name();
+            if (!rec.SetType(Type)) {
+                _error->Error("Unknown type %s", Type);
+                return false;
             }
+
+            if (Enabled.empty() == false && StringToBool(Enabled) == false)
+                rec.Type |= SourcesList::Disabled;
+
+            rec.Dist = S;
+            rec.NumSections = 0;
+            rec.Sections = nullptr;
+            AddSourceNode(rec);
+         } else {
+            if (list_comp.empty())
+                return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Component");
+
+            rec.SourceFile = Fd.Name();
+            if (!rec.SetType(Type)) {
+                _error->Error("Unknown type %s", Type);
+                return false;
+            }
+            if (Enabled.empty() == false && StringToBool(Enabled) == false)
+                rec.Type |= SourcesList::Disabled;
+
+            rec.Dist = S;
+            rec.NumSections = list_comp.size();
+            rec.Sections = new string[rec.NumSections];
+            std::copy(list_comp.begin(), list_comp.end(), rec.Sections);
+            AddSourceNode(rec);
         }
     }
 
@@ -195,7 +177,7 @@ bool SourcesList::ReadSourceDeb822(string listpath)
             return _error->Error("Malformed stanza %u in source list %s (type)", i, listpath.c_str());
 
         for (auto const &type : FindMultiValue(Tags, "Types")) {
-            if (!ParseStanza(type.c_str(), Tags, i, Fd))
+            if (!ParseDeb822Stanza(type.c_str(), Tags, i, Fd))
                 return false;
         }
     }
@@ -475,7 +457,7 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
         string S;
         if ((sr->Type & Comment) != 0) {
             S = sr->Comment;
-        } else if (sr->URI.empty() || sr->Dist.empty()) {
+        } else if (sr->PrimaryURI.empty() || sr->Dist.empty()) {
             continue;
         } else {
             if ((sr->Type & Disabled) != 0)
@@ -486,7 +468,7 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
             if (sr->VendorID.empty() == false)
                 S += "[" + sr->VendorID + "] ";
 
-            S += sr->URI + " ";
+            S += sr->PrimaryURI + " ";
             S += sr->Dist + " ";
 
             for (unsigned int J = 0; J < sr->NumSections; ++J) {
@@ -508,17 +490,86 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
         return false;
     }
 
-    ofstream ofs(filename.c_str(), ios::out);
-    if (!ofs != 0)
+    Deb822File sf;
+    if (!sf.load(filename)) {
+        g_warning("Failed to load Deb822 file '%s': %s", filename.c_str(), sf.lastError().c_str());
         return false;
+    }
 
+    std::set<uint> rmPendingStanzas;
     for (SourceRecord *sr : SourceRecords) {
         if (filename != sr->SourceFile)
             continue;
-    }
-    ofs.close();
 
-    return true;
+        // comments shouldn't exist for Deb822 files in this data structure,
+        // we parse them differently.
+        if ((sr->Type & Comment) != 0)
+            continue;
+
+        if (sr->PrimaryURI.empty() || sr->Dist.empty())
+            continue;
+
+        std::string components;
+        for (unsigned int J = 0; J < sr->NumSections; ++J)
+            components += sr->Sections[J] + " ";
+        if (!components.empty())
+            components.pop_back();
+
+        std::string uris;
+        for (const auto &uri : sr->URIs)
+            uris += uri + " ";
+        if (!uris.empty())
+            uris.pop_back();
+
+        const auto type = sr->GetType();
+
+        if (sf.getFieldValue(sr->Deb822StanzaIdx, "Types") != type ||
+            sf.getFieldValue(sr->Deb822StanzaIdx, "URIs") != uris ||
+            sf.getFieldValue(sr->Deb822StanzaIdx, "Components") != components ||
+            sf.getFieldValue(sr->Deb822StanzaIdx, "Suites") != sr->Dist) {
+            // The new Deb822 sources do not fit well on the existing data model and concept of
+            // what a "source" is, so we rewrite the file to make it match a "one stanza per source"
+            // scheme like what existed in legacy files.
+            // FIXME: In the long run, we should reconsider what a repository source is and adjust the internal
+            // data model, as rewriting the file like this is a really ugly hack.
+
+            // mark the old stanza for deletion and create a new one that we will edit
+            rmPendingStanzas.insert(sr->Deb822StanzaIdx);
+            sr->Deb822StanzaIdx = sf.duplicateStanza(sr->Deb822StanzaIdx);
+        }
+
+        sf.updateField(sr->Deb822StanzaIdx, "Types", type);
+        sf.updateField(sr->Deb822StanzaIdx, "URIs", uris);
+        sf.updateField(sr->Deb822StanzaIdx, "Suites", sr->Dist);
+        sf.updateField(sr->Deb822StanzaIdx, "Components", components);
+
+        if ((sr->Type & Disabled) != 0)
+            sf.updateField(sr->Deb822StanzaIdx, "Enabled", "no");
+        else
+            sf.deleteField(sr->Deb822StanzaIdx, "Enabled");
+    }
+
+    // delete any stanzas marked for removal
+    for (auto &rmIdx : rmPendingStanzas)
+        sf.deleteStanza(rmIdx);
+
+    if (!sf.save(filename)) {
+        g_warning("Failed to save Deb822 file '%s': %s", filename.c_str(), sf.lastError().c_str());
+        return false;
+    }
+
+    // remove all records from this file
+    for (auto it = SourceRecords.begin(); it != SourceRecords.end();) {
+        if ((*it)->SourceFile == filename) {
+            delete *it;
+            it = SourceRecords.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // reload the updated data
+    return ReadSourceDeb822(filename);
 }
 
 bool SourcesList::UpdateSources()
@@ -536,9 +587,8 @@ bool SourcesList::UpdateSources()
     for (const string &filename : filenames) {
         const auto fileExt = std::filesystem::path(filename).extension().string();
         if (fileExt == ".sources") {
-            // TODO
-            //if (!UpdateSourceDeb822(filename))
-            //    return false;
+            if (!UpdateSourceDeb822(filename))
+                return false;
 
         } else if (fileExt == ".list") {
             if (!UpdateSourceLegacy(filename))
@@ -577,25 +627,42 @@ string SourcesList::SourceRecord::GetType()
     return "unknown";
 }
 
-bool SourcesList::SourceRecord::SetURI(string S)
+static bool FixupURI(string &URI)
 {
-    if (S.empty() == true) {
+    if (URI.empty() == true)
         return false;
-    }
-    if (S.find(':') == string::npos) {
+
+    if (URI.find(':') == string::npos)
         return false;
-    }
 
-    S = SubstVar(S, "$(ARCH)", _config->Find("APT::Architecture"));
-    S = SubstVar(S, "$(VERSION)", _config->Find("APT::DistroVersion"));
-    URI = S;
+    URI = ::URI{SubstVar(URI, "$(ARCH)", _config->Find("APT::Architecture"))};
 
-    // append a / to the end if one is not already there
-    if (URI[URI.size() - 1] != '/') {
-        URI += '/';
-    }
+    // Make sure that the URI is / postfixed
+    if (URI.back() != '/')
+        URI.push_back('/');
 
     return true;
+}
+
+bool SourcesList::SourceRecord::SetURI(string S)
+{
+    PrimaryURI = S;
+    return ::FixupURI(PrimaryURI);
+}
+
+bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
+{
+    bool ret = true;
+    URIs = newURIs;
+    for (auto &uri : URIs) {
+        if (!::FixupURI(uri))
+            ret = false;
+    }
+
+    if (!URIs.empty())
+        PrimaryURI = URIs[0];
+
+    return ret;
 }
 
 string SourcesList::SourceRecord::joinedSections()
@@ -613,7 +680,7 @@ string SourcesList::SourceRecord::joinedSections()
 string SourcesList::SourceRecord::niceName()
 {
     string ret;
-    if (starts_with(URI, "cdrom")) {
+    if (starts_with(PrimaryURI, "cdrom")) {
         ret = "Disc ";
     }
 
@@ -640,11 +707,11 @@ string SourcesList::SourceRecord::niceName()
     }
 
     std::string uri_info;
-    size_t schema_pos = URI.find("://");
+    size_t schema_pos = PrimaryURI.find("://");
     if (schema_pos == std::string::npos) {
-        uri_info = URI;
+        uri_info = PrimaryURI;
     } else {
-        uri_info = URI.substr(schema_pos + 3);
+        uri_info = PrimaryURI.substr(schema_pos + 3);
         if (uri_info.back() == '/')
             uri_info.pop_back();
     }
@@ -665,7 +732,7 @@ string SourcesList::SourceRecord::repoId()
     ret = SourceFile;
     ret += ":" + GetType();
     ret += VendorID + " ";
-    ret += URI + " ";
+    ret += PrimaryURI + " ";
     ret += Dist + " ";
     ret += joinedSections();
     return ret;
@@ -686,7 +753,8 @@ SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceReco
     // Needed for a proper deep copy of the record; uses the string operator= to properly copy the strings
     Type = rhs.Type;
     VendorID = rhs.VendorID;
-    URI = rhs.URI;
+    PrimaryURI = rhs.PrimaryURI;
+    URIs = rhs.URIs;
     Dist = rhs.Dist;
     Sections = new string[rhs.NumSections];
     for (unsigned int I = 0; I < rhs.NumSections; ++I) {
@@ -695,6 +763,7 @@ SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceReco
     NumSections = rhs.NumSections;
     Comment = rhs.Comment;
     SourceFile = rhs.SourceFile;
+    Deb822StanzaIdx = rhs.Deb822StanzaIdx;
 
     return *this;
 }
@@ -814,7 +883,7 @@ ostream &operator<<(ostream &os, const SourcesList::SourceRecord &rec)
     os << endl;
     os << "SourceFile: " << rec.SourceFile << endl;
     os << "VendorID: " << rec.VendorID << endl;
-    os << "URI: " << rec.URI << endl;
+    os << "URI: " << rec.PrimaryURI << endl;
     os << "Dist: " << rec.Dist << endl;
     os << "Section(s):" << endl;
 #if 0

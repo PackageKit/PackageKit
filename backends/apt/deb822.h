@@ -45,7 +45,10 @@ public:
     [[nodiscard]] size_t stanzaCount() const;
     [[nodiscard]] std::optional<std::string> getFieldValue(size_t stanzaIndex, const std::string& field,
                                                            std::optional<std::string> defaultValue = std::nullopt);
-    bool modifyField(size_t stanza_index, const std::string& field, const std::string& newValue);
+    bool updateField(size_t stanza_index, const std::string& field, const std::string& newValue);
+    bool deleteField(size_t stanzaIndex, const std::string& key);
+    bool deleteStanza(size_t index);
+    int duplicateStanza(size_t index);
 
     std::string toString() const;
 

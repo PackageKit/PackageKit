@@ -1098,8 +1098,8 @@ PkgList AptJob::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
             continue;
         }
 
-        // Check if the site the package comes from is include in the Repo uri
-        if (vf.File().Site() == NULL || rec->URI.find(vf.File().Site()) == std::string::npos) {
+        // Check if the site the package comes from is included in the Repo uri
+        if (vf.File().Site() == NULL || rec->PrimaryURI.find(vf.File().Site()) == std::string::npos) {
             continue;
         }
 

@@ -172,7 +172,7 @@ std::optional<std::string> Deb822File::getFieldValue(size_t stanzaIndex, const s
     return defaultValue;
 }
 
-bool Deb822File::modifyField(size_t stanzaIndex, const std::string& field, const std::string& newValue)
+bool Deb822File::updateField(size_t stanzaIndex, const std::string& field, const std::string& newValue)
 {
     if (stanzaIndex >= m_fieldStanzaIndices.size()) {
         m_lastError = "Stanza index out of range";
@@ -207,6 +207,82 @@ bool Deb822File::modifyField(size_t stanzaIndex, const std::string& field, const
         stanza.push_back(Line{" " + line, "", "", true});
 
     return true;
+}
+
+bool Deb822File::deleteField(size_t stanzaIndex, const std::string& key)
+{
+    if (stanzaIndex >= m_fieldStanzaIndices.size()) {
+        m_lastError = "Stanza index out of range";
+        return false;
+    }
+
+    Stanza& stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
+
+    for (auto it = stanza.begin(); it != stanza.end(); ++it) {
+        if (it->key == key) {
+            // erase the field and its continuation lines
+            auto next = std::next(it);
+            while (next != stanza.end() && next->isContinuation)
+                next = stanza.erase(next);
+
+            stanza.erase(it);
+
+            return true;
+        }
+    }
+
+    // not found
+    m_lastError = "";
+    return false;
+}
+
+bool Deb822File::deleteStanza(size_t index)
+{
+    if (index >= m_fieldStanzaIndices.size()) {
+        m_lastError = "Stanza index out of range";
+        return false;
+    }
+
+    size_t rawIndex = m_fieldStanzaIndices[index];
+    if (rawIndex >= m_allStanzas.size()) {
+        m_lastError = "Internal error: index mismatch";
+        return false;
+    }
+
+    m_allStanzas.erase(m_allStanzas.begin() + rawIndex);
+
+    // rebuild m_fieldStanzaIndices
+    m_fieldStanzaIndices.clear();
+    for (size_t i = 0; i < m_allStanzas.size(); ++i) {
+        if (isFieldStanza(m_allStanzas[i])) {
+            m_fieldStanzaIndices.push_back(i);
+        }
+    }
+
+    return true;
+}
+
+int Deb822File::duplicateStanza(size_t index)
+{
+    if (index >= m_fieldStanzaIndices.size()) {
+        m_lastError = "Stanza index out of range";
+        return -1;
+    }
+
+    size_t rawIndex = m_fieldStanzaIndices[index];
+    if (rawIndex >= m_allStanzas.size()) {
+        m_lastError = "Internal error: index mismatch";
+        return -1;
+    }
+
+    // copy and append
+    m_allStanzas.push_back(m_allStanzas[rawIndex]);
+
+    // append new index to fieldStanzaIndices and return it
+    size_t newRawIndex = m_allStanzas.size() - 1;
+    m_fieldStanzaIndices.push_back(newRawIndex);
+
+    return static_cast<int>(m_fieldStanzaIndices.size() - 1);
 }
 
 size_t Deb822File::stanzaCount() const
