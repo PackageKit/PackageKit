@@ -549,8 +549,10 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
             sf.deleteField(sr->Deb822StanzaIdx, "Enabled");
     }
 
-    // delete any stanzas marked for removal
-    for (auto &rmIdx : rmPendingStanzas)
+    // delete any stanzas marked for removal, in descending order to avoid index shifting
+    std::vector<uint> sortedRmStanzas(rmPendingStanzas.begin(), rmPendingStanzas.end());
+    std::sort(sortedRmStanzas.rbegin(), sortedRmStanzas.rend());
+    for (uint rmIdx : sortedRmStanzas)
         sf.deleteStanza(rmIdx);
 
     if (!sf.save(filename)) {
