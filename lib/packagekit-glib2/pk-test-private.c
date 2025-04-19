@@ -416,10 +416,10 @@ pk_test_package_ids_func (void)
 {
 	gboolean ret;
 	gchar *package_ids_blank[] = {NULL};
-	gchar **package_ids;
+	gchar **package_ids, **package_ids2;
 
 	/* parse va_list */
-	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora&bar;0.1.1;noarch;livna");
+	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora,bar;0.1.1;noarch;livna");
 	g_assert_true (package_ids != NULL);
 
 	/* verify size */
@@ -432,6 +432,64 @@ pk_test_package_ids_func (void)
 	/* verify */
 	ret = pk_package_ids_check (package_ids);
 	g_assert_true (ret);
+
+	/* corner cases:
+	 * preceding delimiter
+	 */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_string (",foo;0.0.1;i386;fedora,bar;0.1.1;noarch;livna");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+	ret = pk_package_ids_check (package_ids);
+	g_assert_true (ret);
+
+	/* trailing delimiter */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora,bar;0.1.1;noarch;livna,");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+	ret = pk_package_ids_check (package_ids);
+	g_assert_true (ret);
+
+	/* empty item */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora,,bar;0.1.1;noarch;livna");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+	ret = pk_package_ids_check (package_ids);
+	g_assert_true (ret);
+
+	/* all of the above */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_string (",foo;0.0.1;i386;fedora,,bar;0.1.1;noarch;livna,");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+	ret = pk_package_ids_check (package_ids);
+	g_assert_true (ret);
+
+	/* escaping:
+	 * pk_package_ids_from_id accepts unescaped IDs
+	 */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_id("foo,boo;0.0.1;i386;fedora");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 1);
+	ret = pk_package_ids_check (package_ids);
+	g_assert_true (ret);
+
+	/* pk_package_ids_present_id accepts unescaped IDs */
+	ret = pk_package_ids_present_id (package_ids, "foo,boo;0.0.1;i386;fedora");
+	g_assert_true (ret);
+
+	/* pk_package_ids_from_string accepts escaped IDs
+	 * (as produced by pk_package_ids_to_string)
+	 */
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_from_string ("foo\\,boo;0.0.1;i386;fedora,bar\\,baz;0.1.1;noarch;livna");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+
+	/* adding and removing */
+	package_ids2 = pk_package_ids_add_id (package_ids, "lean,mean;1.2.3;i386;fedora");
+	g_assert_cmpint (g_strv_length (package_ids2), ==, 3);
+	g_strfreev (package_ids);
+	package_ids = pk_package_ids_remove_id (package_ids2, "lean,mean;1.2.3;i386;fedora");
+	g_assert_cmpint (g_strv_length (package_ids), ==, 2);
+	g_strfreev (package_ids2);
 
 	g_strfreev (package_ids);
 }

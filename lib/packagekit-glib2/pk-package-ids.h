@@ -30,19 +30,6 @@
 
 G_BEGIN_DECLS
 
-/* rationale:
- *
- * '%': breaks printf
- * '|': used as the filename separator
- * '~': conary
- * '@': conary
- *
- * If this has to be changed, also change:
- * - backends/urpmi/helpers/urpmi-dispatched-backend.pl
- * - python/packagekit/backend.py
- */
-#define PK_PACKAGE_IDS_DELIM	"&"
-
 gchar		**pk_package_ids_from_id		(const gchar	*package_id);
 gchar		**pk_package_ids_from_string		(const gchar	*package_id);
 gboolean	 pk_package_ids_check			(gchar		**package_ids);

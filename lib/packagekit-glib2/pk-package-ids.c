@@ -25,6 +25,50 @@
 #include <packagekit-glib2/pk-package-id.h>
 #include <packagekit-glib2/pk-package-ids.h>
 
+/* Rationale for choosing ',' as separator is to make it match with what
+ * pk-offline machinery does when storing offline update results.
+ *
+ * If this has to be changed, also change:
+ * - lib/python/packagekit/backend.py
+ */
+#define PK_PACKAGE_IDS_DELIM_STR	","
+#define PK_PACKAGE_IDS_DELIM_CHR	','
+
+/* this is a stripped down version of g_key_file_parse_string_as_value from glib */
+static gchar *
+escape_package_id (const gchar *package_id)
+{
+	gchar *ret, *q;
+	const gchar *p;
+	gsize length;
+
+	length = strlen (package_id) + 1;
+	p = package_id;
+
+	/* Worst case would be that every character needs to be escaped.
+	* In other words every character turns to two characters
+	*/
+	ret = g_new (gchar, 2 * length);
+	q = ret;
+
+	while (p < (package_id + length - 1)) {
+		if (*p == PK_PACKAGE_IDS_DELIM_CHR) {
+			*q = '\\';
+			q++;
+			*q = PK_PACKAGE_IDS_DELIM_CHR;
+			q++;
+		} else  {
+			*q = *p;
+			q++;
+		}
+		p++;
+	}
+
+	*q = '\0';
+	return ret;
+}
+
+
 /**
  * pk_package_ids_from_id:
  * @package_id: A single package_id
@@ -39,8 +83,14 @@
 gchar **
 pk_package_ids_from_id (const gchar *package_id)
 {
+	gchar **ret;
+
 	g_return_val_if_fail (package_id != NULL, NULL);
-	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 1);
+
+	ret = g_new0 (char *, 2);
+	ret[0] = escape_package_id (package_id);
+
+	return ret;
 }
 
 /**
@@ -57,8 +107,32 @@ pk_package_ids_from_id (const gchar *package_id)
 gchar **
 pk_package_ids_from_string (const gchar *package_id)
 {
+	GPtrArray *package_ids_array;
+	const gchar *p = package_id;
+
 	g_return_val_if_fail (package_id != NULL, NULL);
-	return g_strsplit (package_id, PK_PACKAGE_IDS_DELIM, 0);
+
+	package_ids_array = g_ptr_array_new ();
+
+	while (*p != '\0') {
+		if (*p == '\\' && *(p+1) == PK_PACKAGE_IDS_DELIM_CHR) {
+			p += 2;
+			continue;
+		}
+		if (*p == PK_PACKAGE_IDS_DELIM_CHR) {
+			if (p - package_id > 1)
+				g_ptr_array_add (package_ids_array, g_strndup (package_id, p - package_id));
+			package_id = p + 1;
+		}
+		p++;
+	}
+
+	if (package_id != p)
+		g_ptr_array_add (package_ids_array, g_strndup (package_id, p - package_id));
+
+	g_ptr_array_add (package_ids_array, NULL);
+
+	return (gchar **) g_ptr_array_free (package_ids_array, FALSE);
 }
 
 /**
@@ -106,10 +180,25 @@ out:
 gchar *
 pk_package_ids_to_string (gchar **package_ids)
 {
+	guint size;
+	gchar **escaped_package_ids;
+	gchar *ret;
+
 	/* special case as this is allowed */
 	if (package_ids == NULL)
 		return NULL;
-	return g_strjoinv (PK_PACKAGE_IDS_DELIM, package_ids);
+
+	size = g_strv_length (package_ids);
+	escaped_package_ids = g_new (gchar *, size + 1);
+
+	for (guint i = 0; i < size; i++)
+		escaped_package_ids[i] = escape_package_id (package_ids[i]);
+	escaped_package_ids[size] = NULL;
+
+	ret = g_strjoinv (PK_PACKAGE_IDS_DELIM_STR, escaped_package_ids);
+	g_strfreev (escaped_package_ids);
+
+	return ret;
 }
 
 /**
@@ -126,14 +215,16 @@ pk_package_ids_to_string (gchar **package_ids)
 gboolean
 pk_package_ids_present_id (gchar **package_ids, const gchar *package_id)
 {
-	guint i;
+	g_autofree gchar *escaped_package_id;
 
 	g_return_val_if_fail (package_ids != NULL, FALSE);
 	g_return_val_if_fail (package_id != NULL, FALSE);
 
+	escaped_package_id = escape_package_id (package_id);
+
 	/* iterate */
-	for (i = 0; package_ids[i] != NULL; i++) {
-		if (g_strcmp0 (package_id, package_ids[i]) == 0)
+	for (guint i = 0; package_ids[i] != NULL; i++) {
+		if (g_strcmp0 (escaped_package_id, package_ids[i]) == 0)
 			return TRUE;
 	}
 	return FALSE;
@@ -166,7 +257,7 @@ pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
 	/* iterate */
 	for (i = 0; package_ids[i] != NULL; i++)
 		result[i] = g_strdup (package_ids[i]);
-	result[i] = g_strdup (package_id);
+	result[i] = escape_package_id (package_id);
 	return result;
 }
 
@@ -218,20 +309,20 @@ pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
 gchar **
 pk_package_ids_remove_id (gchar **package_ids, const gchar *package_id)
 {
-	guint i;
-	guint j = 0;
+	g_autofree gchar *escaped_package_id;
 	guint len;
 	gchar **result;
 
 	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
 
+	escaped_package_id = escape_package_id (package_id);
 	len = g_strv_length (package_ids);
 	result = g_new0 (gchar *, len+1);
 
 	/* iterate */
-	for (i = 0; package_ids[i] != NULL; i++) {
-		if (g_strcmp0 (package_id, package_ids[i]) != 0)
+	for (guint i = 0, j = 0; package_ids[i] != NULL; i++) {
+		if (g_strcmp0 (escaped_package_id, package_ids[i]) != 0)
 			result[j++] = g_strdup (package_ids[i]);
 	}
 	return result;

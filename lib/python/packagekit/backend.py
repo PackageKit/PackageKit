@@ -30,8 +30,27 @@ import os.path
 
 from .enums import *
 
-PACKAGE_IDS_DELIM = '&'
+PACKAGE_IDS_DELIM = ','
 FILENAME_DELIM = '|'
+
+def split_package_ids(package_ids_str):
+    package_ids=[]
+    package_id=''
+
+    for i in range(0, len(package_ids_str)):
+        if i == 0 and package_ids_str[i] == PACKAGE_IDS_DELIM:
+            continue
+
+        if package_ids_str[i] == PACKAGE_IDS_DELIM and package_ids_str[i-1] != '\\' and i > 0:
+            package_ids.append(package_id)
+            package_id=''
+        else:
+            package_id=package_id + package_ids_str[i]
+
+    if len(package_id) > 0:
+        package_ids.append(package_id)
+
+    return package_ids
 
 def _to_unicode(txt, encoding='utf-8'):
     if isinstance(txt, str):
@@ -582,25 +601,25 @@ class PackageKitBaseBackend:
     def dispatch_command(self, cmd, args):
         if cmd == 'download-packages':
             directory = args[0]
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.download_packages(directory, package_ids)
             self.finished()
         elif cmd == 'depends-on':
             filters = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             recursive = _text_to_bool(args[2])
             self.depends_on(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-details':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[0])
             self.get_details(package_ids)
             self.finished()
         elif cmd == 'get-details-local':
-            files = args[0].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[0])
             self.get_details_local(files)
             self.finished()
         elif cmd == 'get-files':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[0])
             self.get_files(package_ids)
             self.finished()
         elif cmd == 'get-packages':
@@ -613,12 +632,12 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'required-by':
             filters = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             recursive = _text_to_bool(args[2])
             self.required_by(filters, package_ids, recursive)
             self.finished()
         elif cmd == 'get-update-detail':
-            package_ids = args[0].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[0])
             self.get_update_detail(package_ids)
             self.finished()
         elif cmd == 'get-distro-upgrades':
@@ -635,7 +654,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'install-packages':
             transaction_flags = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.install_packages(transaction_flags, package_ids)
             self.finished()
         elif cmd == 'install-signature':
@@ -650,7 +669,7 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'remove-packages':
             transaction_flags = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             allowdeps = _text_to_bool(args[2])
             autoremove = _text_to_bool(args[3])
             self.remove_packages(transaction_flags, package_ids, allowdeps, autoremove)
@@ -668,27 +687,27 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'resolve':
             filters = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.resolve(filters, package_ids)
             self.finished()
         elif cmd == 'search-details':
             filters = args[0].split(';')
-            values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
+            values = split_package_ids(_to_unicode(args[1]))
             self.search_details(filters, values)
             self.finished()
         elif cmd == 'search-file':
             filters = args[0].split(';')
-            values = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.search_file(filters, values)
             self.finished()
         elif cmd == 'search-group':
             filters = args[0].split(';')
-            values = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.search_group(filters, values)
             self.finished()
         elif cmd == 'search-name':
             filters = args[0].split(';')
-            values = _to_unicode(args[1]).split(PACKAGE_IDS_DELIM)
+            values = split_package_ids(_to_unicode(args[1]))
             self.search_name(filters, values)
             self.finished()
         elif cmd == 'signature-install':
@@ -697,13 +716,13 @@ class PackageKitBaseBackend:
             self.finished()
         elif cmd == 'update-packages':
             transaction_flags = args[0].split(';')
-            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            package_ids = split_package_ids(args[1])
             self.update_packages(transaction_flags, package_ids)
             self.finished()
         elif cmd == 'what-provides':
             filters = args[0].split(';')
             provides_type = args[1]
-            values = _to_unicode(args[2]).split(PACKAGE_IDS_DELIM)
+            values = split_package_ids(_to_unicode(args[2]))
             self.what_provides(filters, provides_type, values)
             self.finished()
         elif cmd == 'set-locale':
