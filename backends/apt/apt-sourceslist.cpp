@@ -475,7 +475,11 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
                 S += sr->Sections[J] + " ";
             }
         }
-        ofs << S << endl;
+
+        // remove extra linebreak from S, if it has any
+        if (!S.empty() && S[S.size() - 1] == '\n')
+            S.pop_back();
+        ofs << S << "\n";
     }
     ofs.close();
 
