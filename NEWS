@@ -1,3 +1,69 @@
+Version 1.3.1
+~~~~~~~~~~~~~
+Released: 2025-06-16
+
+Features:
+ * Add GetResults method to the Offline interface (Gleb Popov)
+
+Backends:
+ * apt: Fix matching gstreamer pkgs where the only modifier is ()(64bit) (Alessandro Astone)
+ * apt: Add tests for gst-matcher (Alessandro Astone)
+ * apt: Define an apt backend static library (Corentin Noël)
+ * apt: Adjust for libapt-pkg7.0 API (Julian Andres Klode)
+ * apt: Fix floating point value comparison (Matthias Klumpp)
+ * apt: Drop remnants of RPM sources support (Matthias Klumpp)
+ * apt: Add tests for repo-source reading (Matthias Klumpp)
+ * apt: Add non-destructive Deb822 file parser & streamline sources parsing (Matthias Klumpp)
+ * apt: Implement enable/disable support for deb822-style repo sources (Matthias Klumpp)
+ * apt: Harmonize repo-ids between deb822 and legacy sources (Matthias Klumpp)
+ * apt: Use 'pk_backend_job_details_full()' so download size is reported properly (sid)
+ * apt: not call dbus on ostree-managed systems (ssk-wh)
+ * alpm: fix mixed declarations and code (Christian Hesse)
+ * alpm: fix function declaration prototype (Christian Hesse)
+ * alpm: Use 'alpm_errno()' rather than incorrect 'errno' for libalpm errors (sid)
+ * alpm: Fix 'pk_alpm_logcb' printf format warning (sid)
+ * dnf5: Compile against both libdnf5 version 5.1.x and 5.2.x (Alessandro Astone)
+ * dnf: Make a bunch of implicit enum conversions explicit (Matthias Klumpp)
+ * dnf: OpenMandriva: small repo changes (Virtuti Militari)
+ * entropy/portage: Fix missing 'comma' in meson.install_data () (sidt4)
+ * freebsd: Use correct types for PackageView::{compressed,flat}size() (Gleb Popov)
+ * zypp: Mark the correct packages to-be-installed (Jonathan Kang)
+ * zypp: Raise exception on empty search string (Miika Alikirri)
+ * zypp: Fix -Werror=missing-declarations by making functions static (sid)
+ * zypp: Add G_GNUC_UNUSED to unused function 'zypp_get_packages_by_file' (sid)
+ * zypp: Fix '-Wignored-qualifiers' by removing 'const' (sid)
+ * zypp: Use 'G_GNUC_PRINTF' attribute to 'zypp_backend_finished_error' and fixup warnings (sid)
+ * zypp: Disable deprecation errors in zypp backend temporarily (sid)
+
+Bugfixes:
+ * pk-client-helper: Do not crash on edge-case GIO error (Alessandro Astone)
+ * pk-client: Allow debconf helper to display Wayland windows (Alessandro Astone)
+ * pk-task: pk_task_user_accepted/declined_idle_cb actually take an unowned gtask (Corentin Noël)
+ * PkClient: Use g_atomic_int for the copy count (Corentin Noël)
+ * PkClient: Remove the proxy_props field (Corentin Noël)
+ * PkClient: Fix mismatch between remaining and elapsed time (Corentin Noël)
+ * pk_dbus_get_session: Move ConsoleKit check under the appropriate ifdef case (Gleb Popov)
+ * Fix check in pk_engine_proxy_logind_cb (Gleb Popov)
+ * meson: Explicitly specify native argument when adding C++ compiler (Matthias Klumpp)
+ * pk-client: Fix runtime warning when backend does not support role (Milan Crha)
+
+Miscellaneous:
+ * Allow changing offline update action without polkit authentication (Alessandro Astone)
+ * pk-task: Modernize the codebase (Corentin Noël)
+ * PkPackage: Modernize the codebase (Corentin Noël)
+ * PkControl: Modernize the codebase (Corentin Noël)
+ * PkProgress: Move the progress_callback from PkClientState to PkProgress (Corentin Noël)
+ * Decouple offline_update and systemd Meson features (Gleb Popov)
+ * Decouple pk-backend from HAVE_SYSTEMD_SD_LOGIN_H (Gleb Popov)
+ * ci: Build on Debian trixie & latest Fedora (Matthias Klumpp)
+ * ci: Speed up build tests on Debian (Matthias Klumpp)
+ * ci: Add ALPM & ZYPP backends to Fedora CI (sid)
+ * meson: Remove deprecated functions & bump to 1.0 (Matthias Klumpp)
+ * Compile with C11 + GNU extensions (Matthias Klumpp)
+ * meson: Bring back maintainer mode for stricter checks (Matthias Klumpp)
+ * doap: Update the maintainer list to current maintainers (Neal Gompa)
+ * pkcon: Sort commands in 'pkcon' help output (sid)
+
 Version 1.3.0
 ~~~~~~~~~~~~~
 Released: 2024-06-16
