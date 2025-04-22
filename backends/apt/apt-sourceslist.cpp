@@ -660,24 +660,23 @@ bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
 {
     bool ret = true;
     URIs = newURIs;
+
     for (auto &uri : URIs) {
         if (!::FixupURI(uri))
             ret = false;
     }
-
-    if (!URIs.empty())
-        PrimaryURI = URIs[0];
+    PrimaryURI = URIs.empty()? "" : URIs[0];
 
     return ret;
 }
 
-string SourcesList::SourceRecord::joinedSections()
+string SourcesList::SourceRecord::joinedSections(const std::string &separator)
 {
     string ret;
     for (unsigned int i = 0; i < NumSections; ++i) {
         ret += Sections[i];
         if (i + 1 < NumSections) {
-            ret += " ";
+            ret += separator;
         }
     }
     return ret;
@@ -736,11 +735,10 @@ string SourcesList::SourceRecord::repoId()
 {
     string ret;
     ret = SourceFile;
-    ret += ":" + GetType();
-    ret += VendorID + " ";
-    ret += PrimaryURI + " ";
-    ret += Dist + " ";
-    ret += joinedSections();
+    ret += ":" + GetType() + ":";
+    ret += PrimaryURI + ":";
+    ret += Dist + ":";
+    ret += joinedSections(",");
     return ret;
 }
 

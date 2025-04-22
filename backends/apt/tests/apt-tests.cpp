@@ -345,11 +345,11 @@ _test_sample_sources(const std::string &testSourcesDir)
     g_assert_true (sourcesList.ReadSourceDir(testSourcesDir));
 
     const set<string> expectedSources = {
-        testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ experimental main contrib non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
-        testSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
-        testSourcesDir + "/debian.sources:deb-src http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
-        testSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
-        testSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla-disabled main | main | packages.mozilla.org/apt - Mozilla disabled (main) | disabled"
+        testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:experimental:main,contrib,non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
+        testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
+        testSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
+        testSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla:main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
+        testSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | disabled"
     };
 
     set<string> foundSources;
@@ -385,11 +385,11 @@ apt_test_sources_write (void)
     fs::copy(origSampleSourcesDir, wtestSourcesDir, fs::copy_options::recursive);
 
     const set<string> expectedSourcesDisabled = {
-        wtestSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ experimental main contrib non-free | main contrib non-free | Debian Experimental (main contrib non-free) | enabled",
-        wtestSourcesDir + "/debian.sources:deb http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | disabled",
-        wtestSourcesDir + "/debian.sources:deb-src http://deb.debian.org/debian/ testing main contrib non-free-firmware non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
-        wtestSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
-        wtestSourcesDir + "/mozilla.list:debsigned-by=/etc/apt/keyrings/packages.mozilla.org.asc https://packages.mozilla.org/apt/ mozilla-disabled main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled"
+        wtestSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:experimental:main,contrib,non-free | main contrib non-free | Debian Experimental (main contrib non-free) | enabled",
+        wtestSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | disabled",
+        wtestSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
+        wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla:main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
+        wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled"
     };
 
     // read data and write it back, ensure we do not change anything

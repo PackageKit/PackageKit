@@ -58,7 +58,7 @@ public:
         string SourceFile;
         uint Deb822StanzaIdx;
 
-        string joinedSections();
+        string joinedSections(const std::string &separator = " ");
         string niceName();
         string repoId();
         bool hasSection(const char *component);
