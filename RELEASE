@@ -2,12 +2,12 @@ PackageKit Release Notes
 
 1. Write NEWS entries for PackageKit in the same format as usual.
 
-git shortlog v1.3.0.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog v1.3.1.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.3.1
+Version 1.3.2
 ~~~~~~~~~~~~~
-Released: 2024-xx-xx
+Released: 2025-xx-xx
 
 Notes:
 
@@ -33,15 +33,15 @@ git add ../po/*.po
 4. Commit changes in PackageKit git:
 
 # MAKE SURE THESE ARE CORRECT
-export release_version="1.3.1"
-export release_tag="v1.3.1"
+export release_version="1.3.2"
+export release_tag="v1.3.2"
 
 git commit -a -m "Release ${release_version}"
 git tag -s -f -m "Release ${release_version}" "${release_tag}"
 git push --tags
 git push
-git push git+ssh://hughsient@git.freedesktop.org/git/packagekit
-git push --tags git+ssh://hughsient@git.freedesktop.org/git/packagekit
+git push git+ssh://mak@git.freedesktop.org/git/packagekit
+git push --tags git+ssh://mak@git.freedesktop.org/git/packagekit
 
 5. run 'meson dist'
 
@@ -51,9 +51,9 @@ gpg -b -a meson-dist/PackageKit-${release_version}.tar.xz
 
 6. Upload tarball to:
 
-scp meson-dist/PackageKit-${release_version}.tar.* hughsient@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
+scp meson-dist/PackageKit-${release_version}.tar.* mak@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
 
-7. Do post release version bump in meson.build, RELEASES
+7. Do post release version bump in meson.build, RELEASE
 
 8. Commit trivial changes:
 
@@ -63,7 +63,7 @@ git push
 9. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.3.1 released!
+PackageKit 1.3.2 released!
 
 Tarballs available here: https://www.freedesktop.org/software/PackageKit/releases/
 
