@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Piotr Drąg <piotrdrag@gmail.com>, 2011-2018,2022-2023
+# Piotr Drąg <piotrdrag@gmail.com>, 2011-2018,2022-2023,2025
 # Richard Hughes <richard@hughsie.com>, 2011
 msgid ""
 msgstr ""
@@ -15,6 +15,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pl\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i%%)"
 
 msgid "(seconds)"
 msgstr "(sekundy)"
@@ -368,6 +378,10 @@ msgstr "Pozwolić na instalowanie niepodpisanego oprogramowania?"
 msgid "Don't clear environment on startup"
 msgstr "Bez czyszczenia środowiska podczas uruchamiania"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Instalacja starszej wersji"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "Pobierano"
@@ -604,6 +618,10 @@ msgstr "Ikona"
 msgid "Important"
 msgstr "Ważna"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Instalacja"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -770,6 +788,10 @@ msgstr "Nie odnaleziono żadnych pakietów"
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Zwykła"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Zastąpienie"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -940,6 +962,10 @@ msgstr "Zainstalowano ponownie"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Ponowne instalowanie"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Usunięcie"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

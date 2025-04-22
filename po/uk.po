@@ -4,7 +4,7 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022-2023
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022-2023,2025
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
@@ -15,6 +15,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: uk\n"
 "Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i%%)"
 
 msgid "(seconds)"
 msgstr "(секунд)"
@@ -368,6 +378,10 @@ msgstr "Бажаєте дозволити встановлення непідп�
 msgid "Don't clear environment on startup"
 msgstr "Не очищувати середовище під час запуску"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Зниження версії"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "Звантажено"
@@ -604,6 +618,10 @@ msgstr "Значок"
 msgid "Important"
 msgstr "Важливе"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Встановити"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -770,6 +788,10 @@ msgstr "Пакунків не знайдено"
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Звичайне"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Застарілий"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -940,6 +962,10 @@ msgstr "Перевстановлено"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Перевстановлення"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Вилучити"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

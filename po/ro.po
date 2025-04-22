@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2024
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2024-2025
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sergiu Bivol <sergiu@cip.md>, 2020
 msgid ""
@@ -16,6 +16,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ro\n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i%%)"
 
 msgid "(seconds)"
 msgstr "(secunde)"
@@ -369,6 +379,10 @@ msgstr "Doriți să permiteți instalarea programelor nesemnate?"
 msgid "Don't clear environment on startup"
 msgstr "Nu curăța mediul la pornire"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Retrogradare"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "Descărcat"
@@ -605,6 +619,10 @@ msgstr "Pictogramă"
 msgid "Important"
 msgstr "Importantă"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Instalează"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -771,6 +789,10 @@ msgstr "Nu a fost găsit niciun pachet"
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Normală"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Obsolet"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -941,6 +963,10 @@ msgstr "Reinstalat"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Se reinstalează"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Elimină"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019,2022-2023
+# Anders Jonsson <transifex@norsjovallen.se>, 2014,2017,2019,2022-2023,2025
 # Daniel Nylander <po@danielnylander.se>, 2008-2011
 # Josef Andersson <janderssonse@proton.me>, 2017-2018
 # Luna Jernberg <droidbittin@gmail.com>, 2022
@@ -20,6 +20,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: sv\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i%%)"
 
 msgid "(seconds)"
 msgstr "(sekunder)"
@@ -373,6 +383,10 @@ msgstr "Vill du tillåta installation av osignerad programvara?"
 msgid "Don't clear environment on startup"
 msgstr "Rensa inte miljön vid start"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Nedgradera"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "Hämtat"
@@ -609,6 +623,10 @@ msgstr "Ikon"
 msgid "Important"
 msgstr "Viktig"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Installera"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -775,6 +793,10 @@ msgstr "Inga paket hittades"
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Normal"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Föråldrat"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -945,6 +967,10 @@ msgstr "Ominstallerat"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Installerar om"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Ta bort"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as

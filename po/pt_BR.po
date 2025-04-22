@@ -7,7 +7,7 @@
 # Igor Pires Soares <igor@projetofedora.org>, 2008-2010
 # Rafael Fontenelle <rffontenelle@gmail.com>, 2012-2014
 # Rafael Fontenelle <rafaelff@gnome.org>, 2017
-# Rafael Fontenelle <rffontenelle@gmail.com>, 2015-2018,2022
+# Rafael Fontenelle <rffontenelle@gmail.com>, 2015-2018,2022,2025
 # Richard Hughes <richard@hughsie.com>, 2011
 # ufa <ufa@technotroll.org>, 2012
 # ufa <ufa@technotroll.org>, 2012
@@ -21,6 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt_BR\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i%%)"
 
 msgid "(seconds)"
 msgstr "(segundos)"
@@ -374,6 +384,10 @@ msgstr "Você deseja permitir a instalação de softwares não assinados?"
 msgid "Don't clear environment on startup"
 msgstr "Não limpe o ambiente no início"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Desatualizar"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "Baixado"
@@ -610,6 +624,10 @@ msgstr "Ícone"
 msgid "Important"
 msgstr "Importante"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Instalar"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -776,6 +794,10 @@ msgstr "Nenhuma pacote foi encontrado"
 #. TRANSLATORS: The type of update
 msgid "Normal"
 msgstr "Normal"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Obsoleto"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -946,6 +968,10 @@ msgstr "Reinstalado"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Reinstalando"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Remover"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1148,7 +1174,7 @@ msgstr "Subcomandos:"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 msgid "Succeeded"
-msgstr "Concluído"
+msgstr "Bem-sucedido"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to
 #. provide this command
@@ -1215,7 +1241,7 @@ msgstr "Os seguintes pacotes têm que ser instalados:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 msgid "The following packages have to be obsoleted:"
-msgstr "Os seguintes pacotes têm se tornar obsoletos:"
+msgstr "Os seguintes pacotes têm que ser tornados obsoletos:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 msgid "The following packages have to be reinstalled:"

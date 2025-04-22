@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Emir SARI, 2023
+# Emir SARI, 2023,2025
 # Muhammet Kara <muhammetk@gmail.com>, 2014
 # Muhammet Kara <muhammetk@gmail.com>, 2014
 # Necdet Yücel <necdetyucel@gmail.com>, 2012,2015-2016
@@ -21,6 +21,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#, c-format
+msgid "%i%%"
+msgstr "%%%i"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#, c-format
+msgid "(%i%%)"
+msgstr "(%%%i)"
 
 msgid "(seconds)"
 msgstr "(saniye)"
@@ -142,12 +152,12 @@ msgstr "İşlem sırasında paketlerin yeniden kurulmasına izin ver"
 
 #. command line argument, do we ask questions
 msgid "Allow untrusted packages to be installed."
-msgstr "Güvenilmeyen paketlerin kurulmasına izin ver."
+msgstr "Güvenilmeyen paketlerin kurulmasına izin verin."
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "'update-packages' gibi bir eylem gerekiyor"
+msgstr "“update-packages” gibi bir eylem gerekiyor"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
@@ -374,6 +384,10 @@ msgstr "İmzalanmamış yazılımların kurulmasına izin veriyor musunuz?"
 msgid "Don't clear environment on startup"
 msgstr "Açılışta ortamı temizleme"
 
+#. TRANSLATORS: The state of a package: package is to be downgraded
+msgid "Downgrade"
+msgstr "Düşür"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Downloaded"
 msgstr "İndirildi"
@@ -384,7 +398,7 @@ msgstr "İndiriliyor"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr "Yazılım depolarıyla ilgili ayrıntılar indiriliyor."
+msgstr "Yazılım depolarıyla ilgili ayrıntılar indiriliyor…"
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -449,11 +463,11 @@ msgstr "Motor yüklendikten sonra çık"
 #. * 'pkcon install-local dave.rpm'
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Paket adı bekleniyordu, dosya alındı. Bunun yerine 'pkcon install-local %s' kullanmayı deneyin."
+msgstr "Paket adı bekleniyordu, dosya alındı. Bunun yerine “pkcon install-local %s” kullanmayı deneyin."
 
 #. TRANSLATORS: we failed to contact the daemon
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit'e bağlanılamadı"
+msgstr "PackageKit’e bağlanılamadı"
 
 msgid "Failed to get daemon state"
 msgstr "Art alan hizmeti durumu alınamadı"
@@ -610,6 +624,10 @@ msgstr "Simge"
 msgid "Important"
 msgstr "Önemli"
 
+#. TRANSLATORS: The state of a package: to be installed with the next action
+msgid "Install"
+msgstr "Kur"
+
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
 #. - Authorization to install packages does not imply permissions to
@@ -636,7 +654,7 @@ msgstr "Paket kur"
 #. command
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "'%s' paketi '%s' komutunu sağlaması için kurulsun mu?"
+msgstr "“%s” paketi “%s” komutunu sağlaması için kurulsun mu?"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -692,7 +710,7 @@ msgstr "İmza kuruluyor"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 msgid "Installing system upgrade; this could take a while..."
-msgstr "Sistem yükseltmesi kuruluyor, bu işlem biraz vakit alabilir..."
+msgstr "Sistem yükseltmesi kuruluyor; bu, biraz vakit alabilir…"
 
 #. TRANSLATORS: transaction state, installing updates
 msgid "Installing updates"
@@ -700,7 +718,7 @@ msgstr "Güncellemeler kuruluyor"
 
 #. TRANSLATORS: we've started doing offline updates
 msgid "Installing updates; this could take a while..."
-msgstr "Güncellemeler kuruluyor, bu biraz vakit alabilir..."
+msgstr "Güncellemeler kuruluyor; bu, biraz vakit alabilir…"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
@@ -717,7 +735,7 @@ msgstr "Anahtar zaman damgası"
 
 #. TRANSLATORS: the key URL
 msgid "Key URL"
-msgstr "Anahtar URL'si"
+msgstr "Anahtar URL’si"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 msgid "Key fingerprint"
@@ -733,7 +751,7 @@ msgstr "Önbellek yükleniyor"
 
 #. TRANSLATORS: loading package cache so we can search
 msgid "Loading list of packages."
-msgstr "Paketlerin listesi yükleniyor."
+msgstr "Paketlerin listesi yükleniyor…"
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 msgid "Media change required"
@@ -777,6 +795,10 @@ msgstr "Hiçbir paket bulunamadı"
 msgid "Normal"
 msgstr "Normal"
 
+#. TRANSLATORS: The state of a package: package is obsolete
+msgid "Obsolete"
+msgstr "Eski"
+
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
 msgstr "Gereksiz yapıldı"
@@ -798,7 +820,7 @@ msgstr "Paketler gereksiz olarak işaretleniyor"
 #. * unsupported option on the command line
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "'%s' seçeneği desteklenmiyor"
+msgstr "“%s” seçeneği desteklenmiyor"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -915,7 +937,7 @@ msgstr "Gerçek ad"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "Güncellemeler kuruldu, bilgisayar yeniden başlatılıyor..."
+msgstr "Güncellemeler kuruldu, bilgisayar yeniden başlatılıyor…"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -946,6 +968,10 @@ msgstr "Yeniden kuruldu"
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
 msgstr "Yeniden kuruluyor"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+msgid "Remove"
+msgstr "Kaldır"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1436,7 +1462,7 @@ msgstr "Paket yöneticisi kilidi bekleniyor"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Paket yöneticisi kilidi bekleniyor."
+msgstr "Paket yöneticisi kilidi bekleniyor…"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
