@@ -879,7 +879,7 @@ pk_control_set_proxy_cb (GObject *source_object,
 	/* get the result */
 	value = g_dbus_proxy_call_finish (proxy, res, &error);
 	if (value == NULL) {
-		g_warning ("failed to set proxy: %s", error->message);
+		g_debug ("Failed to set proxy: %s", error->message);
 		g_task_return_error (task, g_steal_pointer (&error));
 		return;
 	}
