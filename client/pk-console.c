@@ -486,14 +486,14 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     %s\n", package);
-	g_print ("  summary:     %s\n", summary);
-	g_print ("  license:     %s\n", license);
-	g_print ("  group:       %s\n", pk_group_enum_to_string (group));
-	g_print ("  download size:  %s\n", download_size_str);
-	g_print ("  size:        %s\n", size_str);
-	g_print ("  url:         %s\n", url);
-	g_print ("  description: %s\n", description);
+	g_print ("  package:       %s\n", package);
+	g_print ("  summary:       %s\n", summary);
+	g_print ("  license:       %s\n", license);
+	g_print ("  group:         %s\n", pk_group_enum_to_string (group));
+	g_print ("  download size: %s\n", download_size_str);
+	g_print ("  size:          %s\n", size_str);
+	g_print ("  url:           %s\n", url);
+	g_print ("  description:   %s\n", description);
 }
 
 static void
