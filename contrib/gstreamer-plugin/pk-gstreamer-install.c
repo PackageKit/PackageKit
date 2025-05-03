@@ -354,7 +354,7 @@ main (int argc, gchar **argv)
 		{ "interaction", '\0', 0, G_OPTION_ARG_STRING, &interaction, "Interaction mode specifying which UI elements should be shown", NULL },
 		{ "startup-notification-id", '\0', 0, G_OPTION_ARG_STRING, &startup_id, "The startup notification ID for focus stealing prevention", NULL },
 		{ G_OPTION_REMAINING, '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &codecs, "GStreamer install infos", NULL },
-		{ NULL }
+		G_OPTION_ENTRY_NULL
 	};
 
 	gst_init (&argc, &argv);
