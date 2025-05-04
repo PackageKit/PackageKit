@@ -27,6 +27,7 @@
 
 #include "pk-offline.h"
 #include "pk-offline-private.h"
+#include "pk-package-ids.h"
 
 /**
  * SECTION:pk-offline
@@ -483,7 +484,10 @@ pk_offline_get_prepared_ids (GError **error)
 		return NULL;
 
 	/* return raw package ids */
-	return g_strsplit (prepared_ids, ",", -1);
+	if (strchr (prepared_ids, ',') != NULL)
+		return g_strsplit (prepared_ids, ",", -1);
+	else
+		return pk_package_ids_from_string (prepared_ids);
 }
 
 /**
@@ -725,7 +729,10 @@ pk_offline_get_results (GError **error)
 	data = g_key_file_get_string (file, PK_OFFLINE_RESULTS_GROUP,
 				      "Packages", NULL);
 	if (data != NULL) {
-		package_ids = g_strsplit (data, ",", -1);
+		if (strchr (data, ',') != NULL)
+			package_ids = g_strsplit (data, ",", -1);
+		else
+			package_ids = pk_package_ids_from_string (data);
 		for (i = 0; package_ids[i] != NULL; i++) {
 			g_autoptr(PkPackage) pkg = NULL;
 			pkg = pk_package_new ();
