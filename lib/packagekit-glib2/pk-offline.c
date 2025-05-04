@@ -446,7 +446,8 @@ pk_offline_get_prepared_ids (GError **error)
 {
 	g_autoptr(GError) error_local = NULL;
 	g_autofree gchar *data = NULL;
-	g_autofree gchar *prepared_ids = NULL;
+	gchar **prepared_ids = NULL;
+	gsize prepared_ids_size;
 	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -473,17 +474,18 @@ pk_offline_get_prepared_ids (GError **error)
 	}
 
 	keyfile = g_key_file_new ();
+	g_key_file_set_list_separator (keyfile, ',');
 	if (!g_key_file_load_from_data (keyfile, data, -1, G_KEY_FILE_NONE, &error_local)) {
 		/* fall back to previous plain text file format for backwards compatibility */
 		return g_strsplit (data, "\n", -1);
 	}
 
-	prepared_ids = g_key_file_get_string (keyfile, "update", "prepared_ids", error);
-	if (prepared_ids == NULL)
+	prepared_ids = g_key_file_get_string_list (keyfile, "update", "prepared_ids", &prepared_ids_size, error);
+
+	if (prepared_ids == NULL || prepared_ids_size == 0)
 		return NULL;
 
-	/* return raw package ids */
-	return g_strsplit (prepared_ids, ",", -1);
+	return prepared_ids;
 }
 
 /**
@@ -652,14 +654,13 @@ pk_offline_get_results (GError **error)
 {
 	gboolean ret;
 	gboolean success;
-	guint i;
 	g_autoptr(GError) error_local = NULL;
-	g_autofree gchar *data = NULL;
 	g_autofree gchar *role_str = NULL;
 	g_autoptr(GKeyFile) file = NULL;
 	g_autoptr(PkError) pk_error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_auto(GStrv) package_ids = NULL;
+	gsize package_ids_size;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
@@ -674,6 +675,7 @@ pk_offline_get_results (GError **error)
 
 	/* load data */
 	file = g_key_file_new ();
+	g_key_file_set_list_separator (file, ',');
 	ret = g_key_file_load_from_file (file,
 					 PK_OFFLINE_RESULTS_FILENAME,
 					 G_KEY_FILE_NONE,
@@ -722,18 +724,19 @@ pk_offline_get_results (GError **error)
 		pk_results_set_role (results, pk_role_enum_from_string (role_str));
 
 	/* add packages */
-	data = g_key_file_get_string (file, PK_OFFLINE_RESULTS_GROUP,
-				      "Packages", NULL);
-	if (data != NULL) {
-		package_ids = g_strsplit (data, ",", -1);
-		for (i = 0; package_ids[i] != NULL; i++) {
-			g_autoptr(PkPackage) pkg = NULL;
-			pkg = pk_package_new ();
-			pk_package_set_info (pkg, PK_INFO_ENUM_UPDATING);
-			if (!pk_package_set_id (pkg, package_ids[i], error))
-				return NULL;
-			pk_results_add_package (results, pkg);
-		}
+	package_ids = g_key_file_get_string_list (file, PK_OFFLINE_RESULTS_GROUP,
+						  "Packages", &package_ids_size, NULL);
+	if (package_ids == NULL || package_ids_size == 0)
+		goto out;
+
+	for (guint i = 0; package_ids[i] != NULL; i++) {
+		g_autoptr(PkPackage) pkg = NULL;
+		pkg = pk_package_new ();
+		pk_package_set_info (pkg, PK_INFO_ENUM_UPDATING);
+		if (!pk_package_set_id (pkg, package_ids[i], error))
+			return NULL;
+		pk_results_add_package (results, pkg);
 	}
+out:
 	return g_object_ref (results);
 }

@@ -305,14 +305,17 @@ pk_offline_auth_trigger_upgrade (PkOfflineAction action, GError **error)
 gboolean
 pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 {
-	g_autofree gchar *data = NULL;
 	g_autoptr(GKeyFile) keyfile = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	data = g_strjoinv (",", package_ids);
 	keyfile = g_key_file_new ();
-	g_key_file_set_string (keyfile, "update", "prepared_ids", data);
+	g_key_file_set_list_separator (keyfile, ',');
+	g_key_file_set_string_list (keyfile,
+				    "update",
+				    "prepared_ids",
+				    (const gchar**)package_ids,
+				    g_strv_length (package_ids));
 	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_FILENAME, error);
 }
 
@@ -428,6 +431,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	key_file = g_key_file_new ();
+	g_key_file_set_list_separator (key_file, ',');
 	pk_error = pk_results_get_error_code (results);
 	if (pk_error != NULL) {
 		g_key_file_set_boolean (key_file,
@@ -461,10 +465,9 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	/* save packages if any set */
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
-		g_autoptr(GString) string = NULL;
 		g_autoptr(GHashTable) known_pkgids = g_hash_table_new (g_str_hash, g_str_equal);
+		g_autoptr(GPtrArray) deduped_pkgids = NULL;
 
-		string = g_string_new ("");
 		for (guint i = 0; i < packages->len; i++) {
 			const gchar *pkgid;
 			package = g_ptr_array_index (packages, i);
@@ -474,20 +477,19 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 				pkgid = pk_package_get_id (package);
 
 				/* deduplicate entries in case the backend has emitted them multiple times */
-				if (g_hash_table_add (known_pkgids, (gpointer) pkgid))
-					g_string_append_printf (string, "%s,", pkgid);
+				g_hash_table_add (known_pkgids, (gpointer) pkgid);
 				break;
 			default:
 				break;
 			}
 		}
 
-		if (string->len > 0)
-			g_string_set_size (string, string->len - 1);
-		g_key_file_set_string (key_file,
+		deduped_pkgids = g_hash_table_steal_all_keys (known_pkgids);
+		g_key_file_set_string_list (key_file,
 				       PK_OFFLINE_RESULTS_GROUP,
 				       "Packages",
-				       string->str);
+				       (const gchar**)deduped_pkgids->pdata,
+				       deduped_pkgids->len);
 	}
 
 	/* write file */
