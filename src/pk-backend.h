@@ -42,28 +42,7 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_BACKEND		(pk_backend_get_type ())
-#define PK_BACKEND(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_BACKEND, PkBackend))
-#define PK_BACKEND_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_BACKEND, PkBackendClass))
-#define PK_IS_BACKEND(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_BACKEND))
-#define PK_IS_BACKEND_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_BACKEND))
-#define PK_BACKEND_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_BACKEND, PkBackendClass))
-
-typedef struct PkBackendPrivate PkBackendPrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkBackendPrivate	*priv;
-} PkBackend;
-
-typedef struct
-{
-	GObjectClass		 parent_class;
-} PkBackendClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkBackend, g_object_unref)
-#endif
+G_DECLARE_FINAL_TYPE (PkBackend, pk_backend, PK, BACKEND, GObject)
 
 /**
  * PK_BACKEND_PERCENTAGE_INVALID:
@@ -72,10 +51,9 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkBackend, g_object_unref)
  */
 #define PK_BACKEND_PERCENTAGE_INVALID		101
 
-GType		 pk_backend_get_type			(void);
 PkBackend	*pk_backend_new				(GKeyFile		*conf);
 
-/* utililties */
+/* utilities */
 gboolean	 pk_backend_load			(PkBackend	*backend,
 							 GError		**error)
 							 G_GNUC_WARN_UNUSED_RESULT;
