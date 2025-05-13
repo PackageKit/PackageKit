@@ -37,8 +37,6 @@
 
 static void     pk_details_finalize	(GObject     *object);
 
-#define PK_DETAILS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DETAILS, PkDetailsPrivate))
-
 /**
  * PkDetailsPrivate:
  *
@@ -69,7 +67,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkDetails, pk_details, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkDetails, pk_details, PK_TYPE_SOURCE)
 
 /**
  * pk_details_get_package_id:
@@ -84,8 +82,11 @@ G_DEFINE_TYPE (PkDetails, pk_details, PK_TYPE_SOURCE)
 const gchar *
 pk_details_get_package_id (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, NULL);
-	return details->priv->package_id;
+
+	return priv->package_id;
 }
 
 /**
@@ -101,8 +102,11 @@ pk_details_get_package_id (PkDetails *details)
 const gchar *
 pk_details_get_license (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, NULL);
-	return details->priv->license;
+
+	return priv->license;
 }
 
 /**
@@ -118,8 +122,11 @@ pk_details_get_license (PkDetails *details)
 PkGroupEnum
 pk_details_get_group (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, PK_GROUP_ENUM_UNKNOWN);
-	return details->priv->group;
+
+	return priv->group;
 }
 
 /**
@@ -135,8 +142,11 @@ pk_details_get_group (PkDetails *details)
 const gchar *
 pk_details_get_description (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, NULL);
-	return details->priv->description;
+
+	return priv->description;
 }
 
 /**
@@ -152,8 +162,11 @@ pk_details_get_description (PkDetails *details)
 const gchar *
 pk_details_get_url (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, NULL);
-	return details->priv->url;
+
+	return priv->url;
 }
 
 /**
@@ -169,8 +182,11 @@ pk_details_get_url (PkDetails *details)
 const gchar *
 pk_details_get_summary (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, NULL);
-	return details->priv->summary;
+
+	return priv->summary;
 }
 
 /**
@@ -187,8 +203,11 @@ pk_details_get_summary (PkDetails *details)
 guint64
 pk_details_get_size (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, G_MAXUINT64);
-	return details->priv->size;
+
+	return priv->size;
 }
 
 /**
@@ -204,8 +223,11 @@ pk_details_get_size (PkDetails *details)
 guint64
 pk_details_get_download_size (PkDetails *details)
 {
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
 	g_return_val_if_fail (details != NULL, G_MAXUINT64);
-	return details->priv->download_size;
+
+	return priv->download_size;
 }
 
 /*
@@ -215,7 +237,7 @@ static void
 pk_details_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkDetails *details = PK_DETAILS (object);
-	PkDetailsPrivate *priv = details->priv;
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -255,7 +277,7 @@ static void
 pk_details_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkDetails *details = PK_DETAILS (object);
-	PkDetailsPrivate *priv = details->priv;
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -384,8 +406,6 @@ pk_details_class_init (PkDetailsClass *klass)
 				     0, G_MAXUINT64, G_MAXUINT64,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DOWNLOAD_SIZE, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkDetailsPrivate));
 }
 
 /*
@@ -394,8 +414,10 @@ pk_details_class_init (PkDetailsClass *klass)
 static void
 pk_details_init (PkDetails *details)
 {
-	details->priv = PK_DETAILS_GET_PRIVATE (details);
-	details->priv->download_size = G_MAXUINT64;
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
+
+	details->priv = priv;
+	priv->download_size = G_MAXUINT64;
 }
 
 /*
@@ -405,13 +427,13 @@ static void
 pk_details_finalize (GObject *object)
 {
 	PkDetails *details = PK_DETAILS (object);
-	PkDetailsPrivate *priv = details->priv;
+	PkDetailsPrivate *priv = pk_details_get_instance_private (details);
 
-	g_free (priv->package_id);
-	g_free (priv->license);
-	g_free (priv->description);
-	g_free (priv->url);
-	g_free (priv->summary);
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->license, g_free);
+	g_clear_pointer (&priv->description, g_free);
+	g_clear_pointer (&priv->url, g_free);
+	g_clear_pointer (&priv->summary, g_free);
 
 	G_OBJECT_CLASS (pk_details_parent_class)->finalize (object);
 }
