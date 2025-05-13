@@ -39,8 +39,6 @@
 
 static void     pk_results_finalize	(GObject     *object);
 
-#define PK_RESULTS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_RESULTS, PkResultsPrivate))
-
 /**
  * PkResultsPrivate:
  *
@@ -77,7 +75,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkResults, pk_results, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (PkResults, pk_results, G_TYPE_OBJECT)
 
 /*
  * pk_results_get_property:
@@ -86,7 +84,7 @@ static void
 pk_results_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkResults *results = PK_RESULTS (object);
-	PkResultsPrivate *priv = results->priv;
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -114,7 +112,7 @@ static void
 pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkResults *results = PK_RESULTS (object);
-	PkResultsPrivate *priv = results->priv;
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -127,9 +125,7 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 		priv->inputs = g_value_get_uint (value);
 		break;
 	case PROP_PROGRESS:
-		if (priv->progress != NULL)
-			g_object_unref (priv->progress);
-		priv->progress = g_object_ref (g_value_get_object (value));
+		g_set_object (&priv->progress, g_value_get_object (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -151,12 +147,17 @@ pk_results_set_property (GObject *object, guint prop_id, const GValue *value, GP
 gboolean
 pk_results_set_role (PkResults *results, PkRoleEnum role)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (role != PK_ROLE_ENUM_UNKNOWN, FALSE);
 
-	results->priv->role = role;
+	if (priv->role != role) {
+		priv->role = role;
+		return TRUE;
+	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -173,12 +174,17 @@ pk_results_set_role (PkResults *results, PkRoleEnum role)
 gboolean
 pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (exit_enum != PK_EXIT_ENUM_UNKNOWN, FALSE);
 
-	results->priv->exit_enum = exit_enum;
+	if (priv->exit_enum != exit_enum) {
+		priv->exit_enum = exit_enum;
+		return TRUE;
+	}
 
-	return TRUE;
+	return FALSE;
 }
 
 /**
@@ -195,6 +201,8 @@ pk_results_set_exit_code (PkResults *results, PkExitEnum exit_enum)
 gboolean
 pk_results_add_package (PkResults *results, PkPackage *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
@@ -203,7 +211,8 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 		g_warning ("Finished packages cannot be added to PkResults");
 		return FALSE;
 	}
-	pk_package_sack_add_package (results->priv->package_sack, item);
+
+	pk_package_sack_add_package (priv->package_sack, item);
 	return TRUE;
 }
 
@@ -221,11 +230,13 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 gboolean
 pk_results_add_details (PkResults *results, PkDetails *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->details_array, g_object_ref (item));
+	g_ptr_array_add (priv->details_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -244,11 +255,13 @@ pk_results_add_details (PkResults *results, PkDetails *item)
 gboolean
 pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->update_detail_array, g_object_ref (item));
+	g_ptr_array_add (priv->update_detail_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -267,11 +280,13 @@ pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
 gboolean
 pk_results_add_category (PkResults *results, PkCategory *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->category_array, g_object_ref (item));
+	g_ptr_array_add (priv->category_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -290,11 +305,13 @@ pk_results_add_category (PkResults *results, PkCategory *item)
 gboolean
 pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->distro_upgrade_array, g_object_ref (item));
+	g_ptr_array_add (priv->distro_upgrade_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -313,11 +330,13 @@ pk_results_add_distro_upgrade (PkResults *results, PkDistroUpgrade *item)
 gboolean
 pk_results_add_require_restart (PkResults *results, PkRequireRestart *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->require_restart_array, g_object_ref (item));
+	g_ptr_array_add (priv->require_restart_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -336,11 +355,13 @@ pk_results_add_require_restart (PkResults *results, PkRequireRestart *item)
 gboolean
 pk_results_add_transaction (PkResults *results, PkTransactionPast *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->transaction_array, g_object_ref (item));
+	g_ptr_array_add (priv->transaction_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -359,11 +380,13 @@ pk_results_add_transaction (PkResults *results, PkTransactionPast *item)
 gboolean
 pk_results_add_files (PkResults *results, PkFiles *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->files_array, g_object_ref (item));
+	g_ptr_array_add (priv->files_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -382,11 +405,13 @@ pk_results_add_files (PkResults *results, PkFiles *item)
 gboolean
 pk_results_add_repo_signature_required (PkResults *results, PkRepoSignatureRequired *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->repo_signature_required_array, g_object_ref (item));
+	g_ptr_array_add (priv->repo_signature_required_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -405,11 +430,13 @@ pk_results_add_repo_signature_required (PkResults *results, PkRepoSignatureRequi
 gboolean
 pk_results_add_eula_required (PkResults *results, PkEulaRequired *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->eula_required_array, g_object_ref (item));
+	g_ptr_array_add (priv->eula_required_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -428,11 +455,13 @@ pk_results_add_eula_required (PkResults *results, PkEulaRequired *item)
 gboolean
 pk_results_add_media_change_required (PkResults *results, PkMediaChangeRequired *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->media_change_required_array, g_object_ref (item));
+	g_ptr_array_add (priv->media_change_required_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -451,11 +480,13 @@ pk_results_add_media_change_required (PkResults *results, PkMediaChangeRequired 
 gboolean
 pk_results_add_repo_detail (PkResults *results, PkRepoDetail *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
 	/* copy and add to array */
-	g_ptr_array_add (results->priv->repo_detail_array, g_object_ref (item));
+	g_ptr_array_add (priv->repo_detail_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -474,14 +505,12 @@ pk_results_add_repo_detail (PkResults *results, PkRepoDetail *item)
 gboolean
 pk_results_set_error_code (PkResults *results, PkError *item)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
-	/* unref old error, then ref */
-	if (results->priv->error_code != NULL)
-		g_object_unref (results->priv->error_code);
-	results->priv->error_code = g_object_ref (item);
-
+	g_set_object (&priv->error_code, item);
 	return TRUE;
 }
 
@@ -499,8 +528,11 @@ pk_results_set_error_code (PkResults *results, PkError *item)
 PkExitEnum
 pk_results_get_exit_code (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_EXIT_ENUM_UNKNOWN);
-	return results->priv->exit_enum;
+
+	return priv->exit_enum;
 }
 
 /**
@@ -516,8 +548,11 @@ pk_results_get_exit_code (PkResults *results)
 PkRoleEnum
 pk_results_get_role (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), PK_ROLE_ENUM_UNKNOWN);
-	return results->priv->role;
+
+	return priv->role;
 }
 
 /**
@@ -533,8 +568,11 @@ pk_results_get_role (PkResults *results)
 PkBitfield
 pk_results_get_transaction_flags (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
-	return results->priv->transaction_flags;
+
+	return priv->transaction_flags;
 }
 
 /**
@@ -550,18 +588,21 @@ pk_results_get_transaction_flags (PkResults *results)
 PkError *
 pk_results_get_error_code (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
 
 	/* failed, but no exit code? */
-	if (results->priv->error_code == NULL && results->priv->exit_enum != PK_EXIT_ENUM_SUCCESS) {
+	if (priv->error_code == NULL && priv->exit_enum != PK_EXIT_ENUM_SUCCESS) {
 		g_warning ("internal error: failed, but no error code: %s",
-			   pk_exit_enum_to_string (results->priv->exit_enum));
+			   pk_exit_enum_to_string (priv->exit_enum));
 		return NULL;
 	}
 
-	if (results->priv->error_code == NULL)
+	if (priv->error_code == NULL)
 		return NULL;
-	return g_object_ref (results->priv->error_code);
+
+	return g_object_ref (priv->error_code);
 }
 
 /**
@@ -577,8 +618,11 @@ pk_results_get_error_code (PkResults *results)
 GPtrArray *
 pk_results_get_package_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return pk_package_sack_get_array (results->priv->package_sack);
+
+	return pk_package_sack_get_array (priv->package_sack);
 }
 
 /**
@@ -594,8 +638,11 @@ pk_results_get_package_array (PkResults *results)
 PkPackageSack *
 pk_results_get_package_sack (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_object_ref (results->priv->package_sack);
+
+	return g_object_ref (priv->package_sack);
 }
 
 /**
@@ -611,8 +658,11 @@ pk_results_get_package_sack (PkResults *results)
 GPtrArray *
 pk_results_get_details_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->details_array);
+
+	return g_ptr_array_ref (priv->details_array);
 }
 
 /**
@@ -628,8 +678,11 @@ pk_results_get_details_array (PkResults *results)
 GPtrArray *
 pk_results_get_update_detail_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->update_detail_array);
+
+	return g_ptr_array_ref (priv->update_detail_array);
 }
 
 /**
@@ -645,8 +698,11 @@ pk_results_get_update_detail_array (PkResults *results)
 GPtrArray *
 pk_results_get_category_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->category_array);
+
+	return g_ptr_array_ref (priv->category_array);
 }
 
 /**
@@ -662,8 +718,11 @@ pk_results_get_category_array (PkResults *results)
 GPtrArray *
 pk_results_get_distro_upgrade_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->distro_upgrade_array);
+
+	return g_ptr_array_ref (priv->distro_upgrade_array);
 }
 
 /**
@@ -679,8 +738,11 @@ pk_results_get_distro_upgrade_array (PkResults *results)
 GPtrArray *
 pk_results_get_require_restart_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->require_restart_array);
+
+	return g_ptr_array_ref (priv->require_restart_array);
 }
 
 /**
@@ -702,6 +764,7 @@ pk_results_get_require_restart_array (PkResults *results)
 PkRestartEnum
 pk_results_get_require_restart_worst (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
 	GPtrArray *array;
 	PkRestartEnum worst = 0;
 	PkRestartEnum restart;
@@ -710,7 +773,7 @@ pk_results_get_require_restart_worst (PkResults *results)
 
 	g_return_val_if_fail (PK_IS_RESULTS (results), 0);
 
-	array = results->priv->require_restart_array;
+	array = priv->require_restart_array;
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
@@ -736,8 +799,11 @@ pk_results_get_require_restart_worst (PkResults *results)
 GPtrArray *
 pk_results_get_transaction_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->transaction_array);
+
+	return g_ptr_array_ref (priv->transaction_array);
 }
 
 /**
@@ -770,8 +836,11 @@ pk_results_get_files_array (PkResults *results)
 GPtrArray *
 pk_results_get_repo_signature_required_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->repo_signature_required_array);
+
+	return g_ptr_array_ref (priv->repo_signature_required_array);
 }
 
 /**
@@ -787,8 +856,11 @@ pk_results_get_repo_signature_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_eula_required_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->eula_required_array);
+
+	return g_ptr_array_ref (priv->eula_required_array);
 }
 
 /**
@@ -804,8 +876,11 @@ pk_results_get_eula_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_media_change_required_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->media_change_required_array);
+
+	return g_ptr_array_ref (priv->media_change_required_array);
 }
 
 /**
@@ -821,8 +896,11 @@ pk_results_get_media_change_required_array (PkResults *results)
 GPtrArray *
 pk_results_get_repo_detail_array (PkResults *results)
 {
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
 	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-	return g_ptr_array_ref (results->priv->repo_detail_array);
+
+	return g_ptr_array_ref (priv->repo_detail_array);
 }
 
 /*
@@ -871,8 +949,6 @@ pk_results_class_init (PkResultsClass *klass)
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_INPUTS, pspec);
 
-	g_type_class_add_private (klass, sizeof (PkResultsPrivate));
-
 	/**
 	 * PkResults:progress:
 	 *
@@ -891,24 +967,26 @@ pk_results_class_init (PkResultsClass *klass)
 static void
 pk_results_init (PkResults *results)
 {
-	results->priv = PK_RESULTS_GET_PRIVATE (results);
-	results->priv->role = PK_ROLE_ENUM_UNKNOWN;
-	results->priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
-	results->priv->inputs = 0;
-	results->priv->progress = NULL;
-	results->priv->error_code = NULL;
-	results->priv->package_sack = pk_package_sack_new ();
-	results->priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	results->priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
+
+	results->priv = priv;
+	priv->role = PK_ROLE_ENUM_UNKNOWN;
+	priv->exit_enum = PK_EXIT_ENUM_UNKNOWN;
+	priv->inputs = 0;
+	priv->progress = NULL;
+	priv->error_code = NULL;
+	priv->package_sack = pk_package_sack_new ();
+	priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
 /*
@@ -918,24 +996,22 @@ static void
 pk_results_finalize (GObject *object)
 {
 	PkResults *results = PK_RESULTS (object);
-	PkResultsPrivate *priv = results->priv;
+	PkResultsPrivate *priv = pk_results_get_instance_private (results);
 
-	g_ptr_array_unref (priv->details_array);
-	g_ptr_array_unref (priv->update_detail_array);
-	g_ptr_array_unref (priv->category_array);
-	g_ptr_array_unref (priv->distro_upgrade_array);
-	g_ptr_array_unref (priv->require_restart_array);
-	g_ptr_array_unref (priv->transaction_array);
-	g_ptr_array_unref (priv->files_array);
-	g_ptr_array_unref (priv->repo_signature_required_array);
-	g_ptr_array_unref (priv->eula_required_array);
-	g_ptr_array_unref (priv->media_change_required_array);
-	g_ptr_array_unref (priv->repo_detail_array);
-	g_object_unref (priv->package_sack);
-	if (results->priv->progress != NULL)
-		g_object_unref (results->priv->progress);
-	if (results->priv->error_code != NULL)
-		g_object_unref (results->priv->error_code);
+	g_clear_pointer (&priv->details_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->update_detail_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->category_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->distro_upgrade_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->require_restart_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->transaction_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->files_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->repo_signature_required_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->eula_required_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->media_change_required_array, g_ptr_array_unref);
+	g_clear_pointer (&priv->repo_detail_array, g_ptr_array_unref);
+	g_clear_object (&priv->package_sack);
+	g_clear_object (&priv->progress);
+	g_clear_object (&priv->error_code);
 
 	G_OBJECT_CLASS (pk_results_parent_class)->finalize (object);
 }
