@@ -37,8 +37,6 @@
 
 static void     pk_source_finalize	(GObject     *object);
 
-#define PK_SOURCE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_SOURCE, PkSourcePrivate))
-
 /**
  * PkSourcePrivate:
  *
@@ -57,7 +55,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkSource, pk_source, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (PkSource, pk_source, G_TYPE_OBJECT)
 
 /*
  * pk_source_get_property:
@@ -66,7 +64,7 @@ static void
 pk_source_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = source->priv;
+	PkSourcePrivate *priv = pk_source_get_instance_private (source);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -88,7 +86,7 @@ static void
 pk_source_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = source->priv;
+	PkSourcePrivate *priv = pk_source_get_instance_private (source);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -96,7 +94,7 @@ pk_source_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 		break;
 	case PROP_TRANSACTION_ID:
 		g_free (priv->transaction_id);
-		priv->transaction_id = g_strdup (g_value_get_string (value));
+		priv->transaction_id = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -135,8 +133,6 @@ pk_source_class_init (PkSourceClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkSourcePrivate));
 }
 
 /*
@@ -145,7 +141,7 @@ pk_source_class_init (PkSourceClass *klass)
 static void
 pk_source_init (PkSource *source)
 {
-	source->priv = PK_SOURCE_GET_PRIVATE (source);
+	source->priv = pk_source_get_instance_private (source);
 }
 
 /*
@@ -155,9 +151,9 @@ static void
 pk_source_finalize (GObject *object)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = source->priv;
+	PkSourcePrivate *priv = pk_source_get_instance_private (source);
 
-	g_free (priv->transaction_id);
+	g_clear_pointer (&priv->transaction_id, g_free);
 
 	G_OBJECT_CLASS (pk_source_parent_class)->finalize (object);
 }
