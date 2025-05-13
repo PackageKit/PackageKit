@@ -38,8 +38,6 @@
 
 static void     pk_repo_signature_required_finalize	(GObject     *object);
 
-#define PK_REPO_SIGNATURE_REQUIRED_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequiredPrivate))
-
 /**
  * PkRepoSignatureRequiredPrivate:
  *
@@ -70,7 +68,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRepoSignatureRequired, pk_repo_signature_required, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkRepoSignatureRequired, pk_repo_signature_required, PK_TYPE_SOURCE)
 
 /*
  * pk_repo_signature_required_get_property:
@@ -79,7 +77,7 @@ static void
 pk_repo_signature_required_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = repo_signature_required->priv;
+	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -119,36 +117,36 @@ static void
 pk_repo_signature_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = repo_signature_required->priv;
+	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
-		priv->package_id = g_strdup (g_value_get_string (value));
+		priv->package_id = g_value_dup_string (value);
 		break;
 	case PROP_REPOSITORY_NAME:
 		g_free (priv->repository_name);
-		priv->repository_name = g_strdup (g_value_get_string (value));
+		priv->repository_name = g_value_dup_string (value);
 		break;
 	case PROP_KEY_URL:
 		g_free (priv->key_url);
-		priv->key_url = g_strdup (g_value_get_string (value));
+		priv->key_url = g_value_dup_string (value);
 		break;
 	case PROP_KEY_USERID:
 		g_free (priv->key_userid);
-		priv->key_userid = g_strdup (g_value_get_string (value));
+		priv->key_userid = g_value_dup_string (value);
 		break;
 	case PROP_KEY_ID:
 		g_free (priv->key_id);
-		priv->key_id = g_strdup (g_value_get_string (value));
+		priv->key_id = g_value_dup_string (value);
 		break;
 	case PROP_KEY_FINGERPRINT:
 		g_free (priv->key_fingerprint);
-		priv->key_fingerprint = g_strdup (g_value_get_string (value));
+		priv->key_fingerprint = g_value_dup_string (value);
 		break;
 	case PROP_KEY_TIMESTAMP:
 		g_free (priv->key_timestamp);
-		priv->key_timestamp = g_strdup (g_value_get_string (value));
+		priv->key_timestamp = g_value_dup_string (value);
 		break;
 	case PROP_TYPE:
 		priv->type = g_value_get_enum (value);
@@ -250,8 +248,6 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 				   PK_TYPE_SIG_TYPE_ENUM, PK_SIGTYPE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TYPE, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkRepoSignatureRequiredPrivate));
 }
 
 /*
@@ -260,7 +256,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 static void
 pk_repo_signature_required_init (PkRepoSignatureRequired *repo_signature_required)
 {
-	repo_signature_required->priv = PK_REPO_SIGNATURE_REQUIRED_GET_PRIVATE (repo_signature_required);
+	repo_signature_required->priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
 }
 
 /*
@@ -270,15 +266,15 @@ static void
 pk_repo_signature_required_finalize (GObject *object)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = repo_signature_required->priv;
+	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
 
-	g_free (priv->package_id);
-	g_free (priv->repository_name);
-	g_free (priv->key_url);
-	g_free (priv->key_userid);
-	g_free (priv->key_id);
-	g_free (priv->key_fingerprint);
-	g_free (priv->key_timestamp);
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->repository_name, g_free);
+	g_clear_pointer (&priv->key_url, g_free);
+	g_clear_pointer (&priv->key_userid, g_free);
+	g_clear_pointer (&priv->key_id, g_free);
+	g_clear_pointer (&priv->key_fingerprint, g_free);
+	g_clear_pointer (&priv->key_timestamp, g_free);
 
 	G_OBJECT_CLASS (pk_repo_signature_required_parent_class)->finalize (object);
 }
