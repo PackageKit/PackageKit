@@ -52,12 +52,12 @@
 gchar *
 pk_iso8601_present (void)
 {
-	GTimeVal timeval;
+	GDateTime *datetime;
 	gchar *timespec;
 
-	/* get current time */
-	g_get_current_time (&timeval);
-	timespec = g_time_val_to_iso8601 (&timeval);
+	datetime = g_date_time_new_now_local ();
+	timespec = g_date_time_format_iso8601 (datetime);
+	g_clear_pointer (&datetime, g_date_time_unref);
 
 	return timespec;
 }
@@ -99,12 +99,8 @@ pk_iso8601_from_date (const GDate *date)
 GDate *
 pk_iso8601_to_date (const gchar *iso_date)
 {
-	gboolean ret = FALSE;
 	guint retval;
-	guint d = 0;
-	guint m = 0;
-	guint y = 0;
-	GTimeVal time_val;
+	GDateTime *datetime = NULL;
 	GDate *date = NULL;
 
 	if (iso_date == NULL || iso_date[0] == '\0')
@@ -112,28 +108,33 @@ pk_iso8601_to_date (const gchar *iso_date)
 
 	/* try to parse complete ISO8601 date */
 	if (g_strstr_len (iso_date, -1, " ") != NULL)
-		ret = g_time_val_from_iso8601 (iso_date, &time_val);
-	if (ret && time_val.tv_sec != 0) {
-		g_debug ("Parsed %s %i", iso_date, ret);
-		date = g_date_new ();
-		g_date_set_time_val (date, &time_val);
+		datetime = g_date_time_new_from_iso8601 (iso_date, NULL);
+
+	if (datetime) {
+		gint d = 0, m = 0, y = 0;
+		g_debug ("Parsed %s %" G_GINT64_FORMAT, iso_date, g_date_time_to_unix (datetime));
+		g_date_time_get_ymd (datetime, &y, &m, &d);
+		g_clear_pointer (&datetime, g_date_time_unref);
+		date = g_date_new_dmy (d, m, y);
 		goto out;
+	} else {
+		guint d = 0, m = 0, y = 0;
+
+		/* g_date_time_new_from_iso8601() blows goats and won't
+		 * accept a valid ISO8601 formatted date without a
+		 * time value - try and parse this case */
+		retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
+		if (retval != 3)
+			goto out;
+
+		/* check it's valid */
+		if (!g_date_valid_dmy (d, m, y))
+			goto out;
+
+		/* create valid object */
+		date = g_date_new_dmy (d, m, y);
 	}
 
-	/* g_time_val_from_iso8601() blows goats and won't
-	 * accept a valid ISO8601 formatted date without a
-	 * time value - try and parse this case */
-	retval = sscanf (iso_date, "%u-%u-%u", &y, &m, &d);
-	if (retval != 3)
-		goto out;
-
-	/* check it's valid */
-	ret = g_date_valid_dmy (d, m, y);
-	if (!ret)
-		goto out;
-
-	/* create valid object */
-	date = g_date_new_dmy (d, m, y);
 out:
 	return date;
 }
@@ -151,12 +152,10 @@ out:
 GDateTime *
 pk_iso8601_to_datetime (const gchar *iso_date)
 {
-	gboolean ret = FALSE;
 	guint retval;
 	guint d = 0;
 	guint m = 0;
 	guint y = 0;
-	GTimeVal time_val;
 	GDateTime *date = NULL;
 
 	if (iso_date == NULL || iso_date[0] == '\0')
@@ -164,10 +163,10 @@ pk_iso8601_to_datetime (const gchar *iso_date)
 
 	/* try to parse complete ISO8601 date */
 	if (g_strstr_len (iso_date, -1, " ") != NULL)
-		ret = g_time_val_from_iso8601 (iso_date, &time_val);
-	if (ret && time_val.tv_sec != 0) {
-		g_debug ("Parsed %s %i", iso_date, ret);
-		date = g_date_time_new_from_timeval_utc (&time_val);
+		date = g_date_time_new_from_iso8601 (iso_date, NULL);
+
+	if (date) {
+		g_debug ("Parsed %s %" G_GINT64_FORMAT, iso_date, g_date_time_to_unix (date));
 		goto out;
 	}
 
