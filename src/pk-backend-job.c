@@ -30,8 +30,6 @@
 #include "pk-backend-job.h"
 #include "pk-shared.h"
 
-#define PK_BACKEND_JOB_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_JOB, PkBackendJobPrivate))
-
 /**
  * PK_BACKEND_FINISHED_ERROR_TIMEOUT:
  *
@@ -66,8 +64,10 @@ typedef struct {
 	gpointer		 user_data;
 } PkBackendJobVFuncItem;
 
-struct PkBackendJobPrivate
+struct _PkBackendJob
 {
+	GObject			 parent;
+
 	gboolean		 finished;
 	gboolean		 has_sent_package;
 	gboolean		 set_error;
@@ -118,9 +118,11 @@ pk_backend_job_disconnect_vfuncs (PkBackendJob *job)
 	guint i;
 	PkBackendJobVFuncItem *item;
 
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+
 	/* reset the vfuncs */
 	for (i = 0; i < PK_BACKEND_SIGNAL_LAST; i++) {
-		item = &job->priv->vfunc_items[i];
+		item = &job->vfunc_items[i];
 		item->enabled = FALSE;
 		item->vfunc = NULL;
 		item->user_data = NULL;
@@ -132,7 +134,10 @@ pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
 				  PkBackendJobSignal signal_kind)
 {
 	PkBackendJobVFuncItem *item;
-	item = &job->priv->vfunc_items[signal_kind];
+
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+
+	item = &job->vfunc_items[signal_kind];
 	if (!item->enabled)
 		return FALSE;
 	if (item->vfunc == NULL)
@@ -148,7 +153,9 @@ pk_backend_job_get_vfunc_enabled (PkBackendJob *job,
 GCancellable *
 pk_backend_job_get_cancellable (PkBackendJob *job)
 {
-	return job->priv->cancellable;
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
+
+	return job->cancellable;
 }
 
 /**
@@ -159,7 +166,9 @@ pk_backend_job_get_cancellable (PkBackendJob *job)
 gboolean
 pk_backend_job_is_cancelled (PkBackendJob *job)
 {
-	return g_cancellable_is_cancelled (job->priv->cancellable);
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+
+	return g_cancellable_is_cancelled (job->cancellable);
 }
 
 /**
@@ -171,14 +180,16 @@ gpointer
 pk_backend_job_get_backend (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->backend;
+
+	return job->backend;
 }
 
 void
 pk_backend_job_set_backend (PkBackendJob *job, gpointer backend)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->backend = backend;
+
+	job->backend = backend;
 }
 
 /**
@@ -190,14 +201,16 @@ gpointer
 pk_backend_job_get_user_data (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->user_data;
+
+	return job->user_data;
 }
 
 PkBitfield
 pk_backend_job_get_transaction_flags (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), 0);
-	return job->priv->transaction_flags;
+
+	return job->transaction_flags;
 }
 
 
@@ -206,31 +219,38 @@ pk_backend_job_set_transaction_flags (PkBackendJob *job,
 				      PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->transaction_flags = transaction_flags;
+
+	job->transaction_flags = transaction_flags;
 }
 
 void
-pk_backend_job_set_proxy (PkBackendJob	*job,
-		      const gchar *proxy_http,
-		      const gchar *proxy_https,
-		      const gchar *proxy_ftp,
-		      const gchar *proxy_socks,
-		      const gchar *no_proxy,
-		      const gchar *pac)
+pk_backend_job_set_proxy (PkBackendJob *job,
+			  const gchar *proxy_http,
+			  const gchar *proxy_https,
+			  const gchar *proxy_ftp,
+			  const gchar *proxy_socks,
+			  const gchar *no_proxy,
+			  const gchar *pac)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_free (job->priv->proxy_http);
-	g_free (job->priv->proxy_https);
-	g_free (job->priv->proxy_ftp);
-	g_free (job->priv->proxy_socks);
-	g_free (job->priv->no_proxy);
-	g_free (job->priv->pac);
-	job->priv->proxy_http = g_strdup (proxy_http);
-	job->priv->proxy_https = g_strdup (proxy_https);
-	job->priv->proxy_ftp = g_strdup (proxy_ftp);
-	job->priv->proxy_socks = g_strdup (proxy_socks);
-	job->priv->no_proxy = g_strdup (no_proxy);
-	job->priv->pac = g_strdup (pac);
+
+	g_free (job->proxy_http);
+	job->proxy_http = g_strdup (proxy_http);
+
+	g_free (job->proxy_https);
+	job->proxy_https = g_strdup (proxy_https);
+
+	g_free (job->proxy_ftp);
+	job->proxy_ftp = g_strdup (proxy_ftp);
+
+	g_free (job->proxy_socks);
+	job->proxy_socks = g_strdup (proxy_socks);
+
+	g_free (job->no_proxy);
+	job->no_proxy = g_strdup (no_proxy);
+
+	g_free (job->pac);
+	job->pac = g_strdup (pac);
 }
 
 /**
@@ -242,7 +262,8 @@ const gchar *
 pk_backend_job_get_proxy_http (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->proxy_http;
+
+	return job->proxy_http;
 }
 
 /**
@@ -254,7 +275,8 @@ const gchar *
 pk_backend_job_get_proxy_https (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->proxy_https;
+
+	return job->proxy_https;
 }
 
 /**
@@ -266,7 +288,8 @@ const gchar *
 pk_backend_job_get_proxy_ftp (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->proxy_ftp;
+
+	return job->proxy_ftp;
 }
 
 /**
@@ -278,19 +301,20 @@ const gchar *
 pk_backend_job_get_proxy_socks (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->proxy_socks;
+
+	return job->proxy_socks;
 }
 
 /**
  * pk_backend_job_get_no_proxy:
  *
- * Return value: comma seporated value of proxy exlude string
+ * Return value: comma separated value of proxy exclude string
  **/
 const gchar *
 pk_backend_job_get_no_proxy (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->no_proxy;
+	return job->no_proxy;
 }
 
 /**
@@ -302,7 +326,7 @@ const gchar *
 pk_backend_job_get_pac (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->pac;
+	return job->pac;
 }
 
 void
@@ -310,16 +334,16 @@ pk_backend_job_set_cmdline (PkBackendJob *job, const gchar *cmdline)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	g_free (job->priv->cmdline);
-	job->priv->cmdline = g_strdup (cmdline);
-	g_debug ("install cmdline now %s", job->priv->cmdline);
+	g_free (job->cmdline);
+	job->cmdline = g_strdup (cmdline);
+	g_debug ("install cmdline now %s", job->cmdline);
 }
 
 const gchar *
 pk_backend_job_get_cmdline (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->cmdline;
+	return job->cmdline;
 }
 
 void
@@ -327,18 +351,19 @@ pk_backend_job_set_uid (PkBackendJob *job, guint uid)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	if (job->priv->uid == uid)
+	if (job->uid == uid)
 		return;
 
-	job->priv->uid = uid;
-	g_debug ("install uid now %i", job->priv->uid);
+	job->uid = uid;
+	g_debug ("install uid now %i", job->uid);
 }
 
 guint
 pk_backend_job_get_uid (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->uid;
+
+	return job->uid;
 }
 
 
@@ -351,7 +376,8 @@ const gchar *
 pk_backend_job_get_locale (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->locale;
+
+	return job->locale;
 }
 
 void
@@ -360,19 +386,20 @@ pk_backend_job_set_locale (PkBackendJob *job, const gchar *code)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (code != NULL);
 
-	if (g_strcmp0 (job->priv->locale, code) == 0)
+	if (g_strcmp0 (job->locale, code) == 0)
 		return;
 
 	g_debug ("locale changed to %s", code);
-	g_free (job->priv->locale);
-	job->priv->locale = g_strdup (code);
+	g_free (job->locale);
+	job->locale = g_strdup (code);
 }
 
 GVariant *
 pk_backend_job_get_parameters (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->params;
+
+	return job->params;
 }
 
 void
@@ -381,7 +408,7 @@ pk_backend_job_set_parameters (PkBackendJob *job, GVariant *params)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (params != NULL);
 
-	job->priv->params = g_variant_ref_sink (params);
+	job->params = g_variant_ref_sink (params);
 }
 
 /**
@@ -393,7 +420,8 @@ const gchar *
 pk_backend_job_get_frontend_socket (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), NULL);
-	return job->priv->frontend_socket;
+
+	return job->frontend_socket;
 }
 
 void
@@ -401,12 +429,12 @@ pk_backend_job_set_frontend_socket (PkBackendJob *job, const gchar *frontend_soc
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	if (g_strcmp0 (job->priv->frontend_socket, frontend_socket) == 0)
+	if (g_strcmp0 (job->frontend_socket, frontend_socket) == 0)
 		return;
 
 	g_debug ("frontend_socket changed to %s", frontend_socket);
-	g_free (job->priv->frontend_socket);
-	job->priv->frontend_socket = g_strdup (frontend_socket);
+	g_free (job->frontend_socket);
+	job->frontend_socket = g_strdup (frontend_socket);
 }
 
 /**
@@ -420,7 +448,8 @@ guint
 pk_backend_job_get_cache_age (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), 0);
-	return job->priv->cache_age;
+
+	return job->cache_age;
 }
 
 void
@@ -445,63 +474,71 @@ pk_backend_job_set_cache_age (PkBackendJob *job, guint cache_age)
 		cache_age -= cache_age_offset;
 
 	g_debug ("cache-age changed to %u seconds", cache_age);
-	job->priv->cache_age = cache_age;
+	job->cache_age = cache_age;
 }
 
 void
 pk_backend_job_set_user_data (PkBackendJob *job, gpointer user_data)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->user_data = user_data;
+
+	job->user_data = user_data;
 }
 
 gboolean
 pk_backend_job_get_background (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->background;
+
+	return job->background;
 }
 
 void
 pk_backend_job_set_background (PkBackendJob *job, gboolean background)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->background = background;
+
+	job->background = background;
 }
 
 gboolean
 pk_backend_job_get_interactive (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->interactive;
+
+	return job->interactive;
 }
 
 void
 pk_backend_job_set_interactive (PkBackendJob *job, gboolean interactive)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->interactive = interactive;
+
+	job->interactive = interactive;
 }
 
 gboolean
 pk_backend_job_get_details_with_deps_size (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->details_with_deps_size;
+
+	return job->details_with_deps_size;
 }
 
 void
 pk_backend_job_set_details_with_deps_size (PkBackendJob *job, gboolean details_with_deps_size)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->details_with_deps_size = details_with_deps_size;
+
+	job->details_with_deps_size = details_with_deps_size;
 }
 
 PkRoleEnum
 pk_backend_job_get_role (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), PK_ROLE_ENUM_UNKNOWN);
-	return job->priv->role;
+
+	return job->role;
 }
 
 /**
@@ -513,19 +550,24 @@ guint
 pk_backend_job_get_runtime (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), 0);
-	return g_timer_elapsed (job->priv->timer, NULL) * 1000;
+
+	return g_timer_elapsed (job->timer, NULL) * 1000;
 }
 
 gboolean
 pk_backend_job_get_is_finished (PkBackendJob *job)
 {
-	return job->priv->finished;
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+
+	return job->finished;
 }
 
 gboolean
 pk_backend_job_get_is_error_set (PkBackendJob *job)
 {
-	return job->priv->set_error;
+	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
+
+	return job->set_error;
 }
 
 /* used to call vfuncs in the main daemon thread */
@@ -591,7 +633,7 @@ pk_backend_job_vfunc_event_free (PkBackendJobVFuncHelper *helper)
 {
 	if (helper->destroy_func != NULL)
 		helper->destroy_func (helper->object);
-	g_object_unref (helper->job);
+	g_clear_object (&helper->job);
 	g_free (helper);
 }
 
@@ -602,7 +644,7 @@ pk_backend_job_call_vfunc_idle_cb (gpointer user_data)
 	PkBackendJobVFuncItem *item;
 
 	/* call transaction vfunc on main thread */
-	item = &helper->job->priv->vfunc_items[helper->signal_kind];
+	item = &helper->job->vfunc_items[helper->signal_kind];
 	if (item != NULL && item->vfunc != NULL) {
 		item->vfunc (helper->job, helper->object, item->user_data);
 	} else {
@@ -630,7 +672,7 @@ pk_backend_job_call_vfunc (PkBackendJob *job,
 	g_autoptr(GSource) source = NULL;
 
 	/* call transaction vfunc if not disabled and set */
-	item = &job->priv->vfunc_items[signal_kind];
+	item = &job->vfunc_items[signal_kind];
 	if (!item->enabled || item->vfunc == NULL)
 		return;
 
@@ -673,7 +715,7 @@ pk_backend_job_set_vfunc (PkBackendJob *job,
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	item = &job->priv->vfunc_items[signal_kind];
+	item = &job->vfunc_items[signal_kind];
 	item->enabled = TRUE;
 	item->vfunc = vfunc;
 	item->user_data = user_data;
@@ -683,19 +725,19 @@ void
 pk_backend_job_set_role (PkBackendJob *job, PkRoleEnum role)
 {
 	/* Should only be called once... */
-	if (job->priv->role != PK_ROLE_ENUM_UNKNOWN &&
-	    job->priv->role != role) {
+	if (job->role != PK_ROLE_ENUM_UNKNOWN &&
+	    job->role != role) {
 		g_warning ("cannot set role to %s, already %s",
 			   pk_role_enum_to_string (role),
-			   pk_role_enum_to_string (job->priv->role));
+			   pk_role_enum_to_string (job->role));
 	}
 
-	g_timer_reset (job->priv->timer);
-	job->priv->role = role;
-	job->priv->status = PK_STATUS_ENUM_WAIT;
+	g_timer_reset (job->timer);
+	job->role = role;
+	job->status = PK_STATUS_ENUM_WAIT;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_STATUS_CHANGED,
-				   GUINT_TO_POINTER (job->priv->status),
+				   GUINT_TO_POINTER (job->status),
 				   NULL);
 }
 
@@ -710,10 +752,10 @@ pk_backend_job_set_locked (PkBackendJob *job, gboolean locked)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	job->priv->locked = locked;
+	job->locked = locked;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_LOCKED_CHANGED,
-				   GUINT_TO_POINTER (job->priv->locked),
+				   GUINT_TO_POINTER (job->locked),
 				   NULL);
 }
 
@@ -721,7 +763,7 @@ gboolean
 pk_backend_job_get_locked (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->locked;
+	return job->locked;
 }
 
 /* simple helper to work around the GThread one pointer limit */
@@ -740,20 +782,20 @@ pk_backend_job_thread_setup (gpointer thread_data)
 
 	/* run original function with automatic locking */
 	pk_backend_thread_start (helper->backend, helper->job, helper->func);
-	helper->func (helper->job, helper->job->priv->params, helper->user_data);
+	helper->func (helper->job, helper->job->params, helper->user_data);
 	pk_backend_job_finished (helper->job);
 	pk_backend_thread_stop (helper->backend, helper->job, helper->func);
 
 	/* set idle IO priority */
 #ifdef PK_BUILD_DAEMON
-	if (helper->job->priv->background == TRUE) {
+	if (helper->job->background == TRUE) {
 		g_debug ("setting ioprio class to idle");
 		pk_ioprio_set_idle (0);
 	}
 #endif
 
 	/* destroy helper */
-	g_object_unref (helper->job);
+	g_clear_object (&helper->job);
 	if (helper->destroy_func != NULL)
 		helper->destroy_func (helper->user_data);
 	g_free (helper);
@@ -781,7 +823,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	/* create a helper object to allow us to call a _setup() function */
 	helper = g_new0 (PkBackendJobThreadHelper, 1);
 	helper->job = g_object_ref (job);
-	helper->backend = job->priv->backend;
+	helper->backend = job->backend;
 	helper->func = func;
 	helper->user_data = user_data;
 
@@ -799,13 +841,13 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: percentage %i", percentage);
 		return;
 	}
 
 	/* set the same twice? */
-	if (job->priv->percentage == percentage)
+	if (job->percentage == percentage)
 		return;
 
 	/* check over */
@@ -816,15 +858,15 @@ pk_backend_job_set_percentage (PkBackendJob *job, guint percentage)
 
 	/* check under */
 	if (percentage < 100 &&
-	    job->priv->percentage < 100 &&
-	    percentage < job->priv->percentage) {
+	    job->percentage < 100 &&
+	    percentage < job->percentage) {
 		g_warning ("percentage value is going down to %i from %i",
-			   percentage, job->priv->percentage);
+			   percentage, job->percentage);
 		return;
 	}
 
 	/* save in case we need this from coldplug */
-	job->priv->percentage = percentage;
+	job->percentage = percentage;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_PERCENTAGE,
 				   GUINT_TO_POINTER (percentage),
@@ -837,17 +879,17 @@ pk_backend_job_set_speed (PkBackendJob *job, guint speed)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: speed %i", speed);
 		return;
 	}
 
 	/* set the same twice? */
-	if (job->priv->speed == speed)
+	if (job->speed == speed)
 		return;
 
 	/* set new value */
-	job->priv->speed = speed;
+	job->speed = speed;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_SPEED,
 				   GUINT_TO_POINTER (speed),
@@ -861,17 +903,17 @@ pk_backend_job_set_download_size_remaining (PkBackendJob *job, guint64 download_
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: download-size-remaining");
 		return;
 	}
 
 	/* set the same twice? */
-	if (job->priv->download_size_remaining == download_size_remaining)
+	if (job->download_size_remaining == download_size_remaining)
 		return;
 
 	/* set new value */
-	job->priv->download_size_remaining = download_size_remaining;
+	job->download_size_remaining = download_size_remaining;
 
 	/* we can't squash a 64bit value into a pointer on a 32bit arch */
 	tmp = g_new0 (guint64, 1);
@@ -892,7 +934,7 @@ pk_backend_job_set_item_progress (PkBackendJob *job,
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: item-progress %i", percentage);
 		return;
 	}
@@ -922,11 +964,11 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* already this? */
-	if (job->priv->status == status)
+	if (job->status == status)
 		return;
 
 	/* have we already set an error? */
-	if (job->priv->set_error && status != PK_STATUS_ENUM_FINISHED) {
+	if (job->set_error && status != PK_STATUS_ENUM_FINISHED) {
 		g_warning ("already set error: status %s",
 			   pk_status_enum_to_string (status));
 		return;
@@ -938,9 +980,9 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 		return;
 	}
 
-	/* do we have to enumate a running call? */
+	/* do we have to enumerate a running call? */
 	if (status != PK_STATUS_ENUM_RUNNING && status != PK_STATUS_ENUM_SETUP) {
-		if (job->priv->status == PK_STATUS_ENUM_SETUP) {
+		if (job->status == PK_STATUS_ENUM_SETUP) {
 			/* emit */
 			pk_backend_job_call_vfunc (job,
 						   PK_BACKEND_SIGNAL_STATUS_CHANGED,
@@ -949,10 +991,10 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 		}
 	}
 
-	job->priv->status = status;
+	job->status = status;
 
 	/* don't emit some states when simulating */
-	if (pk_bitfield_contain (job->priv->transaction_flags,
+	if (pk_bitfield_contain (job->transaction_flags,
 				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		switch (status) {
 		case PK_STATUS_ENUM_DOWNLOAD:
@@ -1011,17 +1053,17 @@ pk_backend_job_package_full (PkBackendJob *job,
 	pk_package_set_summary (item, summary);
 
 	/* already emitted? */
-	emitted_item = g_hash_table_lookup (job->priv->emitted, pk_package_get_id (item));
+	emitted_item = g_hash_table_lookup (job->emitted, pk_package_get_id (item));
 	if (emitted_item != NULL && pk_package_equal (emitted_item, item))
 		return;
 
 	/* update the emitted package table */
-	g_hash_table_insert (job->priv->emitted,
+	g_hash_table_insert (job->emitted,
 	                     g_strdup (pk_package_get_id (item)),
 	                     g_object_ref (item));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: package %s", package_id);
 		return;
 	}
@@ -1041,7 +1083,7 @@ pk_backend_job_package_full (PkBackendJob *job,
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
 
 	/* we've sent a package for this transaction */
-	job->priv->has_sent_package = TRUE;
+	job->has_sent_package = TRUE;
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,
@@ -1063,17 +1105,17 @@ pk_backend_job_packages (PkBackendJob *job,
 		PkPackage *emitted_item;
 
 		/* already emitted? */
-		emitted_item = g_hash_table_lookup (job->priv->emitted, pk_package_get_id (item));
+		emitted_item = g_hash_table_lookup (job->emitted, pk_package_get_id (item));
 		if (emitted_item != NULL && pk_package_equal (emitted_item, item))
 			continue;
 
 		/* update the emitted package table */
-		g_hash_table_insert (job->priv->emitted,
+		g_hash_table_insert (job->emitted,
 			             g_strdup (pk_package_get_id (item)),
 			             g_object_ref (item));
 
 		/* have we already set an error? */
-		if (job->priv->set_error) {
+		if (job->set_error) {
 			g_warning ("already set error: package %s", pk_package_get_id (item));
 			continue;
 		}
@@ -1093,7 +1135,7 @@ pk_backend_job_packages (PkBackendJob *job,
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
 
 		/* we've sent a package for this transaction */
-		job->priv->has_sent_package = TRUE;
+		job->has_sent_package = TRUE;
 	}
 
 	/* emit; this relies on the @packages array having ownership of all its
@@ -1128,7 +1170,7 @@ pk_backend_job_update_detail (PkBackendJob *job,
 	g_return_if_fail (package_id != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: update_detail %s", package_id);
 		return;
 	}
@@ -1181,7 +1223,7 @@ pk_backend_job_update_details (PkBackendJob *job,
 	g_return_if_fail (update_details != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: update_details");
 		return;
 	}
@@ -1206,7 +1248,7 @@ pk_backend_job_require_restart (PkBackendJob *job,
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: require-restart %s", pk_restart_enum_to_string (restart));
 		return;
 	}
@@ -1262,7 +1304,7 @@ pk_backend_job_details_full (PkBackendJob *job,
 	g_return_if_fail (package_id != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: details %s", package_id);
 		return;
 	}
@@ -1303,7 +1345,7 @@ pk_backend_job_files (PkBackendJob *job,
 	g_return_if_fail (files != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: files %s", package_id);
 		return;
 	}
@@ -1330,7 +1372,7 @@ pk_backend_job_files (PkBackendJob *job,
 				   g_object_unref);
 
 	/* success */
-	job->priv->download_files++;
+	job->download_files++;
 }
 
 void
@@ -1347,7 +1389,7 @@ pk_backend_job_distro_upgrade (PkBackendJob *job,
 	g_return_if_fail (summary != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: distro-upgrade");
 		return;
 	}
@@ -1384,13 +1426,13 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 	g_return_if_fail (repository_name != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: repo-sig-reqd");
 		return;
 	}
 
 	/* check we don't do this more than once */
-	if (job->priv->set_signature) {
+	if (job->set_signature) {
 		g_warning ("already asked for a signature, cannot process");
 		return;
 	}
@@ -1415,7 +1457,7 @@ pk_backend_job_repo_signature_required (PkBackendJob *job,
 				   g_object_unref);
 
 	/* success */
-	job->priv->set_signature = TRUE;
+	job->set_signature = TRUE;
 }
 
 void
@@ -1434,13 +1476,13 @@ pk_backend_job_eula_required (PkBackendJob *job,
 	g_return_if_fail (license_agreement != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: eula required");
 		return;
 	}
 
 	/* check we don't do this more than once */
-	if (job->priv->set_eula) {
+	if (job->set_eula) {
 		g_warning ("already asked for a signature, cannot process");
 		return;
 	}
@@ -1461,7 +1503,7 @@ pk_backend_job_eula_required (PkBackendJob *job,
 				   g_object_unref);
 
 	/* success */
-	job->priv->set_eula = TRUE;
+	job->set_eula = TRUE;
 }
 
 void
@@ -1477,7 +1519,7 @@ pk_backend_job_media_change_required (PkBackendJob *job,
 	g_return_if_fail (media_text != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: media change required");
 		return;
 	}
@@ -1509,7 +1551,7 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 	g_return_if_fail (repo_id != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: repo-detail %s", repo_id);
 		return;
 	}
@@ -1543,7 +1585,7 @@ pk_backend_job_category (PkBackendJob *job,
 	g_return_if_fail (cat_id != NULL);
 
 	/* have we already set an error? */
-	if (job->priv->set_error) {
+	if (job->set_error) {
 		g_warning ("already set error: category %s", cat_id);
 		return;
 	}
@@ -1601,17 +1643,17 @@ pk_backend_job_error_code (PkBackendJob *job,
 
 	/* did we set a duplicate error? (we can override LOCK_REQUIRED errors,
 	 * so the transaction list can fail transactions) */
-	if (job->priv->set_error) {
-		if (job->priv->last_error_code == PK_ERROR_ENUM_LOCK_REQUIRED) {
+	if (job->set_error) {
+		if (job->last_error_code == PK_ERROR_ENUM_LOCK_REQUIRED) {
 			/* reset the exit status, we're resetting the error now */
-			job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
-			job->priv->finished = FALSE;
+			job->exit = PK_EXIT_ENUM_UNKNOWN;
+			job->finished = FALSE;
 		} else {
 			g_warning ("More than one error emitted! You tried to set '%s'", buffer);
 			return;
 		}
 	}
-	job->priv->set_error = TRUE;
+	job->set_error = TRUE;
 
 	/* some error codes have a different exit code */
 	need_untrusted = pk_backend_job_error_code_is_need_untrusted (error_code);
@@ -1619,7 +1661,7 @@ pk_backend_job_error_code (PkBackendJob *job,
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_NEED_UNTRUSTED);
 	else if (error_code == PK_ERROR_ENUM_CANCELLED_PRIORITY)
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_CANCELLED_PRIORITY);
-	else if (job->priv->exit == PK_EXIT_ENUM_UNKNOWN)
+	else if (job->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_FAILED);
 
 	/* set the hint that RepairSystem is needed */
@@ -1628,7 +1670,7 @@ pk_backend_job_error_code (PkBackendJob *job,
 	}
 
 	/* save so we can check the parallel failure later */
-	job->priv->last_error_code = error_code;
+	job->last_error_code = error_code;
 
 	/* form PkError struct */
 	error = pk_error_new ();
@@ -1647,20 +1689,20 @@ pk_backend_job_error_code (PkBackendJob *job,
 gboolean
 pk_backend_job_has_set_error_code (PkBackendJob *job)
 {
-	return job->priv->set_error;
+	return job->set_error;
 }
 
 void
 pk_backend_job_set_started (PkBackendJob *job, gboolean started)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	job->priv->started = started;
+	job->started = started;
 }
 
 gboolean
 pk_backend_job_get_started (PkBackendJob *job)
 {
-	return job->priv->started;
+	return job->started;
 }
 
 void
@@ -1669,11 +1711,11 @@ pk_backend_job_set_allow_cancel (PkBackendJob *job, gboolean allow_cancel)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* same as last state? */
-	if (job->priv->allow_cancel == allow_cancel)
+	if (job->allow_cancel == allow_cancel)
 		return;
 
 	/* emit */
-	job->priv->allow_cancel = allow_cancel;
+	job->allow_cancel = allow_cancel;
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_ALLOW_CANCEL,
 				   GUINT_TO_POINTER (allow_cancel),
@@ -1684,7 +1726,7 @@ gboolean
 pk_backend_job_get_allow_cancel (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), FALSE);
-	return job->priv->allow_cancel;
+	return job->allow_cancel;
 }
 
 /**
@@ -1697,22 +1739,22 @@ pk_backend_job_set_exit_code (PkBackendJob *job, PkExitEnum exit_enum)
 {
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
-	if (job->priv->exit != PK_EXIT_ENUM_UNKNOWN) {
+	if (job->exit != PK_EXIT_ENUM_UNKNOWN) {
 		g_warning ("already set exit status: old=%s, new=%s",
-			    pk_exit_enum_to_string (job->priv->exit),
+			    pk_exit_enum_to_string (job->exit),
 			    pk_exit_enum_to_string (exit_enum));
 		return;
 	}
 
 	/* new value */
-	job->priv->exit = exit_enum;
+	job->exit = exit_enum;
 }
 
 PkExitEnum
 pk_backend_job_get_exit_code (PkBackendJob *job)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_JOB (job), PK_EXIT_ENUM_UNKNOWN);
-	return job->priv->exit;
+	return job->exit;
 }
 
 void
@@ -1723,24 +1765,24 @@ pk_backend_job_finished (PkBackendJob *job)
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 
 	/* check we have not already finished */
-	if (job->priv->finished) {
+	if (job->finished) {
 		g_warning ("already finished");
 		return;
 	}
 
 	/* find out what we just did */
-	role_text = pk_role_enum_to_string (job->priv->role);
+	role_text = pk_role_enum_to_string (job->role);
 
 	/* ensure the same number of ::Files() were sent as packages for DownloadPackages */
-	if (!job->priv->set_error &&
-	    job->priv->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
-	    job->priv->download_files == 0) {
+	if (!job->set_error &&
+	    job->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
+	    job->download_files == 0) {
 		g_warning ("required multiple Files() for each package_id!");
 	}
 
 	/* check we sent at least one status calls */
-	if (job->priv->set_error == FALSE &&
-	    job->priv->status == PK_STATUS_ENUM_SETUP) {
+	if (job->set_error == FALSE &&
+	    job->status == PK_STATUS_ENUM_SETUP) {
 		g_warning ("required status signals for %s!", role_text);
 	}
 
@@ -1751,49 +1793,45 @@ pk_backend_job_finished (PkBackendJob *job)
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_FINISHED);
 
 	/* we can't ever be re-used */
-	job->priv->finished = TRUE;
+	job->finished = TRUE;
 
 	/* this wasn't set otherwise, assume success */
-	if (job->priv->exit == PK_EXIT_ENUM_UNKNOWN)
+	if (job->exit == PK_EXIT_ENUM_UNKNOWN)
 		pk_backend_job_set_exit_code (job, PK_EXIT_ENUM_SUCCESS);
 
 	/* emit */
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_FINISHED,
-				   GUINT_TO_POINTER (job->priv->exit),
+				   GUINT_TO_POINTER (job->exit),
 				   NULL);
 }
 
 static void
 pk_backend_job_finalize (GObject *object)
 {
-	PkBackendJob *job;
+	PkBackendJob *job = PK_BACKEND_JOB (object);
 
-	g_return_if_fail (object != NULL);
-	g_return_if_fail (PK_IS_BACKEND_JOB (object));
 	g_return_if_fail (pk_is_thread_default ());
-	job = PK_BACKEND_JOB (object);
 
 	if (pk_backend_job_get_started (job)) {
 		g_warning ("finalized job without stopping it before");
-		pk_backend_stop_job (job->priv->backend, job);
+		pk_backend_stop_job (job->backend, job);
 	}
 
-	g_free (job->priv->proxy_http);
-	g_free (job->priv->proxy_https);
-	g_free (job->priv->proxy_ftp);
-	g_free (job->priv->proxy_socks);
-	g_free (job->priv->no_proxy);
-	g_free (job->priv->pac);
-	g_free (job->priv->cmdline);
-	g_free (job->priv->locale);
-	g_free (job->priv->frontend_socket);
-	g_hash_table_unref (job->priv->emitted);
-	if (job->priv->params != NULL)
-		g_variant_unref (job->priv->params);
-	g_timer_destroy (job->priv->timer);
-	g_key_file_unref (job->priv->conf);
-	g_object_unref (job->priv->cancellable);
+	g_clear_pointer (&job->proxy_http, g_free);
+	g_clear_pointer (&job->proxy_https, g_free);
+	g_clear_pointer (&job->proxy_ftp, g_free);
+	g_clear_pointer (&job->proxy_socks, g_free);
+	g_clear_pointer (&job->no_proxy, g_free);
+	g_clear_pointer (&job->pac, g_free);
+	g_clear_pointer (&job->cmdline, g_free);
+	g_clear_pointer (&job->locale, g_free);
+	g_clear_pointer (&job->frontend_socket, g_free);
+	g_clear_pointer (&job->emitted, g_hash_table_unref);
+	g_clear_pointer (&job->params, g_variant_unref);
+	g_clear_pointer (&job->timer, g_timer_destroy);
+	g_clear_pointer (&job->conf, g_key_file_unref);
+	g_clear_object (&job->cancellable);
 
 	G_OBJECT_CLASS (pk_backend_job_parent_class)->finalize (object);
 }
@@ -1803,24 +1841,22 @@ pk_backend_job_class_init (PkBackendJobClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_job_finalize;
-	g_type_class_add_private (klass, sizeof (PkBackendJobPrivate));
 }
 
 static void
 pk_backend_job_init (PkBackendJob *job)
 {
-	job->priv = PK_BACKEND_JOB_GET_PRIVATE (job);
-	job->priv->timer = g_timer_new ();
-	job->priv->cancellable = g_cancellable_new ();
-	job->priv->last_error_code = PK_ERROR_ENUM_UNKNOWN;
-	job->priv->locale = g_strdup ("C");
-	job->priv->cache_age = G_MAXUINT;
-	job->priv->allow_cancel = TRUE;
-	job->priv->exit = PK_EXIT_ENUM_UNKNOWN;
-	job->priv->role = PK_ROLE_ENUM_UNKNOWN;
-	job->priv->status = PK_STATUS_ENUM_UNKNOWN;
-	job->priv->emitted = g_hash_table_new_full (g_str_hash, g_str_equal,
-	                                            g_free, (GDestroyNotify) g_object_unref);
+	job->timer = g_timer_new ();
+	job->cancellable = g_cancellable_new ();
+	job->last_error_code = PK_ERROR_ENUM_UNKNOWN;
+	job->locale = g_strdup ("C");
+	job->cache_age = G_MAXUINT;
+	job->allow_cancel = TRUE;
+	job->exit = PK_EXIT_ENUM_UNKNOWN;
+	job->role = PK_ROLE_ENUM_UNKNOWN;
+	job->status = PK_STATUS_ENUM_UNKNOWN;
+	job->emitted = g_hash_table_new_full (g_str_hash, g_str_equal,
+	                                      g_free, (GDestroyNotify) g_object_unref);
 }
 
 /**
@@ -1833,7 +1869,7 @@ pk_backend_job_new (GKeyFile *conf)
 {
 	PkBackendJob *job;
 	job = g_object_new (PK_TYPE_BACKEND_JOB, NULL);
-	job->priv->conf = g_key_file_ref (conf);
+	job->conf = g_key_file_ref (conf);
 	return PK_BACKEND_JOB (job);
 }
 

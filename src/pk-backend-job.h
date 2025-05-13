@@ -30,6 +30,8 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_BACKEND_JOB		(pk_backend_job_get_type ())
+G_DECLARE_FINAL_TYPE (PkBackendJob, pk_backend_job, PK, BACKEND_JOB, GObject)
+
 #define PK_BACKEND_JOB(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_BACKEND_JOB, PkBackendJob))
 #define PK_BACKEND_JOB_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_BACKEND_JOB, PkBackendJobClass))
 #define PK_IS_BACKEND_JOB(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_BACKEND_JOB))
@@ -65,22 +67,6 @@ typedef enum {
 	PK_BACKEND_SIGNAL_LAST
 } PkBackendJobSignal;
 
-typedef struct
-{
-	GObject			 parent;
-	PkBackendJobPrivate	*priv;
-} PkBackendJob;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkBackendJobClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkBackendJob, g_object_unref)
-#endif
-
-GType		 pk_backend_job_get_type		(void);
 PkBackendJob	*pk_backend_job_new			(GKeyFile		*conf);
 
 void		 pk_backend_job_disconnect_vfuncs	(PkBackendJob	*job);
