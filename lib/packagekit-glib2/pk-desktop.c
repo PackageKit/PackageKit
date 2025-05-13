@@ -32,20 +32,6 @@
 #include <glib.h>
 #include <packagekit-glib2/pk-desktop.h>
 
-static void     pk_desktop_finalize	(GObject        *object);
-
-#define PK_DESKTOP_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DESKTOP, PkDesktopPrivate))
-
-/**
- * PkDesktopPrivate:
- *
- * Private #PkDesktop data
- **/
-struct _PkDesktopPrivate
-{
-	gpointer		 dummy;
-};
-
 G_DEFINE_TYPE (PkDesktop, pk_desktop, G_TYPE_OBJECT)
 static gpointer pk_desktop_object = NULL;
 
@@ -141,9 +127,6 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
 static void
 pk_desktop_class_init (PkDesktopClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-	object_class->finalize = pk_desktop_finalize;
-	g_type_class_add_private (klass, sizeof (PkDesktopPrivate));
 }
 
 /*
@@ -152,18 +135,7 @@ pk_desktop_class_init (PkDesktopClass *klass)
 static void
 pk_desktop_init (PkDesktop *desktop)
 {
-	desktop->priv = PK_DESKTOP_GET_PRIVATE (desktop);
-}
-
-/*
- * pk_desktop_finalize:
- **/
-static void
-pk_desktop_finalize (GObject *object)
-{
-	g_return_if_fail (object != NULL);
-	g_return_if_fail (PK_IS_DESKTOP (object));
-	G_OBJECT_CLASS (pk_desktop_parent_class)->finalize (object);
+	desktop->priv = NULL;
 }
 
 /**
