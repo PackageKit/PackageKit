@@ -36,8 +36,6 @@
 
 static void     pk_eula_required_finalize	(GObject     *object);
 
-#define PK_EULA_REQUIRED_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequiredPrivate))
-
 /**
  * PkEulaRequiredPrivate:
  *
@@ -60,7 +58,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
 
 /**
  * pk_eula_required_get_eula_id:
@@ -75,8 +73,11 @@ G_DEFINE_TYPE (PkEulaRequired, pk_eula_required, PK_TYPE_SOURCE)
 const gchar *
 pk_eula_required_get_eula_id (PkEulaRequired *eula_required)
 {
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
+
 	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
-	return eula_required->priv->eula_id;
+
+	return priv->eula_id;
 }
 
 /**
@@ -92,8 +93,11 @@ pk_eula_required_get_eula_id (PkEulaRequired *eula_required)
 const gchar *
 pk_eula_required_get_package_id (PkEulaRequired *eula_required)
 {
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
+
 	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
-	return eula_required->priv->package_id;
+
+	return priv->package_id;
 }
 
 /**
@@ -109,8 +113,11 @@ pk_eula_required_get_package_id (PkEulaRequired *eula_required)
 const gchar *
 pk_eula_required_get_vendor_name (PkEulaRequired *eula_required)
 {
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
+
 	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
-	return eula_required->priv->vendor_name;
+
+	return priv->vendor_name;
 }
 
 /**
@@ -126,8 +133,11 @@ pk_eula_required_get_vendor_name (PkEulaRequired *eula_required)
 const gchar *
 pk_eula_required_get_license_agreement (PkEulaRequired *eula_required)
 {
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
+
 	g_return_val_if_fail (PK_IS_EULA_REQUIRED (eula_required), NULL);
-	return eula_required->priv->license_agreement;
+
+	return priv->license_agreement;
 }
 
 /*
@@ -137,7 +147,7 @@ static void
 pk_eula_required_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkEulaRequired *eula_required = PK_EULA_REQUIRED (object);
-	PkEulaRequiredPrivate *priv = eula_required->priv;
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
 
 	switch (prop_id) {
 	case PROP_EULA_ID:
@@ -165,24 +175,24 @@ static void
 pk_eula_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkEulaRequired *eula_required = PK_EULA_REQUIRED (object);
-	PkEulaRequiredPrivate *priv = eula_required->priv;
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
 
 	switch (prop_id) {
 	case PROP_EULA_ID:
 		g_free (priv->eula_id);
-		priv->eula_id = g_strdup (g_value_get_string (value));
+		priv->eula_id = g_value_dup_string (value);
 		break;
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
-		priv->package_id = g_strdup (g_value_get_string (value));
+		priv->package_id = g_value_dup_string (value);
 		break;
 	case PROP_VENDOR_NAME:
 		g_free (priv->vendor_name);
-		priv->vendor_name = g_strdup (g_value_get_string (value));
+		priv->vendor_name = g_value_dup_string (value);
 		break;
 	case PROP_LICENSE_AGREEMENT:
 		g_free (priv->license_agreement);
-		priv->license_agreement = g_strdup (g_value_get_string (value));
+		priv->license_agreement = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -249,8 +259,6 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LICENSE_AGREEMENT, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkEulaRequiredPrivate));
 }
 
 /*
@@ -259,7 +267,7 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
 static void
 pk_eula_required_init (PkEulaRequired *eula_required)
 {
-	eula_required->priv = PK_EULA_REQUIRED_GET_PRIVATE (eula_required);
+	eula_required->priv = pk_eula_required_get_instance_private (eula_required);
 }
 
 /*
@@ -269,12 +277,12 @@ static void
 pk_eula_required_finalize (GObject *object)
 {
 	PkEulaRequired *eula_required = PK_EULA_REQUIRED (object);
-	PkEulaRequiredPrivate *priv = eula_required->priv;
+	PkEulaRequiredPrivate *priv = pk_eula_required_get_instance_private (eula_required);
 
-	g_free (priv->eula_id);
-	g_free (priv->package_id);
-	g_free (priv->vendor_name);
-	g_free (priv->license_agreement);
+	g_clear_pointer (&priv->eula_id, g_free);
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->vendor_name, g_free);
+	g_clear_pointer (&priv->license_agreement, g_free);
 
 	G_OBJECT_CLASS (pk_eula_required_parent_class)->finalize (object);
 }
