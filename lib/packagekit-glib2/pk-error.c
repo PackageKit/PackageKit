@@ -38,8 +38,6 @@
 
 static void     pk_error_finalize	(GObject     *object);
 
-#define PK_ERROR_CODE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ERROR_CODE, PkErrorPrivate))
-
 /**
  * PkErrorPrivate:
  *
@@ -58,7 +56,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkError, pk_error, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkError, pk_error, PK_TYPE_SOURCE)
 
 /*
  * pk_error_get_property:
@@ -67,7 +65,7 @@ static void
 pk_error_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = error_code->priv;
+	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -89,7 +87,7 @@ static void
 pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = error_code->priv;
+	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -97,7 +95,7 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 		break;
 	case PROP_DETAILS:
 		g_free (priv->details);
-		priv->details = g_strdup (g_value_get_string (value));
+		priv->details = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -118,8 +116,11 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 PkErrorEnum
 pk_error_get_code (PkError *error_code)
 {
+	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), 0);
-	return error_code->priv->code;
+
+	return priv->code;
 }
 
 /**
@@ -135,8 +136,11 @@ pk_error_get_code (PkError *error_code)
 const gchar *
 pk_error_get_details (PkError *error_code)
 {
+	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), NULL);
-	return error_code->priv->details;
+
+	return priv->details;
 }
 
 /*
@@ -170,8 +174,6 @@ pk_error_class_init (PkErrorClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DETAILS, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkErrorPrivate));
 }
 
 /*
@@ -180,7 +182,7 @@ pk_error_class_init (PkErrorClass *klass)
 static void
 pk_error_init (PkError *error_code)
 {
-	error_code->priv = PK_ERROR_CODE_GET_PRIVATE (error_code);
+	error_code->priv = pk_error_get_instance_private (error_code);
 }
 
 /*
@@ -190,9 +192,9 @@ static void
 pk_error_finalize (GObject *object)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = error_code->priv;
+	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
 
-	g_free (priv->details);
+	g_clear_pointer (&priv->details, g_free);
 
 	G_OBJECT_CLASS (pk_error_parent_class)->finalize (object);
 }
