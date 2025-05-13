@@ -1163,7 +1163,7 @@ pk_backend_job_update_detail (PkBackendJob *job,
 			      const gchar *issued_text,
 			      const gchar *updated_text)
 {
-	GTimeVal timeval;
+	g_autoptr(GDateTime) datetime = NULL;
 	g_autoptr(PkUpdateDetail) item = NULL;
 
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
@@ -1183,12 +1183,16 @@ pk_backend_job_update_detail (PkBackendJob *job,
 
 	/* check the issued dates are valid */
 	if (issued_text != NULL) {
-		if (!g_time_val_from_iso8601 (issued_text, &timeval))
+		datetime = g_date_time_new_from_iso8601 (issued_text, NULL);
+		if (!datetime)
 			g_warning ("failed to parse issued '%s'", issued_text);
+		g_clear_object (&datetime);
 	}
 	if (updated_text != NULL) {
-		if (!g_time_val_from_iso8601 (updated_text, &timeval))
+		datetime = g_date_time_new_from_iso8601 (updated_text, NULL);
+		if (!datetime)
 			g_warning ("failed to parse updated '%s'", updated_text);
+		g_clear_object (&datetime);
 	}
 
 	/* form PkUpdateDetail struct */

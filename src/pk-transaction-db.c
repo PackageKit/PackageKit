@@ -175,25 +175,27 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 static guint
 pk_transaction_db_iso8601_difference (const gchar *isodate)
 {
-	GTimeVal timeval_then;
-	GTimeVal timeval_now;
-	gboolean ret;
-	guint time_s;
+	g_autoptr(GDateTime) dt_then = NULL;
+	g_autoptr(GDateTime) dt_now = NULL;
+	GTimeSpan span;
 
 	g_return_val_if_fail (isodate != NULL, 0);
 
 	/* convert date */
-	ret = g_time_val_from_iso8601 (isodate, &timeval_then);
-	if (!ret) {
+	dt_then = g_date_time_new_from_iso8601 (isodate, NULL);
+	if (!dt_then) {
 		g_warning ("failed to parse '%s'", isodate);
 		return 0;
 	}
-	g_get_current_time (&timeval_now);
 
-	/* work out difference */
-	time_s = timeval_now.tv_sec - timeval_then.tv_sec;
+	dt_now = g_date_time_new_now_local ();
+	span = g_date_time_difference (dt_now, dt_then);
+	if (span < 0) {
+		g_warning ("Given date is in the future '%s'", isodate);
+		return 0;
+	}
 
-	return time_s;
+	return CLAMP (span / 1000000, 0, G_MAXUINT);
 }
 
 guint
