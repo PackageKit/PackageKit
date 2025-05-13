@@ -31,30 +31,10 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_ENGINE		(pk_engine_get_type ())
-#define PK_ENGINE(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_ENGINE, PkEngine))
-#define PK_ENGINE_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_ENGINE, PkEngineClass))
-#define PK_IS_ENGINE(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_ENGINE))
-#define PK_IS_ENGINE_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_ENGINE))
-#define PK_ENGINE_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_ENGINE, PkEngineClass))
-#define PK_ENGINE_ERROR		(pk_engine_error_quark ())
+G_DECLARE_FINAL_TYPE (PkEngine, pk_engine, PK, ENGINE, GObject)
+
+#define PK_ENGINE_ERROR	(pk_engine_error_quark ())
 #define PK_ENGINE_TYPE_ERROR	(pk_engine_error_get_type ())
-
-typedef struct PkEnginePrivate PkEnginePrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkEnginePrivate	*priv;
-} PkEngine;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkEngineClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkEngine, g_object_unref)
-#endif
 
 typedef enum
 {
@@ -71,8 +51,7 @@ typedef enum
 
 GQuark		 pk_engine_error_quark			(void);
 GType		 pk_engine_error_get_type		(void);
-GType		 pk_engine_get_type		  	(void);
-PkEngine	*pk_engine_new				(GKeyFile		*conf);
+PkEngine	*pk_engine_new				(GKeyFile	*conf);
 
 guint		 pk_engine_get_seconds_idle		(PkEngine	*engine);
 gboolean	 pk_engine_load_backend			(PkEngine	*engine,
