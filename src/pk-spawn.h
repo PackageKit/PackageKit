@@ -27,30 +27,10 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_SPAWN		(pk_spawn_get_type ())
-#define PK_SPAWN(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_SPAWN, PkSpawn))
-#define PK_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_SPAWN, PkSpawnClass))
-#define PK_IS_SPAWN(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_SPAWN))
-#define PK_IS_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SPAWN))
-#define PK_SPAWN_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SPAWN, PkSpawnClass))
+G_DECLARE_FINAL_TYPE (PkSpawn, pk_spawn, PK, SPAWN, GObject)
+
 #define PK_SPAWN_ERROR		(pk_spawn_error_quark ())
 #define PK_SPAWN_TYPE_ERROR	(pk_spawn_error_get_type ())
-
-typedef struct PkSpawnPrivate PkSpawnPrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkSpawnPrivate		*priv;
-} PkSpawn;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkSpawnClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkSpawn, g_object_unref)
-#endif
 
 /**
  * PkSpawnExitType:
@@ -73,7 +53,6 @@ typedef enum {
 	PK_SPAWN_ARGV_FLAGS_LAST
 } PkSpawnArgvFlags;
 
-GType		 pk_spawn_get_type			(void);
 PkSpawn		*pk_spawn_new				(GKeyFile		*conf);
 
 gboolean	 pk_spawn_argv				(PkSpawn	*spawn,
