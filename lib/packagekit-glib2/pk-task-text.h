@@ -27,30 +27,10 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_TASK_TEXT		(pk_task_text_get_type ())
-#define PK_TASK_TEXT(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TASK_TEXT, PkTaskText))
-#define PK_TASK_TEXT_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TASK_TEXT, PkTaskTextClass))
-#define PK_IS_TASK_TEXT(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK_TEXT))
-#define PK_IS_TASK_TEXT_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK_TEXT))
-#define PK_TASK_TEXT_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_TEXT, PkTaskTextClass))
+#define PK_TYPE_TASK_TEXT (pk_task_text_get_type ())
+G_DECLARE_FINAL_TYPE (PkTaskText, pk_task_text, PK, TASK_TEXT, PkTask)
 
-typedef struct _PkTaskTextPrivate	PkTaskTextPrivate;
-typedef struct _PkTaskText		PkTaskText;
-typedef struct _PkTaskTextClass		PkTaskTextClass;
-
-struct _PkTaskText
-{
-	 PkTask				 parent;
-	 PkTaskTextPrivate		*priv;
-};
-
-struct _PkTaskTextClass
-{
-	PkTaskClass			 parent_class;
-};
-
-GType		 pk_task_text_get_type				(void);
-PkTaskText	*pk_task_text_new				(void);
+PkTaskText	*pk_task_text_new (void);
 
 G_END_DECLS
 

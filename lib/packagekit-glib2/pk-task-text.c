@@ -31,18 +31,10 @@
 
 #include "pk-task-text.h"
 #include "pk-console-shared.h"
-static void     pk_task_text_finalize	(GObject     *object);
 
-#define PK_TASK_TEXT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_TEXT, PkTaskTextPrivate))
-
-/**
- * PkTaskTextPrivate:
- *
- * Private #PkTaskText data
- **/
-struct _PkTaskTextPrivate
+struct _PkTaskText
 {
-	gpointer		 user_data;
+ PkTask parent;
 };
 
 G_DEFINE_TYPE (PkTaskText, pk_task_text, PK_TYPE_TASK)
@@ -54,10 +46,6 @@ static void
 pk_task_text_untrusted_question (PkTask *task, guint request, PkResults *results)
 {
 	gboolean ret;
-	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* clear new line */
 	g_print ("\n");
@@ -91,10 +79,6 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	gchar *key_fingerprint;
 	gchar *key_timestamp;
 	PkRepoSignatureRequired *item;
-	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* clear new line */
 	g_print ("\n");
@@ -172,10 +156,6 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	guint i;
 	gboolean ret;
 	GPtrArray *array;
-	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* clear new line */
 	g_print ("\n");
@@ -230,10 +210,6 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 	gchar *media_id;
 	PkMediaTypeEnum media_type;
 	gchar *media_text;
-	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* clear new line */
 	g_print ("\n");
@@ -351,12 +327,8 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	GList *l;
 	PkPackage *package;
 	GPtrArray *array;
-	PkTaskTextPrivate *priv = PK_TASK_TEXT(task)->priv;
 	g_autoptr(GHashTable) table = NULL;
 	g_autoptr(GList) list = NULL;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* clear new line */
 	g_print ("\n");
@@ -436,17 +408,13 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 static void
 pk_task_text_class_init (PkTaskTextClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	PkTaskClass *task_class = PK_TASK_CLASS (klass);
 
-	object_class->finalize = pk_task_text_finalize;
 	task_class->untrusted_question = pk_task_text_untrusted_question;
 	task_class->key_question = pk_task_text_key_question;
 	task_class->eula_question = pk_task_text_eula_question;
 	task_class->media_change_question = pk_task_text_media_change_question;
 	task_class->simulate_question = pk_task_text_simulate_question;
-
-	g_type_class_add_private (klass, sizeof (PkTaskTextPrivate));
 }
 
 /*
@@ -456,20 +424,6 @@ pk_task_text_class_init (PkTaskTextClass *klass)
 static void
 pk_task_text_init (PkTaskText *task)
 {
-	task->priv = PK_TASK_TEXT_GET_PRIVATE (task);
-	task->priv->user_data = NULL;
-}
-
-/*
- * pk_task_text_finalize:
- * @object: The object to finalize
- **/
-static void
-pk_task_text_finalize (GObject *object)
-{
-	PkTaskText *task = PK_TASK_TEXT (object);
-	task->priv->user_data = NULL;
-	G_OBJECT_CLASS (pk_task_text_parent_class)->finalize (object);
 }
 
 /**
