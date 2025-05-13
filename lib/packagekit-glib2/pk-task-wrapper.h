@@ -27,30 +27,10 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_TASK_WRAPPER		(pk_task_wrapper_get_type ())
-#define PK_TASK_WRAPPER(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TASK_WRAPPER, PkTaskWrapper))
-#define PK_TASK_WRAPPER_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TASK_WRAPPER, PkTaskWrapperClass))
-#define PK_IS_TASK_WRAPPER(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TASK_WRAPPER))
-#define PK_IS_TASK_WRAPPER_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TASK_WRAPPER))
-#define PK_TASK_WRAPPER_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TASK_WRAPPER, PkTaskWrapperClass))
+#define PK_TYPE_TASK_WRAPPER (pk_task_wrapper_get_type ())
+G_DECLARE_FINAL_TYPE (PkTaskWrapper, pk_task_wrapper, PK, TASK_WRAPPER, PkTask)
 
-typedef struct _PkTaskWrapperPrivate	PkTaskWrapperPrivate;
-typedef struct _PkTaskWrapper		PkTaskWrapper;
-typedef struct _PkTaskWrapperClass	PkTaskWrapperClass;
-
-struct _PkTaskWrapper
-{
-	 PkTask				 parent;
-	 PkTaskWrapperPrivate		*priv;
-};
-
-struct _PkTaskWrapperClass
-{
-	PkTaskClass			 parent_class;
-};
-
-GType		 pk_task_wrapper_get_type			(void);
-PkTaskWrapper	*pk_task_wrapper_new				(void);
+PkTaskWrapper	*pk_task_wrapper_new (void);
 
 G_END_DECLS
 

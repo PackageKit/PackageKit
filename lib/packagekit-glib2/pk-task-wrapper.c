@@ -27,18 +27,9 @@
 
 #include "pk-task-wrapper.h"
 
-static void     pk_task_wrapper_finalize	(GObject     *object);
-
-#define PK_TASK_WRAPPER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_TASK_WRAPPER, PkTaskWrapperPrivate))
-
-/**
- * PkTaskWrapperPrivate:
- *
- * Private #PkTaskWrapper data
- **/
-struct _PkTaskWrapperPrivate
+struct _PkTaskWrapper
 {
-	gpointer		 user_data;
+ PkTask parent;
 };
 
 G_DEFINE_TYPE (PkTaskWrapper, pk_task_wrapper, PK_TYPE_TASK)
@@ -49,11 +40,6 @@ G_DEFINE_TYPE (PkTaskWrapper, pk_task_wrapper, PK_TYPE_TASK)
 static void
 pk_task_wrapper_untrusted_question (PkTask *task, guint request, PkResults *results)
 {
-	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
-
 	g_print ("UNTRUSTED\n");
 
 	/* just accept without asking */
@@ -66,11 +52,6 @@ pk_task_wrapper_untrusted_question (PkTask *task, guint request, PkResults *resu
 static void
 pk_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 {
-	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
 }
@@ -81,11 +62,6 @@ pk_task_wrapper_key_question (PkTask *task, guint request, PkResults *results)
 static void
 pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 {
-	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
 }
@@ -96,11 +72,6 @@ pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 static void
 pk_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *results)
 {
-	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
-
 	/* just accept without asking */
 	pk_task_user_accepted (task, request);
 }
@@ -114,12 +85,8 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 	guint i;
 	const gchar *package_id;
 	PkPackage *package;
-	PkTaskWrapperPrivate *priv = PK_TASK_WRAPPER(task)->priv;
 	g_autoptr(PkPackageSack) sack = NULL;
 	g_autoptr(GPtrArray) array = NULL;
-
-	/* set some user data, for no reason */
-	priv->user_data = NULL;
 
 	/* get data */
 	sack = pk_results_get_package_sack (results);
@@ -145,17 +112,13 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 static void
 pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	PkTaskClass *task_class = PK_TASK_CLASS (klass);
 
-	object_class->finalize = pk_task_wrapper_finalize;
 	task_class->untrusted_question = pk_task_wrapper_untrusted_question;
 	task_class->key_question = pk_task_wrapper_key_question;
 	task_class->eula_question = pk_task_wrapper_eula_question;
 	task_class->media_change_question = pk_task_wrapper_media_change_question;
 	task_class->simulate_question = pk_task_wrapper_simulate_question;
-
-	g_type_class_add_private (klass, sizeof (PkTaskWrapperPrivate));
 }
 
 /*
@@ -165,20 +128,6 @@ pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
 static void
 pk_task_wrapper_init (PkTaskWrapper *task)
 {
-	task->priv = PK_TASK_WRAPPER_GET_PRIVATE (task);
-	task->priv->user_data = NULL;
-}
-
-/*
- * pk_task_wrapper_finalize:
- * @object: The object to finalize
- **/
-static void
-pk_task_wrapper_finalize (GObject *object)
-{
-	PkTaskWrapper *task = PK_TASK_WRAPPER (object);
-	task->priv->user_data = NULL;
-	G_OBJECT_CLASS (pk_task_wrapper_parent_class)->finalize (object);
 }
 
 /**
