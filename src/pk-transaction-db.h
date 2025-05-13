@@ -28,30 +28,8 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_TRANSACTION_DB		(pk_transaction_db_get_type ())
-#define PK_TRANSACTION_DB(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDb))
-#define PK_TRANSACTION_DB_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION_DB, PkTransactionDbClass))
-#define PK_IS_TRANSACTION_DB(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION_DB))
-#define PK_IS_TRANSACTION_DB_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_DB))
-#define PK_TRANSACTION_DB_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_DB, PkTransactionDbClass))
+G_DECLARE_FINAL_TYPE (PkTransactionDb, pk_transaction_db, PK, TRANSACTION_DB, GObject)
 
-typedef struct PkTransactionDbPrivate PkTransactionDbPrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkTransactionDbPrivate	*priv;
-} PkTransactionDb;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkTransactionDbClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransactionDb, g_object_unref)
-#endif
-
-GType		 pk_transaction_db_get_type		(void);
 PkTransactionDb	*pk_transaction_db_new			(void);
 gboolean	 pk_transaction_db_load			(PkTransactionDb	*tdb,
 							 GError			**error);
