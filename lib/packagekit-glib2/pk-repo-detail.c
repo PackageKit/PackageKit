@@ -36,8 +36,6 @@
 
 static void     pk_repo_detail_finalize	(GObject     *object);
 
-#define PK_REPO_DETAIL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REPO_DETAIL, PkRepoDetailPrivate))
-
 /**
  * PkRepoDetailPrivate:
  *
@@ -58,7 +56,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
 
 /**
  * pk_repo_detail_get_id:
@@ -73,8 +71,11 @@ G_DEFINE_TYPE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
 const gchar *
 pk_repo_detail_get_id (PkRepoDetail *repo_detail)
 {
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
-	return repo_detail->priv->repo_id;
+
+	return priv->repo_id;
 }
 
 /**
@@ -90,8 +91,11 @@ pk_repo_detail_get_id (PkRepoDetail *repo_detail)
 const gchar *
 pk_repo_detail_get_description (PkRepoDetail *repo_detail)
 {
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
-	return repo_detail->priv->description;
+
+	return priv->description;
 }
 
 /**
@@ -107,8 +111,11 @@ pk_repo_detail_get_description (PkRepoDetail *repo_detail)
 gboolean
 pk_repo_detail_get_enabled (PkRepoDetail *repo_detail)
 {
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), FALSE);
-	return repo_detail->priv->enabled;
+
+	return priv->enabled;
 }
 
 /*
@@ -118,7 +125,7 @@ static void
 pk_repo_detail_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = repo_detail->priv;
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
 
 	switch (prop_id) {
 	case PROP_REPO_ID:
@@ -143,16 +150,16 @@ static void
 pk_repo_detail_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = repo_detail->priv;
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
 
 	switch (prop_id) {
 	case PROP_REPO_ID:
 		g_free (priv->repo_id);
-		priv->repo_id = g_strdup (g_value_get_string (value));
+		priv->repo_id = g_value_dup_string (value);
 		break;
 	case PROP_DESCRIPTION:
 		g_free (priv->description);
-		priv->description = g_strdup (g_value_get_string (value));
+		priv->description = g_value_dup_string (value);
 		break;
 	case PROP_ENABLED:
 		priv->enabled = g_value_get_boolean (value);
@@ -204,8 +211,6 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 				      FALSE,
 				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ENABLED, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkRepoDetailPrivate));
 }
 
 /*
@@ -214,7 +219,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 static void
 pk_repo_detail_init (PkRepoDetail *repo_detail)
 {
-	repo_detail->priv = PK_REPO_DETAIL_GET_PRIVATE (repo_detail);
+	repo_detail->priv = pk_repo_detail_get_instance_private (repo_detail);
 }
 
 /*
@@ -224,10 +229,10 @@ static void
 pk_repo_detail_finalize (GObject *object)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = repo_detail->priv;
+	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
 
-	g_free (priv->repo_id);
-	g_free (priv->description);
+	g_clear_pointer (&priv->repo_id, g_free);
+	g_clear_pointer (&priv->description, g_free);
 
 	G_OBJECT_CLASS (pk_repo_detail_parent_class)->finalize (object);
 }
