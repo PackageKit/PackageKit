@@ -37,8 +37,6 @@
 
 static void     pk_update_detail_finalize	(GObject     *object);
 
-#define PK_UPDATE_DETAIL_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_UPDATE_DETAIL, PkUpdateDetailPrivate))
-
 /**
  * PkUpdateDetailPrivate:
  *
@@ -77,7 +75,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkUpdateDetail, pk_update_detail, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkUpdateDetail, pk_update_detail, PK_TYPE_SOURCE)
 /**
  * pk_update_detail_get_package_id:
  * @update_detail: a #PkUpdateDetail instance
@@ -91,8 +89,11 @@ G_DEFINE_TYPE (PkUpdateDetail, pk_update_detail, PK_TYPE_SOURCE)
 const gchar *
 pk_update_detail_get_package_id (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->package_id;
+
+	return priv->package_id;
 }
 
 /**
@@ -108,8 +109,11 @@ pk_update_detail_get_package_id (PkUpdateDetail *update_detail)
 gchar **
 pk_update_detail_get_updates (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->updates;
+
+	return priv->updates;
 }
 
 /**
@@ -125,8 +129,11 @@ pk_update_detail_get_updates (PkUpdateDetail *update_detail)
 gchar **
 pk_update_detail_get_obsoletes (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->obsoletes;
+
+	return priv->obsoletes;
 }
 
 /**
@@ -142,8 +149,11 @@ pk_update_detail_get_obsoletes (PkUpdateDetail *update_detail)
 gchar **
 pk_update_detail_get_vendor_urls (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->vendor_urls;
+
+	return priv->vendor_urls;
 }
 
 /**
@@ -159,8 +169,11 @@ pk_update_detail_get_vendor_urls (PkUpdateDetail *update_detail)
 gchar **
 pk_update_detail_get_bugzilla_urls (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->bugzilla_urls;
+
+	return priv->bugzilla_urls;
 }
 
 /**
@@ -176,8 +189,11 @@ pk_update_detail_get_bugzilla_urls (PkUpdateDetail *update_detail)
 gchar **
 pk_update_detail_get_cve_urls (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->cve_urls;
+
+	return priv->cve_urls;
 }
 
 /**
@@ -193,8 +209,11 @@ pk_update_detail_get_cve_urls (PkUpdateDetail *update_detail)
 PkRestartEnum
 pk_update_detail_get_restart (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, PK_RESTART_ENUM_UNKNOWN);
-	return update_detail->priv->restart;
+
+	return priv->restart;
 }
 
 /**
@@ -210,8 +229,11 @@ pk_update_detail_get_restart (PkUpdateDetail *update_detail)
 const gchar *
 pk_update_detail_get_update_text (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->update_text;
+
+	return priv->update_text;
 }
 
 /**
@@ -227,8 +249,11 @@ pk_update_detail_get_update_text (PkUpdateDetail *update_detail)
 const gchar *
 pk_update_detail_get_changelog (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->changelog;
+
+	return priv->changelog;
 }
 
 /**
@@ -244,8 +269,11 @@ pk_update_detail_get_changelog (PkUpdateDetail *update_detail)
 PkUpdateStateEnum
 pk_update_detail_get_state (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, PK_UPDATE_STATE_ENUM_UNKNOWN);
-	return update_detail->priv->state;
+
+	return priv->state;
 }
 
 /**
@@ -261,8 +289,11 @@ pk_update_detail_get_state (PkUpdateDetail *update_detail)
 const gchar *
 pk_update_detail_get_issued (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->issued;
+
+	return priv->issued;
 }
 
 /**
@@ -278,8 +309,11 @@ pk_update_detail_get_issued (PkUpdateDetail *update_detail)
 const gchar *
 pk_update_detail_get_updated (PkUpdateDetail *update_detail)
 {
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
+
 	g_return_val_if_fail (update_detail != NULL, NULL);
-	return update_detail->priv->updated;
+
+	return priv->updated;
 }
 
 /*
@@ -289,7 +323,7 @@ static void
 pk_update_detail_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkUpdateDetail *update_detail = PK_UPDATE_DETAIL (object);
-	PkUpdateDetailPrivate *priv = update_detail->priv;
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -341,54 +375,54 @@ static void
 pk_update_detail_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkUpdateDetail *update_detail = PK_UPDATE_DETAIL (object);
-	PkUpdateDetailPrivate *priv = update_detail->priv;
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
-		priv->package_id = g_strdup (g_value_get_string (value));
+		priv->package_id = g_value_dup_string (value);
 		break;
 	case PROP_UPDATES:
 		g_strfreev (priv->updates);
-		priv->updates = g_strdupv (g_value_get_boxed (value));
+		priv->updates = g_value_dup_boxed (value);
 		break;
 	case PROP_OBSOLETES:
 		g_strfreev (priv->obsoletes);
-		priv->obsoletes = g_strdupv (g_value_get_boxed (value));
+		priv->obsoletes = g_value_dup_boxed (value);
 		break;
 	case PROP_VENDOR_URLS:
 		g_strfreev (priv->vendor_urls);
-		priv->vendor_urls = g_strdupv (g_value_get_boxed (value));
+		priv->vendor_urls = g_value_dup_boxed (value);
 		break;
 	case PROP_BUGZILLA_URLS:
 		g_strfreev (priv->bugzilla_urls);
-		priv->bugzilla_urls = g_strdupv (g_value_get_boxed (value));
+		priv->bugzilla_urls = g_value_dup_boxed (value);
 		break;
 	case PROP_CVE_URLS:
 		g_strfreev (priv->cve_urls);
-		priv->cve_urls = g_strdupv (g_value_get_boxed (value));
+		priv->cve_urls = g_value_dup_boxed (value);
 		break;
 	case PROP_RESTART:
 		priv->restart = g_value_get_enum (value);
 		break;
 	case PROP_UPDATE_TEXT:
 		g_free (priv->update_text);
-		priv->update_text = g_strdup (g_value_get_string (value));
+		priv->update_text = g_value_dup_string (value);
 		break;
 	case PROP_CHANGELOG:
 		g_free (priv->changelog);
-		priv->changelog = g_strdup (g_value_get_string (value));
+		priv->changelog = g_value_dup_string (value);
 		break;
 	case PROP_STATE:
 		priv->state = g_value_get_enum (value);
 		break;
 	case PROP_ISSUED:
 		g_free (priv->issued);
-		priv->issued = g_strdup (g_value_get_string (value));
+		priv->issued = g_value_dup_string (value);
 		break;
 	case PROP_UPDATED:
 		g_free (priv->updated);
-		priv->updated = g_strdup (g_value_get_string (value));
+		priv->updated = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -527,8 +561,6 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_UPDATED, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkUpdateDetailPrivate));
 }
 
 /*
@@ -537,7 +569,7 @@ pk_update_detail_class_init (PkUpdateDetailClass *klass)
 static void
 pk_update_detail_init (PkUpdateDetail *update_detail)
 {
-	update_detail->priv = PK_UPDATE_DETAIL_GET_PRIVATE (update_detail);
+	update_detail->priv = pk_update_detail_get_instance_private (update_detail);
 }
 
 /*
@@ -547,18 +579,18 @@ static void
 pk_update_detail_finalize (GObject *object)
 {
 	PkUpdateDetail *update_detail = PK_UPDATE_DETAIL (object);
-	PkUpdateDetailPrivate *priv = update_detail->priv;
+	PkUpdateDetailPrivate *priv = pk_update_detail_get_instance_private (update_detail);
 
-	g_free (priv->package_id);
-	g_strfreev (priv->updates);
-	g_strfreev (priv->obsoletes);
-	g_strfreev (priv->vendor_urls);
-	g_strfreev (priv->bugzilla_urls);
-	g_free (priv->cve_urls);
-	g_free (priv->update_text);
-	g_free (priv->changelog);
-	g_free (priv->issued);
-	g_free (priv->updated);
+	g_clear_pointer (&priv->package_id, g_free);
+	g_clear_pointer (&priv->updates, g_strfreev);
+	g_clear_pointer (&priv->obsoletes, g_strfreev);
+	g_clear_pointer (&priv->vendor_urls, g_strfreev);
+	g_clear_pointer (&priv->bugzilla_urls, g_strfreev);
+	g_clear_pointer (&priv->cve_urls, g_free);
+	g_clear_pointer (&priv->update_text, g_free);
+	g_clear_pointer (&priv->changelog, g_free);
+	g_clear_pointer (&priv->issued, g_free);
+	g_clear_pointer (&priv->updated, g_free);
 
 	G_OBJECT_CLASS (pk_update_detail_parent_class)->finalize (object);
 }
