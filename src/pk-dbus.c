@@ -31,10 +31,10 @@
 
 #include "pk-dbus.h"
 
-#define PK_DBUS_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_DBUS, PkDbusPrivate))
-
-struct PkDbusPrivate
+struct _PkDbus
 {
+	GObject			 parent;
+
 	GDBusConnection		*connection;
 	GDBusProxy		*proxy_pid;
 	GDBusProxy		*proxy_uid;
@@ -69,11 +69,11 @@ pk_dbus_get_uid_pid (PkDbus *dbus, const gchar *sender, guint32 *uid, guint32 *p
 	}
 
 	/* no connection to DBus */
-	if (dbus->priv->proxy_pid == NULL)
+	if (dbus->proxy_pid == NULL)
 		return FALSE;
 
 	/* get caller credentials from DBus */
-	reply_var = g_dbus_proxy_call_sync (dbus->priv->proxy_pid,
+	reply_var = g_dbus_proxy_call_sync (dbus->proxy_pid,
 					"GetConnectionCredentials",
 					g_variant_new ("(s)",
 						       sender),
@@ -128,7 +128,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
 	/* no connection to DBus */
-	if (dbus->priv->proxy_uid == NULL)
+	if (dbus->proxy_uid == NULL)
 		return G_MAXUINT;
 
 	/* set in the test suite */
@@ -136,7 +136,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 		g_debug ("using self-check shortcut");
 		return 500;
 	}
-	value = g_dbus_proxy_call_sync (dbus->priv->proxy_uid,
+	value = g_dbus_proxy_call_sync (dbus->proxy_uid,
 					"GetConnectionUnixUser",
 					g_variant_new ("(s)",
 						       sender),
@@ -179,11 +179,11 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	}
 
 	/* no connection to DBus */
-	if (dbus->priv->proxy_pid == NULL)
+	if (dbus->proxy_pid == NULL)
 		return G_MAXUINT;
 
 	/* get pid from DBus */
-	value = g_dbus_proxy_call_sync (dbus->priv->proxy_pid,
+	value = g_dbus_proxy_call_sync (dbus->proxy_pid,
 					"GetConnectionUnixProcessID",
 					g_variant_new ("(s)",
 						       sender),
@@ -271,12 +271,12 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 		g_warning ("failed to get session for pid %u", pid);
 #else
 	/* no ConsoleKit? */
-	if (dbus->priv->proxy_session == NULL) {
+	if (dbus->proxy_session == NULL) {
 		g_warning ("no ConsoleKit, so cannot get session");
 		goto out;
 	}
 	/* get session from ConsoleKit */
-	value = g_dbus_proxy_call_sync (dbus->priv->proxy_session,
+	value = g_dbus_proxy_call_sync (dbus->proxy_session,
 					"GetSessionForUnixProcess",
 					g_variant_new ("(u)",
 						       pid),
@@ -304,12 +304,12 @@ pk_dbus_finalize (GObject *object)
 	g_return_if_fail (PK_IS_DBUS (object));
 	dbus = PK_DBUS (object);
 
-	if (dbus->priv->proxy_pid != NULL)
-		g_object_unref (dbus->priv->proxy_pid);
-	if (dbus->priv->proxy_uid != NULL)
-		g_object_unref (dbus->priv->proxy_uid);
-	if (dbus->priv->proxy_session != NULL)
-		g_object_unref (dbus->priv->proxy_session);
+	if (dbus->proxy_pid != NULL)
+		g_object_unref (dbus->proxy_pid);
+	if (dbus->proxy_uid != NULL)
+		g_object_unref (dbus->proxy_uid);
+	if (dbus->proxy_session != NULL)
+		g_object_unref (dbus->proxy_session);
 
 	G_OBJECT_CLASS (pk_dbus_parent_class)->finalize (object);
 }
@@ -319,27 +319,25 @@ pk_dbus_class_init (PkDbusClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_dbus_finalize;
-
-	g_type_class_add_private (klass, sizeof (PkDbusPrivate));
 }
 
 gboolean
 pk_dbus_connect (PkDbus *dbus, GError **error)
 {
-	if (dbus->priv->connection != NULL)
+	if (dbus->connection != NULL)
 		return TRUE;
 
 	/* use the bus to get the uid */
-	dbus->priv->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
+	dbus->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
 						 NULL, error);
-	if (dbus->priv->connection == NULL) {
+	if (dbus->connection == NULL) {
 		g_prefix_error (error, "cannot connect to the system bus: ");
 		return FALSE;
 	}
 
 	/* connect to DBus so we can get the pid */
-	dbus->priv->proxy_pid =
-		g_dbus_proxy_new_sync (dbus->priv->connection,
+	dbus->proxy_pid =
+		g_dbus_proxy_new_sync (dbus->connection,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
 				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 				       NULL,
@@ -348,14 +346,14 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       "org.freedesktop.DBus",
 				       NULL,
 				       error);
-	if (dbus->priv->proxy_pid == NULL) {
+	if (dbus->proxy_pid == NULL) {
 		g_prefix_error (error, "cannot connect to DBus: ");
 		return FALSE;
 	}
 
 	/* connect to DBus so we can get the uid */
-	dbus->priv->proxy_uid =
-		g_dbus_proxy_new_sync (dbus->priv->connection,
+	dbus->proxy_uid =
+		g_dbus_proxy_new_sync (dbus->connection,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
 				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 				       NULL,
@@ -364,14 +362,14 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       "org.freedesktop.DBus",
 				       NULL,
 				       error);
-	if (dbus->priv->proxy_uid == NULL) {
+	if (dbus->proxy_uid == NULL) {
 		g_prefix_error (error, "cannot connect to DBus: ");
 		return FALSE;
 	}
 
 	/* use ConsoleKit to get the session */
-	dbus->priv->proxy_session =
-		g_dbus_proxy_new_sync (dbus->priv->connection,
+	dbus->proxy_session =
+		g_dbus_proxy_new_sync (dbus->connection,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
 				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 				       NULL,
@@ -380,7 +378,7 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       "org.freedesktop.ConsoleKit.Manager",
 				       NULL,
 				       error);
-	if (dbus->priv->proxy_session == NULL) {
+	if (dbus->proxy_session == NULL) {
 		g_prefix_error (error, "cannot connect to DBus: ");
 		return FALSE;
 	}
@@ -399,7 +397,6 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 static void
 pk_dbus_init (PkDbus *dbus)
 {
-	dbus->priv = PK_DBUS_GET_PRIVATE (dbus);
 }
 
 PkDbus *

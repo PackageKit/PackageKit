@@ -27,30 +27,8 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_DBUS		(pk_dbus_get_type ())
-#define PK_DBUS(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_DBUS, PkDbus))
-#define PK_DBUS_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_DBUS, PkDbusClass))
-#define PK_IS_DBUS(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_DBUS))
-#define PK_IS_DBUS_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_DBUS))
-#define PK_DBUS_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_DBUS, PkDbusClass))
+G_DECLARE_FINAL_TYPE (PkDbus, pk_dbus, PK, DBUS, GObject)
 
-typedef struct PkDbusPrivate PkDbusPrivate;
-
-typedef struct
-{
-	GObject			 parent;
-	PkDbusPrivate		*priv;
-} PkDbus;
-
-typedef struct
-{
-	GObjectClass		 parent_class;
-} PkDbusClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDbus, g_object_unref)
-#endif
-
-GType		 pk_dbus_get_type		(void);
 PkDbus		*pk_dbus_new			(void);
 gboolean	 pk_dbus_connect		(PkDbus		*dbus,
 						 GError		**error);
