@@ -56,11 +56,6 @@
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
 
-#ifndef HAVE_POLKIT_0_114
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PolkitAuthorizationResult, g_object_unref)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PolkitDetails, g_object_unref)
-#endif
-
 static void     pk_transaction_finalize		(GObject	    *object);
 static void     pk_transaction_dispose		(GObject	    *object);
 

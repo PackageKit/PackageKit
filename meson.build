@@ -17,10 +17,7 @@ gio_dep = dependency('gio-2.0')
 gio_unix_dep = dependency('gio-unix-2.0', version: '>=2.16.1')
 gmodule_dep = dependency('gmodule-2.0', version: '>=2.16.1')
 sqlite3_dep = dependency('sqlite3')
-polkit_dep = dependency('polkit-gobject-1', version: '>=0.98')
-if polkit_dep.version().version_compare('>=0.114')
-  add_project_arguments ('-DHAVE_POLKIT_0_114=1', language: 'c')
-endif
+polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
 
 libsystemd = []
 if get_option('systemd')
