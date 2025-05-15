@@ -1716,7 +1716,7 @@ main (int argc, char *argv[])
 		{ "allow-untrusted", '\0', 0, G_OPTION_ARG_NONE, &allow_untrusted,
 			/* command line argument, do we ask questions */
 			_("Allow untrusted packages to be installed."), NULL },
-		{ NULL}
+		G_OPTION_ENTRY_NULL
 	};
 
 	setlocale (LC_ALL, "");
