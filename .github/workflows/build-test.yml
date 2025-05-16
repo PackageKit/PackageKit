@@ -9,33 +9,23 @@ jobs:
 
     strategy:
       matrix:
-        distro:
-          - fedora
-          - debian
+        include:
+          - distro: debian
+            backend: apt
+          - distro: fedora
+            backend: dnf
+          - distro: fedora
+            backend: alpm
+          - distro: fedora
+            backend: zypp
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Create Build Environment
         run: podman build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
 
-      - name: Build & Test [DNF]
+      - name: Build & Test
         run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=dnf
-        if: ${{ matrix.distro == 'fedora' }}
-
-      - name: Build & Test [ALPM]
-        run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=alpm
-        if: ${{ matrix.distro == 'fedora' }}
-
-      - name: Build & Test [ZYPP]
-        run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=zypp
-        if: ${{ matrix.distro == 'fedora' }}
-
-      - name: Build & Test [APT]
-        run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=apt
-        if: ${{ matrix.distro == 'debian' }}
+             ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }}
