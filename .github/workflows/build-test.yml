@@ -2,6 +2,9 @@ name: Build Test
 
 on: [push, pull_request]
 
+env:
+  LAST_ABI_BREAK: 0f33069752fe06f6daf3d977cd09665b059494d8
+
 jobs:
   build-test:
     name: Build & Test
@@ -21,7 +24,15 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Get this version
+        uses: actions/checkout@v4
+
+      - name: Get version from last ABI break
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.LAST_ABI_BREAK }}
+          path: original-version
+        if: ${{ matrix.distro == 'debian' }}
 
       - name: Create Build Environment
         run: podman build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
