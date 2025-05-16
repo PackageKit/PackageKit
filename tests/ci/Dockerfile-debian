@@ -8,6 +8,7 @@ RUN apt-get install -yq eatmydata build-essential
 
 # install build dependencies
 RUN eatmydata apt-get install -yq --no-install-recommends \
+	abigail-tools \
 	appstream \
 	bash-completion \
 	gettext \
