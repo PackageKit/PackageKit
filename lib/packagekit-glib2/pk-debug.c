@@ -140,7 +140,7 @@ pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer 
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose,
 		  /* TRANSLATORS: turn on all debugging */
 		  N_("Show debugging information for all files"), NULL },
-		{ NULL}
+		G_OPTION_ENTRY_NULL
 	};
 
 	/* add main entry */
