@@ -47,13 +47,14 @@
 
 //#define ENABLE_STRACE
 
-#define PK_BACKEND_SPAWN_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnPrivate))
 #define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
 
 #define	PK_UNSAFE_DELIMITERS	"\\\f\r\t"
 
-struct PkBackendSpawnPrivate
+struct _PkBackendSpawn
 {
+	GObject			parent;
+
 	PkSpawn			*spawn;
 	PkBackend		*backend;
 	PkBackendJob		*job;
@@ -73,7 +74,7 @@ gboolean
 pk_backend_spawn_set_filter_stdout (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	backend_spawn->priv->stdout_func = func;
+	backend_spawn->stdout_func = func;
 	return TRUE;
 }
 
@@ -81,7 +82,7 @@ gboolean
 pk_backend_spawn_set_filter_stderr (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	backend_spawn->priv->stderr_func = func;
+	backend_spawn->stderr_func = func;
 	return TRUE;
 }
 
@@ -91,11 +92,11 @@ pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* only try to close if running */
-	if (pk_spawn_is_running (backend_spawn->priv->spawn)) {
+	if (pk_spawn_is_running (backend_spawn->spawn)) {
 		g_debug ("closing dispatcher as running and is idle");
-		pk_spawn_exit (backend_spawn->priv->spawn);
+		pk_spawn_exit (backend_spawn->spawn);
 	}
-	backend_spawn->priv->kill_id = 0;
+	backend_spawn->kill_id = 0;
 	return FALSE;
 }
 
@@ -103,25 +104,24 @@ static void
 pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 {
 	gint timeout;
-	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 
 	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
-	priv->finished = TRUE;
+	backend_spawn->finished = TRUE;
 	g_debug ("backend marked as finished, so starting kill timer");
 
-	if (priv->kill_id > 0)
-		g_source_remove (priv->kill_id);
+	if (backend_spawn->kill_id > 0)
+		g_source_remove (backend_spawn->kill_id);
 
 	/* get policy timeout */
-	timeout = g_key_file_get_integer (priv->conf, "Daemon", "BackendShutdownTimeout", NULL);
+	timeout = g_key_file_get_integer (backend_spawn->conf, "Daemon", "BackendShutdownTimeout", NULL);
 	if (timeout == 0) {
 		g_warning ("using built in default value");
 		timeout = 5;
 	}
 
 	/* close down the dispatcher if it is still open after this much time */
-	priv->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
-	g_source_set_name_by_id (priv->kill_id, "[PkBackendSpawn] exit");
+	backend_spawn->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
+	g_source_set_name_by_id (backend_spawn->kill_id, "[PkBackendSpawn] exit");
 }
 
 static gboolean
@@ -147,7 +147,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	PkUpdateStateEnum update_state_enum;
 	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
-	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	g_auto(GStrv) sections = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
@@ -220,7 +219,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			return FALSE;
 		}
 		pk_backend_job_finished (job);
-		priv->is_busy = FALSE;
+		backend_spawn->is_busy = FALSE;
 
 		/* from this point on, we can start the kill timer */
 		pk_backend_spawn_start_kill_timer (backend_spawn);
@@ -558,12 +557,12 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	/* reset the busy flag */
-	backend_spawn->priv->is_busy = FALSE;
+	backend_spawn->is_busy = FALSE;
 
 	/* if we force killed the process, set an error */
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_SIGKILL) {
 		/* we just call this failed, and set an error */
-		pk_backend_job_error_code (backend_spawn->priv->job, PK_ERROR_ENUM_PROCESS_KILL,
+		pk_backend_job_error_code (backend_spawn->job, PK_ERROR_ENUM_PROCESS_KILL,
 				       "Process had to be killed to be cancelled");
 	}
 
@@ -574,16 +573,16 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 	}
 
 	/* only emit if not finished */
-	if (!backend_spawn->priv->finished) {
+	if (!backend_spawn->finished) {
 		g_debug ("script exited without doing finished, tidying up");
-		ret = pk_backend_job_has_set_error_code (backend_spawn->priv->job);
+		ret = pk_backend_job_has_set_error_code (backend_spawn->job);
 		if (!ret) {
-			pk_backend_job_error_code (backend_spawn->priv->job,
+			pk_backend_job_error_code (backend_spawn->job,
 					       PK_ERROR_ENUM_INTERNAL_ERROR,
 					       "The backend exited unexpectedly. "
 					       "This is a serious error as the spawned backend did not complete the pending transaction.");
 		}
-		pk_backend_job_finished (backend_spawn->priv->job);
+		pk_backend_job_finished (backend_spawn->job);
 	}
 }
 
@@ -596,8 +595,8 @@ pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* do we ignore with a filter func ? */
-	if (backend_spawn->priv->stdout_func != NULL) {
-		if (!backend_spawn->priv->stdout_func (job, line))
+	if (backend_spawn->stdout_func != NULL) {
+		if (!backend_spawn->stdout_func (job, line))
 			return TRUE;
 	}
 
@@ -610,7 +609,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
 	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    backend_spawn->priv->job,
+					    backend_spawn->job,
 					    line,
 					    &error);
 	if (!ret)
@@ -624,8 +623,8 @@ pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
 
 	/* do we ignore with a filter func ? */
-	if (backend_spawn->priv->stderr_func != NULL) {
-		ret = backend_spawn->priv->stderr_func (backend_spawn->priv->job, line);
+	if (backend_spawn->stderr_func != NULL) {
+		ret = backend_spawn->stderr_func (backend_spawn->job, line);
 		if (!ret)
 			return;
 	}
@@ -645,7 +644,6 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	gchar *env_key;
 	gchar *env_value;
 	gboolean ret;
-	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	gboolean keep_environment;
 	g_autofree gchar *eulas = NULL;
 	const gchar *locale = NULL;
@@ -659,7 +657,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	g_autoptr(GHashTable) env_table = NULL;
 
 	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-	keep_environment = g_key_file_get_boolean (backend_spawn->priv->conf,
+	keep_environment = g_key_file_get_boolean (backend_spawn->conf,
 						   "Daemon",
 						   "KeepEnvironment",
 						   NULL);
@@ -679,81 +677,81 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	}
 
 	/* accepted eulas */
-	eulas = pk_backend_get_accepted_eula_string (priv->backend);
+	eulas = pk_backend_get_accepted_eula_string (backend_spawn->backend);
 	if (eulas != NULL)
 		g_hash_table_replace (env_table, g_strdup ("accepted_eulas"), g_strdup (eulas));
 
 	/* http_proxy */
-	proxy_http = pk_backend_job_get_proxy_http (priv->job);
+	proxy_http = pk_backend_job_get_proxy_http (backend_spawn->job);
 	if (!pk_strzero (proxy_http)) {
 		uri = pk_backend_convert_uri (proxy_http);
 		g_hash_table_replace (env_table, g_strdup ("http_proxy"), uri);
 	}
 
 	/* https_proxy */
-	proxy_https = pk_backend_job_get_proxy_https (priv->job);
+	proxy_https = pk_backend_job_get_proxy_https (backend_spawn->job);
 	if (!pk_strzero (proxy_https)) {
 		uri = pk_backend_convert_uri (proxy_https);
 		g_hash_table_replace (env_table, g_strdup ("https_proxy"), uri);
 	}
 
 	/* ftp_proxy */
-	proxy_ftp = pk_backend_job_get_proxy_ftp (priv->job);
+	proxy_ftp = pk_backend_job_get_proxy_ftp (backend_spawn->job);
 	if (!pk_strzero (proxy_ftp)) {
 		uri = pk_backend_convert_uri (proxy_ftp);
 		g_hash_table_replace (env_table, g_strdup ("ftp_proxy"), uri);
 	}
 
 	/* socks_proxy */
-	proxy_socks = pk_backend_job_get_proxy_socks (priv->job);
+	proxy_socks = pk_backend_job_get_proxy_socks (backend_spawn->job);
 	if (!pk_strzero (proxy_socks)) {
 		uri = pk_backend_convert_uri_socks (proxy_socks);
 		g_hash_table_replace (env_table, g_strdup ("all_proxy"), uri);
 	}
 
 	/* no_proxy */
-	no_proxy = pk_backend_job_get_no_proxy (priv->job);
+	no_proxy = pk_backend_job_get_no_proxy (backend_spawn->job);
 	if (!pk_strzero (no_proxy)) {
 		g_hash_table_replace (env_table, g_strdup ("no_proxy"),
 		                      g_strdup (no_proxy));
 	}
 
 	/* pac */
-	pac = pk_backend_job_get_pac (priv->job);
+	pac = pk_backend_job_get_pac (backend_spawn->job);
 	if (!pk_strzero (pac)) {
 		uri = pk_backend_convert_uri (pac);
 		g_hash_table_replace (env_table, g_strdup ("pac"), uri);
 	}
 
 	/* LANG */
-	locale = pk_backend_job_get_locale (priv->job);
+	locale = pk_backend_job_get_locale (backend_spawn->job);
 	if (!pk_strzero (locale))
 		g_hash_table_replace (env_table, g_strdup ("LANG"), g_strdup (locale));
 
 	/* FRONTEND SOCKET */
-	value = pk_backend_job_get_frontend_socket (priv->job);
+	value = pk_backend_job_get_frontend_socket (backend_spawn->job);
 	if (!pk_strzero (value))
 		g_hash_table_replace (env_table, g_strdup ("FRONTEND_SOCKET"), g_strdup (value));
 
 	/* NETWORK */
-	ret = pk_backend_is_online (priv->backend);
+	ret = pk_backend_is_online (backend_spawn->backend);
 	g_hash_table_replace (env_table, g_strdup ("NETWORK"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* BACKGROUND */
-	ret = pk_backend_job_get_background (priv->job);
+	ret = pk_backend_job_get_background (backend_spawn->job);
 	g_hash_table_replace (env_table, g_strdup ("BACKGROUND"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* INTERACTIVE */
-	ret = pk_backend_job_get_interactive (priv->job);
+	ret = pk_backend_job_get_interactive (backend_spawn->job);
 	g_hash_table_replace (env_table, g_strdup ("INTERACTIVE"), g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* UID */
 	g_hash_table_replace (env_table,
 			      g_strdup ("UID"),
-			      g_strdup_printf ("%u", pk_backend_job_get_uid (priv->job)));
+			      g_strdup_printf ("%u", pk_backend_job_get_uid (backend_spawn->job)));
 
 	/* CACHE_AGE */
-	cache_age = pk_backend_job_get_cache_age (priv->job);
+	cache_age = pk_backend_job_get_cache_age (backend_spawn->job);
 	if (cache_age == G_MAXUINT) {
 		g_hash_table_replace (env_table,
 				      g_strdup ("CACHE_AGE"),
@@ -841,7 +839,6 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 				 va_list *args)
 {
 	gboolean background;
-	PkBackendSpawnPrivate *priv = backend_spawn->priv;
 	PkSpawnArgvFlags flags = PK_SPAWN_ARGV_FLAGS_NONE;
 #ifdef SOURCEROOTDIR
 	const gchar *directory;
@@ -862,7 +859,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 
 #ifdef SOURCEROOTDIR
 	/* prefer the local version */
-	directory = priv->name;
+	directory = backend_spawn->name;
 	if (g_str_has_prefix (directory, "test_"))
 		directory = "test";
 
@@ -878,11 +875,11 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
 		filename = g_build_filename (DATADIR, "PackageKit", "helpers",
-					     priv->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+					     backend_spawn->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 	}
 #else
 	filename = g_build_filename (DATADIR, "PackageKit", "helpers",
-				     priv->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+				     backend_spawn->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
 #endif
 	g_debug ("using spawn filename %s", filename);
 
@@ -892,7 +889,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 
 	/* copy idle setting from backend to PkSpawn instance */
 	background = pk_backend_job_get_background (job);
-	g_object_set (priv->spawn,
+	g_object_set (backend_spawn->spawn,
 		      "background", (background == TRUE),
 		      NULL);
 
@@ -901,15 +898,15 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	flags |= PK_SPAWN_ARGV_FLAGS_NEVER_REUSE;
 #endif
 
-	priv->finished = FALSE;
+	backend_spawn->finished = FALSE;
 	envp = pk_backend_spawn_get_envp (backend_spawn);
-	if (!pk_spawn_argv (priv->spawn, argv, envp, flags, &error)) {
-		pk_backend_job_error_code (priv->job,
+	if (!pk_spawn_argv (backend_spawn->spawn, argv, envp, flags, &error)) {
+		pk_backend_job_error_code (backend_spawn->job,
 					   PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "Spawn of helper '%s' failed: %s",
 					   argv[PK_BACKEND_SPAWN_ARGV0],
 					   error->message);
-		pk_backend_job_finished (priv->job);
+		pk_backend_job_finished (backend_spawn->job);
 		return FALSE;
 	}
 	return TRUE;
@@ -919,7 +916,7 @@ const gchar *
 pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
-	return backend_spawn->priv->name;
+	return backend_spawn->name;
 }
 
 gboolean
@@ -928,8 +925,8 @@ pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	g_return_val_if_fail (name != NULL, FALSE);
 
-	g_free (backend_spawn->priv->name);
-	backend_spawn->priv->name = g_strdup (name);
+	g_free (backend_spawn->name);
+	backend_spawn->name = g_strdup (name);
 	return TRUE;
 }
 
@@ -939,10 +936,10 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 
 	/* set an error as the script will just exit without doing finished */
-	pk_backend_job_error_code (backend_spawn->priv->job,
+	pk_backend_job_error_code (backend_spawn->job,
 			       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
 			       "the script was killed as the action was cancelled");
-	pk_spawn_kill (backend_spawn->priv->spawn);
+	pk_spawn_kill (backend_spawn->spawn);
 	return TRUE;
 }
 
@@ -950,14 +947,14 @@ gboolean
 pk_backend_spawn_is_busy (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	return backend_spawn->priv->is_busy;
+	return backend_spawn->is_busy;
 }
 
 gboolean
 pk_backend_spawn_exit (PkBackendSpawn *backend_spawn)
 {
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	pk_spawn_exit (backend_spawn->priv->spawn);
+	pk_spawn_exit (backend_spawn->spawn);
 	return TRUE;
 }
 
@@ -971,17 +968,17 @@ pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
 
 	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
 	g_return_val_if_fail (first_element != NULL, FALSE);
-	g_return_val_if_fail (backend_spawn->priv->name != NULL, FALSE);
+	g_return_val_if_fail (backend_spawn->name != NULL, FALSE);
 
 	/* save this */
-	backend_spawn->priv->is_busy = TRUE;
-	backend_spawn->priv->job = job;
-	backend_spawn->priv->backend = g_object_ref (pk_backend_job_get_backend (job));
+	backend_spawn->is_busy = TRUE;
+	backend_spawn->job = job;
+	backend_spawn->backend = g_object_ref (pk_backend_job_get_backend (job));
 
 	/* don't auto-kill this */
-	if (backend_spawn->priv->kill_id > 0) {
-		g_source_remove (backend_spawn->priv->kill_id);
-		backend_spawn->priv->kill_id = 0;
+	if (backend_spawn->kill_id > 0) {
+		g_source_remove (backend_spawn->kill_id);
+		backend_spawn->kill_id = 0;
 	}
 
 	/* get the argument list */
@@ -996,7 +993,7 @@ void
 pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allow_sigkill)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-	g_object_set (backend_spawn->priv->spawn,
+	g_object_set (backend_spawn->spawn,
 		      "allow-sigkill", allow_sigkill,
 		      NULL);
 }
@@ -1004,20 +1001,13 @@ pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allo
 static void
 pk_backend_spawn_finalize (GObject *object)
 {
-	PkBackendSpawn *backend_spawn;
+	PkBackendSpawn *backend_spawn = PK_BACKEND_SPAWN (object);
 
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (object));
-
-	backend_spawn = PK_BACKEND_SPAWN (object);
-
-	if (backend_spawn->priv->kill_id > 0)
-		g_source_remove (backend_spawn->priv->kill_id);
-
-	g_free (backend_spawn->priv->name);
-	g_key_file_unref (backend_spawn->priv->conf);
-	g_object_unref (backend_spawn->priv->spawn);
-	if (backend_spawn->priv->backend != NULL)
-		g_object_unref (backend_spawn->priv->backend);
+	g_clear_handle_id (&backend_spawn->kill_id, g_source_remove);
+	g_clear_pointer (&backend_spawn->name, g_free);
+	g_clear_pointer (&backend_spawn->conf, g_key_file_unref);
+	g_clear_object (&backend_spawn->spawn);
+	g_clear_object (&backend_spawn->backend);
 
 	G_OBJECT_CLASS (pk_backend_spawn_parent_class)->finalize (object);
 }
@@ -1027,13 +1017,11 @@ pk_backend_spawn_class_init (PkBackendSpawnClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_backend_spawn_finalize;
-	g_type_class_add_private (klass, sizeof (PkBackendSpawnPrivate));
 }
 
 static void
 pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
 {
-	backend_spawn->priv = PK_BACKEND_SPAWN_GET_PRIVATE (backend_spawn);
 }
 
 PkBackendSpawn *
@@ -1041,13 +1029,13 @@ pk_backend_spawn_new (GKeyFile *conf)
 {
 	PkBackendSpawn *backend_spawn;
 	backend_spawn = g_object_new (PK_TYPE_BACKEND_SPAWN, NULL);
-	backend_spawn->priv->conf = g_key_file_ref (conf);
-	backend_spawn->priv->spawn = pk_spawn_new (backend_spawn->priv->conf);
-	g_signal_connect (backend_spawn->priv->spawn, "exit",
+	backend_spawn->conf = g_key_file_ref (conf);
+	backend_spawn->spawn = pk_spawn_new (backend_spawn->conf);
+	g_signal_connect (backend_spawn->spawn, "exit",
 			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
-	g_signal_connect (backend_spawn->priv->spawn, "stdout",
+	g_signal_connect (backend_spawn->spawn, "stdout",
 			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
-	g_signal_connect (backend_spawn->priv->spawn, "stderr",
+	g_signal_connect (backend_spawn->spawn, "stderr",
 			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
 	return PK_BACKEND_SPAWN (backend_spawn);
 }

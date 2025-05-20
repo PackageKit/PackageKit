@@ -31,26 +31,11 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_TRANSACTION		(pk_transaction_get_type ())
-#define PK_TRANSACTION(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION, PkTransaction))
-#define PK_IS_TRANSACTION(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION))
+G_DECLARE_FINAL_TYPE (PkTransaction, pk_transaction, PK, TRANSACTION, GObject)
+
 #define PK_TRANSACTION_ERROR		(pk_transaction_error_quark ())
 
 typedef struct PkTransactionPrivate PkTransactionPrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkTransactionPrivate	*priv;
-} PkTransaction;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkTransactionClass;
-
-#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransaction, g_object_unref)
-#endif
 
 /* these have to be kept in order */
 typedef enum {
@@ -64,7 +49,6 @@ typedef enum {
 } PkTransactionState;
 
 GQuark		 pk_transaction_error_quark			(void);
-GType		 pk_transaction_get_type			(void);
 PkTransaction	*pk_transaction_new				(GKeyFile		*conf,
 								 GDBusNodeInfo	*introspection);
 
