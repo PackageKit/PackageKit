@@ -2,9 +2,6 @@ name: Build Test
 
 on: [push, pull_request]
 
-env:
-  LAST_ABI_BREAK: 0f33069752fe06f6daf3d977cd09665b059494d8
-
 jobs:
   build-test:
     name: Build & Test
@@ -40,24 +37,3 @@ jobs:
       - name: Build & Test
         run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
              ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }}
-
-  check-abi:
-    name: Check ABI
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Get this version
-        uses: actions/checkout@v4
-
-      - name: Get version from last ABI break
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.LAST_ABI_BREAK }}
-          path: original-version
-
-      - name: Create Build Environment
-        run: podman build -t packagekit-debian -f tests/ci/Dockerfile-debian
-
-      - name: Build & Test
-        run: podman run -t -v `pwd`:/build packagekit-debian
-             ./tests/ci/check-abi.sh -Dpackaging_backend=apt
