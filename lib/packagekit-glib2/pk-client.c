@@ -218,6 +218,8 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 static void
 pk_client_state_finish (PkClientState *state, GError *error)
 {
+	g_autoptr(GError) error_owned = g_steal_pointer (&error);
+
 	if (state->res == NULL)
 		return;
 
@@ -233,7 +235,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		                       g_object_ref (state->results),
 		                       g_object_unref);
 	} else {
-		g_task_return_error (state->res, error);
+		g_task_return_error (state->res, g_steal_pointer (&error_owned));
 	}
 
 	/* remove any socket file */
