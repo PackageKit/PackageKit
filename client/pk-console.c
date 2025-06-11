@@ -449,12 +449,15 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 {
 	PkGroupEnum group;
 	guint64 size;
+	guint64 download_size;
 	g_autofree gchar *description = NULL;
 	g_autofree gchar *license = NULL;
 	g_autofree gchar *package_id = NULL;
 	g_autofree gchar *package = NULL;
 	g_autofree gchar *summary = NULL;
 	g_autofree gchar *url = NULL;
+	g_autofree gchar *size_str = NULL;
+	g_autofree gchar *download_size_str = NULL;
 
 	/* get data */
 	g_object_get (item,
@@ -465,20 +468,32 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 		      "summary", &summary,
 		      "group", &group,
 		      "size", &size,
+		      "download-size", &download_size,
 		      NULL);
 
 	/* create printable */
 	package = pk_package_id_to_printable (package_id);
 
+	if (size == G_MAXUINT64)
+		size_str = g_strdup ("unknown");
+	else
+		size_str = g_format_size_full (size, G_FORMAT_SIZE_LONG_FORMAT);
+
+	if (download_size == G_MAXUINT64)
+		download_size_str = g_strdup ("unknown");
+	else
+		download_size_str = g_format_size_full (download_size, G_FORMAT_SIZE_LONG_FORMAT);
+
 	/* TRANSLATORS: This a list of details about the package */
 	g_print ("%s\n", _("Package description"));
-	g_print ("  package:     %s\n", package);
-	g_print ("  summary:     %s\n", summary);
-	g_print ("  license:     %s\n", license);
-	g_print ("  group:       %s\n", pk_group_enum_to_string (group));
-	g_print ("  description: %s\n", description);
-	g_print ("  size:        %lu bytes\n", (long unsigned int) size);
-	g_print ("  url:         %s\n", url);
+	g_print ("  package:       %s\n", package);
+	g_print ("  summary:       %s\n", summary);
+	g_print ("  license:       %s\n", license);
+	g_print ("  group:         %s\n", pk_group_enum_to_string (group));
+	g_print ("  download size: %s\n", download_size_str);
+	g_print ("  size:          %s\n", size_str);
+	g_print ("  url:           %s\n", url);
+	g_print ("  description:   %s\n", description);
 }
 
 static void
