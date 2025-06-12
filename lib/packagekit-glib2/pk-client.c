@@ -897,10 +897,6 @@ pk_client_copy_finished_remove_old_files (PkClientState *state)
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL) {
-		g_warning ("internal error, no files in array");
-		return;
-	}
 
 	/* remove any without dest path */
 	for (i = 0; i < array->len; ) {
@@ -1028,10 +1024,6 @@ pk_client_copy_downloaded (PkClientState *state)
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
-	if (array == NULL) {
-		g_warning ("internal error, no files in array");
-		return;
-	}
 
 	/* get the number of files to copy */
 	for (i = 0; i < array->len; i++) {
