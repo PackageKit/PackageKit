@@ -224,6 +224,9 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	if (state->res == NULL)
 		return;
 
+	/* Either have to have been successful, or have set an error */
+	g_assert (state->ret || error_owned != NULL);
+
 	/* force finished (if not already set) so clients can update the UI's */
 	if (state->progress != NULL) {
 		pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
