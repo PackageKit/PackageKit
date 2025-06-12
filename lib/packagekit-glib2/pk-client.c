@@ -1012,6 +1012,8 @@ pk_client_copy_downloaded_file (PkClientState *state, const gchar *package_id, c
  * We have to copy the files from the temporary directory into the user-specified
  * directory. There should only be one file for each package, although this is
  * not encoded in the spec.
+ *
+ * This will eventually call pk_client_state_finish() on `state`.
  */
 static void
 pk_client_copy_downloaded (PkClientState *state)
@@ -1021,15 +1023,19 @@ pk_client_copy_downloaded (PkClientState *state)
 	guint len;
 	PkFiles *item;
 	g_autoptr(GPtrArray) array = NULL;
+	unsigned int n_files_to_copy;
 
 	/* get data */
 	array = pk_results_get_files_array (state->results);
 
 	/* get the number of files to copy */
+	n_files_to_copy = 0;
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		g_atomic_int_add (&state->remaining_files_to_copy, g_strv_length (pk_files_get_files (item)));
+		n_files_to_copy += g_strv_length (pk_files_get_files (item));
 	}
+
+	g_atomic_int_set (&state->remaining_files_to_copy, n_files_to_copy);
 
 	/* get a cached value, as pk_client_copy_downloaded_file() adds items */
 	len = array->len;
@@ -1047,6 +1053,12 @@ pk_client_copy_downloaded (PkClientState *state)
 							pk_files_get_package_id (item),
 							files[j]);
 		}
+	}
+
+	/* Were there actually any files to copy? */
+	if (n_files_to_copy == 0) {
+		state->ret = TRUE;
+		pk_client_state_finish (state, NULL);
 	}
 }
 
@@ -1086,7 +1098,8 @@ pk_client_signal_finished (PkClientState *state,
 		return;
 	}
 
-	/* do we have to copy results? */
+	/* do we have to copy results? If so, this will eventually call
+	 * pk_client_state_finish() for us. */
 	if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES &&
 	    state->directory != NULL &&
 	    exit_enum != PK_EXIT_ENUM_CANCELLED) {
