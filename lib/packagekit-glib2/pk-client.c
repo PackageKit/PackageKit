@@ -63,7 +63,6 @@ struct _PkClientPrivate
 	gchar			*locale;
 	gboolean		 background;
 	gboolean		 interactive;
-	gboolean		 idle;
 	gboolean		 details_with_deps_size;
 	guint			 cache_age;
 };
@@ -202,17 +201,15 @@ static void
 pk_client_state_remove (PkClient *client, PkClientState *state)
 {
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
-	gboolean is_idle;
+	gboolean was_removed, is_idle;
 
-	g_ptr_array_remove_fast (priv->calls, state);
+	was_removed = g_ptr_array_remove_fast (priv->calls, state);
 	/* state may have been finalised after this point */
 
 	/* has the idle state changed? */
 	is_idle = (priv->calls->len == 0);
-	if (is_idle != priv->idle) {
-		priv->idle = is_idle;
+	if (was_removed && is_idle)
 		g_object_notify_by_pspec (G_OBJECT (client), obj_properties[PROP_IDLE]);
-	}
 }
 
 /*
@@ -449,7 +446,7 @@ pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 		g_value_set_boolean (value, priv->interactive);
 		break;
 	case PROP_IDLE:
-		g_value_set_boolean (value, priv->idle);
+		g_value_set_boolean (value, pk_client_get_idle (client));
 		break;
 	case PROP_CACHE_AGE:
 		g_value_set_uint (value, priv->cache_age);
@@ -794,16 +791,15 @@ static void
 pk_client_state_add (PkClient *client, PkClientState *state)
 {
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
-	gboolean is_idle;
+	gboolean was_idle;
+
+	was_idle = pk_client_get_idle (client);
 
 	g_ptr_array_add (priv->calls, g_object_ref (state));
 
 	/* has the idle state changed? */
-	is_idle = (priv->calls->len == 0);
-	if (is_idle != priv->idle) {
-		priv->idle = is_idle;
+	if (was_idle)
 		g_object_notify_by_pspec (G_OBJECT (client), obj_properties[PROP_IDLE]);
-	}
 }
 
 /*
@@ -4461,7 +4457,7 @@ pk_client_get_idle (PkClient *client)
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
-	return priv->idle;
+	return (priv->calls->len == 0);
 }
 
 /**
@@ -4645,7 +4641,6 @@ pk_client_init (PkClient *client)
 	priv->calls = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->background = FALSE;
 	priv->interactive = TRUE;
-	priv->idle = TRUE;
 	priv->cache_age = G_MAXUINT;
 	priv->details_with_deps_size = FALSE;
 
