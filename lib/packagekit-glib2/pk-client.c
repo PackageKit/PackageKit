@@ -1600,7 +1600,6 @@ pk_client_method_cb (GObject *source_object,
 
 	/* wait for ::Finished() or ::Destroy() or notify::g-name-owner (if the daemon disappears) */
 	state->waiting_for_finished = TRUE;
-	g_object_ref (state);
 }
 
 /*
