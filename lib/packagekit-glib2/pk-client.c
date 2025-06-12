@@ -173,6 +173,10 @@ struct _PkClientState
 	gint				 remaining_files_to_copy;
 	PkClientHelper			*client_helper;
 	gboolean			 waiting_for_finished;
+
+	/* True if this PkClientState represents a peek at a transaction which
+	 * it doesn’t own, rather than being the owner of the transaction: */
+	gboolean			 querying_progress;
 };
 
 G_DEFINE_TYPE (PkClientState, pk_client_state, G_TYPE_OBJECT)
@@ -228,7 +232,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_assert (state->ret || error_owned != NULL);
 
 	/* force finished (if not already set) so clients can update the UI's */
-	if (state->progress != NULL) {
+	if (state->progress != NULL && !state->querying_progress) {
 		pk_progress_set_status (state->progress, PK_STATUS_ENUM_FINISHED);
 	}
 
@@ -236,7 +240,7 @@ pk_client_state_finish (PkClientState *state, GError *error)
 
 	if (state->ret) {
 		g_task_return_pointer (state->res,
-		                       g_object_ref (state->results),
+		                       state->querying_progress ? G_OBJECT (g_object_ref (state->progress)) : G_OBJECT (g_object_ref (state->results)),
 		                       g_object_unref);
 	} else {
 		g_task_return_error (state->res, g_steal_pointer (&error_owned));
@@ -4201,40 +4205,6 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
 }
 
 /*
- * pk_client_get_progress_state_finish:
- * @state: a #PkClientState
- * @error: (transfer full)
- **/
-static void
-pk_client_get_progress_state_finish (PkClientState *state, GError *error)
-{
-	g_autoptr(GError) error_owned = g_steal_pointer (&error);
-
-	if (state->res == NULL)
-		return;
-
-	/* Either have to have been successful, or have set an error */
-	g_assert (state->ret || error_owned != NULL);
-
-	pk_client_state_unset_proxy (state);
-
-	if (state->ret) {
-		g_task_return_pointer (state->res,
-		                       g_object_ref (state->progress),
-		                       g_object_unref);
-	} else {
-		g_task_return_error (state->res, g_steal_pointer (&error_owned));
-	}
-
-	/* mark the state as finished */
-	g_clear_object (&state->res);
-
-	/* remove from list */
-	pk_client_state_remove (state->client, state);
-	/* state may have been finalised after this point */
-}
-
-/*
  * pk_client_get_progress_cb:
  **/
 static void
@@ -4247,7 +4217,7 @@ pk_client_get_progress_cb (GObject *source_object,
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
 	if (state->proxy == NULL) {
-		pk_client_get_progress_state_finish (state, g_steal_pointer (&error));
+		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
 
@@ -4255,7 +4225,7 @@ pk_client_get_progress_cb (GObject *source_object,
 	pk_client_proxy_connect (state);
 
 	state->ret = TRUE;
-	pk_client_get_progress_state_finish (state, NULL);
+	pk_client_state_finish (state, NULL);
 }
 
 /**
@@ -4288,6 +4258,7 @@ pk_client_get_progress_async (PkClient *client,
 	state = pk_client_state_new (client, callback_ready, user_data, pk_client_get_progress_async, PK_ROLE_ENUM_UNKNOWN, cancellable);
 	state->tid = g_strdup (transaction_id);
 	state->progress = pk_progress_new ();
+	state->querying_progress = TRUE;
 
 	/* check not already cancelled */
 	if (cancellable != NULL &&
