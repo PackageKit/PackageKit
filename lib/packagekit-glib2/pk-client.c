@@ -1176,13 +1176,16 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		return;
 
 	if (g_strcmp0 (signal_name, "Finished") == 0) {
-		g_variant_get (parameters,
-			       "(uu)",
-			       &tmp_uint2,
-			       &tmp_uint);
-		pk_client_signal_finished (state,
-					   tmp_uint2,
-					   tmp_uint);
+		if (state->waiting_for_finished) {
+			g_variant_get (parameters,
+				       "(uu)",
+				       &tmp_uint2,
+				       &tmp_uint);
+			/* this will call pk_client_state_finish(): */
+			pk_client_signal_finished (state,
+						   tmp_uint2,
+						   tmp_uint);
+		}
 		return;
 	}
 	if (g_strcmp0 (signal_name, "Package") == 0) {
@@ -1595,7 +1598,7 @@ pk_client_method_cb (GObject *source_object,
 		return;
 	}
 
-	/* wait for ::Finished() or notify::g-name-owner (if the daemon disappears) */
+	/* wait for ::Finished() or ::Destroy() or notify::g-name-owner (if the daemon disappears) */
 	state->waiting_for_finished = TRUE;
 	g_object_ref (state);
 }
