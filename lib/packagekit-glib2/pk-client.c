@@ -200,7 +200,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 	PkClientPrivate *priv = pk_client_get_instance_private (client);
 	gboolean is_idle;
 
-	g_ptr_array_remove (priv->calls, state);
+	g_ptr_array_remove_fast (priv->calls, state);
 	/* state may have been finalised after this point */
 
 	/* has the idle state changed? */
