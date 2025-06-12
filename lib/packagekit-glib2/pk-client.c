@@ -223,6 +223,7 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 static void
 pk_client_state_finish (PkClientState *state, GError *error)
 {
+	g_autoptr(PkClientState) state_owned = g_object_ref (state);
 	g_autoptr(GError) error_owned = g_steal_pointer (&error);
 
 	if (state->res == NULL)
@@ -255,13 +256,12 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		g_object_unref (state->client_helper);
 	}
 
-	/* mark the state as finished */
-	g_clear_object (&state->res);
-
 	/* remove from list */
 	pk_client_state_remove (state->client, state);
-	/* state may have been finalised after this point */
+	/* `state_owned` may be the only strong ref to `state` remaining after this point */
 
+	/* mark the state as finished */
+	g_clear_object (&state->res);
 }
 
 static void
