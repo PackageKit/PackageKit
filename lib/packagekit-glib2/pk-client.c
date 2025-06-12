@@ -4209,13 +4209,13 @@ pk_client_get_progress_finish (PkClient *client, GAsyncResult *res, GError **err
 static void
 pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 {
-	if (state->cancellable_id > 0) {
-		g_cancellable_disconnect (state->cancellable_client,
-					  state->cancellable_id);
-		state->cancellable_id = 0;
-	}
-	g_clear_object (&state->cancellable);
-	g_clear_object (&state->cancellable_client);
+	g_autoptr(GError) error_owned = g_steal_pointer (&error);
+
+	if (state->res == NULL)
+		return;
+
+	/* Either have to have been successful, or have set an error */
+	g_assert (state->ret || error_owned != NULL);
 
 	pk_client_state_unset_proxy (state);
 
@@ -4224,8 +4224,11 @@ pk_client_get_progress_state_finish (PkClientState *state, GError *error)
 		                       g_object_ref (state->progress),
 		                       g_object_unref);
 	} else {
-		g_task_return_error (state->res, g_steal_pointer (&error));
+		g_task_return_error (state->res, g_steal_pointer (&error_owned));
 	}
+
+	/* mark the state as finished */
+	g_clear_object (&state->res);
 
 	/* remove from list */
 	pk_client_state_remove (state->client, state);
