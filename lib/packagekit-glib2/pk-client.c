@@ -381,6 +381,8 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable,
 			   pk_client_cancel_cb, pk_client_weak_ref_new (state));
 }
 
+static void pk_client_state_add (PkClient *client, PkClientState *state);
+
 static PkClientState *
 pk_client_state_new (PkClient *client,
 		     GAsyncReadyCallback callback_ready,
@@ -405,6 +407,9 @@ pk_client_state_new (PkClient *client,
 							       pk_client_weak_ref_new (state),
 							       pk_client_weak_ref_free);
 	}
+
+	/* track state */
+	pk_client_state_add (client, state);
 
 	return state;
 }
@@ -2239,9 +2244,6 @@ pk_client_get_proxy_cb (GObject *object,
 			   state->cancellable,
 			   pk_client_set_hints_cb,
 			   g_object_ref (state));
-
-	/* track state */
-	pk_client_state_add (state->client, state);
 }
 
 /*
@@ -4172,9 +4174,6 @@ pk_client_adopt_async (PkClient *client,
 				  state->cancellable,
 				  pk_client_adopt_get_proxy_cb,
 				  g_object_ref (state));
-
-	/* track state */
-	pk_client_state_add (client, state);
 }
 
 /**********************************************************************/
@@ -4310,9 +4309,6 @@ pk_client_get_progress_async (PkClient *client,
 				  state->cancellable,
 				  pk_client_get_progress_cb,
 				  g_object_ref (state));
-
-	/* track state */
-	pk_client_state_add (client, state);
 }
 
 /**********************************************************************/
