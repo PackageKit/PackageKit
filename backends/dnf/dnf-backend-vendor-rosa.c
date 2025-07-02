@@ -28,8 +28,8 @@ dnf_validate_supported_repo (const gchar *id)
 	guint i, j, k, l;
 
 	const gchar *valid_sourcesect[] = { "",
+					  "-main",
 					  "-contrib",
-					  "-restricted",
 					  "-non-free",
 					  NULL };
 
@@ -39,7 +39,13 @@ dnf_validate_supported_repo (const gchar *id)
 					  NULL };
 
 	const gchar *valid_arch[] = { "x86_64",
-				      "i586",
+				      "i686",
+				      "aarch64",
+				      "loongarch64",
+				      "riscv64",
+				      "e2kv4",
+				      "e2kv5",
+				      "e2kv6",
 				      NULL };
 
 	const gchar *valid[] = { "rosa",
