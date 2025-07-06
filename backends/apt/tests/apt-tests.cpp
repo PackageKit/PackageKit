@@ -24,6 +24,7 @@
 
 #include "deb822.h"
 #include "apt-sourceslist.h"
+#include "apt-utils.h"
 #include "gst-matcher.h"
 
 namespace fs = std::filesystem;
@@ -450,6 +451,26 @@ apt_test_sources_write (void)
     fs::remove_all(wtestSourcesDir);
 }
 
+static void
+apt_test_changelog_date (void)
+{
+    // Test dates in the format of debian changelog
+    // and the expected result in format ISO8601
+    const set<pair<string, string>> testDatesSet = {
+        {"Thu, 12 Sep 2024 22:51:37 +0200", "2024-09-12T22:51:37+02"},
+        {"Sat, 29 Mar 2025 09:34:52 -0700", "2025-03-29T09:34:52-07"},
+        {"Sun, 13 Jan 2023 11:33:31 +0000", "2023-01-13T11:33:31Z"},
+        // Intentionally wrong date or format
+        {"Sat, 30 Feb 2022 15:12:45 -0500", ""},
+        {"2025-05-20T20:47:45+01", ""},
+    };
+
+    for (const auto &testDate : testDatesSet) {
+        const string isoDate = changelogDateToIso8601(testDate.first);
+        g_assert_cmpstr(isoDate.c_str(), ==, testDate.second.c_str());
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -473,6 +494,7 @@ main (int argc, char **argv)
     g_test_add_func ("/apt/deb822/readwrite", apt_test_deb822);
     g_test_add_func ("/apt/sources/read", apt_test_sources_read);
     g_test_add_func ("/apt/sources/write", apt_test_sources_write);
+    g_test_add_func ("/apt/utils/changelog-date", apt_test_changelog_date);
 
     return g_test_run();
 }

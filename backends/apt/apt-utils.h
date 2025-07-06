@@ -82,4 +82,11 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf);
   */
 const char *toUtf8(const char *str);
 
+/**
+  * Changelog dates are in format RFC2822/RFC5322 compatible:
+  * "day-of-week, dd month yyyy hh:mm:ss +zzzz"
+  * Parses and converts to ISO8601 respecting the original timezone
+  */
+string changelogDateToIso8601 (const string &date_str);
+
 #endif
