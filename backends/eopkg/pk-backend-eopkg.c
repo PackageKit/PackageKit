@@ -412,6 +412,19 @@ pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *ri
 	pk_backend_spawn_helper (spawn, job, backend_filename, "repo-set-data", rid, parameter, value, NULL);
 }
 
+void
+pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
+{
+	const gchar *backend_filename = NULL;
+	gchar *transaction_flags_temp;
+
+	backend_filename = eopkg_get_backend_filename ();
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+
+	pk_backend_spawn_helper (spawn, job, backend_filename, "repair-system", transaction_flags_temp, NULL);
+	g_free (transaction_flags_temp);
+}
+
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
