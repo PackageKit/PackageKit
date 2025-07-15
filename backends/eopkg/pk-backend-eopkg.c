@@ -177,6 +177,18 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 }
 
 void
+pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+{
+	const gchar *backend_filename = NULL;
+	gchar *package_ids_temp;
+
+	backend_filename = eopkg_get_backend_filename ();
+	package_ids_temp = pk_package_ids_to_string (files);
+	pk_backend_spawn_helper (spawn, job, backend_filename, "get-details-local", package_ids_temp, NULL);
+	g_free (package_ids_temp);
+}
+
+void
 pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	const gchar *backend_filename = NULL;
