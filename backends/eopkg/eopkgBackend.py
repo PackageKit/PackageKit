@@ -310,12 +310,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """ Prints available repositories """
         self.allow_cancel(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
-        for repo in pisi.api.list_repos():
-            # Internal FIXME: What an ugly way to get repo uri
-            # FIXME: Use repository enabled/disabled state
-            uri = self.repodb.get_repo(repo).indexuri.get_uri()
-            self.repo_detail(repo, uri, True)
+        for repo in self.repodb.list_repos(only_active=False):
+            uri = self.repodb.get_repo_url(repo)
+            enabled = False
+            if self.repodb.repo_active(repo):
+                enabled = True
+            self.repo_detail(repo, uri, enabled)
 
     def required_by(self, filters, package_ids, recursive):
         """ Prints a list of requires for a given package """
