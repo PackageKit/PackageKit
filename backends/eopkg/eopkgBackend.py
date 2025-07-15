@@ -608,21 +608,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_UNKNOWN, e)
         pisi.api.set_userinterface(self.saved_ui)
 
-    def update_system(self, only_trusted):
-        """ Updates all available packages """
-        # FIXME: use only_trusted
-        # FIXME: fetch/install progress
-        self.allow_cancel(False)
-        self.percentage(None)
-
-        if not len(pisi.api.list_upgradable()) > 0:
-            self.error(ERROR_NO_PACKAGES_TO_UPDATE, "System is already up2date")
-
-        try:
-            pisi.api.upgrade(pisi.api.list_upgradable())
-        except pisi.Error, e:
-            self.error(ERROR_UNKNOWN, e)
-
 
 def main():
     backend = PackageKitEopkgBackend('')
