@@ -113,30 +113,90 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def __get_package(self, package, filters=None):
         """ Returns package object suitable for other methods """
-        if self.installdb.has_package(package):
-            status = INFO_INSTALLED
-            pkg = self.installdb.get_package(package)
-        elif self.packagedb.has_package(package):
-            status = INFO_AVAILABLE
-            pkg = self.packagedb.get_package(package)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 
-        if filters:
-            if "none" not in filters:
-                if FILTER_INSTALLED in filters and status != INFO_INSTALLED:
+        status = INFO_AVAILABLE
+        data = "installed"
+        pkg = ""
+
+        installed = self.installdb.get_package(package) if self.installdb.has_package(package) else None
+        available, repo = self.packagedb.get_package_repo(package) if self.packagedb.has_package(package) else (None, None)
+
+        # Not found
+        if installed is None and available is None:
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
+
+        # Unholy matrimony of irish priests who got a deal with the catholic church
+        fltred = None
+        fltr_status = None
+        fltr_data = None
+        if filters is not None:
+            if FILTER_NOT_INSTALLED in filters:
+                fltred = available if available is not None else None
+                if fltred is None:
                     return
-                if FILTER_NOT_INSTALLED in filters and status == INFO_INSTALLED:
+                fltr_status = INFO_AVAILABLE if fltred is not None else None
+                fltr_data = repo if fltred is not None else None
+            if FILTER_INSTALLED in filters:
+                fltred = installed if installed is not None else None
+                if fltred is None:
                     return
-                if FILTER_GUI in filters and "app:gui" not in pkg.isA:
+                fltr_status = INFO_INSTALLED if fltred is not None else None
+                fltr_data = "installed:{}".format(repo) if repo is not None else data
+            # FIXME: Newest should be able to show the newest local version as well as remote version
+            if FILTER_NEWEST in filters:
+                fltred = available if available is not None else installed
+                fltr_status = INFO_AVAILABLE if fltred is not None else None
+                fltr_data = repo if fltred is not None else None
+            if FILTER_NEWEST in filters and FILTER_INSTALLED in filters:
+                fltred = installed if installed is not None else None
+                fltr_status = INFO_INSTALLED if fltred is not None else None
+                fltr_data = "installed:{}".format(repo) if repo is not None else data
+
+        # Installed and has repo origin
+        if available is not None and installed is not None:
+            pkg = fltred if fltred is not None else installed
+            status = fltr_status if fltr_status is not None else INFO_INSTALLED
+            data = fltr_data if fltr_data is not None else "installed:{}".format(repo)
+
+        # Available but not installed
+        if available is not None and installed is None:
+            pkg = fltred if fltred is not None else available
+            status = fltr_status if fltr_status is not None else INFO_AVAILABLE
+            data = fltr_data if fltr_data is not None else repo
+
+        # Installed but has no repo origin
+        if installed is not None and available is None:
+            pkg = fltred if fltred is not None else installed
+            status = fltr_status if fltr_status is not None else INFO_INSTALLED
+            data = fltr_data if fltr_data is not None else "installed"
+
+        if filters is not None:
+            if FILTER_GUI in filters and "app:gui" not in pkg.isA:
+                return
+            if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
+                return
+            # FIXME: To lower
+            nonfree = ['EULA', 'Distributable']
+            if FILTER_FREE in filters:
+                if any(l in pkg.license for l in nonfree):
                     return
-                if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
+            if FILTER_NOT_FREE in filters:
+                if not any(l in pkg.license for l in nonfree):
+                    return
+            if FILTER_DEVELOPMENT in filters and not "-devel" in pkg.name:
+                return
+            if FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
+                return
+            pkg_subtypes = ["-devel", "-dbginfo", "-32bit", "-docs"]
+            if FILTER_BASENAME in filters:
+                if any(suffix in pkg.name for suffix in pkg_subtypes):
+                    return
+            if FILTER_NOT_BASENAME in filters:
+                if not any(suffix in pkg.name for suffix in pkg_subtypes):
                     return
 
         version = self.__get_package_version(pkg)
-
-        id = self.get_package_id(pkg.name, version, pkg.architecture, "")
-
+        id = self.get_package_id(pkg.name, version, pkg.architecture, data)
         return self.package(id, status, pkg.summary)
 
     def depends_on(self, filters, package_ids, recursive):
