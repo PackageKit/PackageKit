@@ -242,13 +242,6 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	gchar *package_ids_temp;
 	gchar *transaction_flags_temp;
 
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_job_finished (job);
-		return;
-	}
-
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
@@ -280,13 +273,6 @@ void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	const gchar *backend_filename = NULL;
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
-		pk_backend_job_finished (job);
-		return;
-	}
-
 	backend_filename = eopkg_get_backend_filename ();
 
 	pk_backend_spawn_helper (spawn, job, backend_filename, "refresh-cache", pk_backend_bool_to_string (force), NULL);
@@ -391,13 +377,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 	const gchar *backend_filename = NULL;
 	gchar *package_ids_temp;
 	gchar *transaction_flags_temp;
-
-	/* check network state */
-	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
-		pk_backend_job_finished (job);
-		return;
-	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
