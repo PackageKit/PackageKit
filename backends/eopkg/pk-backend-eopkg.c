@@ -321,6 +321,15 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 }
 
 void
+pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
+{
+	const gchar *backend_filename = NULL;
+	backend_filename = eopkg_get_backend_filename ();
+
+	pk_backend_spawn_helper (spawn, job, backend_filename, "repo-enable", rid, pk_backend_bool_to_string (enabled), NULL);
+}
+
+void
 pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	const gchar *backend_filename = NULL;
