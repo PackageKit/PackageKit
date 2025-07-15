@@ -59,6 +59,12 @@ pk_backend_destroy (PkBackend *backend)
 	g_object_unref (spawn);
 }
 
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return FALSE;
+}
+
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
