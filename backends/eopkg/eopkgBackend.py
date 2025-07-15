@@ -149,6 +149,17 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             # and arguments!
             self.__get_package(pkg.package)
 
+    def get_categories(self):
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        categories = self.componentdb.list_components()
+        categories.sort()
+
+        for p in categories:
+            component = self.componentdb.get_component(p)
+            cat_id = component.name
+            self.category(component.group, cat_id, component.name, str(component.summary), "image-missing")
+
     def repair_system(self, transaction_flags):
         """ Deletes caches, rebuilds filesdb and reinits pisi caches """
 
