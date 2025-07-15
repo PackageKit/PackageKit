@@ -43,6 +43,7 @@ import os.path
 import piksemel
 import re
 from collections import Counter
+from operator import attrgetter
 
 
 class SimplePisiHandler(pisi.ui.UI):
@@ -403,35 +404,39 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package.name)
 
-    def get_updates(self, filter):
+    def get_updates(self, filters):
         """ Prints available updates and types """
         self.allow_cancel(True)
         self.percentage(None)
 
-        self._updates = dict()
         for package in pisi.api.list_upgradable():
-            pkg = self.packagedb.get_package(package)
+            # FIXME: we need to handle replaces here more effectively
+            if self.packagedb.has_package(package):
+                pkg, repo = self.packagedb.get_package_repo(package, None)
+
             version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, pkg.architecture, "")
+            id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
             installed_package = self.installdb.get_package(package)
 
-            repo = self.packagedb.get_package_repo(pkg.name, None)[1]
-            pindex = "/var/lib/eopkg/index/%s/eopkg-index.xml" % repo
+            oldRelease = int(installed_package.release)
+            histories = self._get_history_between(oldRelease, pkg)
 
-            self._updates[pkg.name] = \
-                self._extract_update_details(pindex, pkg.name)
-            bug_uri = self._updates[pkg.name][3]
-
-            # FIXME: PiSi must provide this information as a single API call :(
-            updates = [i for i in self.packagedb.get_package(package).history
-                       if pisi.version.Version(i.release) >
-                       installed_package.release]
-            if pisi.util.any(lambda i: i.type == "security", updates):
+            securities = [x for x in histories if x.type == "security"]
+            # FIXME: INFO_BUGFIX Support? We would have to match against #123 Github issues
+            if len(securities) > 0:
                 self.package(id, INFO_SECURITY, pkg.summary)
-            elif bug_uri != "":
-                self.package(id, INFO_BUGFIX, pkg.summary)
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
+
+    def _get_history_between(self, old_release, new):
+        """ Get the history items between the old release and new pkg """
+        ret = list()
+
+        for i in new.history:
+            if int(i.release) <= int(old_release):
+                continue
+            ret.append(i)
+        return sorted(ret, key=attrgetter('release'), reverse=True)
 
     def _extract_update_details(self, pindex, package_name):
         document = piksemel.parse(pindex)
