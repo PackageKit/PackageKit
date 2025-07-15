@@ -387,14 +387,21 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def required_by(self, filters, package_ids, recursive):
         """ Prints a list of requires for a given package """
+        self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_ids[0])[0]
+        for package_id in package_ids:
+            package = self.get_package_from_id(package_id)[0]
 
-        # FIXME: Handle packages which is not installed from repository
-        for pkg in self.packagedb.get_rev_deps(package):
-            self.__get_package(pkg[0])
+            if self.packagedb.has_package(package):
+                for pkg in self.packagedb.get_rev_deps(package):
+                    self.__get_package(pkg[0])
+            elif self.installdb.has_package(package):
+                for pkg in self.installdb.get_rev_deps(package):
+                    self.__get_package(pkg[0])
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package.name)
 
     def get_updates(self, filter):
         """ Prints available updates and types """
