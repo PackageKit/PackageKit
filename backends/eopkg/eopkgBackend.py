@@ -35,13 +35,18 @@
 # comment.
 
 import pisi
+import pisi.api
+import pisi.config
+import pisi.context
+import pisi.db
+import pisi.fetcher
 import pisi.ui
+import pisi.util
 from packagekit.package import PackagekitPackage
 from packagekit.backend import *
 from packagekit.enums import *
 from packagekit.progress import *
 import os.path
-import piksemel
 import re
 from collections import Counter
 from operator import attrgetter
