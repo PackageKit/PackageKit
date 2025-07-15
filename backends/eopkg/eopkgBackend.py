@@ -42,6 +42,8 @@ from packagekit import enums
 import os.path
 import piksemel
 import re
+from collections import Counter
+
 
 class SimplePisiHandler(pisi.ui.UI):
 
@@ -219,6 +221,30 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             file_list = ";".join(files)
             self.files(pkg_id, file_list)
+
+    def get_packages(self, filters):
+        self.status(STATUS_QUERY)
+        self.allow_cancel(True)
+        self.percentage(None)
+
+        packages = list()
+        all_pkgs = False
+        installed = self.installdb.list_installed()
+        available = self.packagedb.list_packages(None)
+
+        if FILTER_INSTALLED in filters:
+            packages = installed
+        elif FILTER_NOT_INSTALLED in filters:
+            cntInstalled = Counter(installed)
+            cntAvailable = Counter(available)
+
+            diff = cntAvailable - cntInstalled
+            packages = diff.elements()
+        else:
+            packages = available
+
+        for package in packages:
+            self.__get_package(package)
 
     def get_repo_list(self, filters):
         """ Prints available repositories """
