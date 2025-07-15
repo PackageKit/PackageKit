@@ -149,6 +149,18 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             # and arguments!
             self.__get_package(pkg.package)
 
+    def repair_system(self, transaction_flags):
+        """ Deletes caches, rebuilds filesdb and reinits pisi caches """
+
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+            return
+
+        self.status(STATUS_CLEANUP)
+        pisi.api.delete_cache()
+        self.status(STATUS_REFRESH_CACHE)
+        pisi.api.rebuild_db(files=True)
+        pisi.db.update_caches()
+
     def get_details(self, package_ids):
         """ Prints a detailed description for a given package """
         self.allow_cancel(True)
