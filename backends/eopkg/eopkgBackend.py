@@ -286,6 +286,43 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.details(pkg_id, pkg.summary, ",".join(pkg.license), group, description,
                             homepage, size)
 
+    def get_details_local(self, files):
+
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_INFO)
+
+        for f in files:
+            if not f.endswith(".eopkg"):
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Eopkg %s was not found" % f)
+            try:
+                metadata, files = pisi.api.info_file(f)
+            except PkError as e:
+                if e.code == ERROR_PACKAGE_NOT_FOUND:
+                    self.message('COULD_NOT_FIND_PACKAGE', e.details)
+                    continue
+                self.error(e.code, e.details, exit=True)
+                return
+            if metadata:
+                pkg = metadata.package
+
+            data = "local"
+
+            pkg_id = self.get_package_id(pkg.name, self.__get_package_version(pkg),
+                                         pkg.architecture, data)
+
+            if pkg.partOf in self.groups:
+                group = self.groups[pkg.partOf]
+            else:
+                group = GROUP_UNKNOWN
+            homepage = pkg.source.homepage if pkg.source.homepage is not None\
+                else ''
+
+            size = pkg.installedSize
+
+            self.details(pkg_id, pkg.summary, ",".join(pkg.license), group,
+                         pkg.description, homepage, size)
+
     def get_files(self, package_ids):
         """ Prints a file list for a given package """
         self.allow_cancel(True)
