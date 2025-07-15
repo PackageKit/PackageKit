@@ -783,6 +783,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_UNKNOWN, e)
         pisi.api.set_userinterface(self.saved_ui)
 
+    @privileged
     def refresh_cache(self, force):
         """ Updates repository indexes """
         # TODO: use force ?
@@ -797,8 +798,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             pisi.api.update_repo(repo)
             percentage += slice
             self.percentage(percentage)
-
-        self.percentage(100)
 
     def remove_packages(self, transaction_flags, package_ids,
                         allowdeps, autoremove):
