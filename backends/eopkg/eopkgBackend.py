@@ -242,31 +242,49 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         pisi.db.update_caches()
 
     def get_details(self, package_ids):
-        """ Prints a detailed description for a given package """
+        """ Prints a detailed description for a given packages """
+        self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_ids[0])[0]
+        for package in package_ids:
+            package = self.get_package_from_id(package)[0]
 
-        if self.packagedb.has_package(package):
-            pkg = self.packagedb.get_package(package)
-            repo = self.packagedb.get_package_repo(pkg.name, None)
-            pkg_id = self.get_package_id(pkg.name,
-                                         self.__get_package_version(pkg),
-                                         pkg.architecture, repo[1])
+            pkg = ""
+            size = 0
+            dl_size = 0
+            data = "installed"
+
+            # FIXME: There is duplication here from __get_package
+            if self.packagedb.has_package(package):
+                pkg, repo = self.packagedb.get_package_repo(package, None)
+                size = int(pkg.installedSize)
+                dl_size = int(pkg.packageSize)
+                if self.installdb.has_package(package):
+                    data = "installed:{}".format(repo)
+                else:
+                    data = repo
+            elif self.installdb.has_package(package):
+                pkg = self.installdb.get_package(package)
+                data = "local"
+                size = int(pkg.installedSize)
+                dl_size = int(pkg.packageSize)
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package)
+
+            pkg_id = self.get_package_id(pkg.name, self.__get_package_version(pkg),
+                                         pkg.architecture, data)
 
             if pkg.partOf in self.groups:
                 group = self.groups[pkg.partOf]
             else:
                 group = GROUP_UNKNOWN
+            homepage = pkg.source.homepage if pkg.source.homepage is not None else ''
 
-            homepage = pkg.source.homepage if pkg.source.homepage is not None\
-                else ''
+            description = str(pkg.description).replace('\n', " ")
 
-            self.details(pkg_id, '', ",".join(pkg.license), group, pkg.description,
-                         homepage, pkg.packageSize)
-        else:
-            self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
+            self.details(pkg_id, pkg.summary, ",".join(pkg.license), group, description,
+                            homepage, size)
 
     def get_files(self, package_ids):
         """ Prints a file list for a given package """
