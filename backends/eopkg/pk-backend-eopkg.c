@@ -101,6 +101,15 @@ pk_backend_get_filters (PkBackend *backend)
 		-1);
 }
 
+gchar **
+pk_backend_get_mime_types(PkBackend *backend)
+{
+	const gchar *mime_types[] = {
+		"application/zip",
+		NULL };
+	return g_strdupv ((gchar **) mime_types);
+}
+
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
