@@ -320,17 +320,6 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-    gchar *transaction_flags_temp;
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-
-	pk_backend_spawn_helper (spawn, job, "eopkgBackend.py", "update-system", transaction_flags_temp, NULL);
-
-    g_free (transaction_flags_temp);
-}
-
-void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
 	gchar *filters_text;
