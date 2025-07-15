@@ -859,13 +859,25 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         else:
             self.error(ERROR_NOT_SUPPORTED, "Parameter not supported")
 
-    def resolve(self, filters, package):
+    def resolve(self, filters, values):
         """ Turns a single package name into a package_id
         suitable for the other methods """
         self.allow_cancel(True)
         self.percentage(None)
+        self.status(STATUS_QUERY)
 
-        self.__get_package(package[0], filters)
+        for package in values:
+            pkg = self.get_package_from_id(package)[0]
+            try:
+                # FIXME: Hack for newest filter to work correctly (i think)
+                if filters is not None and FILTER_NEWEST in filters:
+                    self.__get_package(pkg, FILTER_NOT_INSTALLED)
+                self.__get_package(pkg, filters)
+            except PkError as e:
+                if e.code == ERROR_PACKAGE_NOT_FOUND:
+                    continue
+                self.error(e.code, e.details, exit=True)
+                return
 
     def search_details(self, filters, values):
         """ Prints a detailed list of packages contains search term """
