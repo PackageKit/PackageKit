@@ -51,7 +51,7 @@ if get_option('man_pages')
     command: [
       xsltproc,
       '--output', '@OUTPUT@',
-      'http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl',
+      'https://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl',
       '@INPUT@',
     ],
     install: true,
@@ -64,7 +64,7 @@ if get_option('man_pages')
     command: [
       xsltproc,
       '--output', '@OUTPUT@',
-      'http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl',
+      'https://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl',
       '@INPUT@',
     ],
     install: true,
