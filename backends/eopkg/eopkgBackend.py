@@ -65,17 +65,21 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self._load_settings()
         PackageKitBaseBackend.__init__(self, args)
 
-        self.componentdb = pisi.db.componentdb.ComponentDB()
-        self.filesdb = pisi.db.filesdb.FilesDB()
-        self.installdb = pisi.db.installdb.InstallDB()
-        self.packagedb = pisi.db.packagedb.PackageDB()
-        self.repodb = pisi.db.repodb.RepoDB()
+        self.get_db()
 
         # Do not ask any question to users
         self.options = pisi.config.Options()
         self.options.yes_all = True
 
         self.saved_ui = pisi.context.ui
+
+    def get_db(self):
+        self.componentdb = pisi.db.componentdb.ComponentDB()
+        # self.filesdb = pisi.db.filesdb.FilesDB()
+        self.installdb = pisi.db.installdb.InstallDB()
+        self.packagedb = pisi.db.packagedb.PackageDB()
+        self.historydb = pisi.db.historydb.HistoryDB()
+        self.repodb = pisi.db.repodb.RepoDB()
 
     def _load_settings(self):
         """ Load the PK Group-> PiSi component mapping """
@@ -101,6 +105,25 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                     self.groups[key] = value
         else:
             self.groups = {}
+
+    def privileged(func):
+        """
+        Decorator for synchronizing privileged functions
+        """
+
+        def wrapper(self, *__args, **__kw):
+            ui = SimplePisiHandler(self)
+            self.operation = func.__name__
+            pisi.api.set_userinterface(ui)
+            try:
+                func(self, *__args, **__kw)
+            except Exception as e:
+                raise e
+            self.percentage(100)
+            self.finished()
+            self.get_db()
+            pisi.api.set_userinterface(self.saved_ui)
+        return wrapper
 
     def __get_package_version(self, package):
         """ Returns version string of given package """
