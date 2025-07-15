@@ -385,7 +385,19 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 
 	pk_backend_spawn_helper (spawn, job, backend_filename, "update-packages", transaction_flags_temp, package_ids_temp, NULL);
 	g_free (package_ids_temp);
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
+}
+
+void
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+{
+	const gchar *backend_filename = NULL;
+	gchar *filters_text;
+
+	backend_filename = eopkg_get_backend_filename ();
+	filters_text = pk_filter_bitfield_to_string (filters);
+	pk_backend_spawn_helper (spawn, job, backend_filename, "get-packages", filters_text, NULL);
+	g_free (filters_text);
 }
 
 void
