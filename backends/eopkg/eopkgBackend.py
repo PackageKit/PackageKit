@@ -36,9 +36,10 @@
 
 import pisi
 import pisi.ui
-from packagekit.backend import *
 from packagekit.package import PackagekitPackage
-from packagekit import enums
+from packagekit.backend import *
+from packagekit.enums import *
+from packagekit.progress import *
 import os.path
 import piksemel
 import re
@@ -658,18 +659,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                                bugURI, cve_url, reboot, update_message,
                                changelog, state, issued, updated)
 
+    @privileged
     def download_packages(self, directory, package_ids):
         """ Download the given packages to a directory """
-        self.allow_cancel(False)
-        self.percentage(None)
+        self.allow_cancel(True)
+        self.percentage(0)
         self.status(STATUS_DOWNLOAD)
 
         packages = list()
 
-        def progress_cb(**kw):
-            self.percentage(int(kw['percent']))
-
-        ui = SimplePisiHandler()
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
             packages.append(package)
@@ -678,8 +676,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             except:
                 self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
         try:
-            pisi.api.set_userinterface(ui)
-            ui.the_callback = progress_cb
             if directory is None:
                 directory = os.path.curdir
             pisi.api.fetch(packages, directory)
@@ -689,70 +685,54 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 uri = package_obj.packageURI.split("/")[-1]
                 location = os.path.join(directory, uri)
                 self.files(package_id, location)
-            pisi.api.set_userinterface(self.saved_ui)
-        except Exception, e:
-            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED,
-                       "Could not download package: %s" % e)
-        self.percentage(None)
+        except pisi.fetcher.FetchError as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except IOError as e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+        except pisi.Error as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except Exception as e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def install_files(self, only_trusted, files):
+    @privileged
+    def install_files(self, transaction_flags, inst_files):
         """ Installs given package into system"""
 
         # FIXME: use only_trusted
 
-        # FIXME: install progress
+        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+            for f in inst_files:
+                metadata, _ = pisi.api.info_file(f)
+                pkg_id = self.get_package_id(metadata.package.name, metadata.package.version, metadata.package.architecture, "local")
+                self.package(pkg_id, INFO_INSTALL, metadata.package.summary)
+                for dep in metadata.package.runtimeDependencies():
+                    if not dep.satisfied_by_installed():
+                        if not self.packagedb.has_package(dep.package):
+                            self.error(ERROR_DEP_RESOLUTION_FAILED, "Cannot install: %s. Can't resolve dependency %s" % (f, dep.package))
+                        dep_pkg = self.packagedb.get_package(dep.package)
+                        repo = self.packagedb.get_package_repo(dep_pkg.name, None)
+                        dep_id = self.get_package_id(dep_pkg.name, dep_pkg.version, dep_pkg.architecture, repo)
+                        self.package(dep_id, INFO_INSTALL, dep_pkg.summary)
+            return
+
         self.allow_cancel(False)
-        self.percentage(None)
-
-        def progress_cb(**kw):
-            self.percentage(int(kw['percent']))
-
-        ui = SimplePisiHandler()
-
-        self.status(STATUS_INSTALL)
-        pisi.api.set_userinterface(ui)
-        ui.the_callback = progress_cb
-
         try:
-            self.status(STATUS_INSTALL)
-            pisi.api.install(files)
-        except pisi.Error, e:
-            # FIXME: Error: internal-error : Package re-install declined
-            # Force needed?
-            self.error(ERROR_PACKAGE_ALREADY_INSTALLED, e)
-        pisi.api.set_userinterface(self.saved_ui)
+            # Actually install
+            pisi.api.install(inst_files)
+        except pisi.fetcher.FetchError as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except IOError as e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+        except pisi.Error as e:
+            self.error(ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e, exit=False)
+        except Exception as e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
-    def _report_all_for_package(self, package, remove=False):
-        """ Report all deps for the given package """
-        if not remove:
-            deps = self.packagedb.get_package(package).runtimeDependencies()
-            # TODO: Add support to report conflicting packages requiring removal
-            #conflicts = self.packagedb.get_package (package).conflicts
-            for dep in deps:
-                if not self.installdb.has_package(dep.name()):
-                    dep_pkg = self.packagedb.get_package(dep.name())
-                    repo = self.packagedb.get_package_repo(dep_pkg.name, None)
-                    version = self.__get_package_version(dep_pkg)
-                    pkg_id = self.get_package_id(dep_pkg.name, version,
-                                                 dep_pkg.architecture, repo[1])
-                    self.package(pkg_id, INFO_INSTALLING, dep_pkg.summary)
-        else:
-            rev_deps = self.installdb.get_rev_deps(package)
-            for rev_dep, depinfo in rev_deps:
-                if self.installdb.has_package(rev_dep):
-                    dep_pkg = self.packagedb.get_package(rev_dep)
-                    repo = self.packagedb.get_package_repo(dep_pkg.name, None)
-                    version = self.__get_package_version(dep_pkg)
-                    pkg_id = self.get_package_id(dep_pkg.name, version,
-                                                 dep_pkg.architecture, repo[1])
-                    self.package(pkg_id, INFO_REMOVING, dep_pkg.summary)
-
+    @privileged
     def install_packages(self, transaction_flags, package_ids):
         """ Installs given package into system"""
-        # FIXME: fetch/install progress
         self.allow_cancel(False)
-        self.percentage(None)
-
+        self.percentage(0)
         packages = list()
 
         # FIXME: use only_trusted
@@ -763,25 +743,34 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                            "Package is already installed")
             packages.append(package)
 
-        def progress_cb(**kw):
-            self.percentage(int(kw['percent']))
-
-        ui = SimplePisiHandler()
-
-        self.status(STATUS_INSTALL)
-        pisi.api.set_userinterface(ui)
-        ui.the_callback = progress_cb
-
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
-            # Simulated, not real.
-            for package in packages:
-                self._report_all_for_package(package)
+            pkgSet = set(packages)
+            order = pisi.api.get_install_order(pkgSet)
+            # Merge any forced system.base upgrades to the order as well
+            base_order = pisi.api.get_base_upgrade_order(pkgSet)
+            order = base_order + order
+            for dep in order:
+                dep_pkg = self.packagedb.get_package(dep)
+                repo = self.packagedb.get_package_repo(dep_pkg.name, None)
+                version = self.__get_package_version(dep_pkg)
+                pkg_id = self.get_package_id(dep_pkg.name, version,
+                                                dep_pkg.architecture, repo[1])
+                self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
             return
+
+        if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
+            pisi.context.set_option("fetch_only", True)
+
         try:
             pisi.api.install(packages)
-        except pisi.Error, e:
-            self.error(ERROR_UNKNOWN, e)
-        pisi.api.set_userinterface(self.saved_ui)
+        except pisi.fetcher.FetchError as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except IOError as e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+        except pisi.Error as e:
+            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e, exit=False)
+        except Exception as e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
     def refresh_cache(self, force):
@@ -799,12 +788,12 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             percentage += slice
             self.percentage(percentage)
 
+    @privileged
     def remove_packages(self, transaction_flags, package_ids,
-                        allowdeps, autoremove):
+                        allowdep, autoremove):
         """ Removes given package from system"""
         self.allow_cancel(False)
-        self.percentage(None)
-        # TODO: use autoremove
+        self.percentage(0)
         packages = list()
 
         for package_id in package_ids:
@@ -814,24 +803,33 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                            "Package is not installed")
             packages.append(package)
 
-        def progress_cb(**kw):
-            self.percentage(int(kw['percent']))
-
-        ui = SimplePisiHandler()
-
-        package = self.get_package_from_id(package_ids[0])[0]
-        self.status(STATUS_REMOVE)
-
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
-            # Simulated, not real.
-            for package in packages:
-                self._report_all_for_package(package, remove=True)
+            pkgSet = set(packages)
+            order = pisi.api.get_remove_order(pkgSet, autoremove)
+            for dep in order:
+                dep_pkg = self.packagedb.get_package(dep)
+                if dep_pkg.partOf == "system.base":
+                    self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, "Cannot remove system.base package: %s" % dep_pkg.name)
+                repo = self.packagedb.get_package_repo(dep_pkg.name, None)
+                version = self.__get_package_version(dep_pkg)
+                pkg_id = self.get_package_id(dep_pkg.name, version,
+                                             dep_pkg.architecture, repo[1])
+                self.package(pkg_id, INFO_REMOVE, dep_pkg.summary)
             return
+
         try:
-            pisi.api.remove(packages)
-        except pisi.Error, e:
-            self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
-        pisi.api.set_userinterface(self.saved_ui)
+            if autoremove:
+                pisi.api.autoremove(packages)
+            else:
+                pisi.api.remove(packages)
+        except pisi.fetcher.FetchError as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except IOError as e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+        except pisi.Error as e:
+            self.error(ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e, exit=False)
+        except Exception as e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
     def repo_enable(self, repoid, enable):
@@ -943,14 +941,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             for pkg in pisi.api.search_package([value]):
                 self.__get_package(pkg, filters)
 
+    @privileged
     def update_packages(self, transaction_flags, package_ids):
         """ Updates given package to its latest version """
 
         # FIXME: use only_trusted
-
-        # FIXME: fetch/install progress
-        self.allow_cancel(False)
+        # FIXME: install progress
+        self.allow_cancel(True)
         self.percentage(None)
+        self.status(STATUS_RUNNING)
 
         packages = list()
         for package_id in package_ids:
@@ -960,22 +959,35 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                            "Cannot update a package that is not installed")
             packages.append(package)
 
-        def progress_cb(**kw):
-            self.percentage(int(kw['percent']))
-
-        ui = SimplePisiHandler()
-        pisi.api.set_userinterface(ui)
-        ui.the_callback = progress_cb
-
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
-            for package in packages:
-                self._report_all_for_package(package)
+            pkgSet = set(packages)
+            order = pisi.api.get_upgrade_order(pkgSet)
+            # Merge any forced system.base upgrades to the order as well
+            base_order = pisi.api.get_base_upgrade_order(pkgSet)
+            order = base_order + order
+            for dep in order:
+                dep_pkg = self.packagedb.get_package(dep)
+                repo = self.packagedb.get_package_repo(dep_pkg.name, None)
+                version = self.__get_package_version(dep_pkg)
+                pkg_id = self.get_package_id(dep_pkg.name, version,
+                                                dep_pkg.architecture, repo[1])
+                self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
             return
+
+        if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
+            pisi.context.set_option("fetch_only", True)
+
         try:
+            # Actually upgrade
             pisi.api.upgrade(packages)
-        except pisi.Error, e:
-            self.error(ERROR_UNKNOWN, e)
-        pisi.api.set_userinterface(self.saved_ui)
+        except pisi.fetcher.FetchError as e:
+            self.error(ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e, exit=False)
+        except IOError as e:
+            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+        except pisi.Error as e:
+            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e, exit=False)
+        except Exception as e:
+            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
 
 def main():
