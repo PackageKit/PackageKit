@@ -201,15 +201,22 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def depends_on(self, filters, package_ids, recursive):
         """ Prints a list of depends for a given package """
+        self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
-        package = self.get_package_from_id(package_ids[0])[0]
+        for package_id in package_ids:
+            package = self.get_package_from_id(package_id)[0]
 
-        for pkg in self.packagedb.get_package(package).runtimeDependencies():
-            # FIXME: PiSi API has really inconsistent for return types
-            # and arguments!
-            self.__get_package(pkg.package)
+            # FIXME: PiSi API has really inconsistent for return types and arguments!
+            if self.packagedb.has_package(package):
+                for pkg in self.packagedb.get_package(package).runtimeDependencies():
+                    self.__get_package(pkg.package)
+            elif self.installdb.has_package(package):
+                for pkg in self.installdb.get_package(package).runtimeDependencies():
+                    self.__get_package(pkg.package)
+            else:
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package)
 
     def get_categories(self):
         self.status(STATUS_QUERY)
