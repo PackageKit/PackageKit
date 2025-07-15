@@ -438,43 +438,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             ret.append(i)
         return sorted(ret, key=attrgetter('release'), reverse=True)
 
-    def _extract_update_details(self, pindex, package_name):
-        document = piksemel.parse(pindex)
-        packages = document.tags("Package")
-        for pkg in packages:
-            if pkg.getTagData("Name") == package_name:
-                history = pkg.getTag("History")
-                update = history.tags("Update")
-                update_message = "Updated"
-                update_release = 0
-                update_date = ""
-                needsReboot = False
-                bugURI = ""
-                for update in update:
-                    if int(update.getAttribute("release")) > update_release:
-                        update_release = int(update.getAttribute("release"))
-                        # updater = update.getTagData("Name")
-                        update_message = update.getTagData("Comment")
-                        update_message = update_message.replace("\n", ";")
-                        update_date = update.getTagData("Date")
-                        needsReboot = False
-                        try:
-                            requires = update.getTag("Requires")
-                            action = requires.getTagData("Action")
-                            if action == "systemRestart":
-                                needsReboot = True
-                        except Exception:
-                            pass
-                # Determine if this is a bug fix
-                for line in update_message.split(";"):
-                    m = self.bug_regex.match(line)
-                    if m is not None:
-                        bugURI = self.bug_uri % m.group(1)
-                        break
-                return (update_message, update_date, needsReboot, bugURI)
-            pkg = pkg.nextTag("Package")
-        return("Log not found", "", False, "")
-
     def get_update_detail(self, package_ids):
         self.status(STATUS_INFO)
         self.allow_cancel(True)
