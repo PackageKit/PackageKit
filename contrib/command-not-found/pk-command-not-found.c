@@ -637,7 +637,7 @@ pk_cnf_spawn_command (const gchar *exec, gchar **arguments, guint arguments_coun
 	for (guint i = 0; i <= arguments_count; i++) {
 		argv[1+i] = arguments[i];
 	}
-	if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
+	if (!g_spawn_sync (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_CHILD_INHERITS_STDIN, NULL, NULL,
 											NULL, NULL, &exit_status, &error)) {
 		/* TRANSLATORS: we failed to launch the executable, the error follows */
 		g_printerr ("%s '%s': %s\n", _("Failed to launch:"), exec, error->message);
