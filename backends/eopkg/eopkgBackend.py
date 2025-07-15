@@ -834,30 +834,31 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE, e)
         pisi.api.set_userinterface(self.saved_ui)
 
-    def repo_set_data(self, repo_id, parameter, value):
+    @privileged
+    def repo_set_data(self, repoid, parameter, value):
         """ Sets a parameter for the repository specified """
         self.allow_cancel(False)
         self.percentage(None)
 
         if parameter == "add-repo":
             try:
-                pisi.api.add_repo(repo_id, value, parameter)
-            except pisi.Error, e:
+                pisi.api.add_repo(repoid, value)
+            except pisi.Error as e:
                 self.error(ERROR_UNKNOWN, e)
 
             try:
-                pisi.api.update_repo(repo_id)
+                pisi.api.update_repo(repoid)
             except pisi.fetcher.FetchError:
-                pisi.api.remove_repo(repo_id)
+                pisi.api.remove_repo(repoid)
                 err = "Could not reach the repository, removing from system"
                 self.error(ERROR_REPO_NOT_FOUND, err)
         elif parameter == "remove-repo":
             try:
-                pisi.api.remove_repo(repo_id)
+                pisi.api.remove_repo(repoid)
             except pisi.Error:
                 self.error(ERROR_REPO_NOT_FOUND, "Repository does not exist")
         else:
-            self.error(ERROR_NOT_SUPPORTED, "Parameter not supported")
+            self.error(ERROR_NOT_SUPPORTED, "Valid parameters are add-repo and remove-repo")
 
     def resolve(self, filters, values):
         """ Turns a single package name into a package_id
