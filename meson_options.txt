@@ -6,7 +6,7 @@ option('maintainer',
 
 option('packaging_backend',
     type : 'array',
-    choices : ['alpm', 'apt', 'dnf', 'dummy', 'entropy', 'pisi', 'poldek', 'portage', 'slack', 'zypp', 'nix', 'freebsd'],
+    choices : ['alpm', 'apt', 'dnf', 'dummy', 'entropy', 'eopkg', 'pisi', 'poldek', 'portage', 'slack', 'zypp', 'nix', 'freebsd'],
     value : ['dummy'],
     description : 'The name of the backend to use'
 )
