@@ -476,26 +476,52 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         return("Log not found", "", False, "")
 
     def get_update_detail(self, package_ids):
+        self.status(STATUS_INFO)
+        self.allow_cancel(True)
+        self.percentage(None)
+
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
-            the_package = self.installdb.get_package(package)
+            pkg, repo = self.packagedb.get_package_repo(package, None)
+            version = self.__get_package_version(pkg)
+            id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
+
             updates = [package_id]
             obsoletes = ""
-            # TODO: Add regex matching for #FIXES:ID or something similar
-            cve_url = ""
-            package_url = the_package.source.homepage
+
+            package_url = pkg.source.homepage
             vendor_url = package_url if package_url is not None else ""
-            issued = ""
+
+            update_message = pkg.history[0].comment
+            update_message = update_message.replace("\n", ";")
+
+            updated_date = pkg.history[0].date
+
+            bugURI = ""
 
             changelog = ""
-            # TODO: Set to security_issued if security update
-            issued = updated = ""
-            update_message, security_issued, needsReboot, bugURI = \
-                self._updates[package]
+            # FIXME: Works but output is fugly
+            #for i in pkg.history:
+            #    comment = i.comment
+            #    comment = comment.replace("\n", ";")
+            #    changelog.append(comment)
 
-            # TODO: Add tagging to repo's, or a mapping file
+            cves = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
+            cve_url = ""
+            if cves is not None:
+                #cve_url = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(cves[0])
+                cve_url = cves
+
+            # TODO: If repo is unstable and package.release not in shannon then UNSTABLE
             state = UPDATE_STATE_STABLE
-            reboot = "system" if needsReboot else "none"
+            reboot = "none"
+
+            # TODO: Eopkg doesn't provide any time
+            split_date = updated_date.split("-")
+            updated = "{}-{}-{}T00:00:00".format(split_date[0], split_date[1], split_date[2])
+            # TODO: The index only stores the last 10 history entries.
+            #       What is the difference between issued and updated?
+            issued = ""
 
             self.update_detail(package_id, updates, obsoletes, vendor_url,
                                bugURI, cve_url, reboot, update_message,
