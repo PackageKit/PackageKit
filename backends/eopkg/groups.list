@@ -1,0 +1,100 @@
+system.base         = system
+system.boot         = system
+system.devel        = admin-tools
+system.utils        = admin-tools
+
+desktop             = desktop
+desktop.budgie      = desktop
+desktop.core        = system
+desktop.font        = fonts
+desktop.gnome       = desktop-gnome
+desktop.gnome.core  = desktop-gnome
+desktop.gnome.doc   = documentation
+desktop.gtk         = desktop-gnome
+desktop.i3          = desktop-other
+desktop.kde         = desktop-kde
+desktop.kde.core    = desktop-kde
+desktop.library     = system
+desktop.mate        = desktop-other
+desktop.multimedia  = multimedia
+desktop.qt          = desktop-kde
+desktop.theme       = desktop
+desktop.xfce        = desktop-xfce
+
+editor              = office
+
+games               = games
+games.action        = games
+games.arcade        = games
+games.card          = games
+games.emulator      = games
+games.mmo           = games
+games.platformer    = games
+games.puzzle        = games
+games.rpg           = games
+games.strategy      = games
+
+kernel.devel        = programming
+kernel.image        = admin-tools
+kernel.devel        = admin-tools
+
+multimedia.audio    = multimedia
+multimedia.codecs   = multimedia
+multimedia.graphics = multimedia
+multimedia.gstreamer = multimedia
+multimedia.library  = multimedia
+multimedia.video    = multimedia
+
+network.base        = network
+network.clients     = network
+network.download    = network
+network.im          = network
+network.irc         = network
+network.mail        = network
+network.news        = network
+network.remote      = network
+network.util        = network
+network.web         = network
+network.web.browser = network
+
+office              = office
+office.finance      = office
+office.maths        = office
+office.notes        = office
+office.scientific   = office
+office.viewers      = office
+
+programming         = programming
+programming.devel   = programming
+programming.haskell = programming
+programming.ide     = programming
+programming.java    = programming
+programming.library = programming
+programming.perl    = programming
+programming.python  = programming
+programming.ruby    = programming
+programming.tools   = programming
+
+security            = security
+security.crypto     = security
+security.library    = security
+
+system.base         = system
+system.boot         = system
+system.devel        = admin-tools
+system.utils        = admin-tools
+
+virt                = virtualization
+
+xorg.apps           = desktop-other
+xorg.base           = desktop-other
+xorg.display        = desktop-other
+xorg.driver         = desktop-other
+xorg.fonts          = fonts
+xorg.library        = programming
+xorg.proto          = programming
+xorg.server         = desktop-other
+
+#FIXME:
+Bug-Regex = Bug-Solus: T(\d+)
+Bug-URI = https://issues.getsol.us
