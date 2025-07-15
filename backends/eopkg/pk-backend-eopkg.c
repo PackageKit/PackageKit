@@ -157,6 +157,15 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 }
 
 void
+pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
+{
+	const gchar *backend_filename = NULL;
+	backend_filename = eopkg_get_backend_filename ();
+
+	pk_backend_spawn_helper (spawn, job, backend_filename, "get-categories", NULL);
+}
+
+void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	const gchar *backend_filename = NULL;
