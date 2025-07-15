@@ -160,8 +160,8 @@ bool GstMatcher::matches(string record, string arch)
                     continue;
                 }
 
-                // if the record is capable of intersect them we found the package
-                bool provides = gst_caps_can_intersect(static_cast<GstCaps*>(match.caps), caps);
+                // if the record is compatible then we found the package
+                bool provides = gst_caps_is_always_compatible(static_cast<GstCaps*>(match.caps), caps);
                 gst_caps_unref(caps);
 
                 if (provides) {
