@@ -626,13 +626,15 @@ void AptJob::providesCodec(PkgList &output, gchar **values)
         }
 
         arch = string(ver.Arch());
+        bool native = arch == "all" ||
+                      arch == m_cache->GetPkgCache()->NativeArch();
 
         pkgCache::VerFileIterator vf = ver.FileList();
         pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(vf);
         const char *start, *stop;
         rec.GetRec(start, stop);
         string record(start, stop - start);
-        if (matcher.matches(record, arch)) {
+        if (matcher.matches(record, native)) {
             output.append(ver);
         }
     }
