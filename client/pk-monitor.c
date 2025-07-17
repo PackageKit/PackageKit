@@ -414,6 +414,6 @@ main (int argc, char *argv[])
 	/* spin */
 	g_main_loop_run (loop);
 out:
-	g_object_unref (client);
+	g_clear_object (&client);
 	return retval;
 }
