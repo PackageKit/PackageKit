@@ -531,7 +531,7 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 	priv->envp = g_strdupv (envp);
 
 	/* Set the socket */
-	priv->socket = socket;
+	g_set_object (&priv->socket, socket);
 
 	/* socket has data */
 	fd = g_socket_get_fd (priv->socket);
