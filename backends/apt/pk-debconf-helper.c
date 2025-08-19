@@ -53,6 +53,6 @@ int main(void)
 	g_main_loop_run (main_loop);
 
 	g_object_unref (helper);
-	g_object_unref (main_loop);
+	g_main_loop_unref (main_loop);
 	return 0;
 }
