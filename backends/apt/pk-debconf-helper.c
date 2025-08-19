@@ -7,17 +7,18 @@
 static GMainLoop *main_loop = NULL;
 static PkClientHelper *helper = NULL;
 
-static gboolean exit_loop(gpointer user_data)
+static gboolean exit_loop (gpointer user_data)
 {
-	g_debug("Checking for active connections");
-	if (!pk_client_helper_is_active(helper)) {
-		g_message("No active connections, exiting");
-		g_main_loop_quit(main_loop);
+	g_debug ("Checking for active connections");
+
+	if (!pk_client_helper_is_active (helper)) {
+		g_message ("No active connections, exiting");
+		g_main_loop_quit (main_loop);
 	}
 	return TRUE;
 }
 
-int main(void)
+int main (void)
 {
 	g_auto(GStrv) argv = NULL;
 	g_auto(GStrv) envp = NULL;
@@ -28,10 +29,9 @@ int main(void)
 	main_loop = g_main_loop_new (NULL, FALSE);
 	pk_client_create_helper_argv_envp (&argv, &envp);
 
-
 	if (sd_listen_fds (0) != 1) {
-			g_error("No or too many file descriptors received.");
-			exit(1);
+		g_error ("No or too many file descriptors received.");
+		exit (1);
 	}
 
 	fd = SD_LISTEN_FDS_START + 0;
@@ -54,5 +54,6 @@ int main(void)
 
 	g_object_unref (helper);
 	g_main_loop_unref (main_loop);
+
 	return 0;
 }
