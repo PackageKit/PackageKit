@@ -1,15 +1,18 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-#
+# 
 # Translators:
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2010
-# Jure Repinc <jlp@holodeck1.com>, 2024
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
+# Jure Repinc <jlp@holodeck1.com>, 2024,
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2015, 2021-2022, 2025,
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-22 21:52+0200\n"
+"PO-Revision-Date: 2010-12-13 12:37+0000\n"
+"Last-Translator: Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022,2025\n"
 "Language-Team: Slovenian (http://app.transifex.com/freedesktop/packagekit/language/sl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,593 +20,1505 @@ msgstr ""
 "Language: sl\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
 
+#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
+msgid "Config file was not found."
+msgstr "Prilagoditvene datoteke ni mogoče najti."
+
+#. TRANSLATORS: The placeholder is an error message
+#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Datoteke prilagoditev ni mogoče naložiti: %s"
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+#: client/pk-console.c:165 client/pk-console.c:560
+msgid "Transaction"
+msgstr "Prenos"
+
+#. TRANSLATORS: this is the time the transaction was started in system
+#. timezone
+#: client/pk-console.c:167
+msgid "System time"
+msgstr "Sistemski čas"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+#: client/pk-console.c:169
+msgid "Succeeded"
+msgstr "Uspešno zaključen prenos"
+
+#: client/pk-console.c:169
+msgid "True"
+msgstr "Prav"
+
+#: client/pk-console.c:169
+msgid "False"
+msgstr "Napak"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+#: client/pk-console.c:171
+msgid "Role"
+msgstr "Vloga"
+
+#. TRANSLATORS: this is The duration of the transaction
+#: client/pk-console.c:176
+msgid "Duration"
+msgstr "Trajanje"
+
+#: client/pk-console.c:176
 msgid "(seconds)"
 msgstr "(sekund)"
 
+#. TRANSLATORS: this is The command line used to do the action
+#: client/pk-console.c:180
+msgid "Command line"
+msgstr "Ukazna vrstica"
+
+#. TRANSLATORS: this is the user ID of the user that started the action
+#: client/pk-console.c:182
+msgid "User ID"
+msgstr "Uporabnikov ID"
+
+#. TRANSLATORS: this is the username, e.g. hughsie
+#: client/pk-console.c:189
+msgid "Username"
+msgstr "Uporabniško ime"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+#: client/pk-console.c:193
+msgid "Real name"
+msgstr "Pravo ime"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:201
+msgid "Affected packages:"
+msgstr "Paketi pod vplivom:"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pk-console.c:204
+msgid "Affected packages: None"
+msgstr "Paketi pod vplivom: brez"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+#: client/pk-console.c:230
+msgid "Distribution"
+msgstr "Distribucija"
+
+#. TRANSLATORS: this is type of update, stable or testing
+#: client/pk-console.c:232
+msgid "Type"
+msgstr "Vrsta"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: client/pk-console.c:234 client/pk-console.c:267
+msgid "Summary"
+msgstr "Povzetek"
+
+#. TRANSLATORS: this is the group category name
+#: client/pk-console.c:256
+msgid "Category"
+msgstr "Kategorija"
+
+#. TRANSLATORS: this is group identifier
+#: client/pk-console.c:258
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is the parent group
+#: client/pk-console.c:261
+msgid "Parent"
+msgstr "Nadrejeni predmet"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+#: client/pk-console.c:264 client/pk-console.c:2327
+msgid "Name"
+msgstr "Ime"
+
+#. TRANSLATORS: this is preferred icon for the group
+#: client/pk-console.c:270
+msgid "Icon"
+msgstr "Ikona"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: client/pk-console.c:308
+msgid "Details about the update:"
+msgstr "Podrobnosti o posodobitvi:"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: client/pk-console.c:314 client/pk-console.c:579
+#: lib/packagekit-glib2/pk-task-text.c:123
+#: lib/packagekit-glib2/pk-task-text.c:198
+msgid "Package"
+msgstr "Paket"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+#: client/pk-console.c:319
+msgid "Updates"
+msgstr "Posodobitve"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+#: client/pk-console.c:326
+msgid "Obsoletes"
+msgstr "Opuščeno"
+
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:201
+msgid "Vendor"
+msgstr "Ponudnik"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+#: client/pk-console.c:338
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+#: client/pk-console.c:344
+msgid "CVE"
+msgstr "CVE"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+#: client/pk-console.c:350
+msgid "Restart"
+msgstr "Ponovno zaženi"
+
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+#: client/pk-console.c:355
+msgid "Update text"
+msgstr "Opis posodobitve"
+
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+#: client/pk-console.c:360
+msgid "Changes"
+msgstr "Spremembe"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+#: client/pk-console.c:365
+msgid "State"
+msgstr "Stanje"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+#: client/pk-console.c:370
+msgid "Issued"
+msgstr "Izdano"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+#: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
+msgid "Updated"
+msgstr "Posodobljeno"
+
+#. TRANSLATORS: if the repo is enabled
+#: client/pk-console.c:397
+msgid "Enabled"
+msgstr "Omogočeno"
+
+#. TRANSLATORS: if the repo is disabled
+#: client/pk-console.c:400
+msgid "Disabled"
+msgstr "Onemogočeno"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#: client/pk-console.c:429
+msgid "System restart required by:"
+msgstr "Ponoven zagon sistema je zahteval paket:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#: client/pk-console.c:432
+msgid "Session restart required:"
+msgstr "Zahteven je ponoven zagon seje:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+#: client/pk-console.c:436
+msgid "System restart (security) required by:"
+msgstr "Ponoven zagon sistema (varnostna posodobitev) je zahteval paket:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+#: client/pk-console.c:440
+msgid "Session restart (security) required:"
+msgstr "Zahtevan je ponoven zagon seje (varnostna posodobitev):"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: client/pk-console.c:443
+msgid "Application restart required by:"
+msgstr "Ponoven zagon programa je zahteval paket:"
+
+#. TRANSLATORS: This a list of details about the package
+#: client/pk-console.c:474
+msgid "Package description"
+msgstr "Opis paketa"
+
+#. TRANSLATORS: This where the package has no files
+#: client/pk-console.c:494
+msgid "No files"
+msgstr "Ni datotek"
+
+#. TRANSLATORS: This a list files contained in the package
+#: client/pk-console.c:499
+msgid "Package files"
+msgstr "Datoteke paketov"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: client/pk-console.c:595
+msgid "Percentage"
+msgstr "Odstotek"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: client/pk-console.c:618
+msgid "Status"
+msgstr "Stanje"
+
+#. TRANSLATORS: the results from the transaction
+#: client/pk-console.c:656
+msgid "Results:"
+msgstr "Rezultati:"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+#: client/pk-console.c:662 client/pk-console.c:823
+msgid "Fatal error"
+msgstr "Usodna napaka"
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+#: client/pk-console.c:687
+msgid "There are no packages to update."
+msgstr "Ni paketov za posodobitev"
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: client/pk-console.c:691
+#: contrib/command-not-found/pk-command-not-found.c:670
+msgid "The transaction failed"
+msgstr "Transakcija je spodletela"
+
+#. TRANSLATORS: print a message when there are no updates
+#: client/pk-console.c:720
+msgid "There are no updates available at this time."
+msgstr "Trenutno ni posodobitev na voljo."
+
+#: client/pk-console.c:743
+msgid "There are no upgrades available at this time."
+msgstr "Trenutno ni nadgradenj na voljo."
+
+#. TRANSLATORS: a package needs to restart their system
+#: client/pk-console.c:805
+msgid "Please restart the computer to complete the update."
+msgstr "Znova zaženite računalnik za dokončanje posodobitve."
+
+#. TRANSLATORS: a package needs to restart the session
+#: client/pk-console.c:808
+msgid "Please logout and login to complete the update."
+msgstr "Odjavite se in se znova prijavite za dokončanje posodobitve."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: client/pk-console.c:811
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr "Ponovno zaženite računalnik za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: client/pk-console.c:814
+msgid ""
+"Please logout and login to complete the update as important security updates"
+" have been installed."
+msgstr "Odjavite se in se ponovno prijavite za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pk-console.c:917
+msgid "More than one package matches:"
+msgstr "Ujema se več paketov:"
+
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pk-console.c:929
+msgid "Please choose the correct package: "
+msgstr "Izberite pravi paket: "
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+#: client/pk-console.c:966
+msgid "Package not found"
+msgstr "Paketa ni mogoče najti"
+
+#. TRANSLATORS: we couldn't find anything
+#: client/pk-console.c:984
+msgid "No packages were found"
+msgstr "Ni najdenih paketov"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#: client/pk-console.c:1009
+#, c-format
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s'"
+" instead."
+msgstr "Pričakovano je bilo ime paketa, pridobljena je bila datoteka. Namesto tega poskusite z uporabo 'pkcon install local %s'."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#: client/pk-console.c:1044
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pk-console.c:1061
+msgid "This tool could not find any available package."
+msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+#: client/pk-console.c:1070
+msgid "The selected packages may already be installed."
+msgstr "Izbrani paketi so morda že nameščeni."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1098
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "To orodje ni moglo najti nameščenega paketa: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pk-console.c:1127 client/pk-console.c:1158
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "To orodje ni moglo najti paketa: %s"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+#: client/pk-console.c:1203
+msgid "No packages require updating to newer versions."
+msgstr "Noben paket ne zahteva posodobitve na novejšo različico."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#: client/pk-console.c:1241 client/pk-console.c:1270 client/pk-console.c:1309
+#: client/pk-console.c:1368 client/pk-console.c:1396
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "To orodje ni moglo najti vseh paketov: %s"
+
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pk-console.c:1423
+msgid "The daemon crashed mid-transaction!"
+msgstr "Ozadnji program se je sesul med transakcijo!"
+
+#. TRANSLATORS: This is the header to the --help menu
+#: client/pk-console.c:1455
+msgid "PackageKit Console Interface"
+msgstr "PackageKit vmesnik konzole"
+
+#. these are commands we can use with pkcon
+#: client/pk-console.c:1457
+msgid "Subcommands:"
+msgstr "Podrejeni ukazi:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pk-console.c:1555
+msgid "Failed to get the time since this action was last completed"
+msgstr "Ni bilo mogoče dobiti časa odkar je bilo dejanje zadnjič končano"
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pk-console.c:1559
+msgid "Time since"
+msgstr "Čas odtlej"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+#: client/pk-console.c:1579
+msgid "Prepared updates:"
+msgstr "Pripravljene posodobitve:"
+
+#. TRANSLATORS: The network settings could not be sent
+#: client/pk-console.c:1648
+msgid "The proxy could not be set"
+msgstr "Posredniškega strežnika ni bilo mogoče nastaviti"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pk-console.c:1690 client/pk-monitor.c:330
+msgid "Show the program version and exit"
+msgstr "Pokaži različico nameščenega programa in končaj"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pk-console.c:1693
+msgid "Set the filter, e.g. installed"
+msgstr "Nastavi filter, na primer nameščeno"
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1696
+msgid "Install the packages without asking for confirmation"
+msgstr "Namesti vse pakete brez spraševanja za potrditev"
+
+#. command line argument, do we just download or apply changes
+#: client/pk-console.c:1699
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Pripravi transakcijo zgolj s prenosom paketov"
+
+#. command line argument, do we allow package downgrades
+#: client/pk-console.c:1702
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Dovoli nadomestitev paketov s starejšimi med transakcijo"
+
+#: client/pk-console.c:1704
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Dovoli ponovno namestitev paketov med transakcijo"
+
+#: client/pk-console.c:1706
+msgid "Automatically remove unused dependencies"
+msgstr "Samodejno odstrani neuporabljene odvisnosti"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pk-console.c:1709
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Požene ukaz z uporabo pasovne širine nedejavnega omrežja in tudi porabi manj energije"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1712
+msgid ""
+"Print to screen a machine readable output, rather than using animated "
+"widgets"
+msgstr "Izpiše zaslon na strojno berljiv izhod namesto uporabe animiranih gradnikov"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pk-console.c:1715
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr "Najvišja starost predpomnilnika metapodatkov (v sekundah). Uporabite -1 samo za uporabo predpomnilnika, 1 za ponovno nalaganje predpomnilnika."
+
+#. command line argument, do we ask questions
+#: client/pk-console.c:1718
+msgid "Allow untrusted packages to be installed."
+msgstr "Dovoli namestitev paketov, nevrednih zaupanja."
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1756
+msgid "Failed to parse command line"
+msgstr "Razčlenjevanje ukazne vrstice je spodletelo"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pk-console.c:1766
+msgid "Failed to contact PackageKit"
+msgstr "Vzpostavitev stika s PackageKit je spodletela"
+
 #. TRANSLATORS: The user specified
-#. * an invalid action
-msgid "A correct role is required"
-msgstr "Zahtevana je pravilna vloga"
+#. * an incorrect filter
+#: client/pk-console.c:1829
+msgid "The filter specified was invalid"
+msgstr "Navedeni filter je bil neveljaven"
 
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-msgid "A destination directory and the package names to download are required"
-msgstr "Zahtevana sta ciljna mapa in imena paketov za prejem"
-
-msgid "A filename is required"
-msgstr "Ime datoteke je obvezno"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A filename to install is required"
-msgstr "Zahtevano je ime datoteke za namestitev"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-msgid "A licence identifier (eula-id) is required"
-msgstr "Zahtevano je določilo licence (eula-id)"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-msgid "A package name is required"
-msgstr "Treba je navesti ime paketa"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-msgid "A package name to install is required"
-msgstr "Zahtevano je ime paketa za namestitev"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-msgid "A package name to remove is required"
-msgstr "Zahtevano je ime paketa za odstranitev"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-msgid "A package name to resolve is required"
-msgstr "Zahtevano je ime paketa za razrešitev"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-msgid "A package provide string is required"
-msgstr "Zahtevan je niz, ki ga zagotovi paket"
-
-msgid "A repo id and autoremove required"
-msgstr "Obvezna sta id skladišča in samoodstranitev"
-
-msgid "A repo name, parameter and value are required"
-msgstr "Zahtevani so ime, parameter in vrednst skladišča."
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-msgid "A repository name is required"
-msgstr "Zahtevano je ime skladišča"
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+#: client/pk-console.c:1855
+msgid "A search type is required, e.g. name"
+msgstr "Zahtevana je vrsta iskanja, na primer ime"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
+#: client/pk-console.c:1865 client/pk-console.c:1882 client/pk-console.c:1899
+#: client/pk-console.c:1916
 msgid "A search term is required"
 msgstr "Zahtevan je iskalni izraz"
 
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-msgid "A search type is required, e.g. name"
-msgstr "Zahtevana je vrsta iskanja, na primer ime"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1942
+msgid "A package name to install is required"
+msgstr "Zahtevano je ime paketa za namestitev"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pk-console.c:1956
+msgid "A filename to install is required"
+msgstr "Zahtevano je ime datoteke za namestitev"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
+#: client/pk-console.c:1972
 msgid "A type, key_id and package_id are required"
 msgstr "Zahtevane so vrsta, key_id in package_id"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to accept new
-#. licence agreements.
-#. - Change this to 'auth_admin' for environments where users should not
-#. be given the option to make legal decisions.
-msgid "Accept EULA"
-msgstr "Sprejmi uporabniško dovoljenje (EULA)"
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+#: client/pk-console.c:1990
+msgid "A package name to remove is required"
+msgstr "Zahtevano je ime paketa za odstranitev"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Accepting EULA"
-msgstr "Sprejemanje uporabniškega dovoljenja (EULA)"
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+#: client/pk-console.c:2003
+msgid "A destination directory and the package names to download are required"
+msgstr "Zahtevana sta ciljna mapa in imena paketov za prejem"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages:"
-msgstr "Paketi pod vplivom:"
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+#: client/pk-console.c:2013
+msgid "Directory not found"
+msgstr "Mape ni mogoče najti"
 
-#. TRANSLATORS: these are packages touched by the transaction
-msgid "Affected packages: None"
-msgstr "Paketi pod vplivom: brez"
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pk-console.c:2028
+msgid "A licence identifier (eula-id) is required"
+msgstr "Zahtevano je določilo licence (eula-id)"
 
-#. TRANSLATORS: the EULA text itself (long and boring)
-msgid "Agreement"
-msgstr "Dovoljenje"
+#. TRANSLATORS: The user did not
+#. * specify a package name
+#: client/pk-console.c:2054
+msgid "A package name to resolve is required"
+msgstr "Zahtevano je ime paketa za razrešitev"
 
-#. TRANSLATORS: this is a command alias
-#, c-format
-msgid "Alias to %s"
-msgstr "Vzdevek za %s"
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+#: client/pk-console.c:2071 client/pk-console.c:2088
+msgid "A repository name is required"
+msgstr "Zahtevano je ime skladišča"
 
-#. command line argument, do we allow package downgrades
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Dovoli nadomestitev paketov s starejšimi med transakcijo"
+#: client/pk-console.c:2104
+msgid "A repo name, parameter and value are required"
+msgstr "Zahtevani so ime, parameter in vrednst skladišča."
 
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Dovoli ponovno namestitev paketov med transakcijo"
-
-#. command line argument, do we ask questions
-msgid "Allow untrusted packages to be installed."
-msgstr "Dovoli namestitev paketov, nevrednih zaupanja."
+#: client/pk-console.c:2121
+msgid "A repo id and autoremove required"
+msgstr "Obvezna sta id skladišča in samoodstranitev"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
+#: client/pk-console.c:2148
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Potrebno je dejanje, npr. 'update-packages'"
 
-#. TRANSLATORS: a package requires the application to be restarted
-msgid "Application restart required by:"
-msgstr "Ponoven zagon programa je zahteval paket:"
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pk-console.c:2158
+msgid "A correct role is required"
+msgstr "Zahtevana je pravilna vloga"
 
-msgid "Authentication is required to accept a EULA"
-msgstr "Zahtevana je overitev za sprejemanje dovoljenja uporabe"
+#. TRANSLATORS: The user did not
+#. * provide a package name
+#: client/pk-console.c:2178 client/pk-console.c:2195 client/pk-console.c:2207
+#: client/pk-console.c:2237 client/pk-console.c:2270
+msgid "A package name is required"
+msgstr "Treba je navesti ime paketa"
 
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev."
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+#: client/pk-console.c:2221
+msgid "A package provide string is required"
+msgstr "Zahtevan je niz, ki ga zagotovi paket"
 
-msgid "Authentication is required to change software repository parameters"
-msgstr "Za spremembo parametrov skladišč programja je zahtevana overitev"
+#: client/pk-console.c:2248 client/pk-console.c:2259
+msgid "A filename is required"
+msgstr "Ime datoteke je obvezno"
 
-msgid "Authentication is required to clear the offline updates message"
-msgstr "Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potrebno overjanje"
-
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Za upoštevanje ključa za podpisovanje programja kot zaupanja vrednega je obvezna overitev"
-
-msgid "Authentication is required to downgrade software"
-msgstr "Za namestitev starejše različice je potrebna overitev"
-
-msgid "Authentication is required to install software"
-msgstr "Za namestitev programja je obvezna overitev"
-
-msgid "Authentication is required to install untrusted software"
-msgstr "Za namestitev programja, ki ni zaupanja vredno, je obvezna overitev"
-
-msgid "Authentication is required to refresh the system repositories"
-msgstr "Za osvežitev sistemskih skladišč je zahtevana overitev"
-
-msgid "Authentication is required to reinstall software"
-msgstr "Za ponovno namestitev programa je potrebna overovitev"
-
-msgid "Authentication is required to remove software"
-msgstr "Za odstranitev programja je obvezna overitev"
-
-msgid "Authentication is required to repair the installed software"
-msgstr "Za popravilo nameščenega programja je obvezna overitev"
-
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Za nastavitev omrežnega posredniškega strežnika, uporabljenega za prejem programja, je obvezna overitev"
-
-msgid "Authentication is required to trigger offline updates"
-msgstr "Za proženje posodobitev v stanju nepovezanosti je potrebno overjanje"
-
-msgid "Authentication is required to update software"
-msgstr "Za posodobitev programja je obvezna overitev"
-
-msgid "Authentication is required to upgrade the operating system"
-msgstr "Za nadgradnjo operacijskega sistema je zahtevana overitev"
+#. TRANSLATORS: this is the description of the backend
+#: client/pk-console.c:2331
+msgid "Description"
+msgstr "Opis"
 
 #. TRANSLATORS: this is the author of the backend
+#: client/pk-console.c:2335
 msgid "Author"
 msgstr "Avtor"
 
-msgid "Automatically remove unused dependencies"
-msgstr "Samodejno odstrani neuporabljene odvisnosti"
+#. TRANSLATORS: The user did not provide a distro name
+#: client/pk-console.c:2405
+msgid "You need to specify a list file to create"
+msgstr "Navesti morate seznamsko datoteko za ustvarjanje"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Available"
-msgstr "Na voljo"
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#: client/pk-console.c:2418
+#, c-format
+msgid "File already exists: %s"
+msgstr "Datoteka že obstaja: %s"
 
-#. TRANSLATORS: The type of update
-msgid "Blocked"
-msgstr "Blokirana"
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#: client/pk-console.c:2436
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Možnost '%s' ni podprta"
 
-#. TRANSLATORS: The type of update
-msgid "Bug fix"
-msgstr "Popravek hrošča"
+#. TRANSLATORS: Generic failure of what they asked to do
+#: client/pk-console.c:2446
+msgid "Command failed"
+msgstr "Ukaz je spodletel"
 
-#. TRANSLATORS: details about the update, the bugzilla URLs
-msgid "Bugzilla"
-msgstr "Bugzilla"
+#: client/pk-monitor.c:267
+msgid "Failed to get daemon state"
+msgstr "Stanja ozadnjega programa ni bilo mogoče dobiti"
 
-#. TRANSLATORS: details about the update, the CVE URLs
-msgid "CVE"
-msgstr "CVE"
+#: client/pk-monitor.c:310
+msgid "Failed to get properties"
+msgstr "Lastnosti ni bilo mogoče dobiti"
 
-#. SECURITY:
-#. - Normal users are allowed to cancel their own task without
-#. authentication, but a different user id needs the admin password
-#. to cancel another users task.
-msgid "Cancel foreign task"
-msgstr "Prekliči tujo nalogo"
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: client/pk-monitor.c:341
+msgid "PackageKit Monitor"
+msgstr "Nadzornik PackageKit"
 
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:161
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:167
+msgid "Installing System Upgrade"
+msgstr "Nameščanje sistemske nadgradnje"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:171
+msgid "Installing Updates"
+msgstr "Nameščanje posodobitev"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:207
+msgid "Rebooting after installing updates…"
+msgstr "Ponoven zagon po namestitvi posodobitev ..."
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:249
+msgid "Shutting down after installing updates…"
+msgstr "Izklop sistema po namestitvi posodobitev ..."
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:394
+msgid "Installing updates; this could take a while..."
+msgstr "Nameščanje posodobitev zahteva svoj čas ..."
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:434
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Nameščanje nadgradnje sistema zahteva svoj čas ..."
+
+#. TRANSLATORS: downloading repo data so we can search
+#: contrib/command-not-found/pk-command-not-found.c:427
+msgid "Downloading details about the software repositories."
+msgstr "Prejemanje podrobnosti o skladiščih programja."
+
+#. TRANSLATORS: downloading file lists so we can search
+#: contrib/command-not-found/pk-command-not-found.c:431
+msgid "Downloading filelists (this may take some time to complete)."
+msgstr "Pridobivanje seznamov datotek (to lahko traja nekaj časa)."
+
+#. TRANSLATORS: waiting for native lock
+#: contrib/command-not-found/pk-command-not-found.c:435
+msgid "Waiting for package manager lock."
+msgstr "Čakanje na zaklep upravljalnika paketov."
+
+#. TRANSLATORS: loading package cache so we can search
+#: contrib/command-not-found/pk-command-not-found.c:439
+msgid "Loading list of packages."
+msgstr "Nalaganje seznama paketov."
+
+#. TRANSLATORS: we failed to find the package, this shouldn't happen
+#: contrib/command-not-found/pk-command-not-found.c:499
+msgid "Failed to search for file"
+msgstr "Iskanje datoteke je spodletelo"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: contrib/command-not-found/pk-command-not-found.c:511
+msgid "Getting the list of files failed"
+msgstr "Dobivanje seznama datotek je spodletelo"
+
+#. TRANSLATORS: we failed to launch the executable, the error follows
+#: contrib/command-not-found/pk-command-not-found.c:643
+msgid "Failed to launch:"
+msgstr "Zaganjanje izvedljive datoteke je spodletelo:"
+
+#. TRANSLATORS: we failed to install the package
+#: contrib/command-not-found/pk-command-not-found.c:662
+msgid "Failed to install packages"
+msgstr "Namestitev paketov je spodletela"
+
+#. TRANSLATORS: the prefix of all the output telling the user
+#. * why it's not executing. NOTE: this is lowercase to mimic
+#. * the style of bash itself -- apologies
+#: contrib/command-not-found/pk-command-not-found.c:781
+msgid "command not found"
+msgstr "ukaza ni mogoče najti"
+
+#. TRANSLATORS: tell the user what we think the command is
+#: contrib/command-not-found/pk-command-not-found.c:802
+msgid "Similar command is:"
+msgstr "Podoben ukaz je:"
+
+#. TRANSLATORS: Ask the user if we should run the similar command
+#: contrib/command-not-found/pk-command-not-found.c:815
+msgid "Run similar command:"
+msgstr "Poženi podoben ukaz:"
+
+#. TRANSLATORS: show the user a list of commands that they could have meant
+#. TRANSLATORS: show the user a list of commands we could run
+#: contrib/command-not-found/pk-command-not-found.c:827
+#: contrib/command-not-found/pk-command-not-found.c:836
+msgid "Similar commands are:"
+msgstr "Podobni ukazi so:"
+
+#. TRANSLATORS: ask the user to choose a file to run
+#: contrib/command-not-found/pk-command-not-found.c:843
+msgid "Please choose a command to run"
+msgstr "Izberite ukaz za zagon"
+
+#. TRANSLATORS: tell the user what package provides the command
+#: contrib/command-not-found/pk-command-not-found.c:863
+msgid "The package providing this file is:"
+msgstr "Paket, ki zagotavlja to datoteko, je:"
+
+#. TRANSLATORS: as the user if we want to install a package to provide the
+#. command
+#: contrib/command-not-found/pk-command-not-found.c:870
+#, c-format
+msgid "Install package '%s' to provide command '%s'?"
+msgstr "Ali želite namestiti paket '%s', ki bo zagotavljal ukaz '%s'?"
+
+#. TRANSLATORS: Show the user a list of packages that provide this command
+#: contrib/command-not-found/pk-command-not-found.c:893
+msgid "Packages providing this file are:"
+msgstr "Paketi, ki zagotavljajo to datoteko so:"
+
+#. TRANSLATORS: Show the user a list of packages that they can install to
+#. provide this command
+#: contrib/command-not-found/pk-command-not-found.c:903
+msgid "Suitable packages are:"
+msgstr "Primerni paketi so:"
+
+#. TRANSLATORS: ask the user to choose a file to install
+#: contrib/command-not-found/pk-command-not-found.c:911
+msgid "Please choose a package to install"
+msgstr "Izberite paket za namestitev"
+
+#: contrib/command-not-found/pk-command-not-found.c:913
+msgid "User aborted selection"
+msgstr "Uporabnik je prekinil izbiranje"
+
+#: lib/packagekit-glib2/pk-console-shared.c:73
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "Vpišite število med 1 in %i: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: lib/packagekit-glib2/pk-console-shared.c:202
+msgid "Unknown state"
+msgstr "Neznano stanje"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: lib/packagekit-glib2/pk-console-shared.c:206
+msgid "Starting"
+msgstr "Začenjanje"
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to
+#. complete
+#: lib/packagekit-glib2/pk-console-shared.c:210
+msgid "Waiting in queue"
+msgstr "Čakanje v vrsti"
+
+#. TRANSLATORS: transaction state, just started
+#: lib/packagekit-glib2/pk-console-shared.c:214
+msgid "Running"
+msgstr "Izvajanje"
+
+#. TRANSLATORS: transaction state, is querying data
+#: lib/packagekit-glib2/pk-console-shared.c:218
+msgid "Querying"
+msgstr "Poizvedovanje"
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:222
+msgid "Getting information"
+msgstr "Pridobivanje podatkov"
+
+#. TRANSLATORS: transaction state, removing packages
+#: lib/packagekit-glib2/pk-console-shared.c:226
+msgid "Removing packages"
+msgstr "Odstranjevanje paketov"
+
+#. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Canceling"
-msgstr "Preklicevanje"
+#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-enum.c:1258
+msgid "Downloading packages"
+msgstr "Prejemanje paketov"
+
+#. TRANSLATORS: transaction state, installing packages
+#: lib/packagekit-glib2/pk-console-shared.c:234
+msgid "Installing packages"
+msgstr "Nameščanje paketov"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: lib/packagekit-glib2/pk-console-shared.c:238
+msgid "Refreshing software list"
+msgstr "Osveževanje seznama programske opreme"
+
+#. TRANSLATORS: transaction state, installing updates
+#: lib/packagekit-glib2/pk-console-shared.c:242
+msgid "Installing updates"
+msgstr "Nameščanje posodobitev"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config
+#. files
+#: lib/packagekit-glib2/pk-console-shared.c:246
+msgid "Cleaning up packages"
+msgstr "Čiščenje paketov"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: lib/packagekit-glib2/pk-console-shared.c:250
+msgid "Obsoleting packages"
+msgstr "Nastavljanje zastarelih paketov"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: lib/packagekit-glib2/pk-console-shared.c:254
+msgid "Resolving dependencies"
+msgstr "Razreševanje odvisnosti"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys
+#. for the operation
+#: lib/packagekit-glib2/pk-console-shared.c:258
+msgid "Checking signatures"
+msgstr "Preverjanje podpisov"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: lib/packagekit-glib2/pk-console-shared.c:262
+msgid "Testing changes"
+msgstr "Preizkušanje sprememb"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package
+#. database
+#: lib/packagekit-glib2/pk-console-shared.c:266
+msgid "Committing changes"
+msgstr "Uveljavljanje sprememb"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: lib/packagekit-glib2/pk-console-shared.c:270
+msgid "Requesting data"
+msgstr "Zahtevanje podatkov"
+
+#. TRANSLATORS: transaction state, all done!
+#: lib/packagekit-glib2/pk-console-shared.c:274
+msgid "Finished"
+msgstr "Končano"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
+#: lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Cancelling"
 msgstr "Preklic v teku"
 
-#. TRANSLATORS: this is the group category name
-msgid "Category"
-msgstr "Kategorija"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:282
+msgid "Downloading repository information"
+msgstr "Prejemanje podatkov o skladiščih"
 
-#. SECURITY:
-#. - Normal users require admin authentication to enable or disable
-#. software repositories as this can be used to enable new updates or
-#. install different versions of software.
-msgid "Change software repository parameters"
-msgstr "Spremeni parametre skladišč programja"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:286
+msgid "Downloading list of packages"
+msgstr "Prejemanje seznama paketov"
 
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-msgid "Changes"
-msgstr "Spremembe"
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:290
+msgid "Downloading file lists"
+msgstr "Prejemanje seznamov datotek"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:294
+msgid "Downloading lists of changes"
+msgstr "Prejemanje seznamov sprememb"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:298
+msgid "Downloading groups"
+msgstr "Prejemanje skupin"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/packagekit-glib2/pk-console-shared.c:302
+msgid "Downloading update information"
+msgstr "Prejemanje podatkov o posodobitvi"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: lib/packagekit-glib2/pk-console-shared.c:306
+msgid "Repackaging files"
+msgstr "Prepakiranje datotek"
+
+#. TRANSLATORS: transaction state, loading databases
+#: lib/packagekit-glib2/pk-console-shared.c:310
+msgid "Loading cache"
+msgstr "Nalaganje predpomnilnika"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: lib/packagekit-glib2/pk-console-shared.c:314
+msgid "Scanning applications"
+msgstr "Preiskovanje programov"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on
+#. the system
+#: lib/packagekit-glib2/pk-console-shared.c:318
+msgid "Generating package lists"
+msgstr "Ustvarjanje seznamov paketov"
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to
+#. exit
+#: lib/packagekit-glib2/pk-console-shared.c:322
+msgid "Waiting for package manager lock"
+msgstr "Čakanje na zaklep upravljalnika paketov"
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: lib/packagekit-glib2/pk-console-shared.c:326
+msgid "Waiting for authentication"
+msgstr "Čakanje na overitev"
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: lib/packagekit-glib2/pk-console-shared.c:330
+msgid "Updating running applications"
+msgstr "Posodabljanje izvajajočih programov"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently
 #. in use
+#: lib/packagekit-glib2/pk-console-shared.c:334
 msgid "Checking applications in use"
 msgstr "Preverjanje programov, ki se uporabljajo"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in
 #. use
+#: lib/packagekit-glib2/pk-console-shared.c:338
 msgid "Checking libraries in use"
 msgstr "Preverjanje knjižnic, ki so v uporabi"
 
-#. TRANSLATORS: transaction state, checking if we have all the security keys
-#. for the operation
-msgid "Checking signatures"
-msgstr "Preverjanje podpisov"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Cleaned up"
-msgstr "Počiščeno"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Cleaning up"
-msgstr "Čiščenje"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config
-#. files
-msgid "Cleaning up packages"
-msgstr "Čiščenje paketov"
-
-#. SECURITY:
-#. - Normal users are able to clear the updates message that is
-#. shown after an updates are applied at boot time.
-msgid "Clear offline update message"
-msgstr "Počisti sporočilo o posodobitvi v stanju nepovezanosti"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-msgid "Command failed"
-msgstr "Ukaz je spodletel"
-
-#. TRANSLATORS: this is The command line used to do the action
-msgid "Command line"
-msgstr "Ukazna vrstica"
-
-msgid "Command not found, valid commands are:"
-msgstr "Ukaza ni mogoče najti, veljavni ukazi so:"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package
-#. database
-msgid "Committing changes"
-msgstr "Uveljavljanje sprememb"
-
-msgid "Config file was not found."
-msgstr "Prilagoditvene datoteke ni mogoče najti."
-
 #. TRANSLATORS: transaction state, we are copying package files before or
 #. after the transaction
+#: lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Copying files"
 msgstr "Kopiranje datotek"
 
+#. TRANSLATORS: transaction state, we are running hooks before or after the
+#. transaction
+#: lib/packagekit-glib2/pk-console-shared.c:346
+msgid "Running hooks"
+msgstr "Izvajanje spojev"
+
+#. TRANSLATORS: turn on all debugging
+#: lib/packagekit-glib2/pk-debug.c:142
+msgid "Show debugging information for all files"
+msgstr "Pokaži podrobnosti razhroščevanja za vse datoteke"
+
+#: lib/packagekit-glib2/pk-debug.c:216
 msgid "Debugging Options"
 msgstr "Možnosti razhroščevanja"
 
-#. TRANSLATORS: this is the description of the backend
-msgid "Description"
-msgstr "Opis"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-msgid "Details about the update:"
-msgstr "Podrobnosti o posodobitvi:"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-msgid "Directory not found"
-msgstr "Mape ni mogoče najti"
-
-#. TRANSLATORS: if we should not monitor how long we are inactive for
-msgid "Disable the idle timer"
-msgstr "Onemogoči časomer nedejavnosti"
-
-#. TRANSLATORS: if the repo is disabled
-msgid "Disabled"
-msgstr "Onemogočeno"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-msgid "Distribution"
-msgstr "Distribucija"
-
-msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Ne namestite teh paketov, če niste prepričani, da je to varno."
-
-msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Ne nameščajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
-
-msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Ne posodobite teh paketov, če niste prepričani, da je to varno."
-
-msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Ne posodabljajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-msgid "Do you accept this agreement?"
-msgstr "Ali želite sprejeti dovoljenje uporabe?"
-
-#. TRANSLATORS: ask the user if they want to import
-msgid "Do you accept this signature?"
-msgstr "Ali sprejemate podpis?"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure
-#. packages
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "Ali želite dovoliti nameščanje nepodpisanih programov?"
-
-#. TRANSLATORS: don't unset environment variables, used for debugging
-msgid "Don't clear environment on startup"
-msgstr "Ne počisti okolja ob zagonu"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Downloaded"
-msgstr "Prejeto"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Downloading"
-msgstr "Prejemanje"
-
-#. TRANSLATORS: downloading repo data so we can search
-msgid "Downloading details about the software repositories."
-msgstr "Prejemanje podrobnosti o skladiščih programja."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading file lists"
-msgstr "Prejemanje seznamov datotek"
-
-#. TRANSLATORS: downloading file lists so we can search
-msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Pridobivanje seznamov datotek (to lahko traja nekaj časa)."
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading groups"
-msgstr "Prejemanje skupin"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading list of packages"
-msgstr "Prejemanje seznama paketov"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading lists of changes"
-msgstr "Prejemanje seznamov sprememb"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Downloading packages"
-msgstr "Prejemanje paketov"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading repository information"
-msgstr "Prejemanje podatkov o skladiščih"
-
-#. TRANSLATORS: transaction state, downloading metadata
-msgid "Downloading update information"
-msgstr "Prejemanje podatkov o posodobitvi"
-
-#. TRANSLATORS: this is The duration of the transaction
-msgid "Duration"
-msgstr "Trajanje"
-
-#. TRANSLATORS: if the repo is enabled
-msgid "Enabled"
-msgstr "Omogočeno"
-
-#. TRANSLATORS: this is another name for a software licence that has to be
-#. read before installing
-msgid "End user licence agreement required"
-msgstr "Zahtevan je sprejem uporabniške licence"
+#: lib/packagekit-glib2/pk-debug.c:216
+msgid "Show debugging options"
+msgstr "Pokaži možnosti razhroščevanja"
 
 #. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:975
+msgid "Trivial"
+msgstr "Trivialna"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:979
+msgid "Normal"
+msgstr "Običajna"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:983
+msgid "Important"
+msgstr "Pomembna"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:987
+msgid "Security"
+msgstr "Varnostna"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:991
+msgid "Bug fix"
+msgstr "Popravek hrošča"
+
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:995
 msgid "Enhancement"
 msgstr "Izboljšava"
 
-#. TRANSLATORS: exit after we've started up, used for user profiling
-msgid "Exit after a small delay"
-msgstr "Končaj po kratki zakasnitvi"
+#. TRANSLATORS: The type of update
+#: lib/packagekit-glib2/pk-enum.c:999
+msgid "Blocked"
+msgstr "Blokirana"
 
-#. TRANSLATORS: exit straight away, used for automatic profiling
-msgid "Exit after the engine has loaded"
-msgstr "Končaj, ko se programnik naloži"
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1004 lib/packagekit-glib2/pk-enum.c:1111
+msgid "Installed"
+msgstr "Nameščen"
 
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Pričakovano je bilo ime paketa, pridobljena je bila datoteka. Namesto tega poskusite z uporabo 'pkcon install local %s'."
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1009
+msgid "Available"
+msgstr "Na voljo"
 
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to contact PackageKit"
-msgstr "Vzpostavitev stika s PackageKit je spodletela"
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/packagekit-glib2/pk-enum.c:1013
+msgid "Unavailable"
+msgstr "Ni na voljo"
 
-msgid "Failed to get daemon state"
-msgstr "Stanja ozadnjega programa ni bilo mogoče dobiti"
+#. TRANSLATORS: The state of a package: to be installed with the next action
+#: lib/packagekit-glib2/pk-enum.c:1017
+msgid "Install"
+msgstr "Namesti"
 
-msgid "Failed to get properties"
-msgstr "Lastnosti ni bilo mogoče dobiti"
+#. TRANSLATORS: The state of a package: to be removed with the next action
+#: lib/packagekit-glib2/pk-enum.c:1021
+msgid "Remove"
+msgstr "Odstrani"
 
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-msgid "Failed to get the time since this action was last completed"
-msgstr "Ni bilo mogoče dobiti časa odkar je bilo dejanje zadnjič končano"
+#. TRANSLATORS: The state of a package: package is obsolete
+#: lib/packagekit-glib2/pk-enum.c:1025
+msgid "Obsolete"
+msgstr "Opuščeno"
 
-#. TRANSLATORS: we failed to install the package
-msgid "Failed to install packages"
-msgstr "Namestitev paketov je spodletela"
+#. TRANSLATORS: The state of a package: package is to be downgraded
+#: lib/packagekit-glib2/pk-enum.c:1029
+msgid "Downgrade"
+msgstr "Namesti starejšo različico"
 
-#. TRANSLATORS: we failed to launch the executable, the error follows
-msgid "Failed to launch:"
-msgstr "Zaganjanje izvedljive datoteke je spodletelo:"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1054
+msgid "Downloading"
+msgstr "Prejemanje"
 
-#. TRANSLATORS: The placeholder is an error message
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr "Datoteke prilagoditev ni mogoče naložiti: %s"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1058
+msgid "Updating"
+msgstr "Posodabljanje"
 
-#. TRANSLATORS: cannot load the backend the user specified
-msgid "Failed to load the backend"
-msgstr "Nalaganje zaledja je spodletelo"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
+msgid "Installing"
+msgstr "Nameščanje"
 
-#. TRANSLATORS: cannot load the backend the user specified
-#, c-format
-msgid "Failed to load the backend: %s"
-msgstr "Nalaganje zaledja je spodletelo: %s"
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
+msgid "Removing"
+msgstr "Odstranjevanje"
 
-#. TRANSLATORS: probably not yet installed
-msgid "Failed to load the config file"
-msgstr "Datoteke prilagoditev ni mogoče naložiti"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1070
+msgid "Cleaning up"
+msgstr "Čiščenje"
 
-#. TRANSLATORS: the user didn't read the man page
-msgid "Failed to parse arguments"
-msgstr "Razčlenjevanje parametrov je spodletelo"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1074
+msgid "Obsoleting"
+msgstr "Nastavljanje zastarelih paketov"
 
-#. TRANSLATORS: we failed to contact the daemon
-msgid "Failed to parse command line"
-msgstr "Razčlenjevanje ukazne vrstice je spodletelo"
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1078
+msgid "Reinstalling"
+msgstr "Ponovno nameščanje"
 
-#. TRANSLATORS: The placeholder is an error message.
-#. * `auto` is a potential value of the DefaultBackend= configuration key.
-#, c-format
-msgid "Failed to resolve auto: %s"
-msgstr "Samodejno razreševanje je spodletelo: %s"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1103
+msgid "Downloaded"
+msgstr "Prejeto"
 
-#. TRANSLATORS: we failed to find the package, this shouldn't happen
-msgid "Failed to search for file"
-msgstr "Iskanje datoteke je spodletelo"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1115
+msgid "Removed"
+msgstr "Odstranjeno"
 
-#. TRANSLATORS: cannot unload the backend the user specified
-msgid "Failed to unload the backend"
-msgstr "Odlaganje zaledja je spodletelo"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1119
+msgid "Cleaned up"
+msgstr "Počiščeno"
 
-msgid "False"
-msgstr "Napak"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1123
+msgid "Obsoleted"
+msgstr "Opuščeno"
 
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-msgid "Fatal error"
-msgstr "Usodna napaka"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#, c-format
-msgid "File already exists: %s"
-msgstr "Datoteka že obstaja: %s"
-
-#. TRANSLATORS: transaction state, all done!
-msgid "Finished"
-msgstr "Končano"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on
-#. the system
-msgid "Generating package lists"
-msgstr "Ustvarjanje seznamov paketov"
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/packagekit-glib2/pk-enum.c:1127
+msgid "Reinstalled"
+msgstr "Ponovno nameščeno"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting categories"
-msgstr "Pridobivanje kategorij"
+#: lib/packagekit-glib2/pk-enum.c:1152
+msgid "Unknown role type"
+msgstr "Neznana vloga"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1156
 msgid "Getting dependencies"
 msgstr "Pridobivanje odvisnosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting details"
-msgstr "Pridobivanje podrobnosti"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting file list"
-msgstr "Pridobivanje seznama datotek"
-
-#. TRANSLATORS: transaction state, getting data from a server
-msgid "Getting information"
-msgstr "Pridobivanje podatkov"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting packages"
-msgstr "Pridobivanje paketov"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting provides"
-msgstr "Pridobivanje ponudbe"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting repositories"
-msgstr "Pridobivanje skladišč"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting requires"
-msgstr "Pridobivanje zahtevanega"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting system upgrades"
-msgstr "Pridobivanje sistemskih posodobitev"
-
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "Getting the list of files failed"
-msgstr "Dobivanje seznama datotek je spodletelo"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Getting transactions"
-msgstr "Pridobivanje prenosov"
-
-#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1160
 msgid "Getting update details"
 msgstr "Pridobivanje podrobnosti posodobitve"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1165
+msgid "Getting details"
+msgstr "Pridobivanje podrobnosti"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1169
+msgid "Getting requires"
+msgstr "Pridobivanje zahtevanega"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1173
 msgid "Getting updates"
 msgstr "Pridobivanje posodobitev"
 
 #. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1177
+msgid "Searching by details"
+msgstr "Iskanje po podrobnostih"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1181
+msgid "Searching by file"
+msgstr "Iskanje po datoteki"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1185
+msgid "Searching groups"
+msgstr "Iskanje skupin"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1189
+msgid "Searching by name"
+msgstr "Iskanje po imenu"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1201
+msgid "Installing files"
+msgstr "Nameščanje datotek"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1205
+msgid "Refreshing cache"
+msgstr "Osveževanje predpomnilnika"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1209
+msgid "Updating packages"
+msgstr "Posodabljanje paketov"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1213
+msgid "Canceling"
+msgstr "Preklicevanje"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1217
+msgid "Getting repositories"
+msgstr "Pridobivanje skladišč"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1221
+msgid "Modifying repository"
+msgstr "Spreminjanje skladišča"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1225
+msgid "Setting data"
+msgstr "Nastavljanje podatkov"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1229
+msgid "Removing repository"
+msgstr "Odstranjevanje skladišča"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1233
+msgid "Resolving"
+msgstr "Razreševanje"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1238
+msgid "Getting file list"
+msgstr "Pridobivanje seznama datotek"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1242
+msgid "Getting provides"
+msgstr "Pridobivanje ponudbe"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1246
+msgid "Installing signature"
+msgstr "Nameščanje podpisa"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1250
+msgid "Getting packages"
+msgstr "Pridobivanje paketov"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1254
+msgid "Accepting EULA"
+msgstr "Sprejemanje uporabniškega dovoljenja (EULA)"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1262
 msgid "Getting upgrades"
 msgstr "Pridobivanje posodobitev"
 
-#. TRANSLATORS: this is group identifier
-msgid "ID"
-msgstr "ID"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1266
+msgid "Getting categories"
+msgstr "Pridobivanje kategorij"
 
-#. TRANSLATORS: this is preferred icon for the group
-msgid "Icon"
-msgstr "Ikona"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1270
+msgid "Getting transactions"
+msgstr "Pridobivanje prenosov"
 
-#. TRANSLATORS: The type of update
-msgid "Important"
-msgstr "Pomembna"
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/packagekit-glib2/pk-enum.c:1274
+msgid "Getting system upgrades"
+msgstr "Pridobivanje sistemskih posodobitev"
+
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
+#: lib/packagekit-glib2/pk-progress-bar.c:138
+#: lib/packagekit-glib2/pk-progress-bar.c:182
+#, c-format
+msgid "(%i%%)"
+msgstr "(%i %%)"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure
+#. packages
+#: lib/packagekit-glib2/pk-task-text.c:66
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "Ali želite dovoliti nameščanje nepodpisanih programov?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:71
+msgid "The unsigned software will not be installed."
+msgstr "Nepodpisani programi ne bodo nameščeni."
+
+#. TRANSLATORS: the package repository is signed by a key that is not
+#. recognised
+#: lib/packagekit-glib2/pk-task-text.c:120
+msgid "Software source signature required"
+msgstr "Zahtevan je podpis programskih virov"
+
+#. TRANSLATORS: the package repository name
+#: lib/packagekit-glib2/pk-task-text.c:126
+msgid "Software source name"
+msgstr "Ime programskega vira"
+
+#. TRANSLATORS: the key URL
+#: lib/packagekit-glib2/pk-task-text.c:129
+msgid "Key URL"
+msgstr "URL ključa"
+
+#. TRANSLATORS: the username of the key
+#: lib/packagekit-glib2/pk-task-text.c:132
+msgid "Key user"
+msgstr "Ključ uporabnika"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: lib/packagekit-glib2/pk-task-text.c:135
+msgid "Key ID"
+msgstr "ID ključa"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: lib/packagekit-glib2/pk-task-text.c:138
+msgid "Key fingerprint"
+msgstr "Podpis ključa"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: lib/packagekit-glib2/pk-task-text.c:141
+msgid "Key Timestamp"
+msgstr "Časovni žig ključa"
+
+#. TRANSLATORS: ask the user if they want to import
+#: lib/packagekit-glib2/pk-task-text.c:154
+msgid "Do you accept this signature?"
+msgstr "Ali sprejemate podpis?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:159
+msgid "The signature was not accepted."
+msgstr "Podpis ni sprejet."
+
+#. TRANSLATORS: this is another name for a software licence that has to be
+#. read before installing
+#: lib/packagekit-glib2/pk-task-text.c:195
+msgid "End user licence agreement required"
+msgstr "Zahtevan je sprejem uporabniške licence"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: lib/packagekit-glib2/pk-task-text.c:204
+msgid "Agreement"
+msgstr "Dovoljenje"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: lib/packagekit-glib2/pk-task-text.c:208
+msgid "Do you accept this agreement?"
+msgstr "Ali želite sprejeti dovoljenje uporabe?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/packagekit-glib2/pk-task-text.c:213
+msgid "The agreement was not accepted."
+msgstr "Licenca ni bila sprejeta"
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: lib/packagekit-glib2/pk-task-text.c:252
+msgid "Media change required"
+msgstr "Zahtevana je zamenjava nosilca"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: lib/packagekit-glib2/pk-task-text.c:255
+msgid "Media type"
+msgstr "Vrsta nosilca"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: lib/packagekit-glib2/pk-task-text.c:258
+msgid "Media label"
+msgstr "Oznaka nosilca"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: lib/packagekit-glib2/pk-task-text.c:261
+msgid "Text"
+msgstr "Besedilo"
+
+#. TRANSLATORS: ask the user to insert the media
+#: lib/packagekit-glib2/pk-task-text.c:267
+msgid "Please insert the correct media"
+msgstr "Vstavite pravilen medij"
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: lib/packagekit-glib2/pk-task-text.c:272
+msgid "The correct media was not inserted."
+msgstr "Ni vstavljenega ustreznega nosilca."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:287
+msgid "The following packages have to be removed:"
+msgstr "Naslednje pakete je treba odstraniti:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:292
+msgid "The following packages have to be installed:"
+msgstr "Namestiti je treba naslednje pakete:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:297
+msgid "The following packages have to be updated:"
+msgstr "Posodobiti je treba naslednje pakete:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:302
+msgid "The following packages have to be reinstalled:"
+msgstr "Ponovno je treba namestiti naslednje pakete:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:307
+msgid "The following packages have to be downgraded:"
+msgstr "Naslednje pakete je treba podgraditi:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+#: lib/packagekit-glib2/pk-task-text.c:312
+msgid "The following packages have to be obsoleted:"
+msgstr "Naslednje pakete je treba označiti kot zastarele:"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be
+#. encountered
+#: lib/packagekit-glib2/pk-task-text.c:317
+msgid "The following packages are untrusted:"
+msgstr "Naslednji paketi niso vredni zaupanja:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: lib/packagekit-glib2/pk-task-text.c:421
+msgid "Proceed with changes?"
+msgstr "Ali želite nadaljevati s spremembami?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: lib/packagekit-glib2/pk-task-text.c:426
+msgid "The transaction did not proceed."
+msgstr "Transakcija se ni nadaljevala."
+
+#. SECURITY:
+#. - Normal users are allowed to cancel their own task without
+#. authentication, but a different user id needs the admin password
+#. to cancel another users task.
+#: policy/org.freedesktop.packagekit.policy.in:22
+msgid "Cancel foreign task"
+msgstr "Prekliči tujo nalogo"
+
+#: policy/org.freedesktop.packagekit.policy.in:23
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev."
+
+#. SECURITY:
+#. - Normal users need authentication to install signed packages
+#. from signed repositories, because otherwise the system is
+#. only as secure as the least-secure package available in the
+#. repositories.
+#: policy/org.freedesktop.packagekit.policy.in:39
+msgid "Install signed package"
+msgstr "Namesti podpisan paket"
+
+#: policy/org.freedesktop.packagekit.policy.in:40
+msgid "Authentication is required to install software"
+msgstr "Za namestitev programja je obvezna overitev"
+
+#. SECURITY:
+#. - Normal users require admin authentication to install untrusted or
+#. unrecognised packages, as allowing users to do this without a
+#. password would be a massive security hole.
+#. - This is not retained as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:56
+msgid "Install untrusted local file"
+msgstr "Namesti krajevno datoteko, ki ni zaupanja vredna"
+
+#: policy/org.freedesktop.packagekit.policy.in:57
+msgid "Authentication is required to install untrusted software"
+msgstr "Za namestitev programja, ki ni zaupanja vredno, je obvezna overitev"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -611,8 +1526,13 @@ msgstr "Pomembna"
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "Znova namesti že nameščene pakete"
+
+#: policy/org.freedesktop.packagekit.policy.in:76
+msgid "Authentication is required to reinstall software"
+msgstr "Za ponovno namestitev programa je potrebna overovitev"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -620,327 +1540,41 @@ msgstr "Znova namesti že nameščene pakete"
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
+#: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "Namesti starejšo različico nameščenega paketa"
 
-#. TRANSLATORS: command description
-msgid "Install package"
-msgstr "Namesti paket"
-
-#. TRANSLATORS: as the user if we want to install a package to provide the
-#. command
-#, c-format
-msgid "Install package '%s' to provide command '%s'?"
-msgstr "Ali želite namestiti paket '%s', ki bo zagotavljal ukaz '%s'?"
+#: policy/org.freedesktop.packagekit.policy.in:94
+msgid "Authentication is required to downgrade software"
+msgstr "Za namestitev starejše različice je potrebna overitev"
 
 #. SECURITY:
-#. - Normal users need authentication to install signed packages
-#. from signed repositories, because otherwise the system is
-#. only as secure as the least-secure package available in the
-#. repositories.
-msgid "Install signed package"
-msgstr "Namesti podpisan paket"
+#. - Normal users require admin authentication to add signing keys.
+#. - This implies adding an explicit trust, and should not be granted
+#. without a secure authentication.
+#. - This is not kept as each package should be authenticated.
+#: policy/org.freedesktop.packagekit.policy.in:111
+msgid "Trust a key used for signing software"
+msgstr "Zaupaj ključu za podpisovanje programja"
 
-#. command line argument, do we ask questions
-msgid "Install the packages without asking for confirmation"
-msgstr "Namesti vse pakete brez spraševanja za potrditev"
-
-#. SECURITY:
-#. - Normal users require admin authentication to install untrusted or
-#. unrecognised packages, as allowing users to do this without a
-#. password would be a massive security hole.
-#. - This is not retained as each package should be authenticated.
-msgid "Install untrusted local file"
-msgstr "Namesti krajevno datoteko, ki ni zaupanja vredna"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Installed"
-msgstr "Nameščen"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing"
-msgstr "Nameščanje"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-msgid "Installing System Upgrade"
-msgstr "Nameščanje sistemske nadgradnje"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-msgid "Installing Updates"
-msgstr "Nameščanje posodobitev"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing files"
-msgstr "Nameščanje datotek"
-
-#. TRANSLATORS: transaction state, installing packages
-msgid "Installing packages"
-msgstr "Nameščanje paketov"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Installing signature"
-msgstr "Nameščanje podpisa"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Nameščanje nadgradnje sistema zahteva svoj čas ..."
-
-#. TRANSLATORS: transaction state, installing updates
-msgid "Installing updates"
-msgstr "Nameščanje posodobitev"
-
-#. TRANSLATORS: we've started doing offline updates
-msgid "Installing updates; this could take a while..."
-msgstr "Nameščanje posodobitev zahteva svoj čas ..."
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-msgid "Issued"
-msgstr "Izdano"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-msgid "Key ID"
-msgstr "ID ključa"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-msgid "Key Timestamp"
-msgstr "Časovni žig ključa"
-
-#. TRANSLATORS: the key URL
-msgid "Key URL"
-msgstr "URL ključa"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-msgid "Key fingerprint"
-msgstr "Podpis ključa"
-
-#. TRANSLATORS: the username of the key
-msgid "Key user"
-msgstr "Ključ uporabnika"
-
-#. TRANSLATORS: transaction state, loading databases
-msgid "Loading cache"
-msgstr "Nalaganje predpomnilnika"
-
-#. TRANSLATORS: loading package cache so we can search
-msgid "Loading list of packages."
-msgstr "Nalaganje seznama paketov."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-msgid "Media change required"
-msgstr "Zahtevana je zamenjava nosilca"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-msgid "Media label"
-msgstr "Oznaka nosilca"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-msgid "Media type"
-msgstr "Vrsta nosilca"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Modifying repository"
-msgstr "Spreminjanje skladišča"
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-msgid "More than one package matches:"
-msgstr "Ujema se več paketov:"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-msgid "Name"
-msgstr "Ime"
-
-#. TRANSLATORS: This where the package has no files
-msgid "No files"
-msgstr "Ni datotek"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-msgid "No packages require updating to newer versions."
-msgstr "Noben paket ne zahteva posodobitve na novejšo različico."
-
-#. TRANSLATORS: we couldn't find anything
-msgid "No packages were found"
-msgstr "Ni najdenih paketov"
-
-#. TRANSLATORS: The type of update
-msgid "Normal"
-msgstr "Običajna"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Obsoleted"
-msgstr "Opuščeno"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-msgid "Obsoletes"
-msgstr "Opuščeno"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Obsoleting"
-msgstr "Nastavljanje zastarelih paketov"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-msgid "Obsoleting packages"
-msgstr "Nastavljanje zastarelih paketov"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Možnost '%s' ni podprta"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-msgid "Package"
-msgstr "Paket"
-
-#. TRANSLATORS: This a list of details about the package
-msgid "Package description"
-msgstr "Opis paketa"
-
-#. TRANSLATORS: This a list files contained in the package
-msgid "Package files"
-msgstr "Datoteke paketov"
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-msgid "Package not found"
-msgstr "Paketa ni mogoče najti"
-
-#. TRANSLATORS: program name
-msgid "PackageKit"
-msgstr "PackageKit"
-
-#. TRANSLATORS: This is the header to the --help menu
-msgid "PackageKit Console Interface"
-msgstr "PackageKit vmesnik konzole"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-msgid "PackageKit Monitor"
-msgstr "Nadzornik PackageKit"
-
-#. TRANSLATORS: describing the service that is running
-msgid "PackageKit service"
-msgstr "Storitev PackageKit"
-
-#. TRANSLATORS: Show the user a list of packages that provide this command
-msgid "Packages providing this file are:"
-msgstr "Paketi, ki zagotavljajo to datoteko so:"
-
-#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-msgid "Packaging backend to use, e.g. dummy"
-msgstr "Zaledje pakiranja za uporabo, na primer preizkusno"
-
-#. TRANSLATORS: this is the parent group
-msgid "Parent"
-msgstr "Nadrejeni predmet"
-
-#. TRANSLATORS: the percentage complete of the transaction
-msgid "Percentage"
-msgstr "Odstotek"
-
-#. TRANSLATORS: ask the user to choose a file to run
-msgid "Please choose a command to run"
-msgstr "Izberite ukaz za zagon"
-
-#. TRANSLATORS: ask the user to choose a file to install
-msgid "Please choose a package to install"
-msgstr "Izberite paket za namestitev"
-
-#. TRANSLATORS: This finds out which package in the list to use
-msgid "Please choose the correct package: "
-msgstr "Izberite pravi paket: "
-
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "Vpišite število med 1 in %i: "
-
-#. TRANSLATORS: ask the user to insert the media
-msgid "Please insert the correct media"
-msgstr "Vstavite pravilen medij"
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Odjavite se in se ponovno prijavite za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
-
-#. TRANSLATORS: a package needs to restart the session
-msgid "Please logout and login to complete the update."
-msgstr "Odjavite se in se znova prijavite za dokončanje posodobitve."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Ponovno zaženite računalnik za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
-
-#. TRANSLATORS: a package needs to restart their system
-msgid "Please restart the computer to complete the update."
-msgstr "Znova zaženite računalnik za dokončanje posodobitve."
-
-#. command line argument, do we just download or apply changes
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Pripravi transakcijo zgolj s prenosom paketov"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-msgid "Prepared updates:"
-msgstr "Pripravljene posodobitve:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Izpiše zaslon na strojno berljiv izhod namesto uporabe animiranih gradnikov"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-msgid "Proceed with changes?"
-msgstr "Ali želite nadaljevati s spremembami?"
-
-#. TRANSLATORS: transaction state, is querying data
-msgid "Querying"
-msgstr "Poizvedovanje"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-msgid "Real name"
-msgstr "Pravo ime"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Rebooting after installing updates…"
-msgstr "Ponoven zagon po namestitvi posodobitev ..."
+#: policy/org.freedesktop.packagekit.policy.in:112
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr "Za upoštevanje ključa za podpisovanje programja kot zaupanja vrednega je obvezna overitev"
 
 #. SECURITY:
-#. - Normal users do not require admin authentication to refresh the
-#. cache, as this doesn't actually install or remove software.
-msgid "Refresh system repositories"
-msgstr "Osveži sistemska skladišča"
+#. - Normal users do not require admin authentication to accept new
+#. licence agreements.
+#. - Change this to 'auth_admin' for environments where users should not
+#. be given the option to make legal decisions.
+#: policy/org.freedesktop.packagekit.policy.in:128
+msgid "Accept EULA"
+msgstr "Sprejmi uporabniško dovoljenje (EULA)"
 
-#. TRANSLATORS: command description
-msgid "Refresh the cache"
-msgstr "Osveži predpomnilnik"
-
-#. TRANSLATORS: command description
-msgid "Refresh the cache (forced)"
-msgstr "Osveži predpomnilnik (vsiljeno)"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Refreshing cache"
-msgstr "Osveževanje predpomnilnika"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-msgid "Refreshing software list"
-msgstr "Osveževanje seznama programske opreme"
-
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Reinstalled"
-msgstr "Ponovno nameščeno"
-
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Reinstalling"
-msgstr "Ponovno nameščanje"
+#: policy/org.freedesktop.packagekit.policy.in:129
+msgid "Authentication is required to accept a EULA"
+msgstr "Zahtevana je overitev za sprejemanje dovoljenja uporabe"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -951,373 +1585,87 @@ msgstr "Ponovno nameščanje"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
+#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
 msgid "Remove package"
 msgstr "Odstrani paket"
 
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Removed"
-msgstr "Odstranjeno"
+#: policy/org.freedesktop.packagekit.policy.in:149
+msgid "Authentication is required to remove software"
+msgstr "Za odstranitev programja je obvezna overitev"
 
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing"
-msgstr "Odstranjevanje"
+#. SECURITY:
+#. - Normal users do not require admin authentication to update the
+#. system as the packages will be signed, and the action is required
+#. to update the system when unattended.
+#. - Changing this to anything other than 'yes' will break unattended
+#. updates.
+#: policy/org.freedesktop.packagekit.policy.in:167
+msgid "Update software"
+msgstr "Posodobi program"
 
-#. TRANSLATORS: transaction state, removing packages
-msgid "Removing packages"
-msgstr "Odstranjevanje paketov"
+#: policy/org.freedesktop.packagekit.policy.in:168
+msgid "Authentication is required to update software"
+msgstr "Za posodobitev programja je obvezna overitev"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Removing repository"
-msgstr "Odstranjevanje skladišča"
+#. SECURITY:
+#. - Normal users require admin authentication to enable or disable
+#. software repositories as this can be used to enable new updates or
+#. install different versions of software.
+#: policy/org.freedesktop.packagekit.policy.in:183
+msgid "Change software repository parameters"
+msgstr "Spremeni parametre skladišč programja"
 
-#. TRANSLATORS: transaction state, repackaging delta files
-msgid "Repackaging files"
-msgstr "Prepakiranje datotek"
+#: policy/org.freedesktop.packagekit.policy.in:184
+msgid "Authentication is required to change software repository parameters"
+msgstr "Za spremembo parametrov skladišč programja je zahtevana overitev"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to refresh the
+#. cache, as this doesn't actually install or remove software.
+#: policy/org.freedesktop.packagekit.policy.in:198
+msgid "Refresh system repositories"
+msgstr "Osveži sistemska skladišča"
+
+#: policy/org.freedesktop.packagekit.policy.in:199
+msgid "Authentication is required to refresh the system repositories"
+msgstr "Za osvežitev sistemskih skladišč je zahtevana overitev"
+
+#. SECURITY:
+#. - Normal users do not require admin authentication to set the proxy
+#. used for downloading packages.
+#: policy/org.freedesktop.packagekit.policy.in:213
+msgid "Set network proxy"
+msgstr "Nastavi posredniški strežnik omrežja"
+
+#: policy/org.freedesktop.packagekit.policy.in:214
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr "Za nastavitev omrežnega posredniškega strežnika, uporabljenega za prejem programja, je obvezna overitev"
+
+#. SECURITY:
+#. - Normal users require admin authentication to upgrade the disto as
+#. this can make the system unbootable or stop other applications from
+#. working.
+#: policy/org.freedesktop.packagekit.policy.in:229
+msgid "Upgrade System"
+msgstr "Nadgradi sistem"
+
+#: policy/org.freedesktop.packagekit.policy.in:230
+msgid "Authentication is required to upgrade the operating system"
+msgstr "Za nadgradnjo operacijskega sistema je zahtevana overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "Popravi sistem"
 
-#. TRANSLATORS: transaction state, requesting data from a server
-msgid "Requesting data"
-msgstr "Zahtevanje podatkov"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Resolving"
-msgstr "Razreševanje"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-msgid "Resolving dependencies"
-msgstr "Razreševanje odvisnosti"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-msgid "Restart"
-msgstr "Ponovno zaženi"
-
-#. TRANSLATORS: the results from the transaction
-msgid "Results:"
-msgstr "Rezultati:"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-msgid "Role"
-msgstr "Vloga"
-
-#. TRANSLATORS: Ask the user if we should run the similar command
-msgid "Run similar command:"
-msgstr "Poženi podoben ukaz:"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Požene ukaz z uporabo pasovne širine nedejavnega omrežja in tudi porabi manj energije"
-
-#. TRANSLATORS: transaction state, just started
-msgid "Running"
-msgstr "Izvajanje"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the
-#. transaction
-msgid "Running hooks"
-msgstr "Izvajanje spojev"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-msgid "Scanning applications"
-msgstr "Preiskovanje programov"
-
-#. TRANSLATORS: command description
-msgid "Search by details"
-msgstr "Iskanje po podrobnostih"
-
-#. TRANSLATORS: command description
-msgid "Search by files"
-msgstr "Iskanje po datotekah"
-
-#. TRANSLATORS: command description
-msgid "Search by names"
-msgstr "Iskanje po imenih"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by details"
-msgstr "Iskanje po podrobnostih"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by file"
-msgstr "Iskanje po datoteki"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching by name"
-msgstr "Iskanje po imenu"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Searching groups"
-msgstr "Iskanje skupin"
-
-#. TRANSLATORS: The type of update
-msgid "Security"
-msgstr "Varnostna"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-msgid "Session restart (security) required:"
-msgstr "Zahtevan je ponoven zagon seje (varnostna posodobitev):"
-
-#. TRANSLATORS: a package requires the session to be restarted
-msgid "Session restart required:"
-msgstr "Zahteven je ponoven zagon seje:"
-
-#. SECURITY:
-#. - Normal users do not require admin authentication to set the proxy
-#. used for downloading packages.
-msgid "Set network proxy"
-msgstr "Nastavi posredniški strežnik omrežja"
-
-#. TRANSLATORS: command description
-msgid "Set repository options"
-msgstr "Določite možnosti skladišča"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-msgid "Set the filter, e.g. installed"
-msgstr "Nastavi filter, na primer nameščeno"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Setting data"
-msgstr "Nastavljanje podatkov"
-
-#. TRANSLATORS: turn on all debugging
-msgid "Show debugging information for all files"
-msgstr "Pokaži podrobnosti razhroščevanja za vse datoteke"
-
-msgid "Show debugging options"
-msgstr "Pokaži možnosti razhroščevanja"
-
-#. TRANSLATORS: command line argument, just show the version string
-msgid "Show the program version and exit"
-msgstr "Pokaži različico nameščenega programa in končaj"
-
-#. TRANSLATORS: show version
-msgid "Show version and exit"
-msgstr "Pokaži različico in končaj"
-
-#. TRANSLATORS: we've finished doing offline updates
-msgid "Shutting down after installing updates…"
-msgstr "Izklop sistema po namestitvi posodobitev ..."
-
-#. TRANSLATORS: tell the user what we think the command is
-msgid "Similar command is:"
-msgstr "Podoben ukaz je:"
-
-#. TRANSLATORS: show the user a list of commands that they could have meant
-#. TRANSLATORS: show the user a list of commands we could run
-msgid "Similar commands are:"
-msgstr "Podobni ukazi so:"
-
-#. TRANSLATORS: the package repository name
-msgid "Software source name"
-msgstr "Ime programskega vira"
-
-#. TRANSLATORS: the package repository is signed by a key that is not
-#. recognised
-msgid "Software source signature required"
-msgstr "Zahtevan je podpis programskih virov"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-msgid "Starting"
-msgstr "Začenjanje"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-msgid "State"
-msgstr "Stanje"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-msgid "Status"
-msgstr "Stanje"
-
-#. these are commands we can use with pkcon
-msgid "Subcommands:"
-msgstr "Podrejeni ukazi:"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-msgid "Succeeded"
-msgstr "Uspešno zaključen prenos"
-
-#. TRANSLATORS: Show the user a list of packages that they can install to
-#. provide this command
-msgid "Suitable packages are:"
-msgstr "Primerni paketi so:"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-msgid "Summary"
-msgstr "Povzetek"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-msgid "System restart (security) required by:"
-msgstr "Ponoven zagon sistema (varnostna posodobitev) je zahteval paket:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-msgid "System restart required by:"
-msgstr "Ponoven zagon sistema je zahteval paket:"
-
-#. TRANSLATORS: this is the time the transaction was started in system
-#. timezone
-msgid "System time"
-msgstr "Sistemski čas"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-msgid "Testing changes"
-msgstr "Preizkušanje sprememb"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-msgid "Text"
-msgstr "Besedilo"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The agreement was not accepted."
-msgstr "Licenca ni bila sprejeta"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-msgid "The correct media was not inserted."
-msgstr "Ni vstavljenega ustreznega nosilca."
-
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-msgid "The daemon crashed mid-transaction!"
-msgstr "Ozadnji program se je sesul med transakcijo!"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-msgid "The filter specified was invalid"
-msgstr "Navedeni filter je bil neveljaven"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be
-#. encountered
-msgid "The following packages are untrusted:"
-msgstr "Naslednji paketi niso vredni zaupanja:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-msgid "The following packages have to be downgraded:"
-msgstr "Naslednje pakete je treba podgraditi:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-msgid "The following packages have to be installed:"
-msgstr "Namestiti je treba naslednje pakete:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-msgid "The following packages have to be obsoleted:"
-msgstr "Naslednje pakete je treba označiti kot zastarele:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-msgid "The following packages have to be reinstalled:"
-msgstr "Ponovno je treba namestiti naslednje pakete:"
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-msgid "The following packages have to be removed:"
-msgstr "Naslednje pakete je treba odstraniti:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-msgid "The following packages have to be updated:"
-msgstr "Posodobiti je treba naslednje pakete:"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "Najvišja starost predpomnilnika metapodatkov (v sekundah). Uporabite -1 samo za uporabo predpomnilnika, 1 za ponovno nalaganje predpomnilnika."
-
-#. TRANSLATORS: tell the user what package provides the command
-msgid "The package providing this file is:"
-msgstr "Paket, ki zagotavlja to datoteko, je:"
-
-#. TRANSLATORS: The network settings could not be sent
-msgid "The proxy could not be set"
-msgstr "Posredniškega strežnika ni bilo mogoče nastaviti"
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-msgid "The selected packages may already be installed."
-msgstr "Izbrani paketi so morda že nameščeni."
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The signature was not accepted."
-msgstr "Podpis ni sprejet."
-
-#. TRANSLATORS: is not GPG signed
-msgid "The software is not from a trusted source."
-msgstr "Ta program ni iz zaupanega vira."
-
-#. TRANSLATORS: tell the user we didn't do anything
-msgid "The transaction did not proceed."
-msgstr "Transakcija se ni nadaljevala."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-msgid "The transaction failed"
-msgstr "Transakcija je spodletela"
-
-#. TRANSLATORS: tell the user we've not done anything
-msgid "The unsigned software will not be installed."
-msgstr "Nepodpisani programi ne bodo nameščeni."
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-msgid "There are no packages to update."
-msgstr "Ni paketov za posodobitev"
-
-#. TRANSLATORS: print a message when there are no updates
-msgid "There are no updates available at this time."
-msgstr "Trenutno ni posodobitev na voljo."
-
-msgid "There are no upgrades available at this time."
-msgstr "Trenutno ni nadgradenj na voljo."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "To orodje ni moglo najti vseh paketov: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-msgid "This tool could not find any available package."
-msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "To orodje ni moglo najti nameščenega paketa: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "To orodje ni moglo najti paketa: %s"
-
-#. TRANSLATORS: this is the time since this role was used
-msgid "Time since"
-msgstr "Čas odtlej"
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-msgid "Transaction"
-msgstr "Prenos"
+#: policy/org.freedesktop.packagekit.policy.in:246
+msgid "Authentication is required to repair the installed software"
+msgstr "Za popravilo nameščenega programja je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1326,124 +1674,162 @@ msgstr "Prenos"
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
+#: policy/org.freedesktop.packagekit.policy.in:260
+#: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "Proži posodobitve v stanju nepovezanosti"
 
-#. TRANSLATORS: The type of update
-msgid "Trivial"
-msgstr "Trivialna"
-
-msgid "True"
-msgstr "Prav"
+#: policy/org.freedesktop.packagekit.policy.in:261
+#: policy/org.freedesktop.packagekit.policy.in:277
+msgid "Authentication is required to trigger offline updates"
+msgstr "Za proženje posodobitev v stanju nepovezanosti je potrebno overjanje"
 
 #. SECURITY:
-#. - Normal users require admin authentication to add signing keys.
-#. - This implies adding an explicit trust, and should not be granted
-#. without a secure authentication.
-#. - This is not kept as each package should be authenticated.
-msgid "Trust a key used for signing software"
-msgstr "Zaupaj ključu za podpisovanje programja"
+#. - Normal users are able to clear the updates message that is
+#. shown after an updates are applied at boot time.
+#: policy/org.freedesktop.packagekit.policy.in:291
+msgid "Clear offline update message"
+msgstr "Počisti sporočilo o posodobitvi v stanju nepovezanosti"
 
-#. TRANSLATORS: this is type of update, stable or testing
-msgid "Type"
-msgstr "Vrsta"
+#: policy/org.freedesktop.packagekit.policy.in:292
+msgid "Authentication is required to clear the offline updates message"
+msgstr "Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potrebno overjanje"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-msgid "Unavailable"
-msgstr "Ni na voljo"
+#. TRANSLATORS: this is a command alias
+#: src/pk-direct.c:99
+#, c-format
+msgid "Alias to %s"
+msgstr "Vzdevek za %s"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Unknown role type"
-msgstr "Neznana vloga"
+#: src/pk-direct.c:168
+msgid "Command not found, valid commands are:"
+msgstr "Ukaza ni mogoče najti, veljavni ukazi so:"
 
-#. TRANSLATORS: This is when the transaction status is not known
-msgid "Unknown state"
-msgstr "Neznano stanje"
+#. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
+#: src/pk-direct.c:408 src/pk-main.c:117
+msgid "Packaging backend to use, e.g. dummy"
+msgstr "Zaledje pakiranja za uporabo, na primer preizkusno"
 
-#. SECURITY:
-#. - Normal users do not require admin authentication to update the
-#. system as the packages will be signed, and the action is required
-#. to update the system when unattended.
-#. - Changing this to anything other than 'yes' will break unattended
-#. updates.
-msgid "Update software"
-msgstr "Posodobi program"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:424
+msgid "Refresh the cache"
+msgstr "Osveži predpomnilnik"
 
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-msgid "Update text"
-msgstr "Opis posodobitve"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:428
+msgid "Refresh the cache (forced)"
+msgstr "Osveži predpomnilnik (vsiljeno)"
 
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-msgid "Updated"
-msgstr "Posodobljeno"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:432
+msgid "Search by names"
+msgstr "Iskanje po imenih"
 
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-msgid "Updates"
-msgstr "Posodobitve"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:436
+msgid "Search by details"
+msgstr "Iskanje po podrobnostih"
 
-#. TRANSLATORS: The action of the package, in present tense
-msgid "Updating"
-msgstr "Posodabljanje"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:440
+msgid "Search by files"
+msgstr "Iskanje po datotekah"
 
-#. TRANSLATORS: The role of the transaction, in present tense
-msgid "Updating packages"
-msgstr "Posodabljanje paketov"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:444
+msgid "Install package"
+msgstr "Namesti paket"
 
-#. TRANSLATORS: transaction state, we are updating the list of processes
-msgid "Updating running applications"
-msgstr "Posodabljanje izvajajočih programov"
+#. TRANSLATORS: command description
+#: src/pk-direct.c:452
+msgid "Set repository options"
+msgstr "Določite možnosti skladišča"
 
-#. SECURITY:
-#. - Normal users require admin authentication to upgrade the disto as
-#. this can make the system unbootable or stop other applications from
-#. working.
-msgid "Upgrade System"
-msgstr "Nadgradi sistem"
+#. TRANSLATORS: program name
+#: src/pk-direct.c:465
+msgid "PackageKit"
+msgstr "PackageKit"
 
-#. TRANSLATORS: this is the user ID of the user that started the action
-msgid "User ID"
-msgstr "Uporabnikov ID"
+#. TRANSLATORS: the user didn't read the man page
+#: src/pk-direct.c:471
+msgid "Failed to parse arguments"
+msgstr "Razčlenjevanje parametrov je spodletelo"
 
-msgid "User aborted selection"
-msgstr "Uporabnik je prekinil izbiranje"
+#. TRANSLATORS: probably not yet installed
+#: src/pk-direct.c:482
+msgid "Failed to load the config file"
+msgstr "Datoteke prilagoditev ni mogoče naložiti"
 
-#. TRANSLATORS: this is the username, e.g. hughsie
-msgid "Username"
-msgstr "Uporabniško ime"
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-direct.c:515
+msgid "Failed to load the backend"
+msgstr "Nalaganje zaledja je spodletelo"
 
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-msgid "Vendor"
-msgstr "Ponudnik"
+#. TRANSLATORS: cannot unload the backend the user specified
+#: src/pk-direct.c:555
+msgid "Failed to unload the backend"
+msgstr "Odlaganje zaledja je spodletelo"
 
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-msgid "Waiting for authentication"
-msgstr "Čakanje na overitev"
+#. TRANSLATORS: if we should not monitor how long we are inactive for
+#: src/pk-main.c:120
+msgid "Disable the idle timer"
+msgstr "Onemogoči časomer nedejavnosti"
 
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to
-#. exit
-msgid "Waiting for package manager lock"
-msgstr "Čakanje na zaklep upravljalnika paketov"
+#. TRANSLATORS: show version
+#: src/pk-main.c:123
+msgid "Show version and exit"
+msgstr "Pokaži različico in končaj"
 
-#. TRANSLATORS: waiting for native lock
-msgid "Waiting for package manager lock."
-msgstr "Čakanje na zaklep upravljalnika paketov."
+#. TRANSLATORS: exit after we've started up, used for user profiling
+#: src/pk-main.c:126
+msgid "Exit after a small delay"
+msgstr "Končaj po kratki zakasnitvi"
 
-#. TRANSLATORS: transaction state, the transaction is waiting for another to
-#. complete
-msgid "Waiting in queue"
-msgstr "Čakanje v vrsti"
+#. TRANSLATORS: exit straight away, used for automatic profiling
+#: src/pk-main.c:129
+msgid "Exit after the engine has loaded"
+msgstr "Končaj, ko se programnik naloži"
 
-#. TRANSLATORS: The user did not provide a distro name
-msgid "You need to specify a list file to create"
-msgstr "Navesti morate seznamsko datoteko za ustvarjanje"
+#. TRANSLATORS: don't unset environment variables, used for debugging
+#: src/pk-main.c:132
+msgid "Don't clear environment on startup"
+msgstr "Ne počisti okolja ob zagonu"
 
-#. TRANSLATORS: the prefix of all the output telling the user
-#. * why it's not executing. NOTE: this is lowercase to mimic
-#. * the style of bash itself -- apologies
-msgid "command not found"
-msgstr "ukaza ni mogoče najti"
+#. TRANSLATORS: describing the service that is running
+#: src/pk-main.c:146
+msgid "PackageKit service"
+msgstr "Storitev PackageKit"
+
+#. TRANSLATORS: The placeholder is an error message.
+#. * `auto` is a potential value of the DefaultBackend= configuration key.
+#: src/pk-main.c:215
+#, c-format
+msgid "Failed to resolve auto: %s"
+msgstr "Samodejno razreševanje je spodletelo: %s"
+
+#. TRANSLATORS: cannot load the backend the user specified
+#: src/pk-main.c:239
+#, c-format
+msgid "Failed to load the backend: %s"
+msgstr "Nalaganje zaledja je spodletelo: %s"
+
+#. TRANSLATORS: is not GPG signed
+#: src/pk-transaction.c:2734
+msgid "The software is not from a trusted source."
+msgstr "Ta program ni iz zaupanega vira."
+
+#: src/pk-transaction.c:2742
+msgid "Do not update this package unless you are sure it is safe to do so."
+msgstr "Ne posodabljajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
+
+#: src/pk-transaction.c:2743
+msgid "Do not update these packages unless you are sure it is safe to do so."
+msgstr "Ne posodobite teh paketov, če niste prepričani, da je to varno."
+
+#: src/pk-transaction.c:2753
+msgid "Do not install this package unless you are sure it is safe to do so."
+msgstr "Ne nameščajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
+
+#: src/pk-transaction.c:2754
+msgid "Do not install these packages unless you are sure it is safe to do so."
+msgstr "Ne namestite teh paketov, če niste prepričani, da je to varno."
