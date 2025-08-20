@@ -30,7 +30,7 @@ int main(void)
 
 
 	if (sd_listen_fds (0) != 1) {
-			g_error("No or too many file descriptors received.\n");
+			g_error("No or too many file descriptors received.");
 			exit(1);
 	}
 
@@ -38,13 +38,13 @@ int main(void)
 	socket = g_socket_new_from_fd (fd, &error);
 
 	if (error != NULL) {
-		g_error ("%s\n", error->message);
+		g_error ("%s", error->message);
 		return 1;
 	}
 
 	helper = pk_client_helper_new ();
 	if (!pk_client_helper_start_with_socket (helper, socket, argv, envp, &error)) {
-		g_error ("%s\n", error->message);
+		g_error ("%s", error->message);
 		return 1;
 	}
 
