@@ -161,7 +161,7 @@ guint _dl_count = 0;
 guint _dl_progress = 0;
 guint _dl_status = 0;
 
-guint _preload_progress = 0;
+gint _preload_progress = 0;
 
 /**
  * Build a package_id from the specified resolvable.  The returned
