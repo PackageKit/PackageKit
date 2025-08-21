@@ -68,6 +68,7 @@
 #include <zypp/Resolvable.h>
 #include <zypp/SrcPackage.h>
 #include <zypp/TmpPath.h>
+#include <zypp/UserData.h>
 #include <zypp/ZYpp.h>
 #include <zypp/ZYppCallbacks.h>
 #include <zypp/ZYppFactory.h>
@@ -159,6 +160,8 @@ gchar * _repoName;
 guint _dl_count = 0;
 guint _dl_progress = 0;
 guint _dl_status = 0;
+
+guint _preload_progress = 0;
 
 /**
  * Build a package_id from the specified resolvable.  The returned
@@ -505,6 +508,59 @@ struct DigestReportReceiver : public zypp::callback::ReceiveReport<zypp::DigestR
 	}
 };
 
+struct CommitPreloadReportReceiver : public zypp::callback::ReceiveReport<zypp::media::CommitPreloadReport>, ZyppBackendReceiver
+{
+	virtual void start(const zypp::callback::UserData &userData = zypp::callback::UserData())
+	{
+		MIL << "[CommitPreload] Started preloading files..." << endl;
+
+		_preload_progress = 0;
+		pk_backend_job_set_status (_job, PK_STATUS_ENUM_DOWNLOAD);
+	}
+
+	virtual bool progress(int value, const zypp::callback::UserData &userData = zypp::callback::UserData())
+	{
+		// Only update the progress if it's a different value
+		if (_preload_progress != value) {
+			MIL << "[CommitPreload] Progress: " << value << "%" << endl;
+
+			_preload_progress = value;
+			pk_backend_job_set_percentage (_job, value);
+		}
+
+		return true;
+	}
+
+	virtual void fileStart (const Pathname &localfile, const zypp::callback::UserData &userData = zypp::callback::UserData())
+	{
+		MIL << "[CommitPreload] Starting: " << localfile.asString() << endl;
+	}
+
+	virtual void fileDone (const Pathname &localfile, Error error, const zypp::callback::UserData &userData = zypp::callback::UserData())
+	{
+		if (error == NO_ERROR)
+			MIL << "[CommitPreload] Finished: " << localfile.asString() << endl;
+		else {
+			MIL << "[CommitPreload] Error on: " << localfile.asString() << " (" << error << ")" << endl;
+			if (userData.haskey("description"))
+				MIL << "  Reason: " << userData.get<std::string>("description") << endl;
+		}
+	}
+
+	virtual void finish(Result res, const zypp::callback::UserData &userData = zypp::callback::UserData())
+	{
+		if (res == SUCCESS) {
+			MIL << "[CommitPreload] All files fetched successfully." << endl;
+		}
+		else {
+			MIL << "[CommitPreload] Some files are missing!" << endl;
+		}
+
+		_preload_progress = 100;
+		pk_backend_job_set_percentage (_job, 100);
+	}
+};
+
 class EventDirector
 {
  private:
@@ -517,6 +573,7 @@ class EventDirector
 		ZyppBackend::DigestReportReceiver _digestReport;
                 ZyppBackend::MediaChangeReportReceiver _mediaChangeReport;
                 ZyppBackend::ProgressReportReceiver _progressReport;
+		ZyppBackend::CommitPreloadReportReceiver _commitPreloadReport;
 
 	public:
 		EventDirector ()
@@ -530,6 +587,7 @@ class EventDirector
 			_digestReport.connect ();
                         _mediaChangeReport.connect ();
                         _progressReport.connect ();
+			_commitPreloadReport.connect ();
 		}
 
 		void setJob(PkBackendJob *job)
@@ -543,6 +601,7 @@ class EventDirector
 			_digestReport._job = job;
                         _mediaChangeReport._job = job;
                         _progressReport._job = job;
+			_commitPreloadReport._job = job;
 		}
 
 		~EventDirector ()
@@ -556,6 +615,7 @@ class EventDirector
 			_digestReport.disconnect ();
                         _mediaChangeReport.disconnect ();
                         _progressReport.disconnect ();
+			_commitPreloadReport.disconnect ();
 		}
 };
 
