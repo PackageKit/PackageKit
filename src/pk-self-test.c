@@ -419,6 +419,10 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504", NULL);
 	g_assert_true (ret);
 
+	/* test pk_backend_spawn_inject_data details - invalid (only size) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "INVALID-SIZE", NULL);
+	g_assert_true (!ret);
+
 	/* test pk_backend_spawn_inject_data details - valid (install size, download size) */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\t20920696", NULL);
 	g_assert_true (ret);

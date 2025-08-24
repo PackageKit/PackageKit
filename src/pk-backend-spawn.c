@@ -195,7 +195,12 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		group = pk_group_enum_from_string (sections[4]);
 
 		/* ITS4: ignore, checked for overflow */
-		package_size = atol (sections[7]);
+		if (!pk_strtoulong (sections[7], &package_size)) {
+			g_set_error (error, 1, 0,
+				     "failed to parse package size: '%s'",
+				     sections[7]);
+			return FALSE;
+		}
 		if (package_size > 1073741824) {
 			g_set_error_literal (error, 1, 0,
 					     "package size cannot be that large");

@@ -265,6 +265,34 @@ pk_strtouint (const gchar *text, guint *value)
 }
 
 /**
+ * pk_strtoulong:
+ * @text: The string to convert
+ * @value: The numeric return value
+ *
+ * Converts a string into a unsigned long value in a safe way.
+ *
+ * Return value: %TRUE if the string was converted correctly
+ **/
+gboolean
+pk_strtoulong (const gchar *text, gulong *value)
+{
+	gboolean ret;
+	guint64 value_raw;
+
+	ret = pk_strtouint64 (text, &value_raw);
+	if (!ret)
+		return FALSE;
+
+	/* out of range */
+	if (value_raw > G_MAXULONG)
+		return FALSE;
+
+	/* cast back down to value */
+	*value = (gulong) value_raw;
+	return TRUE;
+}
+
+/**
  * pk_strzero:
  * @text: The text to check
  *
