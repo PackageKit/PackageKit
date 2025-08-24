@@ -38,6 +38,7 @@
 
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID	14
+#define GET_DETAILS_TEST_DATA "details\tgimp;3.0.4-84;x86_64;Solus\tGNU Image Manipulation Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image editor.\thttps://www.gimp.org/\t"
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
@@ -412,6 +413,22 @@ pk_test_backend_spawn_func (void)
 
 	/* test pk_backend_spawn_inject_data AllowUpdate2 */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\tbrian", NULL);
+	g_assert_true (!ret);
+
+	/* test pk_backend_spawn_inject_data details - valid (only size) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data details - valid (install size, download size) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\t20920696", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data details - invalid (install size, invalid_download size) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\tINVALID-DOWNLOAD-SIZE", NULL);
+	g_assert_true (!ret);
+
+	/* test pk_backend_spawn_inject_data details - invalid (install size, download size, unexpected arg) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\t20920696\tUNEXPECTED-ARG", NULL);
 	g_assert_true (!ret);
 
 	/* convert proxy uri (bare) */
