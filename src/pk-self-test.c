@@ -427,6 +427,10 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\t20920696", NULL);
 	g_assert_true (ret);
 
+	/* test pk_backend_spawn_inject_data details - valid (huge install size, huge download size) - actual sizes from "0ad-data;0.27.0-11;x86_64;Solus" */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "3526938164\t1368603575", NULL);
+	g_assert_true (ret);
+
 	/* test pk_backend_spawn_inject_data details - invalid (install size, invalid_download size) */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\tINVALID-DOWNLOAD-SIZE", NULL);
 	g_assert_true (!ret);
