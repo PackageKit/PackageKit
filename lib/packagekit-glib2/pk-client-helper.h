@@ -27,6 +27,7 @@
 #define __PK_CLIENT_HELPER_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 #include <packagekit-glib2/pk-source.h>
 #include <packagekit-glib2/pk-enum.h>

@@ -49,7 +49,6 @@
 #include <signal.h>
 #include <errno.h>
 #include <glib-object.h>
-#include <gio/gio.h>
 #include <gio/gunixsocketaddress.h>
 
 #include <packagekit-glib2/pk-client-helper.h>
