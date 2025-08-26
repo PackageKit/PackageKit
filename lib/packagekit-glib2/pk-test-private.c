@@ -24,8 +24,11 @@
 
 #include <glib-object.h>
 
+#include "pk-client-helper.h"
 #include "pk-common.h"
+#include "pk-control.h"
 #include "pk-debug.h"
+#include "pk-desktop.h"
 #include "pk-enum.h"
 #include "pk-offline.h"
 #include "pk-offline-private.h"
@@ -34,6 +37,9 @@
 #include "pk-package-ids.h"
 #include "pk-progress-bar.h"
 #include "pk-results.h"
+#include "pk-task-text.h"
+#include "pk-task-wrapper.h"
+#include "pk-transaction-list.h"
 
 static void
 pk_test_bitfield_func (void)
@@ -428,28 +434,6 @@ pk_test_package_ids_func (void)
 	g_assert_true (ret);
 
 	g_strfreev (package_ids);
-}
-
-static void
-pk_test_progress_func (void)
-{
-	PkProgress *progress;
-
-	progress = pk_progress_new ();
-	g_assert_true (progress != NULL);
-
-	g_object_unref (progress);
-}
-
-static void
-pk_test_progress_bar (void)
-{
-	PkProgressBar *progress_bar;
-
-	progress_bar = pk_progress_bar_new ();
-	g_assert_true (progress_bar != NULL);
-
-	g_object_unref (progress_bar);
 }
 
 static void
@@ -910,6 +894,50 @@ pk_test_offline_upgrade_func (void)
 	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 }
 
+#define PK_TEST_TYPE(TYPE_NAME, CTOR_NAME) \
+{ \
+	TYPE_NAME *var = CTOR_NAME (); \
+	g_assert_true (var != NULL); \
+	g_object_unref (var); \
+}
+
+/* Sanity test to check all object types in public API */
+static void
+pk_test_object_types_func (void) {
+	PK_TEST_TYPE (PkCategory, pk_category_new);
+	PK_TEST_TYPE (PkClient, pk_client_new);
+	PK_TEST_TYPE (PkClientHelper, pk_client_helper_new);
+	PK_TEST_TYPE (PkControl, pk_control_new);
+	PK_TEST_TYPE (PkDesktop, pk_desktop_new);
+
+	PK_TEST_TYPE (PkDetails, pk_details_new);
+	PK_TEST_TYPE (PkDistroUpgrade, pk_distro_upgrade_new);
+	PK_TEST_TYPE (PkError, pk_error_new);
+	PK_TEST_TYPE (PkEulaRequired, pk_eula_required_new);
+	PK_TEST_TYPE (PkFiles, pk_files_new);
+
+	PK_TEST_TYPE (PkItemProgress, pk_item_progress_new);
+	PK_TEST_TYPE (PkMediaChangeRequired, pk_media_change_required_new);
+	PK_TEST_TYPE (PkPackage, pk_package_new);
+	PK_TEST_TYPE (PkPackageSack, pk_package_sack_new);
+	PK_TEST_TYPE (PkProgressBar, pk_progress_bar_new);
+
+	PK_TEST_TYPE (PkProgress, pk_progress_new);
+	PK_TEST_TYPE (PkRepoDetail, pk_repo_detail_new);
+	PK_TEST_TYPE (PkRepoSignatureRequired, pk_repo_signature_required_new);
+	PK_TEST_TYPE (PkRequireRestart, pk_require_restart_new);
+	PK_TEST_TYPE (PkResults, pk_results_new);
+
+	PK_TEST_TYPE (PkSource, pk_source_new);
+	PK_TEST_TYPE (PkTask, pk_task_new);
+	PK_TEST_TYPE (PkTaskText, pk_task_text_new);
+	PK_TEST_TYPE (PkTaskWrapper, pk_task_wrapper_new);
+	PK_TEST_TYPE (PkTransactionList, pk_transaction_list_new);
+
+	PK_TEST_TYPE (PkTransactionPast, pk_transaction_past_new);
+	PK_TEST_TYPE (PkUpdateDetail, pk_update_detail_new);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -927,12 +955,11 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/bitfield", pk_test_bitfield_func);
 	g_test_add_func ("/packagekit-glib2/package-id", pk_test_package_id_func);
 	g_test_add_func ("/packagekit-glib2/package-ids", pk_test_package_ids_func);
-	g_test_add_func ("/packagekit-glib2/progress", pk_test_progress_func);
 	g_test_add_func ("/packagekit-glib2/results", pk_test_results_func);
 	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
-	g_test_add_func ("/packagekit-glib2/progress-bar", pk_test_progress_bar);
 	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 	g_test_add_func ("/packagekit-glib2/offline-upgrade", pk_test_offline_upgrade_func);
+	g_test_add_func ("/packagekit-glib2/object-types", pk_test_object_types_func);
 
 	return g_test_run ();
 }
