@@ -55,8 +55,6 @@
 
 static void     pk_client_helper_finalize	(GObject     *object);
 
-#define PK_CLIENT_HELPER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_CLIENT_HELPER, PkClientHelperPrivate))
-
 /**
  * PkClientHelperPrivate:
  *
@@ -88,7 +86,7 @@ typedef struct
 	GSource				*stderr_channel_source;
 } PkClientHelperChild;
 
-G_DEFINE_TYPE (PkClientHelper, pk_client_helper, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (PkClientHelper, pk_client_helper, G_TYPE_OBJECT)
 
 static void
 pk_client_helper_child_free (PkClientHelperChild *child)
@@ -134,12 +132,10 @@ pk_client_helper_child_free (PkClientHelperChild *child)
 gboolean
 pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 {
-	PkClientHelperPrivate *priv = NULL;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	priv = client_helper->priv;
 
 	/* make sure started */
 	g_return_val_if_fail (priv->socket_file != NULL, FALSE);
@@ -250,6 +246,7 @@ pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkC
 static gboolean
 pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
 {
+	PkClientHelperPrivate *helper_priv = pk_client_helper_get_instance_private (child->helper);
 	gchar data[1024];
 	gsize len = 0;
 	GIOStatus status;
@@ -285,7 +282,7 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 			   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
 		return G_SOURCE_REMOVE;
 	}
-	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, child->helper->priv->argv[0]);
+	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, helper_priv->argv[0]);
 
 	return G_SOURCE_CONTINUE;
 }
@@ -313,7 +310,7 @@ make_input_source (GIOChannel *channel, GSourceFunc func, gpointer user_data)
 static gboolean
 pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
 {
-	PkClientHelperPrivate *priv = client_helper->priv;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 	g_autoptr(GSocket) socket = NULL;
 	GPid pid;
 	gint standard_input = 0;
@@ -419,7 +416,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 {
 	guint i;
 	gboolean use_kde_helper = FALSE;
-	PkClientHelperPrivate *priv = NULL;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
 
@@ -428,8 +425,6 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	g_return_val_if_fail (argv != NULL, FALSE);
 	g_return_val_if_fail (socket_filename != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	priv = client_helper->priv;
 
 	/* make sure not been started before */
 	g_return_val_if_fail (priv->argv == NULL, FALSE);
@@ -511,7 +506,7 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 				    GError **error)
 {
 	gint fd;
-	PkClientHelperPrivate *priv = NULL;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
 
@@ -519,8 +514,6 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 	g_return_val_if_fail (socket != NULL, FALSE);
 	g_return_val_if_fail (argv != NULL, FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
-
-	priv = client_helper->priv;
 
 	/* make sure not been started before */
 	g_return_val_if_fail (priv->argv == NULL, FALSE);
@@ -552,11 +545,9 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 gboolean
 pk_client_helper_is_active (PkClientHelper *client_helper)
 {
-	PkClientHelperPrivate *priv;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
-
-	priv = client_helper->priv;
 
 	for (guint i = 0; i < priv->children->len; i++) {
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
@@ -576,7 +567,6 @@ pk_client_helper_class_init (PkClientHelperClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->finalize = pk_client_helper_finalize;
-	g_type_class_add_private (klass, sizeof (PkClientHelperPrivate));
 }
 
 /*
@@ -585,8 +575,10 @@ pk_client_helper_class_init (PkClientHelperClass *klass)
 static void
 pk_client_helper_init (PkClientHelper *client_helper)
 {
-	client_helper->priv = PK_CLIENT_HELPER_GET_PRIVATE (client_helper);
-	client_helper->priv->children = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_client_helper_child_free);
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
+
+	client_helper->priv = priv;
+	priv->children = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_client_helper_child_free);
 }
 
 /*
@@ -596,26 +588,25 @@ static void
 pk_client_helper_finalize (GObject *object)
 {
 	PkClientHelper *client_helper = PK_CLIENT_HELPER (object);
-	PkClientHelperPrivate *priv = client_helper->priv;
+	PkClientHelperPrivate *priv = pk_client_helper_get_instance_private (client_helper);
 
 	if (priv->socket_channel_source != NULL) {
 		g_source_destroy (priv->socket_channel_source);
-		g_source_unref (priv->socket_channel_source);
+		g_clear_pointer (&priv->socket_channel_source, g_source_unref);
 	}
 
-	g_strfreev (priv->argv);
-	g_strfreev (priv->envp);
+	g_clear_pointer (&priv->argv, g_strfreev);
+	g_clear_pointer (&priv->envp, g_strfreev);
 	if (priv->socket_file != NULL) {
 		g_file_delete (priv->socket_file, NULL, NULL);
-		g_object_unref (priv->socket_file);
+		g_clear_object (&priv->socket_file);
 	}
 	if (priv->socket != NULL) {
 		g_socket_close (priv->socket, NULL);
-		g_object_unref (priv->socket);
+		g_clear_object (&priv->socket);
 	}
-	if (priv->socket_channel != NULL)
-		g_io_channel_unref (priv->socket_channel);
-	g_ptr_array_unref (priv->children);
+	g_clear_pointer (&priv->socket_channel, g_io_channel_unref);
+	g_clear_pointer (&priv->children, g_ptr_array_unref);
 	if (priv->kde_helper_pid > 0)
 		kill (priv->kde_helper_pid, SIGQUIT);
 

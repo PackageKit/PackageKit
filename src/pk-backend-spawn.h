@@ -28,29 +28,11 @@
 G_BEGIN_DECLS
 
 #define PK_TYPE_BACKEND_SPAWN		(pk_backend_spawn_get_type ())
-#define PK_BACKEND_SPAWN(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawn))
-#define PK_BACKEND_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnClass))
-#define PK_IS_BACKEND_SPAWN(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_BACKEND_SPAWN))
-#define PK_IS_BACKEND_SPAWN_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_BACKEND_SPAWN))
-#define PK_BACKEND_SPAWN_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_BACKEND_SPAWN, PkBackendSpawnClass))
+G_DECLARE_FINAL_TYPE (PkBackendSpawn, pk_backend_spawn, PK, BACKEND_SPAWN, GObject)
 
 #define PK_BACKEND_SPAWN_FILENAME_DELIM	"|"
 
-typedef struct PkBackendSpawnPrivate PkBackendSpawnPrivate;
-
-typedef struct
-{
-	 GObject		 parent;
-	 PkBackendSpawnPrivate	*priv;
-} PkBackendSpawn;
-
-typedef struct
-{
-	GObjectClass	parent_class;
-} PkBackendSpawnClass;
-
 /* general */
-GType		 pk_backend_spawn_get_type		(void);
 PkBackendSpawn	*pk_backend_spawn_new			(GKeyFile		*conf);
 gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
 							 PkBackendJob	*job,

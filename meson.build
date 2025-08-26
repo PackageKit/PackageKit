@@ -11,11 +11,16 @@ pkg = import('pkgconfig')
 
 source_root = meson.project_source_root()
 
-glib_dep = dependency('glib-2.0', version: '>=2.76')
-gobject_dep = dependency('gobject-2.0')
-gio_dep = dependency('gio-2.0')
-gio_unix_dep = dependency('gio-unix-2.0', version: '>=2.16.1')
-gmodule_dep = dependency('gmodule-2.0', version: '>=2.16.1')
+glib_req_version = '2.76'
+glib_req = '>= @0@'.format(glib_req_version)
+glib_major = glib_req_version.split('.')[0].to_int()
+glib_minor = glib_req_version.split('.')[1].to_int()
+
+glib_dep = dependency('glib-2.0', version: glib_req)
+gobject_dep = dependency('gobject-2.0', version: glib_req)
+gio_dep = dependency('gio-2.0', version: glib_req)
+gio_unix_dep = dependency('gio-unix-2.0', version: glib_req)
+gmodule_dep = dependency('gmodule-2.0', version: glib_req)
 sqlite3_dep = dependency('sqlite3')
 polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
 
@@ -61,8 +66,10 @@ endif
 # Ensure functions like realpath(3) and other "default" functions are available
 add_project_arguments ('-D_DEFAULT_SOURCE', language: 'c')
 
-# Avoid g_simple_async_result deprecation warnings in glib 2.46+
-add_project_arguments ('-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_44', language: 'c')
+add_project_arguments (
+  '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_@0@_@1@'.format(glib_major, glib_minor),
+  language: 'c'
+)
 
 # allow the daemon to include library files directly
 add_project_arguments ('-DPK_COMPILATION', language: ['c', 'cpp'])

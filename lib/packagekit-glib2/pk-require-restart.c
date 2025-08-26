@@ -38,8 +38,6 @@
 
 static void     pk_require_restart_finalize	(GObject     *object);
 
-#define PK_REQUIRE_RESTART_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestartPrivate))
-
 /**
  * PkRequireRestartPrivate:
  *
@@ -58,7 +56,7 @@ enum {
 	PROP_LAST
 };
 
-G_DEFINE_TYPE (PkRequireRestart, pk_require_restart, PK_TYPE_SOURCE)
+G_DEFINE_TYPE_WITH_PRIVATE (PkRequireRestart, pk_require_restart, PK_TYPE_SOURCE)
 
 /*
  * pk_require_restart_get_property:
@@ -67,7 +65,7 @@ static void
 pk_require_restart_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkRequireRestart *require_restart = PK_REQUIRE_RESTART (object);
-	PkRequireRestartPrivate *priv = require_restart->priv;
+	PkRequireRestartPrivate *priv = pk_require_restart_get_instance_private (require_restart);
 
 	switch (prop_id) {
 	case PROP_RESTART:
@@ -89,7 +87,7 @@ static void
 pk_require_restart_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkRequireRestart *require_restart = PK_REQUIRE_RESTART (object);
-	PkRequireRestartPrivate *priv = require_restart->priv;
+	PkRequireRestartPrivate *priv = pk_require_restart_get_instance_private (require_restart);
 
 	switch (prop_id) {
 	case PROP_RESTART:
@@ -97,7 +95,7 @@ pk_require_restart_set_property (GObject *object, guint prop_id, const GValue *v
 		break;
 	case PROP_PACKAGE_ID:
 		g_free (priv->package_id);
-		priv->package_id = g_strdup (g_value_get_string (value));
+		priv->package_id = g_value_dup_string (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -136,8 +134,6 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
-
-	g_type_class_add_private (klass, sizeof (PkRequireRestartPrivate));
 }
 
 /*
@@ -146,7 +142,7 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 static void
 pk_require_restart_init (PkRequireRestart *require_restart)
 {
-	require_restart->priv = PK_REQUIRE_RESTART_GET_PRIVATE (require_restart);
+	require_restart->priv = pk_require_restart_get_instance_private (require_restart);
 }
 
 /*
@@ -156,9 +152,9 @@ static void
 pk_require_restart_finalize (GObject *object)
 {
 	PkRequireRestart *require_restart = PK_REQUIRE_RESTART (object);
-	PkRequireRestartPrivate *priv = require_restart->priv;
+	PkRequireRestartPrivate *priv = pk_require_restart_get_instance_private (require_restart);
 
-	g_free (priv->package_id);
+	g_clear_pointer (&priv->package_id, g_free);
 
 	G_OBJECT_CLASS (pk_require_restart_parent_class)->finalize (object);
 }

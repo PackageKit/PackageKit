@@ -54,16 +54,15 @@
 static void     pk_engine_finalize	(GObject       *object);
 static void	pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
 
-#define PK_ENGINE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), PK_TYPE_ENGINE, PkEnginePrivate))
-
 /* how long to wait when we get the StateHasChanged method */
 #define PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY	2 /* s */
 
 /* how long to wait after the computer has been resumed or any system event */
 #define PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL		600 /* s */
 
-struct PkEnginePrivate
+struct _PkEngine
 {
+	GObject			 parent;
 	GTimer			*timer;
 	gboolean		 notify_clients_of_upgrade;
 	gboolean		 shutdown_as_soon_as_possible;
@@ -137,7 +136,7 @@ pk_engine_error_get_type (void)
 static void
 pk_engine_reset_timer (PkEngine *engine)
 {
-	g_timer_reset (engine->priv->timer);
+	g_timer_reset (engine->timer);
 }
 
 static void pk_engine_inhibit (PkEngine *engine);
@@ -167,7 +166,7 @@ pk_engine_scheduler_changed_cb (PkScheduler *scheduler, PkEngine *engine)
 	pk_engine_set_inhibited (engine, pk_scheduler_get_inhibited (scheduler));
 
 	transaction_list = pk_scheduler_get_array (scheduler);
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
@@ -187,7 +186,7 @@ pk_engine_emit_property_changed (PkEngine *engine,
 	GVariantBuilder invalidated_builder;
 
 	/* not yet connected */
-	if (engine->priv->connection == NULL)
+	if (engine->connection == NULL)
 		return;
 
 	/* build the dict */
@@ -197,7 +196,7 @@ pk_engine_emit_property_changed (PkEngine *engine,
 			       "{sv}",
 			       property_name,
 			       property_value);
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       "org.freedesktop.DBus.Properties",
@@ -218,7 +217,7 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 	GVariantBuilder invalidated_builder;
 
 	/* not yet connected */
-	if (engine->priv->connection == NULL)
+	if (engine->connection == NULL)
 		return;
 
 	/* build the dict */
@@ -235,7 +234,7 @@ pk_engine_emit_offline_property_changed (PkEngine *engine,
 		                       property_name,
 		                       property_value);
 	}
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       "org.freedesktop.DBus.Properties",
@@ -255,17 +254,17 @@ pk_engine_inhibit (PkEngine *engine)
 	g_autoptr(GVariant) res = NULL;
 
 	/* already inhibited */
-	if (engine->priv->logind_fd != 0)
+	if (engine->logind_fd != 0)
 		return;
 
 	/* not yet connected */
-	if (engine->priv->logind_proxy == NULL) {
+	if (engine->logind_proxy == NULL) {
 		g_warning ("no logind connection to use");
 		return;
 	}
 
 	/* block shutdown and idle */
-	res = g_dbus_proxy_call_with_unix_fd_list_sync (engine->priv->logind_proxy,
+	res = g_dbus_proxy_call_with_unix_fd_list_sync (engine->logind_proxy,
 							"Inhibit",
 							g_variant_new ("(ssss)",
 								       "shutdown:idle",
@@ -288,18 +287,18 @@ pk_engine_inhibit (PkEngine *engine)
 		g_warning ("invalid response from logind");
 		return;
 	}
-	engine->priv->logind_fd = g_unix_fd_list_get (out_fd_list, 0, NULL);
-	g_debug ("opened logind fd %i", engine->priv->logind_fd);
+	engine->logind_fd = g_unix_fd_list_get (out_fd_list, 0, NULL);
+	g_debug ("opened logind fd %i", engine->logind_fd);
 }
 
 static void
 pk_engine_uninhibit (PkEngine *engine)
 {
-	if (engine->priv->logind_fd == 0)
+	if (engine->logind_fd == 0)
 		return;
-	g_debug ("closed logind fd %i", engine->priv->logind_fd);
-	close (engine->priv->logind_fd);
-	engine->priv->logind_fd = 0;
+	g_debug ("closed logind fd %i", engine->logind_fd);
+	close (engine->logind_fd);
+	engine->logind_fd = 0;
 }
 
 static void
@@ -308,9 +307,9 @@ pk_engine_set_locked (PkEngine *engine, gboolean is_locked)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	/* already set */
-	if (engine->priv->locked == is_locked)
+	if (engine->locked == is_locked)
 		return;
-	engine->priv->locked = is_locked;
+	engine->locked = is_locked;
 
 	/* emit */
 	pk_engine_emit_property_changed (engine,
@@ -324,7 +323,7 @@ pk_engine_backend_installed_changed_cb (PkBackend *backend, PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	g_debug ("emitting InstalledChanged");
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
@@ -339,7 +338,7 @@ pk_engine_backend_repo_list_changed_cb (PkBackend *backend, PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	g_debug ("emitting RepoListChanged");
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
@@ -354,7 +353,7 @@ pk_engine_backend_updates_changed_cb (PkBackend *backend, PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	g_debug ("emitting UpdatesChanged");
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
@@ -376,16 +375,16 @@ pk_engine_state_changed_cb (gpointer data)
 		g_warning ("failed to invalidate: %s", error->message);
 
 	/* if network is not up, then just reschedule */
-	if (!g_network_monitor_get_network_available (engine->priv->network_monitor)) {
+	if (!g_network_monitor_get_network_available (engine->network_monitor)) {
 		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
 		return TRUE;
 	}
 
-	pk_backend_updates_changed (engine->priv->backend);
+	pk_backend_updates_changed (engine->backend);
 
 	/* reset, now valid */
-	engine->priv->timeout_priority_id = 0;
-	engine->priv->timeout_normal_id = 0;
+	engine->timeout_priority_id = 0;
+	engine->timeout_normal_id = 0;
 
 	/* reset the timer */
 	pk_engine_reset_timer (engine);
@@ -399,7 +398,7 @@ pk_engine_emit_restart_schedule (PkEngine *engine)
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	g_debug ("emitting RestartSchedule");
-	g_dbus_connection_emit_signal (engine->priv->connection,
+	g_dbus_connection_emit_signal (engine->connection,
 				       NULL,
 				       PK_DBUS_PATH,
 				       PK_DBUS_INTERFACE,
@@ -419,25 +418,25 @@ pk_engine_get_seconds_idle (PkEngine *engine)
 
 	/* check for transactions running - a transaction that takes a *long* time might not
 	 * give sufficient percentage updates to not be marked as idle */
-	size = pk_scheduler_get_size (engine->priv->scheduler);
+	size = pk_scheduler_get_size (engine->scheduler);
 	if (size != 0) {
 		g_debug ("engine idle zero as %i transactions in progress", size);
 		return 0;
 	}
 
 	/* have we been updated? */
-	if (engine->priv->notify_clients_of_upgrade) {
+	if (engine->notify_clients_of_upgrade) {
 		pk_engine_emit_restart_schedule (engine);
 		return G_MAXUINT;
 	}
 
 	/* do we need to shutdown quickly */
-	if (engine->priv->shutdown_as_soon_as_possible) {
+	if (engine->shutdown_as_soon_as_possible) {
 		g_debug ("need to restart daemon asap");
 		return G_MAXUINT;
 	}
 
-	idle = (guint) g_timer_elapsed (engine->priv->timer, NULL);
+	idle = (guint) g_timer_elapsed (engine->timer, NULL);
 	return idle;
 }
 
@@ -455,7 +454,7 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 	guint uid;
 	g_autofree gchar *session = NULL;
 
-	if (!pk_dbus_connect (engine->priv->dbus, error)) {
+	if (!pk_dbus_connect (engine->dbus, error)) {
 		g_set_error_literal (error,
 				     PK_ENGINE_ERROR,
 				     PK_ENGINE_ERROR_CANNOT_SET_PROXY,
@@ -464,7 +463,7 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 	}
 
 	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
+	uid = pk_dbus_get_uid (engine->dbus, sender);
 	if (uid == G_MAXUINT) {
 		g_set_error_literal (error,
 				     PK_ENGINE_ERROR,
@@ -474,7 +473,7 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 	}
 
 	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, sender);
+	session = pk_dbus_get_session (engine->dbus, sender);
 	if (session == NULL) {
 		g_set_error_literal (error,
 				     PK_ENGINE_ERROR,
@@ -484,7 +483,7 @@ pk_engine_set_proxy_internal (PkEngine *engine, const gchar *sender,
 	}
 
 	/* save to database */
-	ret = pk_transaction_db_set_proxy (engine->priv->transaction_db,
+	ret = pk_transaction_db_set_proxy (engine->transaction_db,
 					   uid, session,
 					   proxy_http,
 					   proxy_https,
@@ -520,13 +519,13 @@ pk_engine_action_obtain_proxy_authorization_finished_cb (PolkitAuthority *author
 							 PkEngineDbusState *state)
 {
 	gboolean ret;
-	PkEnginePrivate *priv = state->engine->priv;
+	PkEngine *engine = state->engine;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(PolkitAuthorizationResult) result = NULL;
 
 	/* finish the call */
-	result = polkit_authority_check_authorization_finish (priv->authority, res, &error_local);
+	result = polkit_authority_check_authorization_finish (engine->authority, res, &error_local);
 
 	/* failed */
 	if (result == NULL) {
@@ -607,27 +606,27 @@ pk_engine_is_proxy_unchanged (PkEngine *engine, const gchar *sender,
 	g_autofree gchar *no_proxy_tmp = NULL;
 	g_autofree gchar *pac_tmp = NULL;
 
-	if (!pk_dbus_connect (engine->priv->dbus, NULL)) {
+	if (!pk_dbus_connect (engine->dbus, NULL)) {
 		g_warning ("failed to get the D-Bus proxy");
 		return FALSE;
 	}
 
 	/* get uid */
-	uid = pk_dbus_get_uid (engine->priv->dbus, sender);
+	uid = pk_dbus_get_uid (engine->dbus, sender);
 	if (uid == G_MAXUINT) {
 		g_warning ("failed to get the uid for %s", sender);
 		return FALSE;
 	}
 
 	/* get session */
-	session = pk_dbus_get_session (engine->priv->dbus, sender);
+	session = pk_dbus_get_session (engine->dbus, sender);
 	if (session == NULL) {
 		g_warning ("failed to get the session for %s", sender);
 		return FALSE;
 	}
 
 	/* find out if they are the same as what we tried to set before */
-	ret = pk_transaction_db_get_proxy (engine->priv->transaction_db,
+	ret = pk_transaction_db_get_proxy (engine->transaction_db,
 					   uid,
 					   session,
 					   &proxy_http_tmp,
@@ -742,7 +741,7 @@ pk_engine_set_proxy (PkEngine *engine,
 	state->value6 = g_strdup (pac);
 
 	/* do authorization async */
-	polkit_authority_check_authorization (engine->priv->authority, subject,
+	polkit_authority_check_authorization (engine->authority, subject,
 					      "org.freedesktop.packagekit.system-network-proxy-configure",
 					      NULL,
 					      get_polkit_flags_for_dbus_invocation (context),
@@ -769,7 +768,7 @@ pk_engine_can_authorize_action_id (PkEngine *engine,
 	subject = polkit_system_bus_name_new (sender);
 
 	/* check authorization (okay being sync as there's no blocking on the user) */
-	res = polkit_authority_check_authorization_sync (engine->priv->authority,
+	res = polkit_authority_check_authorization_sync (engine->authority,
 							 subject,
 							 action_id,
 							 NULL,
@@ -804,8 +803,6 @@ pk_engine_class_init (PkEngineClass *klass)
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
-
-	g_type_class_add_private (klass, sizeof (PkEnginePrivate));
 }
 
 static void
@@ -817,7 +814,7 @@ pk_engine_conf_file_changed_cb (GFileMonitor *file_monitor,
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	g_debug ("setting shutdown_as_soon_as_possible TRUE");
-	engine->priv->shutdown_as_soon_as_possible = TRUE;
+	engine->shutdown_as_soon_as_possible = TRUE;
 }
 
 static void
@@ -829,7 +826,7 @@ pk_engine_binary_file_changed_cb (GFileMonitor *file_monitor,
 {
 	g_return_if_fail (PK_IS_ENGINE (engine));
 	g_debug ("setting notify_clients_of_upgrade TRUE");
-	engine->priv->notify_clients_of_upgrade = TRUE;
+	engine->notify_clients_of_upgrade = TRUE;
 }
 
 static void
@@ -911,9 +908,9 @@ pk_engine_network_state_changed_cb (GNetworkMonitor *network_monitor,
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
 	network_state = pk_engine_get_network_state (network_monitor);
-	if (network_state == engine->priv->network_state)
+	if (network_state == engine->network_state)
 		return;
-	engine->priv->network_state = network_state;
+	engine->network_state = network_state;
 
 	/* emit */
 	pk_engine_emit_property_changed (engine,
@@ -931,50 +928,50 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 
 	/* monitor the binary file for changes */
 	file_binary = g_file_new_for_path (LIBEXECDIR "/packagekitd");
-	engine->priv->monitor_binary = g_file_monitor_file (file_binary,
+	engine->monitor_binary = g_file_monitor_file (file_binary,
 							    G_FILE_MONITOR_NONE,
 							    NULL,
 							    &error);
-	if (engine->priv->monitor_binary == NULL) {
+	if (engine->monitor_binary == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
 			   LIBEXECDIR "/packagekitd", error->message);
 		return;
 	}
-	g_signal_connect (engine->priv->monitor_binary, "changed",
+	g_signal_connect (engine->monitor_binary, "changed",
 			  G_CALLBACK (pk_engine_binary_file_changed_cb), engine);
 
 	/* monitor config file for changes */
 	g_debug ("setting config file watch on %s", filename);
 	file_conf = g_file_new_for_path (filename);
-	engine->priv->monitor_conf = g_file_monitor_file (file_conf,
+	engine->monitor_conf = g_file_monitor_file (file_conf,
 							  G_FILE_MONITOR_NONE,
 							  NULL,
 							  &error);
-	if (engine->priv->monitor_conf == NULL) {
+	if (engine->monitor_conf == NULL) {
 		g_warning ("Failed to set watch on %s: %s", filename, error->message);
 		return;
 	}
-	g_signal_connect (engine->priv->monitor_conf, "changed",
+	g_signal_connect (engine->monitor_conf, "changed",
 			  G_CALLBACK (pk_engine_conf_file_changed_cb), engine);
 
 	/* set up the prepared update monitor */
-	engine->priv->monitor_offline = pk_offline_get_prepared_monitor (NULL, &error);
-	if (engine->priv->monitor_offline == NULL) {
+	engine->monitor_offline = pk_offline_get_prepared_monitor (NULL, &error);
+	if (engine->monitor_offline == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
 			   PK_OFFLINE_PREPARED_FILENAME, error->message);
 		return;
 	}
-	g_signal_connect (engine->priv->monitor_offline, "changed",
+	g_signal_connect (engine->monitor_offline, "changed",
 			  G_CALLBACK (pk_engine_offline_file_changed_cb), engine);
 
 	/* set up the prepared system upgrade monitor */
-	engine->priv->monitor_offline_upgrade = pk_offline_get_prepared_upgrade_monitor (NULL, &error);
-	if (engine->priv->monitor_offline_upgrade == NULL) {
+	engine->monitor_offline_upgrade = pk_offline_get_prepared_upgrade_monitor (NULL, &error);
+	if (engine->monitor_offline_upgrade == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
 			   PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error->message);
 		return;
 	}
-	g_signal_connect (engine->priv->monitor_offline_upgrade, "changed",
+	g_signal_connect (engine->monitor_offline_upgrade, "changed",
 			  G_CALLBACK (pk_engine_offline_upgrade_file_changed_cb), engine);
 }
 
@@ -982,24 +979,24 @@ gboolean
 pk_engine_load_backend (PkEngine *engine, GError **error)
 {
 	/* load any backend init */
-	if (!pk_backend_load (engine->priv->backend, error))
+	if (!pk_backend_load (engine->backend, error))
 		return FALSE;
 
 	/* load anything that can fail */
-	engine->priv->authority = polkit_authority_get_sync (NULL, error);
-	if (engine->priv->authority == NULL)
+	engine->authority = polkit_authority_get_sync (NULL, error);
+	if (engine->authority == NULL)
 		return FALSE;
-	if (!pk_transaction_db_load (engine->priv->transaction_db, error))
+	if (!pk_transaction_db_load (engine->transaction_db, error))
 		return FALSE;
 
 	/* create a new backend so we can get the static stuff */
-	engine->priv->roles = pk_backend_get_roles (engine->priv->backend);
-	engine->priv->groups = pk_backend_get_groups (engine->priv->backend);
-	engine->priv->filters = pk_backend_get_filters (engine->priv->backend);
-	engine->priv->mime_types = pk_backend_get_mime_types (engine->priv->backend);
-	engine->priv->backend_name = pk_backend_get_name (engine->priv->backend);
-	engine->priv->backend_description = pk_backend_get_description (engine->priv->backend);
-	engine->priv->backend_author = pk_backend_get_author (engine->priv->backend);
+	engine->roles = pk_backend_get_roles (engine->backend);
+	engine->groups = pk_backend_get_groups (engine->backend);
+	engine->filters = pk_backend_get_filters (engine->backend);
+	engine->mime_types = pk_backend_get_mime_types (engine->backend);
+	engine->backend_name = pk_backend_get_name (engine->backend);
+	engine->backend_description = pk_backend_get_description (engine->backend);
+	engine->backend_author = pk_backend_get_author (engine->backend);
 	return TRUE;
 }
 
@@ -1091,25 +1088,25 @@ pk_engine_daemon_get_property (GDBusConnection *connection_, const gchar *sender
 	if (g_strcmp0 (property_name, "VersionMicro") == 0)
 		return g_variant_new_uint32 (PK_MICRO_VERSION);
 	if (g_strcmp0 (property_name, "BackendName") == 0)
-		return g_variant_new_string (engine->priv->backend_name);
+		return g_variant_new_string (engine->backend_name);
 	if (g_strcmp0 (property_name, "BackendDescription") == 0)
-		return _g_variant_new_maybe_string (engine->priv->backend_description);
+		return _g_variant_new_maybe_string (engine->backend_description);
 	if (g_strcmp0 (property_name, "BackendAuthor") == 0)
-		return _g_variant_new_maybe_string (engine->priv->backend_author);
+		return _g_variant_new_maybe_string (engine->backend_author);
 	if (g_strcmp0 (property_name, "Roles") == 0)
-		return g_variant_new_uint64 (engine->priv->roles);
+		return g_variant_new_uint64 (engine->roles);
 	if (g_strcmp0 (property_name, "Groups") == 0)
-		return g_variant_new_uint64 (engine->priv->groups);
+		return g_variant_new_uint64 (engine->groups);
 	if (g_strcmp0 (property_name, "Filters") == 0)
-		return g_variant_new_uint64 (engine->priv->filters);
+		return g_variant_new_uint64 (engine->filters);
 	if (g_strcmp0 (property_name, "MimeTypes") == 0)
-		return g_variant_new_strv ((const gchar * const *) engine->priv->mime_types, -1);
+		return g_variant_new_strv ((const gchar * const *) engine->mime_types, -1);
 	if (g_strcmp0 (property_name, "Locked") == 0)
-		return g_variant_new_boolean (engine->priv->locked);
+		return g_variant_new_boolean (engine->locked);
 	if (g_strcmp0 (property_name, "NetworkState") == 0)
-		return g_variant_new_uint32 (engine->priv->network_state);
+		return g_variant_new_uint32 (engine->network_state);
 	if (g_strcmp0 (property_name, "DistroId") == 0)
-		return _g_variant_new_maybe_string (engine->priv->distro_id);
+		return _g_variant_new_maybe_string (engine->distro_id);
 
 	/* return an error */
 	g_set_error (error,
@@ -1190,7 +1187,7 @@ pk_engine_get_package_history (PkEngine *engine,
 	g_autoptr(GList) keys = NULL;
 	g_autoptr(PkPackage) package_tmp = NULL;
 
-	list = pk_transaction_db_get_list (engine->priv->transaction_db, max_size);
+	list = pk_transaction_db_get_list (engine->transaction_db, max_size);
 
 	/* simplify the loop */
 	if (max_size == 0)
@@ -1317,7 +1314,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "GetTimeSinceAction") == 0) {
 		g_variant_get (parameters, "(u)", &role);
-		time_since = pk_transaction_db_action_time_since (engine->priv->transaction_db,
+		time_since = pk_transaction_db_action_time_since (engine->transaction_db,
 								  role);
 		value = g_variant_new ("(u)", time_since);
 		g_dbus_method_invocation_return_value (invocation, value);
@@ -1325,7 +1322,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	}
 
 	if (g_strcmp0 (method_name, "GetDaemonState") == 0) {
-		data = pk_scheduler_get_state (engine->priv->scheduler);
+		data = pk_scheduler_get_state (engine->scheduler);
 		value = g_variant_new ("(s)", data);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
@@ -1360,9 +1357,9 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "CreateTransaction") == 0) {
 
 		g_debug ("CreateTransaction method called");
-		data = pk_transaction_db_generate_id (engine->priv->transaction_db);
+		data = pk_transaction_db_generate_id (engine->transaction_db);
 		g_assert (data != NULL);
-		ret = pk_scheduler_create (engine->priv->scheduler,
+		ret = pk_scheduler_create (engine->scheduler,
 					   data, sender, &error);
 		if (!ret) {
 			g_dbus_method_invocation_return_error (invocation,
@@ -1382,7 +1379,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 
 	if (g_strcmp0 (method_name, "GetTransactionList") == 0) {
 		g_auto(GStrv) transaction_list = NULL;
-		transaction_list = pk_scheduler_get_array (engine->priv->scheduler);
+		transaction_list = pk_scheduler_get_array (engine->scheduler);
 		value = g_variant_new ("(^a&o)", transaction_list);
 		g_dbus_method_invocation_return_value (invocation, value);
 		return;
@@ -1391,11 +1388,11 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "SuggestDaemonQuit") == 0) {
 
 		/* attempt to kill background tasks */
-		pk_scheduler_cancel_queued (engine->priv->scheduler);
-		pk_scheduler_cancel_background (engine->priv->scheduler);
+		pk_scheduler_cancel_queued (engine->scheduler);
+		pk_scheduler_cancel_background (engine->scheduler);
 
 		/* can we exit straight away */
-		size = pk_scheduler_get_size (engine->priv->scheduler);
+		size = pk_scheduler_get_size (engine->scheduler);
 		if (size == 0) {
 			g_debug ("emitting quit");
 			g_signal_emit (engine, signals[SIGNAL_QUIT], 0);
@@ -1406,7 +1403,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		/* This will wait from 0..10 seconds, depending on the status of
 		 * pk_main_timeout_check_cb() - usually it should be a few seconds
 		 * after the last transaction */
-		engine->priv->shutdown_as_soon_as_possible = TRUE;
+		engine->shutdown_as_soon_as_possible = TRUE;
 		g_dbus_method_invocation_return_value (invocation, NULL);
 		return;
 	}
@@ -1414,7 +1411,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 	if (g_strcmp0 (method_name, "StateHasChanged") == 0) {
 
 		/* have we already scheduled priority? */
-		if (engine->priv->timeout_priority_id != 0) {
+		if (engine->timeout_priority_id != 0) {
 			g_debug ("Already asked to refresh priority state less than %i seconds ago",
 				 PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY);
 			g_dbus_method_invocation_return_value (invocation, NULL);
@@ -1427,7 +1424,7 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 			is_priority = FALSE;
 
 		/* are we normal, and already scheduled normal? */
-		if (!is_priority && engine->priv->timeout_normal_id != 0) {
+		if (!is_priority && engine->timeout_normal_id != 0) {
 			g_debug ("Already asked to refresh normal state less than %i seconds ago",
 				 PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL);
 			g_dbus_method_invocation_return_value (invocation, NULL);
@@ -1435,24 +1432,24 @@ pk_engine_daemon_method_call (GDBusConnection *connection_, const gchar *sender,
 		}
 
 		/* are we priority, and already scheduled normal? */
-		if (is_priority && engine->priv->timeout_normal_id != 0) {
+		if (is_priority && engine->timeout_normal_id != 0) {
 			/* clear normal, as we are about to schedule a priority */
-			g_source_remove (engine->priv->timeout_normal_id);
-			engine->priv->timeout_normal_id = 0;
+			g_source_remove (engine->timeout_normal_id);
+			engine->timeout_normal_id = 0;
 		}
 
 		/* wait a little delay in case we get multiple requests */
 		if (is_priority) {
-			engine->priv->timeout_priority_id =
+			engine->timeout_priority_id =
 				g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT_PRIORITY,
 						       pk_engine_state_changed_cb, engine);
-			g_source_set_name_by_id (engine->priv->timeout_priority_id,
+			g_source_set_name_by_id (engine->timeout_priority_id,
 						 "[PkEngine] priority");
 		} else {
-			engine->priv->timeout_normal_id =
+			engine->timeout_normal_id =
 				g_timeout_add_seconds (PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL,
 						       pk_engine_state_changed_cb, engine);
-			g_source_set_name_by_id (engine->priv->timeout_normal_id, "[PkEngine] normal");
+			g_source_set_name_by_id (engine->timeout_normal_id, "[PkEngine] normal");
 		}
 		g_dbus_method_invocation_return_value (invocation, NULL);
 		return;
@@ -1634,7 +1631,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CANCEL;
 		helper->invocation = g_object_ref (invocation);
-		polkit_authority_check_authorization (engine->priv->authority, subject,
+		polkit_authority_check_authorization (engine->authority, subject,
 						      "org.freedesktop.packagekit.trigger-offline-update",
 						      NULL,
 						      get_polkit_flags_for_dbus_invocation (invocation),
@@ -1648,7 +1645,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS;
 		helper->invocation = g_object_ref (invocation);
-		polkit_authority_check_authorization (engine->priv->authority, subject,
+		polkit_authority_check_authorization (engine->authority, subject,
 						      "org.freedesktop.packagekit.clear-offline-update",
 						      NULL,
 						      get_polkit_flags_for_dbus_invocation (invocation),
@@ -1684,7 +1681,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
-		polkit_authority_check_authorization (engine->priv->authority, subject,
+		polkit_authority_check_authorization (engine->authority, subject,
 						      "org.freedesktop.packagekit.trigger-offline-update",
 						      NULL,
 						      get_polkit_flags_for_dbus_invocation (invocation),
@@ -1720,7 +1717,7 @@ pk_engine_offline_method_call (GDBusConnection *connection_, const gchar *sender
 		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE;
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
-		polkit_authority_check_authorization (engine->priv->authority, subject,
+		polkit_authority_check_authorization (engine->authority, subject,
 						      "org.freedesktop.packagekit.trigger-offline-upgrade",
 						      NULL,
 						      get_polkit_flags_for_dbus_invocation (invocation),
@@ -1808,14 +1805,14 @@ pk_engine_proxy_logind_cb (GObject *source_object,
 	PkEngine *engine = PK_ENGINE (user_data);
 	GDBusConnection* connection;
 
-	engine->priv->logind_proxy = g_dbus_proxy_new_finish (res, &error);
+	engine->logind_proxy = g_dbus_proxy_new_finish (res, &error);
 	// https://gitlab.gnome.org/GNOME/glib/-/issues/879
-	if (g_dbus_proxy_get_name_owner (engine->priv->logind_proxy) == NULL) {
+	if (g_dbus_proxy_get_name_owner (engine->logind_proxy) == NULL) {
 		g_warning ("failed to connect to logind: %s", error ? error->message : "no such service");
-		if (!engine->priv->logind_tried) {
-			engine->priv->logind_tried = TRUE;
-			connection = g_dbus_proxy_get_connection (engine->priv->logind_proxy);
-			g_clear_object (&engine->priv->logind_proxy);
+		if (!engine->logind_tried) {
+			engine->logind_tried = TRUE;
+			connection = g_dbus_proxy_get_connection (engine->logind_proxy);
+			g_clear_object (&engine->logind_proxy);
 			g_dbus_proxy_new (connection,
 				G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
 				NULL,
@@ -1848,7 +1845,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	};
 
 	/* save copy for emitting signals */
-	engine->priv->connection = g_object_ref (connection);
+	engine->connection = g_object_ref (connection);
 
 	/* connect to logind */
 	g_dbus_proxy_new (connection,
@@ -1864,7 +1861,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	/* register org.freedesktop.PackageKit */
 	registration_id = g_dbus_connection_register_object (connection,
 							     PK_DBUS_PATH,
-							     engine->priv->introspection->interfaces[0],
+							     engine->introspection->interfaces[0],
 							     &iface_daemon_vtable,
 							     engine,  /* user_data */
 							     NULL,  /* user_data_free_func */
@@ -1872,7 +1869,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection,
 	g_assert (registration_id > 0);
 	registration_id = g_dbus_connection_register_object (connection,
 							     PK_DBUS_PATH,
-							     engine->priv->introspection->interfaces[1],
+							     engine->introspection->interfaces[1],
 							     &iface_offline_vtable,
 							     engine,  /* user_data */
 							     NULL,  /* user_data_free_func */
@@ -1906,12 +1903,10 @@ pk_engine_init (PkEngine *engine)
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *filename = NULL;
 
-	engine->priv = PK_ENGINE_GET_PRIVATE (engine);
-
 	/* load introspection */
-	engine->priv->introspection = pk_load_introspection (PK_DBUS_INTERFACE ".xml",
+	engine->introspection = pk_load_introspection (PK_DBUS_INTERFACE ".xml",
 							     &error);
-	if (engine->priv->introspection == NULL) {
+	if (engine->introspection == NULL) {
 		g_error ("PkEngine: failed to load daemon introspection: %s",
 			 error->message);
 	}
@@ -1924,31 +1919,31 @@ pk_engine_init (PkEngine *engine)
 	}
 
 	/* proxy the network state */
-	engine->priv->network_monitor = g_network_monitor_get_default ();
-	g_signal_connect (engine->priv->network_monitor, "network-changed",
+	engine->network_monitor = g_network_monitor_get_default ();
+	g_signal_connect (engine->network_monitor, "network-changed",
 			  G_CALLBACK (pk_engine_network_state_changed_cb), engine);
-	engine->priv->network_state = pk_engine_get_network_state (engine->priv->network_monitor);
+	engine->network_state = pk_engine_get_network_state (engine->network_monitor);
 
 	/* try to get the distro id */
-	engine->priv->distro_id = pk_get_distro_id ();
+	engine->distro_id = pk_get_distro_id ();
 
-	engine->priv->timer = g_timer_new ();
+	engine->timer = g_timer_new ();
 
 	/* we need the uid and the session for the proxy setting mechanism */
-	engine->priv->dbus = pk_dbus_new ();
+	engine->dbus = pk_dbus_new ();
 
 	/* we need to be able to clear this */
-	engine->priv->timeout_priority_id = 0;
-	engine->priv->timeout_normal_id = 0;
+	engine->timeout_priority_id = 0;
+	engine->timeout_normal_id = 0;
 
 	/* setup file watches */
 	pk_engine_setup_file_monitors (engine);
 
 	/* we use a trasaction db to store old transactions */
-	engine->priv->transaction_db = pk_transaction_db_new ();
+	engine->transaction_db = pk_transaction_db_new ();
 
 	/* own the object */
-	engine->priv->owner_id =
+	engine->owner_id =
 		g_bus_own_name (G_BUS_TYPE_SYSTEM,
 				PK_DBUS_SERVICE,
 				G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
@@ -1969,52 +1964,52 @@ pk_engine_finalize (GObject *object)
 
 	engine = PK_ENGINE (object);
 
-	g_return_if_fail (engine->priv != NULL);
+	g_return_if_fail (engine != NULL);
 
 	/* if we set an state changed notifier, clear */
-	if (engine->priv->timeout_priority_id != 0) {
-		g_source_remove (engine->priv->timeout_priority_id);
-		engine->priv->timeout_priority_id = 0;
+	if (engine->timeout_priority_id != 0) {
+		g_source_remove (engine->timeout_priority_id);
+		engine->timeout_priority_id = 0;
 	}
-	if (engine->priv->timeout_normal_id != 0) {
-		g_source_remove (engine->priv->timeout_normal_id);
-		engine->priv->timeout_normal_id = 0;
+	if (engine->timeout_normal_id != 0) {
+		g_source_remove (engine->timeout_normal_id);
+		engine->timeout_normal_id = 0;
 	}
 
 	/* unlock if we locked this */
-	if (!pk_backend_unload (engine->priv->backend))
+	if (!pk_backend_unload (engine->backend))
 		g_warning ("couldn't unload the backend");
 
 	/* unown */
-	if (engine->priv->owner_id > 0)
-		g_bus_unown_name (engine->priv->owner_id);
+	if (engine->owner_id > 0)
+		g_bus_unown_name (engine->owner_id);
 
-	if (engine->priv->introspection != NULL)
-		g_dbus_node_info_unref (engine->priv->introspection);
-	if (engine->priv->connection != NULL)
-		g_object_unref (engine->priv->connection);
+	if (engine->introspection != NULL)
+		g_dbus_node_info_unref (engine->introspection);
+	if (engine->connection != NULL)
+		g_object_unref (engine->connection);
 
 	/* uninhibit */
-	if (engine->priv->logind_fd != 0)
-		close (engine->priv->logind_fd);
-	if (engine->priv->logind_proxy != NULL)
-		g_object_unref (engine->priv->logind_proxy);
+	if (engine->logind_fd != 0)
+		close (engine->logind_fd);
+	if (engine->logind_proxy != NULL)
+		g_object_unref (engine->logind_proxy);
 
 	/* compulsory gobjects */
-	g_timer_destroy (engine->priv->timer);
-	g_object_unref (engine->priv->monitor_conf);
-	g_object_unref (engine->priv->monitor_binary);
-	g_object_unref (engine->priv->monitor_offline);
-	g_object_unref (engine->priv->monitor_offline_upgrade);
-	g_object_unref (engine->priv->scheduler);
-	g_object_unref (engine->priv->transaction_db);
-	if (engine->priv->authority != NULL)
-		g_object_unref (engine->priv->authority);
-	g_object_unref (engine->priv->backend);
-	g_key_file_unref (engine->priv->conf);
-	g_object_unref (engine->priv->dbus);
-	g_strfreev (engine->priv->mime_types);
-	g_free (engine->priv->distro_id);
+	g_timer_destroy (engine->timer);
+	g_object_unref (engine->monitor_conf);
+	g_object_unref (engine->monitor_binary);
+	g_object_unref (engine->monitor_offline);
+	g_object_unref (engine->monitor_offline_upgrade);
+	g_object_unref (engine->scheduler);
+	g_object_unref (engine->transaction_db);
+	if (engine->authority != NULL)
+		g_object_unref (engine->authority);
+	g_object_unref (engine->backend);
+	g_key_file_unref (engine->conf);
+	g_object_unref (engine->dbus);
+	g_strfreev (engine->mime_types);
+	g_free (engine->distro_id);
 
 	G_OBJECT_CLASS (pk_engine_parent_class)->finalize (object);
 }
@@ -2024,18 +2019,18 @@ pk_engine_new (GKeyFile *conf)
 {
 	PkEngine *engine;
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
-	engine->priv->conf = g_key_file_ref (conf);
-	engine->priv->backend = pk_backend_new (engine->priv->conf);
-	g_signal_connect (engine->priv->backend, "installed-changed",
+	engine->conf = g_key_file_ref (conf);
+	engine->backend = pk_backend_new (engine->conf);
+	g_signal_connect (engine->backend, "installed-changed",
 			  G_CALLBACK (pk_engine_backend_installed_changed_cb), engine);
-	g_signal_connect (engine->priv->backend, "repo-list-changed",
+	g_signal_connect (engine->backend, "repo-list-changed",
 			  G_CALLBACK (pk_engine_backend_repo_list_changed_cb), engine);
-	g_signal_connect (engine->priv->backend, "updates-changed",
+	g_signal_connect (engine->backend, "updates-changed",
 			  G_CALLBACK (pk_engine_backend_updates_changed_cb), engine);
-	engine->priv->scheduler = pk_scheduler_new (engine->priv->conf);
-	pk_scheduler_set_backend (engine->priv->scheduler,
-				  engine->priv->backend);
-	g_signal_connect (engine->priv->scheduler, "changed",
+	engine->scheduler = pk_scheduler_new (engine->conf);
+	pk_scheduler_set_backend (engine->scheduler,
+				  engine->backend);
+	g_signal_connect (engine->scheduler, "changed",
 			  G_CALLBACK (pk_engine_scheduler_changed_cb), engine);
 	return PK_ENGINE (engine);
 }
