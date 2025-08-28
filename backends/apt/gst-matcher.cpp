@@ -52,7 +52,8 @@ GstMatcher::GstMatcher(gchar **values)
         regmatch_t matches[6];
         if (regexec(&pkre, value, 6, matches, 0) != REG_NOMATCH) {
             Match values;
-            string version, type, data, opt, arch;
+            string version, type, data, opt;
+            bool native = false;
 
             // Appends the version "0.10"
             version = "\nGstreamer-Version: ";
@@ -71,12 +72,16 @@ GstMatcher::GstMatcher(gchar **values)
                 if (!opt.empty()) {
                     size_t start_pos = 0;
                     // This is hardcoded in pk-gstreamer-install, so we also hardcode it here
-                    const string x86_64 = ")(64bit";
-
-                    if (ends_with(opt.c_str(), x86_64.c_str())) {
-                            // We hardcode 64bit -> amd64 here
-                            arch = "amd64";
-                            opt.erase(opt.end() - x86_64.length(), opt.end());
+                    const string arch_64 = ")(64bit";
+                    if (ends_with(opt.c_str(), arch_64.c_str())) {
+                        /* The ()(64bit) suffix is an RPM artifact, where it is used to distinguish
+                         * between the primary and secondary architecture in a 2-arch system.
+                         * It doesn't translate precisely to DPKG, where multi-arch is not limited
+                         * to one secondary architecture. Let's use it the same way RPM would and
+                         * only match the native arch.
+                         */
+                        native = true;
+                        opt.erase(opt.end() - arch_64.length(), opt.end());
                     }
 
                     // Replace all ")(" with "," - convert from input to serialized caps format
@@ -122,7 +127,7 @@ GstMatcher::GstMatcher(gchar **values)
             values.data    = data;
             values.opt     = opt;
             values.caps    = caps;
-            values.arch    = arch;
+            values.native  = native;
 
             m_matches.push_back(values);
         } else {
@@ -139,13 +144,13 @@ GstMatcher::~GstMatcher()
     }
 }
 
-bool GstMatcher::matches(string record, string arch)
+bool GstMatcher::matches(string record, bool native)
 {
     for (const Match &match : m_matches) {
         // Tries to find "Gstreamer-version: xxx"
         if (record.find(match.version) != string::npos) {
             size_t found;
-            if (!match.arch.empty() && arch != match.arch)
+            if (match.native && !native)
                     continue;
             found = record.find(match.type);
             // Tries to find the type "Gstreamer-Uri-Sinks: "

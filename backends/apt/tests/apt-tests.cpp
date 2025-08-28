@@ -124,12 +124,12 @@ static void
 apt_test_gst_matcher_with_caps (void)
 {
     {
-        /* Matches amd64-only */
+        /* Matches native architecture only */
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=4)()(64bit)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_false(matcher.matches(gst_plugins_bad_pkg, "i386"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches(gst_plugins_bad_pkg, FALSE /* native */));
     }
 
     {
@@ -137,9 +137,8 @@ apt_test_gst_matcher_with_caps (void)
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=4)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "i386"));
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "arm64"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, FALSE /* native */));
     }
 
     {
@@ -147,9 +146,9 @@ apt_test_gst_matcher_with_caps (void)
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=4)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_false(matcher.matches(gst_plugins_ugly_pkg, "amd64"));
-        g_assert_false(matcher.matches("", "amd64"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches(gst_plugins_ugly_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches("", TRUE /* native */));
     }
 }
 
@@ -157,12 +156,12 @@ static void
 apt_test_gst_matcher_without_caps (void)
 {
     {
-        /* Matches amd64-only */
+        /* Matches native architecture only */
         GstMatcher matcher(codec_strv("gstreamer1(decoder-video/x-h265)()(64bit)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_false(matcher.matches(gst_plugins_bad_pkg, "i386"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches(gst_plugins_bad_pkg, FALSE /* native */));
     }
 
     {
@@ -170,9 +169,8 @@ apt_test_gst_matcher_without_caps (void)
         GstMatcher matcher(codec_strv("gstreamer1(decoder-video/x-h265)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "i386"));
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "arm64"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, FALSE /* native */));
     }
 
     {
@@ -180,9 +178,9 @@ apt_test_gst_matcher_without_caps (void)
         GstMatcher matcher(codec_strv("gstreamer1(decoder-video/x-h265)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_true(matcher.matches(gst_plugins_bad_pkg, "amd64"));
-        g_assert_false(matcher.matches(gst_plugins_ugly_pkg, "amd64"));
-        g_assert_false(matcher.matches("", "amd64"));
+        g_assert_true(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches(gst_plugins_ugly_pkg, TRUE /* native */));
+        g_assert_false(matcher.matches("", TRUE /* native */));
     }
 }
 
@@ -193,14 +191,14 @@ apt_test_gst_matcher_bad_caps (void)
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=5)()(64bit)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_false(matcher.matches(gst_plugins_bad_pkg, "amd64"));
+        g_assert_false(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
     }
 
     {
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=5)"));
         g_assert_true(matcher.hasMatches());
 
-        g_assert_false(matcher.matches(gst_plugins_bad_pkg, "amd64"));
+        g_assert_false(matcher.matches(gst_plugins_bad_pkg, TRUE /* native */));
     }
 }
 
