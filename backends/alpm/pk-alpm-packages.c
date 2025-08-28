@@ -228,7 +228,6 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		GString *licenses;
 		PkGroupEnum group;
 		const gchar *desc, *url;
-		gulong size;
 
 		if (pk_backend_job_is_cancelled (job))
 			break;
@@ -254,14 +253,9 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		desc = alpm_pkg_get_desc (pkg);
 		url = alpm_pkg_get_url (pkg);
 
-		if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_LOCALDB) {
-			size = alpm_pkg_get_isize (pkg);
-		} else {
-			size = alpm_pkg_download_size (pkg);
-		}
-
-		pk_backend_job_details (job, *packages, NULL, licenses->str, group,
-					desc, url, size);
+		pk_backend_job_details_full (job, *packages, NULL, licenses->str, group,
+					     desc, url, alpm_pkg_get_isize (pkg),
+					     alpm_pkg_download_size (pkg));
 		g_string_free (licenses, TRUE);
 	}
 
