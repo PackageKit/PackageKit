@@ -97,3 +97,71 @@ td.title {
 	font-weight: bold;
 	}
 
+/* Styles imported from https://wiki.archlinux.org/title/XDG_Desktop_Portal */
+:root {
+	--archwiki-table-cell-background-red:light-dark(#faa,#6f1a24);
+	--archwiki-table-cell-background-orange:light-dark(#fda,#59300a);
+	--archwiki-table-cell-background-yellow:light-dark(#ffa,#4a3f00);
+	--archwiki-table-cell-background-green:light-dark(#afa,#004100);
+	--archwiki-table-cell-background-blue:light-dark(#def,#2a2a4b);
+	--archwiki-table-cell-background-violet:light-dark(#dcf,#352457);
+	--archwiki-table-cell-background-grey:light-dark(#ddd,#3f3f3f)
+}
+.archwiki-table-cell {
+	background:inherit;
+	color:inherit;
+	vertical-align:middle;
+	text-align:center
+}
+.archwiki-template-r {
+	background-color:var(--archwiki-table-cell-background-red);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-o {
+	background-color:var(--archwiki-table-cell-background-orange);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-y {
+	background-color:var(--archwiki-table-cell-background-yellow);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-g {
+	background-color:var(--archwiki-table-cell-background-green);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-b {
+	background-color:var(--archwiki-table-cell-background-blue);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-v {
+	background-color:var(--archwiki-table-cell-background-violet);
+	color:var(--archwiki-text-color)
+}
+.archwiki-template-grey {
+	background-color:var(--archwiki-table-cell-background-grey);
+	color:var(--archwiki-text-color)
+}
+
+.wikitable {
+	background-color:var(--background-color-neutral-subtle,#f8f9fa);
+	color:var(--color-base,#202122);
+	margin:1em 0;
+	border:1px solid var(--border-color-base,#a2a9b1);
+	border-collapse:collapse
+}
+.wikitable > tr > th,
+.wikitable > tr > td,
+.wikitable > * > tr > th,
+.wikitable > * > tr > td {
+	border:1px solid var(--border-color-base,#a2a9b1);
+	padding:0.5em 1em
+}
+.wikitable > tr > th,
+.wikitable > * > tr > th {
+	background-color:var(--background-color-neutral,#eaecf0);
+	color:var(--color-base,#202122);
+	text-align:center
+}
+.wikitable > caption {
+	font-weight:bold
+}
