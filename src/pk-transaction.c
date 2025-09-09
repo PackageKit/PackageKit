@@ -1148,9 +1148,12 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 {
 	guint time_ms;
 	guint i;
+	guint n_args;
 	PkPackage *item;
 	PkInfoEnum info;
 	PkBitfield transaction_flags;
+	gchar **cached_data = NULL;
+	g_autofree gchar *transaction_args = NULL;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->priv->tid != NULL);
@@ -1254,20 +1257,38 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* remove any inhibit */
 	//TODO: on main interface
 
+	/* add cached transaction data to syslog if available */
+	if (transaction->priv->cached_values != NULL)
+		cached_data = transaction->priv->cached_values;
+	else if (transaction->priv->cached_package_ids != NULL)
+		cached_data = transaction->priv->cached_package_ids;
+	else if (transaction->priv->cached_full_paths != NULL)
+		cached_data = transaction->priv->cached_full_paths;
+
+	if (cached_data) {
+		n_args = g_strv_length (cached_data);
+		if (n_args == 1)
+			transaction_args = g_strdup_printf (" (%s)", cached_data[0]);
+		else if (n_args > 1)
+			transaction_args = g_strdup_printf (" (n=%u)", n_args);
+	}
+
 	/* report to syslog */
 	if (transaction->priv->client_uid != PK_TRANSACTION_UID_INVALID) {
 		syslog (LOG_DAEMON | LOG_DEBUG,
-			"%s transaction %s from uid %i finished with %s after %ims",
+			"%s transaction %s%s from uid %i finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
+			transaction_args ? transaction_args : "",
 			transaction->priv->client_uid,
 			pk_exit_enum_to_string (exit_enum),
 			time_ms);
 	} else {
 		syslog (LOG_DAEMON | LOG_DEBUG,
-			"%s transaction %s finished with %s after %ims",
+			"%s transaction %s%s finished with %s after %ims",
 			pk_role_enum_to_string (transaction->priv->role),
 			transaction->priv->tid,
+			transaction_args ? transaction_args : "",
 			pk_exit_enum_to_string (exit_enum),
 			time_ms);
 	}
