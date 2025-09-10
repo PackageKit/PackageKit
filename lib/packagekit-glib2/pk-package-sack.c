@@ -60,6 +60,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_package_sack_get_instance_private (o))
 
 /**
  * pk_package_sack_clear:
@@ -72,7 +73,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkPackageSack, pk_package_sack, G_TYPE_OBJECT)
 void
 pk_package_sack_clear (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 
@@ -93,7 +94,7 @@ pk_package_sack_clear (PkPackageSack *sack)
 guint
 pk_package_sack_get_size (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), 0);
 
@@ -113,7 +114,7 @@ pk_package_sack_get_size (PkPackageSack *sack)
 gchar **
 pk_package_sack_get_ids (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	gchar **package_ids;
 	GPtrArray *array;
 	guint i;
@@ -143,7 +144,7 @@ pk_package_sack_get_ids (PkPackageSack *sack)
 GPtrArray *
 pk_package_sack_get_array (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
 
@@ -165,7 +166,7 @@ pk_package_sack_get_array (PkPackageSack *sack)
 PkPackageSack *
 pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackageSack *results;
 	PkPackage *package;
 	PkInfoEnum info_tmp;
@@ -203,7 +204,7 @@ pk_package_sack_filter_by_info (PkPackageSack *sack, PkInfoEnum info)
 PkPackageSack *
 pk_package_sack_filter (PkPackageSack *sack, PkPackageSackFilterFunc filter_cb, gpointer user_data)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackageSack *results;
 	PkPackage *package;
 	guint i;
@@ -237,7 +238,7 @@ pk_package_sack_filter (PkPackageSack *sack, PkPackageSackFilterFunc filter_cb, 
 gboolean
 pk_package_sack_add_package (PkPackageSack *sack, PkPackage *package)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
@@ -376,7 +377,7 @@ pk_package_sack_add_packages_from_file (PkPackageSack *sack,
 gboolean
 pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	gboolean ret;
 	guint i;
 	PkPackage *pkg;
@@ -419,7 +420,7 @@ pk_package_sack_to_file (PkPackageSack *sack, GFile *file, GError **error)
 gboolean
 pk_package_sack_remove_package (PkPackageSack *sack, PkPackage *package)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
@@ -445,7 +446,7 @@ gboolean
 pk_package_sack_remove_package_by_id (PkPackageSack *sack,
 				      const gchar *package_id)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackage *package;
 	guint i;
 	GPtrArray *array;
@@ -482,7 +483,7 @@ pk_package_sack_remove_by_filter (PkPackageSack *sack,
 				  PkPackageSackFilterFunc filter_cb,
 				  gpointer user_data)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	gboolean ret = FALSE;
 	PkPackage *package;
 	gint i;
@@ -519,7 +520,7 @@ pk_package_sack_remove_by_filter (PkPackageSack *sack,
 PkPackage *
 pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackage *package = NULL;
 
 	g_return_val_if_fail (PK_IS_PACKAGE_SACK (sack), NULL);
@@ -547,7 +548,7 @@ pk_package_sack_find_by_id (PkPackageSack *sack, const gchar *package_id)
 PkPackage *
 pk_package_sack_find_by_id_name_arch (PkPackageSack *sack, const gchar *package_id)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackage *pkg_tmp;
 	guint i;
 	g_auto(GStrv) split = NULL;
@@ -644,7 +645,7 @@ pk_package_sack_sort_compare_info_func (PkPackage **a, PkPackage **b)
 void
 pk_package_sack_sort (PkPackageSack *sack, PkPackageSackSortType type)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_return_if_fail (PK_IS_PACKAGE_SACK (sack));
 
@@ -671,7 +672,7 @@ pk_package_sack_sort (PkPackageSack *sack, PkPackageSackSortType type)
 guint64
 pk_package_sack_get_total_bytes (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	PkPackage *package = NULL;
 	guint i;
 	GPtrArray *array;
@@ -698,7 +699,7 @@ pk_package_sack_get_total_bytes (PkPackageSack *sack)
 static gchar **
 pk_package_sack_get_package_ids (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	const gchar *id;
 	gchar **package_ids;
 	const GPtrArray *array;
@@ -794,7 +795,7 @@ pk_package_sack_resolve_async (PkPackageSack *sack, GCancellable *cancellable,
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
@@ -916,7 +917,7 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
@@ -1046,7 +1047,7 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 					 PkProgressCallback progress_callback, gpointer progress_user_data,
 					 GAsyncReadyCallback callback, gpointer user_data)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 	g_autoptr(GTask) task = NULL;
 	g_auto(GStrv) package_ids = NULL;
 
@@ -1081,7 +1082,7 @@ pk_package_sack_class_init (PkPackageSackClass *klass)
 static void
 pk_package_sack_init (PkPackageSack *sack)
 {
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	sack->priv = priv;
 	priv->table = g_hash_table_new (g_str_hash, g_str_equal);
@@ -1096,7 +1097,7 @@ static void
 pk_package_sack_finalize (GObject *object)
 {
 	PkPackageSack *sack = PK_PACKAGE_SACK (object);
-	PkPackageSackPrivate *priv = pk_package_sack_get_instance_private (sack);
+	PkPackageSackPrivate *priv = GET_PRIVATE(sack);
 
 	g_clear_pointer (&priv->array, g_ptr_array_unref);
 	g_clear_pointer (&priv->table, g_hash_table_unref);

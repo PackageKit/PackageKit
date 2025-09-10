@@ -57,6 +57,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_repo_detail_get_instance_private (o))
 
 /**
  * pk_repo_detail_get_id:
@@ -71,7 +72,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkRepoDetail, pk_repo_detail, PK_TYPE_SOURCE)
 const gchar *
 pk_repo_detail_get_id (PkRepoDetail *repo_detail)
 {
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
 
@@ -91,7 +92,7 @@ pk_repo_detail_get_id (PkRepoDetail *repo_detail)
 const gchar *
 pk_repo_detail_get_description (PkRepoDetail *repo_detail)
 {
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), NULL);
 
@@ -111,7 +112,7 @@ pk_repo_detail_get_description (PkRepoDetail *repo_detail)
 gboolean
 pk_repo_detail_get_enabled (PkRepoDetail *repo_detail)
 {
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	g_return_val_if_fail (PK_IS_REPO_DETAIL (repo_detail), FALSE);
 
@@ -125,7 +126,7 @@ static void
 pk_repo_detail_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	switch (prop_id) {
 	case PROP_REPO_ID:
@@ -150,7 +151,7 @@ static void
 pk_repo_detail_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	switch (prop_id) {
 	case PROP_REPO_ID:
@@ -219,7 +220,7 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 static void
 pk_repo_detail_init (PkRepoDetail *repo_detail)
 {
-	repo_detail->priv = pk_repo_detail_get_instance_private (repo_detail);
+	repo_detail->priv = GET_PRIVATE(repo_detail);
 }
 
 /*
@@ -229,7 +230,7 @@ static void
 pk_repo_detail_finalize (GObject *object)
 {
 	PkRepoDetail *repo_detail = PK_REPO_DETAIL (object);
-	PkRepoDetailPrivate *priv = pk_repo_detail_get_instance_private (repo_detail);
+	PkRepoDetailPrivate *priv = GET_PRIVATE(repo_detail);
 
 	g_clear_pointer (&priv->repo_id, g_free);
 	g_clear_pointer (&priv->description, g_free);
@@ -251,4 +252,3 @@ pk_repo_detail_new (void)
 	repo_detail = g_object_new (PK_TYPE_REPO_DETAIL, NULL);
 	return PK_REPO_DETAIL (repo_detail);
 }
-

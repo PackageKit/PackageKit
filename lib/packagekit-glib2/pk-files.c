@@ -55,6 +55,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkFiles, pk_files, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_files_get_instance_private (o))
 
 /**
  * pk_files_get_package_id:
@@ -69,7 +70,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkFiles, pk_files, PK_TYPE_SOURCE)
 const gchar *
 pk_files_get_package_id (PkFiles *files)
 {
-	PkFilesPrivate *priv = pk_files_get_instance_private (files);
+	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	g_return_val_if_fail (PK_IS_FILES (files), NULL);
 
@@ -89,7 +90,7 @@ pk_files_get_package_id (PkFiles *files)
 gchar **
 pk_files_get_files (PkFiles *files)
 {
-	PkFilesPrivate *priv = pk_files_get_instance_private (files);
+	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	g_return_val_if_fail (PK_IS_FILES (files), NULL);
 
@@ -103,7 +104,7 @@ static void
 pk_files_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkFiles *files = PK_FILES (object);
-	PkFilesPrivate *priv = pk_files_get_instance_private (files);
+	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -125,7 +126,7 @@ static void
 pk_files_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkFiles *files = PK_FILES (object);
-	PkFilesPrivate *priv = pk_files_get_instance_private (files);
+	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -190,7 +191,7 @@ static void
 pk_files_finalize (GObject *object)
 {
 	PkFiles *files = PK_FILES (object);
-	PkFilesPrivate *priv = pk_files_get_instance_private (files);
+	PkFilesPrivate *priv = GET_PRIVATE(files);
 
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->files, g_strfreev);
@@ -212,4 +213,3 @@ pk_files_new (void)
 	files = g_object_new (PK_TYPE_FILES, NULL);
 	return PK_FILES (files);
 }
-

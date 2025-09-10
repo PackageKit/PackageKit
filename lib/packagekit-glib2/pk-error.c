@@ -57,6 +57,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkError, pk_error, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_error_get_instance_private (o))
 
 /*
  * pk_error_get_property:
@@ -65,7 +66,7 @@ static void
 pk_error_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+	PkErrorPrivate *priv = GET_PRIVATE(error_code);
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -87,7 +88,7 @@ static void
 pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+	PkErrorPrivate *priv = GET_PRIVATE(error_code);
 
 	switch (prop_id) {
 	case PROP_CODE:
@@ -116,7 +117,7 @@ pk_error_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 PkErrorEnum
 pk_error_get_code (PkError *error_code)
 {
-	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+	PkErrorPrivate *priv = GET_PRIVATE(error_code);
 
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), 0);
 
@@ -136,7 +137,7 @@ pk_error_get_code (PkError *error_code)
 const gchar *
 pk_error_get_details (PkError *error_code)
 {
-	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+	PkErrorPrivate *priv = GET_PRIVATE(error_code);
 
 	g_return_val_if_fail (PK_IS_ERROR_CODE (error_code), NULL);
 
@@ -182,7 +183,7 @@ pk_error_class_init (PkErrorClass *klass)
 static void
 pk_error_init (PkError *error_code)
 {
-	error_code->priv = pk_error_get_instance_private (error_code);
+	error_code->priv = GET_PRIVATE(error_code);
 }
 
 /*
@@ -192,7 +193,7 @@ static void
 pk_error_finalize (GObject *object)
 {
 	PkError *error_code = PK_ERROR_CODE (object);
-	PkErrorPrivate *priv = pk_error_get_instance_private (error_code);
+	PkErrorPrivate *priv = GET_PRIVATE(error_code);
 
 	g_clear_pointer (&priv->details, g_free);
 
@@ -213,4 +214,3 @@ pk_error_new (void)
 	error_code = g_object_new (PK_TYPE_ERROR_CODE, NULL);
 	return PK_ERROR_CODE (error_code);
 }
-

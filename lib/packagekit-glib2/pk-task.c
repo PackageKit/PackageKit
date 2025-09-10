@@ -101,6 +101,7 @@ typedef struct {
 } PkTaskState;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkTask, pk_task, PK_TYPE_CLIENT)
+#define GET_PRIVATE(o) (pk_task_get_instance_private (o))
 
 static void pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data);
 
@@ -120,7 +121,7 @@ pk_task_generate_request_id (void)
 static inline GTask *
 pk_task_find_by_request (PkTask *task, guint request)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
 	g_return_val_if_fail (request != 0, NULL);
@@ -156,7 +157,7 @@ static void
 pk_task_do_async_action (GTask *gtask)
 {
 	PkTask *task = g_task_get_source_object (gtask);
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state = g_task_get_task_data (gtask);
 	GCancellable *cancellable = g_task_get_cancellable (gtask);
 	PkBitfield transaction_flags;
@@ -1023,7 +1024,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
@@ -1081,7 +1082,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
@@ -1139,7 +1140,7 @@ pk_task_upgrade_system_async (PkTask *task,
                               PkProgressCallback progress_callback, gpointer progress_user_data,
                               GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
@@ -1194,7 +1195,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
@@ -1246,7 +1247,7 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
@@ -1300,7 +1301,7 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 		       PkProgressCallback progress_callback, gpointer progress_user_data,
 		       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1355,7 +1356,7 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1403,7 +1404,7 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1451,7 +1452,7 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1499,7 +1500,7 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1546,7 +1547,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1592,7 +1593,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1639,7 +1640,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1686,7 +1687,7 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1734,7 +1735,7 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1782,7 +1783,7 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1830,7 +1831,7 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 			    PkProgressCallback progress_callback, gpointer progress_user_data,
 			    GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1880,7 +1881,7 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1927,7 +1928,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 			 PkProgressCallback progress_callback, gpointer progress_user_data,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -1972,7 +1973,7 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -2017,7 +2018,7 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -2063,7 +2064,7 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -2110,7 +2111,7 @@ pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled,
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	g_autoptr(GTask) gtask = NULL;
 
@@ -2159,7 +2160,7 @@ pk_task_repair_system_async (PkTask *task,
 			     GAsyncReadyCallback callback_ready,
 			     gpointer user_data)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 	g_autoptr(GTask) gtask = NULL;
@@ -2205,7 +2206,7 @@ pk_task_repair_system_async (PkTask *task,
 PkResults *
 pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 	GTask *gtask;
 	PkTaskState *state;
 
@@ -2234,7 +2235,7 @@ pk_task_generic_finish (PkTask *task, GAsyncResult *res, GError **error)
 void
 pk_task_set_simulate (PkTask *task, gboolean simulate)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 
@@ -2258,7 +2259,7 @@ pk_task_set_simulate (PkTask *task, gboolean simulate)
 gboolean
 pk_task_get_simulate (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -2278,7 +2279,7 @@ pk_task_get_simulate (PkTask *task)
 void
 pk_task_set_only_download (PkTask *task, gboolean only_download)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 
@@ -2302,7 +2303,7 @@ pk_task_set_only_download (PkTask *task, gboolean only_download)
 gboolean
 pk_task_get_only_download (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -2323,7 +2324,7 @@ pk_task_get_only_download (PkTask *task)
 void
 pk_task_set_only_trusted (PkTask *task, gboolean only_trusted)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 
@@ -2347,7 +2348,7 @@ pk_task_set_only_trusted (PkTask *task, gboolean only_trusted)
 gboolean
 pk_task_get_only_trusted (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -2366,7 +2367,7 @@ pk_task_get_only_trusted (PkTask *task)
 void
 pk_task_set_allow_downgrade (PkTask *task, gboolean allow_downgrade)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 
@@ -2390,7 +2391,7 @@ pk_task_set_allow_downgrade (PkTask *task, gboolean allow_downgrade)
 gboolean
 pk_task_get_allow_downgrade (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -2409,7 +2410,7 @@ pk_task_get_allow_downgrade (PkTask *task)
 void
 pk_task_set_allow_reinstall (PkTask *task, gboolean allow_reinstall)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_if_fail (PK_IS_TASK (task));
 
@@ -2433,7 +2434,7 @@ pk_task_set_allow_reinstall (PkTask *task, gboolean allow_reinstall)
 gboolean
 pk_task_get_allow_reinstall (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_return_val_if_fail (PK_IS_TASK (task), FALSE);
 
@@ -2447,7 +2448,7 @@ static void
 pk_task_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkTask *task = PK_TASK (object);
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	switch (prop_id) {
 	case PROP_SIMULATE:
@@ -2478,7 +2479,7 @@ static void
 pk_task_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkTask *task = PK_TASK (object);
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	switch (prop_id) {
 	case PROP_SIMULATE:
@@ -2582,7 +2583,7 @@ pk_task_class_init (PkTaskClass *klass)
 static void
 pk_task_init (PkTask *task)
 {
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	task->priv = priv;
 	priv->gtasks = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, g_object_unref);
@@ -2598,7 +2599,7 @@ static void
 pk_task_finalize (GObject *object)
 {
 	PkTask *task = PK_TASK (object);
-	PkTaskPrivate *priv = pk_task_get_instance_private (task);
+	PkTaskPrivate *priv = GET_PRIVATE(task);
 
 	g_clear_pointer (&priv->gtasks, g_hash_table_unref);
 

@@ -59,6 +59,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkDistroUpgrade, pk_distro_upgrade, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_distro_upgrade_get_instance_private (o))
 
 /**
  * pk_distro_upgrade_get_id:
@@ -74,7 +75,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkDistroUpgrade, pk_distro_upgrade, PK_TYPE_SOURCE)
 const gchar *
 pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
 {
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
 
@@ -94,7 +95,7 @@ pk_distro_upgrade_get_id (PkDistroUpgrade *distro_upgrade)
 const gchar *
 pk_distro_upgrade_get_summary (PkDistroUpgrade *distro_upgrade)
 {
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), NULL);
 
@@ -114,7 +115,7 @@ pk_distro_upgrade_get_summary (PkDistroUpgrade *distro_upgrade)
 PkDistroUpgradeEnum
 pk_distro_upgrade_get_state (PkDistroUpgrade *distro_upgrade)
 {
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
 
@@ -129,7 +130,7 @@ static void
 pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	switch (prop_id) {
 	case PROP_STATE:
@@ -154,7 +155,7 @@ static void
 pk_distro_upgrade_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	switch (prop_id) {
 	case PROP_STATE:
@@ -223,7 +224,7 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 static void
 pk_distro_upgrade_init (PkDistroUpgrade *distro_upgrade)
 {
-	distro_upgrade->priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	distro_upgrade->priv = GET_PRIVATE(distro_upgrade);
 }
 
 /*
@@ -233,7 +234,7 @@ static void
 pk_distro_upgrade_finalize (GObject *object)
 {
 	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
-	PkDistroUpgradePrivate *priv = pk_distro_upgrade_get_instance_private (distro_upgrade);
+	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
 	g_clear_pointer (&priv->name, g_free);
 	g_clear_pointer (&priv->summary, g_free);
@@ -255,4 +256,3 @@ pk_distro_upgrade_new (void)
 	distro_upgrade = g_object_new (PK_TYPE_DISTRO_UPGRADE, NULL);
 	return PK_DISTRO_UPGRADE (distro_upgrade);
 }
-

@@ -70,6 +70,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_transaction_past_get_instance_private (o))
 
 /**
  * pk_transaction_past_get_id:
@@ -84,7 +85,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionPast, pk_transaction_past, PK_TYPE_SOUR
 const gchar *
 pk_transaction_past_get_id (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
 
@@ -104,7 +105,7 @@ pk_transaction_past_get_id (PkTransactionPast *past)
 const gchar *
 pk_transaction_past_get_timespec (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
 
@@ -124,7 +125,7 @@ pk_transaction_past_get_timespec (PkTransactionPast *past)
 GDateTime *
 pk_transaction_past_get_datetime (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
 
@@ -173,7 +174,7 @@ pk_transaction_past_get_timestamp (PkTransactionPast *past)
 gboolean
 pk_transaction_past_get_succeeded (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), FALSE);
 
@@ -193,7 +194,7 @@ pk_transaction_past_get_succeeded (PkTransactionPast *past)
 PkRoleEnum
 pk_transaction_past_get_role (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), PK_ROLE_ENUM_UNKNOWN);
 
@@ -213,7 +214,7 @@ pk_transaction_past_get_role (PkTransactionPast *past)
 guint
 pk_transaction_past_get_duration (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), 0);
 
@@ -233,7 +234,7 @@ pk_transaction_past_get_duration (PkTransactionPast *past)
 const gchar *
 pk_transaction_past_get_data (PkTransactionPast *past)
 {
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(past);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_PAST (past), NULL);
 	return priv->data;
@@ -320,7 +321,7 @@ static void
 pk_transaction_past_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkTransactionPast *transaction_past = PK_TRANSACTION_PAST (object);
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (transaction_past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(transaction_past);
 
 	switch (prop_id) {
 	case PROP_TID:
@@ -456,7 +457,7 @@ pk_transaction_past_class_init (PkTransactionPastClass *klass)
 static void
 pk_transaction_past_init (PkTransactionPast *transaction_past)
 {
-	transaction_past->priv = pk_transaction_past_get_instance_private (transaction_past);
+	transaction_past->priv = GET_PRIVATE(transaction_past);
 }
 
 /*
@@ -466,7 +467,7 @@ static void
 pk_transaction_past_finalize (GObject *object)
 {
 	PkTransactionPast *transaction_past = PK_TRANSACTION_PAST (object);
-	PkTransactionPastPrivate *priv = pk_transaction_past_get_instance_private (transaction_past);
+	PkTransactionPastPrivate *priv = GET_PRIVATE(transaction_past);
 
 	g_clear_pointer (&priv->tid, g_free);
 	g_clear_pointer (&priv->timespec, g_free);
@@ -490,4 +491,3 @@ pk_transaction_past_new (void)
 	transaction_past = g_object_new (PK_TYPE_TRANSACTION_PAST, NULL);
 	return PK_TRANSACTION_PAST (transaction_past);
 }
-

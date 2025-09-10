@@ -59,6 +59,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkMediaChangeRequired, pk_media_change_required, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_media_change_required_get_instance_private (o))
 
 /*
  * pk_media_change_required_get_property:
@@ -67,7 +68,7 @@ static void
 pk_media_change_required_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkMediaChangeRequired *media_change_required = PK_MEDIA_CHANGE_REQUIRED (object);
-	PkMediaChangeRequiredPrivate *priv = pk_media_change_required_get_instance_private (media_change_required);
+	PkMediaChangeRequiredPrivate *priv = GET_PRIVATE(media_change_required);
 
 	switch (prop_id) {
 	case PROP_MEDIA_TYPE:
@@ -92,7 +93,7 @@ static void
 pk_media_change_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkMediaChangeRequired *media_change_required = PK_MEDIA_CHANGE_REQUIRED (object);
-	PkMediaChangeRequiredPrivate *priv = pk_media_change_required_get_instance_private (media_change_required);
+	PkMediaChangeRequiredPrivate *priv = GET_PRIVATE(media_change_required);
 
 	switch (prop_id) {
 	case PROP_MEDIA_TYPE:
@@ -161,7 +162,7 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 static void
 pk_media_change_required_init (PkMediaChangeRequired *media_change_required)
 {
-	media_change_required->priv = pk_media_change_required_get_instance_private (media_change_required);
+	media_change_required->priv = GET_PRIVATE(media_change_required);
 }
 
 /*
@@ -171,7 +172,7 @@ static void
 pk_media_change_required_finalize (GObject *object)
 {
 	PkMediaChangeRequired *media_change_required = PK_MEDIA_CHANGE_REQUIRED (object);
-	PkMediaChangeRequiredPrivate *priv = pk_media_change_required_get_instance_private (media_change_required);
+	PkMediaChangeRequiredPrivate *priv = GET_PRIVATE(media_change_required);
 
 	g_clear_pointer (&priv->media_id, g_free);
 	g_clear_pointer (&priv->media_text, g_free);
@@ -193,4 +194,3 @@ pk_media_change_required_new (void)
 	media_change_required = g_object_new (PK_TYPE_MEDIA_CHANGE_REQUIRED, NULL);
 	return PK_MEDIA_CHANGE_REQUIRED (media_change_required);
 }
-

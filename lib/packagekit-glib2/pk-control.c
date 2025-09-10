@@ -105,6 +105,7 @@ static gpointer pk_control_object = NULL;
 static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkControl, pk_control, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_control_get_instance_private (o))
 
 /**
  * pk_control_error_quark:
@@ -162,7 +163,7 @@ pk_control_set_property_value (PkControl *control,
 			       const gchar *key,
 			       GVariant *value)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	const gchar *tmp_str;
 	gboolean tmp_bool;
 	guint tmp_uint;
@@ -371,7 +372,7 @@ static void
 pk_control_proxy_connect (PkControl *control,
 			  GDBusProxy *proxy)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	guint i;
 	g_auto(GStrv) props = NULL;
 
@@ -437,7 +438,7 @@ static void
 pk_control_get_tid_internal (PkControl *control,
 			     GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 
 	g_assert (PK_IS_CONTROL (control));
@@ -494,7 +495,7 @@ pk_control_get_tid_async (PkControl *control,
 			  GAsyncReadyCallback callback,
 			  gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GTask) task = NULL;
 
@@ -588,7 +589,7 @@ static void
 pk_control_suggest_daemon_quit_internal (PkControl *control,
 					 GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 
 	g_assert (PK_IS_CONTROL (control));
@@ -645,7 +646,7 @@ pk_control_suggest_daemon_quit_async (PkControl *control,
 				      GAsyncReadyCallback callback,
 				      gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -743,7 +744,7 @@ static void
 pk_control_get_daemon_state_internal (PkControl *control,
 				      GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 
 	g_assert (PK_IS_CONTROL (control));
@@ -800,7 +801,7 @@ pk_control_get_daemon_state_async (PkControl *control,
 				   GAsyncReadyCallback callback,
 				   gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -895,7 +896,7 @@ static void
 pk_control_set_proxy_internal (PkControl *control,
 			       GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 	GVariant *parameters;
 
@@ -966,7 +967,7 @@ pk_control_set_proxy2_async (PkControl *control,
 			     GAsyncReadyCallback callback,
 			     gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 	GVariant *parameters = NULL;
@@ -1117,7 +1118,7 @@ static void
 pk_control_get_transaction_list_internal (PkControl *control,
 					  GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 
 	g_assert (PK_IS_CONTROL (control));
@@ -1174,7 +1175,7 @@ pk_control_get_transaction_list_async (PkControl *control,
 				       GAsyncReadyCallback callback,
 				       gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -1280,7 +1281,7 @@ static void
 pk_control_get_time_since_action_internal (PkControl *control,
 					   GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 	guint role;
 
@@ -1342,7 +1343,7 @@ pk_control_get_time_since_action_async (PkControl *control,
 					GAsyncReadyCallback callback,
 					gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -1449,7 +1450,7 @@ static void
 pk_control_can_authorize_internal (PkControl *control,
 				   GTask *task)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	GCancellable *cancellable;
 	const gchar *action_id;
 
@@ -1511,7 +1512,7 @@ pk_control_can_authorize_async (PkControl *control,
 				GAsyncReadyCallback callback,
 				gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -1620,7 +1621,7 @@ pk_control_get_properties_async (PkControl *control,
 				 GAsyncReadyCallback callback,
 				 gpointer user_data)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -1690,7 +1691,7 @@ static void
 pk_control_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkControl *control = PK_CONTROL (object);
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 
 	switch (prop_id) {
 	case PROP_VERSION_MAJOR:
@@ -2002,7 +2003,7 @@ pk_control_name_appeared_cb (GDBusConnection *connection,
 			     gpointer user_data)
 {
 	PkControl *control = PK_CONTROL (user_data);
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	priv->connected = TRUE;
 	g_debug ("notify::connected");
 	g_object_notify_by_pspec (G_OBJECT(control), obj_properties[PROP_CONNECTED]);
@@ -2014,7 +2015,7 @@ pk_control_name_appeared_cb (GDBusConnection *connection,
 static void
 pk_control_proxy_destroy (PkControl *control)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 
 	if (priv->proxy == NULL)
 		return;
@@ -2037,7 +2038,7 @@ pk_control_name_vanished_cb (GDBusConnection *connection,
 			     gpointer user_data)
 {
 	PkControl *control = PK_CONTROL (user_data);
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 
 	priv->connected = FALSE;
 	g_debug ("notify::connected");
@@ -2056,7 +2057,7 @@ pk_control_name_vanished_cb (GDBusConnection *connection,
 static void
 pk_control_init (PkControl *control)
 {
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 	priv->network_state = PK_NETWORK_ENUM_UNKNOWN;
 	priv->version_major = G_MAXUINT;
 	priv->version_minor = G_MAXUINT;
@@ -2080,7 +2081,7 @@ static void
 pk_control_finalize (GObject *object)
 {
 	PkControl *control = PK_CONTROL (object);
-	PkControlPrivate *priv = pk_control_get_instance_private (control);
+	PkControlPrivate *priv = GET_PRIVATE(control);
 
 	/* ensure we cancel any in-flight DBus calls */
 	g_cancellable_cancel (priv->cancellable);

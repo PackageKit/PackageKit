@@ -59,6 +59,7 @@ typedef enum {
 static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_transaction_list_get_instance_private (o))
 
 /*
  * pk_transaction_list_process_transaction_list:
@@ -66,7 +67,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionList, pk_transaction_list, G_TYPE_OBJEC
 static void
 pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **transaction_ids)
 {
-	PkTransactionListPrivate *priv = pk_transaction_list_get_instance_private (tlist);
+	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 	guint i, j;
 	gboolean ret;
 	const gchar *tid;
@@ -150,7 +151,7 @@ pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *r
 static void
 pk_transaction_list_get_transaction_list (PkTransactionList *tlist)
 {
-	PkTransactionListPrivate *priv = pk_transaction_list_get_instance_private (tlist);
+	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 
 	g_debug ("refreshing task list");
 	pk_control_get_transaction_list_async (priv->control, priv->cancellable,
@@ -192,7 +193,7 @@ pk_transaction_list_notify_connected_cb (PkControl *control, GParamSpec *pspec, 
 gchar **
 pk_transaction_list_get_ids (PkTransactionList *tlist)
 {
-	PkTransactionListPrivate *priv = pk_transaction_list_get_instance_private (tlist);
+	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_LIST (tlist), NULL);
 
@@ -244,7 +245,7 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 static void
 pk_transaction_list_init (PkTransactionList *tlist)
 {
-	PkTransactionListPrivate *priv = pk_transaction_list_get_instance_private (tlist);
+	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 
 	tlist->priv = priv;
 
@@ -270,7 +271,7 @@ static void
 pk_transaction_list_finalize (GObject *object)
 {
 	PkTransactionList *tlist = PK_TRANSACTION_LIST (object);
-	PkTransactionListPrivate *priv = pk_transaction_list_get_instance_private (tlist);
+	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 
 	/* cancel if we're in the act */
 	g_cancellable_cancel (priv->cancellable);

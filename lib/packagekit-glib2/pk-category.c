@@ -61,6 +61,7 @@ enum {
 static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkCategory, pk_category, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_category_get_instance_private (o))
 
 /**
  * pk_category_get_parent_id:
@@ -75,7 +76,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkCategory, pk_category, PK_TYPE_SOURCE)
 const gchar *
 pk_category_get_parent_id (PkCategory *category)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
 
@@ -94,7 +95,7 @@ pk_category_get_parent_id (PkCategory *category)
 void
 pk_category_set_parent_id (PkCategory *category, const gchar *parent_id)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_if_fail (PK_IS_CATEGORY (category));
 
@@ -119,7 +120,7 @@ pk_category_set_parent_id (PkCategory *category, const gchar *parent_id)
 const gchar *
 pk_category_get_id (PkCategory *category)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
 
@@ -138,7 +139,7 @@ pk_category_get_id (PkCategory *category)
 void
 pk_category_set_id (PkCategory *category, const gchar *cat_id)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_if_fail (PK_IS_CATEGORY (category));
 
@@ -163,7 +164,7 @@ pk_category_set_id (PkCategory *category, const gchar *cat_id)
 const gchar *
 pk_category_get_name (PkCategory *category)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
 
@@ -182,7 +183,7 @@ pk_category_get_name (PkCategory *category)
 void
 pk_category_set_name (PkCategory *category, const gchar *name)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_if_fail (PK_IS_CATEGORY (category));
 
@@ -207,7 +208,7 @@ pk_category_set_name (PkCategory *category, const gchar *name)
 const gchar *
 pk_category_get_summary (PkCategory *category)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
 
@@ -226,7 +227,7 @@ pk_category_get_summary (PkCategory *category)
 void
 pk_category_set_summary (PkCategory *category, const gchar *summary)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_if_fail (PK_IS_CATEGORY (category));
 
@@ -251,7 +252,7 @@ pk_category_set_summary (PkCategory *category, const gchar *summary)
 const gchar *
 pk_category_get_icon (PkCategory *category)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_val_if_fail (PK_IS_CATEGORY (category), NULL);
 
@@ -270,7 +271,7 @@ pk_category_get_icon (PkCategory *category)
 void
 pk_category_set_icon (PkCategory *category, const gchar *icon)
 {
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_return_if_fail (PK_IS_CATEGORY (category));
 
@@ -289,7 +290,7 @@ static void
 pk_category_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkCategory *category = PK_CATEGORY (object);
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	switch (prop_id) {
 	case PROP_PARENT_ID:
@@ -413,7 +414,7 @@ pk_category_class_init (PkCategoryClass *klass)
 static void
 pk_category_init (PkCategory *category)
 {
-	category->priv = pk_category_get_instance_private (category);
+	category->priv = GET_PRIVATE(category);
 }
 
 /*
@@ -423,7 +424,7 @@ static void
 pk_category_finalize (GObject *object)
 {
 	PkCategory *category = PK_CATEGORY (object);
-	PkCategoryPrivate *priv = pk_category_get_instance_private (category);
+	PkCategoryPrivate *priv = GET_PRIVATE(category);
 
 	g_clear_pointer (&priv->parent_id, g_free);
 	g_clear_pointer (&priv->cat_id, g_free);
@@ -448,4 +449,3 @@ pk_category_new (void)
 	category = g_object_new (PK_TYPE_CATEGORY, NULL);
 	return PK_CATEGORY (category);
 }
-

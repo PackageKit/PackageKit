@@ -50,6 +50,7 @@ struct PkProgressBarPrivate
 #define PK_PROGRESS_BAR_PULSE_TIMEOUT		40 /* ms */
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_progress_bar_get_instance_private (o))
 
 /*
  * pk_progress_bar_console:
@@ -57,7 +58,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
 static void
 pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	gssize count;
 	gssize wrote;
 
@@ -84,7 +85,7 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 gboolean
 pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (progress_bar);
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 	g_return_val_if_fail (padding < 100, FALSE);
@@ -105,7 +106,7 @@ pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
 gboolean
 pk_progress_bar_set_size (PkProgressBar *progress_bar, guint size)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (progress_bar);
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 	g_return_val_if_fail (size < 100, FALSE);
@@ -120,7 +121,7 @@ pk_progress_bar_set_size (PkProgressBar *progress_bar, guint size)
 static gboolean
 pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	guint section;
 	guint i;
 	GString *str;
@@ -158,7 +159,7 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 static gboolean
 pk_progress_bar_pulse_bar (PkProgressBar *self)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	gint i;
 	GString *str;
 
@@ -204,7 +205,7 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 static void
 pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 
 	/* have we already got zero percent? */
 	if (priv->timer_id != 0)
@@ -229,7 +230,7 @@ pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 gboolean
 pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (progress_bar);
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 	g_return_val_if_fail (percentage <= PK_PROGRESS_BAR_PERCENTAGE_INVALID, FALSE);
@@ -306,7 +307,7 @@ pk_strpad (const gchar *data, guint length)
 gboolean
 pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (progress_bar);
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 	gchar *text_pad;
 	GString *str;
 
@@ -356,7 +357,7 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 gboolean
 pk_progress_bar_end (PkProgressBar *progress_bar)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (progress_bar);
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 	GString *str;
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
@@ -382,7 +383,7 @@ static void
 pk_progress_bar_finalize (GObject *object)
 {
 	PkProgressBar *self = PK_PROGRESS_BAR (object);
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 
 	g_clear_pointer (&priv->old_start_text, g_free);
 	g_clear_handle_id (&priv->timer_id, g_source_remove);
@@ -408,7 +409,7 @@ pk_progress_bar_class_init (PkProgressBarClass *klass)
 static void
 pk_progress_bar_init (PkProgressBar *self)
 {
-	PkProgressBarPrivate *priv = pk_progress_bar_get_instance_private (self);
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 
 	self->priv = priv;
 	priv->size = 10;

@@ -81,6 +81,7 @@ enum {
 static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkClient, pk_client, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_client_get_instance_private (o))
 
 #define PK_TYPE_CLIENT_STATE (pk_client_state_get_type ())
 
@@ -200,7 +201,7 @@ pk_client_state_unset_proxy (PkClientState *state)
 static void
 pk_client_state_remove (PkClient *client, PkClientState *state)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	gboolean was_removed, is_idle;
 
 	was_removed = g_ptr_array_remove_fast (priv->calls, state);
@@ -433,7 +434,7 @@ static void
 pk_client_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkClient *client = PK_CLIENT (object);
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	switch (prop_id) {
 	case PROP_LOCALE:
@@ -467,7 +468,7 @@ static void
 pk_client_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkClient *client = PK_CLIENT (object);
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	switch (prop_id) {
 	case PROP_LOCALE:
@@ -790,7 +791,7 @@ pk_client_set_property_value (PkClientState *state,
 static void
 pk_client_state_add (PkClient *client, PkClientState *state)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	gboolean was_idle;
 
 	was_idle = pk_client_get_idle (client);
@@ -2325,7 +2326,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 			 PkProgressCallback progress_callback, gpointer progress_user_data,
 			 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2377,7 +2378,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2430,7 +2431,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2481,7 +2482,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2532,7 +2533,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2583,7 +2584,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2634,7 +2635,7 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2690,7 +2691,7 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 				 PkProgressCallback progress_callback, gpointer progress_user_data,
 				 GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2745,7 +2746,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2796,7 +2797,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2847,7 +2848,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2896,7 +2897,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2947,7 +2948,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -2999,7 +3000,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3050,7 +3051,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 			      PkProgressCallback progress_callback, gpointer progress_user_data,
 			      GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3108,7 +3109,7 @@ pk_client_what_provides_async (PkClient *client,
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3158,7 +3159,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 				     PkProgressCallback progress_callback, gpointer progress_user_data,
 				     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3206,7 +3207,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 			   PkProgressCallback progress_callback, gpointer progress_user_data,
 			   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3255,7 +3256,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3315,7 +3316,7 @@ pk_client_remove_packages_async (PkClient *client,
 				 GAsyncReadyCallback callback_ready,
 				 gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3371,7 +3372,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3421,7 +3422,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 				  PkProgressCallback progress_callback, gpointer progress_user_data,
 				  GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3474,7 +3475,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 				   PkProgressCallback progress_callback, gpointer progress_user_data,
 				   GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3531,7 +3532,7 @@ pk_client_update_packages_async (PkClient *client,
 				 GAsyncReadyCallback callback_ready,
 				 gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3661,7 +3662,7 @@ pk_client_install_files_async (PkClient *client,
 			       GAsyncReadyCallback callback_ready,
 			       gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	gboolean ret;
 	guint i;
@@ -3735,7 +3736,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 			     PkProgressCallback progress_callback, gpointer progress_user_data,
 			     GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3784,7 +3785,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 			       PkProgressCallback progress_callback, gpointer progress_user_data,
 			       GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3834,7 +3835,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 			     PkProgressCallback progress_callback,
 			     gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3887,7 +3888,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 			       PkProgressCallback progress_callback,
 			       gpointer progress_user_data, GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -3946,7 +3947,7 @@ pk_client_repo_remove_async (PkClient *client,
 			     GAsyncReadyCallback callback_ready,
 			     gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -4006,7 +4007,7 @@ pk_client_upgrade_system_async (PkClient *client,
 				PkProgressCallback progress_callback, gpointer progress_user_data,
 				GAsyncReadyCallback callback_ready, gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -4066,7 +4067,7 @@ pk_client_repair_system_async (PkClient *client,
 			       GAsyncReadyCallback callback_ready,
 			       gpointer user_data)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
@@ -4291,7 +4292,7 @@ pk_client_get_progress_async (PkClient *client,
 static gboolean
 pk_client_cancel_all_dbus_methods (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 	const PkClientState *state;
 	guint i;
 	g_autoptr(GPtrArray) array = NULL;
@@ -4324,7 +4325,7 @@ pk_client_cancel_all_dbus_methods (PkClient *client)
 void
 pk_client_set_locale (PkClient *client, const gchar *locale)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -4349,7 +4350,7 @@ pk_client_set_locale (PkClient *client, const gchar *locale)
 const gchar *
 pk_client_get_locale (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
 
@@ -4370,7 +4371,7 @@ pk_client_get_locale (PkClient *client)
 void
 pk_client_set_background (PkClient *client, gboolean background)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -4394,7 +4395,7 @@ pk_client_set_background (PkClient *client, gboolean background)
 gboolean
 pk_client_get_background (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -4414,7 +4415,7 @@ pk_client_get_background (PkClient *client)
 void
 pk_client_set_interactive (PkClient *client, gboolean interactive)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -4438,7 +4439,7 @@ pk_client_set_interactive (PkClient *client, gboolean interactive)
 gboolean
 pk_client_get_interactive (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -4458,7 +4459,7 @@ pk_client_get_interactive (PkClient *client)
 gboolean
 pk_client_get_idle (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -4478,7 +4479,7 @@ pk_client_get_idle (PkClient *client)
 void
 pk_client_set_cache_age (PkClient *client, guint cache_age)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -4502,7 +4503,7 @@ pk_client_set_cache_age (PkClient *client, guint cache_age)
 guint
 pk_client_get_cache_age (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -4522,7 +4523,7 @@ pk_client_get_cache_age (PkClient *client)
 void
 pk_client_set_details_with_deps_size (PkClient *client, gboolean details_with_deps_size)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_if_fail (PK_IS_CLIENT (client));
 
@@ -4547,7 +4548,7 @@ pk_client_set_details_with_deps_size (PkClient *client, gboolean details_with_de
 gboolean
 pk_client_get_details_with_deps_size (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	g_return_val_if_fail (PK_IS_CLIENT (client), FALSE);
 
@@ -4640,7 +4641,7 @@ pk_client_class_init (PkClientClass *klass)
 static void
 pk_client_init (PkClient *client)
 {
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	client->priv = priv;
 	priv->calls = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -4663,7 +4664,7 @@ static void
 pk_client_finalize (GObject *object)
 {
 	PkClient *client = PK_CLIENT (object);
-	PkClientPrivate *priv = pk_client_get_instance_private (client);
+	PkClientPrivate *priv = GET_PRIVATE(client);
 
 	/* ensure we cancel any in-flight D-Bus calls */
 	pk_client_cancel_all_dbus_methods (client);

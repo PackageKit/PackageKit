@@ -56,6 +56,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkSource, pk_source, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_source_get_instance_private (o))
 
 /*
  * pk_source_get_property:
@@ -64,7 +65,7 @@ static void
 pk_source_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = pk_source_get_instance_private (source);
+	PkSourcePrivate *priv = GET_PRIVATE(source);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -86,7 +87,7 @@ static void
 pk_source_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = pk_source_get_instance_private (source);
+	PkSourcePrivate *priv = GET_PRIVATE(source);
 
 	switch (prop_id) {
 	case PROP_ROLE:
@@ -141,7 +142,7 @@ pk_source_class_init (PkSourceClass *klass)
 static void
 pk_source_init (PkSource *source)
 {
-	source->priv = pk_source_get_instance_private (source);
+	source->priv = GET_PRIVATE(source);
 }
 
 /*
@@ -151,7 +152,7 @@ static void
 pk_source_finalize (GObject *object)
 {
 	PkSource *source = PK_SOURCE (object);
-	PkSourcePrivate *priv = pk_source_get_instance_private (source);
+	PkSourcePrivate *priv = GET_PRIVATE(source);
 
 	g_clear_pointer (&priv->transaction_id, g_free);
 
@@ -172,4 +173,3 @@ pk_source_new (void)
 	source = g_object_new (PK_TYPE_SOURCE, NULL);
 	return PK_SOURCE (source);
 }
-

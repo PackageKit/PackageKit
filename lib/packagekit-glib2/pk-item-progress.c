@@ -58,6 +58,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkItemProgress, pk_item_progress, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_item_progress_get_instance_private (o))
 
 /**
  * pk_item_progress_get_status:
@@ -70,7 +71,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkItemProgress, pk_item_progress, PK_TYPE_SOURCE)
 PkStatusEnum
 pk_item_progress_get_status (PkItemProgress *item_progress)
 {
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	g_return_val_if_fail (PK_IS_ITEM_PROGRESS (item_progress), PK_STATUS_ENUM_UNKNOWN);
 
@@ -88,7 +89,7 @@ pk_item_progress_get_status (PkItemProgress *item_progress)
 guint
 pk_item_progress_get_percentage (PkItemProgress *item_progress)
 {
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	g_return_val_if_fail (PK_IS_ITEM_PROGRESS (item_progress), 0);
 
@@ -106,7 +107,7 @@ pk_item_progress_get_percentage (PkItemProgress *item_progress)
 const gchar *
 pk_item_progress_get_package_id (PkItemProgress *item_progress)
 {
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	g_return_val_if_fail (PK_IS_ITEM_PROGRESS (item_progress), NULL);
 
@@ -120,7 +121,7 @@ static void
 pk_item_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkItemProgress *item_progress = PK_ITEM_PROGRESS (object);
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -145,7 +146,7 @@ static void
 pk_item_progress_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkItemProgress *item_progress = PK_ITEM_PROGRESS (object);
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -213,7 +214,7 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 static void
 pk_item_progress_init (PkItemProgress *item_progress)
 {
-	item_progress->priv = pk_item_progress_get_instance_private (item_progress);
+	item_progress->priv = GET_PRIVATE(item_progress);
 }
 
 /*
@@ -223,7 +224,7 @@ static void
 pk_item_progress_finalize (GObject *object)
 {
 	PkItemProgress *item_progress = PK_ITEM_PROGRESS (object);
-	PkItemProgressPrivate *priv = pk_item_progress_get_instance_private (item_progress);
+	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
 
 	g_clear_pointer (&priv->package_id, g_free);
 
@@ -246,4 +247,3 @@ pk_item_progress_new (void)
 	item_progress = g_object_new (PK_TYPE_ITEM_PROGRESS, NULL);
 	return PK_ITEM_PROGRESS (item_progress);
 }
-

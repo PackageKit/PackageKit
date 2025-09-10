@@ -69,6 +69,7 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkRepoSignatureRequired, pk_repo_signature_required, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_repo_signature_required_get_instance_private (o))
 
 /*
  * pk_repo_signature_required_get_property:
@@ -77,7 +78,7 @@ static void
 pk_repo_signature_required_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
+	PkRepoSignatureRequiredPrivate *priv = GET_PRIVATE(repo_signature_required);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -117,7 +118,7 @@ static void
 pk_repo_signature_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
+	PkRepoSignatureRequiredPrivate *priv = GET_PRIVATE(repo_signature_required);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -256,7 +257,7 @@ pk_repo_signature_required_class_init (PkRepoSignatureRequiredClass *klass)
 static void
 pk_repo_signature_required_init (PkRepoSignatureRequired *repo_signature_required)
 {
-	repo_signature_required->priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
+	repo_signature_required->priv = GET_PRIVATE(repo_signature_required);
 }
 
 /*
@@ -266,7 +267,7 @@ static void
 pk_repo_signature_required_finalize (GObject *object)
 {
 	PkRepoSignatureRequired *repo_signature_required = PK_REPO_SIGNATURE_REQUIRED (object);
-	PkRepoSignatureRequiredPrivate *priv = pk_repo_signature_required_get_instance_private (repo_signature_required);
+	PkRepoSignatureRequiredPrivate *priv = GET_PRIVATE(repo_signature_required);
 
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->repository_name, g_free);
@@ -293,4 +294,3 @@ pk_repo_signature_required_new (void)
 	repo_signature_required = g_object_new (PK_TYPE_REPO_SIGNATURE_REQUIRED, NULL);
 	return PK_REPO_SIGNATURE_REQUIRED (repo_signature_required);
 }
-

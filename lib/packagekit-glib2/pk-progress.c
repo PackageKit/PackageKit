@@ -88,6 +88,7 @@ enum {
 static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkProgress, pk_progress, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_progress_get_instance_private (o))
 
 /*
  * pk_progress_get_property:
@@ -96,7 +97,7 @@ static void
 pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkProgress *progress = PK_PROGRESS (object);
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -156,7 +157,7 @@ pk_progress_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 static inline void
 pk_progress_invoke_callback (PkProgress *progress, PkProgressType type)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_assert (PK_IS_PROGRESS (progress));
 
@@ -178,7 +179,7 @@ pk_progress_invoke_callback (PkProgress *progress, PkProgressType type)
 gboolean
 pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -214,7 +215,7 @@ pk_progress_set_package_id (PkProgress *progress, const gchar *package_id)
 const gchar *
 pk_progress_get_package_id (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
 
@@ -236,7 +237,7 @@ gboolean
 pk_progress_set_item_progress (PkProgress *progress,
 			       PkItemProgress *item_progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -262,7 +263,7 @@ pk_progress_set_item_progress (PkProgress *progress,
 PkItemProgress *
 pk_progress_get_item_progress (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
 
@@ -283,7 +284,7 @@ pk_progress_get_item_progress (PkProgress *progress)
 gboolean
 pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_id)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -313,7 +314,7 @@ pk_progress_set_transaction_id (PkProgress *progress, const gchar *transaction_i
 const gchar *
 pk_progress_get_transaction_id (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
 
@@ -334,7 +335,7 @@ pk_progress_get_transaction_id (PkProgress *progress)
 gboolean
 pk_progress_set_percentage (PkProgress *progress, gint percentage)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -363,7 +364,7 @@ pk_progress_set_percentage (PkProgress *progress, gint percentage)
 gint
 pk_progress_get_percentage (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), -1);
 
@@ -384,7 +385,7 @@ pk_progress_get_percentage (PkProgress *progress)
 gboolean
 pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -413,7 +414,7 @@ pk_progress_set_status (PkProgress *progress, PkStatusEnum status)
 PkStatusEnum
 pk_progress_get_status (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), PK_STATUS_ENUM_UNKNOWN);
 
@@ -434,7 +435,7 @@ pk_progress_get_status (PkProgress *progress)
 gboolean
 pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -468,7 +469,7 @@ pk_progress_set_role (PkProgress *progress, PkRoleEnum role)
 PkRoleEnum
 pk_progress_get_role (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), PK_ROLE_ENUM_UNKNOWN);
 
@@ -489,7 +490,7 @@ pk_progress_get_role (PkProgress *progress)
 gboolean
 pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -518,7 +519,7 @@ pk_progress_set_allow_cancel (PkProgress *progress, gboolean allow_cancel)
 gboolean
 pk_progress_get_allow_cancel (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -539,7 +540,7 @@ pk_progress_get_allow_cancel (PkProgress *progress)
 gboolean
 pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -568,7 +569,7 @@ pk_progress_set_caller_active (PkProgress *progress, gboolean caller_active)
 gboolean
 pk_progress_get_caller_active (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -589,7 +590,7 @@ pk_progress_get_caller_active (PkProgress *progress)
 gboolean
 pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -618,7 +619,7 @@ pk_progress_set_elapsed_time (PkProgress *progress, guint elapsed_time)
 guint
 pk_progress_get_elapsed_time (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -639,7 +640,7 @@ pk_progress_get_elapsed_time (PkProgress *progress)
 gboolean
 pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -668,7 +669,7 @@ pk_progress_set_remaining_time (PkProgress *progress, guint remaining_time)
 guint
 pk_progress_get_remaining_time (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -689,7 +690,7 @@ pk_progress_get_remaining_time (PkProgress *progress)
 gboolean
 pk_progress_set_speed (PkProgress *progress, guint speed)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -718,7 +719,7 @@ pk_progress_set_speed (PkProgress *progress, guint speed)
 guint
 pk_progress_get_speed (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -739,7 +740,7 @@ pk_progress_get_speed (PkProgress *progress)
 gboolean
 pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_size_remaining)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -768,7 +769,7 @@ pk_progress_set_download_size_remaining (PkProgress *progress, guint64 download_
 guint64
 pk_progress_get_download_size_remaining (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -789,7 +790,7 @@ pk_progress_get_download_size_remaining (PkProgress *progress)
 gboolean
 pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_flags)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -818,7 +819,7 @@ pk_progress_set_transaction_flags (PkProgress *progress, guint64 transaction_fla
 guint64
 pk_progress_get_transaction_flags (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -839,7 +840,7 @@ pk_progress_get_transaction_flags (PkProgress *progress)
 gboolean
 pk_progress_set_uid (PkProgress *progress, guint uid)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -868,7 +869,7 @@ pk_progress_set_uid (PkProgress *progress, guint uid)
 guint
 pk_progress_get_uid (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), 0);
 
@@ -889,7 +890,7 @@ pk_progress_get_uid (PkProgress *progress)
 gboolean
 pk_progress_set_sender (PkProgress *progress, const gchar *bus_name)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -919,7 +920,7 @@ pk_progress_set_sender (PkProgress *progress, const gchar *bus_name)
 gchar*
 pk_progress_get_sender (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
 
@@ -940,7 +941,7 @@ pk_progress_get_sender (PkProgress *progress)
 gboolean
 pk_progress_set_package (PkProgress *progress, PkPackage *package)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), FALSE);
 
@@ -966,7 +967,7 @@ pk_progress_set_package (PkProgress *progress, PkPackage *package)
 PkPackage *
 pk_progress_get_package (PkProgress *progress)
 {
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_return_val_if_fail (PK_IS_PROGRESS (progress), NULL);
 
@@ -1273,7 +1274,7 @@ pk_progress_class_init (PkProgressClass *klass)
 static void
 pk_progress_init (PkProgress *progress)
 {
-	progress->priv = pk_progress_get_instance_private (progress);
+	progress->priv = GET_PRIVATE(progress);
 }
 
 /*
@@ -1283,7 +1284,7 @@ static void
 pk_progress_dispose (GObject *object)
 {
 	PkProgress *progress = PK_PROGRESS (object);
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_clear_object (&priv->package);
 	g_clear_object (&priv->item_progress);
@@ -1298,7 +1299,7 @@ static void
 pk_progress_finalize (GObject *object)
 {
 	PkProgress *progress = PK_PROGRESS (object);
-	PkProgressPrivate *priv = pk_progress_get_instance_private (progress);
+	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->transaction_id, g_free);

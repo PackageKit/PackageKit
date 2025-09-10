@@ -106,6 +106,7 @@ static guint signals [SIGNAL_LAST] = { 0 };
 static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkPackage, pk_package, PK_TYPE_SOURCE)
+#define GET_PRIVATE(o) (pk_package_get_instance_private (o))
 
 /**
  * pk_package_equal:
@@ -121,8 +122,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkPackage, pk_package, PK_TYPE_SOURCE)
 gboolean
 pk_package_equal (PkPackage *package1, PkPackage *package2)
 {
-	PkPackagePrivate *priv1 = pk_package_get_instance_private (package1);
-	PkPackagePrivate *priv2 = pk_package_get_instance_private (package2);
+	PkPackagePrivate *priv1 = GET_PRIVATE(package1);
+	PkPackagePrivate *priv2 = GET_PRIVATE(package2);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
@@ -146,8 +147,8 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
 gboolean
 pk_package_equal_id (PkPackage *package1, PkPackage *package2)
 {
-	PkPackagePrivate *priv1 = pk_package_get_instance_private (package1);
-	PkPackagePrivate *priv2 = pk_package_get_instance_private (package2);
+	PkPackagePrivate *priv1 = GET_PRIVATE(package1);
+	PkPackagePrivate *priv2 = GET_PRIVATE(package2);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package1), FALSE);
 	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
@@ -170,7 +171,7 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
 gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 	guint cnt = 0;
 	guint i;
 
@@ -270,7 +271,7 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 PkInfoEnum
 pk_package_get_info (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 
@@ -289,7 +290,7 @@ pk_package_get_info (PkPackage *package)
 void
 pk_package_set_info (PkPackage *package, PkInfoEnum info)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
@@ -312,7 +313,7 @@ pk_package_set_info (PkPackage *package, PkInfoEnum info)
 void
 pk_package_set_summary (PkPackage *package, const gchar *summary)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
@@ -337,7 +338,7 @@ pk_package_set_summary (PkPackage *package, const gchar *summary)
 const gchar *
 pk_package_get_id (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -357,7 +358,7 @@ pk_package_get_id (PkPackage *package)
 const gchar *
 pk_package_get_summary (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -377,7 +378,7 @@ pk_package_get_summary (PkPackage *package)
 const gchar *
 pk_package_get_name (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -397,7 +398,7 @@ pk_package_get_name (PkPackage *package)
 const gchar *
 pk_package_get_version (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -417,7 +418,7 @@ pk_package_get_version (PkPackage *package)
 const gchar *
 pk_package_get_arch (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -439,7 +440,7 @@ pk_package_get_arch (PkPackage *package)
 const gchar *
 pk_package_get_data (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -457,7 +458,7 @@ pk_package_get_data (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
@@ -476,7 +477,7 @@ static void
 pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -552,7 +553,7 @@ static void
 pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	switch (prop_id) {
 	case PROP_INFO:
@@ -890,7 +891,7 @@ pk_package_class_init (PkPackageClass *klass)
 static void
 pk_package_init (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
@@ -906,7 +907,7 @@ static void
 pk_package_finalize (GObject *object)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->summary, g_free);
@@ -959,7 +960,7 @@ pk_package_new (void)
 PkInfoEnum
 pk_package_get_update_severity (PkPackage *package)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_INFO_ENUM_UNKNOWN);
 
@@ -983,7 +984,7 @@ void
 pk_package_set_update_severity (PkPackage *package,
 				PkInfoEnum update_severity)
 {
-	PkPackagePrivate *priv = pk_package_get_instance_private (package);
+	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 	g_return_if_fail (update_severity == PK_INFO_ENUM_UNKNOWN ||
