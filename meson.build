@@ -110,8 +110,32 @@ package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
+# maintainer mode is even stricter
+if get_option('maintainer')
+  maintainer_compiler_flags = [
+    '-Werror',
+    '-Wall',
+    '-Wextra',
+    '-Wcast-align',
+    '-Wno-uninitialized',
+    '-Wempty-body',
+    '-Winit-self',
+    '-Wnull-dereference',
+    '-Wfloat-equal',
+    '-Winline',
+    '-Wno-error=comment',
+  ]
+
+  supported_maintainer_flags = cc.get_supported_arguments(maintainer_compiler_flags, checked: 'warn')
+
+  add_project_arguments(
+    supported_maintainer_flags,
+      language: ['c', 'cpp']
+    )
+endif
+
 # default compiler flags for C and C++
-add_project_arguments(
+default_compiler_flags = [
     '-Wcast-align',
     '-Wno-uninitialized',
     '-Werror=missing-declarations',
@@ -135,11 +159,24 @@ add_project_arguments(
     '-Wno-error=unused-parameter',
     '-Werror=misleading-indentation',
     '-Werror=return-type',
-    '-Werror=format-security',
+    ['-Werror=format-security', '-Wformat'],
     '-Werror=missing-declarations',
     '-Werror=pointer-arith',
     '-Werror=empty-body',
+]
 
+supported_compiler_flags = []
+foreach arg: default_compiler_flags
+  if cc.has_multi_arguments(arg)
+    supported_compiler_flags += arg
+  endif
+endforeach
+
+
+# if a common compiler flag is not supported by 'c', then it should
+# apply to c++ too. So, we don't need a double check here.
+add_project_arguments(
+  supported_compiler_flags,
   language: ['c', 'cpp']
 )
 
@@ -168,26 +205,6 @@ add_project_arguments(
   '-Werror=init-self',
   language: 'cpp'
 )
-
-# maintainer mode is even stricter
-if get_option('maintainer')
-    add_project_arguments(
-        '-Werror',
-        '-Wall',
-        '-Wextra',
-        '-Wcast-align',
-        '-Wno-uninitialized',
-        '-Wempty-body',
-        '-Winit-self',
-        '-Wnull-dereference',
-        '-Wfloat-equal',
-        '-Winline',
-        '-Wno-error=comment',
-        '-Werror=format-security',
-
-        language: ['c', 'cpp']
-    )
-endif
 
 subdir('po')
 subdir('policy')
