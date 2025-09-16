@@ -4,6 +4,7 @@ dnf5_dep = dependency('libdnf5').partial_dependency(includes: true, compile_args
 libdnf5_version = dnf5_dep.version().split('.')
 rpm_dep = dependency('rpm')
 sdbus_cpp_dep = dependency('sdbus-c++')
+sdbus_cpp_version = sdbus_cpp_dep.version().split('.')
 c_args = ['-DG_LOG_DOMAIN="PackageKit-DNF"']
 
 if meson.get_compiler('c').has_function('hy_query_get_advisory_pkgs', prefix: '#include <libdnf/hy-query.h>', dependencies: dnf_dep)
@@ -32,6 +33,7 @@ shared_module(
     '-DLIBDNF5_VERSION_MAJOR=' + libdnf5_version[0],
     '-DLIBDNF5_VERSION_MINOR=' + libdnf5_version[1],
     '-DLIBDNF5_VERSION_PATCH=' + libdnf5_version[2],
+    '-DSDBUSCPP_VERSION_MAJOR=' + sdbus_cpp_version[0],
   ],
   include_directories: packagekit_glib2_includes,
   dependencies: [
