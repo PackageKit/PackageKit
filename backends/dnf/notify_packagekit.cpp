@@ -67,7 +67,7 @@ void NotifyPackagekitPlugin::post_transaction(const libdnf5::base::Transaction &
     auto interfaceName = "org.freedesktop.PackageKit"s;
     auto methodName = "StateHasChanged"s;
 #endif
-    auto packagekitProxy = sdbus::createProxy(std::move(serviceName), std::move(objectPath));
+    auto packagekitProxy = sdbus::createProxy(std::move(serviceName), std::move(objectPath), sdbus::dont_run_event_loop_thread);
     auto method = packagekitProxy->createMethodCall(std::move(interfaceName), std::move(methodName));
     method << "posttrans";
     packagekitProxy->callMethod(method);
