@@ -20,6 +20,9 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
 ### Entropy (Sabayon)
  * Fabio Erculiani <lxnay@sabayon.org>
 
+### Eopkg (Solus)
+ * Joey Riches <joey@getsol.us> <josephriches@gmail.com> | @joebonrichie
+
 ### Nix (NixOS)
  * Matthew Bauer <mjbauer95@gmail.com> | @matthewbauer
 
