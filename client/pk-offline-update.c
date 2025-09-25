@@ -37,7 +37,17 @@
 #else
 #define LOG_INFO STDERR_FILENO
 #define LOG_WARNING STDERR_FILENO
-#define sd_journal_print dprintf
+static int sd_journal_print (int fd, const char* format, ...)
+{
+	va_list ap;
+	int ret;
+
+	va_start(ap, format);
+	ret = vdprintf(fd, format, ap);
+	va_end(ap);
+	dprintf(fd, "\n");
+	return (ret);
+}
 #endif
 
 static void
