@@ -1,6 +1,6 @@
 appstream_dep = dependency('appstream', version: '>=0.14.0')
 dnf_dep = dependency('libdnf', version: '>=0.43.1')
-dnf5_dep = dependency('libdnf5').partial_dependency(includes: true, compile_args: true)
+dnf5_dep = dependency('libdnf5')
 libdnf5_version = dnf5_dep.version().split('.')
 rpm_dep = dependency('rpm')
 sdbus_cpp_dep = dependency('sdbus-c++')
