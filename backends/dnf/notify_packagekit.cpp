@@ -68,16 +68,18 @@ void NotifyPackagekitPlugin::post_transaction(const libdnf5::base::Transaction &
     auto methodName = "StateHasChanged"s;
 #endif
 
-    auto connection = sdbus::createSystemBusConnection();
-    auto packagekitProxy = sdbus::createProxy(std::move(connection), std::move(serviceName), std::move(objectPath), sdbus::dont_run_event_loop_thread);
-    auto method = packagekitProxy->createMethodCall(std::move(interfaceName), std::move(methodName));
-    method << "posttrans";
+    try {
+        auto connection = sdbus::createSystemBusConnection();
+        auto packagekitProxy = sdbus::createProxy(std::move(connection), std::move(serviceName), std::move(objectPath), sdbus::dont_run_event_loop_thread);
+        auto method = packagekitProxy->createMethodCall(std::move(interfaceName), std::move(methodName));
+        method << "posttrans";
 
 #if SDBUSCPP_VERSION_MAJOR >= 2
-    packagekitProxy->callMethodAsync(method, sdbus::with_future);
+        packagekitProxy->callMethodAsync(method, sdbus::with_future);
 #else
-    packagekitProxy->callMethod(method, sdbus::with_future);
+        packagekitProxy->callMethod(method, sdbus::with_future);
 #endif
+    } catch(const sdbus::Error&) {}
 }
 
 }  // namespace
