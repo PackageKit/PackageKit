@@ -446,7 +446,7 @@ pk_offline_get_prepared_ids (GError **error)
 {
 	g_autoptr(GError) error_local = NULL;
 	g_autofree gchar *data = NULL;
-	gchar **prepared_ids = NULL;
+	g_auto(GStrv) prepared_ids = NULL;
 	gsize prepared_ids_size;
 	g_autoptr(GKeyFile) keyfile = NULL;
 
@@ -485,7 +485,7 @@ pk_offline_get_prepared_ids (GError **error)
 	if (prepared_ids == NULL || prepared_ids_size == 0)
 		return NULL;
 
-	return prepared_ids;
+	return g_steal_pointer (&prepared_ids);
 }
 
 /**
