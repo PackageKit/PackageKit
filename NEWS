@@ -1,3 +1,50 @@
+Version 1.3.2
+~~~~~~~~~~~~~
+Released: 2025-10-02
+
+Features:
+ * Modernize the codebase for modern GLib (Corentin Noël)
+ * pk-offline: Store package ID lists using g_key_file_set_string_list() (Gleb Popov)
+ * pkcon: Make description field the last field in 'get-details' output (sid)
+ * pkcon: Improve 'size' output formatting for 'get-details' command (sid)
+ * pkcon: Add 'download-size' to 'get-details' command (sid)
+
+Backends:
+ * alpm: Use 'pk_backend_job_details_full()' so download size is reported properly (sid)
+ * apt: Handle gstreamer ()(64bit) suffix on any architecture (Alessandro Astone)
+ * apt: Fix updated and issued dates on changelog parsing (Ismael Asensio)
+ * apt: debconf-helper: Fix g_object_unref (main_loop) assertion error (sid)
+ * apt: debconf-helper: Fix g_object_unref (socket) assertion error (sid)
+ * dnf: update ROSA config (Mikhail Novosyolov)
+ * dnf5: Compile against both sdbus version 1 and 2 (Alessandro Astone)
+ * dnf5: Do not wait for dbus reply (Alessandro Astone)
+ * dnf5: Ignore bus errors (Alessandro Astone)
+ * dnf5: Link against libdnf5 (Alessandro Astone)
+ * zypp: Implement parallel downloading (Jonathan Kang)
+ * zypp: use gint instead of guint for _preload_progress (Jonathan Kang)
+ * zypp: Use 'pk_backend_job_details_full()' so download size is reported properly (sid)
+
+Bugfixes:
+ * Use GDateTime instead of the deprecated GTimeVal (Corentin Noël)
+ * pk-control: Use g_debug() rather than g_warning() for proxy error (Philip Withnall)
+ * pk-client: Fix a leak when cancelling a client task (Philip Withnall)
+ * pk-client: Use pk_client_state_add() internally more consistently (Philip Withnall)
+ * pk-client: Avoid array being modified during iteration (Philip Withnall)
+ * pk-client: Tidy up waiting_for_finished implementation (Philip Withnall)
+ * pk-client: Track PkClientState from earlier in its lifecycle (Philip Withnall)
+ * pk-client: Factor out duplicated PkClientState finish code (Philip Withnall)
+ * pk-client: Fix an assertion failure in PkClient (Philip Withnall)
+ * pk-client: Simplify implementation of PkClient:idle property (Philip Withnall)
+ * pk-client: Fix leak on copy-downloads code path (Philip Withnall)
+ * pkmon: Fix g_object_unref(client) assertion error (sid)
+
+Miscellaneous:
+ * Require polkit 0.114 (Corentin Noël)
+ * ci: Add PR label workflow (Matthias Klumpp)
+ * Add backend maintainer list (Matthias Klumpp)
+ * style: Use GET_PRIVATE macro consistently (Matthias Klumpp)
+ * tests: Add test to sanity check all object types in public API (sid)
+
 Version 1.3.1
 ~~~~~~~~~~~~~
 Released: 2025-04-22
