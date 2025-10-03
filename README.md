@@ -1,6 +1,7 @@
 PackageKit
 ==========
 <img align="right" src="docs/html/img/packagekit.png">
+
 [![Build Test](https://github.com/PackageKit/PackageKit/actions/workflows/build-test.yml/badge.svg)](https://github.com/PackageKit/PackageKit/actions/workflows/build-test.yml)
 [![Translation status](https://hosted.weblate.org/widget/packagekit/svg-badge.svg)](https://hosted.weblate.org/engage/packagekit/)
 
