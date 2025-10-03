@@ -14,12 +14,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Swedish (http://app.transifex.com/freedesktop/packagekit/language/sv/)\n"
+"PO-Revision-Date: 2025-10-04 07:23+0000\n"
+"Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
+"Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sv\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #, c-format
@@ -144,7 +147,7 @@ msgstr "Alias för %s"
 
 #. command line argument, do we allow package downgrades
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Tillåt paket att nedgraderas under transaktionen."
+msgstr "Tillåt paket att nedgraderas under transaktionen"
 
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Tillåt paket att ominstalleras under transaktionen"
@@ -1357,7 +1360,7 @@ msgstr "Transaktion"
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
 msgid "Trigger offline updates"
-msgstr "Utlös frånkopplade uppdateringar "
+msgstr "Utlös frånkopplade uppdateringar"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
