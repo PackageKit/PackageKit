@@ -1,1 +1,113 @@
-HACKING
+Hacking PackageKit
+
+Coding Style
+------------
+Please stick to the existing coding style.
+Tabs should be hard (not expanded to spaces), and set equivalent to
+8 spaces.
+
+All documentation and code should be in US English.
+
+Please consider enabling git's default pre-commit hook:
+
+	$> cd PackageKit
+	$> chmod +x .git/hooks/pre-commit
+
+This hook will run before every checkin, and check your changes for
+suspicious use of whitespace.
+
+In the C files use the following convention.
+The number of spaces and tabs are very important!
+
+	/* map the roles to policykit rules */
+	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+	    role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+		policy = "org.freedesktop.packagekit.update";
+	} else if (role == PK_ROLE_ENUM_REMOVE_PACKAGE) {
+		policy = "org.freedesktop.packagekit.remove";
+	}
+
+and please DO NOT use "!" for a null pointer check.
+
+Functions are nearly always the same format, gtk-doc is optional:
+
+/**
+ * pk_engine_search_name:
+ **/
+gboolean
+pk_engine_search_name (PkEngine *engine, const gchar *search, GError **error)
+{
+	gboolean ret;
+	PkTransactionItem *item;
+
+	g_return_val_if_fail (engine != NULL, FALSE);
+	g_return_val_if_fail (PK_IS_ENGINE (engine), FALSE);
+
+	return TRUE;
+}
+
+Finally: DO NOT COMMIT TRAILING WHITESPACE.
+
+Security
+--------
+Remember:
+* The daemon is running as the root user
+ - no FIXME or TODO code please
+* If the daemon crashes, then that's a DOS
+* Text from the user (over the dbus interface) is insecure!
+ - even filters and enumerated values can be wrong
+ - users can use dbus-send to do bad stuff as users
+* Never allocate a buffer on user input
+* Output from backends is trusted, they are run from standard locations
+
+Submitting Patches
+------------------
+We prefer patches submitted as pull requests to our GitHub project at
+https://github.com/PackageKit/PackageKit
+
+However, if you are unable to use GitHub, you can also submit patches
+via email.
+
+To do so, Use 'git format-patch' to generate patches against a checked
+out copy of the source.
+
+For example:
+
+	$> cd PackageKit
+	HACK HACK HACK
+	$> git commit -m "My first commit"
+	HACK HACK HACK
+	$> git commit -m "My second commit"
+	$> git format-patch -M HEAD^^
+	0001-My-first-commit.patch
+	0002-My-second-commit.patch
+
+Send these patches in an introductory email as attachments to
+packagekit@lists.freedesktop.org
+
+Commit/Patch Style
+------------------
+Commits (and thus patches) should be structured such that each one
+is a logically distinct change that stands well and can be tested
+on its own.
+
+Commit/Patch messages should be wrapped at 72 characters, and the
+subject line (minus the subsystem prefix) should be less than 50
+characters.
+
+What we mean by subsystem prefix is the portion of the codebase
+that is being modified.
+
+For example, if you are changing something in the main library,
+use "lib:" as the prefix of the patch subject. If you are
+changing something in one of the backends, use the backend name
+as the prefix in the patch subject.
+
+There are a number of examples of this already in the revision
+history, so look at any number of them for good examples.
+
+Finally, please do not use commit messages as a means for
+advertising. The revision history is not a place for rent-free
+permanent advertising. It can be especially problematic as
+sponsoring entities change, rename, or such.  That means that
+tags like "Sponsored-by" or similar are not allowed.
