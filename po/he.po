@@ -10,12 +10,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Hebrew (http://app.transifex.com/freedesktop/packagekit/language/he/)\n"
+"PO-Revision-Date: 2025-10-04 07:23+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
+"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: he\n"
-"Plural-Forms: nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n == 2) ? 1 : 2);\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "(seconds)"
 msgstr "(שניות)"
@@ -467,7 +470,7 @@ msgstr "כשל בהתקנת החבילות: %s"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 msgid "Failed to launch:"
-msgstr "לא ניתן להפעיל: %s"
+msgstr "לא ניתן להפעיל:"
 
 #. TRANSLATORS: The placeholder is an error message
 #, c-format
@@ -1247,7 +1250,7 @@ msgstr "החתימה נדחתה."
 
 #. TRANSLATORS: is not GPG signed
 msgid "The software is not from a trusted source."
-msgstr "התכנה הזאת לא הגיעה ממקור מהימן"
+msgstr "התכנה הזאת לא הגיעה ממקור אמין."
 
 #. TRANSLATORS: tell the user we didn't do anything
 msgid "The transaction did not proceed."
@@ -1261,7 +1264,7 @@ msgstr "הרצת הפעולה נכשלה"
 
 #. TRANSLATORS: tell the user we've not done anything
 msgid "The unsigned software will not be installed."
-msgstr "התכנה הלא חתומה לא תותקן"
+msgstr "התוכנה הלא חתומה לא תותקן."
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -1270,7 +1273,7 @@ msgstr "אין חבילות לעדכון."
 
 #. TRANSLATORS: print a message when there are no updates
 msgid "There are no updates available at this time."
-msgstr "אין עדכונים זמינים כרגע"
+msgstr "אין עדכונים זמינים כרגע."
 
 msgid "There are no upgrades available at this time."
 msgstr "אין שדרוגים זמינים נכון לעכשיו."
