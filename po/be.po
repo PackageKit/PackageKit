@@ -7,12 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Belarusian (http://app.transifex.com/freedesktop/packagekit/language/be/)\n"
+"PO-Revision-Date: 2025-10-04 22:02+0000\n"
+"Last-Translator: Yauhen <bugomol@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/translations/be/>\n"
+"Language: be\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: be\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "(seconds)"
 msgstr "(секунд)"
@@ -114,7 +117,7 @@ msgstr "Закранутыя пакеты:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 msgid "Affected packages: None"
-msgstr "Закранутыя пакеты: Няма"
+msgstr "Закранутыя пакеты: няма"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 msgid "Agreement"
@@ -179,7 +182,7 @@ msgid "Authentication is required to remove software"
 msgstr "Каб выдаліць пакет, патрабуецца аўтэнтыфікацыя"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Каб аднавіць сістэму, патрабуецца аўтэнтыфікацыя"
+msgstr "Каб аднавіць усталяваныя праграмы, патрабуецца аўтэнтыфікацыя"
 
 msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Каб задаць проксі-сервер, патрабуецца аўтэнтыфікацыя"
