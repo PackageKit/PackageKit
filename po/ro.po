@@ -10,12 +10,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Romanian (http://app.transifex.com/freedesktop/packagekit/language/ro/)\n"
+"PO-Revision-Date: 2025-10-04 22:02+0000\n"
+"Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ro\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #, c-format
@@ -152,7 +155,7 @@ msgstr "Permite instalarea pachetelor care nu sunt de încredere."
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 msgid "An action, e.g. 'update-packages' is required"
-msgstr "Este necesară o acțiune, de exemplu, „update-packages”."
+msgstr "Este necesară o acțiune, de exemplu, „update-packages”"
 
 #. TRANSLATORS: a package requires the application to be restarted
 msgid "Application restart required by:"
@@ -1453,7 +1456,7 @@ msgstr "Se așteaptă autentificarea"
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to
 #. exit
 msgid "Waiting for package manager lock"
-msgstr "Se așteaptă blocarea efectuată de gestionarul de pachete."
+msgstr "Se așteaptă blocajul gestionarului de pachete"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
