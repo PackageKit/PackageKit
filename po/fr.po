@@ -16,12 +16,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: French (http://app.transifex.com/freedesktop/packagekit/language/fr/)\n"
+"PO-Revision-Date: 2025-10-07 00:02+0000\n"
+"Last-Translator: Corentin Noël <tintou@noel.tf>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fr\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "(seconds)"
 msgstr "(secondes)"
@@ -179,7 +182,7 @@ msgid "Authentication is required to install untrusted software"
 msgstr "Une authentification est nécessaire pour installer un logiciel non certifié"
 
 msgid "Authentication is required to refresh the system repositories"
-msgstr "Une authentification est nécessaire pour rafraîchir les dépôts du système "
+msgstr "Une authentification est nécessaire pour rafraîchir les dépôts du système"
 
 msgid "Authentication is required to reinstall software"
 msgstr "Une authentification est nécessaire pour réinstaller un logiciel"
@@ -219,7 +222,7 @@ msgstr "Bloquée"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Bug fix"
+msgstr "Correction de bug"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -382,7 +385,7 @@ msgstr "Téléchargement"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
-msgstr "Téléchargement des détails à propos des dépôts des logiciels"
+msgstr "Téléchargement des détails à propos des dépôts des logiciels."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading file lists"
@@ -1175,7 +1178,7 @@ msgstr "Le média correct n'a pas été inséré."
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 msgid "The daemon crashed mid-transaction!"
-msgstr "Le service a échoué en cours de transaction."
+msgstr "Le service a échoué en cours de transaction !"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
