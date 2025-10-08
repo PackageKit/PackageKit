@@ -8,14 +8,15 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2025-10-08 23:07+0000\n"
+"Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Kabyle <https://hosted.weblate.org/projects/packagekit/translations/kab/>\n"
 "Language: kab\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -37,12 +38,12 @@ msgstr ""
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: client/pk-console.c:167
 msgid "System time"
-msgstr ""
+msgstr "Akkud n unagraw"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pk-console.c:169
 msgid "Succeeded"
-msgstr ""
+msgstr "Yedda"
 
 #: client/pk-console.c:169
 msgid "True"
@@ -55,31 +56,31 @@ msgstr ""
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pk-console.c:171
 msgid "Role"
-msgstr ""
+msgstr "Tamlilt"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pk-console.c:176
 msgid "Duration"
-msgstr ""
+msgstr "Tanzagt"
 
 #: client/pk-console.c:176
 msgid "(seconds)"
-msgstr ""
+msgstr "(tasinin)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pk-console.c:180
 msgid "Command line"
-msgstr ""
+msgstr "Izirig n inezḍayen"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: client/pk-console.c:182
 msgid "User ID"
-msgstr ""
+msgstr "Asulay ID n useqdac"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: client/pk-console.c:189
 msgid "Username"
-msgstr ""
+msgstr "Isem n useqdac"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: client/pk-console.c:193
@@ -104,39 +105,39 @@ msgstr ""
 #. TRANSLATORS: this is type of update, stable or testing
 #: client/pk-console.c:232
 msgid "Type"
-msgstr ""
+msgstr "Tawsit"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: client/pk-console.c:234 client/pk-console.c:267
 msgid "Summary"
-msgstr ""
+msgstr "Agzul"
 
 #. TRANSLATORS: this is the group category name
 #: client/pk-console.c:256
 msgid "Category"
-msgstr ""
+msgstr "Taggayt"
 
 #. TRANSLATORS: this is group identifier
 #: client/pk-console.c:258
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
 #: client/pk-console.c:261
 msgid "Parent"
-msgstr ""
+msgstr "Amarraw"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
 #: client/pk-console.c:264 client/pk-console.c:2342
 msgid "Name"
-msgstr ""
+msgstr "Isem"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: client/pk-console.c:270
 msgid "Icon"
-msgstr ""
+msgstr "Tignit"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: client/pk-console.c:308
@@ -151,13 +152,13 @@ msgstr ""
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
 msgid "Package"
-msgstr ""
+msgstr "Akemmus"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 #: client/pk-console.c:319
 msgid "Updates"
-msgstr ""
+msgstr "Ileqman"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
@@ -169,23 +170,23 @@ msgstr ""
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 #: client/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
 msgid "Vendor"
-msgstr ""
+msgstr "Imefki"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: client/pk-console.c:338
 msgid "Bugzilla"
-msgstr ""
+msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: client/pk-console.c:344
 msgid "CVE"
-msgstr ""
+msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 #: client/pk-console.c:350
 msgid "Restart"
-msgstr ""
+msgstr "Tulsa n usekker"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
@@ -197,13 +198,13 @@ msgstr ""
 #. * the package
 #: client/pk-console.c:360
 msgid "Changes"
-msgstr ""
+msgstr "Isenfal"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
 #: client/pk-console.c:365
 msgid "State"
-msgstr ""
+msgstr "Addad"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
@@ -258,17 +259,17 @@ msgstr ""
 #. TRANSLATORS: This a list of details about the package
 #: client/pk-console.c:488
 msgid "Package description"
-msgstr ""
+msgstr "Aglam n ukemmus"
 
 #. TRANSLATORS: This where the package has no files
 #: client/pk-console.c:509
 msgid "No files"
-msgstr ""
+msgstr "Ulac ifuyla"
 
 #. TRANSLATORS: This a list files contained in the package
 #: client/pk-console.c:514
 msgid "Package files"
-msgstr ""
+msgstr "Ifuyla n ukemmus"
 
 #. TRANSLATORS: the percentage complete of the transaction
 #: client/pk-console.c:610
@@ -278,7 +279,7 @@ msgstr ""
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 #: client/pk-console.c:633
 msgid "Status"
-msgstr ""
+msgstr "Addad"
 
 #. TRANSLATORS: the results from the transaction
 #: client/pk-console.c:671
@@ -642,12 +643,12 @@ msgstr ""
 #. TRANSLATORS: this is the description of the backend
 #: client/pk-console.c:2346
 msgid "Description"
-msgstr ""
+msgstr "Aglam"
 
 #. TRANSLATORS: this is the author of the backend
 #: client/pk-console.c:2350
 msgid "Author"
-msgstr ""
+msgstr "Ameskar"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pk-console.c:2420
@@ -691,7 +692,7 @@ msgstr ""
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -703,7 +704,7 @@ msgstr ""
 #. * advise of the new percentage completion when installing updates
 #: client/pk-offline-update.c:181
 msgid "Installing Updates"
-msgstr ""
+msgstr "Asebded n ileqman"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:217
@@ -832,12 +833,12 @@ msgstr ""
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/packagekit-glib2/pk-console-shared.c:202
 msgid "Unknown state"
-msgstr ""
+msgstr "Addad d arussin"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: lib/packagekit-glib2/pk-console-shared.c:206
 msgid "Starting"
-msgstr ""
+msgstr "Asekker"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: lib/packagekit-glib2/pk-console-shared.c:210
@@ -862,19 +863,19 @@ msgstr ""
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-shared.c:226
 msgid "Removing packages"
-msgstr ""
+msgstr "Tukksa n ikemmusen"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-console-shared.c:230
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
-msgstr ""
+msgstr "Azdam n ikemmusen"
 
 #. TRANSLATORS: transaction state, installing packages
 #: lib/packagekit-glib2/pk-console-shared.c:234
 msgid "Installing packages"
-msgstr ""
+msgstr "Asebded n ikemmusen"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: lib/packagekit-glib2/pk-console-shared.c:238
@@ -884,7 +885,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, installing updates
 #: lib/packagekit-glib2/pk-console-shared.c:242
 msgid "Installing updates"
-msgstr ""
+msgstr "Asebded n yileqman"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/packagekit-glib2/pk-console-shared.c:246
@@ -924,12 +925,12 @@ msgstr ""
 #. TRANSLATORS: transaction state, all done!
 #: lib/packagekit-glib2/pk-console-shared.c:274
 msgid "Finished"
-msgstr ""
+msgstr "Ifukk"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Cancelling"
-msgstr ""
+msgstr "Asemmet"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-shared.c:282
@@ -1009,7 +1010,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Copying files"
-msgstr ""
+msgstr "Anɣal n yifuyla"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-shared.c:346
@@ -1047,7 +1048,7 @@ msgstr ""
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:987
 msgid "Security"
-msgstr ""
+msgstr "Taɣellist"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:991
@@ -1068,12 +1069,12 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1004 lib/packagekit-glib2/pk-enum.c:1111
 msgid "Installed"
-msgstr ""
+msgstr "Yebded"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1009
 msgid "Available"
-msgstr ""
+msgstr "Yella"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
@@ -1083,12 +1084,12 @@ msgstr ""
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 msgid "Install"
-msgstr ""
+msgstr "Sebded"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 msgid "Remove"
-msgstr ""
+msgstr "Kkes"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
@@ -1103,7 +1104,7 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
 msgid "Downloading"
-msgstr ""
+msgstr "Azdam"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1058
@@ -1114,13 +1115,13 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
 msgid "Installing"
-msgstr ""
+msgstr "Yessebdad"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
 msgid "Removing"
-msgstr ""
+msgstr "Tukksa"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1070
@@ -1145,7 +1146,7 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1115
 msgid "Removed"
-msgstr ""
+msgstr "Yettwakkes"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1119
@@ -1230,7 +1231,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
 msgid "Canceling"
-msgstr ""
+msgstr "Asemmet"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
@@ -1255,7 +1256,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1233
 msgid "Resolving"
-msgstr ""
+msgstr "Iferru"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1238
@@ -1402,7 +1403,7 @@ msgstr ""
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: lib/packagekit-glib2/pk-task-text.c:237
 msgid "Text"
-msgstr ""
+msgstr "Aḍris"
 
 #. TRANSLATORS: ask the user to insert the media
 #: lib/packagekit-glib2/pk-task-text.c:243
@@ -1726,7 +1727,7 @@ msgstr ""
 #. TRANSLATORS: program name
 #: src/pk-direct.c:465
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
