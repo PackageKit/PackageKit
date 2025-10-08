@@ -24,12 +24,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: German (http://app.transifex.com/freedesktop/packagekit/language/de/)\n"
+"PO-Revision-Date: 2025-10-08 10:38+0000\n"
+"Last-Translator: Milo Ivir <mail@milotype.de>\n"
+"Language-Team: German <https://hosted.weblate.org/projects/packagekit/translations/de/>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: de\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "(seconds)"
 msgstr "(Sekunden)"
@@ -401,7 +404,7 @@ msgstr "Dateiliste wird heruntergeladen"
 
 #. TRANSLATORS: downloading file lists so we can search
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Dateilisten werden heruntergeladen (dies kann einen Moment dauern)"
+msgstr "Dateilisten werden heruntergeladen (dies kann einen Moment dauern)."
 
 #. TRANSLATORS: transaction state, downloading metadata
 msgid "Downloading groups"
@@ -1445,7 +1448,7 @@ msgstr "Warten auf Sperre des Paketmanagers"
 
 #. TRANSLATORS: waiting for native lock
 msgid "Waiting for package manager lock."
-msgstr "Auf Blockierung des Paketmanagers wird gewartet"
+msgstr "Auf Blockierung des Paketmanagers wird gewartet."
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
