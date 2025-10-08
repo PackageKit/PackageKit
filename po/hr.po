@@ -11,12 +11,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Croatian (http://app.transifex.com/freedesktop/packagekit/language/hr/)\n"
+"PO-Revision-Date: 2025-10-08 10:38+0000\n"
+"Last-Translator: Milo Ivir <mail@milotype.de>\n"
+"Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/translations/hr/>\n"
+"Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: hr\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "(seconds)"
 msgstr "(sekunde)"
@@ -98,7 +101,7 @@ msgstr "Potrebna je vrsta pretrage, npr. naziv"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 msgid "A type, key_id and package_id are required"
-msgstr "Vrsta, key_id i package_id je potrebna"
+msgstr "Potrebni su vrsta, id ključa (key_id) i id paketa (package_id)"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -150,13 +153,13 @@ msgid "Application restart required by:"
 msgstr "Ponovno pokretanje aplikacije zahtijeva:"
 
 msgid "Authentication is required to accept a EULA"
-msgstr "Potrebna je ovjera za  prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
+msgstr "Potrebna je ovjera za prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
 
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Potrebna je ovjera za prekidanje zadatka koji nije pokrenut sam od sebe."
+msgstr "Potrebna je ovjera za prekidanje zadatka koji ti nisi pokrenuo/la"
 
 msgid "Authentication is required to change software repository parameters"
-msgstr "Potrebna je ovjera za promjenu parametara repozitorija softvera"
+msgstr "Potrebna je ovjera za mijenjanje parametara repozitorija softvera"
 
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Potrebna je ovjera za uklanjanje poruke izvanmrežne nadopune"
@@ -165,25 +168,25 @@ msgid "Authentication is required to consider a key used for signing software as
 msgstr "Potrebna je ovjera za uzimanje u obzir ključa korištenog za potpisivanje softvera kao pouzdanog"
 
 msgid "Authentication is required to downgrade software"
-msgstr "Potrebna je ovjera za instalaciju starije inačice softvera"
+msgstr "Potrebna je ovjera za instaliranje starije inačice softvera"
 
 msgid "Authentication is required to install software"
-msgstr "Potrebna je ovjera za instalaciju softvera"
+msgstr "Potrebna je ovjera za instaliranje softvera"
 
 msgid "Authentication is required to install untrusted software"
-msgstr "Potrebna je ovjera za instalaciju nepouzdanog softvera"
+msgstr "Potrebna je ovjera za instaliranje nepouzdanog softvera"
 
 msgid "Authentication is required to refresh the system repositories"
 msgstr "Potrebna je ovjera za osvježavanje repozitorija sustava"
 
 msgid "Authentication is required to reinstall software"
-msgstr "Potrebna je ovjera za ponovnu instalaciju softvera"
+msgstr "Potrebna je ovjera za ponovno instaliranje softvera"
 
 msgid "Authentication is required to remove software"
 msgstr "Potrebna je ovjera za uklanjanje softvera"
 
 msgid "Authentication is required to repair the installed software"
-msgstr "Potrebna je ovjera za popravak instaliranog softvera"
+msgstr "Potrebna je ovjera za popravljanje instaliranog softvera"
 
 msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Potrebna je ovjera za postavljanje mrežnog proxya preuzimanja softvera"
@@ -192,10 +195,10 @@ msgid "Authentication is required to trigger offline updates"
 msgstr "Potrebna je ovjera za pokretanje izvanmrežne nadopune"
 
 msgid "Authentication is required to update software"
-msgstr "Potrebna je ovjera za nadopunu softvera"
+msgstr "Potrebna je ovjera za aktualiziranje softvera"
 
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Potrebna je ovjera za nadogradnju operativnog sustava"
+msgstr "Potrebna je ovjera za nadogradnju operacijskog sustava"
 
 #. TRANSLATORS: this is the author of the backend
 msgid "Author"
@@ -206,15 +209,15 @@ msgstr "Automatski ukloni nekorištene zavisnosti"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Available"
-msgstr "Dostupan"
+msgstr "Dostupno"
 
 #. TRANSLATORS: The type of update
 msgid "Blocked"
-msgstr "Blokirana"
+msgstr "Blokirano"
 
 #. TRANSLATORS: The type of update
 msgid "Bug fix"
-msgstr "Popravak greške "
+msgstr "Ispravak greške"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 msgid "Bugzilla"
@@ -376,7 +379,7 @@ msgstr "Preuzeto"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Downloading"
-msgstr "Preuzimam"
+msgstr "Preuzimanje"
 
 #. TRANSLATORS: downloading repo data so we can search
 msgid "Downloading details about the software repositories."
@@ -604,7 +607,7 @@ msgstr "Ikona"
 
 #. TRANSLATORS: The type of update
 msgid "Important"
-msgstr "Bitna"
+msgstr "Važno"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -657,12 +660,12 @@ msgstr "Instaliraj nepouzdani paket"
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Installed"
-msgstr "Instaliran"
+msgstr "Instalirano"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Installing"
-msgstr "Instaliram"
+msgstr "Instaliranje"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -771,7 +774,7 @@ msgstr "Nema pronađenih paketa"
 
 #. TRANSLATORS: The type of update
 msgid "Normal"
-msgstr "Normalna"
+msgstr "Normalno"
 
 #. TRANSLATORS: The action of the package, in past tense
 msgid "Obsoleted"
@@ -903,7 +906,7 @@ msgstr "Nastavi sa ovim promjenama?"
 
 #. TRANSLATORS: transaction state, is querying data
 msgid "Querying"
-msgstr "Čekanje"
+msgstr "Pretraživanje podataka"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 msgid "Real name"
@@ -911,7 +914,7 @@ msgstr "Pravo ime"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Rebooting after installing updates…"
-msgstr "Ponovno pokretanje nakon instalacije nadopuna..."
+msgstr "Ponovno pokretanje nakon instalacije nadopuna …"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -941,7 +944,7 @@ msgstr "Ponovno instalirano"
 
 #. TRANSLATORS: The action of the package, in present tense
 msgid "Reinstalling"
-msgstr "Ponovno instaliram"
+msgstr "Ponovno instaliranje"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1059,7 +1062,7 @@ msgstr "Pretraživanje po grupama"
 
 #. TRANSLATORS: The type of update
 msgid "Security"
-msgstr "Sigurnosna"
+msgstr "Sigurnost"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
@@ -1105,7 +1108,7 @@ msgstr "Prikaži inačicu i izađi"
 
 #. TRANSLATORS: we've finished doing offline updates
 msgid "Shutting down after installing updates…"
-msgstr "Isključivanje nakon instalacije nadopuna..."
+msgstr "Isključivanje nakon instalacije nadopuna …"
 
 #. TRANSLATORS: tell the user what we think the command is
 msgid "Similar command is:"
@@ -1328,7 +1331,7 @@ msgstr "Pokreni izvanmrežnu nadopunu"
 
 #. TRANSLATORS: The type of update
 msgid "Trivial"
-msgstr "Beznačajna"
+msgstr "Beznačajno"
 
 msgid "True"
 msgstr "Točno"
@@ -1347,7 +1350,7 @@ msgstr "Vrsta"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 msgid "Unavailable"
-msgstr "Nedostupan"
+msgstr "Nedostupno"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 msgid "Unknown role type"
@@ -1433,7 +1436,7 @@ msgstr "Čekanje zaključavanja upravitelja paketa."
 #. TRANSLATORS: transaction state, the transaction is waiting for another to
 #. complete
 msgid "Waiting in queue"
-msgstr "Čekam u redu"
+msgstr "Čekaju u redu"
 
 #. TRANSLATORS: The user did not provide a distro name
 msgid "You need to specify a list file to create"
