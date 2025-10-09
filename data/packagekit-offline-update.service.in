@@ -8,8 +8,8 @@ Before=shutdown.target system-update.target
 # See packagekit.service
 ConditionPathExists=!/run/ostree-booted
 
+FailureAction=reboot
+
 [Service]
 Type=oneshot
 ExecStart=@libexecdir@/pk-offline-update
-
-FailureAction=reboot
