@@ -8,24 +8,25 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2025-10-14 11:07+0000\n"
+"Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/packagekit/translations/et/>\n"
 "Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
-msgstr ""
+msgstr "Seadistuste faili ei leidu."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
 #, c-format
 msgid "Failed to load config file: %s"
-msgstr ""
+msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -37,7 +38,7 @@ msgstr ""
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: client/pk-console.c:167
 msgid "System time"
-msgstr ""
+msgstr "Süsteemi aeg"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pk-console.c:169
@@ -46,55 +47,55 @@ msgstr ""
 
 #: client/pk-console.c:169
 msgid "True"
-msgstr ""
+msgstr "Tõene"
 
 #: client/pk-console.c:169
 msgid "False"
-msgstr ""
+msgstr "Väär"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pk-console.c:171
 msgid "Role"
-msgstr ""
+msgstr "Roll"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pk-console.c:176
 msgid "Duration"
-msgstr ""
+msgstr "Kestus"
 
 #: client/pk-console.c:176
 msgid "(seconds)"
-msgstr ""
+msgstr "(sekundit)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pk-console.c:180
 msgid "Command line"
-msgstr ""
+msgstr "Käsurida"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: client/pk-console.c:182
 msgid "User ID"
-msgstr ""
+msgstr "Kasutajatunnus"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: client/pk-console.c:189
 msgid "Username"
-msgstr ""
+msgstr "Kasutajanimi"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: client/pk-console.c:193
 msgid "Real name"
-msgstr ""
+msgstr "Tegelik nimi"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pk-console.c:201
 msgid "Affected packages:"
-msgstr ""
+msgstr "Mõjutatud paketid:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pk-console.c:204
 msgid "Affected packages: None"
-msgstr ""
+msgstr "Mõjutatud paketid: puuduvad"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: client/pk-console.c:230
@@ -104,44 +105,44 @@ msgstr ""
 #. TRANSLATORS: this is type of update, stable or testing
 #: client/pk-console.c:232
 msgid "Type"
-msgstr ""
+msgstr "Tüüp"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
 #: client/pk-console.c:234 client/pk-console.c:267
 msgid "Summary"
-msgstr ""
+msgstr "Kokkuvõte"
 
 #. TRANSLATORS: this is the group category name
 #: client/pk-console.c:256
 msgid "Category"
-msgstr ""
+msgstr "Kategooria"
 
 #. TRANSLATORS: this is group identifier
 #: client/pk-console.c:258
 msgid "ID"
-msgstr ""
+msgstr "Grupi tunnus"
 
 #. TRANSLATORS: this is the parent group
 #: client/pk-console.c:261
 msgid "Parent"
-msgstr ""
+msgstr "Ülemgrupp"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
 #: client/pk-console.c:264 client/pk-console.c:2342
 msgid "Name"
-msgstr ""
+msgstr "Nimi"
 
 #. TRANSLATORS: this is preferred icon for the group
 #: client/pk-console.c:270
 msgid "Icon"
-msgstr ""
+msgstr "Ikoon"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: client/pk-console.c:308
 msgid "Details about the update:"
-msgstr ""
+msgstr "Teave uuenduse kohta:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -151,13 +152,13 @@ msgstr ""
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
 msgid "Package"
-msgstr ""
+msgstr "Pakett"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
 #: client/pk-console.c:319
 msgid "Updates"
-msgstr ""
+msgstr "Uuendused"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
@@ -203,72 +204,72 @@ msgstr ""
 #. * of the update
 #: client/pk-console.c:365
 msgid "State"
-msgstr ""
+msgstr "Olek"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 #: client/pk-console.c:370
 msgid "Issued"
-msgstr ""
+msgstr "Väljaantud"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 #: client/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
 msgid "Updated"
-msgstr ""
+msgstr "Uuendatud"
 
 #. TRANSLATORS: if the repo is enabled
 #: client/pk-console.c:397
 msgid "Enabled"
-msgstr ""
+msgstr "Kasutusel"
 
 #. TRANSLATORS: if the repo is disabled
 #: client/pk-console.c:400
 msgid "Disabled"
-msgstr ""
+msgstr "Pole kasutusel"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: client/pk-console.c:429
 msgid "System restart required by:"
-msgstr ""
+msgstr "Süsteemi uuesti käivitamist eeldab:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: client/pk-console.c:432
 msgid "Session restart required:"
-msgstr ""
+msgstr "Sessiooni uuesti käivitamist eeldab:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 #: client/pk-console.c:436
 msgid "System restart (security) required by:"
-msgstr ""
+msgstr "Süsteemi uuesti käivitamist turvauuenduse tõttu eeldab:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 #: client/pk-console.c:440
 msgid "Session restart (security) required:"
-msgstr ""
+msgstr "Sessiooni uuesti käivitamist turvauuenduse tõttu eeldab:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: client/pk-console.c:443
 msgid "Application restart required by:"
-msgstr ""
+msgstr "Rakenduse uuesti käivitamist eeldab:"
 
 #. TRANSLATORS: This a list of details about the package
 #: client/pk-console.c:488
 msgid "Package description"
-msgstr ""
+msgstr "Paketi kirjeldus"
 
 #. TRANSLATORS: This where the package has no files
 #: client/pk-console.c:509
 msgid "No files"
-msgstr ""
+msgstr "Faile pole"
 
 #. TRANSLATORS: This a list files contained in the package
 #: client/pk-console.c:514
 msgid "Package files"
-msgstr ""
+msgstr "Paketi failid"
 
 #. TRANSLATORS: the percentage complete of the transaction
 #: client/pk-console.c:610
