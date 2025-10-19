@@ -101,7 +101,7 @@ pk_client_helper_child_free (PkClientHelperChild *child)
 		g_source_unref (child->socket_channel_source);
 	}
 	if (child->pid > 0)
-		kill (child->pid, SIGQUIT);
+		kill (child->pid, SIGTERM);
 	if (child->stdin_channel != NULL)
 		g_io_channel_unref (child->stdin_channel);
 	if (child->stdout_channel != NULL)
@@ -154,8 +154,8 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
 		int retval;
 
-		g_debug ("sending SIGQUIT %ld", (long)child->pid);
-		retval = kill (child->pid, SIGQUIT);
+		g_debug ("sending SIGTERM %ld", (long)child->pid);
+		retval = kill (child->pid, SIGTERM);
 		if (retval == EINVAL) {
 			g_set_error (error, 1, 0, "failed to kill, signum argument is invalid");
 			return FALSE;
@@ -615,7 +615,7 @@ pk_client_helper_finalize (GObject *object)
 	g_clear_pointer (&priv->socket_channel, g_io_channel_unref);
 	g_clear_pointer (&priv->children, g_ptr_array_unref);
 	if (priv->kde_helper_pid > 0)
-		kill (priv->kde_helper_pid, SIGQUIT);
+		kill (priv->kde_helper_pid, SIGTERM);
 
 	G_OBJECT_CLASS (pk_client_helper_parent_class)->finalize (object);
 }
