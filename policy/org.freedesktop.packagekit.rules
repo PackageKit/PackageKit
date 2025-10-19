@@ -1,7 +1,11 @@
+// Allows users belonging to privileged groups to trigger system updates
+// without a password prompt.
+
 polkit.addRule(function(action, subject) {
-    if (action.id == "org.freedesktop.packagekit.package-install" &&
-        subject.active == true && subject.local == true &&
-        subject.isInGroup("wheel")) {
+    if ((action.id == "org.freedesktop.packagekit.upgrade-system" ||
+         action.id == "org.freedesktop.packagekit.trigger-offline-update") &&
+         subject.active == true && subject.local == true &&
+         (subject.isInGroup("wheel") || subject.isInGroup("sudo"))) {
             return polkit.Result.YES;
     }
 });
