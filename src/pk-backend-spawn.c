@@ -185,7 +185,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
-		if (size != 8) {
+		if (size != 8 && size != 9) {
 			g_set_error (error, 1, 0,
 				     "invalid command'%s', size %i",
 				     command, size);
@@ -194,10 +194,10 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		group = pk_group_enum_from_string (sections[4]);
 
 		/* ITS4: ignore, checked for overflow */
-		package_size = atol (sections[7]);
-		if (package_size > 1073741824) {
-			g_set_error_literal (error, 1, 0,
-					     "package size cannot be that large");
+		if (!pk_strtoulong (sections[7], &package_size)) {
+			g_set_error (error, 1, 0,
+				     "failed to parse package size: '%s'",
+				     sections[7]);
 			return FALSE;
 		}
 		g_strdelimit (sections[5], PK_UNSAFE_DELIMITERS, ' ');
@@ -210,8 +210,23 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		text = g_strdup (sections[5]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_details (job, sections[1], sections[2], sections[3],
-					group, text, sections[6], package_size);
+		if (size == 9) {
+			guint64 download_size;
+
+			if (!pk_strtouint64 (sections[8], &download_size)) {
+				g_set_error (error, 1, 0,
+					     "failed to parse download size: '%s'",
+					     sections[8]);
+				return FALSE;
+			}
+
+			pk_backend_job_details_full (job, sections[1], sections[2], sections[3],
+						     group, text, sections[6], package_size, download_size);
+
+		} else {
+			pk_backend_job_details (job, sections[1], sections[2], sections[3],
+						group, text, sections[6], package_size);
+		}
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {
