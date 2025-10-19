@@ -469,8 +469,14 @@ pk_client_helper_start (PkClientHelper *client_helper,
 		priv->argv[0] = g_strdup ("/usr/bin/debconf-kde-helper");
 		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
 
-		if (!g_spawn_async (NULL, priv->argv, NULL, G_SPAWN_STDOUT_TO_DEV_NULL,
-			NULL, NULL, &priv->kde_helper_pid, &error_local)) {
+		if (!g_spawn_async (NULL,
+				    priv->argv,
+				    priv->envp,
+				    G_SPAWN_STDOUT_TO_DEV_NULL,
+				    NULL,
+				    NULL,
+				    &priv->kde_helper_pid,
+				    &error_local)) {
 			g_warning ("failed to spawn: %s", error_local->message);
 			return FALSE;
 		}
