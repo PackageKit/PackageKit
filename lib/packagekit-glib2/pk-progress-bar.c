@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2024-2025 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -22,11 +23,11 @@
 #include "config.h"
 
 #include <glib.h>
-#include <glib/gi18n.h>
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 
 #include "pk-progress-bar.h"
 
@@ -39,37 +40,153 @@ struct PkProgressBarPrivate
 {
 	guint			 size;
 	gint			 percentage;
-	guint			 padding;
 	guint			 timer_id;
 	PkProgressBarPulseState	 pulse_state;
 	gint			 tty_fd;
 	gchar			*old_start_text;
+	guint			 term_width;
+	gboolean		 use_unicode;
 };
 
 #define PK_PROGRESS_BAR_PERCENTAGE_INVALID	101
 #define PK_PROGRESS_BAR_PULSE_TIMEOUT		40 /* ms */
+#define PK_PROGRESS_BAR_DEFAULT_SIZE		30
+
+/* space for percentage text (e.g., " 100%") or spacing */
+static const guint PK_PERCENT_TEXT_WIDTH = 5;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_progress_bar_get_instance_private (o))
 
-/*
+/**
+ * pk_text_truncate:
+ * @text: the UTF-8 string to truncate
+ * @max_chars: maximum number of characters to keep
+ *
+ * Truncate a UTF-8 string to fit within a given character width
+ */
+static gchar*
+pk_text_truncate (const gchar *text, guint max_chars)
+{
+	const gchar *p;
+	guint chars = 0;
+
+	if (text == NULL)
+		return g_strdup ("");
+
+	if (max_chars == 0)
+		return g_strdup ("");
+
+	p = text;
+	while (*p != '\0' && chars < max_chars) {
+		const gchar *next = g_utf8_next_char (p);
+		chars++;
+		p = next;
+	}
+
+	if (*p == '\0') {
+		/* String fits completely */
+		return g_strdup (text);
+	} else {
+		/* String needs truncation  */
+		gsize byte_len = p - text;
+
+		/* If we have room for ellipsis, add it */
+		if (max_chars > 3) {
+			gchar *result;
+			guint ellipsis_chars = 0;
+
+			/* Find position for ellipsis (max_chars - 3) */
+			p = text;
+			while (*p != '\0' && ellipsis_chars < max_chars - 3) {
+				p = g_utf8_next_char (p);
+				ellipsis_chars++;
+			}
+
+			byte_len = p - text;
+			result = g_malloc0 (byte_len + 4); /* +3 for "..." +1 for \0 */
+			memcpy (result, text, byte_len);
+			memcpy (result + byte_len, "...", 3);
+
+			return result;
+		}
+
+		/* Not enough room for ellipsis, just truncate */
+		return g_strndup (text, byte_len);
+	}
+}
+
+/**
+ * pk_pad_string:
+ * @text: the UTF-8 string to pad
+ * @width: desired display width in characters
+ *
+ * Pad a UTF-8 string to exactly the specified display width
+ */
+static gchar *
+pk_pad_string (const gchar *text, guint width)
+{
+	guint chars;
+	guint padding_needed;
+	GString *result;
+
+	if (text == NULL)
+		return g_strnfill (width, ' ');
+
+	/* Count actual UTF-8 characters in the string */
+	chars = g_utf8_strlen (text, -1);
+
+	if (chars >= width)
+		return g_strdup (text);
+
+	/* Add padding to reach desired width */
+	padding_needed = width - chars;
+	result = g_string_new (text);
+	g_string_append_printf (result, "%*s", (int)padding_needed, "");
+
+	return g_string_free (result, FALSE);
+}
+
+/**
+ * pk_progress_bar_get_terminal_width:
+ */
+static guint
+pk_progress_bar_get_terminal_width (PkProgressBar *self)
+{
+	PkProgressBarPrivate *priv = GET_PRIVATE(self);
+	struct winsize w;
+
+	if (priv->tty_fd < 0)
+		return 80;
+
+	if (ioctl (priv->tty_fd, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
+		return w.ws_col;
+
+	return 80;
+}
+
+/**
  * pk_progress_bar_console:
- **/
+ */
 static void
 pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	gssize count;
-	gssize wrote;
+	gssize written;
 
-	count = strlen (tmp) + 1;
 	if (priv->tty_fd < 0)
 		return;
-	wrote = write (priv->tty_fd, tmp, count);
-	if (wrote != count) {
+
+	count = strlen (tmp);
+	if (count == 0)
+		return;
+
+	written = write (priv->tty_fd, tmp, count);
+	if (written != count) {
 		g_warning ("Only wrote %" G_GSSIZE_FORMAT
 			   " of %" G_GSSIZE_FORMAT " bytes",
-			   wrote, count);
+			   written, count);
 	}
 }
 
@@ -80,17 +197,18 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
  *
  * Set minimum size of progress bar text - it will be padded with spaces to meet this requirement.
  *
+ * This function is deprecated as of PackageKit 1.3.3 and has no effect.
+ * Since this release, the progress bar text is automatically adjusted to fit the terminal width
+ * and the progress bar is right-aligned in the terminal..
+ *
  * Return value: %TRUE if changed
- **/
+ */
 gboolean
 pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
 {
-	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
-
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
-	g_return_val_if_fail (padding < 100, FALSE);
+	g_return_val_if_fail (padding < 1000, FALSE);
 
-	priv->padding = padding;
 	return TRUE;
 }
 
@@ -102,112 +220,225 @@ pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
  * Set the width of the progress bar.
  *
  * Return value: %TRUE if changed
- **/
+ */
 gboolean
 pk_progress_bar_set_size (PkProgressBar *progress_bar, guint size)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
-	g_return_val_if_fail (size < 100, FALSE);
+	g_return_val_if_fail (size > 0 && size < 1000, FALSE);
 
 	priv->size = size;
 	return TRUE;
 }
 
-/*
+/**
  * pk_progress_bar_draw:
- **/
+ */
 static gboolean
 pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
-	guint section;
-	guint i;
-	GString *str;
+	g_autoptr(GString) str = NULL;
+	guint term_width;
+	guint available_width;
+	guint bar_width;
+	guint text_width;
 
 	/* no value yet */
 	if (percentage == G_MININT)
 		return FALSE;
 
-	/* restore cursor */
-	str = g_string_new ("");
-	g_string_append_printf (str, "%c8", 0x1B);
+	/* clamp percentage */
+	if (percentage < 0)
+		percentage = 0;
+	if (percentage > 100)
+		percentage = 100;
 
-	section = (guint) ((gfloat) priv->size / (gfloat) 100.0 * (gfloat) percentage);
-	g_string_append (str, "[");
-	for (i = 0; i < section; i++)
-		g_string_append (str, "=");
-	for (i = 0; i < priv->size - section; i++)
-		g_string_append (str, " ");
-	g_string_append (str, "] ");
-	if (percentage >= 0 && percentage < 100) {
-		/* TRANSLATORS: this is a percentage value we use in messages, e.g. "90%. */
-		g_string_append_printf (str, _("(%i%%)"), percentage);
-		g_string_append_printf (str, "  ");
+	str = g_string_sized_new (256);
+
+	/* move cursor to start of line and clear it */
+	g_string_append (str, "\r\033[K");
+
+	term_width = pk_progress_bar_get_terminal_width (self);
+
+	/* calculate available width for text + bar */
+	available_width = term_width > PK_PERCENT_TEXT_WIDTH ? term_width - PK_PERCENT_TEXT_WIDTH : term_width;
+
+	/* determine bar width (use configured size or auto-calculate) */
+	bar_width = priv->size;
+	if (bar_width > available_width / 2)
+		bar_width = available_width / 2;
+	if (bar_width < 10)
+		bar_width = 10;
+
+	/* text width is what's left */
+	text_width = available_width - bar_width - 3; /* -3 for space and brackets */
+
+	/* truncate and pad the current text to exact width */
+	if (priv->old_start_text != NULL && text_width > 0) {
+		g_autofree gchar *truncated = NULL;
+		g_autofree gchar *display_text = NULL;
+		truncated = pk_text_truncate (priv->old_start_text, text_width);
+		display_text = pk_pad_string (truncated, text_width);
+		g_string_append (str, display_text);
 	} else {
-		g_string_append (str, "        ");
+		gsize old_len = str->len;
+		g_string_set_size(str, old_len + text_width);
+		memset(str->str + old_len, ' ', text_width);
+		str->str[str->len] = '\0';
 	}
+
+	if (priv->use_unicode) {
+		/* use Unicode block characters: █ = full, ▓ = 3/4, ▒ = 1/2, ░ = 1/4 */
+		guint filled_chars = (percentage * bar_width) / 100;
+		guint remainder = (percentage * bar_width) % 100;
+
+		g_string_append (str, " [");
+
+		/* full blocks */
+		for (guint i = 0; i < filled_chars; i++)
+			g_string_append (str, "█");
+
+		/* partial block based on remainder */
+		if (filled_chars < bar_width) {
+			if (remainder >= 75)
+				g_string_append (str, "▓");
+			else if (remainder >= 50)
+				g_string_append (str, "▒");
+			else if (remainder >= 25)
+				g_string_append (str, "░");
+			else
+				g_string_append (str, " ");
+			filled_chars++;
+		}
+
+		/* empty space */
+		for (guint i = filled_chars; i < bar_width; i++)
+			g_string_append (str, " ");
+
+		g_string_append (str, "]");
+	} else {
+		/* fallback to ASCII */
+		guint filled = (percentage * bar_width) / 100;
+
+		g_string_append (str, " [");
+		for (guint i = 0; i < filled; i++)
+			g_string_append (str, "=");
+		for (guint i = filled; i < bar_width; i++)
+			g_string_append (str, " ");
+		g_string_append (str, "]");
+	}
+
+	/* percentage text */
+	g_string_append_printf (str, " %3d%%", percentage);
+
 	pk_progress_bar_console (self, str->str);
-	g_string_free (str, TRUE);
+
 	return TRUE;
 }
 
-/*
+/**
  * pk_progress_bar_pulse_bar:
- **/
+ */
 static gboolean
 pk_progress_bar_pulse_bar (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
-	gint i;
-	GString *str;
+	g_autoptr(GString) str = NULL;
+	guint term_width;
+	guint available;
+	guint bar_width;
+	guint text_width;
 
-	/* restore cursor */
-	str = g_string_new ("");
-	g_string_append_printf (str, "%c8", 0x1B);
-
+	/* update position */
 	if (priv->pulse_state.move_forward) {
-		if (priv->pulse_state.position == priv->size - 1)
+		if (priv->pulse_state.position >= priv->size - 2)
 			priv->pulse_state.move_forward = FALSE;
 		else
 			priv->pulse_state.position++;
-	} else if (!priv->pulse_state.move_forward) {
-		if (priv->pulse_state.position == 1)
+	} else {
+		if (priv->pulse_state.position <= 1)
 			priv->pulse_state.move_forward = TRUE;
 		else
 			priv->pulse_state.position--;
 	}
 
-	g_string_append (str, "[");
-	for (i = 0; i < (gint)priv->pulse_state.position-1; i++)
-		g_string_append (str, " ");
-	g_string_append (str, "==");
-	for (i = 0; i < (gint) (priv->size - priv->pulse_state.position - 1); i++)
-		g_string_append (str, " ");
-	g_string_append (str, "] ");
-	if (priv->percentage >= 0 && priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID) {
-		/* TRANSLATORS: this is a percentage value we use in messages, e.g. "90%. */
-		g_string_append_printf (str, _("(%i%%)"), priv->percentage);
-		g_string_append_printf (str, "  ");
+	str = g_string_sized_new (256);
+
+	/* move cursor to start of line and clear it */
+	g_string_append (str, "\r\033[K");
+
+	/* calculate dimensions */
+	term_width = pk_progress_bar_get_terminal_width (self);
+	available = term_width > PK_PERCENT_TEXT_WIDTH ? term_width - PK_PERCENT_TEXT_WIDTH : term_width;
+
+	bar_width = priv->size;
+	if (bar_width > available / 2)
+		bar_width = available / 2;
+	if (bar_width < 10)
+		bar_width = 10;
+
+	text_width = available - bar_width - 3;
+
+	/* truncate and pad the current text to exact width */
+	if (priv->old_start_text != NULL && text_width > 0) {
+		g_autofree gchar *truncated = NULL;
+		g_autofree gchar *display_text = NULL;
+		truncated = pk_text_truncate (priv->old_start_text, text_width);
+		display_text = pk_pad_string (truncated, text_width);
+		g_string_append (str, display_text);
 	} else {
-		g_string_append (str, "        ");
+		gsize old_len = str->len;
+		g_string_set_size(str, old_len + text_width);
+		memset(str->str + old_len, ' ', text_width);
+		str->str[str->len] = '\0';
 	}
+
+	g_string_append (str, " [");
+	if (priv->use_unicode) {
+		for (guint i = 0; i < bar_width; i++) {
+			if (i == priv->pulse_state.position)
+				g_string_append (str, "▓");
+			else if (i == priv->pulse_state.position - 1 || i == priv->pulse_state.position + 1)
+				g_string_append (str, "░");
+			else
+				g_string_append (str, " ");
+		}
+	} else {
+		/* ASCII fallback */
+		for (guint i = 0; i < bar_width; i++) {
+			if (i == priv->pulse_state.position || i == priv->pulse_state.position + 1)
+				g_string_append (str, "=");
+			else
+				g_string_append (str, " ");
+		}
+	}
+	g_string_append (str, "]");
+
+	/* show percentage if available */
+	if (priv->percentage >= 0 && priv->percentage <= 100 &&
+	    priv->percentage != PK_PROGRESS_BAR_PERCENTAGE_INVALID) {
+		g_string_append_printf (str, " %3d%%", priv->percentage);
+	} else {
+		g_string_append (str, "     ");
+	}
+
 	pk_progress_bar_console (self, str->str);
-	g_string_free (str, TRUE);
 
 	return TRUE;
 }
 
-/*
+/**
  * pk_progress_bar_draw_pulse_bar:
- **/
+ */
 static void
 pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 
-	/* have we already got zero percent? */
+	/* have we already got a pulse timer? */
 	if (priv->timer_id != 0)
 		return;
 
@@ -226,7 +457,7 @@ pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
  * Set the percentage value of the progress bar.
  *
  * Return value: %TRUE if changed
- **/
+ */
 gboolean
 pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
 {
@@ -250,7 +481,6 @@ pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
 
 	/* either pulse or display */
 	if (percentage < 0 || percentage > 100) {
-		pk_progress_bar_draw (progress_bar, 0);
 		pk_progress_bar_draw_pulse_bar (progress_bar);
 	} else {
 		g_clear_handle_id (&priv->timer_id, g_source_remove);
@@ -258,41 +488,6 @@ pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
 	}
 out:
 	return TRUE;
-}
-
-/*
- * pk_strpad:
- * @data: the input string
- * @length: the desired length of the output string, with padding
- *
- * Returns the text padded to a length with spaces. If the string is
- * longer than length then a longer string is returned.
- *
- * Return value: The padded string
- **/
-static gchar *
-pk_strpad (const gchar *data, guint length)
-{
-	gint size;
-	guint data_len;
-	gchar *text;
-	gchar *padding;
-
-	if (data == NULL)
-		return g_strnfill (length, ' ');
-
-	/* ITS4: ignore, only used for formatting */
-	data_len = strlen (data);
-
-	/* calculate */
-	size = (length - data_len);
-	if (size <= 0)
-		return g_strdup (data);
-
-	padding = g_strnfill (size, ' ');
-	text = g_strdup_printf ("%s%s", data, padding);
-	g_free (padding);
-	return text;
 }
 
 /**
@@ -303,14 +498,11 @@ pk_strpad (const gchar *data, guint length)
  * Start showing progress.
  *
  * Return value: %TRUE if progress bar started
- **/
+ */
 gboolean
 pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
-	gchar *text_pad;
-	GString *str;
-
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 
 	/* same as last time */
@@ -318,31 +510,20 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 		if (g_strcmp0 (priv->old_start_text, text) == 0)
 			return TRUE;
 	}
+
+	/* finish old progress bar if exists */
+	if (priv->percentage != G_MININT) {
+		pk_progress_bar_draw (progress_bar, 100);
+		pk_progress_bar_console (progress_bar, "\n");
+	}
+
 	g_free (priv->old_start_text);
 	priv->old_start_text = g_strdup (text);
 
-	/* finish old value */
-	str = g_string_new ("");
-	if (priv->percentage != G_MININT) {
-		pk_progress_bar_draw (progress_bar, 100);
-		g_string_append (str, "\n");
-	}
-
-	/* make these all the same length */
-	text_pad = pk_strpad (text, priv->padding);
-	g_string_append (str, text_pad);
-
-	/* save cursor in new position */
-	g_string_append_printf (str, "%c7", 0x1B);
-	pk_progress_bar_console (progress_bar, str->str);
-
 	/* reset */
-	if (priv->percentage == G_MININT)
-		priv->percentage = 0;
+	priv->percentage = 0;
 	pk_progress_bar_draw (progress_bar, 0);
 
-	g_string_free (str, TRUE);
-	g_free (text_pad);
 	return TRUE;
 }
 
@@ -353,32 +534,31 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
  * Stop showing progress.
  *
  * Return value: %TRUE if progress bar stopped
- **/
+ */
 gboolean
 pk_progress_bar_end (PkProgressBar *progress_bar)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
-	GString *str;
-
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 
 	/* never drawn */
 	if (priv->percentage == G_MININT)
 		return FALSE;
 
+	/* stop pulse timer if running */
+	g_clear_handle_id (&priv->timer_id, g_source_remove);
+
+	/* draw final state and newline */
 	priv->percentage = G_MININT;
 	pk_progress_bar_draw (progress_bar, 100);
-	str = g_string_new ("");
-	g_string_append_printf (str, "\n");
-	pk_progress_bar_console (progress_bar, str->str);
-	g_string_free (str, TRUE);
+	pk_progress_bar_console (progress_bar, "\n");
 
 	return TRUE;
 }
 
-/*
+/**
  * pk_progress_bar_finalize:
- **/
+ */
 static void
 pk_progress_bar_finalize (GObject *object)
 {
@@ -393,9 +573,9 @@ pk_progress_bar_finalize (GObject *object)
 	G_OBJECT_CLASS (pk_progress_bar_parent_class)->finalize (object);
 }
 
-/*
+/**
  * pk_progress_bar_class_init:
- **/
+ */
 static void
 pk_progress_bar_class_init (PkProgressBarClass *klass)
 {
@@ -403,24 +583,36 @@ pk_progress_bar_class_init (PkProgressBarClass *klass)
 	object_class->finalize = pk_progress_bar_finalize;
 }
 
-/*
+/**
  * pk_progress_bar_init:
- **/
+ */
 static void
 pk_progress_bar_init (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
+	const gchar *lang;
 
 	self->priv = priv;
-	priv->size = 10;
+	priv->size = PK_PROGRESS_BAR_DEFAULT_SIZE;
 	priv->percentage = G_MININT;
-	priv->padding = 0;
 	priv->timer_id = 0;
+	priv->term_width = 80;
+
+	/* check if we can use Unicode */
+	lang = g_getenv ("LANG");
+	priv->use_unicode = (lang != NULL && g_str_has_suffix (lang, ".UTF-8")) ||
+			    g_str_has_suffix (lang, ".utf8");
+
+	/* try to open TTY */
 	priv->tty_fd = open ("/dev/tty", O_RDWR, 0);
 	if (priv->tty_fd < 0)
 		priv->tty_fd = open ("/dev/console", O_RDWR, 0);
 	if (priv->tty_fd < 0)
 		priv->tty_fd = open ("/dev/stdout", O_RDWR, 0);
+
+	/* get initial terminal width */
+	if (priv->tty_fd >= 0)
+		priv->term_width = pk_progress_bar_get_terminal_width (self);
 }
 
 /**
@@ -429,7 +621,7 @@ pk_progress_bar_init (PkProgressBar *self)
  * #PkProgressBar is a console text progress bar.
  *
  * Return value: A new #PkProgressBar instance
- **/
+ */
 PkProgressBar *
 pk_progress_bar_new (void)
 {

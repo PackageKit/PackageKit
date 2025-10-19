@@ -1695,8 +1695,7 @@ main (int argc, char *argv[])
 	g_autofree gchar *filter = NULL;
 	g_autofree gchar *options_help = NULL;
 	g_autofree gchar *summary = NULL;
-	guint bar_padding = 40;
-	guint bar_size = 25;
+	guint bar_size = 34;
 	struct winsize w;
 
 	const GOptionEntry options[] = {
@@ -1751,14 +1750,11 @@ main (int argc, char *argv[])
 
 	/* Shrink the progresbar to fit in small spaces i.e. termux, small tmux panes, large font terminals */
 	/* If ioctl reports back and the terminal is small, shrink to fit as best we can */
-	if (!ioctl (STDOUT_FILENO, TIOCGWINSZ, &w)) {
-		bar_padding = MAX (1, MIN ( (w.ws_col / 2), bar_padding));
-		bar_size = MAX (0, MIN (w.ws_col - (bar_padding + 11), bar_size));
-	}
+	if (!ioctl (STDOUT_FILENO, TIOCGWINSZ, &w))
+		bar_size = MAX (0, MIN (w.ws_col - 52, bar_size));
 
 	ctx->progressbar = pk_progress_bar_new ();
 	pk_progress_bar_set_size (ctx->progressbar, bar_size);
-	pk_progress_bar_set_padding (ctx->progressbar, bar_padding);
 
 	ctx->cancellable = g_cancellable_new ();
 	context = g_option_context_new ("PackageKit Console Program");

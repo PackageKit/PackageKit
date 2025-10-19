@@ -517,8 +517,7 @@ main (int argc, char *argv[])
 
 	/* use a progress bar when the user presses <esc> in plymouth */
 	progressbar = pk_progress_bar_new ();
-	pk_progress_bar_set_size (progressbar, 25);
-	pk_progress_bar_set_padding (progressbar, 30);
+	pk_progress_bar_set_size (progressbar, 46);
 
 	task = pk_task_new ();
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
