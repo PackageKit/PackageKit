@@ -672,7 +672,7 @@ pk_test_spawn_func (void)
 	/* run the dispatcher */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager", "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C BACKGROUND=TRUE INTERACTIVE=TRUE UID=500", " ", 0);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C.UTF-8 BACKGROUND=TRUE INTERACTIVE=TRUE UID=500", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);

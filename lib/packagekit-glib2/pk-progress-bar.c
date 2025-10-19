@@ -24,6 +24,7 @@
 
 #include <glib.h>
 #include <locale.h>
+#include <langinfo.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -590,7 +591,7 @@ static void
 pk_progress_bar_init (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
-	const gchar *lang;
+	const char *codeset;
 
 	self->priv = priv;
 	priv->size = PK_PROGRESS_BAR_DEFAULT_SIZE;
@@ -599,9 +600,10 @@ pk_progress_bar_init (PkProgressBar *self)
 	priv->term_width = 80;
 
 	/* check if we can use Unicode */
-	lang = g_getenv ("LANG");
-	priv->use_unicode = (lang != NULL && g_str_has_suffix (lang, ".UTF-8")) ||
-			    g_str_has_suffix (lang, ".utf8");
+	codeset = nl_langinfo (CODESET);
+	priv->use_unicode = codeset != NULL &&
+						(g_ascii_strcasecmp (codeset, "UTF-8") == 0 ||
+						 g_ascii_strcasecmp (codeset, "utf8") == 0);
 
 	/* try to open TTY */
 	priv->tty_fd = open ("/dev/tty", O_RDWR, 0);
