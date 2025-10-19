@@ -415,7 +415,6 @@ pk_client_helper_start (PkClientHelper *client_helper,
 			gchar **argv, gchar **envp,
 			GError **error)
 {
-	guint i;
 	gboolean use_kde_helper = FALSE;
 	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
 	g_autoptr(GError) error_local = NULL;
@@ -442,7 +441,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 
 	/* preconfigure KDE frontend, if requested */
 	if (envp != NULL) {
-		for (i = 0; envp[i] != NULL; i++) {
+		for (guint i = 0; envp[i] != NULL; i++) {
 			if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0) {
 				if (g_file_test ("/usr/bin/debconf-kde-helper",
 						 G_FILE_TEST_EXISTS)) {

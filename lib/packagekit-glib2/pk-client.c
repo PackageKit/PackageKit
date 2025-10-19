@@ -2061,6 +2061,9 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 	const gchar *wayland_display;
 	const gchar *xauthority;
 	const gchar *term;
+	const gchar *desktop;
+	const gchar *lang;
+	const gchar *language;
 	gboolean ret;
 	guint envpi = 0;
 	gchar **envp;
@@ -2075,7 +2078,7 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 	*argv = g_new0 (gchar *, 2);
 	*argv[0] = g_strdup ("/usr/bin/debconf-communicate");
 
-	*envp_out = g_new0 (gchar *, 11);
+	*envp_out = g_new0 (gchar *, 16);
 	envp = *envp_out;
 	envp[envpi++] = g_strdup ("DEBCONF_DB_REPLACE=configdb");
 	envp[envpi++] = g_strdup ("DEBCONF_DB_OVERRIDE=Pipe{infd:none outfd:none}");
@@ -2103,12 +2106,29 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 		envp[envpi++] = g_strdup_printf ("WAYLAND_DISPLAY=%s", wayland_display);
 		envp[envpi++] = g_strdup_printf ("XDG_RUNTIME_DIR=%s", g_get_user_runtime_dir ());
 	}
+
+	desktop = g_getenv ("XDG_SESSION_DESKTOP");
 	if (display != NULL || wayland_display != NULL) {
-		if (g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
+		if (g_strcmp0 (desktop, "KDE") == 0 ||
+			g_strcmp0 (g_getenv ("KDE_FULL_SESSION"), "true") == 0)
 			dialog = "kde";
 		else
 			dialog = "gnome";
 	}
+
+	if (desktop != NULL)
+		envp[envpi++] = g_strdup_printf ("XDG_SESSION_DESKTOP=%s", desktop);
+
+	/* some Qt-based helpers need a config directory */
+	envp[envpi++] = g_strdup_printf ("XDG_CONFIG_HOME=%s/config", g_get_user_runtime_dir ());
+
+	/* forward locale */
+	lang = g_getenv ("LANG");
+	if (lang != NULL)
+		envp[envpi++] = g_strdup_printf ("LANG=%s", lang);
+	language = g_getenv ("LANGUAGE");;
+	if (language != NULL)
+		envp[envpi++] = g_strdup_printf ("LANGUAGE=%s", language);
 
 	/* indicate a prefered frontend */
 	if (dialog != NULL) {
