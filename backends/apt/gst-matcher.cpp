@@ -36,9 +36,10 @@ GstMatcher::GstMatcher(gchar **values)
     // The search term from PackageKit daemon:
     // gstreamer0.10(urisource-foobar)
     // gstreamer0.10(decoder-audio/x-wma)(wmaversion=3)
-    const char *pkreg = "^gstreamer\\(0.10\\|1\\)\\(\\.0\\)\\?"
-                        "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
-                        "\\((.*)\\)\\?";
+    const char *pkreg =
+        "^gstreamer\\(0.10\\|1\\)\\(\\.0\\)\\?"
+        "(\\(encoder\\|decoder\\|urisource\\|urisink\\|element\\)-\\([^)]\\+\\))"
+        "\\((.*)\\)\\?";
 
     regex_t pkre;
     if (regcomp(&pkre, pkreg, 0) != 0) {
@@ -86,7 +87,7 @@ GstMatcher::GstMatcher(gchar **values)
 
                     // Replace all ")(" with "," - convert from input to serialized caps format
                     while ((start_pos = opt.find(")(", start_pos)) != string::npos) {
-                        if (start_pos == opt.length()-2) {
+                        if (start_pos == opt.length() - 2) {
                             // Avoid trailing comma
                             opt.erase(start_pos, 2);
                             break;
@@ -123,11 +124,11 @@ GstMatcher::GstMatcher(gchar **values)
             }
 
             values.version = version;
-            values.type    = type;
-            values.data    = data;
-            values.opt     = opt;
-            values.caps    = caps;
-            values.native  = native;
+            values.type = type;
+            values.data = data;
+            values.opt = opt;
+            values.caps = caps;
+            values.native = native;
 
             m_matches.push_back(values);
         } else {
@@ -140,7 +141,7 @@ GstMatcher::GstMatcher(gchar **values)
 GstMatcher::~GstMatcher()
 {
     for (const Match &match : m_matches) {
-        gst_caps_unref(static_cast<GstCaps*>(match.caps));
+        gst_caps_unref(static_cast<GstCaps *>(match.caps));
     }
 }
 
@@ -151,7 +152,7 @@ bool GstMatcher::matches(string record, bool native)
         if (record.find(match.version) != string::npos) {
             size_t found;
             if (match.native && !native)
-                    continue;
+                continue;
             found = record.find(match.type);
             // Tries to find the type "Gstreamer-Uri-Sinks: "
             if (found != string::npos) {
@@ -166,7 +167,7 @@ bool GstMatcher::matches(string record, bool native)
                 }
 
                 // if the record is capable of intersect them we found the package
-                bool provides = gst_caps_can_intersect(static_cast<GstCaps*>(match.caps), caps);
+                bool provides = gst_caps_can_intersect(static_cast<GstCaps *>(match.caps), caps);
                 gst_caps_unref(caps);
 
                 if (provides) {

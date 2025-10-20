@@ -33,7 +33,8 @@ class GetFilesStream : public pkgDirStream
 public:
     std::vector<std::string> files;
 
-    virtual bool DoItem(Item &Itm,int &Fd) override {
+    virtual bool DoItem(Item &Itm, int &Fd) override
+    {
         Fd = -1;
         files.push_back(Itm.Name);
         return true;
@@ -51,7 +52,7 @@ DebFile::DebFile(const string &filename)
         return;
     }
 
-    if(!m_controlData.Scan(m_extractor->Control,m_extractor->Length+2)) {
+    if (!m_controlData.Scan(m_extractor->Control, m_extractor->Length + 2)) {
         g_warning("DebFile: Scan failed.");
         return;
     }
@@ -107,8 +108,8 @@ string DebFile::conflicts() const
 
 string DebFile::summary() const
 {
-    string longDesc = description ();
-    longDesc.resize (longDesc.find_first_of ("\n"));
+    string longDesc = description();
+    longDesc.resize(longDesc.find_first_of("\n"));
 
     return longDesc;
 }
@@ -127,8 +128,7 @@ bool DebFile::check()
     }
 
     g_debug("DebFile architecture: %s", architecture().c_str());
-    if (architecture().compare("all") != 0 &&
-            architecture().compare(_config->Find("APT::Architecture")) != 0) {
+    if (architecture().compare("all") != 0 && architecture().compare(_config->Find("APT::Architecture")) != 0) {
         m_errorMsg = "Wrong architecture ";
         m_errorMsg.append(architecture());
         return false;
@@ -184,5 +184,3 @@ string DebFile::errorMsg() const
 {
     return m_errorMsg;
 }
-
-

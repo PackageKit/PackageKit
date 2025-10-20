@@ -31,8 +31,6 @@
 /**
  * Call the Packagekit error dialog
  */
-void show_errors(PkBackendJob *job,
-                 PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN,
-                 bool errModify = false);
+void show_errors(PkBackendJob *job, PkErrorEnum errorCode = PK_ERROR_ENUM_UNKNOWN, bool errModify = false);
 
 #endif // AAPT_BACKEND_MESSAGES_H

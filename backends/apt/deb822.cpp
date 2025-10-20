@@ -24,18 +24,16 @@
 #include <sstream>
 #include <algorithm>
 
+Deb822File::Deb822File() {}
 
-Deb822File::Deb822File()
+bool Deb822File::isFieldStanza(const Stanza &stanza)
 {
+    return std::any_of(stanza.begin(), stanza.end(), [](const Line &l) {
+        return l.isField();
+    });
 }
 
-bool Deb822File::isFieldStanza(const Stanza& stanza)
-{
-    return std::any_of(stanza.begin(), stanza.end(),
-                       [](const Line& l) { return l.isField(); });
-}
-
-Deb822File::Line Deb822File::parseDeb822Line(const std::string& line) const
+Deb822File::Line Deb822File::parseDeb822Line(const std::string &line) const
 {
     Deb822File::Line l;
     l.content = line;
@@ -64,7 +62,7 @@ Deb822File::Line Deb822File::parseDeb822Line(const std::string& line) const
     return l;
 }
 
-bool Deb822File::loadFromStream(std::istream& stream)
+bool Deb822File::loadFromStream(std::istream &stream)
 {
     m_allStanzas.clear();
     m_fieldStanzaIndices.clear();
@@ -113,13 +111,13 @@ bool Deb822File::loadFromStream(std::istream& stream)
     return true;
 }
 
-bool Deb822File::loadFromString(const std::string& content)
+bool Deb822File::loadFromString(const std::string &content)
 {
     std::istringstream stream(content);
     return loadFromStream(stream);
 }
 
-bool Deb822File::load(const std::string& filename)
+bool Deb822File::load(const std::string &filename)
 {
     std::ifstream file(filename);
     if (!file) {
@@ -131,7 +129,7 @@ bool Deb822File::load(const std::string& filename)
     return loadFromStream(file);
 }
 
-bool Deb822File::save(const std::string& filename)
+bool Deb822File::save(const std::string &filename)
 {
     std::ofstream file(filename);
     if (!file) {
@@ -140,7 +138,7 @@ bool Deb822File::save(const std::string& filename)
     }
 
     for (size_t i = 0; i < m_allStanzas.size(); ++i) {
-        for (const auto& line : m_allStanzas[i])
+        for (const auto &line : m_allStanzas[i])
             file << line.content << "\n";
 
         if (i + 1 < m_allStanzas.size())
@@ -155,15 +153,18 @@ std::string Deb822File::lastError() const
     return m_lastError;
 }
 
-std::optional<std::string> Deb822File::getFieldValue(size_t stanzaIndex, const std::string& field, std::optional<std::string> defaultValue)
+std::optional<std::string> Deb822File::getFieldValue(
+    size_t stanzaIndex,
+    const std::string &field,
+    std::optional<std::string> defaultValue)
 {
     if (stanzaIndex >= m_fieldStanzaIndices.size()) {
         m_lastError = "Stanza index out of range";
         return std::nullopt;
     }
 
-    const Stanza& stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
-    for (const auto& line : stanza) {
+    const Stanza &stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
+    for (const auto &line : stanza) {
         if (line.key == field) {
             return line.value;
         }
@@ -172,14 +173,14 @@ std::optional<std::string> Deb822File::getFieldValue(size_t stanzaIndex, const s
     return defaultValue;
 }
 
-bool Deb822File::updateField(size_t stanzaIndex, const std::string& field, const std::string& newValue)
+bool Deb822File::updateField(size_t stanzaIndex, const std::string &field, const std::string &newValue)
 {
     if (stanzaIndex >= m_fieldStanzaIndices.size()) {
         m_lastError = "Stanza index out of range";
         return false;
     }
 
-    Stanza& stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
+    Stanza &stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
     for (auto it = stanza.begin(); it != stanza.end(); ++it) {
         if (it->key == field) {
             auto next = std::next(it);
@@ -209,14 +210,14 @@ bool Deb822File::updateField(size_t stanzaIndex, const std::string& field, const
     return true;
 }
 
-bool Deb822File::deleteField(size_t stanzaIndex, const std::string& key)
+bool Deb822File::deleteField(size_t stanzaIndex, const std::string &key)
 {
     if (stanzaIndex >= m_fieldStanzaIndices.size()) {
         m_lastError = "Stanza index out of range";
         return false;
     }
 
-    Stanza& stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
+    Stanza &stanza = m_allStanzas[m_fieldStanzaIndices[stanzaIndex]];
 
     for (auto it = stanza.begin(); it != stanza.end(); ++it) {
         if (it->key == key) {
@@ -294,7 +295,7 @@ std::string Deb822File::toString() const
 {
     std::ostringstream out;
     for (size_t i = 0; i < m_allStanzas.size(); ++i) {
-        for (const auto& line : m_allStanzas[i])
+        for (const auto &line : m_allStanzas[i])
             out << line.content << "\n";
 
         if (i + 1 < m_allStanzas.size())

@@ -35,136 +35,137 @@
 
 PkGroupEnum get_enum_group(string group)
 {
-    if (group.compare ("admin") == 0) {
+    if (group.compare("admin") == 0) {
         return PK_GROUP_ENUM_ADMIN_TOOLS;
-    } else if (group.compare ("base") == 0) {
+    } else if (group.compare("base") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("cli-mono") == 0) {
+    } else if (group.compare("cli-mono") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("comm") == 0) {
+    } else if (group.compare("comm") == 0) {
         return PK_GROUP_ENUM_COMMUNICATION;
-    } else if (group.compare ("database") == 0) {
+    } else if (group.compare("database") == 0) {
         return PK_GROUP_ENUM_ADMIN_TOOLS;
-    } else if (group.compare ("debug") == 0) {
+    } else if (group.compare("debug") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("devel") == 0) {
+    } else if (group.compare("devel") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("doc") == 0) {
+    } else if (group.compare("doc") == 0) {
         return PK_GROUP_ENUM_DOCUMENTATION;
-    } else if (group.compare ("editors") == 0) {
+    } else if (group.compare("editors") == 0) {
         return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare ("education") == 0) {
+    } else if (group.compare("education") == 0) {
         return PK_GROUP_ENUM_EDUCATION;
-    } else if (group.compare ("electronics") == 0) {
+    } else if (group.compare("electronics") == 0) {
         return PK_GROUP_ENUM_ELECTRONICS;
-    } else if (group.compare ("embedded") == 0) {
+    } else if (group.compare("embedded") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("fonts") == 0) {
+    } else if (group.compare("fonts") == 0) {
         return PK_GROUP_ENUM_FONTS;
-    } else if (group.compare ("games") == 0) {
+    } else if (group.compare("games") == 0) {
         return PK_GROUP_ENUM_GAMES;
-    } else if (group.compare ("gnome") == 0) {
+    } else if (group.compare("gnome") == 0) {
         return PK_GROUP_ENUM_DESKTOP_GNOME;
-    } else if (group.compare ("gnu-r") == 0) {
+    } else if (group.compare("gnu-r") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("gnustep") == 0) {
+    } else if (group.compare("gnustep") == 0) {
         return PK_GROUP_ENUM_DESKTOP_OTHER;
-    } else if (group.compare ("golang") == 0) {
+    } else if (group.compare("golang") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("graphics") == 0) {
+    } else if (group.compare("graphics") == 0) {
         return PK_GROUP_ENUM_GRAPHICS;
-    } else if (group.compare ("hamradio") == 0) {
+    } else if (group.compare("hamradio") == 0) {
         return PK_GROUP_ENUM_COMMUNICATION;
-    } else if (group.compare ("haskell") == 0) {
+    } else if (group.compare("haskell") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("httpd") == 0) {
+    } else if (group.compare("httpd") == 0) {
         return PK_GROUP_ENUM_SERVERS;
-    } else if (group.compare ("interpreters") == 0) {
+    } else if (group.compare("interpreters") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("introspection") == 0) {
+    } else if (group.compare("introspection") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("java") == 0) {
+    } else if (group.compare("java") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("javascript") == 0) {
+    } else if (group.compare("javascript") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("kde") == 0) {
+    } else if (group.compare("kde") == 0) {
         return PK_GROUP_ENUM_DESKTOP_KDE;
-    } else if (group.compare ("kernel") == 0) {
+    } else if (group.compare("kernel") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("libdevel") == 0) {
+    } else if (group.compare("libdevel") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("libs") == 0) {
+    } else if (group.compare("libs") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("lisp") == 0) {
+    } else if (group.compare("lisp") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("mail") == 0) {
+    } else if (group.compare("mail") == 0) {
         return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare ("math") == 0) {
+    } else if (group.compare("math") == 0) {
         return PK_GROUP_ENUM_SCIENCE;
-    } else if (group.compare ("misc") == 0) {
+    } else if (group.compare("misc") == 0) {
         return PK_GROUP_ENUM_OTHER;
-    } else if (group.compare ("net") == 0) {
+    } else if (group.compare("net") == 0) {
         return PK_GROUP_ENUM_NETWORK;
-    } else if (group.compare ("news") == 0) {
+    } else if (group.compare("news") == 0) {
         return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare ("ocaml") == 0) {
+    } else if (group.compare("ocaml") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("oldlibs") == 0) {
+    } else if (group.compare("oldlibs") == 0) {
         return PK_GROUP_ENUM_LEGACY;
-    } else if (group.compare ("otherosfs") == 0) {
+    } else if (group.compare("otherosfs") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("perl") == 0) {
+    } else if (group.compare("perl") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("php") == 0) {
+    } else if (group.compare("php") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("python") == 0) {
+    } else if (group.compare("python") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("ruby") == 0) {
+    } else if (group.compare("ruby") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("rust") == 0) {
+    } else if (group.compare("rust") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("science") == 0) {
+    } else if (group.compare("science") == 0) {
         return PK_GROUP_ENUM_SCIENCE;
-    } else if (group.compare ("shells") == 0) {
+    } else if (group.compare("shells") == 0) {
         return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare ("sound") == 0) {
+    } else if (group.compare("sound") == 0) {
         return PK_GROUP_ENUM_MULTIMEDIA;
-    } else if (group.compare ("tex") == 0) {
+    } else if (group.compare("tex") == 0) {
         return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare ("text") == 0) {
+    } else if (group.compare("text") == 0) {
         return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare ("utils") == 0) {
+    } else if (group.compare("utils") == 0) {
         return PK_GROUP_ENUM_ACCESSORIES;
-    } else if (group.compare ("vcs") == 0) {
+    } else if (group.compare("vcs") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("video") == 0) {
+    } else if (group.compare("video") == 0) {
         return PK_GROUP_ENUM_MULTIMEDIA;
-    } else if (group.compare ("web") == 0) {
+    } else if (group.compare("web") == 0) {
         return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare ("x11") == 0) {
+    } else if (group.compare("x11") == 0) {
         return PK_GROUP_ENUM_DESKTOP_OTHER;
-    } else if (group.compare ("xfce") == 0) {
+    } else if (group.compare("xfce") == 0) {
         return PK_GROUP_ENUM_DESKTOP_XFCE;
-    } else if (group.compare ("zope") == 0) {
+    } else if (group.compare("zope") == 0) {
         return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare ("alien") == 0) {
-        return PK_GROUP_ENUM_UNKNOWN;//FIXME alien is an unknown group?
-    } else if (group.compare ("translations") == 0) {
+    } else if (group.compare("alien") == 0) {
+        return PK_GROUP_ENUM_UNKNOWN; // FIXME alien is an unknown group?
+    } else if (group.compare("translations") == 0) {
         return PK_GROUP_ENUM_LOCALIZATION;
-    } else if (group.compare ("metapackages") == 0) {
+    } else if (group.compare("metapackages") == 0) {
         return PK_GROUP_ENUM_COLLECTIONS;
     } else {
         return PK_GROUP_ENUM_UNKNOWN;
     }
 }
 
-string fetchChangelogData(AptCacheFile &CacheFile,
-                          pkgAcquire &Fetcher,
-                          pkgCache::VerIterator Ver,
-                          pkgCache::VerIterator currver,
-                          string *update_text,
-                          string *updated,
-                          string *issued)
+string fetchChangelogData(
+    AptCacheFile &CacheFile,
+    pkgAcquire &Fetcher,
+    pkgCache::VerIterator Ver,
+    pkgCache::VerIterator currver,
+    string *update_text,
+    string *updated,
+    string *issued)
 {
     string changelog;
 
@@ -177,7 +178,7 @@ string fetchChangelogData(AptCacheFile &CacheFile,
     // error
     pkgRecords Recs(CacheFile);
     pkgCache::PkgIterator Pkg = Ver.ParentPkg();
-    pkgRecords::Parser &rec=Recs.Lookup(Ver.FileList());
+    pkgRecords::Parser &rec = Recs.Lookup(Ver.FileList());
     string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
     changelog = "Changelog for this version is not yet available";
 
@@ -193,23 +194,22 @@ string fetchChangelogData(AptCacheFile &CacheFile,
     ifstream in(c->DestFile.c_str());
     string line;
     g_autoptr(GRegex) regexVer = NULL;
-    regexVer = g_regex_new("(?'source'.+) \\((?'version'.*)\\) "
-                           "(?'dist'.+); urgency=(?'urgency'.+)",
-                           G_REGEX_CASELESS,
-                           G_REGEX_MATCH_ANCHORED,
-                           0);
+    regexVer = g_regex_new(
+        "(?'source'.+) \\((?'version'.*)\\) "
+        "(?'dist'.+); urgency=(?'urgency'.+)",
+        G_REGEX_CASELESS,
+        G_REGEX_MATCH_ANCHORED,
+        0);
     g_autoptr(GRegex) regexDate = NULL;
-    regexDate = g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$",
-                            G_REGEX_CASELESS,
-                            G_REGEX_MATCH_ANCHORED,
-                            0);
+    regexDate = g_regex_new(
+        "^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$", G_REGEX_CASELESS, G_REGEX_MATCH_ANCHORED, 0);
 
     changelog = "";
     while (getline(in, line)) {
         // we don't want the additional whitespace, because it can confuse
         // some markdown parsers used by client tools
         if (starts_with(line, "  "))
-            line.erase(0,1);
+            line.erase(0, 1);
         // no need to free str later, it is allocated in a static buffer
         const char *str = toUtf8(line.c_str());
         if (strcmp(str, "") == 0) {
@@ -227,11 +227,14 @@ string fetchChangelogData(AptCacheFile &CacheFile,
 
                 // Compare if the current version is shown in the changelog, to not
                 // display old changelog information
-                if (_system != 0  &&
-                        _system->VS->DoCmpVersion(version, version + strlen(version),
-                                                  currver.SourceVerStr(),
-                                                  currver.SourceVerStr() + strlen(currver.SourceVerStr())) <= 0) {
-                    g_free (version);
+                if (_system != 0
+                    && _system->VS->DoCmpVersion(
+                           version,
+                           version + strlen(version),
+                           currver.SourceVerStr(),
+                           currver.SourceVerStr() + strlen(currver.SourceVerStr()))
+                           <= 0) {
+                    g_free(version);
                     break;
                 } else {
                     if (!update_text->empty()) {
@@ -240,10 +243,10 @@ string fetchChangelogData(AptCacheFile &CacheFile,
                     update_text->append(" == ");
                     update_text->append(version);
                     update_text->append(" ==");
-                    g_free (version);
+                    g_free(version);
                 }
             }
-            g_match_info_free (match_info);
+            g_match_info_free(match_info);
         } else if (starts_with(str, " --")) {
             // Parse the text to know when the update was issued,
             // and when it got updated
@@ -275,24 +278,21 @@ string fetchChangelogData(AptCacheFile &CacheFile,
     return changelog;
 }
 
-GPtrArray* getCVEUrls(const string &changelog)
+GPtrArray *getCVEUrls(const string &changelog)
 {
     GPtrArray *cve_urls = g_ptr_array_new();
 
     // Regular expression to find cve references
     GRegex *regex;
     GMatchInfo *match_info;
-    regex = g_regex_new("CVE-\\d{4}-\\d{4,}",
-                        G_REGEX_CASELESS,
-                        G_REGEX_MATCH_NEWLINE_ANY,
-                        0);
-    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
-        gchar *cve = g_match_info_fetch (match_info, 0);
+        gchar *cve = g_match_info_fetch(match_info, 0);
         gchar *cveLink;
 
         cveLink = g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve);
-        g_ptr_array_add(cve_urls, (gpointer) cveLink);
+        g_ptr_array_add(cve_urls, (gpointer)cveLink);
 
         g_free(cve);
         g_match_info_next(match_info, NULL);
@@ -306,24 +306,21 @@ GPtrArray* getCVEUrls(const string &changelog)
     return cve_urls;
 }
 
-GPtrArray* getBugzillaUrls(const string &changelog)
+GPtrArray *getBugzillaUrls(const string &changelog)
 {
     GPtrArray *bugzilla_urls = g_ptr_array_new();
 
     // Matches Ubuntu bugs
     GRegex *regex;
     GMatchInfo *match_info;
-    regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*",
-                        G_REGEX_CASELESS,
-                        G_REGEX_MATCH_NEWLINE_ANY,
-                        0);
-    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
         gchar *bug = g_match_info_fetch_named(match_info, "bug");
         gchar *bugLink;
 
         bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug);
-        g_ptr_array_add(bugzilla_urls, (gpointer) bugLink);
+        g_ptr_array_add(bugzilla_urls, (gpointer)bugLink);
 
         g_free(bug);
         g_match_info_next(match_info, NULL);
@@ -336,17 +333,18 @@ GPtrArray* getBugzillaUrls(const string &changelog)
     // Debian Policy Chapter 4.4. For details see the footnote 15:
     // https://www.debian.org/doc/debian-policy/footnotes.html#f15
     // /closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*/i
-    regex = g_regex_new("closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
-                        G_REGEX_CASELESS,
-                        G_REGEX_MATCH_NEWLINE_ANY,
-                        0);
-    g_regex_match (regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+    regex = g_regex_new(
+        "closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
+        G_REGEX_CASELESS,
+        G_REGEX_MATCH_NEWLINE_ANY,
+        0);
+    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
         gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
         gchar *bugLink1;
 
         bugLink1 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1);
-        g_ptr_array_add(bugzilla_urls, (gpointer) bugLink1);
+        g_ptr_array_add(bugzilla_urls, (gpointer)bugLink1);
 
         g_free(bug1);
 
@@ -355,7 +353,7 @@ GPtrArray* getBugzillaUrls(const string &changelog)
             gchar *bugLink2;
 
             bugLink2 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2);
-            g_ptr_array_add(bugzilla_urls, (gpointer) bugLink2);
+            g_ptr_array_add(bugzilla_urls, (gpointer)bugLink2);
 
             g_free(bug2);
         }
@@ -385,11 +383,8 @@ bool starts_with(const string &str, const char *start)
 
 bool utilRestartRequired(const string &packageName)
 {
-    if (starts_with(packageName, "linux-image-") ||
-        starts_with(packageName, "nvidia-") ||
-        packageName == "libc6" ||
-        packageName == "dbus" ||
-        packageName == "dbus-broker") {
+    if (starts_with(packageName, "linux-image-") || starts_with(packageName, "nvidia-") || packageName == "libc6"
+        || packageName == "dbus" || packageName == "dbus-broker") {
         return true;
     }
     return false;
@@ -447,13 +442,14 @@ const char *toUtf8(const char *str)
     return _str;
 }
 
-string changelogDateToIso8601 (const string &date) {
+string changelogDateToIso8601(const string &date)
+{
     if (date.empty()) {
         return {};
     }
 
     std::istringstream date_ss(date);
-    date_ss.imbue(std::locale("C"));  // Dates are always in English locale
+    date_ss.imbue(std::locale("C")); // Dates are always in English locale
     tm time = {};
     date_ss >> get_time(&time, "%a, %d %b %Y %H:%M:%S ");
     if (date_ss.fail()) {
@@ -469,9 +465,7 @@ string changelogDateToIso8601 (const string &date) {
     }
 
     g_autoptr(GDateTime) dateTime = g_date_time_new(
-        tz,
-        time.tm_year + 1900, time.tm_mon + 1, time.tm_mday,
-        time.tm_hour, time.tm_min, time.tm_sec);
+        tz, time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
 
     if (dateTime == NULL) {
         return {};

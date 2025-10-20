@@ -58,9 +58,6 @@ void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
     }
 
     if (errorCount > 0) {
-        pk_backend_job_error_code(job,
-                                  errorCode,
-                                  "%s",
-                                  toUtf8(errors.str().c_str()));
+        pk_backend_job_error_code(job, errorCode, "%s", toUtf8(errors.str().c_str()));
     }
 }

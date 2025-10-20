@@ -37,27 +37,27 @@ public:
     ~AptCacheFile();
 
     /**
-      * Inits the package cache returning false if it can't open
-      */
+     * Inits the package cache returning false if it can't open
+     */
     bool Open(bool withLock = false);
 
     /**
-      * Closes the package cache
-      */
+     * Closes the package cache
+     */
     void Close();
 
     /**
-      * Build caches
-      */
+     * Build caches
+     */
     bool BuildCaches(bool withLock = false);
 
     /**
-      * This routine generates the caches and then opens the dependency cache
-      * and verifies that the system is OK.
-      * @param AllowBroken when true it will try to perform the instalation
-      * even if we have broken packages, when false it will try to fix
-      * the current situation
-      */
+     * This routine generates the caches and then opens the dependency cache
+     * and verifies that the system is OK.
+     * @param AllowBroken when true it will try to perform the instalation
+     * even if we have broken packages, when false it will try to fix
+     * the current situation
+     */
     bool CheckDeps(bool AllowBroken = false);
 
     /**
@@ -71,19 +71,34 @@ public:
      */
     void ShowBroken(bool Now, PkErrorEnum error = PK_ERROR_ENUM_DEP_RESOLUTION_FAILED);
 
-    inline pkgRecords* GetPkgRecords() { buildPkgRecords(); return m_packageRecords; }
+    inline pkgRecords *GetPkgRecords()
+    {
+        buildPkgRecords();
+        return m_packageRecords;
+    }
 
     /**
-      * GetPolicy will build the policy object if needed and return it
-      * @note This override if because the cache should be built before the policy
-      */
-    inline pkgPolicy* GetPolicy() { BuildCaches(); BuildPolicy(); return Policy; }
+     * GetPolicy will build the policy object if needed and return it
+     * @note This override if because the cache should be built before the policy
+     */
+    inline pkgPolicy *GetPolicy()
+    {
+        BuildCaches();
+        BuildPolicy();
+        return Policy;
+    }
 
     /**
-      * GetDepCache will build the dependency cache if needed and return it
-      * @note This override if because the policy should be built before the dependency cache
-      */
-    inline pkgDepCache* GetDepCache() { BuildCaches(); BuildPolicy(); BuildDepCache(); return DCache; }
+     * GetDepCache will build the dependency cache if needed and return it
+     * @note This override if because the policy should be built before the dependency cache
+     */
+    inline pkgDepCache *GetDepCache()
+    {
+        BuildCaches();
+        BuildPolicy();
+        BuildDepCache();
+        return DCache;
+    }
 
     /**
      * Checks if the package is garbage (not depended on)
@@ -104,15 +119,16 @@ public:
 
     /**
      * Tries to find a package with the given packageId
-     * @returns PkgInfo containing a pkgCache::VerIterator. If PkgInfo::ver::end() is true, the package could not be found
+     * @returns PkgInfo containing a pkgCache::VerIterator. If PkgInfo::ver::end() is true, the package could not be
+     * found
      */
     PkgInfo resolvePkgID(const gchar *packageId);
 
     /**
-      * Build a package id from the given package version
-      * The caller must g_free the returned value
-      */
-    gchar* buildPackageId(const pkgCache::VerIterator &ver);
+     * Build a package id from the given package version
+     * The caller must g_free the returned value
+     */
+    gchar *buildPackageId(const pkgCache::VerIterator &ver);
 
     /**
      * Tries to find the candidate version of a package
@@ -143,14 +159,14 @@ public:
      */
     std::string getLongDescriptionParsed(const pkgCache::VerIterator &ver);
 
-    bool tryToInstall(pkgProblemResolver &Fix,
-                      const PkgInfo &pki,
-                      bool autoInst,
-                      bool preserveAuto,
-                      bool fixBroken = false);
+    bool tryToInstall(
+        pkgProblemResolver &Fix,
+        const PkgInfo &pki,
+        bool autoInst,
+        bool preserveAuto,
+        bool fixBroken = false);
 
-    void tryToRemove(pkgProblemResolver &Fix,
-                     const PkgInfo &pki);
+    void tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki);
 
 private:
     void buildPkgRecords();
@@ -175,7 +191,7 @@ protected:
     virtual void Update();
 
 private:
-    PkBackendJob  *m_job;
+    PkBackendJob *m_job;
 };
 
 #endif // APT_CACHE_FILE_H

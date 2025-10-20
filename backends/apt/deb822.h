@@ -34,19 +34,21 @@ class Deb822File
 public:
     explicit Deb822File();
 
-    bool load(const std::string& filename);
-    bool loadFromStream(std::istream& stream);
-    bool loadFromString(const std::string& content);
+    bool load(const std::string &filename);
+    bool loadFromStream(std::istream &stream);
+    bool loadFromString(const std::string &content);
 
-    bool save(const std::string& filename);
+    bool save(const std::string &filename);
 
     [[nodiscard]] std::string lastError() const;
 
     [[nodiscard]] size_t stanzaCount() const;
-    [[nodiscard]] std::optional<std::string> getFieldValue(size_t stanzaIndex, const std::string& field,
-                                                           std::optional<std::string> defaultValue = std::nullopt);
-    bool updateField(size_t stanza_index, const std::string& field, const std::string& newValue);
-    bool deleteField(size_t stanzaIndex, const std::string& key);
+    [[nodiscard]] std::optional<std::string> getFieldValue(
+        size_t stanzaIndex,
+        const std::string &field,
+        std::optional<std::string> defaultValue = std::nullopt);
+    bool updateField(size_t stanza_index, const std::string &field, const std::string &newValue);
+    bool deleteField(size_t stanzaIndex, const std::string &key);
     bool deleteStanza(size_t index);
     int duplicateStanza(size_t index);
 
@@ -59,16 +61,19 @@ private:
         std::string value; /// only valid if key is non-empty
 
         bool isContinuation = false;
-        [[nodiscard]] bool isField() const { return !key.empty(); }
+        [[nodiscard]] bool isField() const
+        {
+            return !key.empty();
+        }
     };
 
     using Stanza = std::vector<Line>;
 
     std::string m_filename;
     std::string m_lastError;
-    std::vector<Stanza> m_allStanzas; // all stanzas, including comment-only ones
+    std::vector<Stanza> m_allStanzas;         // all stanzas, including comment-only ones
     std::vector<size_t> m_fieldStanzaIndices; // map for stanzas with fields
 
-    static bool isFieldStanza(const Stanza& stanza);
-    Line parseDeb822Line(const std::string& line) const;
+    static bool isFieldStanza(const Stanza &stanza);
+    Line parseDeb822Line(const std::string &line) const;
 };

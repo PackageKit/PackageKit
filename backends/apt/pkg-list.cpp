@@ -32,15 +32,18 @@ class compare
 public:
     compare() {}
 
-    bool operator() (const PkgInfo &a, const PkgInfo &b)
+    bool operator()(const PkgInfo &a, const PkgInfo &b)
     {
         const pkgCache::VerIterator &viA = a.ver;
         const pkgCache::VerIterator &viB = b.ver;
         int ret = strcmp(viA.ParentPkg().Name(), viB.ParentPkg().Name());
         if (ret == 0) {
             if (_system != 0)
-                ret = _system->VS->DoCmpVersion(viA.VerStr(), viA.VerStr() + strlen(viA.VerStr()),
-                                                viB.VerStr(), viB.VerStr() + strlen(viB.VerStr()));
+                ret = _system->VS->DoCmpVersion(
+                    viA.VerStr(),
+                    viA.VerStr() + strlen(viA.VerStr()),
+                    viB.VerStr(),
+                    viB.VerStr() + strlen(viB.VerStr()));
             else
                 ret = strcmp(viA.VerStr(), viB.VerStr());
 
@@ -49,8 +52,9 @@ public:
                 if (ret == 0) {
                     pkgCache::VerFileIterator aVF = viA.FileList();
                     pkgCache::VerFileIterator bVF = viB.FileList();
-                    ret = strcmp(aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
-                                 bVF.File().Archive() == NULL ? "" : bVF.File().Archive());
+                    ret = strcmp(
+                        aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
+                        bVF.File().Archive() == NULL ? "" : bVF.File().Archive());
                 }
             }
         }
@@ -64,20 +68,21 @@ class result_equality
 public:
     result_equality() {}
 
-    bool operator() (const PkgInfo &a, const PkgInfo &b)
+    bool operator()(const PkgInfo &a, const PkgInfo &b)
     {
         const pkgCache::VerIterator &viA = a.ver;
         const pkgCache::VerIterator &viB = b.ver;
 
         bool ret;
-        ret = strcmp(viA.ParentPkg().Name(), viB.ParentPkg().Name()) == 0 &&
-                strcmp(viA.VerStr(), viB.VerStr()) == 0 &&
-                strcmp(viA.Arch(), viB.Arch()) == 0;
+        ret = strcmp(viA.ParentPkg().Name(), viB.ParentPkg().Name()) == 0 && strcmp(viA.VerStr(), viB.VerStr()) == 0
+              && strcmp(viA.Arch(), viB.Arch()) == 0;
         if (ret) {
             pkgCache::VerFileIterator aVF = viA.FileList();
             pkgCache::VerFileIterator bVF = viB.FileList();
-            ret = strcmp(aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
-                         bVF.File().Archive() == NULL ? "" : bVF.File().Archive()) == 0;
+            ret = strcmp(
+                      aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
+                      bVF.File().Archive() == NULL ? "" : bVF.File().Archive())
+                  == 0;
         }
         return ret;
     }

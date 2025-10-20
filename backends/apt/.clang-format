@@ -1,0 +1,82 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+---
+Language: Cpp
+Standard: C++11
+ColumnLimit: 120
+BreakBeforeBraces: Linux
+PointerAlignment: Right
+AlignAfterOpenBracket: AlwaysBreak
+AllowAllParametersOfDeclarationOnNextLine: false
+AlwaysBreakBeforeMultilineStrings: true
+BreakBeforeBinaryOperators: NonAssignment
+AlignArrayOfStructures: Left
+
+# format C++11 braced lists like function calls
+Cpp11BracedListStyle: true
+
+# do not put a space before C++11 braced lists
+SpaceBeforeCpp11BracedList: false
+
+# no namespace indentation to keep indent level low
+NamespaceIndentation: None
+
+# we use template< without space.
+SpaceAfterTemplateKeyword: false
+
+# Always break after template declaration
+AlwaysBreakTemplateDeclarations: true
+
+# keep lambda formatting multi-line if not empty
+AllowShortLambdasOnASingleLine: Empty
+
+# return types should not be on their own lines
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 1000
+AlwaysBreakAfterDefinitionReturnType: None
+
+# Break constructor initializers before the colon and after the commas,
+# and never put the all in one line.
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+PackConstructorInitializers: Never
+
+# Place ternary operators after line breaks
+BreakBeforeTernaryOperators: true
+
+# No own indentation level for access modifiers
+IndentAccessModifiers: false
+AccessModifierOffset: -4
+
+# Add empty line only when access modifier starts a new logical block.
+EmptyLineBeforeAccessModifier: LogicalBlock
+
+# Only merge empty functions.
+AllowShortFunctionsOnASingleLine: Empty
+
+# Don't indent case labels.
+IndentCaseLabels: false
+
+# No space after C-style cast
+SpaceAfterCStyleCast: false
+
+# Never pack arguments or parameters
+BinPackArguments: false
+BinPackParameters: false
+
+# Avoid breaking around an assignment operator
+PenaltyBreakAssignment: 150
+
+# Left-align newline escapes, e.g. in macros
+AlignEscapedNewlines: Left
+
+# Enums should be one entry per line
+AllowShortEnumsOnASingleLine: false
+
+# we want consecutive macros to be aligned
+AlignConsecutiveMacros: true
+
+# never sort includes, only regroup (in rare cases)
+IncludeBlocks: Regroup
+SortIncludes: Never

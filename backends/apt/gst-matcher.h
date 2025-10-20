@@ -29,12 +29,12 @@
 using namespace std;
 
 typedef struct {
-    string   version;
-    string   type;
-    string   data;
-    string   opt;
-    void    *caps;
-    bool     native;
+    string version;
+    string type;
+    string data;
+    string opt;
+    void *caps;
+    bool native;
 } Match;
 
 class GstMatcher

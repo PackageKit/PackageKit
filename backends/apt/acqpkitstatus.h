@@ -48,12 +48,12 @@ public:
     bool Pulse(pkgAcquire *Owner);
 
 private:
-    void updateStatus(pkgAcquire::ItemDesc & Itm, int status);
+    void updateStatus(pkgAcquire::ItemDesc &Itm, int status);
 
     unsigned long m_lastPercent;
-    double        m_lastCPS;
+    double m_lastCPS;
 
-    AptJob       *m_apt;
+    AptJob *m_apt;
     PkBackendJob *m_job;
 };
 
@@ -61,7 +61,10 @@ class pkgAcqArchiveSane : public pkgAcqArchive
 {
 public:
     // This is insane the version is protected
-    pkgCache::VerIterator version() { return Version; }
+    pkgCache::VerIterator version()
+    {
+        return Version;
+    }
 };
 
 #endif

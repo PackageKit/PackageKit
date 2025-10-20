@@ -34,7 +34,7 @@
 #include "pkg-list.h"
 #include "apt-sourceslist.h"
 
-#define REBOOT_REQUIRED_FILE    "/run/reboot-required"
+#define REBOOT_REQUIRED_FILE "/run/reboot-required"
 
 class pkgProblemResolver;
 class Matcher;
@@ -67,38 +67,39 @@ public:
     PkgList resolvePackageIds(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
     /**
-      * Tries to resolve a list of local deb files
-      * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
-      */
+     * Tries to resolve a list of local deb files
+     * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
+     */
     PkgList resolveLocalFiles(gchar **localDebs);
 
     /**
      * Tries to resolve package updates for the given package ids
      * @returns true if the package updates could be resolved
      */
-    bool resolvePackageUpdateIds(gchar **package_ids,
-                                 PkgList &updates,
-                                 PkgList &downgrades,
-                                 PkgList &installs,
-                                 PkgList &removals,
-                                 PkgList &obsoleted);
+    bool resolvePackageUpdateIds(
+        gchar **package_ids,
+        PkgList &updates,
+        PkgList &downgrades,
+        PkgList &installs,
+        PkgList &removals,
+        PkgList &obsoleted);
 
     /**
-      * Refreshes the sources of packages
-      */
+     * Refreshes the sources of packages
+     */
     void refreshCache();
 
     /**
-      * Tries to resolve a pkg file installation of the given \sa file
-      * @param install is where the packages to be installed will be stored
-      * @param remove is where the packages to be removed will be stored
-      * @returns true if the package can be installed
-      */
+     * Tries to resolve a pkg file installation of the given \sa file
+     * @param install is where the packages to be installed will be stored
+     * @param remove is where the packages to be removed will be stored
+     * @returns true if the package can be installed
+     */
     bool markFileForInstall(std::string const &file);
 
     /**
-      * Marks the given packages as auto installed
-      */
+     * Marks the given packages as auto installed
+     */
     void markAutoInstalled(const PkgList &pkgs);
 
     /**
@@ -110,50 +111,47 @@ public:
      * @param flags operation flags as per public API
      * @param autoremove whether to autoremove dangling packages
      */
-    bool runTransaction(const PkgList &install,
-                        const PkgList &remove,
-                        const PkgList &update,
-                        bool fixBroken,
-                        PkBitfield flags,
-                        bool autoremove);
+    bool runTransaction(
+        const PkgList &install,
+        const PkgList &remove,
+        const PkgList &update,
+        bool fixBroken,
+        PkBitfield flags,
+        bool autoremove);
 
     /**
      *  Get package depends
      */
-    void getDepends(PkgList &output,
-                    const pkgCache::VerIterator &ver,
-                    bool recursive);
+    void getDepends(PkgList &output, const pkgCache::VerIterator &ver, bool recursive);
 
     /**
      *  Get package requires
      */
-    void getRequires(PkgList &output,
-                     const pkgCache::VerIterator &ver,
-                     bool recursive);
+    void getRequires(PkgList &output, const pkgCache::VerIterator &ver, bool recursive);
 
     /**
-      * Returns a list of all packages in the cache
-      */
+     * Returns a list of all packages in the cache
+     */
     PkgList getPackages();
 
     /**
-      * Returns a list of all packages in the cache
-      */
+     * Returns a list of all packages in the cache
+     */
     PkgList getPackagesFromRepo(SourcesList::SourceRecord *&);
 
     /**
-      * Returns a list of all packages in the given groups
-      */
+     * Returns a list of all packages in the given groups
+     */
     PkgList getPackagesFromGroup(gchar **values);
 
     /**
-      * Returns a list of all packages that matched their names with matcher
-      */
+     * Returns a list of all packages that matched their names with matcher
+     */
     PkgList searchPackageName(const vector<string> &queries);
 
     /**
-      * Returns a list of all packages that matched their description with matcher
-      */
+     * Returns a list of all packages that matched their description with matcher
+     */
     PkgList searchPackageDetails(const vector<string> &queries);
 
     /**
@@ -165,7 +163,13 @@ public:
      * Determines available updates.
      * Returns true on success.
      */
-    bool getUpdates(PkgList &updates, PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted);
+    bool getUpdates(
+        PkgList &updates,
+        PkgList &blocked,
+        PkgList &downgrades,
+        PkgList &installs,
+        PkgList &removals,
+        PkgList &obsoleted);
 
     /**
      *  Emits a package with the given state
@@ -180,57 +184,58 @@ public:
     /**
      * Emits a list of packages that matches the given filters
      */
-    void emitPackages(PkgList &output,
-                      PkBitfield filters = PK_FILTER_ENUM_NONE,
-                      PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
-                      bool multiversion = false);
+    void emitPackages(
+        PkgList &output,
+        PkBitfield filters = PK_FILTER_ENUM_NONE,
+        PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
+        bool multiversion = false);
 
     void emitRequireRestart(PkgList &output);
 
     /**
-      * Emits a list of updates that matches the given filters
-      */
+     * Emits a list of updates that matches the given filters
+     */
     void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
     /**
-      * Checks if a given package matches the filters
-      * @returns true if it passed the filters
-      */
+     * Checks if a given package matches the filters
+     * @returns true if it passed the filters
+     */
     bool matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters);
 
     /**
-      * Returns the list of packages with the ones that passed the given filters
-      */
+     * Returns the list of packages with the ones that passed the given filters
+     */
     PkgList filterPackages(const PkgList &packages, PkBitfield filters);
 
     /**
-      * Emits details of the given package
-      */
+     * Emits details of the given package
+     */
     void emitPackageDetail(const pkgCache::VerIterator &ver);
 
     /**
-      * Emits details of the given package list
-      */
+     * Emits details of the given package list
+     */
     void emitDetails(PkgList &pkgs);
 
     /**
-      * Emits update datails for the given list
-      */
+     * Emits update datails for the given list
+     */
     void emitUpdateDetails(const PkgList &pkgs);
 
     /**
-      *  Emits the files of a package
-      */
+     *  Emits the files of a package
+     */
     void emitPackageFiles(const gchar *pi);
 
     /**
-      *  Emits the files of a package
-      */
+     *  Emits the files of a package
+     */
     void emitPackageFilesLocal(const gchar *file);
 
     /**
-      *  Download and install packages
-      */
+     *  Download and install packages
+     */
     bool installPackages(PkBitfield flags);
 
     /**
@@ -251,10 +256,13 @@ public:
     /** Like pkgAcqArchive, but uses generic File objects to download to
      *  the cwd (and copies from file:/ URLs).
      */
-    bool getArchive(pkgAcquire *Owner, pkgCache::VerIterator const &Version,
-                    std::string directory, std::string &StoreFilename);
+    bool getArchive(
+        pkgAcquire *Owner,
+        pkgCache::VerIterator const &Version,
+        std::string directory,
+        std::string &StoreFilename);
 
-    AptCacheFile* aptCacheFile() const;
+    AptCacheFile *aptCacheFile() const;
 
 private:
     void setEnvLocaleFromJob();
@@ -264,9 +272,11 @@ private:
     bool matchesQueries(const vector<string> &queries, string s);
     bool dpkgHasForceConfFileSet();
     PkInfoEnum packageStateFromVer(const pkgCache::VerIterator &ver) const;
-    void stagePackageForEmit(GPtrArray *array, const pkgCache::VerIterator &ver,
-                             PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
-                             PkInfoEnum updateSeverity = PK_INFO_ENUM_UNKNOWN) const;
+    void stagePackageForEmit(
+        GPtrArray *array,
+        const pkgCache::VerIterator &ver,
+        PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
+        PkInfoEnum updateSeverity = PK_INFO_ENUM_UNKNOWN) const;
     void stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterator &candver);
 
     /**
@@ -278,18 +288,18 @@ private:
 
     AptCacheFile *m_cache;
     PkBackendJob *m_job;
-    bool       m_cancel;
+    bool m_cancel;
     struct stat m_restartStat;
 
     bool m_isMultiArch;
     PkgList m_pkgs;
     PkgList m_restartPackages;
 
-    time_t     m_lastTermAction;
-    string     m_lastPackage;
-    uint       m_lastSubProgress;
-    bool       m_startCounting;
-    bool       m_interactive;
+    time_t m_lastTermAction;
+    string m_lastPackage;
+    uint m_lastSubProgress;
+    bool m_startCounting;
+    bool m_interactive;
 
     // when the internal terminal timesout after no activity
     int m_terminalTimeout;

@@ -48,12 +48,19 @@
 
 static std::vector<std::string> FindMultiValue(pkgTagSection &Tags, char const *const Field)
 {
-   auto values = Tags.FindS(Field);
-   // we ignore duplicate spaces by removing empty values
-   std::replace_if(values.begin(), values.end(), isspace_ascii, ' ');
-   auto vect = VectorizeString(values, ' ');
-   vect.erase(std::remove_if(vect.begin(), vect.end(), [](std::string const &s) { return s.empty(); }), vect.end());
-   return vect;
+    auto values = Tags.FindS(Field);
+    // we ignore duplicate spaces by removing empty values
+    std::replace_if(values.begin(), values.end(), isspace_ascii, ' ');
+    auto vect = VectorizeString(values, ' ');
+    vect.erase(
+        std::remove_if(
+            vect.begin(),
+            vect.end(),
+            [](std::string const &s) {
+                return s.empty();
+            }),
+        vect.end());
+    return vect;
 }
 
 SourcesList::~SourcesList()
@@ -78,20 +85,17 @@ SourcesList::SourceRecord *SourcesList::AddSourceNode(SourceRecord &rec)
 
 bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd) /*{{{*/
 {
-   int const fd = open(File.c_str(), O_RDONLY | O_CLOEXEC | O_NOCTTY);
-   if (fd == -1)
-      return _error->WarningE("open", "Unable to read %s", File.c_str());
-   APT::Configuration::Compressor none(".", "", "", nullptr, nullptr, 0);
-   if (Fd.OpenDescriptor(fd, FileFd::ReadOnly, none, true) == false)
-      return false;
-   Fd.SetFileName(File);
-   return true;
+    int const fd = open(File.c_str(), O_RDONLY | O_CLOEXEC | O_NOCTTY);
+    if (fd == -1)
+        return _error->WarningE("open", "Unable to read %s", File.c_str());
+    APT::Configuration::Compressor none(".", "", "", nullptr, nullptr, 0);
+    if (Fd.OpenDescriptor(fd, FileFd::ReadOnly, none, true) == false)
+        return false;
+    Fd.SetFileName(File);
+    return true;
 }
 
-bool SourcesList::ParseDeb822Stanza(const char *Type,
-                              pkgTagSection &Tags,
-                              unsigned int const stanzaIdx,
-                              FileFd &Fd)
+bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsigned int const stanzaIdx, FileFd &Fd)
 {
     string Enabled = Tags.FindS("Enabled");
 
@@ -102,8 +106,9 @@ bool SourcesList::ParseDeb822Stanza(const char *Type,
 
     {
         auto const nativeArch = _config->Find("APT::Architecture");
-        std::transform(list_suite.begin(), list_suite.end(), list_suite.begin(),
-                       [&](std::string const &suite) { return SubstVar(suite, "$(ARCH)", nativeArch); });
+        std::transform(list_suite.begin(), list_suite.end(), list_suite.begin(), [&](std::string const &suite) {
+            return SubstVar(suite, "$(ARCH)", nativeArch);
+        });
     }
 
     if (list_uris.empty())
@@ -113,15 +118,21 @@ bool SourcesList::ParseDeb822Stanza(const char *Type,
         return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Suite");
 
     for (auto const &S : list_suite) {
-        SourceRecord rec = SourceRecord ();
+        SourceRecord rec = SourceRecord();
         rec.Deb822StanzaIdx = stanzaIdx;
 
         if (!rec.SetURIs(list_uris))
-            return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI parse");
+            return _error->Error(
+                "Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI parse");
 
         if (S.empty() == false && S[S.size() - 1] == '/') {
             if (list_comp.empty() == false)
-                return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "absolute Suite Component");
+                return _error->Error(
+                    "Malformed entry %u in %s file %s (%s)",
+                    stanzaIdx,
+                    "sources",
+                    Fd.Name().c_str(),
+                    "absolute Suite Component");
 
             rec.SourceFile = Fd.Name();
             if (!rec.SetType(Type)) {
@@ -136,9 +147,10 @@ bool SourcesList::ParseDeb822Stanza(const char *Type,
             rec.NumSections = 0;
             rec.Sections = nullptr;
             AddSourceNode(rec);
-         } else {
+        } else {
             if (list_comp.empty())
-                return _error->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Component");
+                return _error->Error(
+                    "Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Component");
 
             rec.SourceFile = Fd.Name();
             if (!rec.SetType(Type)) {
@@ -159,7 +171,6 @@ bool SourcesList::ParseDeb822Stanza(const char *Type,
     return true;
 }
 
-
 bool SourcesList::ReadSourceDeb822(string listpath)
 {
     FileFd Fd;
@@ -173,7 +184,7 @@ bool SourcesList::ReadSourceDeb822(string listpath)
     // read step by step
     pkgTagSection Tags;
     for (guint i = 0; Sources.Step(Tags); i++) {
-        if(Tags.Exists("Types") == false)
+        if (Tags.Exists("Types") == false)
             return _error->Error("Malformed stanza %u in source list %s (type)", i, listpath.c_str());
 
         for (auto const &type : FindMultiValue(Tags, "Types")) {
@@ -226,8 +237,7 @@ bool SourcesList::ReadSourceLegacy(string listpath)
         }
 
         bool Failed = true;
-        if (ParseQuoteWord(p, Type) == true &&
-                rec.SetType(Type) == true && ParseQuoteWord(p, VURI) == true) {
+        if (ParseQuoteWord(p, Type) == true && rec.SetType(Type) == true && ParseQuoteWord(p, VURI) == true) {
             if (VURI[0] == '[') {
                 rec.VendorID = VURI.substr(1, VURI.length() - 2);
                 if (ParseQuoteWord(p, VURI) == true && rec.SetURI(VURI) == true)
@@ -250,7 +260,7 @@ bool SourcesList::ReadSourceLegacy(string listpath)
                 string s = "#" + string(buf);
                 rec.Comment = s;
                 record_ok = false;
-                //return _error->Error("Syntax error in line %s", buf);
+                // return _error->Error("Syntax error in line %s", buf);
             }
         }
 
@@ -260,8 +270,7 @@ bool SourcesList::ReadSourceLegacy(string listpath)
             if (ParseQuoteWord(p, Section) == true)
                 return _error->Error("Syntax error in line %s", buf);
 
-            rec.Dist = SubstVar(rec.Dist, "$(ARCH)",
-                                _config->Find("APT::Architecture"));
+            rec.Dist = SubstVar(rec.Dist, "$(ARCH)", _config->Find("APT::Architecture"));
 
             AddSourceNode(rec);
             continue;
@@ -299,7 +308,7 @@ bool SourcesList::ReadSourceLegacy(string listpath)
 
 bool SourcesList::ReadSourcePart(string listpath)
 {
-    if (g_str_has_suffix (listpath.c_str(), ".sources")) {
+    if (g_str_has_suffix(listpath.c_str(), ".sources")) {
         return ReadSourceDeb822(listpath);
     } else {
         return ReadSourceLegacy(listpath);
@@ -308,7 +317,7 @@ bool SourcesList::ReadSourcePart(string listpath)
 
 bool SourcesList::ReadSourceDir(string Dir)
 {
-    //cout << "SourcesList::ReadSourceDir() " << Dir  << endl;
+    // cout << "SourcesList::ReadSourceDir() " << Dir  << endl;
 
     DIR *D = opendir(Dir.c_str());
     if (D == 0) {
@@ -316,7 +325,7 @@ bool SourcesList::ReadSourceDir(string Dir)
     }
 
     vector<string> List;
-    for (struct dirent * Ent = readdir(D); Ent != 0; Ent = readdir(D)) {
+    for (struct dirent *Ent = readdir(D); Ent != 0; Ent = readdir(D)) {
         if (Ent->d_name[0] == '.') {
             continue;
         }
@@ -324,8 +333,7 @@ bool SourcesList::ReadSourceDir(string Dir)
         // Skip bad file names ala run-parts
         const char *C = Ent->d_name;
         for (; *C != 0; C++) {
-            if (isalpha(*C) == 0 && isdigit(*C) == 0
-                    && *C != '_' && *C != '-' && *C != '.') {
+            if (isalpha(*C) == 0 && isdigit(*C) == 0 && *C != '_' && *C != '-' && *C != '.') {
                 break;
             }
         }
@@ -334,8 +342,7 @@ bool SourcesList::ReadSourceDir(string Dir)
         }
 
         // Only look at files ending in .list and .sources, skip .dpkg-new/.bak/.save etc.
-        if (!g_str_has_suffix (Ent->d_name, ".list") &&
-            !g_str_has_suffix (Ent->d_name, ".sources")) {
+        if (!g_str_has_suffix(Ent->d_name, ".list") && !g_str_has_suffix(Ent->d_name, ".sources")) {
             continue;
         }
 
@@ -346,7 +353,6 @@ bool SourcesList::ReadSourceDir(string Dir)
             continue;
         }
         List.push_back(File);
-
     }
     closedir(D);
 
@@ -361,10 +367,9 @@ bool SourcesList::ReadSourceDir(string Dir)
     return true;
 }
 
-
 bool SourcesList::ReadSources()
 {
-    //cout << "SourcesList::ReadSources() " << endl;
+    // cout << "SourcesList::ReadSources() " << endl;
 
     bool Res = true;
 
@@ -392,12 +397,14 @@ SourcesList::SourceRecord *SourcesList::AddEmptySource()
     return AddSourceNode(rec);
 }
 
-SourcesList::SourceRecord *SourcesList::AddSource(RecType Type,
-                                                  string VendorID, string URI,
-                                                  string Dist,
-                                                  string *Sections,
-                                                  unsigned short count,
-                                                  string SourceFile)
+SourcesList::SourceRecord *SourcesList::AddSource(
+    RecType Type,
+    string VendorID,
+    string URI,
+    string Dist,
+    string *Sections,
+    unsigned short count,
+    string SourceFile)
 {
     SourceRecord rec;
     rec.Type = Type;
@@ -424,23 +431,23 @@ void SourcesList::RemoveSource(SourceRecord *&rec)
     rec = 0;
 }
 
-void SourcesList::SwapSources( SourceRecord *&rec_one, SourceRecord *&rec_two )
+void SourcesList::SwapSources(SourceRecord *&rec_one, SourceRecord *&rec_two)
 {
     list<SourceRecord *>::iterator rec_p;
     list<SourceRecord *>::iterator rec_n;
 
-    rec_p = find( SourceRecords.begin(), SourceRecords.end(), rec_one );
-    rec_n = find( SourceRecords.begin(), SourceRecords.end(), rec_two );
+    rec_p = find(SourceRecords.begin(), SourceRecords.end(), rec_one);
+    rec_n = find(SourceRecords.begin(), SourceRecords.end(), rec_two);
 
-    SourceRecords.insert( rec_p, rec_two );
-    SourceRecords.erase( rec_n );
+    SourceRecords.insert(rec_p, rec_two);
+    SourceRecords.erase(rec_n);
 }
 
 bool SourcesList::UpdateSourceLegacy(const string &filename)
 {
     if (std::filesystem::path(filename).extension().string() != ".list") {
-        g_warning("Tried to update APT source file '%s' as legacy file, but filename has wrong extension.",
-            filename.c_str());
+        g_warning(
+            "Tried to update APT source file '%s' as legacy file, but filename has wrong extension.", filename.c_str());
         return false;
     }
 
@@ -489,7 +496,8 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
 bool SourcesList::UpdateSourceDeb822(const std::string &filename)
 {
     if (std::filesystem::path(filename).extension().string() != ".sources") {
-        g_warning("Tried to update APT source file '%s' in Deb822 format, but filename has wrong extension.",
+        g_warning(
+            "Tried to update APT source file '%s' in Deb822 format, but filename has wrong extension.",
             filename.c_str());
         return false;
     }
@@ -527,10 +535,10 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
 
         const auto type = sr->GetType();
 
-        if (sf.getFieldValue(sr->Deb822StanzaIdx, "Types") != type ||
-            sf.getFieldValue(sr->Deb822StanzaIdx, "URIs") != uris ||
-            sf.getFieldValue(sr->Deb822StanzaIdx, "Components") != components ||
-            sf.getFieldValue(sr->Deb822StanzaIdx, "Suites") != sr->Dist) {
+        if (sf.getFieldValue(sr->Deb822StanzaIdx, "Types") != type
+            || sf.getFieldValue(sr->Deb822StanzaIdx, "URIs") != uris
+            || sf.getFieldValue(sr->Deb822StanzaIdx, "Components") != components
+            || sf.getFieldValue(sr->Deb822StanzaIdx, "Suites") != sr->Dist) {
             // The new Deb822 sources do not fit well on the existing data model and concept of
             // what a "source" is, so we rewrite the file to make it match a "one stanza per source"
             // scheme like what existed in legacy files.
@@ -601,8 +609,7 @@ bool SourcesList::UpdateSources()
                 return false;
 
         } else {
-            g_warning("Tried to update APT source file '%s', but could not determine file type.",
-                filename.c_str());
+            g_warning("Tried to update APT source file '%s', but could not determine file type.", filename.c_str());
         }
     }
 
@@ -665,7 +672,7 @@ bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
         if (!::FixupURI(uri))
             ret = false;
     }
-    PrimaryURI = URIs.empty()? "" : URIs[0];
+    PrimaryURI = URIs.empty() ? "" : URIs[0];
 
     return ret;
 }
@@ -707,7 +714,7 @@ string SourcesList::SourceRecord::niceName()
         ret += " (" + joinedSections() + ")";
     }
 
-    if(Type & SourcesList::DebSrc) {
+    if (Type & SourcesList::DebSrc) {
         ret += " Sources";
     }
 
@@ -721,11 +728,11 @@ string SourcesList::SourceRecord::niceName()
             uri_info.pop_back();
     }
 
-    if (g_pattern_match_simple ("*.debian.org/*", uri_info.c_str()))
+    if (g_pattern_match_simple("*.debian.org/*", uri_info.c_str()))
         return "Debian " + ret;
-    if (g_pattern_match_simple ("*.ubuntu.com/*", uri_info.c_str()))
+    if (g_pattern_match_simple("*.ubuntu.com/*", uri_info.c_str()))
         return "Ubuntu " + ret;
-    if (g_pattern_match_simple ("*.pureos.net/*", uri_info.c_str()))
+    if (g_pattern_match_simple("*.pureos.net/*", uri_info.c_str()))
         return "PureOS " + ret;
 
     return uri_info + " - " + ret;
@@ -808,21 +815,19 @@ bool SourcesList::ReadVendors()
         Vendor.Description = Block.Find("Name");
 
         char *buffer = new char[Vendor.FingerPrint.length() + 1];
-        char *p = buffer;;
-        for (string::const_iterator I = Vendor.FingerPrint.begin();
-             I != Vendor.FingerPrint.end(); ++I) {
+        char *p = buffer;
+        ;
+        for (string::const_iterator I = Vendor.FingerPrint.begin(); I != Vendor.FingerPrint.end(); ++I) {
             if (*I != ' ' && *I != '\t') {
                 *p++ = *I;
             }
         }
         *p = 0;
         Vendor.FingerPrint = buffer;
-        delete[]buffer;
+        delete[] buffer;
 
-        if (Vendor.FingerPrint.empty() == true ||
-                Vendor.Description.empty() == true) {
-            _error->Error("Vendor block %s is invalid",
-                          Vendor.VendorID.c_str());
+        if (Vendor.FingerPrint.empty() == true || Vendor.Description.empty() == true) {
+            _error->Error("Vendor block %s is invalid", Vendor.VendorID.c_str());
             continue;
         }
 
@@ -832,9 +837,7 @@ bool SourcesList::ReadVendors()
     return !_error->PendingError();
 }
 
-SourcesList::VendorRecord *SourcesList::AddVendor(string VendorID,
-                                                  string FingerPrint,
-                                                  string Description)
+SourcesList::VendorRecord *SourcesList::AddVendor(string VendorID, string FingerPrint, string Description)
 {
     VendorRecord rec;
     rec.VendorID = VendorID;
@@ -860,7 +863,6 @@ bool SourcesList::UpdateVendors()
     ofs.close();
     return true;
 }
-
 
 void SourcesList::RemoveVendor(VendorRecord *&rec)
 {
@@ -899,7 +901,7 @@ ostream &operator<<(ostream &os, const SourcesList::SourceRecord &rec)
     return os;
 }
 
-ostream &operator <<(ostream &os, const SourcesList::VendorRecord &rec)
+ostream &operator<<(ostream &os, const SourcesList::VendorRecord &rec)
 {
     os << "VendorID: " << rec.VendorID << endl;
     os << "FingerPrint: " << rec.FingerPrint << endl;

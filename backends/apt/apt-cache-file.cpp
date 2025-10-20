@@ -32,9 +32,9 @@
 
 using namespace APT;
 
-AptCacheFile::AptCacheFile(PkBackendJob *job) :
-    m_packageRecords(0),
-    m_job(job)
+AptCacheFile::AptCacheFile(PkBackendJob *job)
+    : m_packageRecords(0),
+      m_job(job)
 {
 }
 
@@ -83,7 +83,8 @@ bool AptCacheFile::CheckDeps(bool AllowBroken)
 
     // Apply corrections for half-installed packages
     if (pkgApplyStatus(*DCache) == false) {
-        _error->Error("Unable to apply corrections for half-installed packages");;
+        _error->Error("Unable to apply corrections for half-installed packages");
+        ;
         show_errors(m_job, PK_ERROR_ENUM_INTERNAL_ERROR);
         return false;
     }
@@ -123,19 +124,19 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
     std::stringstream out;
 
     out << "The following packages have unmet dependencies:" << std::endl;
-    for (pkgCache::PkgIterator I = (*this)->PkgBegin(); ! I.end(); ++I) {
+    for (pkgCache::PkgIterator I = (*this)->PkgBegin(); !I.end(); ++I) {
         if (Now == true) {
             if ((*this)[I].NowBroken() == false) {
                 continue;
             }
         } else {
-            if ((*this)[I].InstBroken() == false){
+            if ((*this)[I].InstBroken() == false) {
                 continue;
             }
         }
 
         // Print out each package and the failed dependencies
-        out << "  " <<  I.Name() << ":";
+        out << "  " << I.Name() << ":";
         unsigned Indent = strlen(I.Name()) + 3;
         bool First = true;
         pkgCache::VerIterator Ver;
@@ -155,14 +156,14 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
             // Compute a single dependency element (glob or)
             pkgCache::DepIterator Start;
             pkgCache::DepIterator End;
-            D.GlobOr(Start,End); // advances D
+            D.GlobOr(Start, End); // advances D
 
-            if ((*this)->IsImportantDep(End) == false){
+            if ((*this)->IsImportantDep(End) == false) {
                 continue;
             }
 
             if (Now == true) {
-                if (((*this)[End] & pkgDepCache::DepGNow) == pkgDepCache::DepGNow){
+                if (((*this)[End] & pkgDepCache::DepGNow) == pkgDepCache::DepGNow) {
                     continue;
                 }
             } else {
@@ -173,7 +174,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
 
             bool FirstOr = true;
             while (1) {
-                if (First == false){
+                if (First == false) {
                     for (unsigned J = 0; J != Indent; J++) {
                         out << ' ';
                     }
@@ -206,8 +207,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
                         Ver = Targ.CurrentVer();
                     }
 
-                    if (Ver.end() == false)
-                    {
+                    if (Ver.end() == false) {
                         char buffer[1024];
                         if (Now == true) {
                             sprintf(buffer, "but %s is installed", Ver.VerStr());
@@ -238,17 +238,14 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
                 }
                 out << std::endl;
 
-                if (Start == End){
+                if (Start == End) {
                     break;
                 }
                 Start++;
             }
         }
     }
-    pk_backend_job_error_code(m_job,
-                              error,
-                              "%s",
-                              toUtf8(out.str().c_str()));
+    pk_backend_job_error_code(m_job, error, "%s", toUtf8(out.str().c_str()));
 }
 
 void AptCacheFile::buildPkgRecords()
@@ -271,10 +268,9 @@ bool AptCacheFile::doAutomaticRemove()
     pkgDepCache::ActionGroup group(*this);
 
     // look over the cache to see what can be removed
-    for (pkgCache::PkgIterator Pkg = (*this)->PkgBegin(); ! Pkg.end(); ++Pkg) {
+    for (pkgCache::PkgIterator Pkg = (*this)->PkgBegin(); !Pkg.end(); ++Pkg) {
         if ((*this)[Pkg].Garbage) {
-            if (Pkg.CurrentVer() != 0 &&
-                    Pkg->CurrentState != pkgCache::State::ConfigFiles) {
+            if (Pkg.CurrentVer() != 0 && Pkg->CurrentState != pkgCache::State::ConfigFiles) {
                 // TODO, packagekit could provide a way to purge
                 (*this)->MarkDelete(Pkg, false);
             } else {
@@ -285,8 +281,9 @@ bool AptCacheFile::doAutomaticRemove()
 
     // Now see if we destroyed anything
     if ((*this)->BrokenCount() != 0) {
-        g_warning("Seems like the AutoRemover destroyed something which really "
-                  "shouldn't happen. Please file a bug report against APT.");
+        g_warning(
+            "Seems like the AutoRemover destroyed something which really "
+            "shouldn't happen. Please file a bug report against APT.");
         // TODO call show_broken
         //       ShowBroken(c1out,cache,false);
         return _error->Error("Internal Error, AutoRemover broke stuff");
@@ -303,9 +300,9 @@ bool AptCacheFile::isRemovingEssentialPackages()
         Added[I] = false;
     }
 
-    for (pkgCache::PkgIterator I = (*this)->PkgBegin(); ! I.end(); ++I) {
-        if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential &&
-                (I->Flags & pkgCache::Flag::Important) != pkgCache::Flag::Important) {
+    for (pkgCache::PkgIterator I = (*this)->PkgBegin(); !I.end(); ++I) {
+        if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential
+            && (I->Flags & pkgCache::Flag::Important) != pkgCache::Flag::Important) {
             continue;
         }
 
@@ -323,15 +320,13 @@ bool AptCacheFile::isRemovingEssentialPackages()
         // Print out any essential package depenendents that are to be removed
         for (pkgCache::DepIterator D = I.CurrentVer().DependsList(); D.end() == false; ++D) {
             // Skip everything but depends
-            if (D->Type != pkgCache::Dep::PreDepends &&
-                    D->Type != pkgCache::Dep::Depends){
+            if (D->Type != pkgCache::Dep::PreDepends && D->Type != pkgCache::Dep::Depends) {
                 continue;
             }
 
             pkgCache::PkgIterator P = D.SmartTargetPkg();
-            if ((*this)[P].Delete() == true)
-            {
-                if (Added[P->ID] == true){
+            if ((*this)[P].Delete() == true) {
+                if (Added[P->ID] == true) {
                     continue;
                 }
                 Added[P->ID] = true;
@@ -343,12 +338,13 @@ bool AptCacheFile::isRemovingEssentialPackages()
         }
     }
 
-    delete [] Added;
+    delete[] Added;
     if (!List.empty()) {
-        pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
-                                  "WARNING: You are trying to remove the following essential packages: %s",
-                                  List.c_str());
+        pk_backend_job_error_code(
+            m_job,
+            PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
+            "WARNING: You are trying to remove the following essential packages: %s",
+            List.c_str());
         return true;
     }
 
@@ -370,14 +366,13 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
     // check if any intended action was encoded in this package-ID
     auto piAction = PkgAction::NONE;
     if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+auto:"))
-            piAction = PkgAction::INSTALL_AUTO;
+        piAction = PkgAction::INSTALL_AUTO;
     else if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+manual:"))
         piAction = PkgAction::INSTALL_MANUAL;
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
-    if (ver.end() == false &&
-            strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+    if (ver.end() == false && strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
         return PkgInfo(ver, piAction);
 
     // check to see if the provided package isn't virtual too
@@ -405,17 +400,14 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     // package (auto/manual) with a plus sign (+).
     string data = "";
     if (isInstalled) {
-        data = isAuto? "auto:" : "manual:";
+        data = isAuto ? "auto:" : "manual:";
     } else {
         if (State.NewInstall())
-            data = isAuto? "+auto:" : "+manual:";
+            data = isAuto ? "+auto:" : "+manual:";
     }
     data += utilBuildPackageOriginId(vf);
 
-    return pk_package_id_build(ver.ParentPkg().Name(),
-                               ver.VerStr(),
-                               ver.Arch(),
-                               data.c_str());
+    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), data.c_str());
 }
 
 pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)
@@ -484,19 +476,21 @@ std::string AptCacheFile::getLongDescriptionParsed(const pkgCache::VerIterator &
     return debParser(getLongDescription(ver));
 }
 
-bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
-                                const PkgInfo &pki,
-                                bool autoInst,
-                                bool preserveAuto,
-                                bool fixBroken)
+bool AptCacheFile::tryToInstall(
+    pkgProblemResolver &Fix,
+    const PkgInfo &pki,
+    bool autoInst,
+    bool preserveAuto,
+    bool fixBroken)
 {
     // attempt to fix broken packages, if requested
     if (fixBroken) {
         if (!CheckDeps(false)) {
-            pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_INTERNAL_ERROR,
-                                  "Unable to resolve broken packages. Please attempt to resolve this manually, or try "
-                                  "`sudo apt -f install`.");
+            pk_backend_job_error_code(
+                m_job,
+                PK_ERROR_ENUM_INTERNAL_ERROR,
+                "Unable to resolve broken packages. Please attempt to resolve this manually, or try "
+                "`sudo apt -f install`.");
             return false;
         }
     }
@@ -508,10 +502,11 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
     pkgDepCache::StateCache &State = (*this)[Pkg];
 
     if (State.CandidateVer == 0) {
-        pk_backend_job_error_code(m_job,
-                                  PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-                                  "Package %s is virtual and has no installation candidate",
-                                  Pkg.Name());
+        pk_backend_job_error_code(
+            m_job,
+            PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+            "Package %s is virtual and has no installation candidate",
+            Pkg.Name());
         return false;
     }
 
@@ -543,8 +538,7 @@ bool AptCacheFile::tryToInstall(pkgProblemResolver &Fix,
     return true;
 }
 
-void AptCacheFile::tryToRemove(pkgProblemResolver &Fix,
-                               const PkgInfo &pki)
+void AptCacheFile::tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki)
 {
     pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
 
@@ -570,12 +564,12 @@ std::string AptCacheFile::debParser(std::string descr)
     // Policy page on package descriptions
     // http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Description
     unsigned int i;
-    string::size_type nlpos=0;
+    string::size_type nlpos = 0;
 
     nlpos = descr.find('\n');
     // delete first line
     if (nlpos != string::npos) {
-        descr.erase(0, nlpos + 2);        // del "\n " too
+        descr.erase(0, nlpos + 2); // del "\n " too
     }
 
     // avoid replacing '\n' for a ' ' after a '.\n' is found
@@ -614,8 +608,8 @@ std::string AptCacheFile::debParser(std::string descr)
     return descr;
 }
 
-OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job) :
-    m_job(job)
+OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job)
+    : m_job(job)
 {
     // Set PackageKit status
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_LOADING_CACHE);

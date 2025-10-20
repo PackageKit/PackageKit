@@ -2,7 +2,7 @@
  *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
-*            (c) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
+ *           (c) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
  *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -36,7 +36,8 @@
 
 using namespace std;
 
-class SourcesList {
+class SourcesList
+{
 public:
     enum RecType {
         Deb = 1 << 0,
@@ -68,10 +69,17 @@ public:
         bool SetURI(string);
         bool SetURIs(const std::vector<std::string> &newURIs);
 
-        SourceRecord():Type(0), Sections(0), NumSections(0), Deb822StanzaIdx(0) {}
-        ~SourceRecord() {
+        SourceRecord()
+            : Type(0),
+              Sections(0),
+              NumSections(0),
+              Deb822StanzaIdx(0)
+        {
+        }
+        ~SourceRecord()
+        {
             if (Sections) {
-                delete [] Sections;
+                delete[] Sections;
             }
         }
         SourceRecord &operator=(const SourceRecord &);
@@ -90,23 +98,22 @@ private:
     SourceRecord *AddSourceNode(SourceRecord &);
     VendorRecord *AddVendorNode(VendorRecord &);
     bool OpenConfigurationFileFd(std::string const &File, FileFd &Fd);
-    bool ParseDeb822Stanza(const char*Type,
-                           pkgTagSection &Tags,
-                           unsigned int const stanzaIdx,
-                           FileFd &Fd);
+    bool ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsigned int const stanzaIdx, FileFd &Fd);
     bool UpdateSourceLegacy(const std::string &filename);
     bool UpdateSourceDeb822(const std::string &filename);
 
 public:
-    SourceRecord *AddSource(RecType Type,
-                            string VendorID,
-                            string URI,
-                            string Dist,
-                            string *Sections,
-                            unsigned short count, string SourceFile);
+    SourceRecord *AddSource(
+        RecType Type,
+        string VendorID,
+        string URI,
+        string Dist,
+        string *Sections,
+        unsigned short count,
+        string SourceFile);
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);
-    void SwapSources( SourceRecord *&, SourceRecord *& );
+    void SwapSources(SourceRecord *&, SourceRecord *&);
     bool ReadSourceDeb822(string listpath);
     bool ReadSourceLegacy(string listpath);
     bool ReadSourcePart(string listpath);
@@ -114,8 +121,7 @@ public:
     bool ReadSources();
     bool UpdateSources();
 
-    VendorRecord *AddVendor(string VendorID,
-                            string FingerPrint, string Description);
+    VendorRecord *AddVendor(string VendorID, string FingerPrint, string Description);
     void RemoveVendor(VendorRecord *&);
     bool ReadVendors();
     bool UpdateVendors();
@@ -126,7 +132,7 @@ public:
 
 typedef list<SourcesList::SourceRecord *>::iterator SourcesListIter;
 
-ostream &operator <<(ostream &, const SourcesList::SourceRecord &);
-ostream &operator <<(ostream &os, const SourcesList::VendorRecord &rec);
+ostream &operator<<(ostream &, const SourcesList::SourceRecord &);
+ostream &operator<<(ostream &os, const SourcesList::VendorRecord &rec);
 
 #endif
