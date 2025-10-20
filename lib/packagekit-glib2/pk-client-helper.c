@@ -419,6 +419,7 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GSocketAddress) address = NULL;
+	const gchar *kde_helper_path = "/usr/libexec/debconf-kde-helper";
 
 	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
 	g_return_val_if_fail (socket_filename != NULL, FALSE);
@@ -443,10 +444,16 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	if (envp != NULL) {
 		for (guint i = 0; envp[i] != NULL; i++) {
 			if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0) {
-				if (g_file_test ("/usr/bin/debconf-kde-helper",
-						 G_FILE_TEST_EXISTS)) {
+				if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS)) {
 					use_kde_helper = TRUE;
+				} else {
+					/* try alternative path */
+					kde_helper_path = "/usr/bin/debconf-kde-helper";
+					if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS))
+						use_kde_helper = TRUE;
 				}
+
+				break;
 			}
 		}
 	}
@@ -463,9 +470,11 @@ pk_client_helper_start (PkClientHelper *client_helper,
 
 	/* spawn KDE debconf communicator */
 	if (use_kde_helper) {
+		g_debug ("Using KDE debconf communicator: %s", kde_helper_path);
+
 		priv->envp = g_strdupv (envp);
 		priv->argv = g_new0 (gchar *, 2);
-		priv->argv[0] = g_strdup ("/usr/bin/debconf-kde-helper");
+		priv->argv[0] = g_strdup (kde_helper_path);
 		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
 
 		if (!g_spawn_async (NULL,
