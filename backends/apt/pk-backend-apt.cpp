@@ -386,7 +386,7 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     PkgList obsoleted;
     PkgList downgrades;
     PkgList blocked;
-    updates = apt->getUpdates(blocked, downgrades, installs, removals, obsoleted);
+    apt->getUpdates(updates, blocked, downgrades, installs, removals, obsoleted);
 
     apt->emitUpdates(updates, filters);
     apt->emitPackages(installs, filters, PK_INFO_ENUM_INSTALL);
@@ -786,7 +786,12 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
             installPkgs = apt->resolvePackageIds(package_ids);
         } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-            updatePkgs = apt->resolvePackageIds(package_ids);
+            PkgList downgradeIgnored; // FIXME: We likely shouldn't ignore downgrades here...
+            if (!apt->resolvePackageUpdateIds(package_ids, updatePkgs, downgradeIgnored, installPkgs, removePkgs, removePkgs)) {
+                // the resolve method already emitted the error message,
+                // we don't need to do anything else here
+                return;
+            }
         } else if (role == PK_ROLE_ENUM_INSTALL_FILES) {
             installPkgs = apt->resolveLocalFiles(full_paths);
         } else {

@@ -1357,14 +1357,12 @@ PkgList AptJob::searchPackageFiles(gchar **values)
     return output;
 }
 
-PkgList AptJob::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted)
+bool AptJob::getUpdates(PkgList &updates, PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted)
 {
-    PkgList updates;
-
     if (m_cache->DistUpgrade() == false) {
         m_cache->ShowBroken(false);
         g_debug("Internal error, DistUpgrade broke stuff");
-        return updates;
+        return false;
     }
 
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
@@ -1426,7 +1424,7 @@ PkgList AptJob::getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &insta
         }
     }
 
-    return updates;
+    return true;
 }
 
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
@@ -2125,68 +2123,71 @@ PkgList AptJob::resolvePackageIds(gchar **package_ids, PkBitfield filters)
     if (package_ids == NULL)
         return ret;
 
-    for (uint i = 0; i < g_strv_length(package_ids); ++i) {
+    for (uint i = 0; package_ids[i] != nullptr; ++i) {
         if (m_cancel)
             break;
 
         const gchar *pkgid = package_ids[i];
 
         // Check if it's a valid package id
-        if (pk_package_id_check(pkgid) == false) {
-            string name(pkgid);
-            // Check if the package name didn't contains the arch field
-            if (name.find(':') == std::string::npos) {
-                // OK FindPkg is not suitable on muitarch without ":arch"
-                // it can only return one package in this case we need to
-                // search the whole package cache and match the package
-                // name manually
-                pkgCache::PkgIterator pkg;
-                // Name can be supplied user input and may not be an actually valid id. In this
-                // case FindGrp can come back with a bad group we shouldn't process any further
-                // as results are undefined.
-                pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
-                for (pkg = grp.PackageList(); grp.IsGood() && pkg.end() == false; pkg = grp.NextPkg(pkg)) {
-                    if (m_cancel) {
-                        break;
-                    }
+        if (pk_package_id_check(pkgid)) {
+            const PkgInfo &pkgi = m_cache->resolvePkgID(pkgid);
+            // check to see if we found the package
+            if (!pkgi.ver.end())
+                ret.append(pkgi);
 
-                    // Ignore packages that exist only due to dependencies.
-                    if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
-                        continue;
-                    }
+            continue;
+        }
 
-                    const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-                    // check to see if the provided package isn't virtual too
-                    if (!ver.end())
-                        ret.append(ver);
-
-                    const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
-                    // check to see if the provided package isn't virtual too
-                    if (!candidateVer.end())
-                        ret.append(candidateVer);
+        // Not a valid package id, try to find it by name
+        string name(pkgid);
+        // Check if the package name didn't contains the arch field
+        if (name.find(':') == std::string::npos) {
+            // OK FindPkg is not suitable on muitarch without ":arch"
+            // it can only return one package in this case we need to
+            // search the whole package cache and match the package
+            // name manually
+            pkgCache::PkgIterator pkg;
+            // Name can be supplied user input and may not be an actually valid id. In this
+            // case FindGrp can come back with a bad group we shouldn't process any further
+            // as results are undefined.
+            pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
+            for (pkg = grp.PackageList(); grp.IsGood() && pkg.end() == false; pkg = grp.NextPkg(pkg)) {
+                if (m_cancel) {
+                    break;
                 }
-            } else {
-                const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
-                // Ignore packages that could not be found or that exist only due to dependencies.
-                if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+
+                // Ignore packages that exist only due to dependencies.
+                if (pkg.VersionList().end() && pkg.ProvidesList().end()) {
                     continue;
                 }
 
                 const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
                 // check to see if the provided package isn't virtual too
-                if (ver.end() == false)
+                if (!ver.end())
                     ret.append(ver);
 
                 const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
                 // check to see if the provided package isn't virtual too
-                if (candidateVer.end() == false)
+                if (!candidateVer.end())
                     ret.append(candidateVer);
             }
         } else {
-            const PkgInfo &pkgi = m_cache->resolvePkgID(pkgid);
-            // check to see if we found the package
-            if (!pkgi.ver.end())
-                ret.append(pkgi);
+            const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
+            // Ignore packages that could not be found or that exist only due to dependencies.
+            if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+                continue;
+            }
+
+            const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
+            // check to see if the provided package isn't virtual too
+            if (ver.end() == false)
+                ret.append(ver);
+
+            const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
+            // check to see if the provided package isn't virtual too
+            if (candidateVer.end() == false)
+                ret.append(candidateVer);
         }
     }
 
@@ -2250,8 +2251,121 @@ PkgList AptJob::resolveLocalFiles(gchar **localDebs)
     return ret;
 }
 
+bool AptJob::resolvePackageUpdateIds(gchar** package_ids,
+                                     PkgList &updates,
+                                     PkgList& downgrades,
+                                     PkgList& installs,
+                                     PkgList& removals,
+                                     PkgList& obsoleted)
+{
+    PkgList updateCandidates;
+    PkgList installCandidates;
+    PkgList removeCandidates;
+    PkgList obsoleteCandidates;
+    PkgList downgradeCandidates;
+    PkgList unusedBlocked;
+
+    // fetch update candidates
+    if (!getUpdates(updateCandidates, unusedBlocked, downgradeCandidates, installCandidates, removeCandidates, obsoleteCandidates))
+        return false;
+
+    // transform candidate lists into package-id lookup maps
+    std::unordered_map<std::string, PkgInfo> updateIdMap;
+    std::unordered_map<std::string, PkgInfo> downgradeIdMap;
+    std::unordered_map<std::string, PkgInfo> installIdMap;
+    std::unordered_map<std::string, PkgInfo> removalIdMap;
+    std::unordered_map<std::string, PkgInfo> obsoleteIdMap;
+
+    updateCandidates.removeDuplicates();
+    for (const auto &pkgInfo : updateCandidates) {
+        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+        updateIdMap.emplace(pkid, pkgInfo);
+    }
+
+    downgradeCandidates.removeDuplicates();
+    for (const auto &pkgInfo : downgradeCandidates) {
+        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+        downgradeIdMap.emplace(pkid, pkgInfo);
+    }
+
+    installCandidates.removeDuplicates();
+    for (const auto &pkgInfo : installCandidates) {
+        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+        installIdMap.emplace(pkid, pkgInfo);
+    }
+
+    removeCandidates.removeDuplicates();
+    for (const auto &pkgInfo : removeCandidates) {
+        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+        removalIdMap.emplace(pkid, pkgInfo);
+    }
+
+    obsoleteCandidates.removeDuplicates();
+    for (const auto &pkgInfo : obsoleteCandidates) {
+        g_autofree gchar *pkid = m_cache->buildPackageId(pkgInfo.ver);
+        obsoleteIdMap.emplace(pkid, pkgInfo);
+    }
+
+    // Resolve IDs
+    for (uint i = 0; package_ids[i] != nullptr; ++i) {
+        if (m_cancel)
+            return false;
+
+        const gchar *pkgid = package_ids[i];
+        if (!pk_package_id_check(pkgid)) {
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                                      "Can not update package with invalid package id: %s", pkgid);
+            return false;
+        }
+
+        // Try to find the package ID in each map
+        bool found = false;
+
+        auto updateIt = updateIdMap.find(pkgid);
+        if (updateIt != updateIdMap.end()) {
+            updates.append(updateIt->second);
+            found = true;
+        } else {
+            auto downgradeIt = downgradeIdMap.find(pkgid);
+            if (downgradeIt != downgradeIdMap.end()) {
+                downgrades.append(downgradeIt->second);
+                found = true;
+            } else {
+                auto installIt = installIdMap.find(pkgid);
+                if (installIt != installIdMap.end()) {
+                    installs.append(installIt->second);
+                    found = true;
+                } else {
+                    auto removalIt = removalIdMap.find(pkgid);
+                    if (removalIt != removalIdMap.end()) {
+                        removals.append(removalIt->second);
+                        found = true;
+                    } else {
+                        auto obsoleteIt = obsoleteIdMap.find(pkgid);
+                        if (obsoleteIt != obsoleteIdMap.end()) {
+                            obsoleted.append(obsoleteIt->second);
+                            found = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // If the package ID wasn't found in any candidate set, error out
+        if (!found) {
+            pk_backend_job_error_code(m_job,
+                                      PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                                      "Package id '%s' is not available as an update candidate", pkgid);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool AptJob::runTransaction(const PkgList &install, const PkgList &remove, const PkgList &update,
-                             bool fixBroken, PkBitfield flags, bool autoremove)
+                            bool fixBroken, PkBitfield flags, bool autoremove)
 {
     pk_backend_job_set_status (m_job, PK_STATUS_ENUM_RUNNING);
 

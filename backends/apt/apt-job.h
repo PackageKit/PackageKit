@@ -66,7 +66,22 @@ public:
      */
     PkgList resolvePackageIds(gchar **package_ids, PkBitfield filters = PK_FILTER_ENUM_NONE);
 
+    /**
+      * Tries to resolve a list of local deb files
+      * @returns a list of pkgCache::VerIterator, if the list is empty no package was found
+      */
     PkgList resolveLocalFiles(gchar **localDebs);
+
+    /**
+     * Tries to resolve package updates for the given package ids
+     * @returns true if the package updates could be resolved
+     */
+    bool resolvePackageUpdateIds(gchar **package_ids,
+                                 PkgList &updates,
+                                 PkgList &downgrades,
+                                 PkgList &installs,
+                                 PkgList &removals,
+                                 PkgList &obsoleted);
 
     /**
       * Refreshes the sources of packages
@@ -142,15 +157,15 @@ public:
     PkgList searchPackageDetails(const vector<string> &queries);
 
     /**
-      * Returns a list of all packages that matched contains the given files
-      */
+     * Returns a list of all packages that matched contains the given files
+     */
     PkgList searchPackageFiles(gchar **values);
 
     /**
-      * Returns a list of all packages that can be updated
-      * Pass a PkgList to get the blocked updates as well
-      */
-    PkgList getUpdates(PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted);
+     * Determines available updates.
+     * Returns true on success.
+     */
+    bool getUpdates(PkgList &updates, PkgList &blocked, PkgList &downgrades, PkgList &installs, PkgList &removals, PkgList &obsoleted);
 
     /**
      *  Emits a package with the given state
@@ -163,8 +178,8 @@ public:
     void emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, uint percentage);
 
     /**
-      * Emits a list of packages that matches the given filters
-      */
+     * Emits a list of packages that matches the given filters
+     */
     void emitPackages(PkgList &output,
                       PkBitfield filters = PK_FILTER_ENUM_NONE,
                       PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
