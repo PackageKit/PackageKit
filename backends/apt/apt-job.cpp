@@ -65,8 +65,13 @@ AptJob::AptJob(PkBackendJob *job)
     : m_cache(nullptr),
       m_job(job),
       m_cancel(false),
+      m_isMultiArch(false),
+      m_lastTermAction(0),
       m_lastSubProgress(0),
-      m_terminalTimeout(120)
+      m_startCounting(false),
+      m_interactive(false),
+      m_terminalTimeout(120),
+      m_child_pid(0)
 {
     const gchar *http_proxy;
     const gchar *ftp_proxy;
@@ -76,14 +81,14 @@ AptJob::AptJob(PkBackendJob *job)
 
     // set http proxy
     http_proxy = pk_backend_job_get_proxy_http(m_job);
-    if (http_proxy != NULL) {
+    if (http_proxy != nullptr) {
         g_autofree gchar *uri = pk_backend_convert_uri(http_proxy);
         g_setenv("http_proxy", uri, TRUE);
     }
 
     // set ftp proxy
     ftp_proxy = pk_backend_job_get_proxy_ftp(m_job);
-    if (ftp_proxy != NULL) {
+    if (ftp_proxy != nullptr) {
         g_autofree gchar *uri = pk_backend_convert_uri(ftp_proxy);
         g_setenv("ftp_proxy", uri, TRUE);
     }
@@ -184,7 +189,7 @@ bool AptJob::init(gchar **localDebs)
 void AptJob::setEnvLocaleFromJob()
 {
     const gchar *locale = pk_backend_job_get_locale(m_job);
-    if (locale == NULL)
+    if (locale == nullptr)
         return;
 
     // set daemon locale
@@ -199,17 +204,14 @@ bool AptJob::dpkgHasForceConfFileSet()
 {
     std::vector<std::string> dpkg_options = _config->FindVector("Dpkg::Options");
 
-    bool is_set = false;
     const std::string forced_options[]{"--force-confdef", "--force-confold", "--force-confnew"};
 
-    for (auto setting : forced_options) {
-        if (std::find(dpkg_options.begin(), dpkg_options.end(), setting) != dpkg_options.end()) {
-            is_set = true;
-            break;
-        }
+    for (const auto &setting : forced_options) {
+        if (std::find(dpkg_options.begin(), dpkg_options.end(), setting) != dpkg_options.end())
+            return true;
     }
 
-    return is_set;
+    return false;
 }
 
 void AptJob::cancel()
@@ -253,13 +255,12 @@ bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             }
         }
 
-        std::string str = ver.Section() == NULL ? "" : ver.Section();
+        std::string str = ver.Section() == nullptr ? "" : ver.Section();
         std::string section, component;
 
-        size_t found;
-        found = str.find_last_of("/");
+        size_t found = str.find_last_of('/');
         section = str.substr(found + 1);
-        if (found == str.npos) {
+        if (found == std::string::npos) {
             component = "main";
         } else {
             component = str.substr(0, found);
@@ -271,42 +272,36 @@ bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
             return false;
 
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT)) {
-            // if ver.end() means unknow
-            // strcmp will be true when it's different than devel
             std::string pkgName = pkg.Name();
-            if (!ends_with(pkgName, "-dev") && !ends_with(pkgName, "-dbg") && section.compare("devel")
-                && section.compare("libdevel")) {
+            if (!ends_with(pkgName, "-dev") && !ends_with(pkgName, "-dbg") && !ends_with(pkgName, "-dbgsym")
+                && section != "devel" && section != "libdevel") {
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
             std::string pkgName = pkg.Name();
-            if (ends_with(pkgName, "-dev") || ends_with(pkgName, "-dbg") || !section.compare("devel")
-                || !section.compare("libdevel")) {
+            if (ends_with(pkgName, "-dev") || ends_with(pkgName, "-dbg") || ends_with(pkgName, "-dbgsym")
+                || section == "devel" || section == "libdevel") {
                 return false;
             }
         }
 
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI)) {
-            // if ver.end() means unknow
-            // strcmp will be true when it's different than x11
-            if (section.compare("x11") && section.compare("gnome") && section.compare("kde")
-                && section.compare("graphics")) {
+            if (section != "x11" && section != "gnome" && section != "kde" && section != "graphics") {
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI)) {
-            if (!section.compare("x11") || !section.compare("gnome") || !section.compare("kde")
-                || !section.compare("graphics")) {
+            if (section == "x11" || section == "gnome" || section == "kde" || section == "graphics") {
                 return false;
             }
         }
 
         if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE)) {
-            if (component.compare("main") != 0 && component.compare("universe") != 0) {
+            if (component != "main" && component != "universe") {
                 // Must be in main and universe to be free
                 return false;
             }
         } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE)) {
-            if (component.compare("main") == 0 || component.compare("universe") == 0) {
+            if (component == "main" || component == "universe") {
                 // Must not be in main or universe to be free
                 return false;
             }
