@@ -24,6 +24,7 @@ gio_unix_dep = dependency('gio-unix-2.0', version: glib_req)
 gmodule_dep = dependency('gmodule-2.0', version: glib_req)
 sqlite3_dep = dependency('sqlite3')
 polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
+ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5', required: false)
 
 libsystemd = []
 if get_option('systemd')
@@ -58,10 +59,6 @@ endif
 
 if get_option('daemon_tests')
   add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
-endif
-
-if dependency('ply-boot-client', version: '>=0.9.5', required: false).found()
-  add_project_arguments ('-DPLYMOUTH_0_9_5=1', language: 'c')
 endif
 
 # Ensure functions like realpath(3) and other "default" functions are available
