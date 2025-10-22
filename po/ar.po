@@ -8,24 +8,27 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"Language-Team: Arabic (http://app.transifex.com/freedesktop/packagekit/language/ar/)\n"
+"PO-Revision-Date: 2025-10-22 12:02+0000\n"
+"Last-Translator: jonnysemon <jonnysemon@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/packagekit/translations/ar/>\n"
+"Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ar\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 5.14-dev\n"
 
 msgid "Authentication is required to accept a EULA"
 msgstr "الاستيثاق مطلوب للموافقة على اتفاقية الترخيص للمستخدم النهائي"
 
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "الاستيثاق مطلوب لإلغاء مَهمة بُدأت بواسطة"
+msgstr "الاستيثاق مطلوب لإلغاء مهمة لم تبدأها بنفسك"
 
 msgid "Authentication is required to change software repository parameters"
 msgstr "الاستيثاق مطلوب لتغير مُعامِلات مستودع البرامج"
 
 msgid "Authentication is required to clear the offline updates message"
-msgstr "الاستيثاق مطلوب لمسح رسائل التحديث في أثناء إقلاع النظام "
+msgstr "الاستيثاق مطلوب لمسح رسالة التحديثات غير المتصلة بالإنترنت"
 
 msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "الاستيثاق مطلوب لاعتبار مفتاح يستخدم لتوقيع البرامج على أنه موثوق به"
@@ -55,7 +58,7 @@ msgid "Authentication is required to set the network proxy used for downloading 
 msgstr "الاستيثاق مطلوب لتعيين وكيل شبكة سيستخدم لتنزيل البرامج"
 
 msgid "Authentication is required to trigger offline updates"
-msgstr "الاستيثاق مطلوب لإطلاق التحديث في أثناء إقلاع النظام "
+msgstr "الاستيثاق مطلوب لتشغيل التحديثات دون الاتصال بالإنترنت"
 
 msgid "Authentication is required to update software"
 msgstr "الاستيثاق مطلوب لتحديث برنامَج"
