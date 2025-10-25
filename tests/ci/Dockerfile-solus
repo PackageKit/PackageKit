@@ -1,0 +1,13 @@
+FROM silkeh/solus:devel
+
+RUN eopkg -y upgrade
+RUN eopkg -y install \
+    packagekit-devel \
+    sqlite3-devel \
+    vala \
+    gstreamer-1.0-plugins-base-devel \
+    libgtk-3-devel \
+    docbook-xml
+
+RUN mkdir /build
+WORKDIR /build
