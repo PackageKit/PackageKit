@@ -18,6 +18,8 @@ jobs:
             backend: alpm
           - distro: fedora
             backend: zypp
+          - distro: solus
+            backend: eopkg
       fail-fast: false
 
     steps:
