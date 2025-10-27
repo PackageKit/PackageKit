@@ -1186,13 +1186,13 @@ pk_backend_job_update_detail (PkBackendJob *job,
 		datetime = g_date_time_new_from_iso8601 (issued_text, NULL);
 		if (!datetime)
 			g_warning ("failed to parse issued '%s'", issued_text);
-		g_clear_object (&datetime);
+		g_clear_pointer (&datetime, g_date_time_unref);
 	}
 	if (updated_text != NULL) {
 		datetime = g_date_time_new_from_iso8601 (updated_text, NULL);
 		if (!datetime)
 			g_warning ("failed to parse updated '%s'", updated_text);
-		g_clear_object (&datetime);
+		g_clear_pointer (&datetime, g_date_time_unref);
 	}
 
 	/* form PkUpdateDetail struct */
