@@ -2228,7 +2228,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		MIL << package_ids[i] << endl;
 
 		if (zypp_package_is_local(package_ids[i])) {
-			pk_backend_job_details_full (job, package_ids[i], "", "", PK_GROUP_ENUM_UNKNOWN, "", "", (gulong)0, (gulong)0);
+			pk_backend_job_details (job, package_ids[i], "", "", PK_GROUP_ENUM_UNKNOWN, "", "", (gulong)0, (gulong)0);
 			return;
 		}
 
@@ -2264,7 +2264,7 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 				download_size = obj->downloadSize();
 			}
 
-			pk_backend_job_details_full (job,
+			pk_backend_job_details (job,
 				package_ids[i],				// package_id
 				(pkg ? pkg->summary().c_str() : "" ),   // Package summary
 				(pkg ? pkg->license().c_str() : "" ),	// license is Package attribute
@@ -2324,7 +2324,7 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 					"local",
 					NULL);
 
-		pk_backend_job_details_full (job,
+		pk_backend_job_details (job,
 			package_id,
 			rpmHeader->tag_summary ().c_str (),
 			rpmHeader->tag_license ().c_str (),

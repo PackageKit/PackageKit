@@ -2505,7 +2505,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 							group,
 							pkguinf_get (pkgu, PKGUINF_DESCRIPTION),
 							pkguinf_get (pkgu, PKGUINF_URL),
-							pkg->fsize);
+							pkg->fsize,
+							G_MAXUINT64);
 				pkguinf_free (pkgu);
 			} else {
 				pk_backend_job_details (job,
@@ -2515,7 +2516,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 							group,
 							"",
 							"",
-							pkg->fsize);
+							pkg->fsize,
+							G_MAXUINT64);
 			}
 
 			pkg_free (pkg);

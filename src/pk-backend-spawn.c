@@ -139,6 +139,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	PkRestartEnum restart;
 	PkGroupEnum group;
 	gulong package_size;
+	gulong download_size;
 	gint percentage;
 	PkErrorEnum error_enum;
 	PkStatusEnum status_enum;
@@ -185,7 +186,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
-		if (size != 8) {
+		if (size != 9) {
 			g_set_error (error, 1, 0,
 				     "invalid command'%s', size %i",
 				     command, size);
@@ -200,6 +201,13 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 					     "package size cannot be that large");
 			return FALSE;
 		}
+		download_size = atol (sections[8]);
+		if (download_size > 1073741824) {
+			g_set_error_literal (error, 1, 0,
+					     "download size cannot be that large");
+			return FALSE;
+		}
+
 		g_strdelimit (sections[5], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[4], -1, NULL)) {
 			g_set_error (error, 1, 0,
@@ -211,7 +219,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
 		pk_backend_job_details (job, sections[1], sections[2], sections[3],
-					group, text, sections[6], package_size);
+					group, text, sections[6], package_size, download_size);
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {

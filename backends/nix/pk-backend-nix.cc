@@ -193,7 +193,7 @@ pk_backend_get_details_thread (PkBackendJob* job, GVariant* params, gpointer p)
 						PK_GROUP_ENUM_UNKNOWN,
 						longDescription.c_str (),
 						homepage.c_str (),
-						0);
+						0, G_MAXUINT64);
 		} else {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_UNKNOWN,

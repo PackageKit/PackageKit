@@ -539,7 +539,7 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 
         PackageView pkgView(pkg);
         PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
-        pk_backend_job_details_full (job, pkgView.packageKitId(),
+        pk_backend_job_details (job, pkgView.packageKitId(),
                                 pkgView.comment(),
                                 pkgView.license(),
                                 group,
@@ -576,7 +576,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
         if (pkgdb_it_next (it, &pkg, PKG_LOAD_BASIC | PKG_LOAD_CATEGORIES | PKG_LOAD_LICENSES) == EPKG_OK) {
             PackageView pkgView(pkg);
             PkGroupEnum group = PortsCategoriesToPKGroup(pkgView.categories());
-            pk_backend_job_details_full (job, package_ids[i],
+            pk_backend_job_details (job, package_ids[i],
                                     pkgView.comment(),
                                     pkgView.license(),
                                     group,

@@ -1285,22 +1285,8 @@ pk_backend_job_details (PkBackendJob *job,
 			PkGroupEnum group,
 			const gchar *description,
 			const gchar *url,
-			gulong size)
-{
-	pk_backend_job_details_full (job, package_id, summary, license, group,
-				     description, url, size, G_MAXUINT64);
-}
-
-void
-pk_backend_job_details_full (PkBackendJob *job,
-			     const gchar *package_id,
-			     const gchar *summary,
-			     const gchar *license,
-			     PkGroupEnum group,
-			     const gchar *description,
-			     const gchar *url,
-			     gulong size,
-			     guint64 download_size)
+			gulong size,
+			guint64 download_size)
 {
 	g_autoptr(PkDetails) item = NULL;
 

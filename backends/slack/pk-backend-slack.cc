@@ -373,13 +373,15 @@ pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user
 	g_regex_unref(expr);
 
 	/* Ready */
-	pk_backend_job_details(job, pkg_ids[0],
-						   NULL,
-						   NULL,
-						   pk_group_enum_from_string((gchar *) sqlite3_column_text(stmt, 1)),
-						   desc->str,
-						   homepage,
-						   sqlite3_column_int(stmt, 2));
+	pk_backend_job_details(job,
+			        pkg_ids[0],
+				NULL,
+				NULL,
+				pk_group_enum_from_string((gchar *) sqlite3_column_text(stmt, 1)),
+				desc->str,
+				homepage,
+				sqlite3_column_int(stmt, 2),
+				G_MAXUINT64);
 
 	g_free(homepage);
 	if (desc)

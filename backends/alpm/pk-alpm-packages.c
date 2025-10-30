@@ -253,9 +253,9 @@ pk_backend_get_details_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		desc = alpm_pkg_get_desc (pkg);
 		url = alpm_pkg_get_url (pkg);
 
-		pk_backend_job_details_full (job, *packages, NULL, licenses->str, group,
-					     desc, url, alpm_pkg_get_isize (pkg),
-					     alpm_pkg_download_size (pkg));
+		pk_backend_job_details (job, *packages, NULL, licenses->str, group,
+					desc, url, alpm_pkg_get_isize (pkg),
+					alpm_pkg_download_size (pkg));
 		g_string_free (licenses, TRUE);
 	}
 

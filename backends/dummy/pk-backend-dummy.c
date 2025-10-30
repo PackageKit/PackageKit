@@ -161,7 +161,7 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 	pk_backend_job_set_percentage (job, 0);
 	pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 				"PowerTOP is a tool that finds the software component(s) that make your "
-				"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
+				"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024, 0);
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
 }
@@ -198,7 +198,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 			pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"PowerTOP is a tool that finds the software component(s) that make your "
-						"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024);
+						"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024, G_MAXUINT64);
 		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
 			pk_backend_job_details (job, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
 						"The Linux kernel (the core of the Linux operating system)",
@@ -206,24 +206,24 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 						"The kernel package contains the Linux kernel (vmlinuz), the core of any "
 						"Linux operating system.  The kernel handles the basic functions of the "
 						"operating system: memory allocation, process allocation, device input "
-						"and output, etc.", "http://www.kernel.org", 33*1024*1024);
+						"and output, etc.", "http://www.kernel.org", 33*1024*1024, G_MAXUINT64);
 		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
 			pk_backend_job_details (job, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"GtkHTML2 (sometimes called libgtkhtml) is a widget for displaying html "
-						"pages.", "http://live.gnome.org/gtkhtml", 133*1024);
+						"pages.", "http://live.gnome.org/gtkhtml", 133*1024, G_MAXUINT64);
 		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
 			pk_backend_job_details (job, "vino;2.24.2.fc9;i386;fedora", "Remote desktop server for the desktop",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"Vino is a VNC server for GNOME. It allows remote users to "
-						"connect to a running GNOME session using VNC.", "http://live.gnome.org/powertop", 3*1024*1024);
+						"connect to a running GNOME session using VNC.", "http://live.gnome.org/powertop", 3*1024*1024, G_MAXUINT64);
 		} else if (g_strcmp0 (package_id, "gnome-power-manager;2.6.19;i386;fedora") == 0) {
 			pk_backend_job_details (job, "gnome-power-manager;2.6.19;i386;fedora", "GNOME power management service",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"GNOME Power Manager uses the information and facilities provided by HAL "
 						"displaying icons and handling user callbacks in an interactive GNOME session.\n"
 						"GNOME Power Preferences allows authorised users to set policy and "
-						"change preferences.", "http://projects.gnome.org/gnome-power-manager/", 13*1024*1024);
+						"change preferences.", "http://projects.gnome.org/gnome-power-manager/", 13*1024*1024, G_MAXUINT64);
 		//TODO: add other packages
 		} else {
 			pk_backend_job_details (job, "scribus;1.3.4-1.fc8;i386;fedora", 
@@ -236,7 +236,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 						"While the goals of the program are for ease of use and simple easy to "
 						"understand tools, Scribus offers support for professional publishing "
 						"features, such as CMYK color, easy PDF creation, Encapsulated Postscript "
-						"import/export and creation of color separations.", "http://live.gnome.org/scribus", 44*1024*1024);
+						"import/export and creation of color separations.", "http://live.gnome.org/scribus", 44*1024*1024, G_MAXUINT64);
 		}
 	}
 	pk_backend_job_set_percentage (job, 100);

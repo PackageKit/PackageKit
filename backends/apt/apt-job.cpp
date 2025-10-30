@@ -804,7 +804,7 @@ void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(vf);
 
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
-    pk_backend_job_details_full(
+    pk_backend_job_details(
         m_job,
         package_id,
         m_cache->getShortDescription(ver).c_str(),
