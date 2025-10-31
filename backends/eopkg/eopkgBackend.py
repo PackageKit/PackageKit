@@ -459,7 +459,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             description = str(pkg.description).replace('\n', " ")
 
             self.details(pkg_id, pkg.summary, ",".join(pkg.license), group, description,
-                            homepage, size)
+                            homepage, size, dl_size)
 
     def get_details_local(self, files):
 
@@ -494,9 +494,10 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 else ''
 
             size = pkg.installedSize
+            dl_size = os.path.getsize(f)
 
             self.details(pkg_id, pkg.summary, ",".join(pkg.license), group,
-                         pkg.description, homepage, size)
+                         pkg.description, homepage, size, dl_size)
 
     def get_files(self, package_ids):
         """ Prints a file list for a given packages """
