@@ -71,8 +71,8 @@ packagekit_backend_apt_lib = static_library(
   ],
   override_options: [
     'b_lundef=false',
-    'c_std=c11',
-    'cpp_std=c++17'
+    'c_std=gnu17',
+    'cpp_std=c++20'
   ],
 )
 

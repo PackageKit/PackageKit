@@ -1,6 +1,6 @@
 project('PackageKit', 'c',
   meson_version : '>=1.0',
-  default_options : ['warning_level=2', 'c_std=gnu11'],
+  default_options : ['warning_level=2', 'c_std=gnu17'],
 
   license : 'LGPL-2.1+',
   version : '1.3.3',
