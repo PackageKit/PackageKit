@@ -326,16 +326,12 @@ msgstr ""
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched,
@@ -365,9 +361,7 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -499,15 +493,12 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pk-console.c:1727
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pk-console.c:1730
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -1469,8 +1460,7 @@ msgid "Cancel foreign task"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr ""
 
 #. SECURITY:
@@ -1537,9 +1527,7 @@ msgid "Trust a key used for signing software"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr ""
 
 #. SECURITY:
@@ -1617,9 +1605,7 @@ msgid "Set network proxy"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr ""
 
 #. SECURITY:
