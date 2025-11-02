@@ -5,18 +5,21 @@
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010
 # Jure Repinc <jlp@holodeck1.com>, 2024
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"Language-Team: Slovenian (http://app.transifex.com/freedesktop/packagekit/language/sl/)\n"
+"PO-Revision-Date: 2025-11-02 10:13+0000\n"
+"Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
+"Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3);\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -164,7 +167,7 @@ msgstr "Posodobitve"
 #. * this update obsoletes
 #: client/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Opuščeno"
+msgstr "Opuščeni"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -296,7 +299,7 @@ msgstr "Usodna napaka"
 #. * but there is nothing that can be updated
 #: client/pk-console.c:702
 msgid "There are no packages to update."
-msgstr "Ni paketov za posodobitev"
+msgstr "Ni paketov za posodobitev."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -594,7 +597,7 @@ msgstr "Zahtevano je ime skladišča"
 
 #: client/pk-console.c:2119
 msgid "A repo name, parameter and value are required"
-msgstr "Zahtevani so ime, parameter in vrednst skladišča."
+msgstr "Zahtevani so ime skladišča, parameter in vrednost"
 
 #: client/pk-console.c:2136
 msgid "A repo id and autoremove required"
@@ -683,7 +686,7 @@ msgstr "Nadzornik PackageKit"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i %%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -700,12 +703,12 @@ msgstr "Nameščanje posodobitev"
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:217
 msgid "Rebooting after installing updates…"
-msgstr "Ponoven zagon po namestitvi posodobitev ..."
+msgstr "Ponoven zagon po namestitvi posodobitev …"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:259
 msgid "Shutting down after installing updates…"
-msgstr "Izklop sistema po namestitvi posodobitev ..."
+msgstr "Izklop sistema po namestitvi posodobitev …"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:404
@@ -1074,31 +1077,23 @@ msgstr "Ni na voljo"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "Nameščen"
+msgstr "Namesti"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "Odstranjeno"
+msgstr "Odstrani"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "Opuščeno"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "Prejeto"
+msgstr "Povrni na prejšnjo različico"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -1155,7 +1150,7 @@ msgstr "Počiščeno"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
 msgid "Obsoleted"
-msgstr "Opuščeno"
+msgstr "Opuščeni"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1127
@@ -1307,7 +1302,7 @@ msgstr "Pridobivanje sistemskih posodobitev"
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i %%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -1382,7 +1377,7 @@ msgstr "Ali želite sprejeti dovoljenje uporabe?"
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:193
 msgid "The agreement was not accepted."
-msgstr "Licenca ni bila sprejeta"
+msgstr "Licenca ni bila sprejeta."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 #: lib/packagekit-glib2/pk-task-text.c:228
@@ -1469,7 +1464,7 @@ msgstr "Prekliči tujo nalogo"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev."
+msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
