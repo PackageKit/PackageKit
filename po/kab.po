@@ -1,14 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-10-08 23:07+0000\n"
+"PO-Revision-Date: 2025-11-02 00:51+0000\n"
 "Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Kabyle <https://hosted.weblate.org/projects/packagekit/translations/kab/>\n"
 "Language: kab\n"
@@ -16,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -349,7 +348,7 @@ msgstr ""
 #. * that could not be found in any repo
 #: client/pk-console.c:981
 msgid "Package not found"
-msgstr ""
+msgstr "Akemmus ur yettwaf ara"
 
 #. TRANSLATORS: we couldn't find anything
 #: client/pk-console.c:999
@@ -762,7 +761,7 @@ msgstr ""
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
 msgid "command not found"
-msgstr ""
+msgstr "anezḍay ur yettwaf ara"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: contrib/command-not-found/pk-command-not-found.c:802
@@ -881,7 +880,7 @@ msgstr "Asebded n yileqman"
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/packagekit-glib2/pk-console-shared.c:246
 msgid "Cleaning up packages"
-msgstr ""
+msgstr "Asizdeg n ikemmusen"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/packagekit-glib2/pk-console-shared.c:250
@@ -1182,7 +1181,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1173
 msgid "Getting updates"
-msgstr ""
+msgstr "Awway n ileqman"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1177
@@ -1197,7 +1196,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1185
 msgid "Searching groups"
-msgstr ""
+msgstr "Anadi n wegrawen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1189
@@ -1207,7 +1206,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1201
 msgid "Installing files"
-msgstr ""
+msgstr "Asebded n ifuyla"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1205
@@ -1252,7 +1251,7 @@ msgstr "Iferru"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1238
 msgid "Getting file list"
-msgstr ""
+msgstr "Awway n tebdart n ifuyla"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1242
@@ -1299,7 +1298,7 @@ msgstr ""
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i%%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -1568,7 +1567,7 @@ msgstr ""
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
 msgid "Update software"
-msgstr ""
+msgstr "Leqqem aseɣẓan"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
 msgid "Authentication is required to update software"
@@ -1614,7 +1613,7 @@ msgstr ""
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr ""
+msgstr "Leqqem anagraw"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
@@ -1626,7 +1625,7 @@ msgstr ""
 #. applications from working.
 #: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr ""
+msgstr "Seggem anagraw"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
@@ -1688,22 +1687,22 @@ msgstr ""
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
 msgid "Search by names"
-msgstr ""
+msgstr "Anadi s yismawen"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
 msgid "Search by details"
-msgstr ""
+msgstr "Anadi s telqayt"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
 msgid "Search by files"
-msgstr ""
+msgstr "Anadi s ifuyla"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
 msgid "Install package"
-msgstr ""
+msgstr "Sebded akemmus"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
@@ -1763,7 +1762,7 @@ msgstr ""
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:146
 msgid "PackageKit service"
-msgstr ""
+msgstr "Ameẓlu n PackageKit"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
