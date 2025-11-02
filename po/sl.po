@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-11-02 10:13+0000\n"
+"PO-Revision-Date: 2025-11-02 22:51+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
@@ -167,7 +167,7 @@ msgstr "Posodobitve"
 #. * this update obsoletes
 #: client/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Opuščeni"
+msgstr "Opuščene"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -1150,7 +1150,7 @@ msgstr "Počiščeno"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
 msgid "Obsoleted"
-msgstr "Opuščeni"
+msgstr "Opuščen"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1127
