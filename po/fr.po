@@ -12,31 +12,31 @@
 # Richard Hughes <richard@hughsie.com>, 2011
 # Thomas <thomas.canniot@outlook.fr>, 2009
 # troubi51 <corentin.perard@gmail.com>, 2009
+# Léane GRASSER <leane.grasser@proton.me>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-10-07 00:02+0000\n"
-"Last-Translator: Corentin Noël <tintou@noel.tf>\n"
+"PO-Revision-Date: 2025-11-03 22:51+0000\n"
+"Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
-msgstr ""
+msgstr "Le fichier de configuration est introuvable."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
-#, fuzzy, c-format
-#| msgid "Failed to load the config file"
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Impossible de charger le fichier de configuration"
+msgstr "Échec du chargement du fichier de configuration : %s"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -383,18 +383,14 @@ msgstr "Cet outil n'a pas pu trouver de paquet disponible : %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pk-console.c:1076
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
 msgid "This tool could not find any available package."
-msgstr "Cet outil n'a pas pu trouver de paquet disponible : %s"
+msgstr "Cet outil n'a pas pu trouver de paquet disponible."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 #: client/pk-console.c:1085
-#, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The selected packages may already be installed."
-msgstr "Les paquets suivants doivent être installés :"
+msgstr "Il est possible que les paquets sélectionnés soient déjà installés."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -513,7 +509,7 @@ msgstr "Afficher à l'écran une sortie lisible par la machine plutôt qu'en uti
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pk-console.c:1730
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "L'âge maximum du cache de métadonnées (en secondes). Utilisez -1 pour utiliser uniquement le cache, et 1 pour recharger le cache."
 
 #. command line argument, do we ask questions
 #: client/pk-console.c:1733
@@ -697,7 +693,7 @@ msgstr "Contrôleur PackageKit"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i %%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -1088,31 +1084,23 @@ msgstr "Indisponible"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "Installé"
+msgstr "Installer"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "Supprimé"
+msgstr "Supprimer"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
-msgstr "Rendu obsolète"
+msgstr "Obsolète"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "Téléchargé"
+msgstr "Installer une version antérieure"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -1321,7 +1309,7 @@ msgstr "Obtention des mises à niveau du système"
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i %%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -1790,17 +1778,15 @@ msgstr "Service PackageKit"
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:215
-#, fuzzy, c-format
-#| msgid "Failed to parse arguments"
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Impossible d'analyser les arguments"
+msgstr "Échec de la résolution auto : %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:239
-#, fuzzy, c-format
-#| msgid "Failed to load the backend"
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Impossible de charger le moteur"
+msgstr "Échec du chargement du backend : %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
