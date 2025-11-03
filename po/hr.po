@@ -3,8 +3,8 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Milo Ivir <mail@milotype.de>, 2020
-# Milo Ivir <mail@milotype.de>, 2022
+# Milo Ivir <mail@milotype.de>, 2020, 2025.
+# Milo Ivir <mail@milotype.de>, 2022, 2025.
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012
 # gogo <trebelnik2@gmail.com>, 2017-2019,2021
 msgid ""
@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-10-08 10:38+0000\n"
+"PO-Revision-Date: 2025-11-03 22:51+0000\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/translations/hr/>\n"
 "Language: hr\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -168,7 +168,7 @@ msgstr "Nadopune"
 #. * this update obsoletes
 #: client/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Zastarjelo"
+msgstr "Zastarjuje"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -503,7 +503,7 @@ msgstr "Prikazuj na zaslonu strojno čitljiv zapis, radije nego animirane widget
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pk-console.c:1730
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "Maksimalna starost predmemorije metapodataka (u sekundama). Koristi −1 za korištenje samo predmemorije, 1 za ponovno učitavanje predmemorije."
 
 #. command line argument, do we ask questions
 #: client/pk-console.c:1733
@@ -687,7 +687,7 @@ msgstr "PackageKit nadgledatelj"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i %%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -1078,31 +1078,23 @@ msgstr "Nedostupno"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "Instalirano"
+msgstr "Instaliraj"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "Uklonjeno"
+msgstr "Ukloni"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "Zastarjelo"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "Preuzeto"
+msgstr "Preuzmie stariju verziju"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -1134,7 +1126,7 @@ msgstr "Brišem"
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
 msgid "Obsoleting"
-msgstr "Zastarjelo"
+msgstr "Zastarijeva"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
@@ -1311,7 +1303,7 @@ msgstr "Preuzimanje nadogradnja sustava"
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i %%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
