@@ -11,15 +11,15 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-10-04 22:02+0000\n"
-"Last-Translator: Sergiu Bivol <sergiu@cip.md>\n"
+"PO-Revision-Date: 2025-11-05 08:51+0000\n"
+"Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -46,7 +46,7 @@ msgstr "Ora sistemului"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pk-console.c:169
 msgid "Succeeded"
-msgstr "Reușit"
+msgstr "Reușită"
 
 #: client/pk-console.c:169
 msgid "True"
@@ -64,7 +64,7 @@ msgstr "Rol"
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pk-console.c:176
 msgid "Duration"
-msgstr "Durată"
+msgstr "Durata"
 
 #: client/pk-console.c:176
 msgid "(seconds)"
@@ -88,7 +88,7 @@ msgstr "Nume utilizator"
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: client/pk-console.c:193
 msgid "Real name"
-msgstr "Nume real"
+msgstr "Numele real"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pk-console.c:201
@@ -98,7 +98,7 @@ msgstr "Pachete afectate:"
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pk-console.c:204
 msgid "Affected packages: None"
-msgstr "Pachete afectate: Niciunul"
+msgstr "Pachete afectate: niciunul"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: client/pk-console.c:230
@@ -213,7 +213,7 @@ msgstr "Stare"
 #. * was issued
 #: client/pk-console.c:370
 msgid "Issued"
-msgstr "Emis"
+msgstr "Emisă"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
@@ -372,12 +372,12 @@ msgstr "Se aștepta un nume de pachet, dar s-a primit fișier. Încercați să f
 #: client/pk-console.c:1059
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "Această unealtă nu a putut găsi niciun pachet disponibil: %s"
+msgstr "Acest instrument nu a putut găsi niciun pachet disponibil: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pk-console.c:1076
 msgid "This tool could not find any available package."
-msgstr "Această unealtă nu a putut găsi niciun pachet disponibil."
+msgstr "Acest instrument nu a putut găsi niciun pachet disponibil."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
@@ -390,14 +390,14 @@ msgstr "Este posibil ca pachetele selectate să fie deja instalate."
 #: client/pk-console.c:1113
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "Această unealtă nu a putut găsi pachetul instalat: %s"
+msgstr "Acest instrument nu a putut găsi pachetul instalat: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pk-console.c:1142 client/pk-console.c:1173
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Această unealtă nu a putut găsi pachetul: %s"
+msgstr "Acest instrument nu a putut găsi pachetul: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pk-console.c:1218
@@ -416,7 +416,7 @@ msgstr "Niciun pachet nu necesită actualizarea la versiuni mai noi."
 #: client/pk-console.c:1383 client/pk-console.c:1411
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Această unealtă nu a putut găsi toate pachetele: %s"
+msgstr "Acest instrument nu a putut găsi toate pachetele: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -459,7 +459,7 @@ msgstr "Proxy-ul nu a putut fi definit"
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pk-console.c:1705 client/pk-monitor.c:330
 msgid "Show the program version and exit"
-msgstr "Arată versiunea programului și iese"
+msgstr "Afișează versiunea programului și iese"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pk-console.c:1708
@@ -738,7 +738,7 @@ msgstr "Se așteaptă blocarea gestionarului de pachete."
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
 msgid "Loading list of packages."
-msgstr "Se încarcă listă de pachete."
+msgstr "Se încarcă lista de pachete."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
@@ -1362,7 +1362,7 @@ msgstr "Semnătura nu a fost acceptată."
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/packagekit-glib2/pk-task-text.c:175
 msgid "End user licence agreement required"
-msgstr "Acordul de licență cu utilizatorul final e necesar"
+msgstr "Acordul de licență cu utilizatorul final este necesar"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/packagekit-glib2/pk-task-text.c:184
@@ -1756,7 +1756,7 @@ msgstr "Iese după o mică întârziere"
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:129
 msgid "Exit after the engine has loaded"
-msgstr "Iese după ce motorului de împachetare/despachetare a pachetelor a fost încărcat"
+msgstr "Iese după ce motorul de împachetare/despachetare a pachetelor a fost încărcat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
