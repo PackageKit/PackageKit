@@ -1,3 +1,7 @@
+#
+# General options
+#
+
 option('maintainer',
     type : 'boolean',
     value : false,
@@ -17,19 +21,29 @@ option('dnf_vendor',
     description : 'Vendor configuration when using the dnf backend'
 )
 
+option('packagekit_user',
+    type : 'string',
+    value : 'root',
+    description : 'User for running the PackageKit daemon'
+)
+option('local_checkout',
+    type : 'boolean',
+    value : false,
+    description : 'Allow running in local checkout'
+)
+option('daemon_tests',
+    type : 'boolean',
+    value : true,
+    description : 'Test the daemon using the dummy backend'
+)
+
+#
+# Features
+#
+
 option('systemd',
     type : 'boolean',
     value : true, description : 'Use systemd and logind'
-)
-option('systemdsystemunitdir',
-    type : 'string',
-    value : '',
-    description : 'Directory for systemd service files'
-)
-option('systemduserunitdir',
-    type : 'string',
-    value : '',
-    description : 'Directory for systemd user service files'
 )
 option('offline_update',
     type : 'boolean',
@@ -46,16 +60,6 @@ option('gobject_introspection',
     value : true,
     description : 'Build GObject Introspection data'
 )
-option('man_pages',
-    type : 'boolean',
-    value : true,
-    description : 'Generate man pages'
-)
-option('gtk_doc',
-    type : 'boolean',
-    value : false,
-    description : 'Generate API reference'
-)
 option('bash_completion',
     type : 'boolean',
     value : true,
@@ -65,16 +69,6 @@ option('bash_command_not_found',
     type : 'boolean',
     value : true,
     description : 'Build Bash command-not-found functionality'
-)
-option('packagekit_user',
-    type : 'string',
-    value : 'root',
-    description : 'User for running the PackageKit daemon'
-)
-option('local_checkout',
-    type : 'boolean',
-    value : false,
-    description : 'Allow running in local checkout'
 )
 option('gstreamer_plugin',
     type : 'boolean',
@@ -91,6 +85,41 @@ option('cron',
     value : true,
     description : 'Build cron background functionality'
 )
+option('python_backend',
+    type : 'boolean',
+    value : true,
+    description : 'Provide a Python backend'
+)
+
+#
+# Documentation
+#
+
+option('man_pages',
+    type : 'boolean',
+    value : true,
+    description : 'Generate man pages'
+)
+option('gtk_doc',
+    type : 'boolean',
+    value : false,
+    description : 'Generate API reference'
+)
+
+#
+# Locations
+#
+
+option('systemdsystemunitdir',
+    type : 'string',
+    value : '',
+    description : 'Directory for systemd service files'
+)
+option('systemduserunitdir',
+    type : 'string',
+    value : '',
+    description : 'Directory for systemd user service files'
+)
 option('dbus_sys',
     type : 'string',
     value : '',
@@ -101,18 +130,8 @@ option('dbus_services',
     value : '',
     description : 'D-BUS system-services directory'
 )
-option('python_backend',
-    type : 'boolean',
-    value : true,
-    description : 'Provide a python backend'
-)
 option('pythonpackagedir',
     type : 'string',
     value : '',
-    description : 'Location for python modules'
-)
-option('daemon_tests',
-    type : 'boolean',
-    value : true,
-    description : 'Test the daemon using the dummy backend'
+    description : 'Location for Python modules'
 )
