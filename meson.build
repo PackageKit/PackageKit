@@ -133,7 +133,6 @@ endif
 # isn't by C++ either. So, we don't need a double check here.
 add_project_arguments(
     cc.get_supported_arguments([
-        '-Werror=shadow',
         '-Werror=missing-include-dirs',
         '-Wno-strict-aliasing',
         '-Winline',
@@ -173,6 +172,7 @@ add_project_arguments(
     '-Werror=return-type',
     '-Werror=format-security',
     '-Wformat',
+    '-Werror=shadow',
     '-Werror=missing-declarations',
     '-Werror=pointer-arith',
     '-Werror=strict-prototypes',
