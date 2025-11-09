@@ -228,7 +228,7 @@ pk_progress_bar_set_size (PkProgressBar *progress_bar, guint size)
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
-	g_return_val_if_fail (size > 0 && size < 1000, FALSE);
+	g_return_val_if_fail (size > 0 && size < G_MAXINT, FALSE);
 
 	priv->size = size;
 	return TRUE;
