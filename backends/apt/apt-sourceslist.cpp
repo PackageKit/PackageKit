@@ -287,12 +287,12 @@ bool SourcesList::ReadSourceLegacy(string listpath)
             while (ParseQuoteWord(p, Section) == true) {
                 // comments inside the record are preserved
                 if (Section[0] == '#') {
-                    SourceRecord rec;
+                    SourceRecord crec;
                     string s = Section + string(p);
-                    rec.Type = Comment;
-                    rec.Comment = s;
-                    rec.SourceFile = listpath;
-                    AddSourceNode(rec);
+                    crec.Type = Comment;
+                    crec.Comment = s;
+                    crec.SourceFile = listpath;
+                    AddSourceNode(crec);
                     break;
                 } else {
                     rec.Sections[rec.NumSections++] = Section;

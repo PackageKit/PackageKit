@@ -52,7 +52,7 @@ GstMatcher::GstMatcher(gchar **values)
         value = values[i];
         regmatch_t matches[6];
         if (regexec(&pkre, value, 6, matches, 0) != REG_NOMATCH) {
-            Match values;
+            Match mvals;
             string version, type, data, opt;
             bool native = false;
 
@@ -123,14 +123,14 @@ GstMatcher::GstMatcher(gchar **values)
                 continue;
             }
 
-            values.version = version;
-            values.type = type;
-            values.data = data;
-            values.opt = opt;
-            values.caps = caps;
-            values.native = native;
+            mvals.version = version;
+            mvals.type = type;
+            mvals.data = data;
+            mvals.opt = opt;
+            mvals.caps = caps;
+            mvals.native = native;
 
-            m_matches.push_back(values);
+            m_matches.push_back(mvals);
         } else {
             g_debug("gstmatcher: Did not match: %s", value);
         }

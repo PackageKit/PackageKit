@@ -972,19 +972,19 @@ void AptJob::getDepends(PkgList &output, const pkgCache::VerIterator &ver, bool 
             break;
         }
 
-        const pkgCache::VerIterator &ver = m_cache->findVer(dep.TargetPkg());
+        const auto &dver = m_cache->findVer(dep.TargetPkg());
         // Ignore packages that exist only due to dependencies.
-        if (ver.end()) {
+        if (dver.end()) {
             dep++;
             continue;
         } else if (dep->Type == pkgCache::Dep::Depends) {
             if (recursive) {
                 if (!output.contains(dep.TargetPkg())) {
-                    output.append(ver);
-                    getDepends(output, ver, recursive);
+                    output.append(dver);
+                    getDepends(output, dver, recursive);
                 }
             } else {
-                output.append(ver);
+                output.append(dver);
             }
         }
         dep++;
@@ -1560,8 +1560,8 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
         deb.packageName().c_str(), deb.version().c_str(), deb.architecture().c_str(), file);
 
     g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
-    for (auto file : deb.files()) {
-        g_ptr_array_add(files, g_canonicalize_filename(file.c_str(), "/"));
+    for (auto cFile : deb.files()) {
+        g_ptr_array_add(files, g_canonicalize_filename(cFile.c_str(), "/"));
     }
     g_ptr_array_add(files, NULL);
     pk_backend_job_files(m_job, package_id, (gchar **)files->pdata);
@@ -2555,8 +2555,8 @@ bool AptJob::installPackages(PkBitfield flags)
         return _error->Errno("statvfs", "Couldn't determine free space in %s", OutputDir.c_str());
     }
     if (unsigned(Buf.f_bfree) < (FetchBytes - FetchPBytes) / Buf.f_bsize) {
-        struct statfs Stat;
-        if (statfs(OutputDir.c_str(), &Stat) != 0 || unsigned(Stat.f_type) != RAMFS_MAGIC) {
+        struct statfs st;
+        if (statfs(OutputDir.c_str(), &st) != 0 || unsigned(st.f_type) != RAMFS_MAGIC) {
             pk_backend_job_error_code(
                 m_job, PK_ERROR_ENUM_NO_SPACE_ON_DEVICE, "You don't have enough free space in %s", OutputDir.c_str());
             return false;

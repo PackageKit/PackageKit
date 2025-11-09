@@ -108,32 +108,44 @@ package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
-# maintainer mode is even stricter
+# enable strict checks and make warnings errors in maintainer mode
 if get_option('maintainer')
-  maintainer_compiler_flags = [
-    '-Werror',
-    '-Wall',
-    '-Wextra',
-    '-Wcast-align',
-    '-Wno-uninitialized',
-    '-Wempty-body',
-    '-Winit-self',
-    '-Wnull-dereference',
-    '-Wfloat-equal',
-    '-Winline',
-    '-Wno-error=comment',
-  ]
-
-  supported_maintainer_flags = cc.get_supported_arguments(maintainer_compiler_flags, checked: 'warn')
-
   add_project_arguments(
-    supported_maintainer_flags,
-      language: ['c', 'cpp']
+    cc.get_supported_arguments([
+            '-Werror',
+            '-Wall',
+            '-Wextra',
+            '-Wcast-align',
+            '-Wno-uninitialized',
+            '-Wempty-body',
+            '-Winit-self',
+            '-Wnull-dereference',
+            '-Wfloat-equal',
+            '-Winline',
+            '-Wno-error=comment',
+        ], checked: 'warn'),
+        language: ['c', 'cpp']
     )
 endif
 
 # default compiler flags for C and C++
-default_compiler_flags = [
+# if a common compiler flag is not supported by C, then it likely
+# isn't by C++ either. So, we don't need a double check here.
+add_project_arguments(
+    cc.get_supported_arguments([
+        '-Werror=shadow',
+        '-Werror=missing-include-dirs',
+        '-Wno-strict-aliasing',
+        '-Winline',
+        '-Wno-unused-parameter',
+        '-Wno-error=unused-parameter',
+    ]),
+    language: ['c', 'cpp']
+)
+
+# default compiler warning/error flags for C only
+add_project_arguments(
+  cc.get_supported_arguments([
     '-Wcast-align',
     '-Wno-uninitialized',
     '-Werror=missing-declarations',
@@ -153,47 +165,23 @@ default_compiler_flags = [
     '-Wsign-compare',
     '-Wtype-limits',
     '-Wuninitialized',
+    '-Wmissing-parameter-type',
+    '-Woverride-init',
     '-Wno-unused-parameter',
     '-Wno-error=unused-parameter',
     '-Werror=misleading-indentation',
     '-Werror=return-type',
-    ['-Werror=format-security', '-Wformat'],
+    '-Werror=format-security',
+    '-Wformat',
     '-Werror=missing-declarations',
     '-Werror=pointer-arith',
-    '-Werror=empty-body',
-]
-
-supported_compiler_flags = []
-foreach arg: default_compiler_flags
-  if cc.has_multi_arguments(arg)
-    supported_compiler_flags += arg
-  endif
-endforeach
-
-
-# if a common compiler flag is not supported by 'c', then it should
-# apply to c++ too. So, we don't need a double check here.
-add_project_arguments(
-  supported_compiler_flags,
-  language: ['c', 'cpp']
-)
-
-# default compiler warning/error flags for C only
-add_project_arguments(
-  cc.get_supported_arguments([
-    '-Werror=shadow',
     '-Werror=strict-prototypes',
     '-Werror=missing-prototypes',
     '-Werror=implicit-function-declaration',
     '-Werror=int-conversion',
     '-Werror=incompatible-pointer-types',
-    '-Werror=missing-include-dirs',
     '-Werror=declaration-after-statement',
-    '-Waggregate-return',
-    '-Wno-strict-aliasing',
-    '-Winline',
-    '-Wmissing-parameter-type',
-    '-Woverride-init',
+    '-Werror=empty-body',
   ]),
   language: 'c'
 )

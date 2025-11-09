@@ -198,21 +198,21 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
                 }
 
                 /* Show a summary of the target package if possible. In the case
-                of virtual packages we show nothing */
+                   of virtual packages we show nothing */
                 pkgCache::PkgIterator Targ = Start.TargetPkg();
                 if (Targ->ProvidesList == 0) {
                     out << ' ';
-                    pkgCache::VerIterator Ver = (*this)[Targ].InstVerIter(*this);
+                    pkgCache::VerIterator tVer = (*this)[Targ].InstVerIter(*this);
                     if (Now == true) {
-                        Ver = Targ.CurrentVer();
+                        tVer = Targ.CurrentVer();
                     }
 
-                    if (Ver.end() == false) {
+                    if (tVer.end() == false) {
                         char buffer[1024];
                         if (Now == true) {
-                            sprintf(buffer, "but %s is installed", Ver.VerStr());
+                            sprintf(buffer, "but %s is installed", tVer.VerStr());
                         } else {
-                            sprintf(buffer, "but %s is to be installed", Ver.VerStr());
+                            sprintf(buffer, "but %s is to be installed", tVer.VerStr());
                         }
 
                         out << buffer;
@@ -439,12 +439,12 @@ std::string AptCacheFile::getShortDescription(const pkgCache::VerIterator &ver)
         return string();
     }
 
-    pkgCache::DescIterator d = ver.TranslatedDescription();
-    if (d.end()) {
+    pkgCache::DescIterator di = ver.TranslatedDescription();
+    if (di.end()) {
         return string();
     }
 
-    pkgCache::DescFileIterator df = d.FileList();
+    pkgCache::DescFileIterator df = di.FileList();
     if (df.end()) {
         return string();
     } else {
@@ -458,12 +458,12 @@ std::string AptCacheFile::getLongDescription(const pkgCache::VerIterator &ver)
         return string();
     }
 
-    pkgCache::DescIterator d = ver.TranslatedDescription();
-    if (d.end()) {
+    pkgCache::DescIterator di = ver.TranslatedDescription();
+    if (di.end()) {
         return string();
     }
 
-    pkgCache::DescFileIterator df = d.FileList();
+    pkgCache::DescFileIterator df = di.FileList();
     if (df.end()) {
         return string();
     } else {
