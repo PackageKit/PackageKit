@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
+# Yauhen <bugomol@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"PO-Revision-Date: 2025-10-04 22:02+0000\n"
+"PO-Revision-Date: 2025-11-16 08:51+0000\n"
 "Last-Translator: Yauhen <bugomol@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/translations/be/>\n"
 "Language: be\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -683,7 +684,7 @@ msgstr "Манітор PackageKit"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -1074,31 +1075,23 @@ msgstr "Недаступны"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "Усталяваны"
+msgstr "Да ўсталявання"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "Выдалены"
+msgstr "Да выдалення"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
-msgstr "Замешчаны"
+msgstr "Да замяшчэння"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "Спампавана"
+msgstr "Паніжэнне версіі"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -1307,7 +1300,7 @@ msgstr "Атрыманне абнаўленняў сістэмы"
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i%%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
