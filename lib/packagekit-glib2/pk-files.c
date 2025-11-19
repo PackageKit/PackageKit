@@ -134,7 +134,8 @@ pk_files_set_property (GObject *object, guint prop_id, const GValue *value, GPar
 		priv->package_id = g_value_dup_string (value);
 		break;
 	case PROP_FILES:
-		g_strfreev (priv->files);
+		if (priv->files != NULL)
+			g_strfreev (priv->files);
 		priv->files = g_value_dup_boxed (value);
 		break;
 	default:
