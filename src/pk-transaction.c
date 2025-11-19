@@ -3210,7 +3210,7 @@ pk_transaction_download_packages (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		goto out;
 	}
 
@@ -3307,7 +3307,7 @@ pk_transaction_depends_on (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3358,7 +3358,7 @@ pk_transaction_get_details (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid",
+			     "The package-IDs '%s' are not valid",
 			     package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
@@ -3620,7 +3620,7 @@ pk_transaction_get_files (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3817,7 +3817,7 @@ pk_transaction_required_by (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -3868,7 +3868,7 @@ pk_transaction_get_update_detail (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid",
+			     "The package-IDs '%s' are not valid",
 			     package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
@@ -4095,7 +4095,7 @@ pk_transaction_install_packages (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -4281,7 +4281,7 @@ pk_transaction_remove_packages (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid", package_ids_temp);
+			     "The package-IDs '%s' are not valid", package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
@@ -4988,7 +4988,7 @@ pk_transaction_update_packages (PkTransaction *transaction,
 		g_set_error (&error,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-			     "The package id's '%s' are not valid",
+			     "The package-IDs '%s' are not valid",
 			     package_ids_temp);
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
@@ -5591,4 +5591,3 @@ pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 	transaction->introspection = g_dbus_node_info_ref (introspection);
 	return PK_TRANSACTION (transaction);
 }
-
