@@ -47,6 +47,8 @@ struct PkProgressBarPrivate
 	gchar			*old_start_text;
 	guint			 term_width;
 	gboolean		 use_unicode;
+
+	gboolean		 allow_restart;
 };
 
 #define PK_PROGRESS_BAR_PERCENTAGE_INVALID	101
@@ -515,7 +517,8 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 	/* finish old progress bar if exists */
 	if (priv->percentage != G_MININT) {
 		pk_progress_bar_draw (progress_bar, 100);
-		pk_progress_bar_console (progress_bar, "\n");
+		if (!priv->allow_restart)
+			pk_progress_bar_console (progress_bar, "\n");
 	}
 
 	g_free (priv->old_start_text);
@@ -555,6 +558,25 @@ pk_progress_bar_end (PkProgressBar *progress_bar)
 	pk_progress_bar_console (progress_bar, "\n");
 
 	return TRUE;
+}
+
+/**
+ * pk_progress_bar_set_allow_restart:
+ * @progress_bar: a valid #PkProgressBar instance
+ * @allow_restart: whether restarting is allowed
+ *
+ * Set whether the progress bar can be restarted, changing its status text
+ * instead of creating a new progress bar.
+ * If set to %FALSE, calling %pk_progress_bar_start() on a running progress
+ * bar will create a new one, otherwise the existing one will be overridden.
+ *
+ */
+void
+pk_progress_bar_set_allow_restart (PkProgressBar* progress_bar, gboolean allow_restart)
+{
+	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
+	g_return_if_fail (PK_IS_PROGRESS_BAR (progress_bar));
+	priv->allow_restart = allow_restart;
 }
 
 /**
