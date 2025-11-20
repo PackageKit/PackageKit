@@ -60,6 +60,9 @@ gboolean	 pk_progress_bar_start			(PkProgressBar	*progress_bar,
 							 const gchar	*text);
 gboolean	 pk_progress_bar_end			(PkProgressBar	*progress_bar);
 
+void		 pk_progress_bar_set_allow_restart	(PkProgressBar	*progress_bar,
+												 gboolean	 allow_restart);
+
 /* DEPRECATED */
 
 G_DEPRECATED
