@@ -1273,6 +1273,10 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext("PackageKit", "Getting system upgrades");
 		break;
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+		/* TRANSLATORS: The role of the transaction, in present tense */
+		text = dgettext("PackageKit", "Repairing system");
+		break;
 	default:
 		g_warning ("role unrecognised: %s", pk_role_enum_to_string (role));
 	}
