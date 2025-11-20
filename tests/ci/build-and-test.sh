@@ -10,6 +10,7 @@ meson setup build \
     -Dlocal_checkout=true \
     -Dmaintainer=true \
     -Ddaemon_tests=true \
+    -Dpkgctl=true \
     $@
 
 DUMMY_DESTDIR=/tmp/install-root/

@@ -26,6 +26,10 @@ sqlite3_dep = dependency('sqlite3')
 polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
 ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5', required: false)
 
+if get_option('pkgctl')
+    jansson_dep = dependency('jansson', version: '>=2.8', required: true)
+endif
+
 libsystemd = []
 if get_option('systemd')
   libsystemd = dependency('libsystemd', version: '>=213')

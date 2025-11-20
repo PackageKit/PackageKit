@@ -1,7 +1,2 @@
 contrib/command-not-found/pk-tools-common.c
 contrib/command-not-found/pk-text.c
-client/egg-debug.c
-contrib/command-not-found/egg-debug.c
-contrib/debuginfo-install/egg-debug.c
-lib/packagekit-glib/egg-debug.c
-lib/packagekit-glib2/egg-debug.c

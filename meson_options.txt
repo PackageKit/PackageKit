@@ -50,6 +50,11 @@ option('offline_update',
     value : true,
     description : 'Use systemd offline update'
 )
+option('pkgctl',
+    type : 'boolean',
+    value : false,
+    description : 'Build the experimental pkgctl client'
+)
 option('elogind',
     type : 'boolean',
     value : false,

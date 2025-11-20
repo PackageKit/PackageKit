@@ -22,6 +22,7 @@ RUN eatmydata apt-get install -yq --no-install-recommends \
 	libglib2.0-dev \
 	libgstreamer-plugins-base1.0-dev \
 	libgtk-3-dev \
+	libjansson-dev \
 	libplymouth-dev \
 	libpolkit-gobject-1-dev \
 	libsqlite3-dev \
