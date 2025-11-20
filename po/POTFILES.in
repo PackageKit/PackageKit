@@ -1,8 +1,14 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 backends/dnf/pk-backend-dnf-refresh.c
-client/pk-console.c
-client/pk-monitor.c
+client/pkgc-context.c
+client/pkgc-manage.c
+client/pkgc-query.c
+client/pkgc-repo.c
+client/pkgc-util.c
+client/pkgctl.c
+client/pkcon/pk-console.c
+client/pkcon/pk-monitor.c
 client/pk-offline-update.c
 contrib/command-not-found/pk-command-not-found.c
 lib/packagekit-glib2/pk-console-shared.c

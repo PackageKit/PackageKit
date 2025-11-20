@@ -10,10 +10,12 @@ RUN dnf -y install \
 	gcc \
 	gcc-c++ \
 	ninja-build \
+	appstream \
+	appstream-devel \
 	dbus-daemon \
 	sdbus-cpp-devel \
-	appstream \
-	appstream-devel
+	jansson-devel
+
 RUN dnf -y builddep PackageKit
 
 # install dependencies for 'alpm' backend
