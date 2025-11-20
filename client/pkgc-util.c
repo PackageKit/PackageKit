@@ -133,7 +133,7 @@ pkgc_util_format_time (guint seconds)
 		guint minutes = seconds / 60;
 		guint remaining_seconds = seconds % 60;
 		if (remaining_seconds > 0) {
-			/* TRANSLATORS: A duration in muntes & seconds */
+			/* TRANSLATORS: A duration in minutes & seconds */
 			return g_strdup_printf (_("%u min %u sec"), minutes, remaining_seconds);
 		} else {
 			/* TRANSLATORS: A duration in minutes */
@@ -443,31 +443,22 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 		 name,
 		 get_reset_color (ctx));
 
-	if (ctx->output_mode == PKGCTL_MODE_VERBOSE ||
-		g_strcmp0 (arch, "all") != 0 || g_strcmp0 (arch, "noarch") != 0 ||
-	    g_strcmp0 (repo, "") != 0) {
-		g_print (" %s%s%s",
+	g_print (" %s%s%s",
+		 get_color (ctx, COLOR_GRAY),
+		 version,
+		 get_reset_color (ctx));
+
+	if (arch != NULL && g_strcmp0 (arch, "") != 0) {
+		g_print (".%s%s%s",
 			 get_color (ctx, COLOR_GRAY),
-			 version,
+			 arch,
 			 get_reset_color (ctx));
+	}
 
-		if (g_strcmp0 (arch, "noarch") != 0 || g_strcmp0 (arch, "all") != 0) {
-			g_print (".%s%s%s",
-				 get_color (ctx, COLOR_GRAY),
-				 arch,
-				 get_reset_color (ctx));
-		}
-
-		if (g_strcmp0 (repo, "") != 0) {
-			g_print (" [%s%s%s]",
-				 get_color (ctx, COLOR_GRAY),
-				 repo,
-				 get_reset_color (ctx));
-		}
-	} else {
-		g_print (" %s%s%s",
+	if (repo != NULL && g_strcmp0 (repo, "") != 0) {
+		g_print (" [%s%s%s]",
 			 get_color (ctx, COLOR_GRAY),
-			 version,
+			 repo,
 			 get_reset_color (ctx));
 	}
 
