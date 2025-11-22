@@ -22,6 +22,7 @@
 #pragma once
 
 #include <glib.h>
+#include <jansson.h>
 
 #include "pkgc-context.h"
 
@@ -31,6 +32,8 @@ gboolean     pkgc_util_setup_proxy (PkgctlContext *ctx, GError **error);
 gboolean     pkgc_util_check_connection (PkgctlContext *ctx, GError **error);
 gchar	    *pkgc_util_format_size (guint64 size);
 gchar	    *pkgc_util_format_time (guint seconds);
+
+void		 pkgc_print_json_decref (json_t *root);
 
 const gchar *pkgc_get_ansi_color_from_name (PkgctlContext *ctx, const gchar *color_name);
 

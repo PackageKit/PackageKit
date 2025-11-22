@@ -214,16 +214,16 @@ pkgc_get_ansi_color_from_name (PkgctlContext *ctx, const gchar *color_name)
 }
 
 /**
- * print_json:
+ * pkgc_print_json_decref:
+ *
+ * Print a JSON object and decrease its reference count.
  */
-static void
-print_json (json_t *root)
+void
+pkgc_print_json_decref (json_t *root)
 {
-	char *json_str = json_dumps (root, JSON_COMPACT);
-	if (json_str) {
+	g_autofree gchar *json_str = json_dumps (root, JSON_COMPACT);
+	if (json_str)
 		g_print ("%s\n", json_str);
-		free (json_str);
-	}
 	json_decref (root);
 }
 
@@ -256,7 +256,7 @@ void
 pkgc_print_error (PkgctlContext *ctx, const gchar *format, ...)
 {
 	va_list args;
-	g_autofree char *message = NULL;
+	g_autofree gchar *message = NULL;
 
 	va_start (args, format);
 	message = g_strdup_vprintf (format, args);
@@ -265,7 +265,7 @@ pkgc_print_error (PkgctlContext *ctx, const gchar *format, ...)
 	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "error", json_string (message));
-		print_json (root);
+		pkgc_print_json_decref (root);
 	} else {
 		g_printerr ("%s%s%s:%s %s\n",
 			    get_color (ctx, COLOR_BOLD),
@@ -289,13 +289,20 @@ pkgc_print_warning (PkgctlContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	if (ctx->output_mode != PKGCTL_MODE_QUIET) {
-		g_print ("%s%s %s%s %s\n",
-			 get_color (ctx, COLOR_BOLD),
-			 get_color (ctx, COLOR_YELLOW),
-			 /* TRANSLATORS: A warning message prefix, displayed on the command-line */
-			 _("Warning:"), get_reset_color (ctx), message);
+	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+		json_t *root = NULL;
+		root = json_object ();
+		json_object_set_new (root, "warning", json_string (message));
+		pkgc_print_json_decref (root);
+
+		return;
 	}
+
+	g_print ("%s%s %s%s %s\n",
+		 get_color (ctx, COLOR_BOLD),
+		 get_color (ctx, COLOR_YELLOW),
+		 /* TRANSLATORS: A warning message prefix, displayed on the command-line */
+		 _("Warning:"), get_reset_color (ctx), message);
 }
 
 /**
@@ -307,6 +314,21 @@ void
 pkgc_print_info (PkgctlContext *ctx, const gchar *format, ...)
 {
 	va_list args;
+
+	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+		json_t *root = NULL;
+		g_autofree gchar *message = NULL;
+
+		va_start (args, format);
+		message = g_strdup_vprintf (format, args);
+		va_end (args);
+
+		root = json_object ();
+		json_object_set_new (root, "info", json_string (message));
+		pkgc_print_json_decref (root);
+
+		return;
+	}
 
 	va_start (args, format);
 	print_colored (ctx, COLOR_BLUE, format, args);
@@ -331,7 +353,7 @@ pkgc_print_success (PkgctlContext *ctx, const gchar *format, ...)
 	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "success", json_string (message));
-		print_json (root);
+		pkgc_print_json_decref (root);
 	} else if (ctx->output_mode != PKGCTL_MODE_QUIET) {
 		g_print ("%s%s%s %s\n",
 			 get_color (ctx, COLOR_GREEN),
@@ -424,7 +446,7 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 	const gchar *package_id;
 	PkInfoEnum info;
 	g_auto(GStrv) split = NULL;
-	const gchar *name, *version, *arch, *repo;
+	const gchar *name, *version, *arch, *data;
 	const gchar *info_color = COLOR_RESET;
 	const gchar *info_symbol = SYMBOL_PACKAGE;
 
@@ -441,9 +463,9 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 	name = split[PK_PACKAGE_ID_NAME];
 	version = split[PK_PACKAGE_ID_VERSION];
 	arch = split[PK_PACKAGE_ID_ARCH];
-	repo = split[PK_PACKAGE_ID_DATA];
+	data = split[PK_PACKAGE_ID_DATA];
 
-	/* Set color based on package state */
+	/* set color & symbol based on package state */
 	switch (info) {
 	case PK_INFO_ENUM_INSTALLED:
 		info_color = COLOR_GREEN;
@@ -454,6 +476,10 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 		info_symbol = SYMBOL_PACKAGE;
 		break;
 	case PK_INFO_ENUM_NORMAL:
+	case PK_INFO_ENUM_BUGFIX:
+	case PK_INFO_ENUM_IMPORTANT:
+	case PK_INFO_ENUM_SECURITY:
+	case PK_INFO_ENUM_CRITICAL:
 	case PK_INFO_ENUM_UPDATING:
 		info_color = COLOR_CYAN;
 		info_symbol = SYMBOL_UP;
@@ -477,20 +503,19 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 		break;
 	}
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON)
-	{
+	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "name", json_string (name));
 		json_object_set_new (root, "version", json_string (version));
 		json_object_set_new (root, "arch", json_string (arch));
-		json_object_set_new (root, "repo", json_string (repo));
+		json_object_set_new (root, "repo", json_string (data));
 		json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
-		print_json (root);
+		pkgc_print_json_decref (root);
 
 		return;
 	}
 
-	/* Normal and verbose mode */
+	/* print package info */
 	g_print ("%s%s%s %s%s%s",
 		 get_color (ctx, info_color),
 		 info_symbol,
@@ -511,10 +536,10 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 			 get_reset_color (ctx));
 	}
 
-	if (repo != NULL && g_strcmp0 (repo, "") != 0) {
+	if (data != NULL && g_strcmp0 (data, "") != 0) {
 		g_print (" [%s%s%s]",
 			 get_color (ctx, COLOR_GRAY),
-			 repo,
+			 data,
 			 get_reset_color (ctx));
 	}
 
@@ -571,7 +596,7 @@ pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details)
 		json_object_set_new (root, "url", json_string (url ? url : ""));
 		json_object_set_new (root, "install_size", json_integer ((json_int_t) install_size));
 		json_object_set_new (root, "download_size", json_integer ((json_int_t) download_size));
-		print_json (root);
+		pkgc_print_json_decref (root);
 	} else {
 		g_print ("%s%s%s %s\n",
 			 get_color (ctx, COLOR_BOLD),
@@ -721,7 +746,7 @@ pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update)
 					     "restart",
 					     json_string (pk_restart_enum_to_string (restart)));
 
-		print_json (root);
+		pkgc_print_json_decref (root);
 	} else {
 		g_print ("%s%s%s\n",
 			 get_color (ctx, COLOR_BOLD),
@@ -856,7 +881,7 @@ pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo)
 				     "description",
 				     json_string (description ? description : ""));
 		json_object_set_new (root, "enabled", json_boolean (enabled));
-		print_json (root);
+		pkgc_print_json_decref (root);
 	} else {
 		const gchar *status_color = enabled ? COLOR_GREEN : COLOR_RED;
 		const gchar *status_text = enabled ? "enabled" : "disabled";
@@ -930,7 +955,7 @@ pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction)
 		if (cmdline && cmdline[0] != '\0')
 			json_object_set_new (root, "cmdline", json_string (cmdline));
 
-		print_json (root);
+		pkgc_print_json_decref (root);
 
 		return;
 	}

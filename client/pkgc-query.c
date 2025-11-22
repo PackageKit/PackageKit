@@ -83,7 +83,6 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 		if (ctx->output_mode == PKGCTL_MODE_JSON) {
 			json_t *root;
 			json_t *files_array;
-			gchar *json_str;
 
 			root = json_object ();
 			files_array = json_array ();
@@ -95,12 +94,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 			json_object_set_new (root, "files", files_array);
 
-			json_str = json_dumps (root, JSON_COMPACT);
-			if (json_str) {
-				g_print ("%s\n", json_str);
-				free (json_str);
-			}
-			json_decref (root);
+			pkgc_print_json_decref (root);
 		} else {
 			for (guint j = 0; filelist && filelist[j] != NULL; j++)
 				g_print ("%s\n", filelist[j]);
@@ -190,7 +184,6 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		json_t *root;
 		json_t *backend_obj;
-		gchar *json_str;
 
 		root = json_object ();
 		backend_obj = json_object ();
@@ -208,12 +201,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 
 		json_object_set_new (root, "roles", json_string (roles_str));
 
-		json_str = json_dumps (root, JSON_COMPACT);
-		if (json_str) {
-			g_print ("%s\n", json_str);
-			g_free (json_str);
-		}
-		json_decref (root);
+		pkgc_print_json_decref (root);
 	} else {
 		g_print ("%sStatus:%s\n",
 			 pkgc_get_ansi_color_from_name (ctx, "bold"),
@@ -910,17 +898,11 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 
 	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		json_t *root;
-		gchar *json_str;
 
 		root = json_object ();
 		json_object_set_new (root, "time_sec", json_integer (time_s));
 
-		json_str = json_dumps (root, JSON_COMPACT);
-		if (json_str) {
-			g_print ("%s\n", json_str);
-			g_free (json_str);
-		}
-		json_decref (root);
+		pkgc_print_json_decref (root);
 	} else {
 		/* TRANSLATORS: this is the time since this role was used */
 		g_print ("%s: %is\n", _("Elapsed time"), time_s);
