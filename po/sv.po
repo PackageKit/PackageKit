@@ -10,12 +10,13 @@
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sebastian Rasmussen <sebras@gmail.com>, 2015
 # Sebastian Rasmussen <sebras@gmail.com>, 2015-2016
+# Anders Jonsson <anders.jonsson@norsjovallen.se>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-22 20:00+0100\n"
-"PO-Revision-Date: 2025-10-04 07:23+0000\n"
+"PO-Revision-Date: 2025-11-22 20:16+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -49,24 +50,18 @@ msgstr "Förbered transaktionen genom att endast hämta ner paket"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
 msgid "Allow package downgrades"
-msgstr "Tillåt paket att nedgraderas under transaktionen"
+msgstr "Tillåt nedgradering av paket"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
 msgid "Allow package re-installations"
-msgstr "Tillåt paket att ominstalleras under transaktionen"
+msgstr "Tillåt ominstallation av paket"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install older version of installed package"
 msgid "Allow installation of untrusted packages"
-msgstr "Installera äldre version av installerat paket"
+msgstr "Tillåt installation av ej betrodda paket"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
@@ -76,27 +71,25 @@ msgstr "Ta automatiskt bort oanvända beroenden"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr ""
+msgstr "Maximal cacheålder för metadata i sekunder"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDER"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:195
-#, fuzzy
-#| msgid "Refresh the cache"
 msgid "Refresh the package metadata cache."
-msgstr "Uppdatera cachen"
+msgstr "Uppdatera paketets metadatacache."
 
 #: client/pkgc-manage.c:221
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Metadata för paket uppdaterades"
 
 #. TRANSLATORS: Description for pkgctl install
 #: client/pkgc-manage.c:245
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Installera ett eller flera paket eller lokala paketfiler."
 
 #: client/pkgc-manage.c:301 client/pkgc-manage.c:360 client/pkgc-manage.c:415
 #: client/pkgc-query.c:448
