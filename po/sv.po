@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-22 20:00+0100\n"
-"PO-Revision-Date: 2025-11-22 20:16+0000\n"
+"PO-Revision-Date: 2025-11-22 20:38+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -93,42 +93,38 @@ msgstr "Installera ett eller flera paket eller lokala paketfiler."
 
 #: client/pkgc-manage.c:301 client/pkgc-manage.c:360 client/pkgc-manage.c:415
 #: client/pkgc-query.c:448
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Detta verktyg kunde inte hitta paketet: %s"
+msgstr "Kunde inte hitta paket: %s"
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:337
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Ta bort ett eller flera paket från systemet."
 
 #. TRANSLATORS: Description for pkgctl download
 #: client/pkgc-manage.c:401
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Hämta paket till den angivna katalogen utan att installera."
 
 #: client/pkgc-manage.c:423
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Katalogen finns inte: %s"
 
 #. TRANSLATORS: Description for pkgctl update
 #: client/pkgc-manage.c:460
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Uppdatera alla paket eller specifika paket till sina senaste versioner."
 
 #: client/pkgc-manage.c:497 client/pkgc-manage.c:597
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Misslyckades med läsa av tillstånd för bakgrundsprocess"
+msgstr "Misslyckades med att hämta uppdateringar: %s"
 
 #: client/pkgc-manage.c:506 client/pkgc-manage.c:606
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
-msgstr "Inga paket behöver uppdateras till nyare versioner."
+msgstr "Inga paket behöver uppdateras"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -138,12 +134,13 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Uppgradera alla paket eller utför en distributionsuppgradering.\n"
+"\n"
+"Typer: minimal, default, complete"
 
 #: client/pkgc-manage.c:639
-#, fuzzy
-#| msgid "There are no packages to update."
 msgid "Prepare packages for offline system update."
-msgstr "Det finns inga paket att uppdatera."
+msgstr "Förbered paket för frånkopplad systemuppdatering."
 
 #. This prepares updates for offline installation
 #: client/pkgc-manage.c:644
