@@ -40,13 +40,13 @@
 #define COLOR_GRAY    "\033[90m"
 
 /* Useful unicode symbols */
-#define SYMBOL_ARROW      "➡"
-#define SYMBOL_CHECK      "✔"
-#define SYMBOL_CROSS      "✘"
-#define SYMBOL_DOT        "●"
-#define SYMBOL_PACKAGE    "⧉"
-#define SYMBOL_ARROW_UP   "⬆"
-#define SYMBOL_ARROW_DOWN "⬇"
+#define SYMBOL_RIGHT   "▶"
+#define SYMBOL_CHECK   "✔"
+#define SYMBOL_CROSS   "✘"
+#define SYMBOL_DOT     "●"
+#define SYMBOL_PACKAGE "⧉"
+#define SYMBOL_UP      "▲"
+#define SYMBOL_DOWN    "▼"
 
 
 /* Emoji symbols - no single-cell width, so we can only use them sparingly */
@@ -453,13 +453,14 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 		info_color = COLOR_BLUE;
 		info_symbol = SYMBOL_PACKAGE;
 		break;
+	case PK_INFO_ENUM_NORMAL:
 	case PK_INFO_ENUM_UPDATING:
 		info_color = COLOR_CYAN;
-		info_symbol = SYMBOL_ARROW_UP;
+		info_symbol = SYMBOL_UP;
 		break;
 	case PK_INFO_ENUM_DOWNGRADE:
 		info_color = COLOR_RED;
-		info_symbol = SYMBOL_ARROW_DOWN;
+		info_symbol = SYMBOL_DOWN;
 		break;
 	case PK_INFO_ENUM_INSTALL:
 	case PK_INFO_ENUM_INSTALLING:
