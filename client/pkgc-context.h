@@ -61,14 +61,15 @@ typedef struct {
 	GMainLoop     *loop;
 
 	PkProgressBar *progressbar;
-	gboolean       is_tty;
-
 	GPtrArray     *commands;
+
+	/* Automatic Flags */
+	gboolean       simulate;
+	gboolean       is_tty;
 
 	/* Global Options */
 	PkgctlMode     output_mode;
 	gboolean       no_color;
-	gboolean       simulate;
 	gboolean       noninteractive;
 	gboolean       only_download;
 	gboolean       allow_downgrade;
@@ -90,13 +91,17 @@ typedef struct {
  *
  * Structure defining a pkgctl command
  */
-typedef struct {
+typedef struct PkgctlCommand PkgctlCommand;
+struct PkgctlCommand {
 	gchar *name;
-	gchar *description;
-	gchar *help_text;
+	gchar *summary;
+	gchar *param_summary;
 
-	int (*handler) (PkgctlContext *ctx, int argc, char **argv);
-} PkgctlCommand;
+	gint (*handler) (PkgctlContext *ctx,
+					 PkgctlCommand *cmd,
+					 gint argc,
+					 gchar **argv);
+};
 
 PkgctlContext	    *pkgc_context_new (void);
 void		     pkgc_context_free (PkgctlContext *ctx);
@@ -105,10 +110,9 @@ void		     pkgc_context_apply_settings (PkgctlContext *ctx);
 
 void		     pkgc_context_register_command (PkgctlContext *ctx,
 						    const gchar	  *name,
-						    int (*handler) (PkgctlContext *ctx, int argc, char **argv),
-						    const gchar *description,
-						    const gchar *help_text);
-const PkgctlCommand *pkgc_context_find_command (PkgctlContext *ctx, const char *name);
+						    gint (*handler) (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv),
+						    const gchar *summary);
+PkgctlCommand	*pkgc_context_find_command (PkgctlContext *ctx, const char *name);
 
 void pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data);
 

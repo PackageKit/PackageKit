@@ -359,6 +359,61 @@ void pkgc_println (const char* format, ...)
 }
 
 /**
+ * pkgc_option_context_for_command:
+ *
+ * Create a GOptionContext for a specific command.
+ */
+GOptionContext*
+pkgc_option_context_for_command(PkgctlContext *ctx,
+								PkgctlCommand *cmd,
+								const gchar *parameter_summary,
+								const gchar *description)
+{
+	GOptionContext *option_context = NULL;
+
+	option_context = g_option_context_new (parameter_summary);
+	g_option_context_set_help_enabled (option_context, TRUE);
+	g_option_context_set_description (option_context, (description != NULL)? description : cmd->summary);
+
+	if (parameter_summary == NULL)
+		parameter_summary = "";
+	g_free (cmd->param_summary);
+	cmd->param_summary = g_strdup (parameter_summary);
+
+	return option_context;
+}
+
+/**
+ * pkgc_parse_command_options:
+ *
+ * Parse command options and check for minimum argument count.
+ */
+gboolean
+pkgc_parse_command_options(PkgctlContext	*ctx,
+						   PkgctlCommand	*cmd,
+						   GOptionContext	*option_context,
+						   gint				*argc,
+						   gchar			***argv,
+						   gint				min_arg_count)
+{
+	g_autoptr(GError) error = NULL;
+
+	if (!g_option_context_parse (option_context, argc, argv, &error)) {
+		/* TRANSLATORS: Failed to parse command-line options in pkgctl */
+		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+		return FALSE;
+	}
+
+	if (*argc < min_arg_count) {
+		/* TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters */
+		pkgc_print_error (ctx, _("Usage: %s %s %s"), "pkgctl", cmd->name, cmd->param_summary);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pkgc_print_package:
  *
  * Print package information based on the output mode.

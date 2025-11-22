@@ -36,7 +36,6 @@ pkgc_repo_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoint
 	PkgctlContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
-	g_autoptr(GPtrArray) array = NULL;
 
 	results = pk_task_generic_finish (PK_TASK (source_object), res, &error);
 
@@ -51,6 +50,8 @@ pkgc_repo_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoint
 	}
 
 	if (results) {
+		g_autoptr(GPtrArray) array = NULL;
+
 		/* Process repo details */
 		array = pk_results_get_repo_detail_array (results);
 		for (guint i = 0; i < array->len; i++) {
@@ -68,21 +69,21 @@ out:
  *
  * List configured repositories.
  */
-static int
-pkgc_repo_list (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_repo_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
 	/* parse options */
-	option_context = g_option_context_new (NULL);
-	g_option_context_set_help_enabled (option_context, TRUE);
-
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		NULL,
+		/* TRANSLATORS: Description for pkgctl repo-list */
+		_("List all configured package repositories."));
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
+	/* run */
 	pk_task_get_repo_list_async (PK_TASK (ctx->task),
 				     ctx->filters,
 				     ctx->cancellable,
@@ -100,15 +101,20 @@ pkgc_repo_list (PkgctlContext *ctx, int argc, char **argv)
  *
  * Enable a repository
  */
-static int
-pkgc_repo_enable (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_repo_enable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
-	const char *repo_id;
+	g_autoptr(GOptionContext) option_context = NULL;
+	const gchar *repo_id;
 
-	if (argc < 2) {
-		pkgc_print_error (ctx, _("Usage: %s REPO-ID"), "pkgctl repo-enable");
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"REPO-ID",
+		/* TRANSLATORS: Description for pkgctl repo-enable */
+		_("Enable the specified repository."));
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	repo_id = argv[1];
 
@@ -135,15 +141,20 @@ pkgc_repo_enable (PkgctlContext *ctx, int argc, char **argv)
  *
  * Disable a repository
  */
-static int
-pkgc_repo_disable (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_repo_disable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
-	const char *repo_id;
+	g_autoptr(GOptionContext) option_context = NULL;
+	const gchar *repo_id;
 
-	if (argc < 2) {
-		pkgc_print_error (ctx, _("Usage: %s REPO-ID"), "pkgctl repo-disable");
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"REPO-ID",
+		/* TRANSLATORS: Description for pkgctl repo-disable */
+		_("Disable the specified repository."));
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	repo_id = argv[1];
 
@@ -170,11 +181,10 @@ pkgc_repo_disable (PkgctlContext *ctx, int argc, char **argv)
  *
  * Remove a repository
  */
-static int
-pkgc_repo_remove (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_repo_remove (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean autoremove = FALSE;
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
 	const GOptionEntry options[] = {
@@ -186,20 +196,16 @@ pkgc_repo_remove (PkgctlContext *ctx, int argc, char **argv)
 		{ NULL,	0, 0, 0, NULL, NULL,NULL }
 	};
 
-	/* Parse options */
-	option_context = g_option_context_new ("REPO-ID");
-	g_option_context_set_help_enabled (option_context, TRUE);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"REPO-ID",
+		/* TRANSLATORS: Description for pkgctl repo-remove */
+		_("Remove the specified repository."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
-
-	if (argc < 2) {
-		pkgc_print_error (ctx, _("Usage: %s REPO-ID"), "pkgctl repo-remove");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Remove repository */
 	pk_client_repo_remove_async (PK_CLIENT (ctx->task),
@@ -228,31 +234,27 @@ pkgc_repo_remove (PkgctlContext *ctx, int argc, char **argv)
 void
 pkgc_register_repo_commands (PkgctlContext *ctx)
 {
-	pkgc_context_register_command (ctx,
-				       "repo-list",
-				       pkgc_repo_list,
-				       N_ ("List repositories"),
-				       N_ ("Usage: pkgctl repo-list\n"
-					   "List all configured package repositories."));
+	pkgc_context_register_command (
+		ctx,
+		"repo-list",
+		pkgc_repo_list,
+		_("List repositories"));
 
-	pkgc_context_register_command (ctx,
-				       "repo-enable",
-				       pkgc_repo_enable,
-				       N_ ("Enable a repository"),
-				       N_ ("Usage: pkgctl repo-enable REPO-ID\n"
-					   "Enable the specified repository."));
+	pkgc_context_register_command (
+		ctx,
+		"repo-enable",
+		pkgc_repo_enable,
+		_("Enable a repository"));
 
-	pkgc_context_register_command (ctx,
-				       "repo-disable",
-				       pkgc_repo_disable,
-				       N_ ("Disable a repository"),
-				       N_ ("Usage: pkgctl repo-disable REPO-ID\n"
-					   "Disable the specified repository."));
+	pkgc_context_register_command (
+		ctx,
+		"repo-disable",
+		pkgc_repo_disable,
+		_("Disable a repository"));
 
-	pkgc_context_register_command (ctx,
-				       "repo-remove",
-				       pkgc_repo_remove,
-				       N_ ("Remove a repository"),
-				       N_ ("Usage: pkgctl repo-remove REPO-ID [--autoremove]\n"
-					   "Remove the specified repository."));
+	pkgc_context_register_command (
+		ctx,
+		"repo-remove",
+		pkgc_repo_remove,
+		_("Remove a repository"));
 }

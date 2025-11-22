@@ -39,8 +39,8 @@ pkgctl_command_free (gpointer data)
 		return;
 
 	g_free (cmd->name);
-	g_free (cmd->description);
-	g_free (cmd->help_text);
+	g_free (cmd->summary);
+	g_free (cmd->param_summary);
 	g_free (cmd);
 }
 
@@ -201,17 +201,8 @@ pkgc_context_apply_settings (PkgctlContext *ctx)
 {
 	gboolean do_simulate;
 
-	/* Simulate by default in interactive mode
-	 * (unless only downloading or user explicitly requested --simulate).
-	 * This enables the 2-phase transaction: simulate first, ask for
-	 * confirmation, then execute for real. */
-	if (ctx->simulate) {
-		/* User explicitly requested --simulate, so just simulate */
-		do_simulate = TRUE;
-	} else {
-		/* Auto-simulate if interactive and not download-only */
-		do_simulate = !ctx->noninteractive && !ctx->only_download;
-	}
+	/* Always simulate if interactive and not download-only */
+	do_simulate = !ctx->noninteractive && !ctx->only_download;
 
 	g_object_set (ctx->task,
 		      "simulate",
@@ -236,26 +227,22 @@ pkgc_context_apply_settings (PkgctlContext *ctx)
  * @ctx: a valid #PkgctlContext
  * @name: the command name
  * @handler: function pointer to the command handler
- * @description: short description of the command
- * @help_text: detailed help text for the command, or %NULL
- * @options: (nullable): command-specific options, or %NULL
+ * @summary: short description of the command
  *
  * Register a command in the given #PkgctlContext.
  */
 void
 pkgc_context_register_command (PkgctlContext *ctx,
-			       const gchar *name,
-			       int (*handler) (PkgctlContext *ctx, int argc, char **argv),
-			       const gchar *description,
-			       const gchar *help_text)
+							   const gchar *name,
+							   gint (*handler) (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv),
+							   const gchar *summary)
 {
 	PkgctlCommand *cmd;
 
 	cmd = g_new0 (PkgctlCommand, 1);
 	cmd->name = g_strdup (name);
 	cmd->handler = handler;
-	cmd->description = g_strdup (description);
-	cmd->help_text = help_text ? g_strdup (help_text) : NULL;
+	cmd->summary = g_strdup (summary);
 
 	g_ptr_array_add (ctx->commands, cmd);
 }
@@ -269,7 +256,7 @@ pkgc_context_register_command (PkgctlContext *ctx,
  *
  * Returns: (transfer none): a pointer to the #PkgctlCommand, or %NULL if not found
  */
-const PkgctlCommand *
+PkgctlCommand *
 pkgc_context_find_command (PkgctlContext *ctx, const char *name)
 {
 	if (!name)

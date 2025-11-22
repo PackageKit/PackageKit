@@ -27,7 +27,6 @@
 #include "pkgc-util.h"
 
 /* Options for various management operations */
-static gboolean opt_simulate = FALSE;
 static gboolean opt_download_only = FALSE;
 static gboolean opt_allow_downgrade = FALSE;
 static gboolean opt_allow_reinstall = FALSE;
@@ -35,44 +34,44 @@ static gboolean opt_allow_untrusted = FALSE;
 static gboolean opt_autoremove = FALSE;
 static gint opt_cache_age = -1;
 
-static const GOptionEntry option_simulate[] = {
-	{ "simulate", 'n', 0, G_OPTION_ARG_NONE, &opt_simulate,
-	  N_("Only simulate the action"), NULL },
-	{ NULL, 0, 0, 0, NULL, NULL, NULL }
-};
-
 static const GOptionEntry option_download_only[] = {
 	{ "download-only", 'd', 0, G_OPTION_ARG_NONE, &opt_download_only,
-	  N_("Only download packages"), NULL },
+		/* TRANSLATORS: command line argument, do we just download or apply changes */
+	  N_("Prepare the transaction by downloading packages only"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_downgrade[] = {
 	{ "allow-downgrade", 0, 0, G_OPTION_ARG_NONE, &opt_allow_downgrade,
+		/* TRANSLATORS: command line argument, do we allow package downgrades */
 	  N_("Allow package downgrades"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_reinstall[] = {
 	{ "allow-reinstall", 0, 0, G_OPTION_ARG_NONE, &opt_allow_reinstall,
+		/* TRANSLATORS: command line argument, do we allow package re-installations */
 	  N_("Allow package re-installations"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_untrusted[] = {
 	{ "allow-untrusted", 0, 0, G_OPTION_ARG_NONE, &opt_allow_untrusted,
+		/* TRANSLATORS: command line argument */
 	  N_("Allow installation of untrusted packages"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_autoremove[] = {
 	{ "autoremove", 0, 0, G_OPTION_ARG_NONE, &opt_autoremove,
+		/* TRANSLATORS: command line argument */
 	  N_("Automatically remove unused dependencies"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_cache_age[] = {
 	{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &opt_cache_age,
+		/* TRANSLATORS: command line argument */
 	  N_("Maximum metadata cache age in seconds"), N_("SECONDS") },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
@@ -85,7 +84,6 @@ static const GOptionEntry option_cache_age[] = {
 static void
 pkgc_manage_reset_options (void)
 {
-	opt_simulate = FALSE;
 	opt_download_only = FALSE;
 	opt_allow_downgrade = FALSE;
 	opt_allow_reinstall = FALSE;
@@ -103,7 +101,6 @@ pkgc_manage_reset_options (void)
 static void
 pkgc_manage_apply_options (PkgctlContext *ctx)
 {
-	ctx->simulate = opt_simulate;
 	ctx->only_download = opt_download_only;
 	ctx->allow_downgrade = opt_allow_downgrade;
 	ctx->allow_reinstall = opt_allow_reinstall;
@@ -182,24 +179,24 @@ out:
  *
  * Refresh package metadata cache.
  */
-static int
-pkgc_refresh (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_refresh (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean force = FALSE;
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new (NULL);
-	g_option_context_set_help_enabled (option_context, TRUE);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"[force]",
+		/* TRANSLATORS: Description for pkgctl refresh */
+		_("Refresh the package metadata cache."));
 	g_option_context_add_main_entries (option_context, option_cache_age, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Check for force flag */
 	if (argc >= 2 && strcmp (argv[1], "force") == 0) {
@@ -231,8 +228,8 @@ pkgc_refresh (PkgctlContext *ctx, int argc, char **argv)
  *
  * Install packages or local package files.
  */
-static int
-pkgc_install (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_install (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean has_files;
 	g_autoptr(GError) error = NULL;
@@ -240,25 +237,21 @@ pkgc_install (PkgctlContext *ctx, int argc, char **argv)
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new ("PACKAGE...");
-	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_add_main_entries (option_context, option_simulate, NULL);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"PACKAGE...",
+		/* TRANSLATORS: Description for pkgctl install */
+		_("Install one or more packages or local package files."));
+
 	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_reinstall, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_untrusted, NULL);
 	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
-
-	if (argc < 2) {
-		pkgc_print_error (ctx, _("Usage: %s PACKAGE..."), "pkgctl install");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
@@ -328,29 +321,24 @@ pkgc_install (PkgctlContext *ctx, int argc, char **argv)
  *
  * Remove packages from the system.
  */
-static int
-pkgc_remove (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_remove (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
+	g_autoptr(GError) error = NULL;
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new ("PACKAGE...");
-	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_add_main_entries (option_context, option_simulate, NULL);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"PACKAGE...",
+		/* TRANSLATORS: Description for pkgctl remove */
+		_("Remove one or more packages from the system."));
 	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
-
-	if (argc < 2) {
-		pkgc_print_error (ctx, _("Usage: %s PACKAGE..."), "pkgctl remove");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
@@ -395,30 +383,24 @@ pkgc_remove (PkgctlContext *ctx, int argc, char **argv)
  *
  * Download packages to the specified directory without installing.
  */
-static int
-pkgc_download (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_download (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
+	g_autoptr(GOptionContext) option_context = NULL;
 	const char *directory = NULL;
 	g_auto(GStrv) package_ids = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GOptionContext) option_context = NULL;
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new ("DIRECTORY PACKAGE...");
-	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_add_main_entries (option_context, option_simulate, NULL);
-
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"DIRECTORY PACKAGE...",
+		/* TRANSLATORS: Description for pkgctl download */
+		_("Download packages to the specified directory without installing."));
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 3))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
-
-	if (argc < 3) {
-		pkgc_print_error (ctx, _("Usage: %s DIRECTORY PACKAGE..."), "pkgctl download");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
@@ -461,27 +443,27 @@ pkgc_download (PkgctlContext *ctx, int argc, char **argv)
  *
  * Update all packages or specific packages to their latest versions.
  */
-static int
-pkgc_update (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
+	g_autoptr(GOptionContext) option_context = NULL;
 	PkBitfield filters = 0;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GOptionContext) option_context = NULL;
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new ("[PACKAGE...]");
-	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_add_main_entries (option_context, option_simulate, NULL);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"[PACKAGE...]",
+		/* TRANSLATORS: Description for pkgctl update */
+		_("Update all packages or specific packages to their latest versions."));
 	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
 	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
@@ -544,27 +526,29 @@ pkgc_update (PkgctlContext *ctx, int argc, char **argv)
  *
  * Upgrade the system to a new distribution version or do an advanced update.
  */
-static int
-pkgc_upgrade (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
+	g_autoptr(GOptionContext) option_context = NULL;
 	const char *distro_name = NULL;
 	PkUpgradeKindEnum upgrade_kind = PK_UPGRADE_KIND_ENUM_DEFAULT;
 	PkBitfield filters = 0;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GOptionContext) option_context = NULL;
 
 	pkgc_manage_reset_options ();
 
-	/* Parse options */
-	option_context = g_option_context_new ("[DISTRO] [TYPE]");
-	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_add_main_entries (option_context, option_simulate, NULL);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"[DISTRO] [TYPE]",
+		/* TRANSLATORS: Description of pkgctl upgrade.
+		 * No not translate "minimal, default, complete", those are parameters */
+		_("Upgrade all packages or perform a distribution upgrade.\n\n"
+		  "Types: minimal, default, complete"));
 	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Apply options to context */
 	pkgc_manage_apply_options (ctx);
@@ -642,10 +626,19 @@ pkgc_upgrade (PkgctlContext *ctx, int argc, char **argv)
  *
  * Prepare an offline update for installation on next reboot.
  */
-static int
-pkgc_offline_update (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_offline_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
+	g_autoptr(GOptionContext) option_context = NULL;
 	PkBitfield filters = 0;
+
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		NULL,
+		_("Prepare packages for offline system update."));
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
+		return PKGCTL_EXIT_SYNTAX_ERROR;
 
 	/* This prepares updates for offline installation */
 	pkgc_print_info (ctx, _("Preparing offline update..."));
@@ -673,8 +666,8 @@ pkgc_offline_update (PkgctlContext *ctx, int argc, char **argv)
  *
  * Trigger the offline update on next reboot.
  */
-static int
-pkgc_offline_trigger (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_offline_trigger (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -695,8 +688,8 @@ pkgc_offline_trigger (PkgctlContext *ctx, int argc, char **argv)
  *
  * Cancel the prepared offline update.
  */
-static int
-pkgc_offline_cancel (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_offline_cancel (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -714,8 +707,8 @@ pkgc_offline_cancel (PkgctlContext *ctx, int argc, char **argv)
  *
  * Show the status of offline updates.
  */
-static int
-pkgc_offline_status (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_offline_status (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
@@ -773,25 +766,21 @@ pkgc_offline_status (PkgctlContext *ctx, int argc, char **argv)
  *
  * Install a package signature (for GPG verification).
  */
-static int
-pkgc_install_sig (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_install_sig (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
-	/* Parse options */
-	option_context = g_option_context_new ("TYPE KEY_ID PACKAGE_ID");
-	g_option_context_set_help_enabled (option_context, TRUE);
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"TYPE KEY_ID PACKAGE_ID",
+		/* TRANSLATORS: Description for pkgctl install-sig */
+		_("Install a package signature for GPG verification."));
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 4))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
-
-	if (argc < 4) {
-		pkgc_print_error (ctx, _("Usage: %s TYPE KEY_ID PACKAGE_ID"), "pkgctl install-sig");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* Install signature */
 	pk_client_install_signature_async (PK_CLIENT (ctx->task),
@@ -813,20 +802,20 @@ pkgc_install_sig (PkgctlContext *ctx, int argc, char **argv)
  *
  * Repair broken package management.
  */
-static int
-pkgc_repair (PkgctlContext *ctx, int argc, char **argv)
+static gint
+pkgc_repair (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
 	/* parse options */
-	option_context = g_option_context_new (NULL);
-	g_option_context_set_help_enabled (option_context, TRUE);
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		NULL,
+		/* TRANSLATORS: Description for pkgctl repair */
+		_("Attempt to repair the package management system."));
 
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
-	}
 
 	/* repair system */
 	pk_task_repair_system_async (PK_TASK (ctx->task),
@@ -852,92 +841,75 @@ pkgc_repair (PkgctlContext *ctx, int argc, char **argv)
 void
 pkgc_register_manage_commands (PkgctlContext *ctx)
 {
-	pkgc_context_register_command (ctx,
-				       "refresh",
-				       pkgc_refresh,
-				       N_ ("Refresh package metadata"),
-				       N_ ("Usage: pkgctl refresh [force]\n"
-					   "Refresh the package metadata cache."));
+	pkgc_context_register_command (
+		ctx,
+       "refresh",
+       pkgc_refresh,
+       _("Refresh package metadata"));
 
-	pkgc_context_register_command (ctx,
-				       "install",
-				       pkgc_install,
-				       N_ ("Install packages"),
-				       N_ ("Usage: pkgctl install PACKAGE...\n"
-					   "Install one or more packages or local package files."));
+	pkgc_context_register_command (
+		ctx,
+		"install",
+		pkgc_install,
+		_("Install packages"));
 
-	pkgc_context_register_command (ctx,
-				       "remove",
-				       pkgc_remove,
-				       N_ ("Remove packages"),
-				       N_ ("Usage: pkgctl remove PACKAGE...\n"
-					   "Remove one or more packages from the system."));
+	pkgc_context_register_command (
+		ctx,
+		"remove",
+		pkgc_remove,
+		_("Remove packages"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "update",
 	    pkgc_update,
-	    N_ ("Update packages"),
-	    N_ ("Usage: pkgctl update [PACKAGE...]\n"
-		"Update all packages or specific packages to their latest versions."));
+	    _("Update packages"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "upgrade",
 	    pkgc_upgrade,
-	    N_ ("Upgrade the system"),
-	    /* TRANSLATORS: No not translate "minimal, default, complete", those are parameters */
-	    N_ ("Usage: pkgctl upgrade [DISTRO] [TYPE]\n"
-		"Upgrade all packages or perform a distribution upgrade.\n\n"
-		"Types: minimal, default, complete"));
+	    _("Upgrade the system"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "download",
 	    pkgc_download,
-	    N_ ("Download packages"),
-	    N_ ("Usage: pkgctl download DIRECTORY PACKAGE...\n"
-		"Download packages to the specified directory without installing."));
+	    _("Download packages"));
 
-	pkgc_context_register_command (ctx,
-				       "offline-update",
-				       pkgc_offline_update,
-				       N_ ("Prepare offline update"),
-				       N_ ("Usage: pkgctl offline-update\n"
-					   "Prepare packages for offline system update."));
+	pkgc_context_register_command (
+		ctx,
+		"offline-update",
+		pkgc_offline_update,
+		_("Prepare offline update"));
 
-	pkgc_context_register_command (ctx,
-				       "offline-trigger",
-				       pkgc_offline_trigger,
-				       N_ ("Trigger offline update"),
-				       N_ ("Usage: pkgctl offline-trigger\n"
-					   "Schedule offline update for next reboot."));
+	pkgc_context_register_command (
+		ctx,
+		"offline-trigger",
+		pkgc_offline_trigger,
+		_("Trigger offline update"));
 
-	pkgc_context_register_command (ctx,
-				       "offline-cancel",
-				       pkgc_offline_cancel,
-				       N_ ("Cancel offline update"),
-				       N_ ("Usage: pkgctl offline-cancel\n"
-					   "Cancel a scheduled offline update."));
+	pkgc_context_register_command (
+		ctx,
+		"offline-cancel",
+		pkgc_offline_cancel,
+		_("Cancel offline update"));
 
-	pkgc_context_register_command (ctx,
-				       "offline-status",
-				       pkgc_offline_status,
-				       N_ ("Show offline update status"),
-				       N_ ("Usage: pkgctl offline-status\n"
-					   "Show the status of offline updates."));
+	pkgc_context_register_command (
+		ctx,
+		"offline-status",
+		pkgc_offline_status,
+		_("Show offline update status"));
 
-	pkgc_context_register_command (ctx,
-				       "install-sig",
-				       pkgc_install_sig,
-				       N_ ("Install package signature"),
-				       N_ ("Usage: pkgctl install-sig TYPE KEY_ID PACKAGE_ID\n"
-					   "Install a package signature for GPG verification."));
+	pkgc_context_register_command (
+		ctx,
+		"install-sig",
+		pkgc_install_sig,
+		_("Install package signature"));
 
-	pkgc_context_register_command (ctx,
-				       "repair",
-				       pkgc_repair,
-				       N_ ("Repair package system"),
-				       N_ ("Usage: pkgctl repair\n"
-					   "Attempt to repair the package management system."));
+	pkgc_context_register_command (
+		ctx,
+		"repair",
+		pkgc_repair,
+		_("Repair package system"));
 }

@@ -65,11 +65,13 @@ static gboolean opt_verbose = FALSE;
 static gboolean opt_json = FALSE;
 static gboolean opt_yes = FALSE;
 static gboolean opt_no_color = FALSE;
+static gboolean opt_background = FALSE;
 static gchar *opt_filter_str = NULL;
 
 /* Global options that apply to all commands */
 const GOptionEntry pkgc_global_options[] = {
 	{ "version", 'v', 0, G_OPTION_ARG_NONE, &opt_version,
+		/* TRANSLATORS: command line argument, just show the version string */
 		N_("Show pkgctl version"), NULL },
 	{ "help", 'h', 0, G_OPTION_ARG_NONE, &opt_help,
 		N_("Show help"), NULL },
@@ -82,9 +84,14 @@ const GOptionEntry pkgc_global_options[] = {
 	{ "no-color", 0, 0, G_OPTION_ARG_NONE, &opt_no_color,
 		N_("Disable colored output"), NULL },
 	{ "yes", 'y', 0, G_OPTION_ARG_NONE, &opt_yes,
+		/* TRANSLATORS: command line argument, do we ask questions */
 	  N_("Answer 'yes' to all questions"), NULL },
 	{ "filter", 'f', 0, G_OPTION_ARG_STRING, &opt_filter_str,
+		/* TRANSLATORS: command line argument, use a filter to narrow down results */
 	N_("Filter packages (installed, available, etc.)"), N_("FILTER") },
+	{ "background", 'n', 0, G_OPTION_ARG_NONE, &opt_background,
+		/* TRANSLATORS: command line argument, this command is not a priority */
+		N_("Run the command using idle network bandwidth and also using less power"), NULL},
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -102,7 +109,7 @@ static int
 pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 {
 	const gchar *command_name;
-	const PkgctlCommand *cmd;
+	PkgctlCommand *cmd;
 
 	if (argc < 2) {
 		pkgc_print_error (ctx,
@@ -119,7 +126,7 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 	}
 
 	/* call the command handler */
-	return cmd->handler (ctx, argc - 1, argv + 1);
+	return cmd->handler (ctx, cmd, argc - 1, argv + 1);
 }
 
 /**
@@ -191,7 +198,7 @@ main (int argc, char **argv)
 		g_print ("%s\n", _("Available Commands:"));
 		for (guint i = 0; i < ctx->commands->len; i++) {
 			PkgctlCommand *cmd = g_ptr_array_index (ctx->commands, i);
-			g_print ("  %-23s %s\n", cmd->name, _(cmd->description));
+			g_print ("  %-23s %s\n", cmd->name, cmd->summary);
 		}
 		g_print ("\n");
 		g_print ("%s\n", _("Use 'pkgctl COMMAND --help' for command-specific help."));
