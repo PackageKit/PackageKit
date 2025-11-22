@@ -447,7 +447,6 @@ static gint
 pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
-	PkBitfield filters = 0;
 	g_autoptr(GError) error = NULL;
 
 	pkgc_manage_reset_options ();
@@ -488,7 +487,7 @@ pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 
 		/* Get current updates */
 		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
-						    filters,
+						    ctx->filters,
 						    ctx->cancellable,
 						    pkgc_context_on_progress_cb,
 						    ctx,
@@ -532,7 +531,6 @@ pkgc_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	g_autoptr(GOptionContext) option_context = NULL;
 	const char *distro_name = NULL;
 	PkUpgradeKindEnum upgrade_kind = PK_UPGRADE_KIND_ENUM_DEFAULT;
-	PkBitfield filters = 0;
 	g_autoptr(GError) error = NULL;
 
 	pkgc_manage_reset_options ();
@@ -554,16 +552,16 @@ pkgc_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	pkgc_manage_apply_options (ctx);
 
 	/* Parse optional distro name and upgrade type */
-	if (argc >= 2) {
+	if (argc >= 2)
 		distro_name = argv[1];
-	}
+
 
 	if (argc >= 3) {
-		if (strcmp (argv[2], "minimal") == 0)
+		if (g_strcmp0 (argv[2], "minimal") == 0)
 			upgrade_kind = PK_UPGRADE_KIND_ENUM_MINIMAL;
-		else if (strcmp (argv[2], "complete") == 0)
+		else if (g_strcmp0 (argv[2], "complete") == 0)
 			upgrade_kind = PK_UPGRADE_KIND_ENUM_COMPLETE;
-		else if (strcmp (argv[2], "default") == 0)
+		else if (g_strcmp0 (argv[2], "default") == 0)
 			upgrade_kind = PK_UPGRADE_KIND_ENUM_DEFAULT;
 	}
 
@@ -588,7 +586,7 @@ pkgc_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 
 		/* Get current updates */
 		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
-						    filters,
+						    ctx->filters,
 						    ctx->cancellable,
 						    pkgc_context_on_progress_cb,
 						    ctx,
@@ -622,59 +620,124 @@ pkgc_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 }
 
 /**
- * pkgc_offline_update:
+ * pkgc_print_offline_update_status:
  *
- * Prepare an offline update for installation on next reboot.
+ * Helper for pkgc_offline_update().
  */
 static gint
-pkgc_offline_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_print_offline_update_status (PkgctlContext *ctx)
 {
-	g_autoptr(GOptionContext) option_context = NULL;
-	PkBitfield filters = 0;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	g_autoptr(PkError) pk_error = NULL;
+	g_auto(GStrv) package_ids = NULL;
+	g_autoptr(GPtrArray) packages = NULL;
+	PkOfflineAction action;
 
-	/* parse options */
-	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		_("Prepare packages for offline system update."));
-	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+	/* Check if offline update is armed */
+	action = pk_offline_get_action (&error);
+	if (action == PK_OFFLINE_ACTION_UNKNOWN) {
+		pkgc_print_error (ctx, _("Failed to read offline update action: %s"), error->message);
+		return PKGCTL_EXIT_FAILURE;
+	}
 
-	/* This prepares updates for offline installation */
-	pkgc_print_info (ctx, _("Preparing offline update..."));
+	if (action == PK_OFFLINE_ACTION_UNSET) {
+		if (ctx->output_mode != PKGCTL_MODE_JSON)
+			g_print ("%s%s%s",
+				 pkgc_get_ansi_color_from_name (ctx, "blue"),
+				 "⏾ ",
+				 pkgc_get_ansi_color_from_name (ctx, "reset"));
+		pkgc_print_info (ctx, _("Offline update is not triggered."));
+		g_print ("\n");
+	} else {
+		if (ctx->output_mode != PKGCTL_MODE_JSON)
+			g_print ("%s%s%s",
+				 pkgc_get_ansi_color_from_name (ctx, "yellow"),
+				 "⚠ ",
+				 pkgc_get_ansi_color_from_name (ctx, "reset"));
+		pkgc_print_info (ctx, _("Offline update is triggered. Action after update: %s"),
+			pk_offline_action_to_string(action));
+		g_print ("\n");
+	}
 
-	/* Get available updates */
+	g_clear_error (&error);
 
-	pk_task_get_updates_async (PK_TASK (ctx->task),
-				   filters,
-				   ctx->cancellable,
-				   pkgc_context_on_progress_cb,
-				   ctx,
-				   pkgc_manage_on_task_finished_cb,
-				   ctx);
+	/* Check if there are prepared updates */
+	package_ids = pk_offline_get_prepared_ids (&error);
+	if (package_ids != NULL) {
+		/* TRANSLATORS: Packages that were prepared for an offline update */
+		pkgc_print_info (ctx, _("Prepared packages:"));
+		for (guint i = 0; package_ids[i] != NULL; i++) {
+			g_autofree gchar *printable = pk_package_id_to_printable (package_ids[i]);
+			if (ctx->output_mode == PKGCTL_MODE_JSON) {
+				json_t *root = json_object ();
+				json_object_set_new (root, "pkid", json_string (package_ids[i]));
+				pkgc_print_json_decref (root);
+			} else {
+				g_print ("  %s\n", printable);
+			}
+		}
+		g_print ("\n");
+	} else if (error != NULL) {
+		if (error->code == PK_OFFLINE_ERROR_NO_DATA) {
+			pkgc_print_info (ctx, _("No offline update is prepared."));
+		} else {
+			pkgc_print_error (ctx, _("Failed to read prepared offline updates: %s"), error->message);
+			return PKGCTL_EXIT_FAILURE;
+		}
+	}
 
-	g_main_loop_run (ctx->loop);
+	/* Check if there are results from last update */
+	g_clear_error (&error);
+	results = pk_offline_get_results (&error);
 
-	if (ctx->exit_code == PKGCTL_EXIT_SUCCESS)
-		pkgc_print_info (ctx, _("Use 'pkgctl offline-trigger' to schedule the update"));
+	if (!results) {
+		pkgc_print_info (ctx, _("No results from last offline update available."));
+		return PKGCTL_EXIT_SUCCESS;
+	}
 
-	return ctx->exit_code;
+	pk_error = pk_results_get_error_code (results);
+	if (pk_error) {
+		pkgc_print_error (ctx,
+				  _("Last offline update failed: %s: %s"),
+					pk_error_enum_to_string (pk_error_get_code (pk_error)),
+					pk_error_get_details (pk_error));
+		return PKGCTL_EXIT_TRANSACTION_FAILED;
+	}
+
+	packages = pk_results_get_package_array (results);
+	pkgc_print_success (ctx, _("Last offline update completed successfully"));
+	for (guint i = 0; i < packages->len; i++) {
+		PkPackage *pkg = PK_PACKAGE (g_ptr_array_index (packages, i));
+		g_autofree gchar *printable = pk_package_id_to_printable (
+			pk_package_get_id (pkg));
+		if (ctx->output_mode == PKGCTL_MODE_JSON) {
+			json_t *root = json_object ();
+			json_object_set_new (root, "pkid", json_string (pk_package_get_id (pkg)));
+			pkgc_print_json_decref (root);
+		} else {
+			g_print ("  ");
+			g_print (_("Updated: %s"), printable);
+			g_print ("\n");
+		}
+	}
+
+	return PKGCTL_EXIT_SUCCESS;
 }
 
 /**
- * pkgc_offline_trigger:
+ * pkgc_trigger_offline_update:
  *
- * Trigger the offline update on next reboot.
+ * Helper for pkgc_offline_update().
  */
 static gint
-pkgc_offline_trigger (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_trigger_offline_update (PkgctlContext *ctx)
 {
+	gboolean ret;
 	g_autoptr(GError) error = NULL;
 
-	if (!pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
-					    PK_OFFLINE_FLAGS_INTERACTIVE,
-					    NULL,
-					    &error)) {
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+	if (!ret) {
 		pkgc_print_error (ctx, _("Failed to trigger offline update: %s"), error->message);
 		return PKGCTL_EXIT_FAILURE;
 	}
@@ -684,81 +747,103 @@ pkgc_offline_trigger (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar *
 }
 
 /**
- * pkgc_offline_cancel:
+ * pkgc_offline_update:
  *
- * Cancel the prepared offline update.
+ * Manage offline updates (for update installation on next (soft)reboot).
  */
 static gint
-pkgc_offline_cancel (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_offline_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 {
+	g_autoptr(GOptionContext) option_context = NULL;
+	const gchar *cmd_description = NULL;
+	const gchar *request = NULL;
+	gboolean ret;
 	g_autoptr(GError) error = NULL;
 
-	if (!pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error)) {
-		pkgc_print_error (ctx, _("Failed to cancel offline update: %s"), error->message);
-		return PKGCTL_EXIT_FAILURE;
+	/* TRANSLATORS: Description of the pkgctl offline-update command.
+	 * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated. */
+	cmd_description = _("Trigger & manage offline system updates.\n\n"
+						"You can select one of these requests:\n"
+						"  prepare - prepare an offline update and trigger it (default)\n"
+						"  trigger - trigger a (manually prepared) offline update\n"
+						"  cancel  - cancel a planned offline update\n"
+						"  status  - show status information about a prepared or finished offline update");
+
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		"[REQUEST]",
+		cmd_description);
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
+		return PKGCTL_EXIT_SYNTAX_ERROR;
+
+	request = (argc >= 2)? argv[1] : "prepare";
+
+	if (g_strcmp0 (request, "trigger") == 0) {
+		return pkgc_trigger_offline_update (ctx);
 	}
 
-	pkgc_print_success (ctx, _("Offline update cancelled"));
-	return PKGCTL_EXIT_SUCCESS;
-}
-
-/**
- * pkgc_offline_status:
- *
- * Show the status of offline updates.
- */
-static gint
-pkgc_offline_status (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
-{
-	g_autoptr(GError) error = NULL;
-	g_autoptr(PkResults) results = NULL;
-	g_autoptr(PkError) pk_error = NULL;
-	g_auto(GStrv) package_ids = NULL;
-	g_autoptr(GPtrArray) packages = NULL;
-
-	/* Check if there are prepared updates */
-	package_ids = pk_offline_get_prepared_ids (&error);
-
-	if (package_ids && package_ids[0] != NULL) {
-		pkgc_print_info (ctx, _("Offline update is prepared:"));
-		for (guint i = 0; package_ids[i] != NULL; i++) {
-			g_autofree char *printable = pk_package_id_to_printable (package_ids[i]);
-			g_print ("  %s\n", printable);
+	if (g_strcmp0 (request, "cancel") == 0) {
+		ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+		if (!ret) {
+			pkgc_print_error (ctx, _("Failed to cancel offline update: %s"), error->message);
+			return PKGCTL_EXIT_FAILURE;
 		}
+
+		pkgc_print_success (ctx, _("Offline update cancelled"));
 		return PKGCTL_EXIT_SUCCESS;
 	}
 
-	/* Check if there are results from last update */
-	g_clear_error (&error);
-	results = pk_offline_get_results (&error);
-
-	if (!results) {
-		pkgc_print_info (ctx, _("No offline update information available"));
-		return PKGCTL_EXIT_SUCCESS;
+	if (g_strcmp0 (request, "status") == 0) {
+		return pkgc_print_offline_update_status (ctx);
 	}
 
-	pk_error = pk_results_get_error_code (results);
-	if (pk_error) {
-		pkgc_print_error (ctx,
-				  _("Last offline update failed: %s"),
-				    pk_error_get_details (pk_error));
-		return PKGCTL_EXIT_SUCCESS;
-	}
+	if (g_strcmp0 (request, "prepare") == 0) {
+		/* Update all packages - get updates first */
+		g_autoptr(PkResults) results = NULL;
+		g_autoptr(PkPackageSack) sack = NULL;
+		g_auto(GStrv) package_ids = NULL;
 
-	packages = pk_results_get_package_array (results);
-	if (packages && packages->len > 0) {
-		pkgc_print_success (ctx, _("Last offline update completed successfully"));
-		for (guint i = 0; i < packages->len; i++) {
-			PkPackage *pkg = g_ptr_array_index (packages, i);
-			g_autofree char *printable = pk_package_id_to_printable (
-			    pk_package_get_id (pkg));
-			g_print ("  ");
-			g_print (_("Updated: %s"), printable);
-			g_print ("\n");
+		/* set parameters to prepare offline updates */
+		ctx->only_download = TRUE;
+		ctx->allow_downgrade = FALSE;
+		ctx->allow_untrusted = FALSE;
+		pkgc_context_apply_settings (ctx);
+
+		/* download all updates */
+		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
+							ctx->filters,
+							ctx->cancellable,
+							pkgc_context_on_progress_cb,
+							ctx,
+							&error);
+		if (results == NULL) {
+			pkgc_print_error (ctx, _("Failed to get updates: %s"), error->message);
+			ctx->exit_code = PKGCTL_EXIT_FAILURE;
+			return ctx->exit_code;
 		}
+
+		sack = pk_results_get_package_sack (results);
+		package_ids = pk_package_sack_get_ids (sack);
+		if (package_ids == NULL || g_strv_length (package_ids) == 0) {
+			pkgc_print_info (ctx, _("No packages require updating"));
+			return PKGCTL_EXIT_SUCCESS;
+		}
+
+		/* download packages */
+		pk_task_update_packages_async (PK_TASK (ctx->task),
+						   package_ids,
+						   ctx->cancellable,
+						   pkgc_context_on_progress_cb,
+						   ctx,
+						   pkgc_manage_on_task_finished_cb,
+						   ctx);
+
+		return pkgc_trigger_offline_update (ctx);
 	}
 
-	return PKGCTL_EXIT_SUCCESS;
+	pkgc_print_error (ctx, _("Unknown offline-update request: %s"), request);
+	return PKGCTL_EXIT_SYNTAX_ERROR;
 }
 
 /**
@@ -881,25 +966,7 @@ pkgc_register_manage_commands (PkgctlContext *ctx)
 		ctx,
 		"offline-update",
 		pkgc_offline_update,
-		_("Prepare offline update"));
-
-	pkgc_context_register_command (
-		ctx,
-		"offline-trigger",
-		pkgc_offline_trigger,
-		_("Trigger offline update"));
-
-	pkgc_context_register_command (
-		ctx,
-		"offline-cancel",
-		pkgc_offline_cancel,
-		_("Cancel offline update"));
-
-	pkgc_context_register_command (
-		ctx,
-		"offline-status",
-		pkgc_offline_status,
-		_("Show offline update status"));
+		_("Manage offline system updates"));
 
 	pkgc_context_register_command (
 		ctx,
