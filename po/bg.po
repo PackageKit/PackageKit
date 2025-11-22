@@ -5,28 +5,31 @@
 # Translators:
 # Alexander Shopov <ash@kambanaria.org>, 2008, 2009, 2010, 2011
 # Richard Hughes <richard@hughsie.com>, 2011
+# twlvnn kraftwerk <kraft_werk@tutanota.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-02 21:53+0200\n"
-"Language-Team: Bulgarian (http://app.transifex.com/freedesktop/packagekit/language/bg/)\n"
+"PO-Revision-Date: 2025-11-22 19:06+0000\n"
+"Last-Translator: twlvnn kraftwerk <kraft_werk@tutanota.com>\n"
+"Language-Team: Bulgarian <https://hosted.weblate.org/projects/packagekit/translations/bg/>\n"
 "Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
-msgstr ""
+msgstr "Файл с настройки не може да бъде намерен."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
-#, fuzzy, c-format
-#| msgid "Failed to search for file"
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Неуспешно търсене на файл"
+msgstr "Файлът с настройки не може да бъде зареден: %s"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -151,10 +154,8 @@ msgstr "Подробности за обновлението:"
 #: client/pk-console.c:314 client/pk-console.c:594
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
-#, fuzzy
-#| msgid "Package files"
 msgid "Package"
-msgstr "Файлове на пакета"
+msgstr "Пакет"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -350,15 +351,13 @@ msgstr "Изберете правилния пакет: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 #: client/pk-console.c:981
-#, fuzzy
-#| msgid "command not found"
 msgid "Package not found"
-msgstr "командата не е открита."
+msgstr "Пакетът не е намерен"
 
 #. TRANSLATORS: we couldn't find anything
 #: client/pk-console.c:999
 msgid "No packages were found"
-msgstr ""
+msgstr "Няма намерени пакети"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -377,18 +376,14 @@ msgstr "Този инструмент не може да намери налич
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pk-console.c:1076
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
 msgid "This tool could not find any available package."
-msgstr "Този инструмент не може да намери наличен пакет: %s"
+msgstr "Този инструмент не може да намери нито един наличен пакет."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 #: client/pk-console.c:1085
-#, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The selected packages may already be installed."
-msgstr "Следните пакети трябва да бъдат инсталирани:"
+msgstr "Избраните пакети може вече да са инсталирани."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -407,7 +402,7 @@ msgstr "Този инструмент не може да намери пакет
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pk-console.c:1218
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Няма пакети, които да изискват обновяване до по-нови версии."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -448,13 +443,13 @@ msgstr "Неуспешно получаване на времето от пос�
 #. TRANSLATORS: this is the time since this role was used
 #: client/pk-console.c:1574
 msgid "Time since"
-msgstr ""
+msgstr "Изминало време"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: client/pk-console.c:1594
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Подготвени обновления:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: client/pk-console.c:1663
@@ -479,24 +474,20 @@ msgstr "Инсталиране на пакетите без изчакване �
 #. command line argument, do we just download or apply changes
 #: client/pk-console.c:1714
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Подготвяне на транзакцията чрез изтегляне само на пакети"
 
 #. command line argument, do we allow package downgrades
 #: client/pk-console.c:1717
-#, fuzzy
-#| msgid "The following packages have to be downgraded:"
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Следните пакети трябва да бъдат върнати към предишна версия:"
+msgstr "Позволяване на понижаване на пакетите по време на транзакцията"
 
 #: client/pk-console.c:1719
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Следните пакети трябва да бъдат преинсталирани:"
+msgstr "Позволяване на преинсталирането на пакети по време на транзакцията"
 
 #: client/pk-console.c:1721
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Автоматично премахване на неизползвани зависимости"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pk-console.c:1724
@@ -511,21 +502,17 @@ msgstr "Отпечатване на машинно четим изход без 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pk-console.c:1730
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "Максималната възраст на временните файлове за метаданни (в секунди). Използвайте -1, за да използвате само временните файлове, 1 — за презареждане на временните файлове."
 
 #. command line argument, do we ask questions
 #: client/pk-console.c:1733
-#, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "Allow untrusted packages to be installed."
-msgstr "Следните пакети трябва да бъдат инсталирани:"
+msgstr "Позволяване на инсталирането на ненадеждни пакети."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pk-console.c:1771
-#, fuzzy
-#| msgid "Failed to search for file"
 msgid "Failed to parse command line"
-msgstr "Неуспешно търсене на файл"
+msgstr "Анализирането на командния ред е неуспешно"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pk-console.c:1781
@@ -613,16 +600,14 @@ msgid "A repo name, parameter and value are required"
 msgstr "Трябва да укажете име на хранилище, параметър и стойност"
 
 #: client/pk-console.c:2136
-#, fuzzy
-#| msgid "A repository name is required"
 msgid "A repo id and autoremove required"
-msgstr "Трябва да укажете име на хранилището"
+msgstr "Трябва да укажете идентификатор и опция autoremove на хранилището"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 #: client/pk-console.c:2163
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Изисква се действие, напр. „update-packages“"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
@@ -646,27 +631,23 @@ msgid "A package provide string is required"
 msgstr "Трябва да укажете име на пакет, предоставящ ресурса"
 
 #: client/pk-console.c:2263 client/pk-console.c:2274
-#, fuzzy
-#| msgid "A filename to install is required"
 msgid "A filename is required"
-msgstr "Трябва да укажете име на файл за инсталиране"
+msgstr "Трябва да укажете име на файл"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pk-console.c:2346
-#, fuzzy
-#| msgid "Distribution"
 msgid "Description"
-msgstr "Дистрибуция"
+msgstr "Описание"
 
 #. TRANSLATORS: this is the author of the backend
 #: client/pk-console.c:2350
 msgid "Author"
-msgstr ""
+msgstr "Автор"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pk-console.c:2420
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Трябва да посочите файл със списък, който да бъде създаден"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -674,7 +655,7 @@ msgstr ""
 #: client/pk-console.c:2433
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Файлът вече съществува: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -705,50 +686,44 @@ msgstr "Датчик на PackageKit"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:177
-#, fuzzy
-#| msgid "Installing signature"
 msgid "Installing System Upgrade"
-msgstr "Инсталиране на подпис"
+msgstr "Инсталиране на надстройката на системата"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 #: client/pk-offline-update.c:181
-#, fuzzy
-#| msgid "Installing updates"
 msgid "Installing Updates"
 msgstr "Инсталиране на обновления"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:217
-#, fuzzy
-#| msgid "Installing updates"
 msgid "Rebooting after installing updates…"
-msgstr "Инсталиране на обновления"
+msgstr "Рестартиране след инсталиране на обновленията…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:259
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Изключване след инсталиране на обновленията…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:404
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Инсталиране на обновленията. Това може да отнеме известно време..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:444
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Инсталиране на надстройката на системата. Това може да отнеме известно време..."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Изтегляне на информация за хранилищата на софтуер."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
@@ -790,7 +765,7 @@ msgstr "Неуспешно инсталиране на пакети"
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
 msgid "command not found"
-msgstr "командата не е открита."
+msgstr "командата не е открита"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: contrib/command-not-found/pk-command-not-found.c:802
@@ -842,7 +817,7 @@ msgstr "Изберете пакета за инсталиране"
 
 #: contrib/command-not-found/pk-command-not-found.c:913
 msgid "User aborted selection"
-msgstr ""
+msgstr "Изборът е прекратен от потребителя"
 
 #: lib/packagekit-glib2/pk-console-shared.c:73
 #, c-format
@@ -1033,10 +1008,8 @@ msgstr "Копиране на файлове"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-shared.c:346
-#, fuzzy
-#| msgid "Running"
 msgid "Running hooks"
-msgstr "Изпълнение"
+msgstr "Изпълняване на куките"
 
 #. TRANSLATORS: turn on all debugging
 #: lib/packagekit-glib2/pk-debug.c:142
@@ -1074,7 +1047,7 @@ msgstr "За сигурността"
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:991
 msgid "Bug fix"
-msgstr ""
+msgstr "Поправка на грешка"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:995
@@ -1099,38 +1072,28 @@ msgstr "Наличен"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
-#, fuzzy
-#| msgid "Available"
 msgid "Unavailable"
-msgstr "Наличен"
+msgstr "Недостъпен"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "Инсталиран"
+msgstr "Инсталиране"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "Деинсталиран"
+msgstr "Деинсталиране"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "Обявен за остарял"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "Изтеглен"
+msgstr "Понижаване"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -1271,10 +1234,8 @@ msgstr "Получаване на хранилищата със софтуер"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1221
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "Modifying repository"
-msgstr "Получаване на хранилищата със софтуер"
+msgstr "Променяне на хранилището"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1225
@@ -1283,10 +1244,8 @@ msgstr "Задаване на данни"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "Removing repository"
-msgstr "Получаване на хранилищата със софтуер"
+msgstr "Премахване на хранилището"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1233
@@ -1335,17 +1294,15 @@ msgstr "Получаване на транзакции"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1274
-#, fuzzy
-#| msgid "Getting upgrades"
 msgid "Getting system upgrades"
-msgstr "Получаване на надграждания"
+msgstr "Получаване на надграждания на системни"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%.
 #: lib/packagekit-glib2/pk-progress-bar.c:146
 #: lib/packagekit-glib2/pk-progress-bar.c:191
 #, c-format
 msgid "(%i%%)"
-msgstr ""
+msgstr "(%i%%)"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -1479,17 +1436,13 @@ msgstr "Следните пакети трябва да бъдат върнат�
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
-#, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The following packages have to be obsoleted:"
-msgstr "Следните пакети трябва да бъдат инсталирани:"
+msgstr "Следните пакети трябва да бъдат обявени за остарели:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
-#, fuzzy
-#| msgid "The following packages have to be updated:"
 msgid "The following packages are untrusted:"
-msgstr "Следните пакети трябва да бъдат обновени:"
+msgstr "Следните пакети са ненадеждни:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/packagekit-glib2/pk-task-text.c:393
@@ -1523,10 +1476,8 @@ msgid "Install signed package"
 msgstr "Инсталиране на подписан пакет"
 
 #: policy/org.freedesktop.packagekit.policy.in:40
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За инсталиране на софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1538,10 +1489,8 @@ msgid "Install untrusted local file"
 msgstr "Инсталиране на недоверен локален файл"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install untrusted software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За инсталиране на ненадежден софтуер се изисква идентификация"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1550,16 +1499,12 @@ msgstr "За приемането на EULA се изисква идентифи
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
-#, fuzzy
-#| msgid "Install signed package"
 msgid "Install already installed package again"
-msgstr "Инсталиране на подписан пакет"
+msgstr "Инсталирайте отново вече инсталиран пакет"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to reinstall software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За преинсталиране на софтуер се изисква идентификация"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1568,16 +1513,12 @@ msgstr "За приемането на EULA се изисква идентифи
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
-#, fuzzy
-#| msgid "Install signed package"
 msgid "Install older version of installed package"
-msgstr "Инсталиране на подписан пакет"
+msgstr "Инсталирайте по-стара версия на инсталиран пакет"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to downgrade software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За понижаване на софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1586,13 +1527,11 @@ msgstr "За приемането на EULA се изисква идентифи
 #. - This is not kept as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Задавайте даден ключ като надежден за подписване на софтуер"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-#, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Изисква се идентификация за отмяната на задача, която е стартирана от друг"
+msgstr "За да се счита за надежден ключът, използван за подписване на софтуер, се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1621,10 +1560,8 @@ msgid "Remove package"
 msgstr "Деинсталиране на пакeт"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to remove software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За деинсталиране на софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1633,16 +1570,12 @@ msgstr "За приемането на EULA се изисква идентифи
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
-#, fuzzy
-#| msgid "Update text"
 msgid "Update software"
-msgstr "Обновяване на текста"
+msgstr "Обновяване на софтуера"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to update software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За обновяване на софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1650,28 +1583,22 @@ msgstr "За приемането на EULA се изисква идентифи
 #. install different versions of software.
 #: policy/org.freedesktop.packagekit.policy.in:183
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Променяне на параметрите на хранилище за софтуер"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
-#, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
 msgid "Authentication is required to change software repository parameters"
-msgstr "Изисква се идентификация за отмяната на задача, която е стартирана от друг"
+msgstr "За променяне на параметрите на хранилище за софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: policy/org.freedesktop.packagekit.policy.in:198
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "Refresh system repositories"
-msgstr "Получаване на хранилищата със софтуер"
+msgstr "Опресняване на системните хранилища"
 
 #: policy/org.freedesktop.packagekit.policy.in:199
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to refresh the system repositories"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За опресняване на системните хранилища се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1681,10 +1608,8 @@ msgid "Set network proxy"
 msgstr "Задаване на сървър-посредник"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-#, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Изисква се идентификация за отмяната на задача, която е стартирана от друг"
+msgstr "За задаване на мрежовия посредник, използван за изтегляне на софтуер, се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1692,13 +1617,11 @@ msgstr "Изисква се идентификация за отмяната н�
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr ""
+msgstr "Надграждане на системата"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to upgrade the operating system"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За надграждане на операционната система се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1706,13 +1629,11 @@ msgstr "За приемането на EULA се изисква идентифи
 #. applications from working.
 #: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr ""
+msgstr "Поправяне на системата"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to repair the installed software"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За поправяне на инсталирания софтуер се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1724,37 +1645,33 @@ msgstr "За приемането на EULA се изисква идентифи
 #: policy/org.freedesktop.packagekit.policy.in:260
 #: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Задействане на обновления без връзка с Интернет"
 
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to trigger offline updates"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За задействане на обновления без връзка с Интернет се изисква идентификация"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Изчистване на съобщението за обновлението без връзка с Интернет"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
-#, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to clear the offline updates message"
-msgstr "За приемането на EULA се изисква идентификация"
+msgstr "За изчистване на съобщението за обновления без връзка с Интернет се изисква идентификация"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Псевдоним на %s"
 
 #: src/pk-direct.c:168
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Командата не е намерена, правилните команди са:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 #: src/pk-direct.c:408 src/pk-main.c:117
@@ -1763,87 +1680,63 @@ msgstr "Пакетно ядро, което да се ползва, напр. �
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:424
-#, fuzzy
-#| msgid "Refreshing cache"
 msgid "Refresh the cache"
-msgstr "Обновяване на временните файлове"
+msgstr "Опресняване на временните файлове"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:428
-#, fuzzy
-#| msgid "Refreshing cache"
 msgid "Refresh the cache (forced)"
-msgstr "Обновяване на временните файлове"
+msgstr "Опресняване на временните файлове (принудително)"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
-#, fuzzy
-#| msgid "Searching by name"
 msgid "Search by names"
 msgstr "Търсене по име"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
-#, fuzzy
-#| msgid "Searching by details"
 msgid "Search by details"
 msgstr "Търсене по информация"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
-#, fuzzy
-#| msgid "Searching by file"
 msgid "Search by files"
 msgstr "Търсене по файл"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
-#, fuzzy
-#| msgid "Installing packages"
 msgid "Install package"
-msgstr "Инсталиране на пакети"
+msgstr "Инсталиране на пакет"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "Set repository options"
-msgstr "Получаване на хранилищата със софтуер"
+msgstr "Задаване на опциите на хранилище"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:465
-#, fuzzy
-#| msgid "PackageKit Monitor"
 msgid "PackageKit"
-msgstr "Датчик на PackageKit"
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
-#, fuzzy
-#| msgid "Failed to get properties"
 msgid "Failed to parse arguments"
-msgstr "Неуспешно получаване на свойствата"
+msgstr "Анализирането на опциите на командния ред е неуспешно"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
-#, fuzzy
-#| msgid "Failed to search for file"
 msgid "Failed to load the config file"
-msgstr "Неуспешно търсене на файл"
+msgstr "Файлът с настройки не може да бъде зареден"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
-#, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend"
-msgstr "Неуспех при свързване с PackageKit"
+msgstr "Ядрото не може да бъде заредено"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
-#, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to unload the backend"
-msgstr "Неуспех при свързване с PackageKit"
+msgstr "Ядрото не може да бъде отзареждане"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:120
@@ -1868,7 +1761,7 @@ msgstr "Изход след зареждането на ядрото"
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Без изчистване на променливите на средата при стартиране"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:146
@@ -1878,17 +1771,15 @@ msgstr "Услуга PackageKit"
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:215
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Неуспешно стартиране:"
+msgstr "Стойността „auto“ не може да бъде определена: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:239
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Неуспех при свързване с PackageKit"
+msgstr "Ядрото не може да бъде заредено: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
