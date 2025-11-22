@@ -95,11 +95,9 @@ pk_offline_auth_cancel (GError **error)
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GFile) file1 = NULL;
 	g_autoptr(GFile) file2 = NULL;
-	g_autoptr(GFile) file3 = NULL;
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	/* remove the trigger file first - this is the most important one */
 	file1 = g_file_new_for_path (PK_OFFLINE_TRIGGER_FILENAME);
 	if (!g_file_query_exists (file1, NULL))
 		return TRUE;
@@ -113,21 +111,9 @@ pk_offline_auth_cancel (GError **error)
 		return FALSE;
 	}
 
-	file2 = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
+	file2 = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
 	if (g_file_query_exists (file2, NULL) &&
-		!g_file_delete (file2, NULL, &error_local)) {
-		g_set_error (error,
-				 PK_OFFLINE_ERROR,
-				 PK_OFFLINE_ERROR_FAILED,
-				 "Cannot delete %s: %s",
-				 PK_OFFLINE_PREPARED_FILENAME,
-				 error_local->message);
-		return FALSE;
-	}
-
-	file3 = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
-	if (g_file_query_exists (file3, NULL) &&
-	    !g_file_delete (file3, NULL, &error_local)) {
+	    !g_file_delete (file2, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
