@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-23 06:24+0100\n"
-"PO-Revision-Date: 2025-11-02 00:51+0000\n"
+"PO-Revision-Date: 2025-11-23 10:34+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
 "Language: he\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n == 2) ? 1 : 2);\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -155,23 +155,18 @@ msgid "Offline update is not triggered."
 msgstr "פינוי הודעת עדכון בלתי מקוון"
 
 #: client/pkgc-manage.c:658
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "הקפצת עדכונים בלתי מקוונים"
+msgstr "הוקפץ עדכון בלתי מקוון. פעולה לאחר העדכון: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:669
-#, fuzzy
-#| msgid "Prepared updates:"
 msgid "Prepared packages:"
-msgstr "עדכונים מוכנים:"
+msgstr "חבילות שהוכנו:"
 
 #: client/pkgc-manage.c:683
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "No offline update is prepared."
-msgstr "פינוי הודעת עדכון בלתי מקוון"
+msgstr "לא הוכן עדכון בלתי מקוון."
 
 #: client/pkgc-manage.c:685
 #, fuzzy, c-format
