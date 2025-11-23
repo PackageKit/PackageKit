@@ -122,6 +122,7 @@ pkgc_manage_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoi
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(PkError) pk_error = NULL;
 
+	ctx->exit_code = PKGCTL_EXIT_SUCCESS;
 	results = pk_task_generic_finish (PK_TASK (source_object), res, &error);
 
 	if (ctx->progressbar != NULL && ctx->is_tty)
@@ -838,6 +839,11 @@ pkgc_offline_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **
 						   ctx,
 						   pkgc_manage_on_task_finished_cb,
 						   ctx);
+		g_main_loop_run (ctx->loop);
+
+		/* don't trigger offline update if download failed */
+		if (ctx->exit_code != PKGCTL_EXIT_SUCCESS)
+			return ctx->exit_code;
 
 		return pkgc_trigger_offline_update (ctx);
 	}
