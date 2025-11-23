@@ -3,6 +3,7 @@
 backends/dnf/pk-backend-dnf-refresh.c
 client/pkgc-context.c
 client/pkgc-manage.c
+client/pkgc-monitor.c
 client/pkgc-query.c
 client/pkgc-repo.c
 client/pkgc-util.c
