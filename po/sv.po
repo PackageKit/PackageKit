@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-23 06:24+0100\n"
-"PO-Revision-Date: 2025-11-23 05:26+0000\n"
+"PO-Revision-Date: 2025-11-23 10:34+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -139,53 +139,41 @@ msgstr ""
 "Typer: minimal, default, complete"
 
 #: client/pkgc-manage.c:640
-#, fuzzy, c-format
-#| msgid "Failed to trigger offline update: %s"
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+msgstr "Misslyckades med att läsa frånkopplad uppdateringsåtgärd: %s"
 
 #: client/pkgc-manage.c:650
-#, fuzzy
-#| msgid "Offline update is prepared:"
 msgid "Offline update is not triggered."
-msgstr "Frånkopplad uppdatering förbereds:"
+msgstr "Frånkopplad uppdatering utlöses inte."
 
 #: client/pkgc-manage.c:658
-#, fuzzy, c-format
-#| msgid "Failed to trigger offline update: %s"
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+msgstr "Frånkopplad uppdatering utlöses. Åtgärd efter uppdatering: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:669
-#, fuzzy
-#| msgid "Prepared updates:"
 msgid "Prepared packages:"
-msgstr "Förberedda uppdateringar:"
+msgstr "Förberedda paket:"
 
 #: client/pkgc-manage.c:683
-#, fuzzy
-#| msgid "Offline update is prepared:"
 msgid "No offline update is prepared."
-msgstr "Frånkopplad uppdatering förbereds:"
+msgstr "Ingen frånkopplad uppdatering har förberetts."
 
 #: client/pkgc-manage.c:685
-#, fuzzy, c-format
-#| msgid "Failed to trigger offline update: %s"
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+msgstr "Misslyckades med att läsa förberedda frånkopplade uppdateringar: %s"
 
 #: client/pkgc-manage.c:695
-#, fuzzy
-#| msgid "No offline update information available"
 msgid "No results from last offline update available."
-msgstr "Ingen frånkopplad uppdateringsinformation tillgänglig"
+msgstr "Inga resultat från senaste frånkopplad uppdatering tillgängliga."
 
 #: client/pkgc-manage.c:702
-#, fuzzy, c-format
-#| msgid "Last offline update failed: %s"
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Senaste frånkopplad uppdatering misslyckades: %s"
+msgstr "Senaste frånkopplad uppdatering misslyckades: %s: %s"
 
 #: client/pkgc-manage.c:709
 msgid "Last offline update completed successfully"
@@ -217,6 +205,13 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Utlös & hantera frånkopplade systemuppdateringar.\n"
+"\n"
+"Du kan välja en av dessa förfrågningar:\n"
+"  prepare - förbered en frånkopplad uppdatering och utlös den (standard)\n"
+"  trigger - utlös en (manuellt förberedd) frånkopplad uppdatering\n"
+"  cancel  - avbryt en planerad frånkopplad uppdatering\n"
+"  status  - visa statusinformation om en förberedd eller slutförd frånkopplad uppdatering"
 
 #: client/pkgc-manage.c:789
 #, c-format
@@ -228,10 +223,9 @@ msgid "Offline update cancelled"
 msgstr "Frånkopplad uppdatering avbröts"
 
 #: client/pkgc-manage.c:845
-#, fuzzy, c-format
-#| msgid "Show offline update status"
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Visa status för frånkopplad uppdatering"
+msgstr "Okänd förfrågan för frånkopplad uppdatering: %s"
 
 #. TRANSLATORS: Description for pkgctl install-sig
 #: client/pkgc-manage.c:865
@@ -249,16 +243,13 @@ msgstr "Reparerade systemet"
 
 #. TRANSLATORS: Description for pkgctl quit
 #: client/pkgc-manage.c:937
-#, fuzzy
-#| msgid "Not connected to PackageKit daemon"
 msgid "Safely terminate the PackageKit daemon."
-msgstr "Inte ansluten till PackageKit-demon"
+msgstr "Avsluta PackageKit-demon på ett säkert sätt."
 
 #: client/pkgc-manage.c:943
-#, fuzzy, c-format
-#| msgid "Failed to get updates: %s"
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Misslyckades med att hämta uppdateringar: %s"
+msgstr "Misslyckades med att skicka avslutningsförfrågan till demon: %s"
 
 #: client/pkgc-manage.c:962
 msgid "Refresh package metadata"
@@ -285,10 +276,8 @@ msgid "Download packages"
 msgstr "Hämta paket"
 
 #: client/pkgc-manage.c:998
-#, fuzzy
-#| msgid "Prepare packages for offline system update."
 msgid "Manage offline system updates"
-msgstr "Förbered paket för frånkopplad systemuppdatering."
+msgstr "Hantera frånkopplade systemuppdateringar"
 
 #: client/pkgc-manage.c:1004
 msgid "Install package signature"
@@ -299,10 +288,8 @@ msgid "Repair package system"
 msgstr "Reparera paketsystem"
 
 #: client/pkgc-manage.c:1016
-#, fuzzy
-#| msgid "Not connected to PackageKit daemon"
 msgid "Safely stop the PackageKit daemon"
-msgstr "Inte ansluten till PackageKit-demon"
+msgstr "Stoppa PackageKit-demonen på ett säkert sätt"
 
 #: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
 msgid "Failed to get daemon state"
@@ -314,17 +301,13 @@ msgstr "Misslyckades med att få egenskaper"
 
 #. TRANSLATORS: Description for pkgctl monitor
 #: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit-tjänst"
+msgstr "Övervaka D-Bus-händelser för PackageKit"
 
 #. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit bus events"
-msgstr "PackageKit-tjänst"
+msgstr "Övervaka busshändelser för PackageKit"
 
 #. TRANSLATORS: Description for pkgctl backend
 #: client/pkgc-query.c:166
