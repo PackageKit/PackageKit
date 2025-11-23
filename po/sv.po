@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-22 20:00+0100\n"
+"POT-Creation-Date: 2025-11-23 06:24+0100\n"
 "PO-Revision-Date: 2025-11-23 05:26+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
@@ -92,7 +92,7 @@ msgid "Install one or more packages or local package files."
 msgstr "Installera ett eller flera paket eller lokala paketfiler."
 
 #: client/pkgc-manage.c:301 client/pkgc-manage.c:360 client/pkgc-manage.c:415
-#: client/pkgc-query.c:448
+#: client/pkgc-query.c:436
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Kunde inte hitta paket: %s"
@@ -113,22 +113,22 @@ msgid "Directory does not exist: %s"
 msgstr "Katalogen finns inte: %s"
 
 #. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:460
+#: client/pkgc-manage.c:459
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Uppdatera alla paket eller specifika paket till sina senaste versioner."
 
-#: client/pkgc-manage.c:497 client/pkgc-manage.c:597
+#: client/pkgc-manage.c:496 client/pkgc-manage.c:595 client/pkgc-manage.c:821
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Misslyckades med att hämta uppdateringar: %s"
 
-#: client/pkgc-manage.c:506 client/pkgc-manage.c:606
+#: client/pkgc-manage.c:505 client/pkgc-manage.c:604 client/pkgc-manage.c:829
 msgid "No packages require updating"
 msgstr "Inga paket behöver uppdateras"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:546
+#: client/pkgc-manage.c:544
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -138,155 +138,228 @@ msgstr ""
 "\n"
 "Typer: minimal, default, complete"
 
-#: client/pkgc-manage.c:639
-msgid "Prepare packages for offline system update."
-msgstr "Förbered paket för frånkopplad systemuppdatering."
-
-#. This prepares updates for offline installation
-#: client/pkgc-manage.c:644
-msgid "Preparing offline update..."
-msgstr "Förbereder frånkopplad uppdatering…"
-
-#: client/pkgc-manage.c:659
-msgid "Use 'pkgctl offline-trigger' to schedule the update"
-msgstr "Använd ”pkgctl offline-trigger” för att schemalägga uppdateringen"
-
-#: client/pkgc-manage.c:678
-#, c-format
-msgid "Failed to trigger offline update: %s"
+#: client/pkgc-manage.c:640
+#, fuzzy, c-format
+#| msgid "Failed to trigger offline update: %s"
+msgid "Failed to read offline update action: %s"
 msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
 
-#: client/pkgc-manage.c:682
-msgid "Offline update scheduled. System will update on next reboot."
-msgstr "Frånkopplad uppdatering schemalagd. Systemet kommer uppdateras vid nästa omstart."
-
-#: client/pkgc-manage.c:697
-#, c-format
-msgid "Failed to cancel offline update: %s"
-msgstr "Misslyckades med att avbryta frånkopplad uppdatering: %s"
-
-#: client/pkgc-manage.c:701
-msgid "Offline update cancelled"
-msgstr "Frånkopplad uppdatering avbröts"
-
-#: client/pkgc-manage.c:723
-msgid "Offline update is prepared:"
+#: client/pkgc-manage.c:650
+#, fuzzy
+#| msgid "Offline update is prepared:"
+msgid "Offline update is not triggered."
 msgstr "Frånkopplad uppdatering förbereds:"
 
-#: client/pkgc-manage.c:736
-msgid "No offline update information available"
+#: client/pkgc-manage.c:658
+#, fuzzy, c-format
+#| msgid "Failed to trigger offline update: %s"
+msgid "Offline update is triggered. Action after update: %s"
+msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+
+#. TRANSLATORS: Packages that were prepared for an offline update
+#: client/pkgc-manage.c:669
+#, fuzzy
+#| msgid "Prepared updates:"
+msgid "Prepared packages:"
+msgstr "Förberedda uppdateringar:"
+
+#: client/pkgc-manage.c:683
+#, fuzzy
+#| msgid "Offline update is prepared:"
+msgid "No offline update is prepared."
+msgstr "Frånkopplad uppdatering förbereds:"
+
+#: client/pkgc-manage.c:685
+#, fuzzy, c-format
+#| msgid "Failed to trigger offline update: %s"
+msgid "Failed to read prepared offline updates: %s"
+msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+
+#: client/pkgc-manage.c:695
+#, fuzzy
+#| msgid "No offline update information available"
+msgid "No results from last offline update available."
 msgstr "Ingen frånkopplad uppdateringsinformation tillgänglig"
 
-#: client/pkgc-manage.c:743
-#, c-format
-msgid "Last offline update failed: %s"
+#: client/pkgc-manage.c:702
+#, fuzzy, c-format
+#| msgid "Last offline update failed: %s"
+msgid "Last offline update failed: %s: %s"
 msgstr "Senaste frånkopplad uppdatering misslyckades: %s"
 
-#: client/pkgc-manage.c:750
+#: client/pkgc-manage.c:709
 msgid "Last offline update completed successfully"
 msgstr "Senaste frånkopplad uppdatering lyckades"
 
-#: client/pkgc-manage.c:756
+#: client/pkgc-manage.c:720
 #, c-format
 msgid "Updated: %s"
 msgstr "Uppdaterad: %s"
 
+#: client/pkgc-manage.c:741
+#, c-format
+msgid "Failed to trigger offline update: %s"
+msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
+
+#: client/pkgc-manage.c:745
+msgid "Offline update scheduled. System will update on next reboot."
+msgstr "Frånkopplad uppdatering schemalagd. Systemet kommer uppdateras vid nästa omstart."
+
+#. TRANSLATORS: Description of the pkgctl offline-update command.
+#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
+#: client/pkgc-manage.c:765
+msgid ""
+"Trigger & manage offline system updates.\n"
+"\n"
+"You can select one of these requests:\n"
+"  prepare - prepare an offline update and trigger it (default)\n"
+"  trigger - trigger a (manually prepared) offline update\n"
+"  cancel  - cancel a planned offline update\n"
+"  status  - show status information about a prepared or finished offline update"
+msgstr ""
+
+#: client/pkgc-manage.c:789
+#, c-format
+msgid "Failed to cancel offline update: %s"
+msgstr "Misslyckades med att avbryta frånkopplad uppdatering: %s"
+
+#: client/pkgc-manage.c:793
+msgid "Offline update cancelled"
+msgstr "Frånkopplad uppdatering avbröts"
+
+#: client/pkgc-manage.c:845
+#, fuzzy, c-format
+#| msgid "Show offline update status"
+msgid "Unknown offline-update request: %s"
+msgstr "Visa status för frånkopplad uppdatering"
+
 #. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:780
+#: client/pkgc-manage.c:865
 msgid "Install a package signature for GPG verification."
 msgstr "Installera en paketsignatur för GPG-verifiering."
 
 #. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:815
+#: client/pkgc-manage.c:900
 msgid "Attempt to repair the package management system."
 msgstr "Försök reparera pakethanteringssystemet."
 
-#: client/pkgc-manage.c:831
+#: client/pkgc-manage.c:916
 msgid "System repaired successfully"
 msgstr "Reparerade systemet"
 
-#: client/pkgc-manage.c:848
+#. TRANSLATORS: Description for pkgctl quit
+#: client/pkgc-manage.c:937
+#, fuzzy
+#| msgid "Not connected to PackageKit daemon"
+msgid "Safely terminate the PackageKit daemon."
+msgstr "Inte ansluten till PackageKit-demon"
+
+#: client/pkgc-manage.c:943
+#, fuzzy, c-format
+#| msgid "Failed to get updates: %s"
+msgid "Failed to send daemon quit request: %s"
+msgstr "Misslyckades med att hämta uppdateringar: %s"
+
+#: client/pkgc-manage.c:962
 msgid "Refresh package metadata"
 msgstr "Uppdatera paketmetadata"
 
-#: client/pkgc-manage.c:854
+#: client/pkgc-manage.c:968
 msgid "Install packages"
 msgstr "Installera paket"
 
-#: client/pkgc-manage.c:860
+#: client/pkgc-manage.c:974
 msgid "Remove packages"
 msgstr "Ta bort paket"
 
-#: client/pkgc-manage.c:866
+#: client/pkgc-manage.c:980
 msgid "Update packages"
 msgstr "Uppdatera paket"
 
-#: client/pkgc-manage.c:872
+#: client/pkgc-manage.c:986
 msgid "Upgrade the system"
 msgstr "Uppgradera systemet"
 
-#: client/pkgc-manage.c:878
+#: client/pkgc-manage.c:992
 msgid "Download packages"
 msgstr "Hämta paket"
 
-#: client/pkgc-manage.c:884
-msgid "Prepare offline update"
-msgstr "Förbered frånkopplad uppdatering"
+#: client/pkgc-manage.c:998
+#, fuzzy
+#| msgid "Prepare packages for offline system update."
+msgid "Manage offline system updates"
+msgstr "Förbered paket för frånkopplad systemuppdatering."
 
-#: client/pkgc-manage.c:890
-msgid "Trigger offline update"
-msgstr "Utlös frånkopplad uppdatering"
-
-#: client/pkgc-manage.c:896
-msgid "Cancel offline update"
-msgstr "Avbryt frånkopplad uppdatering"
-
-#: client/pkgc-manage.c:902
-msgid "Show offline update status"
-msgstr "Visa status för frånkopplad uppdatering"
-
-#: client/pkgc-manage.c:908
+#: client/pkgc-manage.c:1004
 msgid "Install package signature"
 msgstr "Installera paketsignatur"
 
-#: client/pkgc-manage.c:914
+#: client/pkgc-manage.c:1010
 msgid "Repair package system"
 msgstr "Reparera paketsystem"
 
+#: client/pkgc-manage.c:1016
+#, fuzzy
+#| msgid "Not connected to PackageKit daemon"
+msgid "Safely stop the PackageKit daemon"
+msgstr "Inte ansluten till PackageKit-demon"
+
+#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
+msgid "Failed to get daemon state"
+msgstr "Misslyckades med läsa av tillstånd för bakgrundsprocess"
+
+#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
+msgid "Failed to get properties"
+msgstr "Misslyckades med att få egenskaper"
+
+#. TRANSLATORS: Description for pkgctl monitor
+#: client/pkgc-monitor.c:460
+#, fuzzy
+#| msgid "PackageKit service"
+msgid "Monitor PackageKit D-Bus events"
+msgstr "PackageKit-tjänst"
+
+#. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
+#: client/pkgc-monitor.c:562
+#, fuzzy
+#| msgid "PackageKit service"
+msgid "Monitor PackageKit bus events"
+msgstr "PackageKit-tjänst"
+
 #. TRANSLATORS: Description for pkgctl backend
-#: client/pkgc-query.c:172
+#: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
 msgstr "Visa PackageKit-bakändesinformation."
 
-#: client/pkgc-query.c:223
+#: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
 msgstr "Bakände: %s"
 
-#: client/pkgc-query.c:226
+#: client/pkgc-query.c:214
 #, c-format
 msgid "Description: %s"
 msgstr "Beskrivning: %s"
 
-#: client/pkgc-query.c:229
+#: client/pkgc-query.c:217
 #, c-format
 msgid "Author: %s"
 msgstr "Upphovsman: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:234
+#: client/pkgc-query.c:222
 #, c-format
 msgid "Roles: %s"
 msgstr "Roller: %s"
 
 #. TRANSLATORS: Description for pkgctl history
-#: client/pkgc-query.c:257
+#: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
 msgstr "Visa senaste pakethanteringstranskationer."
 
 #. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
-#: client/pkgc-query.c:296
+#: client/pkgc-query.c:284
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -304,177 +377,177 @@ msgstr ""
 "  file    - sök efter filnamn\n"
 "  group   - sök efter paketgrupp"
 
-#: client/pkgc-query.c:323
+#: client/pkgc-query.c:311
 msgid "No search pattern specified"
 msgstr "Inget sökmönster angivet"
 
 #. TRANSLATORS: Description for pkgctl list
-#: client/pkgc-query.c:383
+#: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
 msgstr "Lista alla paket eller de som matchar ett mönster."
 
 #. TRANSLATORS: Description for pkgctl show
-#: client/pkgc-query.c:427
+#: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
 msgstr "Visa information om ett eller flera paket."
 
-#: client/pkgc-query.c:483 client/pkgc-query.c:761
+#: client/pkgc-query.c:471 client/pkgc-query.c:749
 msgid "Check dependencies recursively"
 msgstr "Kontrollera beroenden rekursivt"
 
 #. TRANSLATORS: Description for pkgctl depends-on
-#: client/pkgc-query.c:492
+#: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
 msgstr "Visa beroenden för ett eller flera paket."
 
-#: client/pkgc-query.c:500 client/pkgc-query.c:582 client/pkgc-query.c:696
-#: client/pkgc-query.c:778
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:684
+#: client/pkgc-query.c:766
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "Kunde inte slå upp paket: %s"
 
 #. TRANSLATORS: Description for pkgctl what-provides
-#: client/pkgc-query.c:532
+#: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
 msgstr "Visa vilka paket som tillhandahåller den angivna förmågan."
 
 #. TRANSLATORS: Description for pkgctl files
-#: client/pkgc-query.c:563
+#: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
 msgstr "Lista alla filer som finns i ett eller flera paket."
 
 #. TRANSLATORS: Description for pkgctl list-updates
-#: client/pkgc-query.c:658
+#: client/pkgc-query.c:646
 msgid "List all currently available package updates."
 msgstr "Lista alla för närvarande tillgängliga paketuppdateringar."
 
 #. TRANSLATORS: Description for pkgctl show-update
-#: client/pkgc-query.c:690
+#: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
 msgstr "Visa delaljerad information om den angivna paketuppdateringen."
 
 #. TRANSLATORS: Description for pkgctl resolve
-#: client/pkgc-query.c:727
+#: client/pkgc-query.c:715
 msgid "Resolve package names to package IDs."
 msgstr "Slå upp paketnamn till paket-ID:n."
 
 #. TRANSLATORS: Description for pkgctl required-by
-#: client/pkgc-query.c:770
+#: client/pkgc-query.c:758
 msgid "Show which packages require the specified packages."
 msgstr "Visa vilka paket som kräver de angivna paketen."
 
 #. TRANSLATORS: Description for pkgctl organization
-#: client/pkgc-query.c:812
+#: client/pkgc-query.c:800
 msgid "List all available filters, groups and categories for package organization."
 msgstr "Lista alla tillgängliga filter, grupper och kategorier för paketorganisation."
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:820
+#: client/pkgc-query.c:808
 msgid "Filters:"
 msgstr "Filter:"
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:835
+#: client/pkgc-query.c:823
 msgid "Groups:"
 msgstr "Grupper:"
 
 #. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:850
+#: client/pkgc-query.c:838
 msgid "Categories:"
 msgstr "Kategorier:"
 
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
-#: client/pkgc-query.c:876
+#: client/pkgc-query.c:864
 msgid "Show distribution version upgrades, if any are available."
 msgstr "Visa versionsuppgraderingar för distribution om några är tillgängliga."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkgc-query.c:907 client/pkcon/pk-console.c:1572
+#: client/pkgc-query.c:895 client/pkcon/pk-console.c:1572
 msgid "Failed to get the time since this action was last completed"
 msgstr "Misslyckades med att få tiden sedan denna åtgärd senast färdigställdes"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:926
+#: client/pkgc-query.c:908
 msgid "Elapsed time"
 msgstr "Förfluten tid"
 
 #. TRANSLATORS: Description for pkgctl last-time
-#: client/pkgc-query.c:950
+#: client/pkgc-query.c:932
 msgid "Get time in seconds since the last specified action."
 msgstr "Hämta tiden i sekunder sedan den senaste angivna åtgärden."
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: client/pkgc-query.c:960 client/pkcon/pk-console.c:2161
+#: client/pkgc-query.c:942 client/pkcon/pk-console.c:2161
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "En åtgärd, t.ex ”update-packages” krävs"
 
 #. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: client/pkgc-query.c:967 client/pkcon/pk-console.c:2171
+#: client/pkgc-query.c:949 client/pkcon/pk-console.c:2171
 msgid "A correct role is required"
 msgstr "En korrekt roll krävs"
 
-#: client/pkgc-query.c:989
+#: client/pkgc-query.c:971
 msgid "Show backend information"
 msgstr "Visa bakändesinformation"
 
-#: client/pkgc-query.c:995
+#: client/pkgc-query.c:977
 msgid "Show transaction history"
 msgstr "Visa transaktionshistorik"
 
-#: client/pkgc-query.c:1001
+#: client/pkgc-query.c:983
 msgid "Search for packages"
 msgstr "Sök efter paket"
 
-#: client/pkgc-query.c:1007
+#: client/pkgc-query.c:989
 msgid "List packages"
 msgstr "Lista paket"
 
-#: client/pkgc-query.c:1013
+#: client/pkgc-query.c:995
 msgid "Show package information"
 msgstr "Visa paketinformation"
 
-#: client/pkgc-query.c:1019
+#: client/pkgc-query.c:1001
 msgid "Show package dependencies"
 msgstr "Visa paketberoenden"
 
-#: client/pkgc-query.c:1025
+#: client/pkgc-query.c:1007
 msgid "Show packages providing a capability"
 msgstr "Visa paket som tillhandahåller en förmåga"
 
-#: client/pkgc-query.c:1031
+#: client/pkgc-query.c:1013
 msgid "Show files in package"
 msgstr "Visa filer i paket"
 
-#: client/pkgc-query.c:1037
+#: client/pkgc-query.c:1019
 msgid "Get available updates"
 msgstr "Hämta tillgängliga uppdateringar"
 
-#: client/pkgc-query.c:1043
+#: client/pkgc-query.c:1025
 msgid "Get update details"
 msgstr "Hämta uppdateringsdetaljer"
 
-#: client/pkgc-query.c:1049
+#: client/pkgc-query.c:1031
 msgid "Resolve package names"
 msgstr "Slå upp paketnamn"
 
-#: client/pkgc-query.c:1055
+#: client/pkgc-query.c:1037
 msgid "Show packages requiring this package"
 msgstr "Visa paket som kräver detta paket"
 
-#: client/pkgc-query.c:1061
+#: client/pkgc-query.c:1043
 msgid "List available filters and categories"
 msgstr "Lista tillgängliga filter och kategorier"
 
-#: client/pkgc-query.c:1067
+#: client/pkgc-query.c:1049
 msgid "Show available distribution upgrades"
 msgstr "Visa tillgängliga distributionsuppgraderingar"
 
-#: client/pkgc-query.c:1073
+#: client/pkgc-query.c:1055
 msgid "Get time since last action"
 msgstr "Hämta tiden sedan senaste åtgärd"
 
@@ -579,292 +652,292 @@ msgstr "%u dagar %u h"
 msgid "%u days"
 msgstr "%u dagar"
 
-#: client/pkgc-util.c:273
+#: client/pkgc-util.c:275
 msgid "Error"
 msgstr "Fel"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:297
+#: client/pkgc-util.c:307
 msgid "Warning:"
 msgstr "Varning:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgctl
-#: client/pkgc-util.c:403 client/pkgctl.c:175
+#: client/pkgc-util.c:427 client/pkgctl.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Misslyckades med att tolka flaggor: %s"
 
 #. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:409
+#: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Användning: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:578 client/pkgc-util.c:732
+#: client/pkgc-util.c:606 client/pkgc-util.c:760
 msgid "Package:"
 msgstr "Paket:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:582
+#: client/pkgc-util.c:610
 msgid "Version:"
 msgstr "Version:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:589
+#: client/pkgc-util.c:617
 msgid "Summary:"
 msgstr "Sammandrag:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:597
+#: client/pkgc-util.c:625
 msgid "Description:"
 msgstr "Beskrivning:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:604
+#: client/pkgc-util.c:632
 msgid "License:"
 msgstr "Licens:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:611
+#: client/pkgc-util.c:639
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:618
+#: client/pkgc-util.c:646
 msgid "Group:"
 msgstr "Grupp:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:626
+#: client/pkgc-util.c:654
 msgid "Installed Size:"
 msgstr "Installerad storlek:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:634
+#: client/pkgc-util.c:662
 msgid "Download Size:"
 msgstr "Hämtningsstorlek:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:728
+#: client/pkgc-util.c:756
 msgid "Update Details:"
 msgstr "Uppdateringsdetaljer:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:739
+#: client/pkgc-util.c:767
 msgid "Updates:"
 msgstr "Uppdaterar:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:748
+#: client/pkgc-util.c:776
 msgid "Obsoletes:"
 msgstr "Föråldrar:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:757
+#: client/pkgc-util.c:785
 msgid "Vendor:"
 msgstr "Leverantör:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:766
+#: client/pkgc-util.c:794
 msgid "Issue Tracker:"
 msgstr "Ärendehanteringssystem:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:775
+#: client/pkgc-util.c:803
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:783
+#: client/pkgc-util.c:811
 msgid "Restart:"
 msgstr "Omstart:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:792
+#: client/pkgc-util.c:820
 msgid "Update text:"
 msgstr "Uppdateringstext:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:799
+#: client/pkgc-util.c:827
 msgid "Changes:"
 msgstr "Ändringar:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:806
+#: client/pkgc-util.c:834
 msgid "State:"
 msgstr "Tillstånd:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:815
+#: client/pkgc-util.c:843
 msgid "Issued:"
 msgstr "Utfärdad:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:822
+#: client/pkgc-util.c:850
 msgid "Updated:"
 msgstr "Uppdaterad:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:939
+#: client/pkgc-util.c:967
 msgid "Transaction:"
 msgstr "Transaktion:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:943
+#: client/pkgc-util.c:971
 msgid "System time:"
 msgstr "Systemtid:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:947
+#: client/pkgc-util.c:975
 msgid "Succeeded:"
 msgstr "Lyckades:"
 
-#: client/pkgc-util.c:951 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "Sant"
 
-#: client/pkgc-util.c:952 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:980 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "Falskt"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:956
+#: client/pkgc-util.c:984
 msgid "Role:"
 msgstr "Roll:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:963
+#: client/pkgc-util.c:991
 msgid "Duration:"
 msgstr "Längd:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:970
+#: client/pkgc-util.c:998
 msgid "Command line:"
 msgstr "Kommandorad:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:976
+#: client/pkgc-util.c:1004
 msgid "User ID:"
 msgstr "Användar-ID:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:985
+#: client/pkgc-util.c:1013
 msgid "Username:"
 msgstr "Användarnamn:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:991
+#: client/pkgc-util.c:1019
 msgid "Real name:"
 msgstr "Verkligt namn:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1003 client/pkgc-util.c:1022
+#: client/pkgc-util.c:1031 client/pkgc-util.c:1050
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "Påverkade paket:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1025
+#: client/pkgc-util.c:1053
 msgid "None"
 msgstr "Inga"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1114 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1142 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "Det finns fler än ett paket som matchar:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1126 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1154 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Välj det korrekta paketet: "
 
-#: client/pkgc-util.c:1170
+#: client/pkgc-util.c:1198
 #, c-format
 msgid "Package not found: %s"
 msgstr "Paketet hittades inte: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkgctl.c:75
+#: client/pkgctl.c:76
 msgid "Show pkgctl version"
 msgstr "Visa pkgctl-version"
 
-#: client/pkgctl.c:77
+#: client/pkgctl.c:78
 msgid "Show help"
 msgstr "Visa hjälp"
 
-#: client/pkgctl.c:79
+#: client/pkgctl.c:80
 msgid "Only provide minimal output"
 msgstr "Tillhandahåll endast minimal utmatning"
 
-#: client/pkgctl.c:81
+#: client/pkgctl.c:82
 msgid "Show more detailed output"
 msgstr "Visa mer detaljerad utmatning"
 
-#: client/pkgctl.c:83
+#: client/pkgctl.c:84
 msgid "Output in JSON format"
 msgstr "Utdata i JSON-format"
 
-#: client/pkgctl.c:85
+#: client/pkgctl.c:86
 msgid "Disable colored output"
 msgstr "Inaktivera färglagd utmatning"
 
 #. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgctl.c:88
+#: client/pkgctl.c:89
 msgid "Answer 'yes' to all questions"
 msgstr "Svara ”ja” på alla frågor"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgctl.c:91
+#: client/pkgctl.c:92
 msgid "Filter packages (installed, available, etc.)"
 msgstr "Filtrera paket (installerade, tillgängliga o.s.v.)"
 
-#: client/pkgctl.c:91
+#: client/pkgctl.c:92
 msgid "FILTER"
 msgstr "FILTER"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgctl.c:94 client/pkcon/pk-console.c:1725
+#: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Kör kommandot med inaktiv nätverksbandbredd och även med mindre ström"
 
-#: client/pkgctl.c:116
+#: client/pkgctl.c:118
 msgid "No command specified. Use --help for usage information."
 msgstr "Inget kommando angivet. Använd --help för användningsinformation."
 
-#: client/pkgctl.c:124
+#: client/pkgctl.c:126
 #, c-format
 msgid "Unknown command: %s"
 msgstr "Okänt kommando :%s"
 
-#: client/pkgctl.c:183
+#: client/pkgctl.c:135
+#, c-format
+msgid "Failed to connect to PackageKit: %s"
+msgstr "Misslyckades med att ansluta till PackageKit: %s"
+
+#: client/pkgctl.c:196
 #, c-format
 msgid "Version: %s"
 msgstr "Version: %s"
 
-#: client/pkgctl.c:198
+#: client/pkgctl.c:211
 msgid "Available Commands:"
 msgstr "Tillgängliga kommandon:"
 
-#: client/pkgctl.c:204
+#: client/pkgctl.c:217
 msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgstr "Använd ”pkgctl KOMMANDO --help” för kommandospecifik hjälp."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkgctl.c:241 client/pkcon/pk-console.c:1842
+#: client/pkgctl.c:254 client/pkcon/pk-console.c:1842
 msgid "The filter specified was invalid"
 msgstr "Angivet filter var ogiltigt"
-
-#: client/pkgctl.c:250
-#, c-format
-msgid "Failed to connect to PackageKit: %s"
-msgstr "Misslyckades med att ansluta till PackageKit: %s"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1438,14 +1511,6 @@ msgstr "Flaggan ”%s” stöds inte"
 #: client/pkcon/pk-console.c:2459
 msgid "Command failed"
 msgstr "Kommandot misslyckades"
-
-#: client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "Misslyckades med läsa av tillstånd för bakgrundsprocess"
-
-#: client/pkcon/pk-monitor.c:310
-msgid "Failed to get properties"
-msgstr "Misslyckades med att få egenskaper"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
@@ -2569,6 +2634,21 @@ msgstr "Installera inte detta paket såvida inte du vet att det är säkert att 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Installera inte dessa paket såvida inte du vet att det är säkert att göra så."
+
+#~ msgid "Preparing offline update..."
+#~ msgstr "Förbereder frånkopplad uppdatering…"
+
+#~ msgid "Use 'pkgctl offline-trigger' to schedule the update"
+#~ msgstr "Använd ”pkgctl offline-trigger” för att schemalägga uppdateringen"
+
+#~ msgid "Prepare offline update"
+#~ msgstr "Förbered frånkopplad uppdatering"
+
+#~ msgid "Trigger offline update"
+#~ msgstr "Utlös frånkopplad uppdatering"
+
+#~ msgid "Cancel offline update"
+#~ msgstr "Avbryt frånkopplad uppdatering"
 
 #, c-format
 #~ msgid "(%i%%)"
