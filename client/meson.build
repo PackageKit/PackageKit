@@ -27,6 +27,7 @@ executable(
     'pkgctl.c',
     'pkgc-context.c',
     'pkgc-manage.c',
+    'pkgc-monitor.c',
     'pkgc-query.c',
     'pkgc-repo.c',
     'pkgc-util.c',

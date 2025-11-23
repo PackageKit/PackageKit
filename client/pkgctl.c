@@ -37,6 +37,7 @@
 #include "pkgc-query.h"
 #include "pkgc-manage.h"
 #include "pkgc-repo.h"
+#include "pkgc-monitor.h"
 
 /**
  * pkc_handle_sigint:
@@ -110,6 +111,7 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 {
 	const gchar *command_name;
 	PkgctlCommand *cmd;
+	g_autoptr(GError) error = NULL;
 
 	if (argc < 2) {
 		pkgc_print_error (ctx,
@@ -123,6 +125,16 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 	if (!cmd) {
 		pkgc_print_error (ctx, _("Unknown command: %s"), command_name);
 		return PKGCTL_EXIT_SYNTAX_ERROR;
+	}
+
+	if (g_strcmp0 (command_name, "monitor") != 0) {
+		/* we defer initialization of the context if we are monitoring the bus */
+
+		/* connect to PK with the selected parameters */
+		if (!pkgc_context_init (ctx, &error)) {
+			pkgc_print_error (ctx, _("Failed to connect to PackageKit: %s"), error->message);
+			return PKGCTL_EXIT_FAILURE;
+		}
 	}
 
 	/* call the command handler */
@@ -153,6 +165,7 @@ main (int argc, char **argv)
 	pkgc_register_query_commands (ctx);
 	pkgc_register_manage_commands (ctx);
 	pkgc_register_repo_commands (ctx);
+	pkgc_register_monitor_commands (ctx);
 
 	/* check if this is a command-specific help request before parsing options */
 	if (argc >= 3) {
@@ -243,13 +256,6 @@ skip_global_parse:
 			ret = PKGCTL_EXIT_SYNTAX_ERROR;
 			goto out;
 		}
-	}
-
-	/* connect to PK with the selected parameters */
-	if (!pkgc_context_init (ctx, &error)) {
-		pkgc_print_error (ctx, _("Failed to connect to PackageKit: %s"), error->message);
-		ret = PKGCTL_EXIT_FAILURE;
-		goto out;
 	}
 
 	/* start polkit agent to listen for authentication requests */
