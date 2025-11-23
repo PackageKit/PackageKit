@@ -28,48 +28,88 @@
 #include "pkgc-monitor.h"
 #include "pkgc-util.h"
 
-static PkClient *g_client = NULL;
+static PkgctlContext *g_context = NULL;
 
 static void
 pkgc_monitor_installed_changed_cb (PkControl *control, gpointer data)
 {
-	g_print ("installed-changed\n");
+	PkgctlContext *ctx = g_context;
+	g_print ("%s%s%s%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+		 "● Installed packages changed",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 }
 
 static void
 pkgc_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 {
-	g_print ("repo-list-changed\n");
+	PkgctlContext *ctx = g_context;
+	g_print ("%s%s%s%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+		 "● Repository list changed",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 }
 
 static void
 pkgc_monitor_updates_changed_cb (PkControl *control, gpointer data)
 {
-	g_print ("updates-changed\n");
+	PkgctlContext *ctx = g_context;
+	g_print ("%s%s%s%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW),
+		 "● Updates changed",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 }
 
 static void
 pkgc_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
+	PkgctlContext *ctx = g_context;
 	gboolean connected;
+	const gchar *color;
+
 	g_object_get (control, "connected", &connected, NULL);
-	g_print ("daemon connected=%i\n", connected);
+	color = connected ? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN) : pkgc_get_ansi_color (ctx, PKGC_COLOR_RED);
+	g_print ("%s%s%s%s %s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 color,
+		 connected ? "✓" : "✗",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 connected ? "Connected" : "Disconnected");
 }
 
 static void
 pkgc_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
+	PkgctlContext *ctx = g_context;
 	gboolean locked;
+	const gchar *color;
 	g_object_get (control, "locked", &locked, NULL);
-	g_print ("daemon locked=%i\n", locked);
+	color = locked ? pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW) : pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY);
+	g_print ("%s%s%s%s %s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 color,
+		 locked ? "🔒" : "🔓",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 locked ? "Locked" : "Unlocked");
 }
 
 static void
 pkgc_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
+	PkgctlContext *ctx = g_context;
 	PkNetworkEnum state;
+	const gchar *color;
 	g_object_get (control, "network-state", &state, NULL);
-	g_print ("network status=%s\n", pk_network_enum_to_string (state));
+	color = (state == PK_NETWORK_ENUM_ONLINE)? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN)
+			: pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
+	g_print ("%s%s● Network:%s %s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 color,
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 pk_network_enum_to_string (state));
 }
 
 static void
@@ -93,6 +133,7 @@ pkgc_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar 
 static void
 pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
+	PkgctlContext *ctx = g_context;
 	PkExitEnum exit_enum;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *transaction_id = NULL;
@@ -100,9 +141,10 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	g_autoptr(PkProgress) progress = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) media_array = NULL;
+	const gchar *exit_color;
 
 	/* get the results */
-	results = pk_client_generic_finish (g_client, res, &error);
+	results = pk_client_generic_finish (PK_CLIENT (ctx->task), res, &error);
 	if (results == NULL) {
 		g_warning ("failed to adopt: %s", error->message);
 		return;
@@ -119,7 +161,24 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 		      NULL);
 
 	exit_enum = pk_results_get_exit_code (results);
-	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_string (exit_enum));
+
+	/* Color based on exit code */
+	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
+		exit_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN);
+	else if (exit_enum == PK_EXIT_ENUM_CANCELLED)
+		exit_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
+	else
+		exit_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_RED);
+
+	g_print ("%s%s%s  %sexit:%s %s%s%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+		 transaction_id,
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 exit_color,
+		 pk_exit_enum_to_string (exit_enum),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 
 	/* media change required */
 	media_array = pk_results_get_media_change_required_array (results);
@@ -128,9 +187,15 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		g_print ("%s\terror code: %s, %s\n",
+		g_print ("%s%s%s  %serror:%s %s%s%s - %s\n",
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
 			 transaction_id,
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RED),
 			 pk_error_enum_to_string (pk_error_get_code (error_code)),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
 			 pk_error_get_details (error_code));
 	}
 }
@@ -176,6 +241,8 @@ pkgc_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 static void
 pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
+	PkgctlContext *ctx = g_context;
+	GDBusProxy *bus_proxy = G_DBUS_PROXY (user_data);
 	PkRoleEnum role;
 	PkStatusEnum status;
 	PkInfoEnum info;
@@ -188,7 +255,9 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 	g_autofree gchar *sender = NULL;
 	g_autoptr(PkItemProgress) item_progress = NULL;
 	g_autoptr(PkPackage) package = NULL;
-	GDBusProxy *bus_proxy = G_DBUS_PROXY (user_data);
+	const gchar *tid_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN);
+	const gchar *bold = pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD);
+	const gchar *color_reset = pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET);
 
 	/* get data */
 	g_object_get (progress,
@@ -208,52 +277,96 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 		return;
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
-		g_print ("%s\trole         %s\n", transaction_id, pk_role_enum_to_string (role));
+		g_print ("%s%s%s  %srole:%s %s%s\n",
+			 bold, tid_color, transaction_id, color_reset, bold,
+			 pk_role_enum_to_string (role), color_reset);
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
-		g_print ("%s\tpackage-id   %s\n", transaction_id, package_id);
+		g_print ("%s%s%s  %spackage-id:%s %s%s\n",
+			 bold, tid_color, transaction_id, color_reset, bold, package_id, color_reset);
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE) {
+		const gchar *info_color;
 		g_object_get (package,
 			      "info", &info,
 			      "package-id", &package_id_tmp,
 			      "summary", &summary,
 			      NULL);
-		g_print ("%s\tpackage      %s:%s:%s\n",
-			 transaction_id,
-			 pk_info_enum_to_string (info),
+		/* Color based on package info type */
+		if (info == PK_INFO_ENUM_INSTALLING || info == PK_INFO_ENUM_UPDATING)
+			info_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN);
+		else if (info == PK_INFO_ENUM_REMOVING)
+			info_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_RED);
+		else if (info == PK_INFO_ENUM_DOWNLOADING)
+			info_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN);
+		else
+			info_color = color_reset;
+
+		g_print ("%s%s%s  %s%s%s %s %s %s\n",
+			 bold, tid_color, transaction_id, color_reset,
+			 info_color, pk_info_enum_to_string (info), color_reset,
 			 package_id_tmp,
-			 summary);
+			 summary ? summary : "");
 	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
-		g_print ("%s\tpercentage   %i\n", transaction_id, percentage);
+		if (percentage <= 100) {
+			g_print ("%s%s%s  %s[%3d%%]%s\n",
+				 bold, tid_color, transaction_id, color_reset,
+				 percentage, color_reset);
+		}
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
-		g_print ("%s\tallow_cancel %i\n", transaction_id, allow_cancel);
+		/* Don't print allow_cancel as it's not very interesting */
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_string (status));
+		const gchar *status_color;
+		/* Color based on status */
+		if (status == PK_STATUS_ENUM_FINISHED)
+			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN);
+		else if (status == PK_STATUS_ENUM_DOWNLOAD || status == PK_STATUS_ENUM_INSTALL ||
+				 status == PK_STATUS_ENUM_UPDATE || status == PK_STATUS_ENUM_REMOVE)
+			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
+		else
+			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY);
+
+		g_print ("%s%s%s  %s%s%s%s\n",
+			 bold, tid_color, transaction_id, color_reset,
+			 status_color, pk_status_enum_to_string (status), color_reset);
 	} else if (type == PK_PROGRESS_TYPE_ITEM_PROGRESS) {
-		g_print ("%s\titem-progress %s,%i [%s]\n",
-			 transaction_id,
+		g_print ("%s%s%s  %sitem: %s [%d%%, %s]%s\n",
+			 bold, tid_color, transaction_id, color_reset,
 			 pk_item_progress_get_package_id (item_progress),
 			 pk_item_progress_get_percentage (item_progress),
-			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)));
+			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)),
+			 color_reset);
 	} else if (type == PK_PROGRESS_TYPE_SENDER) {
 		g_autofree gchar *cmdline = pkgc_monitor_get_caller_info (bus_proxy, sender);
-		g_print ("%s\tsender       %s\n", transaction_id, cmdline);
+		g_print ("%s%s%s  %ssender:%s %s%s\n",
+			 bold, tid_color, transaction_id, color_reset, bold, cmdline, color_reset);
 	}
 }
 
 static void
-pkgc_monitor_list_print (PkTransactionList *tlist)
+pkgc_monitor_list_print (PkgctlContext *ctx, PkTransactionList *tlist)
 {
-	guint i;
 	g_auto(GStrv) list = NULL;
 
 	list = pk_transaction_list_get_ids (tlist);
-	g_print ("Transactions:\n");
 	if (list[0] == NULL) {
-		g_print (" [none]\n");
+		g_print ("%sTransactions:%s %snone%s\n",
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 		return;
 	}
-	for (i = 0; list[i] != NULL; i++)
-		g_print (" %i\t%s\n", i+1, list[i]);
+	g_print ("%sTransactions:%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+	for (guint i = 0; list[i] != NULL; i++) {
+		g_print ("  %s%i.%s %s%s%s\n",
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+			 i+1,
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+			 list[i],
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+	}
 }
 
 static void
@@ -289,18 +402,33 @@ pkgc_monitor_transaction_list_changed_cb (PkControl *control, gchar **transactio
 static void
 pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
 {
-	g_debug ("added: %s", transaction_id);
-	pk_client_adopt_async (g_client, transaction_id, NULL,
+	PkgctlContext *ctx = g_context;
+	g_print ("\n%s%s▶ Transaction started:%s %s%s%s\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+		 transaction_id,
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+
+	pk_client_adopt_async (PK_CLIENT (ctx->task), transaction_id, NULL,
 			       (PkProgressCallback) pkgc_monitor_progress_cb, user_data,
 			       (GAsyncReadyCallback) pkgc_monitor_adopt_cb, user_data);
-	pkgc_monitor_list_print (tlist);
+	pkgc_monitor_list_print (ctx, tlist);
 }
 
 static void
 pkgc_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
 {
-	g_debug ("removed: %s", transaction_id);
-	pkgc_monitor_list_print (tlist);
+	PkgctlContext *ctx = g_context;
+	g_print ("%s%s◀ Transaction finished:%s %s%s%s\n\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BLUE),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
+		 transaction_id,
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+	pkgc_monitor_list_print (ctx, tlist);
 }
 
 static void
@@ -365,6 +493,9 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
 	 * here.
 	 * This is fairly evil, but should be forgiven for this one command... */
 
+	/* create a global reference to the client for use in callbacks */
+	g_context = ctx;
+
 	g_clear_object (&ctx->control);
 	ctx->control = pk_control_new ();
 
@@ -395,19 +526,21 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
 	g_clear_object (&ctx->task);
 	ctx->task = pk_task_text_new ();
 
-	/* create a global reference to the client for use in callbacks */
-	g_client = PK_CLIENT (ctx->task);
-
 	/* coldplug, but shouldn't be needed yet */
 	transaction_ids = pk_transaction_list_get_ids (tlist);
 	for (guint i = 0; transaction_ids[i] != NULL; i++) {
 		g_warning ("need to coldplug %s", transaction_ids[i]);
 	}
-	pkgc_monitor_list_print (tlist);
+
+	pkgc_monitor_list_print (ctx, tlist);
 
 	/* only print state when verbose */
 	if (pk_debug_is_verbose ())
 		pkgc_monitor_get_daemon_state (ctx->control);
+
+	g_print ("\n%sMonitoring PackageKit events... Press Ctrl+C to stop.%s\n\n",
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY),
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 
 	/* spin */
 	g_main_loop_run (ctx->loop);

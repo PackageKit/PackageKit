@@ -184,33 +184,35 @@ get_reset_color (PkgctlContext *ctx)
 }
 
 /**
- * pkgc_get_ansi_color_from_name:
+ * pkgc_get_ansi_color:
  *
- * Returns the ANSI color code for a given color name.
+ * Returns the ANSI color code for a given color.
  */
 const gchar *
-pkgc_get_ansi_color_from_name (PkgctlContext *ctx, const gchar *color_name)
+pkgc_get_ansi_color (PkgctlContext *ctx, PkgcColor color)
 {
-	if (g_strcmp0 (color_name, "reset") == 0)
+	switch (color) {
+	case PKGC_COLOR_RESET:
 		return get_reset_color (ctx);
-	if (g_strcmp0 (color_name, "bold") == 0)
+	case PKGC_COLOR_BOLD:
 		return get_color (ctx, COLOR_BOLD);
-	if (g_strcmp0 (color_name, "red") == 0)
+	case PKGC_COLOR_RED:
 		return get_color (ctx, COLOR_RED);
-	if (g_strcmp0 (color_name, "green") == 0)
+	case PKGC_COLOR_GREEN:
 		return get_color (ctx, COLOR_GREEN);
-	if (g_strcmp0 (color_name, "yellow") == 0)
+	case PKGC_COLOR_YELLOW:
 		return get_color (ctx, COLOR_YELLOW);
-	if (g_strcmp0 (color_name, "blue") == 0)
+	case PKGC_COLOR_BLUE:
 		return get_color (ctx, COLOR_BLUE);
-	if (g_strcmp0 (color_name, "magenta") == 0)
+	case PKGC_COLOR_MAGENTA:
 		return get_color (ctx, COLOR_MAGENTA);
-	if (g_strcmp0 (color_name, "cyan") == 0)
+	case PKGC_COLOR_CYAN:
 		return get_color (ctx, COLOR_CYAN);
-	if (g_strcmp0 (color_name, "gray") == 0)
+	case PKGC_COLOR_GRAY:
 		return get_color (ctx, COLOR_GRAY);
-
-	return "";
+	default:
+		return "";
+	}
 }
 
 /**

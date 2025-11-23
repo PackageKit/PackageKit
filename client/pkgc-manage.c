@@ -644,17 +644,17 @@ pkgc_print_offline_update_status (PkgctlContext *ctx)
 	if (action == PK_OFFLINE_ACTION_UNSET) {
 		if (ctx->output_mode != PKGCTL_MODE_JSON)
 			g_print ("%s%s%s",
-				 pkgc_get_ansi_color_from_name (ctx, "blue"),
+				 pkgc_get_ansi_color (ctx, PKGC_COLOR_BLUE),
 				 "⏾ ",
-				 pkgc_get_ansi_color_from_name (ctx, "reset"));
+				 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 		pkgc_print_info (ctx, _("Offline update is not triggered."));
 		g_print ("\n");
 	} else {
 		if (ctx->output_mode != PKGCTL_MODE_JSON)
 			g_print ("%s%s%s",
-				 pkgc_get_ansi_color_from_name (ctx, "yellow"),
+				 pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW),
 				 "⚠ ",
-				 pkgc_get_ansi_color_from_name (ctx, "reset"));
+				 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 		pkgc_print_info (ctx, _("Offline update is triggered. Action after update: %s"),
 			pk_offline_action_to_string(action));
 		g_print ("\n");

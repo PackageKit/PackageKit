@@ -204,8 +204,8 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 		pkgc_print_json_decref (root);
 	} else {
 		g_print ("%sStatus:%s\n",
-			 pkgc_get_ansi_color_from_name (ctx, "bold"),
-			 pkgc_get_ansi_color_from_name (ctx, "reset"));
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 
 		if (backend_name != NULL)
 			pkgc_println (_("Backend: %s"), backend_name);
@@ -803,10 +803,10 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
 
 	/* print available filters */
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color_from_name (ctx, "bold"),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 			 /* TRANSLATORS: Header for list of available package filters */
 			 _("Filters:"),
-			 pkgc_get_ansi_color_from_name (ctx, "reset"));
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 	g_object_get (ctx->control,
 				  "filters", &ctx->filters,
 				  NULL);
@@ -818,10 +818,10 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
 	/* print available groups */
 	g_print ("\n");
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color_from_name (ctx, "bold"),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 			 /* TRANSLATORS: Header for list of available package groups */
 			 _("Groups:"),
-			 pkgc_get_ansi_color_from_name (ctx, "reset"));
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 	g_object_get (ctx->control,
 				  "groups", &groups,
 				  NULL);
@@ -833,10 +833,10 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
 	/* print available categories, if we have any */
 	g_print ("\n");
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color_from_name (ctx, "bold"),
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 			 /* TRANSLATORS: Header for list of available package categories */
 			 _("Categories:"),
-			 pkgc_get_ansi_color_from_name (ctx, "reset"));
+			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 	pk_task_get_categories_async (PK_TASK (ctx->task),
 				      ctx->cancellable,
 				      pkgc_context_on_progress_cb,
