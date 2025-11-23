@@ -919,6 +919,35 @@ pkgc_repair (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 }
 
 /**
+ * pkgc_suggest_quit:
+ *
+ * Suggest to safely stop the PackageKit daemon.
+ */
+static gint
+pkgc_suggest_quit (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+{
+	g_autoptr(GOptionContext) option_context = NULL;
+	g_autoptr(GError) error = NULL;
+
+	/* parse options */
+	option_context = pkgc_option_context_for_command (
+		ctx, cmd,
+		NULL,
+		/* TRANSLATORS: Description for pkgctl quit */
+		_("Safely terminate the PackageKit daemon."));
+
+	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
+		return PKGCTL_EXIT_SYNTAX_ERROR;
+
+	if (!pk_control_suggest_daemon_quit (ctx->control, ctx->cancellable, &error)) {
+		pkgc_print_error (ctx, _("Failed to send daemon quit request: %s"), error->message);
+		return PKGCTL_EXIT_FAILURE;
+	}
+
+	return PKGCTL_EXIT_SUCCESS;
+}
+
+/**
  * pkgc_register_manage_commands:
  *
  * Register package management commands
@@ -979,4 +1008,10 @@ pkgc_register_manage_commands (PkgctlContext *ctx)
 		"repair",
 		pkgc_repair,
 		_("Repair package system"));
+
+	pkgc_context_register_command (
+		ctx,
+		"quit",
+		pkgc_suggest_quit,
+		_("Safely stop the PackageKit daemon"));
 }
