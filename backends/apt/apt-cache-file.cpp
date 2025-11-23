@@ -613,6 +613,7 @@ OpPackageKitProgress::OpPackageKitProgress(PkBackendJob *job)
 {
     // Set PackageKit status
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_LOADING_CACHE);
+    pk_backend_job_set_percentage(m_job, PK_BACKEND_PERCENTAGE_INVALID);
 }
 
 OpPackageKitProgress::~OpPackageKitProgress()

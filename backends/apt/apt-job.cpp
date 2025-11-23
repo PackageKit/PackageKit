@@ -150,21 +150,31 @@ bool AptJob::init(gchar **localDebs)
             markFileForInstall(localDebs[i]);
     }
 
-    int timeout = 10;
-    // TODO test this
-    while (m_cache->Open(withLock) == false) {
-        if (withLock == false || (timeout <= 0)) {
-            show_errors(m_job, PK_ERROR_ENUM_CANNOT_GET_LOCK);
+
+    if (!m_cache->Open(withLock)) {
+        if (!withLock) {
+            show_errors(m_job, PK_ERROR_ENUM_TRANSACTION_ERROR);
             return false;
-        } else {
-            _error->Discard();
-            pk_backend_job_set_status(m_job, PK_STATUS_ENUM_WAITING_FOR_LOCK);
-            sleep(1);
-            timeout--;
         }
 
-        // Close the cache if we are going to try again
-        m_cache->Close();
+        // wait a bit for the lock to become available
+        int timeout = 60;
+        while (!m_cache->Open(withLock)) {
+            pk_backend_job_set_percentage (m_job, PK_BACKEND_PERCENTAGE_INVALID);
+        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+
+            if (timeout <= 0) {
+                show_errors(m_job, PK_ERROR_ENUM_CANNOT_GET_LOCK);
+                return false;
+            } else {
+                _error->Discard();
+                timeout--;
+                sleep(1);
+            }
+
+            // Close the cache if we are going to try again
+            m_cache->Close();
+        }
     }
 
     m_interactive = pk_backend_job_get_interactive(m_job);
