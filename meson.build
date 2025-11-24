@@ -3,7 +3,7 @@ project('PackageKit', 'c',
   default_options : ['warning_level=2', 'c_std=gnu17'],
 
   license : 'LGPL-2.1+',
-  version : '1.3.3',
+  version : '1.3.4',
 )
 
 gnome = import('gnome')

@@ -1,11 +1,16 @@
 PackageKit Release Notes
 
-1. Write NEWS entries for PackageKit in the same format as usual.
+1. Set variables
 
-git shortlog v1.3.2.. | grep -i -v trivial | grep -v Merge > NEWS.new
+OLD_VERSION="1.3.3"
+NEW_VERSION="1.3.4"
+
+2. Write NEWS entries for PackageKit in the same format as usual.
+
+git shortlog v$OLD_VERSION.. | grep -i -v -E '^\s*(trivial:|l10n:)' | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 1.3.3
+Version 1.3.4
 ~~~~~~~~~~~~~
 Released: 2025-xx-xx
 
@@ -20,50 +25,40 @@ Bugfixes:
 Miscellaneous:
 --------------------------------------------------------------------------------
 
-2. Update translations and commit them with sign-off:
+3. Update translation template and commit it with sign-off:
 
 ninja PackageKit-pot
-tx push --source
-tx pull --all --force --minimum-perc=5
-ninja fix-translations
-git add ../po/*.po
 
-3. Update library version if new ABI or API in meson.build
+4. Update library version if new ABI or API in meson.build
 
-4. Commit changes in PackageKit git:
+5. Commit changes in PackageKit git:
 
-# MAKE SURE THESE ARE CORRECT
-export release_version="1.3.3"
-export release_tag="v1.3.3"
-
-git commit -a -m "Release ${release_version}"
-git tag -s -f -m "Release ${release_version}" "${release_tag}"
-git push --tags
-git push
+git commit -a -m "Release ${NEW_VERSION}"
+git tag -s -f -m "Release ${NEW_VERSION}" "v${NEW_VERSION}"
+git push && git push --tags
 git push git+ssh://mak@git.freedesktop.org/git/packagekit
 git push --tags git+ssh://mak@git.freedesktop.org/git/packagekit
 
-5. run 'meson dist'
+6. Create tarball & sign it:
 
-5a. Sign the release
+rm -r meson-dist ; meson dist
+gpg -b -a meson-dist/PackageKit-${NEW_VERSION}.tar.xz
 
-gpg -b -a meson-dist/PackageKit-${release_version}.tar.xz
+7. Upload tarball to:
 
-6. Upload tarball to:
+scp meson-dist/PackageKit-${NEW_VERSION}.tar.* mak@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
 
-scp meson-dist/PackageKit-${release_version}.tar.* mak@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/releases/
+8. Do post release version bump in meson.build, RELEASE
 
-7. Do post release version bump in meson.build, RELEASE
-
-8. Commit trivial changes:
+9. Commit trivial changes:
 
 git commit -a -m "trivial: post release version bump"
 git push
 
-9. Send an email to packagekit@lists.freedesktop.org
+10. Send an email to packagekit@lists.freedesktop.org
 
 =================================================
-PackageKit 1.3.3 released!
+PackageKit 1.3.4 released!
 
 Tarballs available here: https://www.freedesktop.org/software/PackageKit/releases/
 
