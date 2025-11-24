@@ -736,11 +736,6 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check for updates when offline");
-        return;
-    }
-
     // GOS-397: what filters could we possibly get there?
     if (! (filters == 0
         || filters == pk_bitfield_value(PK_FILTER_ENUM_UNKNOWN)
