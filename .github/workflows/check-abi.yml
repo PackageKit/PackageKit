@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Get this version
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Get version from last ABI break
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ env.LAST_ABI_BREAK }}
           path: original-version
