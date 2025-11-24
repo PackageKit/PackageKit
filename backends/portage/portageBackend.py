@@ -36,6 +36,7 @@ except ImportError:
 import layman.config
 import layman.db
 import layman.remotedb
+from gi.repository import GLib
 # packagekit imports
 from packagekit.backend import (
     PackageKitBaseBackend,
@@ -966,7 +967,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._get_pk_group(cpv),
                 metadata["DESCRIPTION"],
                 metadata["HOMEPAGE"],
-                self._get_size(cpv)
+                self._get_size(cpv),
+                GLib.MAXUINT64
             )
 
             self.percentage(percentage)

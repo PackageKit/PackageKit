@@ -35,6 +35,7 @@
 
 import pisi
 import pisi.ui
+from gi.repository import GLib
 from packagekit.backend import *
 from packagekit.package import PackagekitPackage
 from packagekit import enums
@@ -171,7 +172,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 else ''
 
             self.details(pkg_id, '', ",".join(pkg.license), group, pkg.description,
-                         homepage, pkg.packageSize)
+                         homepage, pkg.packageSize, GLib.MAXUINT64)
         else:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
 

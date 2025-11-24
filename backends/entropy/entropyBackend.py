@@ -28,6 +28,8 @@ import time
 import traceback
 import threading
 
+from gi.repository import GLib
+
 from packagekit.enums import *
 
 from packagekit.backend import PackageKitBaseBackend, get_package_id, \
@@ -1140,7 +1142,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
 
             self.details(pk_pkg, '', lic, self._get_pk_group(category),
-                         description, homepage, self._get_pkg_size(pkg))
+                         description, homepage, self._get_pkg_size(pkg), GLib.MAXUINT64)
 
         self.percentage(100)
 
