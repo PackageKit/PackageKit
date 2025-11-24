@@ -236,8 +236,6 @@ private:
     }
 
     void open() {
-        // TODO: call pkgdb_access here?
-
         if (pkgdb_open (&dbHandle, dbType) != EPKG_OK)
             g_error("pkgdb_open failed"); // TODO: this kills whole daemon, maybe this is too much?
         dbDeleter = deleted_unique_ptr<struct pkgdb>(dbHandle, [](pkgdb* dbHandle) {pkgdb_close (dbHandle); });
