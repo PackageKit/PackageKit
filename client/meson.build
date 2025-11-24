@@ -17,10 +17,6 @@ if get_option('offline_update')
   )
 endif
 
-subdir('pkcon')
-
-if get_option('pkgctl')
-
 executable(
   'pkgctl',
   [
@@ -44,4 +40,6 @@ executable(
   ]
 )
 
+if get_option('legacy_tools')
+    subdir('pkcon')
 endif

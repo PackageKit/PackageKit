@@ -7,10 +7,10 @@ fi
 set -x
 
 meson setup build \
-    -Dlocal_checkout=true \
     -Dmaintainer=true \
+    -Dlocal_checkout=true \
+    -Dlegacy_tools=true \
     -Ddaemon_tests=true \
-    -Dpkgctl=true \
     $@
 
 DUMMY_DESTDIR=/tmp/install-root/

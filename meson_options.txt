@@ -10,7 +10,19 @@ option('maintainer',
 
 option('packaging_backend',
     type : 'array',
-    choices : ['alpm', 'apt', 'dnf', 'dummy', 'entropy', 'eopkg', 'pisi', 'poldek', 'portage', 'slack', 'zypp', 'nix', 'freebsd'],
+    choices : ['alpm',
+               'apt',
+               'dnf',
+               'dummy',
+               'entropy',
+               'eopkg',
+               'pisi',
+               'poldek',
+               'portage',
+               'slack',
+               'zypp',
+               'nix',
+               'freebsd'],
     value : ['dummy'],
     description : 'The name of the backend to use'
 )
@@ -50,10 +62,10 @@ option('offline_update',
     value : true,
     description : 'Use systemd offline update'
 )
-option('pkgctl',
+option('legacy_tools',
     type : 'boolean',
     value : false,
-    description : 'Build the experimental pkgctl client'
+    description : 'Build the pkcon/pkmon command-line tools'
 )
 option('elogind',
     type : 'boolean',

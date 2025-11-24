@@ -24,11 +24,8 @@ gio_unix_dep = dependency('gio-unix-2.0', version: glib_req)
 gmodule_dep = dependency('gmodule-2.0', version: glib_req)
 sqlite3_dep = dependency('sqlite3')
 polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
+jansson_dep = dependency('jansson', version: '>=2.8', required: true)
 ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5', required: false)
-
-if get_option('pkgctl')
-    jansson_dep = dependency('jansson', version: '>=2.8', required: true)
-endif
 
 libsystemd = []
 if get_option('systemd')
