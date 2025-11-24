@@ -759,6 +759,11 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
 
     PKJobCanceller jc (job);
 
+    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline");
+        return;
+    }
+
     PkBitfield transaction_flags;
     gchar **package_ids = NULL;
     g_variant_get (params, "(t^a&s)",
@@ -1011,12 +1016,6 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
-    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
-    if (!pk_backend_is_online (backend)) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot check when offline");
-        return;
-    }
-
     pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
@@ -1239,11 +1238,6 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 void
 pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
 {
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot update packages when offline");
-        return;
-    }
-
     pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
 }
 
