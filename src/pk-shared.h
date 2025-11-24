@@ -39,6 +39,8 @@ gboolean	 pk_strtoint				(const gchar	*text,
 							 gint		*value);
 gboolean	 pk_strtouint				(const gchar	*text,
 							 guint		*value);
+gboolean	 pk_strtoulong				(const gchar	*text,
+							 gulong		*value);
 gboolean	 pk_strtouint64				(const gchar	*text,
 							 guint64	*value);
 GDBusNodeInfo	*pk_load_introspection			(const gchar	*filename,
