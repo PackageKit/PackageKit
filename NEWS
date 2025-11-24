@@ -1,3 +1,46 @@
+Version 1.3.3
+~~~~~~~~~~~~~
+Released: 2025-11-24
+
+Notes:
+ * This release introduces the experimental pkgctl utility, as a modern command-line
+   PackageKit client. It will eventually replace pkcon/pkmon, although we will keep
+   both available for a long time. The pkgctl build is disabled by default, pass
+   -Dpkgctl=true to enable it for testing.
+
+Features:
+ * lib: Modernize progress bar display (Matthias Klumpp)
+ * backends: Make extended job details API the default (Matthias Klumpp)
+ * progress-bar: Allow restarting an existing progress-bar (Matthias Klumpp)
+ * pkgctl: Add initial version of modern package-management CLI tool (Matthias Klumpp)
+
+Backends:
+ * backends: Add eopkg (forked from PiSi) (Joey Riches)
+ * apt: Fully resolve update candidates, allowing removals (Matthias Klumpp)
+ * apt: Emit pulsing/unknown progress while waiting for cache lock (Matthias Klumpp)
+
+Bugfixes:
+ * offline-update: Move FailureAction= to the correct  (Andrew Sayers)
+ * PkBackendJob: Fix clearing GDateTime pointer (Jelle van der Waa)
+ * lib: When spawning debconf helper, actually pass environment (Matthias Klumpp)
+ * client: Send SIGTERM to debconf helper instead of SIGQUIT (Matthias Klumpp)
+ * client: Pass a few more env vars to the debconf helper to fix Qt helpers (Matthias Klumpp)
+ * pkcon: Don't filter out removed packages from the update target set (Matthias Klumpp)
+ * client: Allow showing progress on very wide terminals on large screens (Matthias Klumpp)
+ * Add missing role-enum description for repair-system (Matthias Klumpp)
+ * command-not-found: inherit stdin (Osama Albahrani)
+
+Miscellaneous:
+ * Bump C standard version to C17 (Matthias Klumpp)
+ * policy: Allow admins to trigger updates without password, require password for installations (Matthias Klumpp)
+ * policy: Allow inactive users to refresh sources (Matthias Klumpp)
+ * policy: Allow offline-upgrades to be triggered without password for admin users (Matthias Klumpp)
+ * Find KDE debconf communicator in libexec as well (Matthias Klumpp)
+ * offline-updates: Assume plymouth>=0.9.5 by default (Matthias Klumpp)
+ * build: Fix "missing field initializer" clang warnings (sid)
+ * build: Fix "set but not used" clang warnings (sid)
+ * meson: Move broader warning flags ahead of narrower ones for clang (sid)
+
 Version 1.3.2
 ~~~~~~~~~~~~~
 Released: 2025-10-02
