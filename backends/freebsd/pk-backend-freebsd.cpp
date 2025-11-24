@@ -948,6 +948,30 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
 
     PackageDatabase pkgDb(job, PKGDB_LOCK_EXCLUSIVE);
 
+    int ret = pkgdb_access(PKGDB_MODE_WRITE|PKGDB_MODE_CREATE,
+                PKGDB_DB_REPO);
+    switch (ret) {
+        case EPKG_OK:
+            break;
+        case EPKG_ENOACCESS:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,
+                "The package DB directory isn't writable");
+            return;
+        case EPKG_INSECURE:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
+                "The package DB directory is writable by non-root users");
+            return;
+        default:
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
+                "General libpkg failure");
+            return;
+    }
+
+    if (pkg_repos_activated_count() == 0) {
+        g_warning("No active remote repositories configured");
+        return;
+    }
+
     pkgDb.setEventHandler([job, &jc](pkg_event* ev) {
         if (jc.cancelIfRequested())
             return true;
@@ -975,31 +999,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
         return jc.cancelIfRequested();
     });
 
-    int ret = pkgdb_access(PKGDB_MODE_WRITE|PKGDB_MODE_CREATE,
-                PKGDB_DB_REPO);
-    switch (ret) {
-        case EPKG_OK:
-            break;
-        case EPKG_ENOACCESS:
-            pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_WRITE_REPO_CONFIG,
-                "The package DB directory isn't writable");
-            return;
-        case EPKG_INSECURE:
-            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
-                "The package DB directory is writable by non-root users");
-            return;
-        default:
-            pk_backend_job_error_code (job, PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,
-                "General libpkg failure");
-            return;
-    }
-
     pk_backend_job_set_percentage (job, 0);
-
-    if (pkg_repos_activated_count() == 0) {
-        g_warning("No active remote repositories configured");
-        return;
-    }
 
     struct pkg_repo *r = NULL;
     while (pkg_repos(&r) == EPKG_OK) {
