@@ -232,7 +232,7 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("data\t%s\n" % data))
         sys.stdout.flush()
 
-    def details(self, package_id, summary, package_license, group, desc, url, bytes):
+    def details(self, package_id, summary, package_license, group, desc, url, bytes, download_bytes):
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -243,7 +243,7 @@ class PackageKitBaseBackend:
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
         '''
-        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes)))
+        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
         sys.stdout.flush()
 
     def files(self, package_id, file_list):
