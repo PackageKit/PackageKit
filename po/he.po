@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-23 06:24+0100\n"
-"PO-Revision-Date: 2025-11-23 10:34+0000\n"
+"PO-Revision-Date: 2025-11-25 07:51+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
 "Language: he\n"
@@ -128,10 +128,8 @@ msgid "Failed to get updates: %s"
 msgstr "לא ניתן לקבל מצב סוכן"
 
 #: client/pkgc-manage.c:505 client/pkgc-manage.c:604 client/pkgc-manage.c:829
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
-msgstr "אין חבילות שדורשות עדכון לגרסאות חדשות יותר."
+msgstr "אין חבילות שדורשות עדכון"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -647,254 +645,208 @@ msgid "Repository '%s' removed"
 msgstr "נדרש שם מאגר"
 
 #: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "List repositories"
-msgstr "מאגרים מתקבלים"
+msgstr "הצגת מאגרים"
 
 #: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Enable a repository"
-msgstr "מאגר נמחק"
+msgstr "הפעלת מאגר"
 
 #: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Disable a repository"
-msgstr "מאגר נמחק"
+msgstr "השבתת מאגר"
 
 #: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Remove a repository"
-msgstr "מאגר נמחק"
+msgstr "הסרת מאגר"
 
 #: client/pkgc-util.c:94
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "אין חיבור לסוכן PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
+#, c-format
 msgid "%u seconds"
-msgstr "(שניות)"
+msgstr "%u שניות"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:137
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u דק׳ %u שנ׳"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u דק׳"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:147
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u שע׳ %u דק׳"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u שע׳"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u ימים %u שע׳"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u ימים"
 
 #: client/pkgc-util.c:275
 msgid "Error"
-msgstr ""
+msgstr "שגיאה"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:307
 msgid "Warning:"
-msgstr ""
+msgstr "אזהרה:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgctl
 #: client/pkgc-util.c:427 client/pkgctl.c:188
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "פענוח הביטוי ‚auto’ (אוטומטית) נכשל: %s"
+msgstr "פענוח האפשרויות נכשל: %s"
 
 #. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "שימוש: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:606 client/pkgc-util.c:760
-#, fuzzy
-#| msgid "Package"
 msgid "Package:"
-msgstr "חבילה"
+msgstr "חבילה:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:610
 msgid "Version:"
-msgstr ""
+msgstr "גרסה:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:617
-#, fuzzy
-#| msgid "Summary"
 msgid "Summary:"
-msgstr "תיאור"
+msgstr "תקציר:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:625
-#, fuzzy
-#| msgid "Description"
 msgid "Description:"
-msgstr "תיאור"
+msgstr "תיאור:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:632
 msgid "License:"
-msgstr ""
+msgstr "רישיון:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:639
 msgid "URL:"
-msgstr ""
+msgstr "כתובת:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:646
 msgid "Group:"
-msgstr ""
+msgstr "קבוצה:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:654
-#, fuzzy
-#| msgid "Installed"
 msgid "Installed Size:"
-msgstr "הותקן"
+msgstr "גודל מותקן:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:662
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Download Size:"
-msgstr "ירד"
+msgstr "גודל הורדה:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:756
-#, fuzzy
-#| msgid "Update text"
 msgid "Update Details:"
-msgstr "פרטי עדכון"
+msgstr "פרטי עדכון:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:767
-#, fuzzy
-#| msgid "Updates"
 msgid "Updates:"
-msgstr "עדכונים"
+msgstr "עדכונים:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:776
-#, fuzzy
-#| msgid "Obsoletes"
 msgid "Obsoletes:"
-msgstr "מיישנת"
+msgstr "מיושנות:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:785
-#, fuzzy
-#| msgid "Vendor"
 msgid "Vendor:"
-msgstr "ספק"
+msgstr "ספק:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:794
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "עוקב תקלות:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:803
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:811
-#, fuzzy
-#| msgid "Restart"
 msgid "Restart:"
-msgstr "הפעלה מחדש"
+msgstr "הפעלה מחדש:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:820
-#, fuzzy
-#| msgid "Update text"
 msgid "Update text:"
-msgstr "פרטי עדכון"
+msgstr "טקסט עדכון:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:827
-#, fuzzy
-#| msgid "Changes"
 msgid "Changes:"
-msgstr "שינויים"
+msgstr "שינויים:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:834
-#, fuzzy
-#| msgid "State"
 msgid "State:"
-msgstr "מצב"
+msgstr "מצב:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:843
-#, fuzzy
-#| msgid "Issued"
 msgid "Issued:"
-msgstr "הונפק"
+msgstr "הונפק:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:850
-#, fuzzy
-#| msgid "Updated"
 msgid "Updated:"
-msgstr "עודכן"
+msgstr "עודכן:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:967
-#, fuzzy
-#| msgid "Transaction"
 msgid "Transaction:"
-msgstr "פעולה"
+msgstr "פעולה:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:971
-#, fuzzy
-#| msgid "System time"
 msgid "System time:"
-msgstr "שעת המערכת"
+msgstr "שעת המערכת:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:975
-#, fuzzy
-#| msgid "Succeeded"
 msgid "Succeeded:"
-msgstr "הצליחה"
+msgstr "הצליחה:"
 
 #: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
 msgid "True"
@@ -906,17 +858,13 @@ msgstr "שקר"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:984
-#, fuzzy
-#| msgid "Role"
 msgid "Role:"
-msgstr "תפקיד"
+msgstr "תפקיד:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:991
-#, fuzzy
-#| msgid "Duration"
 msgid "Duration:"
-msgstr "משך"
+msgstr "משך:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:998
