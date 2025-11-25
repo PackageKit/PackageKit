@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-23 06:24+0100\n"
+"POT-Creation-Date: 2025-11-24 16:04+0100\n"
 "PO-Revision-Date: 2025-10-04 22:02+0000\n"
 "Last-Translator: Ricky Tigg <ricky.tigg@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/packagekit/translations/fi/>\n"
@@ -82,22 +82,22 @@ msgid "SECONDS"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl refresh
-#: client/pkgc-manage.c:195
+#: client/pkgc-manage.c:196
 #, fuzzy
 #| msgid "Refresh the cache"
 msgid "Refresh the package metadata cache."
 msgstr "Päivitä välimuisti"
 
-#: client/pkgc-manage.c:221
+#: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl install
-#: client/pkgc-manage.c:245
+#: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
 msgstr ""
 
-#: client/pkgc-manage.c:301 client/pkgc-manage.c:360 client/pkgc-manage.c:415
+#: client/pkgc-manage.c:302 client/pkgc-manage.c:361 client/pkgc-manage.c:416
 #: client/pkgc-query.c:436
 #, fuzzy, c-format
 #| msgid "This tool could not find the package: %s"
@@ -105,32 +105,32 @@ msgid "Could not find packages: %s"
 msgstr "Tämä työkalu ei löytänyt pakettia: %s"
 
 #. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:337
+#: client/pkgc-manage.c:338
 msgid "Remove one or more packages from the system."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:401
+#: client/pkgc-manage.c:402
 msgid "Download packages to the specified directory without installing."
 msgstr ""
 
-#: client/pkgc-manage.c:423
+#: client/pkgc-manage.c:424
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:459
+#: client/pkgc-manage.c:460
 msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#: client/pkgc-manage.c:496 client/pkgc-manage.c:595 client/pkgc-manage.c:821
+#: client/pkgc-manage.c:497 client/pkgc-manage.c:596 client/pkgc-manage.c:822
 #, fuzzy, c-format
 #| msgid "Failed to get daemon state"
 msgid "Failed to get updates: %s"
 msgstr "Taustaprosessin tilaa ei saatu"
 
-#: client/pkgc-manage.c:505 client/pkgc-manage.c:604 client/pkgc-manage.c:829
+#: client/pkgc-manage.c:506 client/pkgc-manage.c:605 client/pkgc-manage.c:830
 #, fuzzy
 #| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
@@ -138,87 +138,87 @@ msgstr "Yksikään paketti ei vaadi päivittämistä uudempaan versioon."
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:544
+#: client/pkgc-manage.c:545
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
 
-#: client/pkgc-manage.c:640
+#: client/pkgc-manage.c:641
 #, fuzzy, c-format
 #| msgid "Trigger offline updates"
 msgid "Failed to read offline update action: %s"
 msgstr "Käynnistä offline-päivitykset"
 
-#: client/pkgc-manage.c:650
+#: client/pkgc-manage.c:651
 #, fuzzy
 #| msgid "Clear offline update message"
 msgid "Offline update is not triggered."
 msgstr "Poista offline-päivitysviesti"
 
-#: client/pkgc-manage.c:658
+#: client/pkgc-manage.c:659
 #, fuzzy, c-format
 #| msgid "Trigger offline updates"
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Käynnistä offline-päivitykset"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:669
+#: client/pkgc-manage.c:670
 #, fuzzy
 #| msgid "Prepared updates:"
 msgid "Prepared packages:"
 msgstr "Valmistellut päivitykset:"
 
-#: client/pkgc-manage.c:683
+#: client/pkgc-manage.c:684
 #, fuzzy
 #| msgid "Clear offline update message"
 msgid "No offline update is prepared."
 msgstr "Poista offline-päivitysviesti"
 
-#: client/pkgc-manage.c:685
+#: client/pkgc-manage.c:686
 #, fuzzy, c-format
 #| msgid "Trigger offline updates"
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Käynnistä offline-päivitykset"
 
-#: client/pkgc-manage.c:695
+#: client/pkgc-manage.c:696
 #, fuzzy
 #| msgid "Downloading update information"
 msgid "No results from last offline update available."
 msgstr "Ladataan päivitystietoja"
 
-#: client/pkgc-manage.c:702
+#: client/pkgc-manage.c:703
 #, fuzzy, c-format
 #| msgid "Clear offline update message"
 msgid "Last offline update failed: %s: %s"
 msgstr "Poista offline-päivitysviesti"
 
-#: client/pkgc-manage.c:709
+#: client/pkgc-manage.c:710
 #, fuzzy
 #| msgid "Clear offline update message"
 msgid "Last offline update completed successfully"
 msgstr "Poista offline-päivitysviesti"
 
-#: client/pkgc-manage.c:720
+#: client/pkgc-manage.c:721
 #, fuzzy, c-format
 #| msgid "Updated"
 msgid "Updated: %s"
 msgstr "Päivitetty"
 
-#: client/pkgc-manage.c:741
+#: client/pkgc-manage.c:742
 #, fuzzy, c-format
 #| msgid "Trigger offline updates"
 msgid "Failed to trigger offline update: %s"
 msgstr "Käynnistä offline-päivitykset"
 
-#: client/pkgc-manage.c:745
+#: client/pkgc-manage.c:746
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr ""
 
 #. TRANSLATORS: Description of the pkgctl offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:765
+#: client/pkgc-manage.c:766
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -229,104 +229,104 @@ msgid ""
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
-#: client/pkgc-manage.c:789
+#: client/pkgc-manage.c:790
 #, fuzzy, c-format
 #| msgid "Failed to resolve auto: %s"
 msgid "Failed to cancel offline update: %s"
 msgstr "Automaattinen ratkaisu epäonnistui: %s"
 
-#: client/pkgc-manage.c:793
+#: client/pkgc-manage.c:794
 #, fuzzy
 #| msgid "Clear offline update message"
 msgid "Offline update cancelled"
 msgstr "Poista offline-päivitysviesti"
 
-#: client/pkgc-manage.c:845
+#: client/pkgc-manage.c:851
 #, fuzzy, c-format
 #| msgid "Clear offline update message"
 msgid "Unknown offline-update request: %s"
 msgstr "Poista offline-päivitysviesti"
 
 #. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:865
+#: client/pkgc-manage.c:871
 #, fuzzy
 #| msgid "Install the packages without asking for confirmation"
 msgid "Install a package signature for GPG verification."
 msgstr "Asenna paketit kysymättä vahvistusta"
 
 #. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:900
+#: client/pkgc-manage.c:906
 msgid "Attempt to repair the package management system."
 msgstr ""
 
-#: client/pkgc-manage.c:916
+#: client/pkgc-manage.c:922
 msgid "System repaired successfully"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:937
+#: client/pkgc-manage.c:943
 msgid "Safely terminate the PackageKit daemon."
 msgstr ""
 
-#: client/pkgc-manage.c:943
+#: client/pkgc-manage.c:949
 #, fuzzy, c-format
 #| msgid "Failed to get daemon state"
 msgid "Failed to send daemon quit request: %s"
 msgstr "Taustaprosessin tilaa ei saatu"
 
-#: client/pkgc-manage.c:962
+#: client/pkgc-manage.c:968
 msgid "Refresh package metadata"
 msgstr ""
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:974
 #, fuzzy
 #| msgid "Install package"
 msgid "Install packages"
 msgstr "Asenna paketti"
 
-#: client/pkgc-manage.c:974
+#: client/pkgc-manage.c:980
 #, fuzzy
 #| msgid "Remove package"
 msgid "Remove packages"
 msgstr "Poista paketti"
 
-#: client/pkgc-manage.c:980
+#: client/pkgc-manage.c:986
 #, fuzzy
 #| msgid "Updating packages"
 msgid "Update packages"
 msgstr "Päivitetään paketteja"
 
-#: client/pkgc-manage.c:986
+#: client/pkgc-manage.c:992
 #, fuzzy
 #| msgid "Upgrade System"
 msgid "Upgrade the system"
 msgstr "Tee käyttöjärjestelmäpäivitys"
 
-#: client/pkgc-manage.c:992
+#: client/pkgc-manage.c:998
 #, fuzzy
 #| msgid "Downloading packages"
 msgid "Download packages"
 msgstr "Ladataan paketteja"
 
-#: client/pkgc-manage.c:998
+#: client/pkgc-manage.c:1004
 #, fuzzy
 #| msgid "There are no packages to update."
 msgid "Manage offline system updates"
 msgstr "Yhtään päivitystä ei ole saatavilla."
 
-#: client/pkgc-manage.c:1004
+#: client/pkgc-manage.c:1010
 #, fuzzy
 #| msgid "Installing signature"
 msgid "Install package signature"
 msgstr "Asennetaan allekirjoitusta"
 
-#: client/pkgc-manage.c:1010
+#: client/pkgc-manage.c:1016
 #, fuzzy
 #| msgid "Repair System"
 msgid "Repair package system"
 msgstr "Korjaa järjestelmä"
 
-#: client/pkgc-manage.c:1016
+#: client/pkgc-manage.c:1022
 msgid "Safely stop the PackageKit daemon"
 msgstr ""
 

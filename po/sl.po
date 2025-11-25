@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-23 06:24+0100\n"
+"POT-Creation-Date: 2025-11-24 16:04+0100\n"
 "PO-Revision-Date: 2025-11-23 22:51+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
@@ -73,57 +73,57 @@ msgid "SECONDS"
 msgstr "SEKUNDE"
 
 #. TRANSLATORS: Description for pkgctl refresh
-#: client/pkgc-manage.c:195
+#: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
 msgstr "Osveži predpomnilnik metapodatkov paketa."
 
-#: client/pkgc-manage.c:221
+#: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
 msgstr "Metapodatki paketa osveženi"
 
 #. TRANSLATORS: Description for pkgctl install
-#: client/pkgc-manage.c:245
+#: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
 msgstr "Namestite enega ali več paketov ali krajevnih paketnih datotek."
 
-#: client/pkgc-manage.c:301 client/pkgc-manage.c:360 client/pkgc-manage.c:415
+#: client/pkgc-manage.c:302 client/pkgc-manage.c:361 client/pkgc-manage.c:416
 #: client/pkgc-query.c:436
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Ni možno najti paketov: %s"
 
 #. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:337
+#: client/pkgc-manage.c:338
 msgid "Remove one or more packages from the system."
 msgstr "Odstranite enega ali več paketov iz sistema."
 
 #. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:401
+#: client/pkgc-manage.c:402
 msgid "Download packages to the specified directory without installing."
 msgstr "Prenesite pakete v določeno mapo brez nameščanja."
 
-#: client/pkgc-manage.c:423
+#: client/pkgc-manage.c:424
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "Mapa ne obstaja: %s"
 
 #. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:459
+#: client/pkgc-manage.c:460
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Posodobite vse pakete ali posamezne pakete na najnovejše različice."
 
-#: client/pkgc-manage.c:496 client/pkgc-manage.c:595 client/pkgc-manage.c:821
+#: client/pkgc-manage.c:497 client/pkgc-manage.c:596 client/pkgc-manage.c:822
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Ni možno pridobiti posodobitev: %s"
 
-#: client/pkgc-manage.c:505 client/pkgc-manage.c:604 client/pkgc-manage.c:829
+#: client/pkgc-manage.c:506 client/pkgc-manage.c:605 client/pkgc-manage.c:830
 msgid "No packages require updating"
 msgstr "Noben paket ne zahteva posodobitve"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:544
+#: client/pkgc-manage.c:545
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -133,64 +133,64 @@ msgstr ""
 "\n"
 "Vrste: minimal (minimalna), default (privzeta), complete (popolna)"
 
-#: client/pkgc-manage.c:640
+#: client/pkgc-manage.c:641
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "Ni uspelo prebrati dejanja posodobitve brez povezave: %s"
 
-#: client/pkgc-manage.c:650
+#: client/pkgc-manage.c:651
 msgid "Offline update is not triggered."
 msgstr "Posodobitev brez povezave ni sprožena."
 
-#: client/pkgc-manage.c:658
+#: client/pkgc-manage.c:659
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Posodobitev brez povezave je sprožena. Dejanje po posodobitvi: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:669
+#: client/pkgc-manage.c:670
 msgid "Prepared packages:"
 msgstr "Pripravljeni paketi:"
 
-#: client/pkgc-manage.c:683
+#: client/pkgc-manage.c:684
 msgid "No offline update is prepared."
 msgstr "Nobena posodobitev brez povezave ni pripravljena."
 
-#: client/pkgc-manage.c:685
+#: client/pkgc-manage.c:686
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Branje pripravljenih posodobitev brez povezave ni uspelo: %s"
 
-#: client/pkgc-manage.c:695
+#: client/pkgc-manage.c:696
 msgid "No results from last offline update available."
 msgstr "Rezultati o zadnji razpoložljivi posodobitvi brez povezave niso na voljo."
 
-#: client/pkgc-manage.c:702
+#: client/pkgc-manage.c:703
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "Zadnja posodobitev brez povezave ni uspela: %s: %s"
 
-#: client/pkgc-manage.c:709
+#: client/pkgc-manage.c:710
 msgid "Last offline update completed successfully"
 msgstr "Zadnja posodobitev brez povezave uspešno zaključena"
 
-#: client/pkgc-manage.c:720
+#: client/pkgc-manage.c:721
 #, c-format
 msgid "Updated: %s"
 msgstr "Posodobljeno: %s"
 
-#: client/pkgc-manage.c:741
+#: client/pkgc-manage.c:742
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "Ni uspelo sprožiti posodobitve brez povezave: %s"
 
-#: client/pkgc-manage.c:745
+#: client/pkgc-manage.c:746
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "Načrtovana je posodobitev brez povezave. Sistem se bo ob naslednjem ponovnem zagonu posodobil."
 
 #. TRANSLATORS: Description of the pkgctl offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:765
+#: client/pkgc-manage.c:766
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -208,81 +208,81 @@ msgstr ""
 "  cancel  - prekliče načrtovano posodobitev brez povezave\n"
 "  status  - pokaže podatke o stanju pripravljene ali dokončane posodobitev brez povezave"
 
-#: client/pkgc-manage.c:789
+#: client/pkgc-manage.c:790
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "Ni uspelo preklicati posodobitve brez povezave: %s"
 
-#: client/pkgc-manage.c:793
+#: client/pkgc-manage.c:794
 msgid "Offline update cancelled"
 msgstr "Posodobitev brez povezave preklicana"
 
-#: client/pkgc-manage.c:845
+#: client/pkgc-manage.c:851
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "Neznana zahteva za posodobitev brez povezave: %s"
 
 #. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:865
+#: client/pkgc-manage.c:871
 msgid "Install a package signature for GPG verification."
 msgstr "Namesti podpis paketa za overjanje GPG."
 
 #. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:900
+#: client/pkgc-manage.c:906
 msgid "Attempt to repair the package management system."
 msgstr "Poskusi popraviti sistem upravljanja paketov."
 
-#: client/pkgc-manage.c:916
+#: client/pkgc-manage.c:922
 msgid "System repaired successfully"
 msgstr "Sistem je uspešno popravljen"
 
 #. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:937
+#: client/pkgc-manage.c:943
 msgid "Safely terminate the PackageKit daemon."
 msgstr "Varno zaključi prikriti proces PackageKit."
 
-#: client/pkgc-manage.c:943
+#: client/pkgc-manage.c:949
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "Pošiljanje zahteve po izhodu prikritega procesa ni uspelo: %s"
 
-#: client/pkgc-manage.c:962
+#: client/pkgc-manage.c:968
 msgid "Refresh package metadata"
 msgstr "Osveži metapodatke paketa"
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:974
 msgid "Install packages"
 msgstr "Namesti pakete"
 
-#: client/pkgc-manage.c:974
+#: client/pkgc-manage.c:980
 msgid "Remove packages"
 msgstr "Odstrani pakete"
 
-#: client/pkgc-manage.c:980
+#: client/pkgc-manage.c:986
 msgid "Update packages"
 msgstr "Posodobi pakete"
 
-#: client/pkgc-manage.c:986
+#: client/pkgc-manage.c:992
 msgid "Upgrade the system"
 msgstr "Nadgradite sistem"
 
-#: client/pkgc-manage.c:992
+#: client/pkgc-manage.c:998
 msgid "Download packages"
 msgstr "Prejemi pakete"
 
-#: client/pkgc-manage.c:998
+#: client/pkgc-manage.c:1004
 msgid "Manage offline system updates"
 msgstr "Upravljaj posodobitve sistema brez povezave"
 
-#: client/pkgc-manage.c:1004
+#: client/pkgc-manage.c:1010
 msgid "Install package signature"
 msgstr "Namesti podpis paketa"
 
-#: client/pkgc-manage.c:1010
+#: client/pkgc-manage.c:1016
 msgid "Repair package system"
 msgstr "Popravi sistem upravljanja paketov"
 
-#: client/pkgc-manage.c:1016
+#: client/pkgc-manage.c:1022
 msgid "Safely stop the PackageKit daemon"
 msgstr "Varno ustavi prikriti proces PackageKit"
 
