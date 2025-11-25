@@ -465,28 +465,42 @@ pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGCTL_EXIT_SYNTAX_ERROR;
 
-	/* Apply options to context */
+	/* apply options to context */
 	pkgc_manage_apply_options (ctx);
 
 	if (argc >= 2) {
-		/* Update specific packages */
+		/* update specific packages */
+		g_auto(GStrv) package_ids = NULL;
+
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
+
+		package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
+		if (package_ids == NULL) {
+			if (error)
+				pkgc_print_error (ctx,
+						  _("Could not find packages to update: %s"), error->message);
+			return PKGCTL_EXIT_FAILURE;
+		}
+
 		pk_task_update_packages_async (PK_TASK (ctx->task),
-					       argv + 1,
+					       package_ids,
 					       ctx->cancellable,
 					       pkgc_context_on_progress_cb,
 					       ctx,
 					       pkgc_manage_on_task_finished_cb,
 					       ctx);
 	} else {
-		/* Update all packages - get updates first */
+		/* update all packages - get updates first */
 		g_autoptr(PkResults) results = NULL;
 		g_autoptr(PkPackageSack) sack = NULL;
 		g_auto(GStrv) package_ids = NULL;
 
-		/* Clear any previous error */
+		/* clear any previous error */
 		g_clear_error (&error);
 
-		/* Get current updates */
+		/* get current updates */
 		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
 						    ctx->filters,
 						    ctx->cancellable,
@@ -507,7 +521,7 @@ pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 			return PKGCTL_EXIT_SUCCESS;
 		}
 
-		/* Now update them */
+		/* now update them */
 		pk_task_update_packages_async (PK_TASK (ctx->task),
 					       package_ids,
 					       ctx->cancellable,
