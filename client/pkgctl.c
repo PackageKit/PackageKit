@@ -116,7 +116,7 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 	if (argc < 2) {
 		pkgc_print_error (ctx,
 				  _("No command specified. Use --help for usage information."));
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 	}
 
 	command_name = argv[1];
@@ -124,7 +124,7 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 
 	if (!cmd) {
 		pkgc_print_error (ctx, _("Unknown command: %s"), command_name);
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 	}
 
 	if (g_strcmp0 (command_name, "monitor") != 0) {
@@ -133,7 +133,7 @@ pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
 		/* connect to PK with the selected parameters */
 		if (!pkgc_context_init (ctx, &error)) {
 			pkgc_print_error (ctx, _("Failed to connect to PackageKit: %s"), error->message);
-			return PKGCTL_EXIT_FAILURE;
+			return PKGC_EXIT_FAILURE;
 		}
 	}
 
@@ -150,7 +150,7 @@ main (int argc, char **argv)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) context = NULL;
 	PkgctlContext *ctx = NULL;
-	int ret = PKGCTL_EXIT_SUCCESS;
+	int ret = PKGC_EXIT_SUCCESS;
 
 	/* setup locale */
 	setlocale (LC_ALL, "");
@@ -187,7 +187,7 @@ main (int argc, char **argv)
 		/* TRANSLATORS: Failed to parse command-line options in pkgctl */
 		g_printerr (_("Failed to parse options: %s"), error->message);
 		g_printerr ("\n");
-		ret = PKGCTL_EXIT_SYNTAX_ERROR;
+		ret = PKGC_EXIT_SYNTAX_ERROR;
 		goto out;
 	}
 
@@ -195,7 +195,7 @@ main (int argc, char **argv)
 	if (opt_version) {
 		g_print (_("Version: %s"), VERSION);
 		g_print ("\n");
-		ret = PKGCTL_EXIT_SUCCESS;
+		ret = PKGC_EXIT_SUCCESS;
 		goto out;
 	}
 
@@ -216,7 +216,7 @@ main (int argc, char **argv)
 		g_print ("\n");
 		g_print ("%s\n", _("Use 'pkgctl COMMAND --help' for command-specific help."));
 
-		ret = PKGCTL_EXIT_SUCCESS;
+		ret = PKGC_EXIT_SUCCESS;
 		goto out;
 	}
 
@@ -253,7 +253,7 @@ skip_global_parse:
 						  * an incorrect filter */
 						 _("The filter specified was invalid"),
 						 opt_filter_str);
-			ret = PKGCTL_EXIT_SYNTAX_ERROR;
+			ret = PKGC_EXIT_SYNTAX_ERROR;
 			goto out;
 		}
 	}

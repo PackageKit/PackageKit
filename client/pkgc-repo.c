@@ -44,7 +44,7 @@ pkgc_repo_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoint
 
 	if (error) {
 		pkgc_print_error (ctx, "%s", error->message);
-		ctx->exit_code = PKGCTL_EXIT_FAILURE;
+		ctx->exit_code = PKGC_EXIT_FAILURE;
 
 		goto out;
 	}
@@ -81,7 +81,7 @@ pkgc_repo_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 		/* TRANSLATORS: Description for pkgctl repo-list */
 		_("List all configured package repositories."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* run */
 	pk_task_get_repo_list_async (PK_TASK (ctx->task),
@@ -114,7 +114,7 @@ pkgc_repo_enable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 		/* TRANSLATORS: Description for pkgctl repo-enable */
 		_("Enable the specified repository."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	repo_id = argv[1];
 
@@ -130,7 +130,7 @@ pkgc_repo_enable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 
 	g_main_loop_run (ctx->loop);
 
-	if (ctx->exit_code == PKGCTL_EXIT_SUCCESS)
+	if (ctx->exit_code == PKGC_EXIT_SUCCESS)
 		pkgc_print_success (ctx, _("Repository '%s' enabled"), repo_id);
 
 	return ctx->exit_code;
@@ -154,7 +154,7 @@ pkgc_repo_disable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 		/* TRANSLATORS: Description for pkgctl repo-disable */
 		_("Disable the specified repository."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	repo_id = argv[1];
 
@@ -170,7 +170,7 @@ pkgc_repo_disable (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 
 	g_main_loop_run (ctx->loop);
 
-	if (ctx->exit_code == PKGCTL_EXIT_SUCCESS)
+	if (ctx->exit_code == PKGC_EXIT_SUCCESS)
 		pkgc_print_success (ctx, _("Repository '%s' disabled"), repo_id);
 
 	return ctx->exit_code;
@@ -205,7 +205,7 @@ pkgc_repo_remove (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Remove repository */
 	pk_client_repo_remove_async (PK_CLIENT (ctx->task),
@@ -220,7 +220,7 @@ pkgc_repo_remove (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 
 	g_main_loop_run (ctx->loop);
 
-	if (ctx->exit_code == PKGCTL_EXIT_SUCCESS)
+	if (ctx->exit_code == PKGC_EXIT_SUCCESS)
 		pkgc_print_success (ctx, _("Repository '%s' removed"), argv[1]);
 
 	return ctx->exit_code;

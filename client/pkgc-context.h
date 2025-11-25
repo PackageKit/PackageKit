@@ -28,12 +28,16 @@
 
 G_BEGIN_DECLS
 
-/* Exit codes */
-#define PKGCTL_EXIT_SUCCESS	       0
-#define PKGCTL_EXIT_FAILURE	       1
-#define PKGCTL_EXIT_SYNTAX_ERROR       2
-#define PKGCTL_EXIT_PERMISSION_DENIED  4
-#define PKGCTL_EXIT_TRANSACTION_FAILED 5
+/* exit codes */
+#define PKGC_EXIT_SUCCESS	       0
+#define PKGC_EXIT_FAILURE	       1
+#define PKGC_EXIT_SYNTAX_ERROR       2
+#define PKGC_EXIT_PERMISSION_DENIED  3
+#define PKGC_EXIT_NOT_FOUND			 4
+#define PKGC_EXIT_TRANSACTION_FAILED 5
+
+/* error domain */
+#define PKGC_ERROR	(pkgc_error_quark ())
 
 /**
  * OutputMode:
@@ -103,6 +107,7 @@ struct PkgctlCommand {
 					 gchar **argv);
 };
 
+GQuark			 pkgc_error_quark (void);
 PkgctlContext	    *pkgc_context_new (void);
 void		     pkgc_context_free (PkgctlContext *ctx);
 gboolean	     pkgc_context_init (PkgctlContext *ctx, GError **error);

@@ -46,7 +46,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 	if (error) {
 		pkgc_print_error (ctx, "%s", error->message);
-		ctx->exit_code = PKGCTL_EXIT_FAILURE;
+		ctx->exit_code = PKGC_EXIT_FAILURE;
 		g_main_loop_quit (ctx->loop);
 		return;
 	}
@@ -122,7 +122,7 @@ pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpo
 
 	if (error) {
 		pkgc_print_error (ctx, "%s", error->message);
-		ctx->exit_code = PKGCTL_EXIT_FAILURE;
+		ctx->exit_code = PKGC_EXIT_FAILURE;
 
 		goto out;
 	}
@@ -165,7 +165,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 		/* TRANSLATORS: Description for pkgctl backend */
 		_("Show PackageKit backend information."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* get control properties */
 	g_object_get (ctx->control,
@@ -223,7 +223,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 		}
 	}
 
-	return PKGCTL_EXIT_SUCCESS;
+	return PKGC_EXIT_SUCCESS;
 }
 
 /**
@@ -244,7 +244,7 @@ pkgc_history (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 		/* TRANSLATORS: Description for pkgctl history */
 		_("Show recent package management transactions."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Parse optional limit */
 	if (argc >= 2) {
@@ -294,7 +294,7 @@ pkgc_query_search (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 												  "[MODE] PATTERN...",
 												  cmd_description);
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Check if first argument is a search type */
 	if (argc >= 3 && (strcmp (argv[1], "name") == 0 || strcmp (argv[1], "details") == 0 ||
@@ -309,7 +309,7 @@ pkgc_query_search (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 
 	if (search_count == 0) {
 		pkgc_print_error (ctx, _("No search pattern specified"));
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 	}
 
 	/* Perform search based on type */
@@ -370,7 +370,7 @@ pkgc_query_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 		/* TRANSLATORS: Description for pkgctl list */
 		_("List all packages or those matching a pattern."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* if patterns provided, search by name */
 	if (argc >= 2) {
@@ -414,7 +414,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 		/* TRANSLATORS: Description for pkgctl show */
 		_("Show information about one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* TODO: Do we support mixed local packages and remote ones? Local handling should be improved... */
 	if (g_file_test ((argv + 1)[0], G_FILE_TEST_EXISTS)) {
@@ -436,7 +436,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 						  _("Could not find packages: %s"), error->message);
 			}
 
-			return PKGCTL_EXIT_FAILURE;
+			return PKGC_EXIT_FAILURE;
 		}
 
 		/* get package details */
@@ -481,12 +481,12 @@ pkgc_query_depends_on (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar 
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 	if (package_ids == NULL) {
 		pkgc_print_error (ctx, _("Could not resolve packages: %s"), error->message);
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 
 	/* get dependencies */
@@ -519,7 +519,7 @@ pkgc_query_what_provides (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
 		/* TRANSLATORS: Description for pkgctl what-provides */
 		_("Show which packages provide the specified capability."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	pk_task_what_provides_async (PK_TASK (ctx->task),
 				     ctx->filters,
@@ -550,7 +550,7 @@ pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 		/* TRANSLATORS: Description for pkgctl files */
 		_("List all files contained in one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* TODO: Do we support mixed local packages and remote ones? Local handling should be improved... */
 	if (g_file_test ((argv + 1)[0], G_FILE_TEST_EXISTS)) {
@@ -568,7 +568,7 @@ pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 		package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 		if (package_ids == NULL) {
 			pkgc_print_error (ctx, _("Could not resolve packages: %s"), error->message);
-			return PKGCTL_EXIT_FAILURE;
+			return PKGC_EXIT_FAILURE;
 		}
 
 		/* get files list */
@@ -602,7 +602,7 @@ pkgc_on_updates_finished_cb (GObject *source_object, GAsyncResult *res, gpointer
 
 	if (error != NULL) {
 		pkgc_print_error (ctx, "%s", error->message);
-		ctx->exit_code = PKGCTL_EXIT_FAILURE;
+		ctx->exit_code = PKGC_EXIT_FAILURE;
 		g_main_loop_quit (ctx->loop);
 		return;
 	}
@@ -645,7 +645,7 @@ pkgc_updates_list_updates (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gc
 		/* TRANSLATORS: Description for pkgctl list-updates */
 		_("List all currently available package updates."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* get available updates */
 	pk_task_get_updates_async (PK_TASK (ctx->task),
@@ -677,12 +677,13 @@ pkgc_updates_show_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
 		/* TRANSLATORS: Description for pkgctl show-update */
 		_("Show detailed information about the specified package update."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
+	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_INSTALLED);
 	package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 	if (package_ids == NULL) {
 		pkgc_print_error (ctx, _("Could not resolve packages: %s"), error->message);
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 
 	/* get update details for specific packages */
@@ -714,7 +715,7 @@ pkgc_query_resolve (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **a
 		/* TRANSLATORS: Description for pkgctl resolve */
 		_("Resolve package names to package IDs."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* we run this without our default filters, unless the user has explicitly specified some */
 	filters = ctx->user_filters_set? ctx->filters : 0;
@@ -759,12 +760,13 @@ pkgc_query_required_by (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
+	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_INSTALLED);
 	package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 	if (package_ids == NULL) {
-		pkgc_print_error (ctx, _("Could not resolve packages: %s"), error->message);
-		return PKGCTL_EXIT_FAILURE;
+		pkgc_print_error (ctx, _("Could not find packages: %s"), error->message);
+		return PKGC_EXIT_FAILURE;
 	}
 
 	/* get packages that require this package */
@@ -799,7 +801,7 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
 		/* TRANSLATORS: Description for pkgctl organization */
 		_("List all available filters, groups and categories for package organization."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* print available filters */
 	g_print ("%s%s%s\n",
@@ -863,7 +865,7 @@ pkgc_query_show_os_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, g
 		/* TRANSLATORS: Description for pkgctl show-distro-upgrade */
 		_("Show distribution version upgrades, if any are available."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* Get available distribution upgrades */
 	pk_client_get_distro_upgrades_async (PK_CLIENT (ctx->task),
@@ -931,7 +933,7 @@ pkgc_query_last_time (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar *
 		/* TRANSLATORS: Description for pkgctl last-time */
 		_("Get time in seconds since the last specified action."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	if (argc >= 2)
 		value = argv[1];
@@ -940,14 +942,14 @@ pkgc_query_last_time (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar *
 		pkgc_print_error (ctx,
 				/* TRANSLATORS: The user didn't specify what action to use */
 				 "%s", _("An action, e.g. 'update-packages' is required"));
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 	role = pk_role_enum_from_string (value);
 	if (role == PK_ROLE_ENUM_UNKNOWN) {
 		pkgc_print_error (ctx,
 				/* TRANSLATORS: The user specified an invalid action */
 			 "%s", _("A correct role is required"));
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 	pk_control_get_time_since_action_async (ctx->control,
 						role,

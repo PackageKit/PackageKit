@@ -1193,7 +1193,7 @@ pkgc_resolve_packages (PkgctlContext *ctx, PkBitfield filters, gchar **packages,
 		package_id = pkgc_resolve_package (ctx, filters, packages[i], &error_local);
 		if (package_id == NULL) {
 			if (g_error_matches (error_local,
-					     G_IO_ERROR,
+					     PKGC_ERROR,
 					     PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
 				pkgc_print_warning (ctx, _("Package not found: %s"), packages[i]);
 				g_clear_error (&error_local);
@@ -1209,7 +1209,7 @@ pkgc_resolve_packages (PkgctlContext *ctx, PkBitfield filters, gchar **packages,
 	/* nothing resolved */
 	if (array->len == 0) {
 		g_set_error_literal (error,
-				     G_IO_ERROR,
+				     PKGC_ERROR,
 				     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 				     "No packages were found");
 		return NULL;

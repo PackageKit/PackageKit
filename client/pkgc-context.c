@@ -29,6 +29,15 @@
 #include "pkgc-util.h"
 
 /**
+ * pkgc_error_quark:
+ *
+ * An error quark for pkgctl.
+ *
+ * Return value: an error quark.
+ **/
+G_DEFINE_QUARK (pkgc-error-quark, pkgc_error)
+
+/**
  * pkgctl_command_free:
  */
 static void
@@ -58,7 +67,7 @@ pkgc_context_new (void)
 
 	ctx->cache_age = -1; /* use default cache age */
 	ctx->output_mode = PKGCTL_MODE_NORMAL;
-	ctx->exit_code = PKGCTL_EXIT_SUCCESS;
+	ctx->exit_code = PKGC_EXIT_SUCCESS;
 	ctx->is_tty = isatty (fileno (stdout));
 
 	ctx->loop = g_main_loop_new (NULL, FALSE);

@@ -460,18 +460,18 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
 		_("Monitor PackageKit D-Bus events"));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 
 	if (ctx->output_mode == PKGCTL_MODE_JSON) {
 		pkgc_print_error (ctx, "JSON mode is not supported for 'monitor' command");
-		return PKGCTL_EXIT_SYNTAX_ERROR;
+		return PKGC_EXIT_SYNTAX_ERROR;
 	}
 
 	/* use the bus to resolve connection names to PIDs */
 	bus_conn = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (bus_conn == NULL) {
 		pkgc_print_error (ctx, "Cannot connect to the system bus: %s", error->message);
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 	bus_proxy = g_dbus_proxy_new_sync (bus_conn,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
@@ -484,7 +484,7 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
 				       &error);
 	if (bus_proxy == NULL) {
 		pkgc_print_error (ctx, "Cannot connect to D-Bus: %s", error->message);
-		return PKGCTL_EXIT_FAILURE;
+		return PKGC_EXIT_FAILURE;
 	}
 
 	/* We run on a non-initialized PkgctlContext, as we do not want to stop
