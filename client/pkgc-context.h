@@ -29,12 +29,12 @@
 G_BEGIN_DECLS
 
 /* exit codes */
-#define PKGC_EXIT_SUCCESS	       0
-#define PKGC_EXIT_FAILURE	       1
-#define PKGC_EXIT_SYNTAX_ERROR       2
-#define PKGC_EXIT_PERMISSION_DENIED  3
-#define PKGC_EXIT_NOT_FOUND			 4
-#define PKGC_EXIT_TRANSACTION_FAILED 5
+#define PKGC_EXIT_SUCCESS		0
+#define PKGC_EXIT_FAILURE		1
+#define PKGC_EXIT_SYNTAX_ERROR		2
+#define PKGC_EXIT_PERMISSION_DENIED	3
+#define PKGC_EXIT_NOT_FOUND		4
+#define PKGC_EXIT_TRANSACTION_FAILED	5
 
 /* error domain */
 #define PKGC_ERROR	(pkgc_error_quark ())
