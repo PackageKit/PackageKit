@@ -468,7 +468,7 @@ pkgc_query_depends_on (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar 
 
 	const GOptionEntry options[] = {
 		{ "recursive", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &recursive,
-		  N_("Check dependencies recursively"), NULL },
+		  _("Check dependencies recursively"), NULL },
 		{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
 
@@ -746,7 +746,7 @@ pkgc_query_required_by (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar
 
 	const GOptionEntry options[] = {
 		{ "recursive", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &recursive,
-		  N_("Check dependencies recursively"), NULL },
+		  _("Check dependencies recursively"), NULL },
 		{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
 
@@ -1002,6 +1002,12 @@ pkgc_register_query_commands (PkgctlContext *ctx)
 
 	pkgc_context_register_command (
 		ctx,
+		"required-by",
+		pkgc_query_required_by,
+		_("Show packages requiring this package"));
+
+	pkgc_context_register_command (
+		ctx,
 		"what-provides",
 		pkgc_query_what_provides,
 		_("Show packages providing a capability"));
@@ -1029,12 +1035,6 @@ pkgc_register_query_commands (PkgctlContext *ctx)
 		"resolve",
 		pkgc_query_resolve,
 		_("Resolve package names"));
-
-	pkgc_context_register_command (
-		ctx,
-		"required-by",
-		pkgc_query_required_by,
-		_("Show packages requiring this package"));
 
 	pkgc_context_register_command (
 		ctx,
