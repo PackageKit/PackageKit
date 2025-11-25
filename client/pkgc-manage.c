@@ -439,6 +439,13 @@ pkgc_download (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	return ctx->exit_code;
 }
 
+static gboolean
+pkgc_update_system_filter_helper (PkPackage *package, gpointer user_data)
+{
+	PkInfoEnum package_enum = pk_package_get_info (package);
+	return package_enum != PK_INFO_ENUM_BLOCKED;
+}
+
 /**
  * pkgc_update:
  *
@@ -501,6 +508,7 @@ pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 		g_clear_error (&error);
 
 		/* get current updates */
+		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
 		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
 						    ctx->filters,
 						    ctx->cancellable,
@@ -513,7 +521,10 @@ pkgc_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 			return ctx->exit_code;
 		}
 
+		/* drop blocked packages from the update set */
 		sack = pk_results_get_package_sack (results);
+		pk_package_sack_remove_by_filter (sack, &pkgc_update_system_filter_helper, NULL);
+
 		package_ids = pk_package_sack_get_ids (sack);
 
 		if (package_ids == NULL || g_strv_length (package_ids) == 0) {
