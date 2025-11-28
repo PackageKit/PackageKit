@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-24 16:04+0100\n"
-"PO-Revision-Date: 2025-11-26 13:31+0000\n"
+"PO-Revision-Date: 2025-11-28 09:00+0000\n"
 "Last-Translator: Mateus Liberale Gomes <sergiogomes209403@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/packagekit/translations/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -72,7 +72,7 @@ msgstr "Remove automaticamente dependências não usada"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr ""
+msgstr "Idade máxima do cache de metadados em segundos"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -80,10 +80,8 @@ msgstr "SEGUNDOS"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refresh the cache"
 msgid "Refresh the package metadata cache."
-msgstr "Renovar o cache"
+msgstr "Atualize o cache de metadados do pacote."
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
@@ -304,27 +302,23 @@ msgstr "Falha ao obter as propriedades"
 
 #. TRANSLATORS: Description for pkgctl monitor
 #: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Serviço do PackageKit"
+msgstr "Conjunto de monitoramento para eventos D-Bus"
 
 #. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit bus events"
-msgstr "Serviço do PackageKit"
+msgstr "Eventos do barramento do PackageKit"
 
 #. TRANSLATORS: Description for pkgctl backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Exibir informações do backend do PackageKit."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Backend: %s"
 
 #: client/pkgc-query.c:214
 #, c-format
@@ -628,7 +622,7 @@ msgstr "%u h %u min"
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u hs"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
