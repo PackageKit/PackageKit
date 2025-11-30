@@ -998,21 +998,21 @@ pkgc_register_query_commands (PkgctlContext *ctx)
 
 	pkgc_context_register_command (
 		ctx,
-		"depends-on",
+		"list-depends",
 		pkgc_query_depends_on,
-		_("Show package dependencies"));
+		_("List package dependencies"));
 
 	pkgc_context_register_command (
 		ctx,
-		"required-by",
+		"list-required-by",
 		pkgc_query_required_by,
-		_("Show packages requiring this package"));
+		_("List packages requiring this package"));
 
 	pkgc_context_register_command (
 		ctx,
 		"what-provides",
 		pkgc_query_what_provides,
-		_("Show packages providing a capability"));
+		_("List packages providing a capability"));
 
 	pkgc_context_register_command (
 		ctx,

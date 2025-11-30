@@ -40,6 +40,24 @@ executable(
   ]
 )
 
+if get_option('man_pages')
+  xsltproc = find_program('xsltproc')
+  custom_target(
+    'pkgctl.1',
+    input: 'pkgctl.xml',
+    output: 'pkgctl.1',
+    command: [
+      xsltproc,
+      '--nonet',
+      '--output', '@OUTPUT@',
+      'http://docbook.sourceforge.net/release/xsl-ns/current/manpages/docbook.xsl',
+      '@INPUT@',
+    ],
+    install: true,
+    install_dir: join_paths(get_option('datadir'), 'man', 'man1'),
+  )
+endif
+
 if get_option('legacy_tools')
     subdir('pkcon')
 endif

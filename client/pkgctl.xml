@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<refentry xmlns="http://docbook.org/ns/docbook" version="5.0">
+  <info>
+    <title>pkgctl</title>
+    <productname>PackageKit</productname>
+    <author>
+      <personname>
+        <firstname>Matthias</firstname>
+        <surname>Klumpp</surname>
+      </personname>
+      <email>matthias@tenstral.net</email>
+      <contrib>Developer</contrib>
+    </author>
+    <author>
+      <personname>
+        <firstname>Richard</firstname>
+        <surname>Hughes</surname>
+      </personname>
+      <email>richard@hughsie.com</email>
+      <contrib>Developer</contrib>
+    </author>
+    <copyright>
+      <year>2012-2025</year>
+      <holder>Matthias Klumpp</holder>
+    </copyright>
+    <date>26. November 2025</date>
+  </info>
+  <refmeta>
+    <refentrytitle>pkgctl</refentrytitle>
+    <manvolnum>1</manvolnum>
+  </refmeta>
+  <refnamediv>
+    <refname>pkgctl</refname>
+    <refpurpose>command-line client for PackageKit</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>pkgctl</command>
+      <arg choice="opt" rep="repeat"><option>GLOBAL-OPTIONS</option></arg>
+      <arg choice="plain"><replaceable>COMMAND</replaceable></arg>
+      <arg choice="opt" rep="repeat"><option>COMMAND-OPTIONS</option></arg>
+      <arg choice="opt" rep="repeat"><replaceable>ARGUMENTS</replaceable></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>DESCRIPTION</title>
+    <para>
+      <command>pkgctl</command> is a command line client for PackageKit, a
+      distribution-neutral interface to the operating system's package manager.
+      It provides a set of subcommands for querying and managing software
+      packages, repositories and transaction history.
+    </para>
+    <para>
+      Use <command>pkgctl</command> <option>--help</option> to get a list
+      of available commands, and
+      <command>pkgctl</command> <replaceable>COMMAND</replaceable>
+      <option>--help</option> for command-specific help.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>GLOBAL OPTIONS</title>
+    <para>
+      The following options are parsed before the command name and
+      affect most subcommands:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><option>-v</option>, <option>--version</option></term>
+        <listitem>
+          <para>Show the <command>pkgctl</command> version and exit.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option>, <option>--help</option></term>
+        <listitem>
+          <para>Show generic help and a list of available commands.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-q</option>, <option>--quiet</option></term>
+        <listitem>
+          <para>Only provide minimal output.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--verbose</option></term>
+        <listitem>
+          <para>Show more detailed and debug-style output.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--json</option></term>
+        <listitem>
+          <para>
+            Output results in JSON format suitable for consumption by
+            other tools. Output is generated in the JSONL (JSON Lines)
+            format, with one JSON object per line.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--no-color</option></term>
+        <listitem>
+          <para>
+            Disable colored terminal output. This is also enabled when the
+            <envar>NO_COLOR</envar> environment variable is set.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-y</option>, <option>--yes</option></term>
+        <listitem>
+          <para>
+            Answer “yes” to all questions and run in non-interactive
+            mode.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option>, <option>--filter</option>=<replaceable>FILTER</replaceable></term>
+        <listitem>
+          <para>
+            Apply one or more filters when querying  packages, such as
+            restricting results to installed or  available packages.
+            You can view all supported filter options by running
+            <command>pkgctl organization</command>.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-n</option>, <option>--background</option></term>
+        <listitem>
+          <para>
+            Hint that the command is not urgent and may  use idle network bandwidth
+            and power-saving settings where supported.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>COMMANDS</title>
+    <para>
+      The following commands are available:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term><command>backend</command></term>
+        <listitem>
+          <para>
+            Display information about the PackageKit backend currently in use,
+            including the backend name, version, and the roles it supports.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>history</command></term>
+        <listitem>
+          <para>
+            Show a list of recent package management transactions (like  installation,
+            removal, and update operations performed on the system).
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>search</command></term>
+        <listitem>
+          <para>
+            Search for packages matching a given pattern. The first argument may
+            optionally be one of <literal>name</literal>, <literal>details</literal>,
+            <literal>file</literal> or <literal>group</literal>, to limit the search
+            to the selected domain. If only one argument is given, a search across
+            package details (name, summary, and description) is performed.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>list</command></term>
+        <listitem>
+          <para>
+            List packages, optionally filtered by installation status or name pattern.
+            Use with <option>--filter</option> to show only installed, available,
+            or other categories of packages.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>show</command></term>
+        <listitem>
+          <para>
+            Display detailed information about one or more packages, including
+            version, size, description, license, and repository information.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>list-depends</command></term>
+        <listitem>
+          <para>
+            List all packages that the specified package depends on.
+            Use the <option>--recursive</option> flag to list dependencies
+            of the entire chain.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>list-required-by</command></term>
+        <listitem>
+          <para>
+            List packages that depend on or require the specified package.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>what-provides</command></term>
+        <listitem>
+          <para>
+            Find and list packages that provide a given capability, shared library,
+            or file path.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>files</command></term>
+        <listitem>
+          <para>
+            Display a list of all files contained in the specified package.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>list-updates</command></term>
+        <listitem>
+          <para>
+            List all available package updates for installed software.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>show-update</command></term>
+        <listitem>
+          <para>
+            Display detailed information about a specific update, including
+            changelog entries, security advisories, and other update metadata.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>resolve</command></term>
+        <listitem>
+          <para>
+            Resolve package names or identifiers to their package state,
+            showing whether they are installed, available, or unavailable.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>organization</command></term>
+        <listitem>
+          <para>
+            Display available package filters (such as installed, available, newest),
+            groups (such as system, development, graphics), and categories that can
+            be used to query packages.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>show-os-upgrade</command></term>
+        <listitem>
+          <para>
+            Check for and display information about available operating system or
+            distribution upgrades, such as upgrades to a newer OS release.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>last-time</command></term>
+        <listitem>
+          <para>
+            Show the elapsed time since the last transaction of a specified role
+            occurred, such as the last package update or cache refresh.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>refresh</command></term>
+        <listitem>
+          <para>
+            Refresh the local package metadata cache by downloading the latest
+            package information from configured repositories. This should be run
+            before checking for updates or searching for new packages.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>install</command></term>
+        <listitem>
+          <para>
+            Install one or more packages by name, or install local package files
+            if a path is provided instead of a package name.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>remove</command></term>
+        <listitem>
+          <para>
+            Remove one or more installed packages from the system. This may also
+            remove dependent packages if they are no longer needed.
+            Use with the <literal>--autoremove</literal> option to clean up unused
+            packages as well.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>update</command></term>
+        <listitem>
+          <para>
+            Install available updates for all installed packages on the system,
+            or for specific packages if specified as arguments.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>upgrade</command></term>
+        <listitem>
+          <para>
+            Perform a system upgrade to newer package versions or a new distribution
+            release. This may involve major version updates and significant changes.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>download</command></term>
+        <listitem>
+          <para>
+            Download package files to the local system without installing them.
+            This is useful for offline installation or package inspection.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>offline-update</command></term>
+        <listitem>
+          <para>
+            Prepare, trigger, cancel, or inspect offline system updates. Offline
+            updates are applied during system boot before the desktop environment
+            starts, allowing critical system packages to be updated safely.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>install-sig</command></term>
+        <listitem>
+          <para>
+            Install a cryptographic signature for a package to verify its
+            authenticity and integrity.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>repair</command></term>
+        <listitem>
+          <para>
+            Attempt to automatically repair problems with the package management
+            system, such as broken dependencies, corrupted databases, or
+            interrupted transactions.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>quit</command></term>
+        <listitem>
+          <para>
+            Request the PackageKit daemon to terminate gracefully after
+            completing any ongoing operations. The daemon will restart
+            automatically when needed.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>repo-list</command></term>
+        <listitem>
+          <para>
+            Display a list of all configured software repositories, showing
+            their identifiers, descriptions, and enabled/disabled status.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>repo-enable</command></term>
+        <listitem>
+          <para>
+            Enable a previously disabled repository, allowing packages from
+            that repository to be installed and updated.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>repo-disable</command></term>
+        <listitem>
+          <para>
+            Disable a repository, preventing packages from that source from
+            being installed or updated while keeping the repository configuration.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>repo-remove</command></term>
+        <listitem>
+          <para>
+            Completely remove a repository from the system configuration.
+            This is permanent and the repository will need to be re-added
+            if needed later.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><command>monitor</command></term>
+        <listitem>
+          <para>
+            Monitor and display real-time PackageKit transaction events and
+            status changes on the bus. This is useful for debugging
+            or observing package management activity.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+      Use <command>pkgctl</command> <replaceable>COMMAND</replaceable>
+      <option>--help</option> for detailed usage information
+      including supported options and arguments for each command.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>EXIT STATUS</title>
+    <para>
+      The following exit codes are used by <command>pkgctl</command>:
+    </para>
+    <variablelist>
+      <varlistentry>
+        <term>0</term>
+        <listitem>
+          <para>The command completed successfully.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>1</term>
+        <listitem>
+          <para>
+            A non-specific error occurred.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>2</term>
+        <listitem>
+          <para>
+            Invalid syntax or command-line options were supplied.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>3</term>
+        <listitem>
+          <para>
+            Insufficient permissions to perform the requested operation.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>4</term>
+        <listitem>
+          <para>
+            Required information or packages could not be found.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>5</term>
+        <listitem>
+          <para>
+            The transaction failed.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+      Additional exit codes may be used for more specific failure
+      conditions by individual commands.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>ENVIRONMENT</title>
+    <variablelist>
+      <varlistentry>
+        <term><envar>NO_COLOR</envar></term>
+        <listitem>
+          <para>
+            When set to any non-empty value, disables colored output,
+            equivalent to passing <option>--no-color</option>.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>EXAMPLES</title>
+    <variablelist>
+      <varlistentry>
+        <term>Search for packages related to text editors</term>
+        <listitem>
+          <para>
+            <command>pkgctl search editor</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Search only in package names</term>
+        <listitem>
+          <para>
+            <command>pkgctl search name python3</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Show detailed information about a package</term>
+        <listitem>
+          <para>
+            <command>pkgctl show nano</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Install a package non-interactively</term>
+        <listitem>
+          <para>
+            <command>pkgctl --yes install nano</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>List all installed packages</term>
+        <listitem>
+          <para>
+            <command>pkgctl --filter=installed list</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Check for available updates</term>
+        <listitem>
+          <para>
+            <command>pkgctl refresh &amp;&amp; pkgctl list-updates</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>List dependencies of a package</term>
+        <listitem>
+          <para>
+            <command>pkgctl list-depends inkscape</command>
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Find which package provides the AV1 GStreamer codec</term>
+        <listitem>
+          <para>
+            <command>pkgctl what-provides "gstreamer1(decoder-video/x-av1)"</command>
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>SEE ALSO</title>
+    <para>
+      <citerefentry>
+        <refentrytitle>appstreamcli</refentrytitle><manvolnum>1</manvolnum>
+      </citerefentry>,
+      and the PackageKit documentation at
+      <ulink url="https://www.freedesktop.org/software/PackageKit/"/>.
+    </para>
+  </refsect1>
+</refentry>
