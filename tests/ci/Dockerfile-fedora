@@ -3,6 +3,7 @@ FROM fedora:latest
 RUN dnf -y update
 RUN dnf -y install \
 	dnf-plugins-core \
+	docbook5-style-xsl \
 	libdnf-devel \
 	libdnf5-devel \
 	redhat-rpm-config \
