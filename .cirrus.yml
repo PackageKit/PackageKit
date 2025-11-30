@@ -9,7 +9,7 @@ task:
     - env ASSUME_ALWAYS_YES=yes pkg update -f
     - env ASSUME_ALWAYS_YES=yes pkg install -y docbook-xsl vala libxslt fontconfig polkit consolekit2
         desktop-file-utils gettext meson ninja python3 glib gtk3 pkgconf sqlite3 gobject-introspection
-        dbus bash
+        jansson dbus bash
   build_script:
     - meson --auto-features=enabled -Db_colorout=never --buildtype debug -Dlocal_checkout=true -Dlocalstatedir=/var
         -Dsystemd=false -Doffline_update=false  -Dbash_completion=false -Dbash_command_not_found=false
