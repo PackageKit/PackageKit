@@ -2,7 +2,7 @@
 // without a password prompt.
 
 polkit.addRule(function(action, subject) {
-    if ((action.id == "org.freedesktop.packagekit.upgrade-system" ||
+    if ((action.id == "org.freedesktop.packagekit.system-update" ||
          action.id == "org.freedesktop.packagekit.trigger-offline-update" ||
          action.id == "org.freedesktop.packagekit.trigger-offline-upgrade") &&
          subject.active == true && subject.local == true &&
