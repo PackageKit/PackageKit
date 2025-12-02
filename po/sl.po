@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"PO-Revision-Date: 2025-11-23 22:51+0000\n"
+"PO-Revision-Date: 2025-12-02 06:00+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
@@ -90,16 +90,13 @@ msgstr "Namestite enega ali več paketov ali krajevnih paketnih datotek."
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:308 client/pkgc-manage.c:321
-#, fuzzy, c-format
-#| msgid "This tool could not find any available package: %s"
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "To orodje ni moglo najti nobenega razpoložljivega paketa: %s"
+msgstr "Ni možno najti nobenega razpoložljivega paketa: %s"
 
 #: client/pkgc-manage.c:326
-#, fuzzy
-#| msgid "The selected packages may already be installed."
 msgid "The selected package is already installed."
-msgstr "Izbrani paketi so morda že nameščeni."
+msgstr "Izbrani paket je že nameščen."
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
@@ -107,10 +104,9 @@ msgid "Remove one or more packages from the system."
 msgstr "Odstranite enega ali več paketov iz sistema."
 
 #: client/pkgc-manage.c:383
-#, fuzzy, c-format
-#| msgid "Could not find packages: %s"
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Ni možno najti paketov: %s"
+msgstr "Ni možno najti nameščenih paketov: %s"
 
 #. TRANSLATORS: Description for pkgctl download
 #: client/pkgc-manage.c:423
@@ -133,10 +129,9 @@ msgid "Update all packages or specific packages to their latest versions."
 msgstr "Posodobite vse pakete ali posamezne pakete na najnovejše različice."
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
-#| msgid "Could not find packages: %s"
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Ni možno najti paketov: %s"
+msgstr "Ni možno najti paketov za posodobitev: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
 #, c-format
@@ -515,22 +510,16 @@ msgid "Show package information"
 msgstr "Pokaži podatke o paketu"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Show package dependencies"
 msgid "List package dependencies"
-msgstr "Pokaži odvisnosti paketov"
+msgstr "Izpiši odvisnosti paketov"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "Show packages requiring this package"
 msgid "List packages requiring this package"
-msgstr "Prikaži pakete, ki zahtevajo ta paket"
+msgstr "Izpiši pakete, ki zahtevajo ta paket"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "Show packages providing a capability"
 msgid "List packages providing a capability"
-msgstr "Pokaži pakete, ki zagotavljajo zmogljivost"
+msgstr "Izpiši pakete, ki zagotavljajo zmogljivost"
 
 #: client/pkgc-query.c:1021
 msgid "Show files in package"
