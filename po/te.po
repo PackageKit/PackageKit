@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-24 16:04+0100\n"
+"POT-Creation-Date: 2025-12-01 16:38+0100\n"
 "Language-Team: Telugu (http://app.transifex.com/freedesktop/packagekit/language/te/)\n"
 "Language: te\n"
 "MIME-Version: 1.0\n"
@@ -30,7 +30,7 @@ msgstr "దస్త్రమును శోధించుటలో విఫ�
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:123 client/pkcon/pk-console.c:1440
+#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
 msgid "The daemon crashed mid-transaction!"
 msgstr "వ్యవహారము-మద్యలో డెమోన్ కుప్పకూలినది!"
 
@@ -91,40 +91,66 @@ msgstr ""
 msgid "Install one or more packages or local package files."
 msgstr ""
 
-#: client/pkgc-manage.c:302 client/pkgc-manage.c:361 client/pkgc-manage.c:416
-#: client/pkgc-query.c:436
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkgc-manage.c:308 client/pkgc-manage.c:321
+#, fuzzy, c-format
+#| msgid "This tool could not find any available package: %s"
+msgid "Could not find any available package: %s"
+msgstr "ఈ సాధనము అందుబాటులో వున్న యే సంకలనములను కనుగొనలేకపోయింది: %s"
+
+#: client/pkgc-manage.c:326
+#, fuzzy
+#| msgid "The following packages have to be installed:"
+msgid "The selected package is already installed."
+msgstr "ఈ క్రింది ప్యాకేజీలు సంస్థాపించబడినవి:"
+
+#. TRANSLATORS: Description for pkgctl remove
+#: client/pkgc-manage.c:366
+msgid "Remove one or more packages from the system."
+msgstr ""
+
+#: client/pkgc-manage.c:383
+#, fuzzy, c-format
+#| msgid "This tool could not find the package: %s"
+msgid "Could not find installed packages: %s"
+msgstr "ఈ సాధనము ప్యాకేజీను కనుగొనలేక పోయింది: %s"
+
+#. TRANSLATORS: Description for pkgctl download
+#: client/pkgc-manage.c:423
+msgid "Download packages to the specified directory without installing."
+msgstr ""
+
+#: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, fuzzy, c-format
 #| msgid "This tool could not find the package: %s"
 msgid "Could not find packages: %s"
 msgstr "ఈ సాధనము ప్యాకేజీను కనుగొనలేక పోయింది: %s"
 
-#. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:338
-msgid "Remove one or more packages from the system."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:402
-msgid "Download packages to the specified directory without installing."
-msgstr ""
-
-#: client/pkgc-manage.c:424
+#: client/pkgc-manage.c:445
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:460
+#: client/pkgc-manage.c:488
 msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#: client/pkgc-manage.c:497 client/pkgc-manage.c:596 client/pkgc-manage.c:822
+#: client/pkgc-manage.c:511
+#, fuzzy, c-format
+#| msgid "This tool could not find the package: %s"
+msgid "Could not find packages to update: %s"
+msgstr "ఈ సాధనము ప్యాకేజీను కనుగొనలేక పోయింది: %s"
+
+#: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
 #, fuzzy, c-format
 #| msgid "Failed to get daemon state"
 msgid "Failed to get updates: %s"
 msgstr "డెమోన్ స్థితిని పొందుటకు విఫలమైంది"
 
-#: client/pkgc-manage.c:506 client/pkgc-manage.c:605 client/pkgc-manage.c:830
+#: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
 #, fuzzy
 #| msgid "A package name is required"
 msgid "No packages require updating"
@@ -132,83 +158,83 @@ msgstr "సంకలనము నామము అవసరమైంది"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:545
+#: client/pkgc-manage.c:591
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
 
-#: client/pkgc-manage.c:641
+#: client/pkgc-manage.c:687
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to read offline update action: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
-#: client/pkgc-manage.c:651
+#: client/pkgc-manage.c:697
 msgid "Offline update is not triggered."
 msgstr ""
 
-#: client/pkgc-manage.c:659
+#: client/pkgc-manage.c:705
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:670
+#: client/pkgc-manage.c:716
 #, fuzzy
 #| msgid "Updating packages"
 msgid "Prepared packages:"
 msgstr "సంకలనాలను నవీకరిస్తోంది"
 
-#: client/pkgc-manage.c:684
+#: client/pkgc-manage.c:730
 #, fuzzy
 #| msgid "Downloading update information"
 msgid "No offline update is prepared."
 msgstr "నవీకరణ సమాచారమును డౌనులోడుచేస్తున్నది"
 
-#: client/pkgc-manage.c:686
+#: client/pkgc-manage.c:732
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to read prepared offline updates: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
-#: client/pkgc-manage.c:696
+#: client/pkgc-manage.c:742
 #, fuzzy
 #| msgid "Downloading update information"
 msgid "No results from last offline update available."
 msgstr "నవీకరణ సమాచారమును డౌనులోడుచేస్తున్నది"
 
-#: client/pkgc-manage.c:703
+#: client/pkgc-manage.c:749
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Last offline update failed: %s: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
-#: client/pkgc-manage.c:710
+#: client/pkgc-manage.c:756
 msgid "Last offline update completed successfully"
 msgstr ""
 
-#: client/pkgc-manage.c:721
+#: client/pkgc-manage.c:767
 #, fuzzy, c-format
 #| msgid "Updated"
 msgid "Updated: %s"
 msgstr "నవీకరించిన"
 
-#: client/pkgc-manage.c:742
+#: client/pkgc-manage.c:788
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to trigger offline update: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
-#: client/pkgc-manage.c:746
+#: client/pkgc-manage.c:792
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr ""
 
 #. TRANSLATORS: Description of the pkgctl offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:766
+#: client/pkgc-manage.c:812
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -219,99 +245,99 @@ msgid ""
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
-#: client/pkgc-manage.c:790
+#: client/pkgc-manage.c:836
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to cancel offline update: %s"
 msgstr "ఆరంభించుటలో విఫలమైంది:"
 
-#: client/pkgc-manage.c:794
+#: client/pkgc-manage.c:840
 msgid "Offline update cancelled"
 msgstr ""
 
-#: client/pkgc-manage.c:851
+#: client/pkgc-manage.c:897
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:871
+#: client/pkgc-manage.c:917
 #, fuzzy
 #| msgid "Install the packages without asking for confirmation"
 msgid "Install a package signature for GPG verification."
 msgstr "నిర్ధారణ కొరకు అడుగకుండా ప్యాకేజీలను సంస్థాపించుము"
 
 #. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:906
+#: client/pkgc-manage.c:952
 msgid "Attempt to repair the package management system."
 msgstr ""
 
-#: client/pkgc-manage.c:922
+#: client/pkgc-manage.c:968
 msgid "System repaired successfully"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:943
+#: client/pkgc-manage.c:989
 msgid "Safely terminate the PackageKit daemon."
 msgstr ""
 
-#: client/pkgc-manage.c:949
+#: client/pkgc-manage.c:995
 #, fuzzy, c-format
 #| msgid "Failed to get daemon state"
 msgid "Failed to send daemon quit request: %s"
 msgstr "డెమోన్ స్థితిని పొందుటకు విఫలమైంది"
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:1014
 msgid "Refresh package metadata"
 msgstr ""
 
-#: client/pkgc-manage.c:974
+#: client/pkgc-manage.c:1020
 #, fuzzy
 #| msgid "Installing packages"
 msgid "Install packages"
 msgstr "సంకలనాలను సంస్థాపించుచున్నది"
 
-#: client/pkgc-manage.c:980
+#: client/pkgc-manage.c:1026
 #, fuzzy
 #| msgid "Remove package"
 msgid "Remove packages"
 msgstr "ప్యాకేజీని తీసివేయుము"
 
-#: client/pkgc-manage.c:986
+#: client/pkgc-manage.c:1032
 #, fuzzy
 #| msgid "Updating packages"
 msgid "Update packages"
 msgstr "సంకలనాలను నవీకరిస్తోంది"
 
-#: client/pkgc-manage.c:992
+#: client/pkgc-manage.c:1038
 msgid "Upgrade the system"
 msgstr ""
 
-#: client/pkgc-manage.c:998
+#: client/pkgc-manage.c:1044
 #, fuzzy
 #| msgid "Downloading packages"
 msgid "Download packages"
 msgstr "సంకలనాలను డౌనులోడు చేయుచున్నది"
 
-#: client/pkgc-manage.c:1004
+#: client/pkgc-manage.c:1050
 #, fuzzy
 #| msgid "The following packages have to be updated:"
 msgid "Manage offline system updates"
 msgstr "ఈ క్రింది సంకలనములు నవీకరించవలసివుంది:"
 
-#: client/pkgc-manage.c:1010
+#: client/pkgc-manage.c:1056
 #, fuzzy
 #| msgid "Installing signature"
 msgid "Install package signature"
 msgstr "సంతకమును సంస్థాపించుచున్నది"
 
-#: client/pkgc-manage.c:1016
+#: client/pkgc-manage.c:1062
 #, fuzzy
 #| msgid "Removing packages"
 msgid "Repair package system"
 msgstr "ప్యాకేజీలను తీసివేయుచున్నది"
 
-#: client/pkgc-manage.c:1022
+#: client/pkgc-manage.c:1068
 msgid "Safely stop the PackageKit daemon"
 msgstr ""
 
@@ -401,7 +427,7 @@ msgstr ""
 msgid "Show information about one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:471 client/pkgc-query.c:749
+#: client/pkgc-query.c:471 client/pkgc-query.c:750
 msgid "Check dependencies recursively"
 msgstr ""
 
@@ -410,8 +436,7 @@ msgstr ""
 msgid "Show dependencies for one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:684
-#: client/pkgc-query.c:766
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Could not resolve packages: %s"
@@ -440,155 +465,155 @@ msgid "Show detailed information about the specified package update."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl resolve
-#: client/pkgc-query.c:715
+#: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl required-by
-#: client/pkgc-query.c:758
+#: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgctl organization
-#: client/pkgc-query.c:800
+#: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:808
+#: client/pkgc-query.c:810
 msgid "Filters:"
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:823
+#: client/pkgc-query.c:825
 msgid "Groups:"
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:838
+#: client/pkgc-query.c:840
 #, fuzzy
 #| msgid "Category"
 msgid "Categories:"
 msgstr "వర్గము"
 
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
-#: client/pkgc-query.c:864
+#: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
 msgstr ""
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkgc-query.c:895 client/pkcon/pk-console.c:1572
+#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
 msgid "Failed to get the time since this action was last completed"
 msgstr "ఈ చర్య ఆఖరున పూర్తైన కారణముగా సమయమును పొందుటలో విఫలమైంది"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:908
+#: client/pkgc-query.c:910
 #, fuzzy
 #| msgid "System time"
 msgid "Elapsed time"
 msgstr "సిస్టమ్ సమయం"
 
 #. TRANSLATORS: Description for pkgctl last-time
-#: client/pkgc-query.c:932
+#: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr ""
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: client/pkgc-query.c:942 client/pkcon/pk-console.c:2161
+#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
 msgid "An action, e.g. 'update-packages' is required"
 msgstr ""
 
 #. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: client/pkgc-query.c:949 client/pkcon/pk-console.c:2171
+#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
 msgid "A correct role is required"
 msgstr "ఒక సరైన పాత్ర అవసరము"
 
-#: client/pkgc-query.c:971
+#: client/pkgc-query.c:973
 #, fuzzy
 #| msgid "Getting information"
 msgid "Show backend information"
 msgstr "సమాచారమును పొందుచున్నది"
 
-#: client/pkgc-query.c:977
+#: client/pkgc-query.c:979
 #, fuzzy
 #| msgid "The transaction failed"
 msgid "Show transaction history"
 msgstr "బదిలీకరణ విఫలమైంది"
 
-#: client/pkgc-query.c:983
+#: client/pkgc-query.c:985
 #, fuzzy
 #| msgid "Searching by name"
 msgid "Search for packages"
 msgstr "నామము ప్రకారం శోధించుచున్నది"
 
-#: client/pkgc-query.c:989
+#: client/pkgc-query.c:991
 #, fuzzy
 #| msgid "Installing packages"
 msgid "List packages"
 msgstr "సంకలనాలను సంస్థాపించుచున్నది"
 
-#: client/pkgc-query.c:995
+#: client/pkgc-query.c:997
 #, fuzzy
 #| msgid "Downloading update information"
 msgid "Show package information"
 msgstr "నవీకరణ సమాచారమును డౌనులోడుచేస్తున్నది"
 
-#: client/pkgc-query.c:1001
+#: client/pkgc-query.c:1003
 #, fuzzy
 #| msgid "Resolving dependencies"
-msgid "Show package dependencies"
+msgid "List package dependencies"
 msgstr "ఆధారాలను పరిష్కరించుచున్నది"
 
-#: client/pkgc-query.c:1007
+#: client/pkgc-query.c:1009
 #, fuzzy
 #| msgid "The package providing this file is:"
-msgid "Show packages providing a capability"
+msgid "List packages requiring this package"
 msgstr "సంకలనము అందించుచున్న ఈ దస్త్రము:"
 
-#: client/pkgc-query.c:1013
+#: client/pkgc-query.c:1015
+#, fuzzy
+#| msgid "The package providing this file is:"
+msgid "List packages providing a capability"
+msgstr "సంకలనము అందించుచున్న ఈ దస్త్రము:"
+
+#: client/pkgc-query.c:1021
 #, fuzzy
 #| msgid "Obsoleting packages"
 msgid "Show files in package"
 msgstr "సంకలనాలను తీసివేయుచున్నది"
 
-#: client/pkgc-query.c:1019
+#: client/pkgc-query.c:1027
 #, fuzzy
 #| msgid "Getting updates"
 msgid "Get available updates"
 msgstr "నవీకరణలను పొందుచున్నది"
 
-#: client/pkgc-query.c:1025
+#: client/pkgc-query.c:1033
 #, fuzzy
 #| msgid "Getting update details"
 msgid "Get update details"
 msgstr "నవీకరణ వివరములను పొందుచున్నది"
 
-#: client/pkgc-query.c:1031
+#: client/pkgc-query.c:1039
 #, fuzzy
 #| msgid "Remove package"
 msgid "Resolve package names"
 msgstr "ప్యాకేజీని తీసివేయుము"
 
-#: client/pkgc-query.c:1037
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "Show packages requiring this package"
-msgstr "సంకలనము అందించుచున్న ఈ దస్త్రము:"
-
-#: client/pkgc-query.c:1043
+#: client/pkgc-query.c:1045
 msgid "List available filters and categories"
 msgstr ""
 
-#: client/pkgc-query.c:1049
+#: client/pkgc-query.c:1051
 msgid "Show available distribution upgrades"
 msgstr ""
 
-#: client/pkgc-query.c:1055
+#: client/pkgc-query.c:1057
 #, fuzzy
 #| msgid "Getting transactions"
 msgid "Get time since last action"
