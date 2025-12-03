@@ -614,6 +614,14 @@ pk_alpm_config_parse (PkAlpmConfig *config, const gchar *filename,
 			continue;
 		}
 
+		if (g_strcmp0 (key, "DisableSandboxFilesystem") == 0) {
+			continue;
+		}
+
+		if (g_strcmp0 (key, "DisableSandboxSyscalls") == 0) {
+			continue;
+		}
+
 		if (g_strcmp0 (key, "DownloadUser") == 0 && str != NULL) {
 			continue;
 		}
