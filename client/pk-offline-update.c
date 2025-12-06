@@ -199,19 +199,14 @@ pk_offline_update_progress_cb (PkProgress *progress,
 	}
 }
 
+#if HAVE_SYSTEMD
 static int
-pk_offline_update_reboot (void)
+do_reboot (void)
 {
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GDBusConnection) connection = NULL;
 	g_autoptr(GVariant) val = NULL;
 
-	/* reboot using systemd */
-	sd_journal_print (LOG_INFO, "rebooting");
-	pk_offline_update_set_plymouth_mode ("reboot");
-
-	/* TRANSLATORS: we've finished doing offline updates */
-	pk_offline_update_set_plymouth_msg (_("Rebooting after installing updates…"));
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
 		sd_journal_print (LOG_WARNING,
@@ -241,19 +236,65 @@ pk_offline_update_reboot (void)
 
 	return EXIT_SUCCESS;
 }
+#endif
 
+#ifdef __FreeBSD__
 static int
-pk_offline_update_power_off (void)
+do_reboot (void)
 {
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GDBusConnection) connection = NULL;
 	g_autoptr(GVariant) val = NULL;
 
-	/* reboot using systemd */
-	sd_journal_print (LOG_INFO, "shutting down");
-	pk_offline_update_set_plymouth_mode ("shutdown");
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	if (connection == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to get system bus connection: %s",
+				  error->message);
+		return EXIT_FAILURE;
+	}
+	val = g_dbus_connection_call_sync (connection,
+					   "org.freedesktop.ConsoleKit",
+					   "/org/freedesktop/ConsoleKit/Manager",
+					   "org.freedesktop.ConsoleKit.Manager",
+					   "Reboot",
+					   g_variant_new ("(b)", FALSE),
+					   NULL,
+					   G_DBUS_CALL_FLAGS_NONE,
+					   -1,
+					   NULL,
+					   &error);
+	if (val == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to power off: %s",
+				  error->message);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+#endif
+
+static int
+pk_offline_update_reboot (void)
+{
+	sd_journal_print (LOG_INFO, "rebooting");
+	pk_offline_update_set_plymouth_mode ("reboot");
+
 	/* TRANSLATORS: we've finished doing offline updates */
-	pk_offline_update_set_plymouth_msg (_("Shutting down after installing updates…"));
+	pk_offline_update_set_plymouth_msg (_("Rebooting after installing updates…"));
+
+	return do_reboot ();
+}
+
+#if HAVE_SYSTEMD
+static int
+do_power_off (void)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GVariant) val = NULL;
+
 	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
 	if (connection == NULL) {
 		sd_journal_print (LOG_WARNING,
@@ -282,6 +323,55 @@ pk_offline_update_power_off (void)
 	}
 
 	return EXIT_SUCCESS;
+}
+#endif
+
+#ifdef __FreeBSD__
+static int
+do_power_off (void)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GDBusConnection) connection = NULL;
+	g_autoptr(GVariant) val = NULL;
+
+	connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, &error);
+	if (connection == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to get system bus connection: %s",
+				  error->message);
+		return EXIT_FAILURE;
+	}
+	val = g_dbus_connection_call_sync (connection,
+					   "org.freedesktop.ConsoleKit",
+					   "/org/freedesktop/ConsoleKit/Manager",
+					   "org.freedesktop.ConsoleKit.Manager",
+					   "PowerOff",
+					   g_variant_new ("(b)", FALSE),
+					   NULL,
+					   G_DBUS_CALL_FLAGS_NONE,
+					   -1,
+					   NULL,
+					   &error);
+	if (val == NULL) {
+		sd_journal_print (LOG_WARNING,
+				  "Failed to power off: %s",
+				  error->message);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
+}
+#endif
+
+static int
+pk_offline_update_power_off (void)
+{
+	sd_journal_print (LOG_INFO, "shutting down");
+	pk_offline_update_set_plymouth_mode ("shutdown");
+	/* TRANSLATORS: we've finished doing offline updates */
+	pk_offline_update_set_plymouth_msg (_("Shutting down after installing updates…"));
+
+	return do_power_off ();
 }
 
 static void

@@ -42,6 +42,7 @@ if get_option('systemd')
     systemd_user_unit_dir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
   endif
 
+  add_project_arguments ('-DHAVE_SYSTEMD=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_DAEMON_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
@@ -50,6 +51,7 @@ endif
 elogind = []
 if get_option('elogind')
   elogind = dependency('elogind', version: '>=229.4')
+  add_project_arguments ('-DHAVE_SYSTEMD=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
 endif
