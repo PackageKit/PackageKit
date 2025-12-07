@@ -1842,6 +1842,194 @@ out:
 }
 
 static void
+dnf_utils_process_dependency (DnfSack *sack,
+			      DnfPackage *pkg,
+			      PkRoleEnum role,
+			      gboolean recursive,
+			      GHashTable *visited,
+			      GPtrArray *results_array,
+			      GError **error)
+{
+	g_autoptr(GQueue) queue = g_queue_new ();
+	g_queue_push_tail (queue, g_object_ref (pkg));
+
+	/* mark the start package as visited so we don't process it again */
+	if (!g_hash_table_contains (visited, dnf_package_get_package_id (pkg)))
+		g_hash_table_add (visited, g_strdup (dnf_package_get_package_id (pkg)));
+
+	while (!g_queue_is_empty (queue)) {
+		g_autoptr(DnfPackage) curr = g_queue_pop_head (queue);
+		g_autoptr(DnfReldepList) reldeps = NULL;
+
+		if (role == PK_ROLE_ENUM_DEPENDS_ON)
+			reldeps = dnf_package_get_requires (curr);
+		else
+			reldeps = dnf_package_get_provides (curr);
+
+		for (guint i = 0; i < (guint) dnf_reldep_list_count (reldeps); i++) {
+			DnfReldep *reldep = dnf_reldep_list_index (reldeps, i);
+			const gchar *req = dnf_reldep_to_string (reldep);
+			hy_autoquery HyQuery query = hy_query_create (sack);
+			g_autoptr(GPtrArray) results = NULL;
+
+			/* find packages that provide the requirement, or require the provided capability */
+			if (role == PK_ROLE_ENUM_DEPENDS_ON)
+				hy_query_filter (query, HY_PKG_PROVIDES, HY_EQ, req);
+			else
+				hy_query_filter (query, HY_PKG_REQUIRES, HY_EQ, req);
+
+			results = dnf_utils_run_query_with_newest_filter (sack, query);
+			for (guint j = 0; j < results->len; j++) {
+				DnfPackage *res = g_ptr_array_index (results, j);
+				const gchar *resid = dnf_package_get_package_id (res);
+
+				/* ignore self-referential dependencies */
+				if (g_strcmp0 (resid, dnf_package_get_package_id (curr)) == 0)
+					continue;
+
+				if (!g_hash_table_contains (visited, resid)) {
+					g_hash_table_add (visited, g_strdup (resid));
+					g_ptr_array_add (results_array, g_object_ref (res));
+					if (recursive)
+						g_queue_push_tail (queue, g_object_ref (res));
+				}
+			}
+
+		}
+	}
+}
+
+static void
+backend_dependency_query_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	gboolean ret;
+	DnfState *state_local;
+	DnfPackage *pkg;
+	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
+	PkBitfield filters;
+	PkRoleEnum role;
+	g_autofree gchar **package_ids = NULL;
+	g_autoptr(DnfSack) sack = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GHashTable) hash = NULL;
+	g_autoptr(GHashTable) emitted = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	g_autoptr(GPtrArray) results_array = g_ptr_array_new_with_free_func (g_object_unref);
+	gboolean recursive;
+	g_variant_get (params, "(t^a&sb)",
+		       &filters,
+		       &package_ids,
+		       &recursive);
+
+	/* set state */
+	ret = dnf_state_set_steps (job_data->state, NULL,
+				   50, /* add repos */
+				   49, /* find packages */
+				   1, /* emit */
+				   -1);
+	g_assert (ret);
+
+	/* get role */
+	role = pk_backend_job_get_role (job);
+
+	/* get sack */
+	state_local = dnf_state_get_child (job_data->state);
+	sack = dnf_utils_create_sack_for_filters (job,
+						  filters,
+						  DNF_CREATE_SACK_FLAG_USE_CACHE,
+						  state_local,
+						  &error);
+	if (sack == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* done */
+	if (!dnf_state_done (job_data->state, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* find packages */
+	hash = dnf_utils_find_package_ids (sack, package_ids, &error);
+	if (hash == NULL) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* done */
+	if (!dnf_state_done (job_data->state, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+	/* get dependency information */
+	for (guint i = 0; package_ids[i] != NULL; i++) {
+		pkg = g_hash_table_lookup (hash, package_ids[i]);
+		if (pkg == NULL) {
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+						   "Failed to find %s", package_ids[i]);
+			return;
+		}
+
+		if (role == PK_ROLE_ENUM_DEPENDS_ON ||
+		    role == PK_ROLE_ENUM_REQUIRED_BY) {
+			if (i == 0)
+				g_hash_table_remove_all (emitted);
+			dnf_utils_process_dependency (sack,
+						      pkg,
+						      role,
+						      recursive,
+						      emitted,
+						      results_array,
+						      &error);
+		}
+
+	}
+
+	/* emit */
+	if (results_array->len > 0)
+		dnf_emit_package_list_filter (job, filters, results_array);
+
+	/* done */
+	if (!dnf_state_done (job_data->state, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		return;
+	}
+
+}
+
+void
+pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
+	pk_backend_job_thread_create (job, backend_dependency_query_thread, NULL, NULL);
+}
+
+void
+pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+{
+	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GError) error = NULL;
+
+	if (!pk_backend_ensure_default_dnf_context (backend, &error)) {
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
+		pk_backend_job_finished (job);
+		return;
+	}
+	pk_backend_job_set_context (job, priv->context);
+	pk_backend_job_thread_create (job, backend_dependency_query_thread, NULL, NULL);
+}
+
+static void
 backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean ret;
