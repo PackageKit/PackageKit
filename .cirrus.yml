@@ -2,7 +2,7 @@ task:
   name: "Build & Test (freebsd)"
   freebsd_instance:
     matrix:
-      - image_family: freebsd-14-2
+      - image_family: freebsd-15-0-amd64-ufs
   deps_script:
     - mkdir -p /usr/local/etc/pkg/repos/
     - sed 's|/quarterly|/latest|' /etc/pkg/FreeBSD.conf > /usr/local/etc/pkg/repos/FreeBSD.conf
