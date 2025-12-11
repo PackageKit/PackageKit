@@ -28,6 +28,8 @@ import sys
 import traceback
 import os.path
 
+from gi.repository import GLib
+
 from .enums import *
 
 PACKAGE_IDS_DELIM = '&'
@@ -244,6 +246,13 @@ class PackageKitBaseBackend:
         @param bytes: The size of the package, in bytes
         @param download_bytes: The download size of the package, in bytes
         '''
+
+        # Ensure sizes report as 'unknown' in pkcon if not reported
+        if bytes is None:
+            bytes = GLib.MAXUINT64
+        if download_bytes is None:
+            download_bytes = GLib.MAXUINT64
+
         sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
         sys.stdout.flush()
 
