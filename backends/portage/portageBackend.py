@@ -966,7 +966,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 self._get_pk_group(cpv),
                 metadata["DESCRIPTION"],
                 metadata["HOMEPAGE"],
-                self._get_size(cpv)
+                self._get_size(cpv),
+                None
             )
 
             self.percentage(percentage)

@@ -1140,7 +1140,7 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
                 continue
 
             self.details(pk_pkg, '', lic, self._get_pk_group(category),
-                         description, homepage, self._get_pkg_size(pkg))
+                         description, homepage, self._get_pkg_size(pkg), None)
 
         self.percentage(100)
 
