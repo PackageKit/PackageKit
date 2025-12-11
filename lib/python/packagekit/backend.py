@@ -28,6 +28,8 @@ import sys
 import traceback
 import os.path
 
+from gi.repository import GLib
+
 from .enums import *
 
 PACKAGE_IDS_DELIM = '&'
@@ -232,7 +234,7 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("data\t%s\n" % data))
         sys.stdout.flush()
 
-    def details(self, package_id, summary, package_license, group, desc, url, bytes):
+    def details(self, package_id, summary, package_license, group, desc, url, bytes, download_bytes):
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -242,8 +244,16 @@ class PackageKitBaseBackend:
         @param desc: The multi line package description
         @param url: The upstream project homepage
         @param bytes: The size of the package, in bytes
+        @param download_bytes: The download size of the package, in bytes
         '''
-        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes)))
+
+        # Ensure sizes report as 'unknown' in pkcon if not reported
+        if bytes is None:
+            bytes = GLib.MAXUINT64
+        if download_bytes is None:
+            download_bytes = GLib.MAXUINT64
+
+        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
         sys.stdout.flush()
 
     def files(self, package_id, file_list):
