@@ -234,7 +234,7 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("data\t%s\n" % data))
         sys.stdout.flush()
 
-    def details(self, package_id, summary, package_license, group, desc, url, bytes, download_bytes):
+    def details(self, package_id, summary, package_license, group, desc, url, bytes: int | None = None, download_bytes: int | None = None):
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
