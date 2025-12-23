@@ -11,17 +11,21 @@
 # b83946de5835331df42b9ffcc43e6a33_05e65cd <73a30e0a984b2291d4915f37112ad292_814039>, 2023-2024
 # Serdar Sağlam <teknomobil@msn.com>, 2020
 # yunus kaba <yunuskaba@gmail.com>, 2019
+# Emir <bitigchi@me.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"Language-Team: Turkish (http://app.transifex.com/freedesktop/packagekit/language/tr/)\n"
+"PO-Revision-Date: 2025-12-23 05:00+0000\n"
+"Last-Translator: Emir <bitigchi@me.com>\n"
+"Language-Team: Turkish <https://hosted.weblate.org/projects/packagekit/translations/tr/>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -37,7 +41,7 @@ msgstr "Yapılandırma dosyası yüklenemedi: %s"
 #. * shit creek without a paddle
 #: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
 msgid "The daemon crashed mid-transaction!"
-msgstr "Art alan hizmeti işlem sürerken çöktü!"
+msgstr "Ardalan süreci işlem sürerken çöktü!"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
@@ -47,24 +51,18 @@ msgstr "İşlemi yalnızca paketleri indirecek biçimde ayarla"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
 msgid "Allow package downgrades"
-msgstr "İşlem sırasında paketlerin eski sürümlere indirilmesine izin ver"
+msgstr "Paket sürümünün düşürülmesine izin ver"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
 msgid "Allow package re-installations"
-msgstr "İşlem sırasında paketlerin yeniden kurulmasına izin ver"
+msgstr "Paketlerin yeniden kurulmasına izin ver"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install older version of installed package"
 msgid "Allow installation of untrusted packages"
-msgstr "Kurulu paketin eski sürümünü kur"
+msgstr "Güvenilmeyen paketlerin kurulmasına izin ver"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
@@ -74,92 +72,81 @@ msgstr "Kullanılmayan bağımlılıkları kendiliğinden kaldır"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr ""
+msgstr "Saniye türünden en büyük üst veri önbellek yaşı"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SANİYE"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refresh the cache"
 msgid "Refresh the package metadata cache."
-msgstr "Önbelleği yenile"
+msgstr "Paket üst veri önbelleğini yenileyin."
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Paket üst verisi yenilendi"
 
 #. TRANSLATORS: Description for pkgctl install
 #: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Bir veya birden çok paket veya yerel paket dosyaları kurun."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:308 client/pkgc-manage.c:321
-#, fuzzy, c-format
-#| msgid "This tool could not find any available package: %s"
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Bu araç kullanılabilir bir paket bulamadı: %s"
+msgstr "Kullanılabilir paket bulunamadı: %s"
 
 #: client/pkgc-manage.c:326
-#, fuzzy
-#| msgid "The selected packages may already be installed."
 msgid "The selected package is already installed."
-msgstr "Seçili paketler halihazırda kurulu olabilir."
+msgstr "Seçili paket halihazırda kurulu."
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Sistemden bir veya daha fazla paketi kaldırın."
 
 #: client/pkgc-manage.c:383
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Bu araç paketi bulamadı: %s"
+msgstr "Kurulu paketler bulunamadı: %s"
 
 #. TRANSLATORS: Description for pkgctl download
 #: client/pkgc-manage.c:423
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Paketleri kurmadan belirtilen dizine indirin."
 
 #: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Bu araç paketi bulamadı: %s"
+msgstr "Paketler bulunamadı: %s"
 
 #: client/pkgc-manage.c:445
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Dizin yok: %s"
 
 #. TRANSLATORS: Description for pkgctl update
 #: client/pkgc-manage.c:488
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Tüm veya belirli paketleri güncel sürümlerine yükseltin."
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Bu araç paketi bulamadı: %s"
+msgstr "Güncellenecek paket bulunamadı: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Art alan hizmeti durumu alınamadı"
+msgstr "Güncellemeler alınamadı: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
-msgstr "Daha yeni bir sürüme yükseltilmesi gereken paket yok."
+msgstr "Güncellenmesi gereken paket yok"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -169,77 +156,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Tüm paketleri yükseltin veya bir dağıtım yükseltmesi uygulayın.\n"
+"\n"
+"Türler: minimal, default, complete"
 
 #: client/pkgc-manage.c:687
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Çevrimdışı güncellemeleri tetikle"
+msgstr "Çevrimdışı güncelleme eylemi okunamadı: %s"
 
 #: client/pkgc-manage.c:697
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "Offline update is not triggered."
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Çevrimdışı güncelleme tetiklenmedi."
 
 #: client/pkgc-manage.c:705
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Çevrimdışı güncellemeleri tetikle"
+msgstr "Çevrimdışı güncelleme tetiklendi. Güncelleme sonrası eylem: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:716
-#, fuzzy
-#| msgid "Prepared updates:"
 msgid "Prepared packages:"
-msgstr "Hazırlanan güncellemeler:"
+msgstr "Hazırlanan paketler:"
 
 #: client/pkgc-manage.c:730
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "No offline update is prepared."
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Hazırlanan çevrimdışı güncelleme yok."
 
 #: client/pkgc-manage.c:732
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Çevrimdışı güncellemeleri tetikle"
+msgstr "Hazırlanan çevrimdışı güncellemeler okunamadı: %s"
 
 #: client/pkgc-manage.c:742
-#, fuzzy
-#| msgid "Downloading update information"
 msgid "No results from last offline update available."
-msgstr "Güncelleme bilgisi indiriliyor"
+msgstr "Son çevrimdışı güncellemeden bir sonuç verisi yok."
 
 #: client/pkgc-manage.c:749
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Son çevrimdışı güncelleme başarısız oldu: %s: %s"
 
 #: client/pkgc-manage.c:756
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "Last offline update completed successfully"
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Çevrimdışı güncelleme başarıyla tamamlandı"
 
 #: client/pkgc-manage.c:767
-#, fuzzy, c-format
-#| msgid "Updated"
+#, c-format
 msgid "Updated: %s"
-msgstr "Güncellenme"
+msgstr "Güncellendi: %s"
 
 #: client/pkgc-manage.c:788
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Çevrimdışı güncellemeleri tetikle"
+msgstr "Çevrimdışı güncelleme tetiklenemedi: %s"
 
 #: client/pkgc-manage.c:792
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Çevrimdışı güncellemeler zamanlandı. Sistem, bir sonraki yeniden başlatmada güncellenecek."
 
 #. TRANSLATORS: Description of the pkgctl offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -253,111 +227,95 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Çevrimdışı sistem güncellemelerini tetikleyin ve yönetin.\n"
+"\n"
+"Aşağıdaki isteklerden birini seçebilirsiniz:\n"
+"  prepare - bir çevrimdışı güncellemeyi hazırlayın ve tetikleyin (öntanımlı)\n"
+"  trigger - (elle hazırlanmış) bir çevrimdışı güncellemeyi tetikleyin\n"
+"  cancel - planlı bir çevrimdışı güncellemeyi iptal edin\n"
+"  status - hazırlanmış veya bitmiş bir çevrimdışı güncellemenin durumuna bakın"
 
 #: client/pkgc-manage.c:836
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Kendiliğinden çözülemedi: %s"
+msgstr "Çevrimdışı güncelleme iptal edilemedi: %s"
 
 #: client/pkgc-manage.c:840
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "Offline update cancelled"
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Çevrimdışı güncelleme iptal edildi"
 
 #: client/pkgc-manage.c:897
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Çevrimdışı güncelleme iletilerini temizle"
+msgstr "Bilinmeyen çevrimdışı güncelleme isteği: %s"
 
 #. TRANSLATORS: Description for pkgctl install-sig
 #: client/pkgc-manage.c:917
-#, fuzzy
-#| msgid "Install the packages without asking for confirmation"
 msgid "Install a package signature for GPG verification."
-msgstr "Paketleri onay istemeden kur"
+msgstr "GPG doğrulaması için bir paket imzası kurun."
 
 #. TRANSLATORS: Description for pkgctl repair
 #: client/pkgc-manage.c:952
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Paket yönetimi sistemini onarmaya çalışın."
 
 #: client/pkgc-manage.c:968
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Sistem başarıyla onarıldı"
 
 #. TRANSLATORS: Description for pkgctl quit
 #: client/pkgc-manage.c:989
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "PackageKit ardalan sürecini güvenli bir şekilde sonlandırın."
 
 #: client/pkgc-manage.c:995
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Art alan hizmeti durumu alınamadı"
+msgstr "Ardalan süreci çıkış isteği alınamadı: %s"
 
 #: client/pkgc-manage.c:1014
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Paket üst verisini yenile"
 
 #: client/pkgc-manage.c:1020
-#, fuzzy
-#| msgid "Install package"
 msgid "Install packages"
-msgstr "Paket kur"
+msgstr "Paketler kur"
 
 #: client/pkgc-manage.c:1026
-#, fuzzy
-#| msgid "Remove package"
 msgid "Remove packages"
-msgstr "Paketi kaldır"
+msgstr "Paketleri kaldır"
 
 #: client/pkgc-manage.c:1032
-#, fuzzy
-#| msgid "Updating packages"
 msgid "Update packages"
-msgstr "Paketler güncelleniyor"
+msgstr "Paketleri güncelle"
 
 #: client/pkgc-manage.c:1038
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade the system"
-msgstr "Sistemi Yükselt"
+msgstr "Sistemi yükselt"
 
 #: client/pkgc-manage.c:1044
-#, fuzzy
-#| msgid "Downloading packages"
 msgid "Download packages"
-msgstr "Paketler indiriliyor"
+msgstr "Paketler indir"
 
 #: client/pkgc-manage.c:1050
-#, fuzzy
-#| msgid "There are no packages to update."
 msgid "Manage offline system updates"
-msgstr "Güncellenecek paket yok."
+msgstr "Çevrimdışı sistem güncellemelerini yönet"
 
 #: client/pkgc-manage.c:1056
-#, fuzzy
-#| msgid "Installing signature"
 msgid "Install package signature"
-msgstr "İmza kuruluyor"
+msgstr "Paket imzası kur"
 
 #: client/pkgc-manage.c:1062
-#, fuzzy
-#| msgid "Repair System"
 msgid "Repair package system"
-msgstr "Sistemi Onar"
+msgstr "Paket sistemini onar"
 
 #: client/pkgc-manage.c:1068
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "PackageKit ardalan sürecini güvenli bir şekilde durdur"
 
 #: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
 msgid "Failed to get daemon state"
-msgstr "Art alan hizmeti durumu alınamadı"
+msgstr "Ardalan süreci durumu alınamadı"
 
 #: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
 msgid "Failed to get properties"
@@ -365,52 +323,45 @@ msgstr "Özellikler alınamadı"
 
 #. TRANSLATORS: Description for pkgctl monitor
 #: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit hizmeti"
+msgstr "PackageKit D-Bus olaylarını izle"
 
 #. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
 msgid "Monitor PackageKit bus events"
-msgstr "PackageKit hizmeti"
+msgstr "PackageKit veri yolu olaylarını izle"
 
 #. TRANSLATORS: Description for pkgctl backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "PackageKit arka uç bilgisini gösterin."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Arka uç: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
+#, c-format
 msgid "Description: %s"
-msgstr "Açıklama"
+msgstr "Açıklama: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
+#, c-format
 msgid "Author: %s"
-msgstr "Yazar"
+msgstr "Yazar: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
+#, c-format
 msgid "Roles: %s"
-msgstr "Rol"
+msgstr "Roller: %s"
 
 #. TRANSLATORS: Description for pkgctl history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Son paket yönetimi işlemlerini gösterin."
 
 #. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
@@ -423,96 +374,96 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Verilen dizgilerle işleşen paketleri arayın. MODE belirtilmemişse\n"
+"“details” araması yapılır.\n"
+"Olası arama MODE'ları:\n"
+"  name - paket adına göre arayın\n"
+"  details - paket ayrıntılarına göre arayın (öntanımlı)\n"
+"  file - dosya adına göre arayın\n"
+"  group - paket grubuna göre arayın"
 
 #: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A search term is required"
 msgid "No search pattern specified"
-msgstr "Bir arama terimi gerekiyor"
+msgstr "Belirtilen arama dizgisi yok"
 
 #. TRANSLATORS: Description for pkgctl list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Tüm paketleri veya bir dizgiyle eşleşen paketleri listeleyin."
 
 #. TRANSLATORS: Description for pkgctl show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Bir veya birden çok paket hakkında bilgi gösterin."
 
 #: client/pkgc-query.c:471 client/pkgc-query.c:750
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Bağımlılıkları özyineli olarak denetle"
 
 #. TRANSLATORS: Description for pkgctl depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Bir veya birden çok paket için bağımlılıkları gösterin."
 
 #: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Kendiliğinden çözülemedi: %s"
+msgstr "Paketler çözülemedi: %s"
 
 #. TRANSLATORS: Description for pkgctl what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Belirtilen yeteneği hangi paketin sağladığını gösterin."
 
 #. TRANSLATORS: Description for pkgctl files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Bir veya birden çok pakette içerilen tüm dosyaları listeleyin."
 
 #. TRANSLATORS: Description for pkgctl list-updates
 #: client/pkgc-query.c:646
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
 msgid "List all currently available package updates."
-msgstr "Bu araç kullanılabilir bir paket bulamadı: %s"
+msgstr "Şu anda kullanılabilir tüm paket güncellemelerini listeleyin."
 
 #. TRANSLATORS: Description for pkgctl show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Belirtilen paket güncellemesi hakkında ayrıntılı bilgi gösterin."
 
 #. TRANSLATORS: Description for pkgctl resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Paket adlarını paket kimliklerine çözün."
 
 #. TRANSLATORS: Description for pkgctl required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Belirtilen paketleri hangi paketlerin gerektirdiğini gösterin."
 
 #. TRANSLATORS: Description for pkgctl organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Paket organizasyonu için kullanılabilir tüm süzgeçleri, grupları ve kategorileri listeleyin."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
 msgid "Filters:"
-msgstr ""
+msgstr "Süzgeçler:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:825
 msgid "Groups:"
-msgstr ""
+msgstr "Gruplar:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
 msgid "Categories:"
-msgstr "Kategori"
+msgstr "Kategoriler:"
 
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Varsa dağıtım sürüm yükseltmelerini gösterin."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -522,15 +473,13 @@ msgstr "Bu eylemin en son tamamlandığı tarih bulunamadı"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
 msgid "Elapsed time"
-msgstr "Sistem zamanı"
+msgstr "Geçen süre"
 
 #. TRANSLATORS: Description for pkgctl last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Son belirtilen eylemden bu yana kaç saniye geçtiğini alın."
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
@@ -547,386 +496,307 @@ msgid "A correct role is required"
 msgstr "Bir doğru rol gerekiyor"
 
 #: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
 msgid "Show backend information"
-msgstr "Bilgi alınıyor"
+msgstr "Arka uç bilgisini göster"
 
 #: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
 msgid "Show transaction history"
-msgstr "İşlem başarısız"
+msgstr "İşlem geçmişini göster"
 
 #: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Search by names"
 msgid "Search for packages"
-msgstr "Ada göre ara"
+msgstr "Paketleri ara"
 
 #: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Install package"
 msgid "List packages"
-msgstr "Paket kur"
+msgstr "Paketleri listele"
 
 #: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Downloading update information"
 msgid "Show package information"
-msgstr "Güncelleme bilgisi indiriliyor"
+msgstr "Paket bilgisini göster"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
 msgid "List package dependencies"
-msgstr "Bağımlılıklar çözülüyor"
+msgstr "Paket bağımlılıklarını listele"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "The package providing this file is:"
 msgid "List packages requiring this package"
-msgstr "Bu dosyayı içeren paket:"
+msgstr "Bu paketi gerektiren paketleri listele"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "The package providing this file is:"
 msgid "List packages providing a capability"
-msgstr "Bu dosyayı içeren paket:"
+msgstr "Bir yeteneği sağlayan paketleri listele"
 
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Obsoleting packages"
 msgid "Show files in package"
-msgstr "Paketler gereksiz olarak işaretleniyor"
+msgstr "Paketteki dosyaları göster"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
 msgid "Get available updates"
-msgstr "Güncellemeler alınıyor"
+msgstr "Kullanılabilir güncellemeleri al"
 
 #: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Getting update details"
 msgid "Get update details"
-msgstr "Güncelleme ayrıntıları alınıyor"
+msgstr "Güncelleme ayrıntılarını al"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
 msgid "Resolve package names"
-msgstr "Paketi kaldır"
+msgstr "Paket adlarını çöz"
 
 #: client/pkgc-query.c:1045
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Kullanılabilir süzgeçleri ve kategorileri listele"
 
 #: client/pkgc-query.c:1051
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Kullanılabilir dağıtım yükseltmelerini göster"
 
 #: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Get time since last action"
-msgstr "İşlemler alınıyor"
+msgstr "Son eylemden bu yana geçen zamanı al"
 
 #. TRANSLATORS: Description for pkgctl repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Tüm yapılandırılmış paket depolarını listeleyin."
 
 #. TRANSLATORS: Description for pkgctl repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Belirtilen depoyu etkinleştirin."
 
 #: client/pkgc-repo.c:134
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "'%s' deposu etkinleştirildi"
 
 #. TRANSLATORS: Description for pkgctl repo-disable
 #: client/pkgc-repo.c:155
-#, fuzzy
-#| msgid "Disable the idle timer"
 msgid "Disable the specified repository."
-msgstr "Boştaki zamanlayıcıyı kapat"
+msgstr "Belirtilen depoyu devre dışı bırakın."
 
 #: client/pkgc-repo.c:174
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "'%s' deposu devre dışı"
 
 #: client/pkgc-repo.c:194
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Automatically remove orphaned packages"
-msgstr "Kullanılmayan bağımlılıkları kendiliğinden kaldır"
+msgstr "Yetim bırakılmış paketleri kendiliğinden kaldır"
 
 #. TRANSLATORS: Description for pkgctl repo-remove
 #: client/pkgc-repo.c:204
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Remove the specified repository."
-msgstr "Depo kaldırılıyor"
+msgstr "Belirtilen depoyu kaldırın."
 
 #: client/pkgc-repo.c:224
-#, fuzzy, c-format
-#| msgid "A repository name is required"
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Bir depo adı gerekiyor"
+msgstr "'%s' deposu kaldırıldı"
 
 #: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "List repositories"
-msgstr "Depolar alınıyor"
+msgstr "Depoları listele"
 
 #: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Enable a repository"
-msgstr "Depo kaldırılıyor"
+msgstr "Depoyu etkinleştir"
 
 #: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Disable a repository"
-msgstr "Depo kaldırılıyor"
+msgstr "Depoyu devre dışı bırak"
 
 #: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Remove a repository"
-msgstr "Depo kaldırılıyor"
+msgstr "Depoyu kaldır"
 
 #: client/pkgc-util.c:94
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "PackageKit ardalan sürecine bağlı değil"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
+#, c-format
 msgid "%u seconds"
-msgstr "(saniye)"
+msgstr "%u saniye"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:137
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u dak %u san"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u dak"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:147
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u sa %u dak"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u sa"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u gün %u sa"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u gün"
 
 #: client/pkgc-util.c:275
 msgid "Error"
-msgstr ""
+msgstr "Hata"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:307
 msgid "Warning:"
-msgstr ""
+msgstr "Uyarı:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgctl
 #: client/pkgc-util.c:427 client/pkgctl.c:188
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Kendiliğinden çözülemedi: %s"
+msgstr "Seçenekler ayrıştırılamadı: %s"
 
 #. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Kullanım: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:606 client/pkgc-util.c:760
-#, fuzzy
-#| msgid "Package"
 msgid "Package:"
-msgstr "Paket"
+msgstr "Paket:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:610
 msgid "Version:"
-msgstr ""
+msgstr "Sürüm:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:617
-#, fuzzy
-#| msgid "Summary"
 msgid "Summary:"
-msgstr "Özet"
+msgstr "Özet:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:625
-#, fuzzy
-#| msgid "Description"
 msgid "Description:"
-msgstr "Açıklama"
+msgstr "Açıklama:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:632
 msgid "License:"
-msgstr ""
+msgstr "Lisans:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:639
 msgid "URL:"
-msgstr ""
+msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:646
 msgid "Group:"
-msgstr ""
+msgstr "Grup:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:654
-#, fuzzy
-#| msgid "Installed"
 msgid "Installed Size:"
-msgstr "Kurulu"
+msgstr "Kurulu boyut:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:662
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Download Size:"
-msgstr "İndirildi"
+msgstr "İndirme boyutu:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:756
-#, fuzzy
-#| msgid "Update text"
 msgid "Update Details:"
-msgstr "Güncelleme metni"
+msgstr "Güncelleme ayrıntıları:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:767
-#, fuzzy
-#| msgid "Updates"
 msgid "Updates:"
-msgstr "Güncellemeler"
+msgstr "Güncellemeler:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:776
-#, fuzzy
-#| msgid "Obsoletes"
 msgid "Obsoletes:"
-msgstr "Geçersiz kılar"
+msgstr "Eskimişler:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:785
-#, fuzzy
-#| msgid "Vendor"
 msgid "Vendor:"
-msgstr "Satıcı"
+msgstr "Satıcı:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:794
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Hata izleyicisi:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:803
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:811
-#, fuzzy
-#| msgid "Restart"
 msgid "Restart:"
-msgstr "Yeniden başlat"
+msgstr "Yeniden başlat:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:820
-#, fuzzy
-#| msgid "Update text"
 msgid "Update text:"
-msgstr "Güncelleme metni"
+msgstr "Güncelleme metni:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:827
-#, fuzzy
-#| msgid "Changes"
 msgid "Changes:"
-msgstr "Değişiklikler"
+msgstr "Değişiklikler:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:834
-#, fuzzy
-#| msgid "State"
 msgid "State:"
-msgstr "Durum"
+msgstr "Durum:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:843
-#, fuzzy
-#| msgid "Issued"
 msgid "Issued:"
-msgstr "Çıkış"
+msgstr "Çıkış:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:850
-#, fuzzy
-#| msgid "Updated"
 msgid "Updated:"
-msgstr "Güncellenme"
+msgstr "Güncellenme:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:967
-#, fuzzy
-#| msgid "Transaction"
 msgid "Transaction:"
-msgstr "İşlem"
+msgstr "İşlem:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:971
-#, fuzzy
-#| msgid "System time"
 msgid "System time:"
-msgstr "Sistem zamanı"
+msgstr "Sistem zamanı:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:975
-#, fuzzy
-#| msgid "Succeeded"
 msgid "Succeeded:"
-msgstr "Başarılı"
+msgstr "Başarılı:"
 
 #: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
 msgid "True"
@@ -938,45 +808,33 @@ msgstr "Yanlış"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:984
-#, fuzzy
-#| msgid "Role"
 msgid "Role:"
-msgstr "Rol"
+msgstr "Rol:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:991
-#, fuzzy
-#| msgid "Duration"
 msgid "Duration:"
-msgstr "Süre"
+msgstr "Süre:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:998
-#, fuzzy
-#| msgid "Command line"
 msgid "Command line:"
-msgstr "Komut satırı"
+msgstr "Komut satırı:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1004
-#, fuzzy
-#| msgid "User ID"
 msgid "User ID:"
-msgstr "Kullanıcı kimliği"
+msgstr "Kullanıcı kimliği:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1013
-#, fuzzy
-#| msgid "Username"
 msgid "Username:"
-msgstr "Kullanıcı adı"
+msgstr "Kullanıcı adı:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1019
-#, fuzzy
-#| msgid "Real name"
 msgid "Real name:"
-msgstr "Gerçek ad"
+msgstr "Gerçek ad:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
@@ -988,7 +846,7 @@ msgstr "Etkilenen paketler:"
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1053
 msgid "None"
-msgstr ""
+msgstr "Yok"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -1004,51 +862,48 @@ msgid "Please choose the correct package: "
 msgstr "Lütfen doğru paketi seçin: "
 
 #: client/pkgc-util.c:1198
-#, fuzzy, c-format
-#| msgid "Package not found"
+#, c-format
 msgid "Package not found: %s"
-msgstr "Paket bulunamadı"
+msgstr "Paket bulunamadı: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgctl.c:76
-#, fuzzy
-#| msgid "Show version and exit"
 msgid "Show pkgctl version"
-msgstr "Sürümü göster ve çık"
+msgstr "pkgctl sürümünü göster"
 
 #: client/pkgctl.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Yardımı göster"
 
 #: client/pkgctl.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Yalnızca en az çıktıyı sağla"
 
 #: client/pkgctl.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Daha ayrıntılı çıktı göster"
 
 #: client/pkgctl.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "JSON biçiminde çıktı"
 
 #: client/pkgctl.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Renkli çıktıyı devre dışı bırak"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgctl.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Tüm sorulara 'Evet' yanıtını ver"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgctl.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Paketleri süz (kurulu, kullanılabilir vb.)"
 
 #: client/pkgctl.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "SÜZGEÇ"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
@@ -1057,33 +912,30 @@ msgstr "Komutu ağ kullanılmadığında çalıştır ve daha az güç harca"
 
 #: client/pkgctl.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Belirtilen komut yok. Kullanım bilgisi için --help yazın."
 
 #: client/pkgctl.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Bilinmeyen komut: %s"
 
 #: client/pkgctl.c:135
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "PackageKit’e bağlanılamadı"
+msgstr "PackageKit'e bağlanamadı: %s"
 
 #: client/pkgctl.c:196
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Sürüm: %s"
 
 #: client/pkgctl.c:211
-#, fuzzy
-#| msgid "Available"
 msgid "Available Commands:"
-msgstr "Kullanılabilir"
+msgstr "Kullanılabilir komutlar:"
 
 #: client/pkgctl.c:217
 msgid "Use 'pkgctl COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Komuta yönelik yardım için 'pkgctl KOMUT --help' yazın."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -1529,7 +1381,7 @@ msgstr "Komut satırı ayrıştırılamadı"
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit’e bağlanılamadı"
+msgstr "PackageKit ile iletişim kurulamadı"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
@@ -1710,7 +1562,7 @@ msgstr "Sistem yükseltmesi kuruluyor; bu, biraz vakit alabilir…"
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
 msgid "Downloading details about the software repositories."
-msgstr "Yazılım depolarıyla ilgili ayrıntılar indiriliyor…"
+msgstr "Yazılım depolarıyla ilgili ayrıntılar indiriliyor."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
@@ -1720,12 +1572,12 @@ msgstr "Dosya listesi indiriliyor (tamamlanması biraz vakit alabilir)."
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
 msgid "Waiting for package manager lock."
-msgstr "Paket yöneticisi kilidi bekleniyor…"
+msgstr "Paket yöneticisi kilidi bekleniyor."
 
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
 msgid "Loading list of packages."
-msgstr "Paketlerin listesi yükleniyor…"
+msgstr "Paketlerin listesi yükleniyor."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
@@ -2286,10 +2138,8 @@ msgstr "Sistem yükseltmeleri alınıyor"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
-#, fuzzy
-#| msgid "Repair System"
 msgid "Repairing system"
-msgstr "Sistemi Onar"
+msgstr "Sistem onarılıyor"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -2314,7 +2164,7 @@ msgstr "Yazılım kaynağı adı"
 #. TRANSLATORS: the key URL
 #: lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
-msgstr "Anahtar URL’si"
+msgstr "Anahtar URL'si"
 
 #. TRANSLATORS: the username of the key
 #: lib/packagekit-glib2/pk-task-text.c:116
@@ -2424,7 +2274,7 @@ msgstr "Aşağıdaki paketlerin eski sürümleri kurulmalıdır:"
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
 msgid "The following packages have to be obsoleted:"
-msgstr "Aşağıdaki paketler kullanılmamalıdır: "
+msgstr "Aşağıdaki paketler kullanılmamalıdır:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
@@ -2604,7 +2454,7 @@ msgstr "Yazılım indirmek üzere vekil sunucuyu ayarlamak için kimlik doğrula
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr "Sistemi Yükselt"
+msgstr "Sistemi yükselt"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
@@ -2616,7 +2466,7 @@ msgstr "İşletim sistemini yükseltmek için kimlik doğrulaması gerekiyor"
 #. applications from working.
 #: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr "Sistemi Onar"
+msgstr "Sistemi onar"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
