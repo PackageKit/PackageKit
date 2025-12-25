@@ -22,7 +22,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"PO-Revision-Date: 2025-12-24 16:00+0000\n"
+"PO-Revision-Date: 2025-12-25 20:00+0000\n"
 "Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -366,7 +366,7 @@ msgstr "角色：%s"
 #. TRANSLATORS: Description for pkgctl history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "显示最近的软件包管理操作记录。"
 
 #. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
@@ -379,31 +379,36 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"根据给定的模式搜索软件包。\n"
+"如果未指定 MODE，则执行“详情”搜索。  \n"
+"可能的搜索模式包括：  \n"
+"  name    - 按软件包名称搜索  \n"
+"  details - 按软件包详情搜索（默认）  \n"
+"  file    - 按文件名搜索  \n"
+"  group   - 按软件包组搜索"
 
 #: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A search term is required"
 msgid "No search pattern specified"
-msgstr "需要指定搜索词"
+msgstr "未指定搜索模式"
 
 #. TRANSLATORS: Description for pkgctl list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "列出所有软件包，或匹配指定模式的软件包。"
 
 #. TRANSLATORS: Description for pkgctl show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "显示一个或多个软件包的信息。"
 
 #: client/pkgc-query.c:471 client/pkgc-query.c:750
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "递归检查依赖项"
 
 #. TRANSLATORS: Description for pkgctl depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "显示一个或多个软件包的依赖关系。"
 
 #: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
 #, c-format
@@ -413,12 +418,12 @@ msgstr "无法解析包：%s"
 #. TRANSLATORS: Description for pkgctl what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "显示提供指定功能的软件包。"
 
 #. TRANSLATORS: Description for pkgctl files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "列出一个或多个软件包中包含的所有文件。"
 
 #. TRANSLATORS: Description for pkgctl list-updates
 #: client/pkgc-query.c:646
@@ -428,32 +433,32 @@ msgstr "列出所有当前可用的软件包更新。"
 #. TRANSLATORS: Description for pkgctl show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "显示指定软件包更新的详细信息。"
 
 #. TRANSLATORS: Description for pkgctl resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "将软件包名称解析为软件包ID。"
 
 #. TRANSLATORS: Description for pkgctl required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "显示哪些软件包需要指定的软件包。"
 
 #. TRANSLATORS: Description for pkgctl organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "列出所有可用于包组织的筛选条件、分组和分类。"
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
 msgid "Filters:"
-msgstr ""
+msgstr "筛选条件："
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:825
 msgid "Groups:"
-msgstr ""
+msgstr "组："
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
@@ -463,7 +468,7 @@ msgstr "类别："
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "显示可用的发行版本升级。"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
@@ -473,15 +478,13 @@ msgstr "获取此动作自上次完成以后的时间失败"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
 msgid "Elapsed time"
-msgstr "系统时间"
+msgstr "所用时间"
 
 #. TRANSLATORS: Description for pkgctl last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "获取自上次指定操作以来的秒数。"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
@@ -498,105 +501,79 @@ msgid "A correct role is required"
 msgstr "需要指定正确的角色"
 
 #: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
 msgid "Show backend information"
-msgstr "正在获取信息"
+msgstr "显示后端信息"
 
 #: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
 msgid "Show transaction history"
-msgstr "事务失败"
+msgstr "显示事务记录"
 
 #: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Search by names"
 msgid "Search for packages"
-msgstr "按名称搜索"
+msgstr "搜索软件包"
 
 #: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Install package"
 msgid "List packages"
-msgstr "安装软件包"
+msgstr "列出软件包"
 
 #: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Downloading update information"
 msgid "Show package information"
-msgstr "正在下载更新信息"
+msgstr "显示包信息"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
 msgid "List package dependencies"
-msgstr "正在解析依赖"
+msgstr "列出软件包依赖关系"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "The package providing this file is:"
 msgid "List packages requiring this package"
-msgstr "提供此文件的软件包是："
+msgstr "列出依赖于本软件包的软件包"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "The package providing this file is:"
 msgid "List packages providing a capability"
-msgstr "提供此文件的软件包是："
+msgstr "列出提供某功能的软件包"
 
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Obsoleting packages"
 msgid "Show files in package"
-msgstr "正在废弃软件包"
+msgstr "显示包中的文件"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
 msgid "Get available updates"
-msgstr "正在获取更新"
+msgstr "获取可用更新"
 
 #: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Getting update details"
 msgid "Get update details"
-msgstr "正在获取更新详情"
+msgstr "获取更新详情"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
 msgid "Resolve package names"
-msgstr "移除软件包"
+msgstr "解析软件包名"
 
 #: client/pkgc-query.c:1045
 msgid "List available filters and categories"
-msgstr ""
+msgstr "列出可用的筛选条件和分类"
 
 #: client/pkgc-query.c:1051
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "显示可用的发行版升级"
 
 #: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting transactions"
 msgid "Get time since last action"
-msgstr "正在获取事务"
+msgstr "获取上次操作以来的时间"
 
 #. TRANSLATORS: Description for pkgctl repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "列出所有已配置的软件包仓库。"
 
 #. TRANSLATORS: Description for pkgctl repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "启用指定的仓库。"
 
 #: client/pkgc-repo.c:134
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "已启用仓库 '%s'"
 
 #. TRANSLATORS: Description for pkgctl repo-disable
 #: client/pkgc-repo.c:155
@@ -606,13 +583,11 @@ msgstr "禁用指定的软件源。"
 #: client/pkgc-repo.c:174
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "仓库 '%s' 已禁用"
 
 #: client/pkgc-repo.c:194
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Automatically remove orphaned packages"
-msgstr "自动卸载未使用的依赖"
+msgstr "自动移除孤儿包"
 
 #. TRANSLATORS: Description for pkgctl repo-remove
 #: client/pkgc-repo.c:204
@@ -625,32 +600,24 @@ msgid "Repository '%s' removed"
 msgstr "已移除仓库 '%s'"
 
 #: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
 msgid "List repositories"
-msgstr "正在获取仓库"
+msgstr "列出仓库"
 
 #: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Enable a repository"
-msgstr "正在移除仓库"
+msgstr "启用软件仓库"
 
 #: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Disable a repository"
-msgstr "正在移除仓库"
+msgstr "禁用软件仓库"
 
 #: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing repository"
 msgid "Remove a repository"
-msgstr "正在移除仓库"
+msgstr "移除软件仓库"
 
 #: client/pkgc-util.c:94
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "未连接到 PackageKit 服务守护进程"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:131
@@ -662,46 +629,46 @@ msgstr "%u 秒"
 #: client/pkgc-util.c:137
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u 分 %u 秒"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u 分"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:147
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u 时 %u 分"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u 时"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u 天 %u 时"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u 天"
 
 #: client/pkgc-util.c:275
 msgid "Error"
-msgstr ""
+msgstr "错误"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:307
 msgid "Warning:"
-msgstr ""
+msgstr "警告："
 
 #. TRANSLATORS: Failed to parse command-line options in pkgctl
 #: client/pkgc-util.c:427 client/pkgctl.c:188
@@ -713,7 +680,7 @@ msgstr "解析选项失败：%s"
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "用法：%s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
@@ -724,7 +691,7 @@ msgstr "软件包："
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:610
 msgid "Version:"
-msgstr ""
+msgstr "版本："
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:617
@@ -739,17 +706,17 @@ msgstr "描述："
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:632
 msgid "License:"
-msgstr ""
+msgstr "许可："
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:639
 msgid "URL:"
-msgstr ""
+msgstr "网址："
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:646
 msgid "Group:"
-msgstr ""
+msgstr "组："
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:654
@@ -784,12 +751,12 @@ msgstr "厂商："
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:794
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "问题追踪器："
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:803
 msgid "CVE:"
-msgstr ""
+msgstr "CVE："
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:811
@@ -884,7 +851,7 @@ msgstr "受影响的软件包："
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1053
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -906,44 +873,42 @@ msgstr "未找到软件包：%s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgctl.c:76
-#, fuzzy
-#| msgid "Show version and exit"
 msgid "Show pkgctl version"
-msgstr "显示版本并退出"
+msgstr "显示 pkgctl 版本"
 
 #: client/pkgctl.c:78
 msgid "Show help"
-msgstr ""
+msgstr "显示帮助"
 
 #: client/pkgctl.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "仅提供最小输出"
 
 #: client/pkgctl.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "显示更详细的输出"
 
 #: client/pkgctl.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "以 JSON 格式输出"
 
 #: client/pkgctl.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "关闭彩色输出"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgctl.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "所有问题均回答“是”"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgctl.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "筛选软件包（已安装、可用等）"
 
 #: client/pkgctl.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "过滤器"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
@@ -952,12 +917,12 @@ msgstr "用空闲网络带宽和更低功耗运行命令"
 
 #: client/pkgctl.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "未指定命令。请使用 --help 查看使用说明。"
 
 #: client/pkgctl.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "未知命令：%s"
 
 #: client/pkgctl.c:135
 #, c-format
@@ -967,7 +932,7 @@ msgstr "无法连接到 PackageKit：%s"
 #: client/pkgctl.c:196
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "版本：%s"
 
 #: client/pkgctl.c:211
 msgid "Available Commands:"
@@ -975,7 +940,7 @@ msgstr "可用命令："
 
 #: client/pkgctl.c:217
 msgid "Use 'pkgctl COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "使用 'pkgctl COMMAND --help' 获取特定命令的帮助。"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
@@ -1406,7 +1371,7 @@ msgstr "只在屏幕上显示机器可读的输出，而不使用动画部件"
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "元数据缓存的最大过期时间（单位：秒）。使用 -1 表示仅使用缓存，使用 1 表示重新加载缓存。"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -1565,7 +1530,7 @@ msgstr "PackageKit 监视器"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -1956,31 +1921,23 @@ msgstr "不可用"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
-#| msgid "Installed"
 msgid "Install"
-msgstr "已安装"
+msgstr "安装"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
-#| msgid "Removed"
 msgid "Remove"
-msgstr "已移除"
+msgstr "移除"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
-msgstr "已废弃"
+msgstr "废弃"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
-msgstr "已下载"
+msgstr "降级"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -2186,10 +2143,8 @@ msgstr "正在获取系统升级"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
-#, fuzzy
-#| msgid "Repair System"
 msgid "Repairing system"
-msgstr "修复系统"
+msgstr "正在修复包管理系统"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
