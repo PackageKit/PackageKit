@@ -8,7 +8,7 @@
 # Christian <Christian.Kirbach@googlemail.com>, 2009,2011
 # Daniela Kugelmann <dkugelma@redhat.com >, 2008
 # 5527760c8f29b02a470a5ee3b26b73e8_231f8d9 <ceb449f1811ff367b2235286902d5d43_32261>, 2012-2013
-# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018,2022-2024
+# Ettore Atalan <atalanttore@googlemail.com>, 2014-2015,2017-2018,2022-2024, 2025.
 # Fabian Affolter <fab@fedoraproject.org>, 2008-2009
 # hpeters <hpeters@redhat.com>, 2009
 # Holger Wansing <linux@wansing-online.de>, 2006
@@ -25,15 +25,15 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"PO-Revision-Date: 2025-10-08 10:38+0000\n"
-"Last-Translator: Milo Ivir <mail@milotype.de>\n"
+"PO-Revision-Date: 2025-12-27 11:00+0000\n"
+"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/packagekit/translations/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -59,17 +59,13 @@ msgstr "Transaktion nur durch das Herunterladen von Paketen vorbereiten"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
 msgid "Allow package downgrades"
-msgstr "Die Herunterstufung von Paketen während der Transaktion erlauben"
+msgstr "Paket-Herunterstufung erlauben"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
 msgid "Allow package re-installations"
-msgstr "Die erneute Installation von Paketen während der Transaktion erlauben"
+msgstr "Paket-Neuinstallationen erlauben"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
@@ -90,7 +86,7 @@ msgstr ""
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDEN"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:196
@@ -101,7 +97,7 @@ msgstr "Zwischenspeicher aktualisieren"
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Paketmetadaten aufgefrischt"
 
 #. TRANSLATORS: Description for pkgctl install
 #: client/pkgc-manage.c:246
@@ -118,10 +114,8 @@ msgid "Could not find any available package: %s"
 msgstr "Dieses Werkzeug konnte keine verfügbaren Pakete finden: %s"
 
 #: client/pkgc-manage.c:326
-#, fuzzy
-#| msgid "The selected packages may already be installed."
 msgid "The selected package is already installed."
-msgstr "Die ausgewählten Pakete sind möglicherweise bereits installiert."
+msgstr "Das ausgewählte Paket ist bereits installiert."
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
@@ -148,7 +142,7 @@ msgstr "Dieses Werkzeug konnte das Paket nicht finden: %s"
 #: client/pkgc-manage.c:445
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Verzeichnis existiert nicht: %s"
 
 #. TRANSLATORS: Description for pkgctl update
 #: client/pkgc-manage.c:488
@@ -168,10 +162,8 @@ msgid "Failed to get updates: %s"
 msgstr "Daemon-Status konnte nicht abgerufen werden"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
-msgstr "Keine Pakete benötigen eine Aktualisierung zu eine neueren Version."
+msgstr "Keine Pakete benötigen eine Aktualisierung"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
