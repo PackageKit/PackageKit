@@ -373,11 +373,14 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable,
 	if (state->proxy == NULL) {
 		g_autoptr(GError) local_error = NULL;
 
-		g_debug ("%s: Cancelled PkClientState %p, but no proxy, not sure what to do here",
+		g_debug ("%s: Cancelled PkClientState %p, but no proxy",
 			 G_STRFUNC, state);
 
-		local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
-						   "PackageKit transaction disappeared");
+		if (!g_cancellable_set_error_if_cancelled (cancellable, &local_error)) {
+			local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
+							   "PackageKit transaction disappeared");
+		}
+
 		pk_client_state_finish (state, g_steal_pointer (&local_error));
 		return;
 	}
