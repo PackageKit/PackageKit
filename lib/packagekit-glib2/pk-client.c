@@ -414,6 +414,12 @@ pk_client_state_new (PkClient *client,
 	g_debug ("%s: Created new PkClientState %p with PkClientState.res (GTask) %p for PkClient %p",
 		 G_STRFUNC, state, state->res, client);
 
+	/* track state */
+	pk_client_state_add (client, state);
+
+	/* Set up cancellation. If `cancellable` has already been cancelled,
+	 * this could result in pk_client_cancellable_cancel_cb() being called
+	 * synchronously. */
 	if (cancellable != NULL) {
 		state->cancellable_client = g_object_ref (cancellable);
 		state->cancellable_id = g_cancellable_connect (cancellable,
@@ -421,9 +427,6 @@ pk_client_state_new (PkClient *client,
 							       pk_client_weak_ref_new (state),
 							       pk_client_weak_ref_free);
 	}
-
-	/* track state */
-	pk_client_state_add (client, state);
 
 	return state;
 }
