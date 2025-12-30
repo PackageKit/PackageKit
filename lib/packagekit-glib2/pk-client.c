@@ -205,6 +205,8 @@ pk_client_state_remove (PkClient *client, PkClientState *state)
 	gboolean was_removed, is_idle;
 
 	was_removed = g_ptr_array_remove_fast (priv->calls, state);
+	g_debug ("%s: PkClientState %p %s removed from PkClient %p",
+		 G_STRFUNC, state, was_removed ? "was" : "was not", client);
 	/* state may have been finalised after this point */
 
 	/* has the idle state changed? */
@@ -223,6 +225,9 @@ pk_client_state_finish (PkClientState *state, GError *error)
 {
 	g_autoptr(PkClientState) state_owned = g_object_ref (state);
 	g_autoptr(GError) error_owned = g_steal_pointer (&error);
+
+	g_debug ("%s: PkClientState %p, error %p, PkClientState.res (GTask) %p",
+		 G_STRFUNC, state, error_owned, state->res);
 
 	if (state->res == NULL)
 		return;
@@ -344,6 +349,8 @@ pk_client_cancel_cb (GObject *source_object,
 		if (state)
 			pk_client_state_finish (state, g_steal_pointer (&error));
 	}
+
+	/* wait for the response from the server to the Cancel() method */
 }
 
 static void
@@ -366,7 +373,9 @@ pk_client_cancellable_cancel_cb (GCancellable *cancellable,
 	if (state->proxy == NULL) {
 		g_autoptr(GError) local_error = NULL;
 
-		g_debug ("Cancelled, but no proxy, not sure what to do here");
+		g_debug ("%s: Cancelled PkClientState %p, but no proxy, not sure what to do here",
+			 G_STRFUNC, state);
+
 		local_error = g_error_new_literal (PK_CLIENT_ERROR, PK_CLIENT_ERROR_FAILED,
 						   "PackageKit transaction disappeared");
 		pk_client_state_finish (state, g_steal_pointer (&local_error));
@@ -401,6 +410,9 @@ pk_client_state_new (PkClient *client,
 	state->res = g_task_new (client, state->cancellable, callback_ready, user_data);
 	state->client = client;
 	g_task_set_source_tag (state->res, source_tag);
+
+	g_debug ("%s: Created new PkClientState %p with PkClientState.res (GTask) %p for PkClient %p",
+		 G_STRFUNC, state, state->res, client);
 
 	if (cancellable != NULL) {
 		state->cancellable_client = g_object_ref (cancellable);
@@ -793,6 +805,9 @@ pk_client_state_add (PkClient *client, PkClientState *state)
 {
 	PkClientPrivate *priv = GET_PRIVATE(client);
 	gboolean was_idle;
+
+	g_debug ("%s: adding PkClientState %p to PkClient %p",
+		 G_STRFUNC, state, client);
 
 	was_idle = pk_client_get_idle (client);
 
