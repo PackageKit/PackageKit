@@ -2382,8 +2382,7 @@ pk_client_resolve_async (PkClient *client, PkBitfield filters, gchar **packages,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2434,8 +2433,7 @@ pk_client_search_names_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2487,8 +2485,7 @@ pk_client_search_details_async (PkClient *client, PkBitfield filters, gchar **va
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2538,8 +2535,7 @@ pk_client_search_groups_async (PkClient *client, PkBitfield filters, gchar **val
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2589,8 +2585,7 @@ pk_client_search_files_async (PkClient *client, PkBitfield filters, gchar **valu
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2640,8 +2635,7 @@ pk_client_get_details_async (PkClient *client, gchar **package_ids, GCancellable
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2696,8 +2690,7 @@ pk_client_get_details_local_async (PkClient *client, gchar **files, GCancellable
 	}
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2751,8 +2744,7 @@ pk_client_get_files_local_async (PkClient *client, gchar **files, GCancellable *
 	}
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2802,8 +2794,7 @@ pk_client_get_update_detail_async (PkClient *client, gchar **package_ids, GCance
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2854,8 +2845,7 @@ pk_client_download_packages_async (PkClient *client, gchar **package_ids, const 
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2903,8 +2893,7 @@ pk_client_get_updates_async (PkClient *client, PkBitfield filters, GCancellable 
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -2952,8 +2941,7 @@ pk_client_get_old_transactions_async (PkClient *client, guint number, GCancellab
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3006,8 +2994,7 @@ pk_client_depends_on_async (PkClient *client, PkBitfield filters, gchar **packag
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3055,8 +3042,7 @@ pk_client_get_packages_async (PkClient *client, PkBitfield filters, GCancellable
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3109,8 +3095,7 @@ pk_client_required_by_async (PkClient *client, PkBitfield filters, gchar **packa
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3165,8 +3150,7 @@ pk_client_what_provides_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3213,8 +3197,7 @@ pk_client_get_distro_upgrades_async (PkClient *client, GCancellable *cancellable
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3263,8 +3246,7 @@ pk_client_get_files_async (PkClient *client, gchar **package_ids, GCancellable *
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3310,8 +3292,7 @@ pk_client_get_categories_async (PkClient *client, GCancellable *cancellable,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3375,8 +3356,7 @@ pk_client_remove_packages_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3427,8 +3407,7 @@ pk_client_refresh_cache_async (PkClient *client, gboolean force, GCancellable *c
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3479,8 +3458,7 @@ pk_client_install_packages_async (PkClient *client, PkBitfield transaction_flags
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3532,8 +3510,7 @@ pk_client_install_signature_async (PkClient *client, PkSigTypeEnum type, const g
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3589,8 +3566,7 @@ pk_client_update_packages_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3720,8 +3696,7 @@ pk_client_install_files_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3791,8 +3766,7 @@ pk_client_accept_eula_async (PkClient *client, const gchar *eula_id, GCancellabl
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3840,8 +3814,7 @@ pk_client_get_repo_list_async (PkClient *client, PkBitfield filters, GCancellabl
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3891,8 +3864,7 @@ pk_client_repo_enable_async (PkClient *client, const gchar *repo_id, gboolean en
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -3945,8 +3917,7 @@ pk_client_repo_set_data_async (PkClient *client, const gchar *repo_id, const gch
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -4004,8 +3975,7 @@ pk_client_repo_remove_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -4064,8 +4034,7 @@ pk_client_upgrade_system_async (PkClient *client,
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -4201,8 +4170,7 @@ pk_client_adopt_async (PkClient *client,
 		      NULL);
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
@@ -4304,8 +4272,7 @@ pk_client_get_progress_async (PkClient *client,
 	state->querying_progress = TRUE;
 
 	/* check not already cancelled */
-	if (cancellable != NULL &&
-	    g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
