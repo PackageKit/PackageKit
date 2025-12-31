@@ -55,9 +55,6 @@ void dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEn
 void dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs);
 void dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBitfield filters);
 std::vector<libdnf5::rpm::Package> dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids);
-
-
-
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
 class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks {
