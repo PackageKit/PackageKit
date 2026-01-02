@@ -1,14 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"PO-Revision-Date: 2025-10-14 11:07+0000\n"
+"PO-Revision-Date: 2026-01-02 17:01+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/packagekit/translations/et/>\n"
 "Language: et\n"
@@ -16,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.15.1\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -32,56 +31,56 @@ msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
 #. * shit creek without a paddle
 #: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
 msgid "The daemon crashed mid-transaction!"
-msgstr ""
+msgstr "Taustateenus jooksid transaktsiooni ajal kokku!"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
 #: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Valmista transaktsioon ette vaid pakettide allalaadimise näol"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
 msgid "Allow package downgrades"
-msgstr ""
+msgstr "Luba pakettide varasemate versioonide paigaldamist"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
 msgid "Allow package re-installations"
-msgstr ""
+msgstr "Luba pakettide korduspaigaldamist"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
 msgid "Allow installation of untrusted packages"
-msgstr ""
+msgstr "Luba usaldamatute pakettide paigaldamist"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Eemalda automaatselt kasutamata jäänud sõltuvused"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr ""
+msgstr "Metateabe puhvri suurim lubatud vanus sekundites"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDIT"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
-msgstr ""
+msgstr "Värskenda pakettide metateabe puhvrit."
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Pakettide metateabe puhver on värskendatud"
 
 #. TRANSLATORS: Description for pkgctl install
 #: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Paigalda üks või enam paketti või kohalikku paketifaili."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -89,11 +88,11 @@ msgstr ""
 #: client/pkgc-manage.c:308 client/pkgc-manage.c:321
 #, c-format
 msgid "Could not find any available package: %s"
-msgstr ""
+msgstr "Ühtegi saadavalolevat paketti ei õnnestunud leida: %s"
 
 #: client/pkgc-manage.c:326
 msgid "The selected package is already installed."
-msgstr ""
+msgstr "Valitud pakett on juba paigaldatud."
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
@@ -126,16 +125,14 @@ msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Uuendatavaid pakette ei leidunud: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Uuenduste tuvastamine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
 msgid "No packages require updating"
@@ -151,63 +148,55 @@ msgid ""
 msgstr ""
 
 #: client/pkgc-manage.c:687
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Vallasrežiimis uuendamistoimingu lugemine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:697
 msgid "Offline update is not triggered."
-msgstr ""
+msgstr "Vallasrežiimis uuendamine on seadistatud toimima."
 
 #: client/pkgc-manage.c:705
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Vallasrežiimis uuendamine on seadistatud toimima. Tegevus peale uuendamist: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:716
-#, fuzzy
-#| msgid "Affected packages:"
 msgid "Prepared packages:"
-msgstr "Mõjutatud paketid:"
+msgstr "Ettevalmistatud paketid:"
 
 #: client/pkgc-manage.c:730
 msgid "No offline update is prepared."
 msgstr ""
 
 #: client/pkgc-manage.c:732
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Vallasrežiimis paigaldamiseks ettevalmistatud uuenduste lugemine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:742
 msgid "No results from last offline update available."
 msgstr ""
 
 #: client/pkgc-manage.c:749
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Viimane vallasrežiimis uuendamine ei õnnestunud: %s: %s"
 
 #: client/pkgc-manage.c:756
 msgid "Last offline update completed successfully"
 msgstr ""
 
 #: client/pkgc-manage.c:767
-#, fuzzy, c-format
-#| msgid "Updated"
+#, c-format
 msgid "Updated: %s"
-msgstr "Uuendatud"
+msgstr "Uuendatud: %s"
 
 #: client/pkgc-manage.c:788
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Vallasrežiimis uuendamise käivitamine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:792
 msgid "Offline update scheduled. System will update on next reboot."
@@ -227,10 +216,9 @@ msgid ""
 msgstr ""
 
 #: client/pkgc-manage.c:836
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Vallasrežiimis tehtava uuenduse tühistamine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:840
 msgid "Offline update cancelled"
@@ -261,10 +249,9 @@ msgid "Safely terminate the PackageKit daemon."
 msgstr ""
 
 #: client/pkgc-manage.c:995
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Taustateenusele lõpetamispäringu saatmine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:1014
 msgid "Refresh package metadata"
@@ -275,16 +262,12 @@ msgid "Install packages"
 msgstr ""
 
 #: client/pkgc-manage.c:1026
-#, fuzzy
-#| msgid "Affected packages:"
 msgid "Remove packages"
-msgstr "Mõjutatud paketid:"
+msgstr "Eemalda paketid"
 
 #: client/pkgc-manage.c:1032
-#, fuzzy
-#| msgid "Affected packages:"
 msgid "Update packages"
-msgstr "Mõjutatud paketid:"
+msgstr "Uuenda paketid"
 
 #: client/pkgc-manage.c:1038
 msgid "Upgrade the system"
@@ -351,10 +334,9 @@ msgstr ""
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
+#, c-format
 msgid "Roles: %s"
-msgstr "Roll"
+msgstr "Rollid: %s"
 
 #. TRANSLATORS: Description for pkgctl history
 #: client/pkgc-query.c:245
@@ -439,19 +421,17 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
 msgid "Filters:"
-msgstr ""
+msgstr "Filtrid:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:825
 msgid "Groups:"
-msgstr ""
+msgstr "Grupid:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
 msgid "Categories:"
-msgstr "Kategooria"
+msgstr "Kategooriad:"
 
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
 #: client/pkgc-query.c:866
@@ -466,10 +446,8 @@ msgstr ""
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
 msgid "Elapsed time"
-msgstr "Süsteemi aeg"
+msgstr "Möödunud aeg"
 
 #. TRANSLATORS: Description for pkgctl last-time
 #: client/pkgc-query.c:934
@@ -503,20 +481,16 @@ msgid "Search for packages"
 msgstr ""
 
 #: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Affected packages:"
 msgid "List packages"
-msgstr "Mõjutatud paketid:"
+msgstr "Pakettide loend"
 
 #: client/pkgc-query.c:997
 msgid "Show package information"
 msgstr ""
 
 #: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Affected packages:"
 msgid "List package dependencies"
-msgstr "Mõjutatud paketid:"
+msgstr "Paketi sõltuvuste loend"
 
 #: client/pkgc-query.c:1009
 msgid "List packages requiring this package"
@@ -531,10 +505,8 @@ msgid "Show files in package"
 msgstr ""
 
 #: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Details about the update:"
 msgid "Get available updates"
-msgstr "Teave uuenduse kohta:"
+msgstr "Tuvasta saadaval uuendused"
 
 #: client/pkgc-query.c:1033
 msgid "Get update details"
@@ -617,10 +589,9 @@ msgstr ""
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
+#, c-format
 msgid "%u seconds"
-msgstr "(sekundit)"
+msgstr "%u sekundit"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:137
@@ -660,19 +631,18 @@ msgstr ""
 
 #: client/pkgc-util.c:275
 msgid "Error"
-msgstr ""
+msgstr "Viga"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:307
 msgid "Warning:"
-msgstr ""
+msgstr "Hoiatus:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgctl
 #: client/pkgc-util.c:427 client/pkgctl.c:188
-#, fuzzy, c-format
-#| msgid "Failed to load config file: %s"
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Seadistuste faili laadimine ei õnnestunud: %s"
+msgstr "Eelistuste töötlemine ei õnnestunud: %s"
 
 #. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
@@ -683,44 +653,38 @@ msgstr ""
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:606 client/pkgc-util.c:760
-#, fuzzy
-#| msgid "Package"
 msgid "Package:"
-msgstr "Pakett"
+msgstr "Pakett:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:610
 msgid "Version:"
-msgstr ""
+msgstr "Versioon:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:617
-#, fuzzy
-#| msgid "Summary"
 msgid "Summary:"
-msgstr "Kokkuvõte"
+msgstr "Kokkuvõte:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:625
-#, fuzzy
-#| msgid "Package description"
 msgid "Description:"
-msgstr "Paketi kirjeldus"
+msgstr "Kirjeldus:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:632
 msgid "License:"
-msgstr ""
+msgstr "Litsents:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:639
 msgid "URL:"
-msgstr ""
+msgstr "Võrguaadress:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:646
 msgid "Group:"
-msgstr ""
+msgstr "Grupp:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:654
@@ -734,27 +698,23 @@ msgstr ""
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:756
-#, fuzzy
-#| msgid "Updates"
 msgid "Update Details:"
-msgstr "Uuendused"
+msgstr "Uuenduse üksikasjad:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:767
-#, fuzzy
-#| msgid "Updates"
 msgid "Updates:"
-msgstr "Uuendused"
+msgstr "Uuendused:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:776
 msgid "Obsoletes:"
-msgstr ""
+msgstr "Eemaldab kasutusest:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:785
 msgid "Vendor:"
-msgstr ""
+msgstr "Valmistaja/tarnija:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:794
@@ -764,64 +724,52 @@ msgstr ""
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:803
 msgid "CVE:"
-msgstr ""
+msgstr "Teave CVE-s:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:811
 msgid "Restart:"
-msgstr ""
+msgstr "Käivita uuesti:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:820
-#, fuzzy
-#| msgid "Updates"
 msgid "Update text:"
-msgstr "Uuendused"
+msgstr "Uuenduse tekst:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:827
 msgid "Changes:"
-msgstr ""
+msgstr "Muudatused:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:834
-#, fuzzy
-#| msgid "State"
 msgid "State:"
-msgstr "Olek"
+msgstr "Olek:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:843
-#, fuzzy
-#| msgid "Issued"
 msgid "Issued:"
-msgstr "Väljaantud"
+msgstr "Välja antud:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:850
-#, fuzzy
-#| msgid "Updated"
 msgid "Updated:"
-msgstr "Uuendatud"
+msgstr "Uuendatud:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:967
-#, fuzzy
-#| msgid "Duration"
 msgid "Transaction:"
-msgstr "Kestus"
+msgstr "Transaktsioon:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:971
-#, fuzzy
-#| msgid "System time"
 msgid "System time:"
-msgstr "Süsteemi aeg"
+msgstr "Süsteemi aeg:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:975
 msgid "Succeeded:"
-msgstr ""
+msgstr "Õnnestus:"
 
 #: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
 msgid "True"
@@ -833,45 +781,33 @@ msgstr "Väär"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:984
-#, fuzzy
-#| msgid "Role"
 msgid "Role:"
-msgstr "Roll"
+msgstr "Roll:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:991
-#, fuzzy
-#| msgid "Duration"
 msgid "Duration:"
-msgstr "Kestus"
+msgstr "Kestus:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:998
-#, fuzzy
-#| msgid "Command line"
 msgid "Command line:"
-msgstr "Käsurida"
+msgstr "Käsurida:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1004
-#, fuzzy
-#| msgid "User ID"
 msgid "User ID:"
-msgstr "Kasutajatunnus"
+msgstr "Kasutajatunnus:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1013
-#, fuzzy
-#| msgid "Username"
 msgid "Username:"
-msgstr "Kasutajanimi"
+msgstr "Kasutajanimi:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1019
-#, fuzzy
-#| msgid "Real name"
 msgid "Real name:"
-msgstr "Tegelik nimi"
+msgstr "Tegelik nimi:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
@@ -883,7 +819,7 @@ msgstr "Mõjutatud paketid:"
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1053
 msgid "None"
-msgstr ""
+msgstr "Mitte ühtegi"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -940,7 +876,7 @@ msgstr ""
 
 #: client/pkgctl.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "FILTREERI"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
@@ -985,7 +921,7 @@ msgstr ""
 #. * e.g. update-packages
 #: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
 msgid "Transaction"
-msgstr ""
+msgstr "Transaktsioon"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: client/pkcon/pk-console.c:167
@@ -995,7 +931,7 @@ msgstr "Süsteemi aeg"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
-msgstr ""
+msgstr "Õnnestus"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
@@ -1039,7 +975,7 @@ msgstr "Mõjutatud paketid: puuduvad"
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: client/pkcon/pk-console.c:230
 msgid "Distribution"
-msgstr ""
+msgstr "Distributsioon"
 
 #. TRANSLATORS: this is type of update, stable or testing
 #: client/pkcon/pk-console.c:232
@@ -1103,41 +1039,41 @@ msgstr "Uuendused"
 #. * this update obsoletes
 #: client/pkcon/pk-console.c:326
 msgid "Obsoletes"
-msgstr ""
+msgstr "Eemaldab kasutusest"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 #: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
 msgid "Vendor"
-msgstr ""
+msgstr "Valmistaja/tarnija"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: client/pkcon/pk-console.c:338
 msgid "Bugzilla"
-msgstr ""
+msgstr "Teave Bugzillas"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: client/pkcon/pk-console.c:344
 msgid "CVE"
-msgstr ""
+msgstr "Teave CVE-s"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
 #: client/pkcon/pk-console.c:350
 msgid "Restart"
-msgstr ""
+msgstr "Käivita uuesti"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
 #: client/pkcon/pk-console.c:355
 msgid "Update text"
-msgstr ""
+msgstr "Uuenduse tekst"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
 #: client/pkcon/pk-console.c:360
 msgid "Changes"
-msgstr ""
+msgstr "Muudatused"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
@@ -1218,18 +1154,18 @@ msgstr ""
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 #: client/pkcon/pk-console.c:633
 msgid "Status"
-msgstr ""
+msgstr "Olek"
 
 #. TRANSLATORS: the results from the transaction
 #: client/pkcon/pk-console.c:671
 msgid "Results:"
-msgstr ""
+msgstr "Tulemused:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
 #: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
 msgid "Fatal error"
-msgstr ""
+msgstr "Ületamatu viga"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -1353,7 +1289,7 @@ msgstr ""
 #. these are commands we can use with pkcon
 #: client/pkcon/pk-console.c:1474
 msgid "Subcommands:"
-msgstr ""
+msgstr "Alamkäsud:"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -1364,7 +1300,7 @@ msgstr ""
 #. * to be updated
 #: client/pkcon/pk-console.c:1596
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Ettevalmistatud uuendused:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: client/pkcon/pk-console.c:1665
@@ -1521,12 +1457,12 @@ msgstr ""
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
 msgid "Description"
-msgstr ""
+msgstr "Kirjeldus"
 
 #. TRANSLATORS: this is the author of the backend
 #: client/pkcon/pk-console.c:2348
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pkcon/pk-console.c:2418
@@ -1551,18 +1487,18 @@ msgstr ""
 #. TRANSLATORS: Generic failure of what they asked to do
 #: client/pkcon/pk-console.c:2459
 msgid "Command failed"
-msgstr ""
+msgstr "Käsk ei toiminud"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
-msgstr ""
+msgstr "PackageKiti seire"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -1574,7 +1510,7 @@ msgstr ""
 #. * advise of the new percentage completion when installing updates
 #: client/pk-offline-update.c:181
 msgid "Installing Updates"
-msgstr ""
+msgstr "Paigaldan uuendusi"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:214
@@ -1703,12 +1639,12 @@ msgstr ""
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/packagekit-glib2/pk-console-shared.c:202
 msgid "Unknown state"
-msgstr ""
+msgstr "Tundmatu olek"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: lib/packagekit-glib2/pk-console-shared.c:206
 msgid "Starting"
-msgstr ""
+msgstr "Käivitamisel"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: lib/packagekit-glib2/pk-console-shared.c:210
@@ -1718,34 +1654,34 @@ msgstr ""
 #. TRANSLATORS: transaction state, just started
 #: lib/packagekit-glib2/pk-console-shared.c:214
 msgid "Running"
-msgstr ""
+msgstr "Töös"
 
 #. TRANSLATORS: transaction state, is querying data
 #: lib/packagekit-glib2/pk-console-shared.c:218
 msgid "Querying"
-msgstr ""
+msgstr "Andmed on pärimisel"
 
 #. TRANSLATORS: transaction state, getting data from a server
 #: lib/packagekit-glib2/pk-console-shared.c:222
 msgid "Getting information"
-msgstr ""
+msgstr "Tuvastan teavet"
 
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-shared.c:226
 msgid "Removing packages"
-msgstr ""
+msgstr "Eemaldan pakette"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-console-shared.c:230
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
-msgstr ""
+msgstr "Laadin pakette alla"
 
 #. TRANSLATORS: transaction state, installing packages
 #: lib/packagekit-glib2/pk-console-shared.c:234
 msgid "Installing packages"
-msgstr ""
+msgstr "Paigaldan pakette"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: lib/packagekit-glib2/pk-console-shared.c:238
@@ -1755,7 +1691,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, installing updates
 #: lib/packagekit-glib2/pk-console-shared.c:242
 msgid "Installing updates"
-msgstr ""
+msgstr "Paigaldan uuendusi"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/packagekit-glib2/pk-console-shared.c:246
@@ -1765,42 +1701,42 @@ msgstr ""
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/packagekit-glib2/pk-console-shared.c:250
 msgid "Obsoleting packages"
-msgstr ""
+msgstr "Märgin pakette aegunuks"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: lib/packagekit-glib2/pk-console-shared.c:254
 msgid "Resolving dependencies"
-msgstr ""
+msgstr "Tuvastan sõltuvusi"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: lib/packagekit-glib2/pk-console-shared.c:258
 msgid "Checking signatures"
-msgstr ""
+msgstr "Kontrollin allkirju"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 #: lib/packagekit-glib2/pk-console-shared.c:262
 msgid "Testing changes"
-msgstr ""
+msgstr "Testin muudatusi"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: lib/packagekit-glib2/pk-console-shared.c:266
 msgid "Committing changes"
-msgstr ""
+msgstr "Teostan muudatusi"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: lib/packagekit-glib2/pk-console-shared.c:270
 msgid "Requesting data"
-msgstr ""
+msgstr "Küsin andmeid"
 
 #. TRANSLATORS: transaction state, all done!
 #: lib/packagekit-glib2/pk-console-shared.c:274
 msgid "Finished"
-msgstr ""
+msgstr "Lõpetatud"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: lib/packagekit-glib2/pk-console-shared.c:278
 msgid "Cancelling"
-msgstr ""
+msgstr "Katkestamisel"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-shared.c:282
@@ -1825,7 +1761,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-shared.c:298
 msgid "Downloading groups"
-msgstr ""
+msgstr "Laadin gruppe alla"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-shared.c:302
@@ -1835,17 +1771,17 @@ msgstr ""
 #. TRANSLATORS: transaction state, repackaging delta files
 #: lib/packagekit-glib2/pk-console-shared.c:306
 msgid "Repackaging files"
-msgstr ""
+msgstr "Pakendan faile uuesti"
 
 #. TRANSLATORS: transaction state, loading databases
 #: lib/packagekit-glib2/pk-console-shared.c:310
 msgid "Loading cache"
-msgstr ""
+msgstr "Laadin puhverdatud andmeid"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 #: lib/packagekit-glib2/pk-console-shared.c:314
 msgid "Scanning applications"
-msgstr ""
+msgstr "Otsin töötavaid protsesse"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: lib/packagekit-glib2/pk-console-shared.c:318
@@ -1880,7 +1816,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: lib/packagekit-glib2/pk-console-shared.c:342
 msgid "Copying files"
-msgstr ""
+msgstr "Kopeerin faile"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-shared.c:346
@@ -1894,7 +1830,7 @@ msgstr ""
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Debugging Options"
-msgstr ""
+msgstr "Veaotsingu ja silumisvalikud"
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Show debugging options"
@@ -1903,95 +1839,95 @@ msgstr ""
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:975
 msgid "Trivial"
-msgstr ""
+msgstr "Väheoluline"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:979
 msgid "Normal"
-msgstr ""
+msgstr "Tavaline"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:983
 msgid "Important"
-msgstr ""
+msgstr "Oluline"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:987
 msgid "Security"
-msgstr ""
+msgstr "Turvauuendus"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:991
 msgid "Bug fix"
-msgstr ""
+msgstr "Veaparandus"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:995
 msgid "Enhancement"
-msgstr ""
+msgstr "Täiustus"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:999
 msgid "Blocked"
-msgstr ""
+msgstr "Blokeeritud"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1004 lib/packagekit-glib2/pk-enum.c:1111
 msgid "Installed"
-msgstr ""
+msgstr "Paigaldatud"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1009
 msgid "Available"
-msgstr ""
+msgstr "Saadaval"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
 msgid "Unavailable"
-msgstr ""
+msgstr "Pole saadaval"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 msgid "Install"
-msgstr ""
+msgstr "Paigalda"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 msgid "Remove"
-msgstr ""
+msgstr "Eemalda"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
 msgid "Obsolete"
-msgstr ""
+msgstr "Aegunud"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 msgid "Downgrade"
-msgstr ""
+msgstr "Taasta varasem versioon"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
 msgid "Downloading"
-msgstr ""
+msgstr "Allalaadimisel"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1058
 msgid "Updating"
-msgstr ""
+msgstr "Uuendamisel"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
 msgid "Installing"
-msgstr ""
+msgstr "Paigaldamisel"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
 msgid "Removing"
-msgstr ""
+msgstr "Eemaldan"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1070
@@ -2001,22 +1937,22 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
 msgid "Obsoleting"
-msgstr ""
+msgstr "Märgin aegunuks"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
 msgid "Reinstalling"
-msgstr ""
+msgstr "Paigaldan uuesti"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1103
 msgid "Downloaded"
-msgstr ""
+msgstr "Allalaaaditud"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1115
 msgid "Removed"
-msgstr ""
+msgstr "Eemaldatud"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1119
@@ -2026,12 +1962,12 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
 msgid "Obsoleted"
-msgstr ""
+msgstr "Märgitud aegunuks"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1127
 msgid "Reinstalled"
-msgstr ""
+msgstr "Uuesti paigaldatud"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1152
@@ -2041,7 +1977,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1156
 msgid "Getting dependencies"
-msgstr ""
+msgstr "Laadin sõltuvuste andmeid"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1160
@@ -2101,7 +2037,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
 msgid "Canceling"
-msgstr ""
+msgstr "Katkestan"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
@@ -2241,7 +2177,7 @@ msgstr ""
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/packagekit-glib2/pk-task-text.c:184
 msgid "Agreement"
-msgstr ""
+msgstr "Tarkvara litsentsileping"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: lib/packagekit-glib2/pk-task-text.c:188
@@ -2271,7 +2207,7 @@ msgstr ""
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: lib/packagekit-glib2/pk-task-text.c:237
 msgid "Text"
-msgstr ""
+msgstr "Tekst"
 
 #. TRANSLATORS: ask the user to insert the media
 #: lib/packagekit-glib2/pk-task-text.c:243
@@ -2519,12 +2455,12 @@ msgstr ""
 #: policy/org.freedesktop.packagekit.policy.in:260
 #: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Seadista vallasrežiimis uuendamine toimima"
 
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Vallasrežiimis uuendamise toimimiseks on vajalik autentimine"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2565,22 +2501,22 @@ msgstr ""
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
 msgid "Search by names"
-msgstr ""
+msgstr "Otsi nime alusel"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
 msgid "Search by details"
-msgstr ""
+msgstr "Otsi üksikasjade alusel"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
 msgid "Search by files"
-msgstr ""
+msgstr "Otsi failide alusel"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
 msgid "Install package"
-msgstr ""
+msgstr "Paigalda pakett"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
@@ -2590,7 +2526,7 @@ msgstr ""
 #. TRANSLATORS: program name
 #: src/pk-direct.c:465
 msgid "PackageKit"
-msgstr ""
+msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
@@ -2662,16 +2598,16 @@ msgstr ""
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Kui sa just pole kindel, et see on ohutu, siis palun ära uuenda seda paketti."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Kui sa just pole kindel, et see on ohutu, siis palun ära uuenda neid pakette."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Kui sa just pole kindel, et see on ohutu, siis palun ära paigalda seda paketti."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Kui sa just pole kindel, et see on ohutu, siis palun ära paigalda neid pakette."
