@@ -87,6 +87,19 @@ pk_backend_get_roles (PkBackend *backend)
 		-1);
 }
 
+static void
+pk_backend_context_invalidate_cb (PkBackend *backend, PkBackend *backend_data)
+{
+	g_return_if_fail (PK_IS_BACKEND (backend));
+
+	g_debug ("invalidating dnf5 base");
+
+	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data (backend);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+
+	dnf5_setup_base (priv);
+}
+
 void
 pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 {
@@ -119,6 +132,8 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 
 	try {
 		dnf5_setup_base (priv);
+		g_signal_connect (backend, "updates-changed",
+				  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
 	} catch (const std::exception &e) {
 		g_warning ("Init failed: %s", e.what());
 	}
