@@ -13,6 +13,9 @@ Backend: dnf
     Richard Hughes <richard@hughsie.com>
     Neal Gompa <ngompa13@gmail.com>
 
+Backend: dnf5
+    Neal Gompa <neal@gompa.dev>
+
 Backend: eopkg
     Joey Riches <josephriches@gmail.com> <joey@getsol.us>
 

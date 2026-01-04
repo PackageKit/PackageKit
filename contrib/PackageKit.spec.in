@@ -1,47 +1,51 @@
 %define alphatag                        #ALPHATAG#
 
+%global glib2_version 2.80
+%global libdnf_version 0.43.1
+
 Summary:   Package management service
 Name:      PackageKit
-Version:   #VERSION#
-Release:   0.#BUILD#%{?alphatag}%{?dist}
-License:   GPLv2+ and LGPLv2+
+Version:   #VERSION#~#BUILD#%{?alphatag}
+Release:   0%{?dist}
+License:   GPL-2.0-or-later AND LGPL-2.1-or-later AND FSFAP
 URL:       http://www.freedesktop.org/software/PackageKit/
-Source0:   http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
+Source:    http://www.freedesktop.org/software/PackageKit/releases/%{name}-%{version}.tar.xz
+
+BuildRequires: docbook-utils
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: gettext
+BuildRequires: gtk-doc
+BuildRequires: meson
+BuildRequires: vala
+BuildRequires: xmlto
+BuildRequires: pkgconfig(appstream)
+BuildRequires: pkgconfig(bash-completion)
+BuildRequires: pkgconfig(fontconfig)
+BuildRequires: pkgconfig(glib-2.0) >= %{glib2_version}
+BuildRequires: pkgconfig(gstreamer-1.0)
+BuildRequires: pkgconfig(gstreamer-plugins-base-1.0)
+BuildRequires: pkgconfig(gtk+-3.0)
+BuildRequires: pkgconfig(jansson)
+BuildRequires: pkgconfig(libdnf) >= %{libdnf_version}
+BuildRequires: pkgconfig(libdnf5)
+BuildRequires: pkgconfig(libsystemd)
+BuildRequires: pkgconfig(pangoft2)
+BuildRequires: pkgconfig(ply-boot-client)
+BuildRequires: pkgconfig(polkit-gobject-1) >= 0.114
+BuildRequires: pkgconfig(sdbus-c++)
+BuildRequires: pkgconfig(sqlite3)
+BuildRequires: systemd
+BuildRequires: python3-devel
+
+# Validate metainfo
+BuildRequires: appstream
 
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
+Requires: glib2%{?_isa} >= %{glib2_version}
+Requires: libdnf%{?_isa} >= %{libdnf_version}
 Requires: shared-mime-info
 Requires: systemd
-
-BuildRequires: python3-devel
-BuildRequires: glib2-devel >= 2.46.0
-BuildRequires: xmlto
-BuildRequires: gtk-doc
-BuildRequires: sqlite-devel
-BuildRequires: polkit-devel >= 0.92
-BuildRequires: libtool
-BuildRequires: gtk3-devel
-BuildRequires: docbook-utils
-BuildRequires: gnome-doc-utils
-BuildRequires: meson
-BuildRequires: gettext
-BuildRequires: vala
-BuildRequires: gstreamer1-devel
-BuildRequires: gstreamer1-plugins-base-devel
-BuildRequires: pango-devel
-BuildRequires: fontconfig-devel
-BuildRequires: systemd-devel
-BuildRequires: gobject-introspection-devel
-%if !0%{?rhel}
-BuildRequires: bash-completion
-%endif
-
-%if !0%{?rhel}
-BuildRequires: rpm-devel >= 4.11.0
-BuildRequires: appstream-devel
-BuildRequires: librepo-devel >= 1.1.5
-BuildRequires: libsolv-devel
-BuildRequires: libdnf-devel >= 0.7.0
-%endif
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -49,17 +53,16 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
-Obsoletes: PackageKit-browser-plugin < %{version}-%{release}
 
 # No more zif, smart or yum in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
-Obsoletes: PackageKit-yum < 0.8.15-2
-Obsoletes: PackageKit-yum-plugin < 0.8.15-2
+Obsoletes: PackageKit-yum < 0.9.1
+Obsoletes: PackageKit-yum-plugin < 0.9.1
 Obsoletes: PackageKit-zif < 0.8.13-2
 
 # components now built-in
-Obsoletes: PackageKit-debug-install < 0.8.15-2
-Obsoletes: PackageKit-hawkey < 0.8.15-2
+Obsoletes: PackageKit-debug-install < 0.9.1
+Obsoletes: PackageKit-hawkey < 0.9.1
 Obsoletes: PackageKit-backend-devel < 0.9.6
 
 # Udev no longer provides this functionality
@@ -70,10 +73,40 @@ PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
 cross-architecture API.
 
+%package backend-dnf5
+Summary: DNF5 backend for PackageKit
+Supplements: (libdnf5%{?_isa} and PackageKit%{?_isa})
+Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: libdnf5-plugin-appstream%{?_isa}
+
+%description backend-dnf5
+PackageKit is a D-Bus abstraction layer that allows the session user
+to manage packages in a secure way using a cross-distro,
+cross-architecture API.
+
+This package provides the DNF5 backend for PackageKit.
+
+%package -n dnf4-plugin-notify-PackageKit
+Summary: DNF4 plugin to notify PackageKit of DNF4 actions
+Supplements: (dnf4 and PackageKit)
+Conflicts: %{name} < 1.3.1-3
+BuildArch: noarch
+
+%description -n dnf4-plugin-notify-PackageKit
+DNF4 plugin to notify PackageKit of DNF4 actions.
+
+%package -n libdnf5-plugin-notify-PackageKit
+Summary: DNF5 plugin to notify PackageKit of DNF5 actions
+Supplements: (libdnf5%{?_isa} and PackageKit%{?_isa})
+Conflicts: %{name} < 1.3.1-2
+
+%description -n libdnf5-plugin-notify-PackageKit
+DNF5 plugin to notify PackageKit of DNF5 actions.
+
 %package glib
 Summary: GLib libraries for accessing PackageKit
 Requires: dbus >= 1.1.1
-Requires: gobject-introspection
+Requires: glib2 >= %{glib2_version}
 Obsoletes: PackageKit-libs < %{version}-%{release}
 Provides: PackageKit-libs = %{version}-%{release}
 
@@ -88,13 +121,22 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %description cron
 Crontab and utilities for running PackageKit as a cron job.
 
+%package devel
+Summary: Libraries and headers for PackageKit
+Requires: %{name}-glib-devel%{?_isa} = %{version}-%{release}
+# Additional deps needed for multilibs computation.
+# Needed for (gtk3-module & gstreamer-plugin), see also rhbz#1901065
+Requires: %{name}-gtk3-module%{?_isa} = %{version}-%{release}
+Requires: %{name}-gstreamer-plugin%{?_isa} = %{version}-%{release}
+
+%description devel
+Headers and libraries for PackageKit.
+
 %package glib-devel
 Summary: GLib Libraries and headers for PackageKit
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: dbus-devel%{?_isa} >= 1.1.1
 Requires: sqlite-devel%{?_isa}
-Obsoletes: PackageKit-devel < %{version}-%{release}
-Provides: PackageKit-devel = %{version}-%{release}
 Obsoletes: PackageKit-docs < %{version}-%{release}
 Provides: PackageKit-docs = %{version}-%{release}
 
@@ -123,100 +165,100 @@ fonts from configured repositories using PackageKit.
 %package command-not-found
 Summary: Ask the user to install command line programs automatically
 Requires: bash
+Requires: %{name} = %{version}-%{release}
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
-Requires: PackageKit
 
 %description command-not-found
 A simple helper that offers to install new packages on the command line
 using PackageKit.
 
 %prep
-%setup -q
+%autosetup
 
-%build
+%conf
 %meson \
         -Dgtk_doc=true \
-        -Dpython_backend=false \
-%if 0%{?rhel} == 0
-        -Dpackaging_backend=dnf \
-        -Dbash_completion=true \
-%else
-        -Dbash_completion=false \
-%endif
+        -Dlegacy_tools=true \
+        -Dpackaging_backend=dnf,dnf5 \
         -Dlocal_checkout=false
+
+%build
 %meson_build
 
 %install
 %meson_install
 
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/downloads
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/PackageKit/metadata
+# Create cache dir
+mkdir -p %{buildroot}%{_localstatedir}/cache/PackageKit
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants
-ln -sf /usr/lib/systemd/system/packagekit-offline-update.service \
-        $RPM_BUILD_ROOT/usr/lib/systemd/system/system-update.target.wants/packagekit-offline-update.service
+# Create directories for downloaded appstream data
+mkdir -p %{buildroot}%{_localstatedir}/cache/app-info/{icons,xmls}
 
 # create a link that GStreamer will recognise
-pushd ${RPM_BUILD_ROOT}%{_libexecdir} > /dev/null
+pushd %{buildroot}%{_libexecdir} > /dev/null
 ln -s pk-gstreamer-install gst-install-plugins-helper
 popd > /dev/null
 
-# create a link that from the comps icons to PK, as PackageKit frontends
-# cannot add /usr/share/pixmaps/comps to the icon search path as some distros
-# do not use comps. Patching this in the frontend is not a good idea, as there
-# are multiple frontends in multiple programming languages.
-pushd ${RPM_BUILD_ROOT}%{_datadir}/PackageKit > /dev/null
-ln -s ../pixmaps/comps icons
-popd > /dev/null
+%find_lang %{name}
 
-%find_lang %name
+%check
+appstreamcli validate --no-net %{buildroot}%{_metainfodir}/*.metainfo.xml
 
-%post glib -p /sbin/ldconfig
-
-%postun glib -p /sbin/ldconfig
+%post
+# Remove leftover symlinks from /etc/systemd; the offline update service is
+# instead now hooked into /usr/lib/systemd/system/system-update.target.wants
+systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 
 %files -f %{name}.lang
 %license COPYING
-%doc README AUTHORS NEWS
+%doc README.md AUTHORS NEWS
 %dir %{_datadir}/PackageKit
 %dir %{_sysconfdir}/PackageKit
 %dir %{_localstatedir}/lib/PackageKit
+%dir %{_localstatedir}/cache/app-info
+%dir %{_localstatedir}/cache/app-info/icons
+%dir %{_localstatedir}/cache/app-info/xmls
 %dir %{_localstatedir}/cache/PackageKit
-%dir %{_localstatedir}/cache/PackageKit/downloads
-%dir %{_localstatedir}/cache/PackageKit/metadata
-%if !0%{?rhel}
+%{_datadir}/bash-completion/completions/pkgctl
 %{_datadir}/bash-completion/completions/pkcon
-%endif
 %dir %{_libdir}/packagekit-backend
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
-%config %{_sysconfdir}/dbus-1/system.d/*
-%{_datadir}/PackageKit/icons
-%{_datadir}/man/man1/pkcon.1.gz
-%{_datadir}/man/man1/pkmon.1.gz
+%{_datadir}/man/man1/pkcon.1*
+%{_datadir}/man/man1/pkmon.1*
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
 %{_datadir}/PackageKit/helpers/test_spawn/search-name.sh
+%{_metainfodir}/org.freedesktop.packagekit.metainfo.xml
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
-%{_libexecdir}/packagekit-dnf-refresh-repo
-%pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
 %{_bindir}/pkmon
 %{_bindir}/pkcon
+%{_bindir}/pkgctl
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/PackageKit/transactions.db
+%ghost %verify(not md5 size mtime) %attr(0644,-,-) %{_localstatedir}/lib/PackageKit/transactions.db
+%{_datadir}/dbus-1/system.d/*
 %{_datadir}/dbus-1/system-services/*.service
 %{_datadir}/dbus-1/interfaces/*.xml
 %{_unitdir}/packagekit-offline-update.service
 %{_unitdir}/packagekit.service
 %{_unitdir}/system-update.target.wants/
 %{_libexecdir}/pk-*offline-update
-%if 0%{?rhel} == 0
+%{_libexecdir}/packagekit-dnf-refresh-repo
 %{_libdir}/packagekit-backend/libpk_backend_dnf.so
-%endif
+
+%files backend-dnf5
+%{_libdir}/packagekit-backend/libpk_backend_dnf5.so
+
+%files -n dnf4-plugin-notify-PackageKit
+%pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
+
+%files -n libdnf5-plugin-notify-PackageKit
+%{_libdir}/libdnf5/plugins/notify_packagekit.so
+%config(noreplace) %{_sysconfdir}/dnf/libdnf5-plugins/notify_packagekit.conf
 
 %files glib
 %{_libdir}/*packagekit-glib2.so.*
@@ -239,6 +281,10 @@ popd > /dev/null
 %{_libexecdir}/pk-command-not-found
 %config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
 
+%files devel
+# Empty on purpose
+# helper for multilibs computation - See rhbz#1901065
+
 %files glib-devel
 %{_libdir}/libpackagekit-glib2.so
 %{_libdir}/pkgconfig/packagekit-glib2.pc
@@ -251,5 +297,5 @@ popd > /dev/null
 %{_datadir}/vala/vapi/packagekit-glib2.deps
 
 %changelog
-* #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
+* #LONGDATE# Neal Gompa <neal@gompa.dev> #VERSION#~#BUILD##ALPHATAG#-0
 - Update from git
