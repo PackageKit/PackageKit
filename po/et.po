@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"PO-Revision-Date: 2026-01-02 17:01+0000\n"
+"PO-Revision-Date: 2026-01-04 00:02+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/packagekit/translations/et/>\n"
 "Language: et\n"
@@ -97,32 +97,32 @@ msgstr "Valitud pakett on juba paigaldatud."
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Eemalda süsteemist üks või enam paketti."
 
 #: client/pkgc-manage.c:383
 #, c-format
 msgid "Could not find installed packages: %s"
-msgstr ""
+msgstr "Paigaldatud pakette ei õnnestu leida: %s"
 
 #. TRANSLATORS: Description for pkgctl download
 #: client/pkgc-manage.c:423
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Laadi paketid alla etteantud kausta ilma neid paigaldamata."
 
 #: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
-msgstr ""
+msgstr "Pakettide leidmine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:445
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Kausta pole olemas: %s"
 
 #. TRANSLATORS: Description for pkgctl update
 #: client/pkgc-manage.c:488
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Uuenda kõik paketid või määratletud paketid viimase versioonini."
 
 #: client/pkgc-manage.c:511
 #, c-format
@@ -136,7 +136,7 @@ msgstr "Uuenduste tuvastamine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
 msgid "No packages require updating"
-msgstr ""
+msgstr "Mitte ükski pakett ei vaja uuendamist"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -146,6 +146,9 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Uuenda kõik paketid või tee dsitributsiooni uuendus.\n"
+"\n"
+"Tüübid: minimaalne, vaikimisi või terviklik"
 
 #: client/pkgc-manage.c:687
 #, c-format
@@ -241,12 +244,12 @@ msgstr ""
 
 #: client/pkgc-manage.c:968
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Süsteemi parandamine õnnestus"
 
 #. TRANSLATORS: Description for pkgctl quit
 #: client/pkgc-manage.c:989
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Lõpeta PackageKiti taustateenuse töö turvaliselt."
 
 #: client/pkgc-manage.c:995
 #, c-format
@@ -255,11 +258,11 @@ msgstr "Taustateenusele lõpetamispäringu saatmine ei õnnestunud: %s"
 
 #: client/pkgc-manage.c:1014
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Värskenda paketi metateavet"
 
 #: client/pkgc-manage.c:1020
 msgid "Install packages"
-msgstr ""
+msgstr "Paigalda paketid"
 
 #: client/pkgc-manage.c:1026
 msgid "Remove packages"
@@ -304,32 +307,32 @@ msgstr ""
 #. TRANSLATORS: Description for pkgctl monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
-msgstr ""
+msgstr "Seira PackageKiti D-Bus'i sündmusi"
 
 #. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
 msgid "Monitor PackageKit bus events"
-msgstr ""
+msgstr "Seira PackageKiti siini sündmusi"
 
 #. TRANSLATORS: Description for pkgctl backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Näita PackageKiti taustateenuse teavet."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Taustateenus: %s"
 
 #: client/pkgc-query.c:214
 #, c-format
 msgid "Description: %s"
-msgstr ""
+msgstr "Kirjeldus: %s"
 
 #: client/pkgc-query.c:217
 #, c-format
 msgid "Author: %s"
-msgstr ""
+msgstr "Autor: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
@@ -341,7 +344,7 @@ msgstr "Rollid: %s"
 #. TRANSLATORS: Description for pkgctl history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Näita hiljutisi paketihalduse transaktsioone."
 
 #. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
@@ -436,13 +439,13 @@ msgstr "Kategooriad:"
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Kui nad on saadaval, siis näita distributsiooni versiooniuuendusi."
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 #: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
+msgstr "Polnud võimalik tuvastada aega, millal see tegevus viimati lõppes"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
@@ -452,33 +455,33 @@ msgstr "Möödunud aeg"
 #. TRANSLATORS: Description for pkgctl last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Tuvasta eelmisest määrtletud tegevusest möödunud aeg."
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 #: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Nõutav on tegevus, nt „update-packages“"
 
 #. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
 #: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
 msgid "A correct role is required"
-msgstr ""
+msgstr "Korrektne roll on nõutav"
 
 #: client/pkgc-query.c:973
 msgid "Show backend information"
-msgstr ""
+msgstr "Näita taustateenuse teavet"
 
 #: client/pkgc-query.c:979
 msgid "Show transaction history"
-msgstr ""
+msgstr "Näita transaktsioonide ajalugu"
 
 #: client/pkgc-query.c:985
 msgid "Search for packages"
-msgstr ""
+msgstr "Otsi pakette"
 
 #: client/pkgc-query.c:991
 msgid "List packages"
@@ -486,7 +489,7 @@ msgstr "Pakettide loend"
 
 #: client/pkgc-query.c:997
 msgid "Show package information"
-msgstr ""
+msgstr "Näita paketiteavet"
 
 #: client/pkgc-query.c:1003
 msgid "List package dependencies"
@@ -494,7 +497,7 @@ msgstr "Paketi sõltuvuste loend"
 
 #: client/pkgc-query.c:1009
 msgid "List packages requiring this package"
-msgstr ""
+msgstr "Loenda paketid, mis vajavad selle paketi olemasolu"
 
 #: client/pkgc-query.c:1015
 msgid "List packages providing a capability"
@@ -502,7 +505,7 @@ msgstr ""
 
 #: client/pkgc-query.c:1021
 msgid "Show files in package"
-msgstr ""
+msgstr "Näita paketis leiduvaid faile"
 
 #: client/pkgc-query.c:1027
 msgid "Get available updates"
@@ -510,7 +513,7 @@ msgstr "Tuvasta saadaval uuendused"
 
 #: client/pkgc-query.c:1033
 msgid "Get update details"
-msgstr ""
+msgstr "Tuvasta uuenduse üksikasjad"
 
 #: client/pkgc-query.c:1039
 msgid "Resolve package names"
@@ -597,37 +600,37 @@ msgstr "%u sekundit"
 #: client/pkgc-util.c:137
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u min %u sek"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:147
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u t %u min"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u t"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u päev(a) %u t"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u päev(a)"
 
 #: client/pkgc-util.c:275
 msgid "Error"
@@ -648,7 +651,7 @@ msgstr "Eelistuste töötlemine ei õnnestunud: %s"
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Kasutus: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
@@ -689,12 +692,12 @@ msgstr "Grupp:"
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:654
 msgid "Installed Size:"
-msgstr ""
+msgstr "Paigaldatud suurus:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:662
 msgid "Download Size:"
-msgstr ""
+msgstr "Allalaaditav andmemaht:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:756
@@ -719,7 +722,7 @@ msgstr "Valmistaja/tarnija:"
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:794
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Veahaldus:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:803
@@ -825,54 +828,54 @@ msgstr "Mitte ühtegi"
 #. * to follow is a list of possible packages
 #: client/pkgc-util.c:1142 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
-msgstr ""
+msgstr "Vastab enam, kui üks pakett:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
 #: client/pkgc-util.c:1154 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
-msgstr ""
+msgstr "Palun vali õige pakett: "
 
 #: client/pkgc-util.c:1198
 #, c-format
 msgid "Package not found: %s"
-msgstr ""
+msgstr "Paketti ei leidu: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgctl.c:76
 msgid "Show pkgctl version"
-msgstr ""
+msgstr "Näita pkgctl käsu versiooni"
 
 #: client/pkgctl.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Näita abiteavet"
 
 #: client/pkgctl.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Näita vaid minimaalset väljundit"
 
 #: client/pkgctl.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Näita üksikasjalikumat väljundit"
 
 #: client/pkgctl.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Väljund JSON-vormingus"
 
 #: client/pkgctl.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Lülita värviline väljund välja"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgctl.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Anna kõikidele küsimustele „jah“ vastus"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgctl.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Filtreeri pakette (paigaldatud, saadaval, jne.)"
 
 #: client/pkgctl.c:92
 msgid "FILTER"
@@ -890,7 +893,7 @@ msgstr ""
 #: client/pkgctl.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Tundmatu käsk: %s"
 
 #: client/pkgctl.c:135
 #, c-format
@@ -900,11 +903,11 @@ msgstr ""
 #: client/pkgctl.c:196
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Versioon: %s"
 
 #: client/pkgctl.c:211
 msgid "Available Commands:"
-msgstr ""
+msgstr "Saadaval käsud:"
 
 #: client/pkgctl.c:217
 msgid "Use 'pkgctl COMMAND --help' for command-specific help."
@@ -914,7 +917,7 @@ msgstr ""
 #. * an incorrect filter
 #: client/pkgctl.c:254 client/pkcon/pk-console.c:1842
 msgid "The filter specified was invalid"
-msgstr ""
+msgstr "Määratletud filter oli vigane"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1171,7 +1174,7 @@ msgstr "Ületamatu viga"
 #. * but there is nothing that can be updated
 #: client/pkcon/pk-console.c:702
 msgid "There are no packages to update."
-msgstr ""
+msgstr "Pole uuendatavaid pakette."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -1214,12 +1217,12 @@ msgstr ""
 #. * that could not be found in any repo
 #: client/pkcon/pk-console.c:981
 msgid "Package not found"
-msgstr ""
+msgstr "Paketti ei leidunud"
 
 #. TRANSLATORS: we couldn't find anything
 #: client/pkcon/pk-console.c:999
 msgid "No packages were found"
-msgstr ""
+msgstr "Ühtegi paketti ei leidunud"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -1294,7 +1297,7 @@ msgstr "Alamkäsud:"
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
 msgid "Time since"
-msgstr ""
+msgstr "Aeg alates"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
@@ -1305,12 +1308,12 @@ msgstr "Ettevalmistatud uuendused:"
 #. TRANSLATORS: The network settings could not be sent
 #: client/pkcon/pk-console.c:1665
 msgid "The proxy could not be set"
-msgstr ""
+msgstr "Proksiserveri seadmistamine ei õnnestunud"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
 msgid "Show the program version and exit"
-msgstr ""
+msgstr "Näita programmi versiooni ja lõpeta töö"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkcon/pk-console.c:1709
@@ -1360,7 +1363,7 @@ msgstr ""
 #. * be name, details, file, etc
 #: client/pkcon/pk-console.c:1868
 msgid "A search type is required, e.g. name"
-msgstr ""
+msgstr "Otsingutüüp on nõutav, nt. nimi"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -1369,19 +1372,19 @@ msgstr ""
 #: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
 #: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
 msgid "A search term is required"
-msgstr ""
+msgstr "Otsingusõna on nõutav"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1955
 msgid "A package name to install is required"
-msgstr ""
+msgstr "Paigaldatava paketi nimi on nõutav"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1969
 msgid "A filename to install is required"
-msgstr ""
+msgstr "Paigaldatava paketi failinimi on nõutav"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -1452,7 +1455,7 @@ msgstr ""
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
 msgid "A filename is required"
-msgstr ""
+msgstr "Failinimi on nõutav"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
@@ -1467,7 +1470,7 @@ msgstr "Autor"
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pkcon/pk-console.c:2418
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Sa pead määratlema loodava faili nime"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -1475,7 +1478,7 @@ msgstr ""
 #: client/pkcon/pk-console.c:2431
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Fail on juba olemas: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -1515,17 +1518,17 @@ msgstr "Paigaldan uuendusi"
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:214
 msgid "Rebooting after installing updates…"
-msgstr ""
+msgstr "Peale uuendamist käivitan uuesti süsteemi…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:256
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Peale uuendamist seiskan süsteemi töö…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:401
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Paigaldan uuendusi, selleks võib kuluda aega…"
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
@@ -2594,7 +2597,7 @@ msgstr ""
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "See tarkvara pole pärit usaldusväärsest allikast."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
