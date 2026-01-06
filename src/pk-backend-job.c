@@ -826,6 +826,7 @@ pk_backend_job_thread_create (PkBackendJob *job,
 	helper->backend = job->backend;
 	helper->func = func;
 	helper->user_data = user_data;
+	helper->destroy_func = destroy_func;
 
 	/* create a thread and unref it immediately as we do not need to join()
 	 * this at any stage */
