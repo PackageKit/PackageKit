@@ -169,7 +169,7 @@ Most user just don't have got the technical understanding to handle this well.</
 PackageKit runs a process <code>packagekitd</code> that is a daemon that runs per-system.
 The daemon lets you schedule transactions using either the raw
 <a href="http://gitweb.freedesktop.org/?p=packagekit.git;a=blob;f=src/org.freedesktop.PackageKit.Transaction.xml">
-DBUS methods</a>, or using <a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/PkClient.html">libpackagekit</a>.
+D-Bus methods</a>, or using <a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/PkClient.html">libpackagekit</a>.
 The transactions are very fine grained, so an application would have to manage
 <a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">
 the transaction process</a> itself.
@@ -180,7 +180,7 @@ For this reason, a session helper is provided which makes all the
 complexity go away; it handles all the GPG key authentication and
 EULA agreements, and also works with authentication agent and user settings.
 Using the session service is also designed to be synchronous, which means
-you can send the DBUS call and just wait for the result, rather than
+you can send the D-Bus call and just wait for the result, rather than
 managing callbacks to update custom GUIs.
 </p>
 <p>
@@ -204,7 +204,7 @@ gcc -o system -Wall system.c `pkg-config --cflags --libs packagekit-glib`
 <hr/>
 <h3><a name="session-methods">How do I use PackageKit in my application?</a></h3>
 <p>
-Using the shared session interface you can use the following DBUS methods
+Using the shared session interface you can use the following D-Bus methods
 to make PackageKit just do the right thing.
 All the additional
 <a href="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">

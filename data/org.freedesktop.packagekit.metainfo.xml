@@ -10,7 +10,7 @@
 
   <description>
     <p>
-      PackageKit allows performing simple software management tasks over a DBus interface e.g. refreshing the cache,
+      PackageKit allows performing simple software management tasks over a D-Bus interface e.g. refreshing the cache,
       updating, installing and removing software packages or searching for multimedia codecs and file handlers.
     </p>
     <p>

@@ -78,9 +78,9 @@ for PackageKit.
 <h2>Using libpackagekit:</h2>
 <p>
 The <a href="gtk-doc/PkTask.html">libpackagekit gobject library</a>
-wraps the DBus interface in a nice glib-style API.
+wraps the D-Bus interface in a nice glib-style API.
 This makes designing programs that use libpackagekit can concentrate on
-core functionality rather that the DBus and PackageKit internals.
+core functionality rather that the D-Bus and PackageKit internals.
 PkTask in libpackagekit can be used as easily as:
 </p>
 <pre>
@@ -144,9 +144,9 @@ out:
 		g_object_unref (results);
 </pre>
 
-<h2>Using the raw DBus API:</h2>
+<h2>Using the raw D-Bus API:</h2>
 <p>
-Using the <a href="gtk-doc/api-reference.html">PackageKit DBus methods
+Using the <a href="gtk-doc/api-reference.html">PackageKit D-Bus methods
 and signals</a> directly means that no glib or gobject dependency is
 needed, although this means you will have to manage the transaction_id
 multiplexing in any client program.  This is not difficult, although

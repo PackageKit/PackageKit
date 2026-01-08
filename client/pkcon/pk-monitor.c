@@ -144,7 +144,7 @@ pk_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 	guint pid = G_MAXUINT;
 	g_autoptr(GVariant) value = NULL;
 
-	/* get pid from DBus */
+	/* get pid from D-Bus */
 	value = g_dbus_proxy_call_sync (bus_proxy,
 					"GetConnectionUnixProcessID",
 					g_variant_new ("(s)",

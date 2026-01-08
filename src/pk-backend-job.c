@@ -45,7 +45,7 @@
  * The time in ms the backend waits after receiving Finished() before
  * propagating the signal to the other components.
  * This delay is required as some threads may take some time to cancel or a
- * spawned executable to disappear of the system DBUS.
+ * spawned executable to disappear of the system bus.
  */
 #define PK_BACKEND_FINISHED_TIMEOUT_GRACE	10 /* ms */
 
