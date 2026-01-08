@@ -9,7 +9,7 @@
 
 # check some important things are installed systemwide
 if [ ! -e "/usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf" ]; then
-    echo "You need to install the DBus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /usr/share/dbus-1/system.d/"
+    echo "You need to install the D-Bus policy. Use sudo cp ../data/org.freedesktop.PackageKit.conf /usr/share/dbus-1/system.d/"
     exit 1
 fi
 if [ ! -e "/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy" ]; then

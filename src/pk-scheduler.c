@@ -646,7 +646,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 		return FALSE;
 	}
 
-	/* set the DBUS sender on the transaction */
+	/* set the D-Bus sender on the transaction */
 	ret = pk_transaction_set_sender (item->transaction, sender);
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to set sender: %s", tid);

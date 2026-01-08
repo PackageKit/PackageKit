@@ -14,7 +14,7 @@ Introduction:
 
 Detecting the calling application:
 
-When an application calls the DBUS interface to install plugins or codecs
+When an application calls the D-Bus interface to install plugins or codecs
 then the XID and timestamp along with the codec string is passed on the
 interface.
 

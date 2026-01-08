@@ -34,7 +34,7 @@ Guide to porting backends from 0.7.x to 0.8.x
    then depsolve and download any packages or metadata, but don't
    actually make any database changes or change any files
 
- * Switch the RemovePackages() arguments to match the DBus API if you're
+ * Switch the RemovePackages() arguments to match the D-Bus API if you're
    using a spawned backend, i.e.
    transaction_flags, package_ids, allow_deps, auto_remove
 

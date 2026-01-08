@@ -2083,7 +2083,7 @@ pk_control_finalize (GObject *object)
 	PkControl *control = PK_CONTROL (object);
 	PkControlPrivate *priv = GET_PRIVATE(control);
 
-	/* ensure we cancel any in-flight DBus calls */
+	/* ensure we cancel any in-flight D-Bus calls */
 	g_cancellable_cancel (priv->cancellable);
 	g_bus_unwatch_name (priv->watch_id);
 

@@ -20,5 +20,5 @@ it came from, and store this data in a database. When each transaction method
 is executed, the uid and session that executed the call are used to lookup the
 proxy settings and this is passed to the backend. This also allows the daemon to
 have to correct proxy settings if the daemon times out (as it is designed to do)
-and is restarted by a client application using DBus system activation.
+and is restarted by a client application using D-Bus system activation.
 

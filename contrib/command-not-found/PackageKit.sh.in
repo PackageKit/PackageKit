@@ -13,7 +13,7 @@ command_not_found_handle () {
 	# only search for the command if we're interactive
 	[[ $- == *"i"* ]] || runcnf=0
 
-	# don't run if DBus isn't running
+	# don't run if the system bus isn't running
 	[[ ! -S /run/dbus/system_bus_socket ]] && runcnf=0
 
 	# don't run if packagekitd doesn't exist in the _system_ root

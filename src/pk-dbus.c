@@ -68,11 +68,11 @@ pk_dbus_get_uid_pid (PkDbus *dbus, const gchar *sender, guint32 *uid, guint32 *p
 		return TRUE;
 	}
 
-	/* no connection to DBus */
+	/* no connection to D-Bus */
 	if (dbus->proxy_pid == NULL)
 		return FALSE;
 
-	/* get caller credentials from DBus */
+	/* get caller credentials from D-Bus */
 	reply_var = g_dbus_proxy_call_sync (dbus->proxy_pid,
 					"GetConnectionCredentials",
 					g_variant_new ("(s)",
@@ -127,7 +127,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (PK_IS_DBUS (dbus), G_MAXUINT);
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
-	/* no connection to DBus */
+	/* no connection to D-Bus */
 	if (dbus->proxy_uid == NULL)
 		return G_MAXUINT;
 
@@ -178,11 +178,11 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 		return G_MAXUINT - 1;
 	}
 
-	/* no connection to DBus */
+	/* no connection to D-Bus */
 	if (dbus->proxy_pid == NULL)
 		return G_MAXUINT;
 
-	/* get pid from DBus */
+	/* get pid from D-Bus */
 	value = g_dbus_proxy_call_sync (dbus->proxy_pid,
 					"GetConnectionUnixProcessID",
 					g_variant_new ("(s)",
@@ -335,7 +335,7 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 		return FALSE;
 	}
 
-	/* connect to DBus so we can get the pid */
+	/* connect to D-Bus so we can get the pid */
 	dbus->proxy_pid =
 		g_dbus_proxy_new_sync (dbus->connection,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
@@ -347,11 +347,11 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       NULL,
 				       error);
 	if (dbus->proxy_pid == NULL) {
-		g_prefix_error (error, "cannot connect to DBus: ");
+		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
 	}
 
-	/* connect to DBus so we can get the uid */
+	/* connect to D-Bus so we can get the uid */
 	dbus->proxy_uid =
 		g_dbus_proxy_new_sync (dbus->connection,
 				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
@@ -363,7 +363,7 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       NULL,
 				       error);
 	if (dbus->proxy_uid == NULL) {
-		g_prefix_error (error, "cannot connect to DBus: ");
+		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
 	}
 
@@ -379,7 +379,7 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 				       NULL,
 				       error);
 	if (dbus->proxy_session == NULL) {
-		g_prefix_error (error, "cannot connect to DBus: ");
+		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
 	}
 

@@ -854,7 +854,7 @@
     <para>
       Each transaction is a new path on the <literal>org.freedesktop.PackageKit</literal>
       service, and to create a path you have to call <literal>CreateTransaction</literal> on the base
-      interface which creates the new DBUS path, and returns the new path for you to connect to.
+      interface which creates the new D-Bus path, and returns the new path for you to connect to.
       In the libpackagekit binding, <literal>PkControl</literal> handles the base interface,
       whilst <literal>PkClient</literal> handles all the transaction interface stuff.
       The <literal>org.freedesktop.PackageKit.Transaction</literal> interface can be used
@@ -1089,7 +1089,7 @@
         The PackageKit backend may support native localisation, which we should support if the
         translations exist.
         In the prior examples the <literal>SetLocale()</literal> method has been left out for brevity.
-        If you are using the raw DBUS methods to access PackageKit, you will also need to make
+        If you are using the raw D-Bus methods to access PackageKit, you will also need to make
         a call to <literal>SetLocale()</literal> so the daemon knows what locale to assign the
         transaction.
         If you are using libpackagekit to schedule transactions, then the locale will be set

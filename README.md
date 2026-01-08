@@ -5,7 +5,7 @@ PackageKit
 [![Build Test](https://github.com/PackageKit/PackageKit/actions/workflows/build-test.yml/badge.svg)](https://github.com/PackageKit/PackageKit/actions/workflows/build-test.yml)
 [![Translation status](https://hosted.weblate.org/widget/packagekit/svg-badge.svg)](https://hosted.weblate.org/engage/packagekit/)
 
-PackageKit is a DBus abstraction layer that allows the session user to manage
+PackageKit is a D-Bus abstraction layer that allows the session user to manage
 packages in a secure way using a cross-distro, cross-architecture API.
 
 Its primary design goal is to unify all the software graphical tools used in different distributions,
