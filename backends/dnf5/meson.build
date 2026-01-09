@@ -25,3 +25,32 @@ shared_module(
   install: true,
   install_dir: pk_plugin_dir,
 )
+
+# Build rpm plugin for notifying PackageKit
+rpm_dep = dependency('rpm', version: '>=4.20')
+sdbus_cpp_dep = dependency('sdbus-c++')
+sdbus_cpp_version = sdbus_cpp_dep.version().split('.')
+
+rpm_plugindir = rpm_dep.get_variable(pkgconfig: 'rpmplugindir')
+rpm_macrosdir = rpm_dep.get_variable(pkgconfig: 'rpmhome') + '/macros.d'
+
+shared_module(
+  'notify_packagekit',
+  'notify_packagekit.cpp',
+  cpp_args: [
+    '-std=c++20',
+    '-DSDBUSCPP_VERSION_MAJOR=' + sdbus_cpp_version[0],
+  ],
+  dependencies: [
+    rpm_dep,
+    sdbus_cpp_dep,
+  ],
+  name_prefix: '',
+  install: true,
+  install_dir: rpm_plugindir,
+)
+
+install_data(
+  'macros.transaction_notify_packagekit',
+  install_dir: rpm_macrosdir,
+)

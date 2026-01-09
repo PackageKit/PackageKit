@@ -252,6 +252,8 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 
 %files backend-dnf5
 %{_libdir}/packagekit-backend/libpk_backend_dnf5.so
+%{_libdir}/rpm-plugins/notify_packagekit.so
+%{_rpmmacrodir}/macros.transaction_notify_packagekit
 
 %files -n dnf4-plugin-notify-PackageKit
 %pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
