@@ -550,8 +550,11 @@ dnf5_transaction_thread (PkBackendJob *job, GVariant *params, gpointer user_data
 			std::string msg;
 			for (const auto &p : trans.get_transaction_problems()) msg += p + "; ";
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Transaction failed: %s", msg.c_str());
+		} else {
+			// Update timestamp to inhibit notifications from our own transaction
+			priv->last_notification_timestamp = g_get_monotonic_time ();
 		}
-		
+
 		// Post-transaction base re-initialization to ensure state consistency
 		dnf5_setup_base (priv);
 		
@@ -707,6 +710,8 @@ dnf5_repo_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 					pk_backend_job_error_code (job, PK_ERROR_ENUM_TRANSACTION_ERROR, "Transaction failed: %s", msg.c_str());
 				} else {
 					g_debug("Transaction completed successfully");
+					// Update timestamp to inhibit notifications from our own transaction
+					priv->last_notification_timestamp = g_get_monotonic_time ();
 				}
 				dnf5_setup_base (priv);
 			} else {
