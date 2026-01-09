@@ -1,0 +1,1 @@
+%__transaction_notify_packagekit    %{__plugindir}/notify_packagekit.so
