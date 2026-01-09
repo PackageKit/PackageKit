@@ -37,6 +37,7 @@ typedef struct {
 	std::unique_ptr<libdnf5::Base> base;
 	GKeyFile *conf;
 	GMutex mutex;
+	gint64 last_notification_timestamp;
 } PkBackendDnf5Private;
 
 void dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh = FALSE, gboolean force = FALSE, const char *releasever = nullptr);
