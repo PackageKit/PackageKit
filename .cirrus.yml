@@ -8,7 +8,7 @@ task:
     - sed 's|/quarterly|/latest|' /etc/pkg/FreeBSD.conf > /usr/local/etc/pkg/repos/FreeBSD.conf
     - env ASSUME_ALWAYS_YES=yes pkg update -f
     - env ASSUME_ALWAYS_YES=yes pkg install -y docbook-xsl-ns vala libxslt fontconfig polkit consolekit2
-        desktop-file-utils gettext meson ninja python3 glib gtk3 pkgconf sqlite3 gobject-introspection
+        desktop-file-utils gettext meson ninja python3 glib gtk3 pkgconf sqlite3
         jansson dbus bash
   build_script:
     - meson --auto-features=enabled -Db_colorout=never --buildtype debug -Dlocal_checkout=true -Dlocalstatedir=/var

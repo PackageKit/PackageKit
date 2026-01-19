@@ -13,7 +13,7 @@ Requires: shared-mime-info
 Requires: systemd
 
 BuildRequires: python3-devel
-BuildRequires: glib2-devel >= 2.46.0
+BuildRequires: glib2-devel >= 2.80
 BuildRequires: xmlto
 BuildRequires: gtk-doc
 BuildRequires: sqlite-devel
@@ -30,7 +30,6 @@ BuildRequires: gstreamer1-plugins-base-devel
 BuildRequires: pango-devel
 BuildRequires: fontconfig-devel
 BuildRequires: systemd-devel
-BuildRequires: gobject-introspection-devel
 %if !0%{?rhel}
 BuildRequires: bash-completion
 %endif
@@ -73,7 +72,7 @@ cross-architecture API.
 %package glib
 Summary: GLib libraries for accessing PackageKit
 Requires: dbus >= 1.1.1
-Requires: gobject-introspection
+Requires: glib2 >= 2.80
 Obsoletes: PackageKit-libs < %{version}-%{release}
 Provides: PackageKit-libs = %{version}-%{release}
 
