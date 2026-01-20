@@ -260,8 +260,7 @@ pkgc_install (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	/* check if we have files or package names */
 	has_files = FALSE;
 	for (gint i = 1; i < argc; i++) {
-		if (g_str_has_suffix (argv[i], ".rpm") || g_str_has_suffix (argv[i], ".deb") ||
-		    g_file_test (argv[i], G_FILE_TEST_EXISTS)) {
+		if (pkgc_is_local_package (argv[i])) {
 			has_files = TRUE;
 			break;
 		}

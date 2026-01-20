@@ -438,6 +438,27 @@ pkgc_parse_command_options(PkgctlContext	*ctx,
 }
 
 /**
+ * pkgc_is_local_package:
+ *
+ * Check if a package name refers to a local package file.
+ */
+gboolean
+pkgc_is_local_package(const gchar *package_name)
+{
+	/* without dot there is no file-extension, so the package cannot be local */
+	if (g_strstr_len (package_name, -1, ".") == NULL)
+		return FALSE;
+
+	/* if we have a slash, it's always a path to a local file, as no package-manager permits slashes
+	 * in package names */
+	if (g_strstr_len (package_name, -1, "/") != NULL)
+		return TRUE;
+
+	/* if we made it here, check if the file exists to be sure */
+	return g_file_test (package_name, G_FILE_TEST_EXISTS);
+}
+
+/**
  * pkgc_print_package:
  *
  * Print package information based on the output mode.

@@ -417,7 +417,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* TODO: Do we support mixed local packages and remote ones? Local handling should be improved... */
-	if (g_file_test ((argv + 1)[0], G_FILE_TEST_EXISTS)) {
+	if (pkgc_is_local_package ((argv + 1)[0])) {
 		/* get details for local package files */
 		pk_client_get_details_local_async (PK_CLIENT (ctx->task),
 						   argv + 1,
@@ -426,7 +426,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 						   ctx,
 						   pkgc_query_on_client_finished_cb,
 						   ctx);
-	} else{
+	} else {
 		package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 		if (package_ids == NULL) {
 			if (error) {
@@ -553,7 +553,7 @@ pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* TODO: Do we support mixed local packages and remote ones? Local handling should be improved... */
-	if (g_file_test ((argv + 1)[0], G_FILE_TEST_EXISTS)) {
+	if (pkgc_is_local_package ((argv + 1)[0])) {
 		/* get file list from local package files */
 		pk_client_get_files_local_async (PK_CLIENT (ctx->task),
 						 argv + 1,

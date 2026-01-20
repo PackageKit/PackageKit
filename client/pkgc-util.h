@@ -45,25 +45,27 @@ typedef enum {
 	PKGC_COLOR_GRAY
 } PkgcColor;
 
-gboolean     pkgc_util_setup_proxy (PkgctlContext *ctx, GError **error);
-gboolean     pkgc_util_check_connection (PkgctlContext *ctx, GError **error);
-gchar	    *pkgc_util_format_size (guint64 size);
-gchar	    *pkgc_util_format_time (guint seconds);
+gboolean		pkgc_util_setup_proxy (PkgctlContext *ctx, GError **error);
+gboolean		pkgc_util_check_connection (PkgctlContext *ctx, GError **error);
+gchar			*pkgc_util_format_size (guint64 size);
+gchar			*pkgc_util_format_time (guint seconds);
 
-void		 pkgc_print_json_decref (json_t *root);
+void			pkgc_print_json_decref (json_t *root);
 
-const gchar *pkgc_get_ansi_color (PkgctlContext *ctx, PkgcColor color);
+const gchar		*pkgc_get_ansi_color (PkgctlContext *ctx, PkgcColor color);
 
-void	     pkgc_print_package (PkgctlContext *ctx, PkPackage *package);
-void	     pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details);
-void	     pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update);
-void	     pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo);
-void	     pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction);
-void	     pkgc_print_error (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void	     pkgc_print_warning (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void	     pkgc_print_info (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void	     pkgc_print_success (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void	     pkgc_println (const char *format, ...) G_GNUC_PRINTF (1, 2);
+void			pkgc_print_package (PkgctlContext *ctx, PkPackage *package);
+void			pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details);
+void			pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update);
+void			pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo);
+void			pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction);
+void			pkgc_print_error (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
+void			pkgc_print_warning (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
+void			pkgc_print_info (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
+void			pkgc_print_success (PkgctlContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
+void			pkgc_println (const char *format, ...) G_GNUC_PRINTF (1, 2);
+
+gboolean		pkgc_is_local_package (const gchar *package_name);
 
 GOptionContext	*pkgc_option_context_for_command (PkgctlContext *ctx,
 												  PkgctlCommand *cmd,
@@ -76,13 +78,15 @@ gboolean		pkgc_parse_command_options (PkgctlContext  *ctx,
 											gchar          ***argv,
 											gint		   min_arg_count);
 
-gchar	    *pkgc_resolve_package (PkgctlContext *ctx,
-				   PkBitfield	  filters,
-				   const gchar	 *package_name,
-				   GError	**error);
-gchar	   **pkgc_resolve_packages (PkgctlContext *ctx,
-				    PkBitfield	   filters,
-				    gchar	 **packages,
-				    GError	 **error);
+
+
+gchar			*pkgc_resolve_package (PkgctlContext *ctx,
+										PkBitfield	  filters,
+										const gchar	 *package_name,
+										GError	**error);
+gchar			**pkgc_resolve_packages (PkgctlContext *ctx,
+										PkBitfield	   filters,
+										gchar	 **packages,
+										GError	 **error);
 
 G_END_DECLS
