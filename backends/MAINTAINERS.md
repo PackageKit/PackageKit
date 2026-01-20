@@ -17,6 +17,9 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
  * Richard Hughes <richard@hughsie.com> | @hughsie
  * Neal Gompa <ngompa13@gmail.com> | @Conan-Kudo
 
+### DNF5 (Fedora)
+ * Neal Gompa <neal@gompa.dev> | @Conan-Kudo
+
 ### Entropy (Sabayon)
  * Fabio Erculiani <lxnay@sabayon.org>
 
