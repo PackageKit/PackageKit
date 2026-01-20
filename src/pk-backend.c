@@ -473,12 +473,13 @@ pk_backend_load (PkBackend *backend, GError **error)
 	if (backend_name == NULL)
 		return FALSE;
 
-	/* the "hawkey" and "hif" backends are superseded by "dnf" */
+	/* the "hawkey", "hif", and "dnf" backends are superseded by "dnf5" */
 	if (g_strcmp0 (backend_name, "hawkey") == 0 ||
 	    g_strcmp0 (backend_name, "yum") == 0 ||
-	    g_strcmp0 (backend_name, "hif") == 0) {
+	    g_strcmp0 (backend_name, "hif") == 0 ||
+	    g_strcmp0 (backend_name, "dnf") == 0) {
 		g_free (backend_name);
-		backend_name = g_strdup ("dnf");
+		backend_name = g_strdup ("dnf5");
 	}
 
 	g_debug ("Trying to load : %s", backend_name);
