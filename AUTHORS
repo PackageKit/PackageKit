@@ -9,10 +9,6 @@ Backend: alpm
     Fabien Bourigault <bourigaultfabien@gmail.com>
     Jonathan Conder <jonno.conder@gmail.com>
 
-Backend: dnf
-    Richard Hughes <richard@hughsie.com>
-    Neal Gompa <ngompa13@gmail.com>
-
 Backend: dnf5
     Neal Gompa <neal@gompa.dev>
 
