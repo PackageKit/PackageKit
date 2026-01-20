@@ -45,7 +45,7 @@
 static gboolean
 pkc_handle_sigint (gpointer user_data)
 {
-	PkgctlContext *ctx = user_data;
+	PkgcliContext *ctx = user_data;
 
 	/* Cancel any running transaction */
 	if (ctx->cancellable && !g_cancellable_is_cancelled (ctx->cancellable))
@@ -73,7 +73,7 @@ static gchar *opt_filter_str = NULL;
 const GOptionEntry pkgc_global_options[] = {
 	{ "version", 'v', 0, G_OPTION_ARG_NONE, &opt_version,
 		/* TRANSLATORS: command line argument, just show the version string */
-		N_("Show pkgctl version"), NULL },
+		N_("Show pkgcli version"), NULL },
 	{ "help", 'h', 0, G_OPTION_ARG_NONE, &opt_help,
 		N_("Show help"), NULL },
 	{ "quiet", 'q', 0, G_OPTION_ARG_NONE, &opt_quiet,
@@ -107,10 +107,10 @@ const GOptionEntry pkgc_global_options[] = {
  * Returns: exit code
  */
 static int
-pkgc_dispatch_command (PkgctlContext *ctx, int argc, char **argv)
+pkgc_dispatch_command (PkgcliContext *ctx, int argc, char **argv)
 {
 	const gchar *command_name;
-	PkgctlCommand *cmd;
+	PkgcliCommand *cmd;
 	g_autoptr(GError) error = NULL;
 
 	if (argc < 2) {
@@ -149,7 +149,7 @@ main (int argc, char **argv)
 {
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) context = NULL;
-	PkgctlContext *ctx = NULL;
+	PkgcliContext *ctx = NULL;
 	int ret = PKGC_EXIT_SUCCESS;
 
 	/* setup locale */
@@ -184,7 +184,7 @@ main (int argc, char **argv)
 	g_option_context_set_ignore_unknown_options (context, TRUE);
 
 	if (!g_option_context_parse (context, &argc, &argv, &error)) {
-		/* TRANSLATORS: Failed to parse command-line options in pkgctl */
+		/* TRANSLATORS: Failed to parse command-line options in pkgcli */
 		g_printerr (_("Failed to parse options: %s"), error->message);
 		g_printerr ("\n");
 		ret = PKGC_EXIT_SYNTAX_ERROR;
@@ -210,11 +210,11 @@ main (int argc, char **argv)
 		g_print ("\n");
 		g_print ("%s\n", _("Available Commands:"));
 		for (guint i = 0; i < ctx->commands->len; i++) {
-			PkgctlCommand *cmd = g_ptr_array_index (ctx->commands, i);
+			PkgcliCommand *cmd = g_ptr_array_index (ctx->commands, i);
 			g_print ("  %-23s %s\n", cmd->name, cmd->summary);
 		}
 		g_print ("\n");
-		g_print ("%s\n", _("Use 'pkgctl COMMAND --help' for command-specific help."));
+		g_print ("%s\n", _("Use 'pkgcli COMMAND --help' for command-specific help."));
 
 		ret = PKGC_EXIT_SUCCESS;
 		goto out;
@@ -227,13 +227,13 @@ skip_global_parse:
 
 	/* parse output mode from global options */
 	if (opt_json)
-		ctx->output_mode = PKGCTL_MODE_JSON;
+		ctx->output_mode = PKGCLI_MODE_JSON;
 	else if (opt_quiet)
-		ctx->output_mode = PKGCTL_MODE_QUIET;
+		ctx->output_mode = PKGCLI_MODE_QUIET;
 	else if (opt_verbose)
-		ctx->output_mode = PKGCTL_MODE_VERBOSE;
+		ctx->output_mode = PKGCLI_MODE_VERBOSE;
 
-	if (ctx->output_mode == PKGCTL_MODE_VERBOSE)
+	if (ctx->output_mode == PKGCLI_MODE_VERBOSE)
 		pk_debug_set_verbose (TRUE);
 
 	/* disable colored output if NO_COLOR is present */

@@ -27,6 +27,6 @@
 
 G_BEGIN_DECLS
 
-void pkgc_register_monitor_commands (PkgctlContext *ctx);
+void pkgc_register_monitor_commands (PkgcliContext *ctx);
 
 G_END_DECLS

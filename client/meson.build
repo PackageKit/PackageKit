@@ -18,9 +18,9 @@ if get_option('offline_update')
 endif
 
 executable(
-  'pkgctl',
+  'pkgcli',
   [
-    'pkgctl.c',
+    'pkgcli.c',
     'pkgc-context.c',
     'pkgc-manage.c',
     'pkgc-monitor.c',
@@ -43,9 +43,9 @@ executable(
 if get_option('man_pages')
   xsltproc = find_program('xsltproc')
   custom_target(
-    'pkgctl.1',
-    input: 'pkgctl.xml',
-    output: 'pkgctl.1',
+    'pkgcli.1',
+    input: 'pkgcli.xml',
+    output: 'pkgcli.1',
     command: [
       xsltproc,
       '--nonet',

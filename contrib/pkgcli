@@ -18,7 +18,7 @@
 #        source ~/.pk-completion.sh
 
 
-__pkgctl_commandlist="
+__pkgcli_commandlist="
     backend
     history
     search
@@ -51,7 +51,7 @@ __pkgctl_commandlist="
     monitor
     "
 
-__pkgctlcomp ()
+__pkgclicomp ()
 {
 	local all c s=$'\n' IFS=' '$'\t'$'\n'
 	local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -69,7 +69,7 @@ __pkgctlcomp ()
 	return
 }
 
-_pkgctl_search ()
+_pkgcli_search ()
 {
 	local i c=1 command
 	while [ $c -lt $COMP_CWORD ]; do
@@ -84,12 +84,12 @@ _pkgctl_search ()
 	done
 
 	if [ $c -eq $COMP_CWORD -a -z "$command" ]; then
-        __pkgctlcomp "name details group file"
+        __pkgclicomp "name details group file"
     fi
     return
 }
 
-_pkgctl ()
+_pkgcli ()
 {
 	local i c=1 command
 
@@ -105,14 +105,14 @@ _pkgctl ()
     if [ $c -eq $COMP_CWORD -a -z "$command" ]; then
 		case "${COMP_WORDS[COMP_CWORD]}" in
 		--*=*) COMPREPLY=() ;;
-		--*)   __pkgctlcomp "
+		--*)   __pkgclicomp "
 			--version
 			--filter
 			--verbose
             --help
 			"
 			;;
-        -*) __pkgctlcomp "
+        -*) __pkgclicomp "
             -v
             -n
             -h
@@ -123,15 +123,15 @@ _pkgctl ()
             --filter
             "
             ;;
-		*)     __pkgctlcomp "$__pkgctl_commandlist" ;;
+		*)     __pkgclicomp "$__pkgcli_commandlist" ;;
 		esac
 		return
 	fi
 
 	case "$command" in
-	search)      _pkgctl_search ;;
+	search)      _pkgcli_search ;;
 	*)           COMPREPLY=() ;;
 	esac
 }
 
-complete -o default -o nospace -F _pkgctl pkgctl
+complete -o default -o nospace -F _pkgcli pkgcli

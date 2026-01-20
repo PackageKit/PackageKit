@@ -28,12 +28,12 @@
 #include "pkgc-monitor.h"
 #include "pkgc-util.h"
 
-static PkgctlContext *g_context = NULL;
+static PkgcliContext *g_context = NULL;
 
 static void
 pkgc_monitor_installed_changed_cb (PkControl *control, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	g_print ("%s%s%s%s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
@@ -44,7 +44,7 @@ pkgc_monitor_installed_changed_cb (PkControl *control, gpointer data)
 static void
 pkgc_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	g_print ("%s%s%s%s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
@@ -55,7 +55,7 @@ pkgc_monitor_repo_list_changed_cb (PkControl *control, gpointer data)
 static void
 pkgc_monitor_updates_changed_cb (PkControl *control, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	g_print ("%s%s%s%s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW),
@@ -66,7 +66,7 @@ pkgc_monitor_updates_changed_cb (PkControl *control, gpointer data)
 static void
 pkgc_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	gboolean connected;
 	const gchar *color;
 
@@ -83,7 +83,7 @@ pkgc_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointe
 static void
 pkgc_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	gboolean locked;
 	const gchar *color;
 	g_object_get (control, "locked", &locked, NULL);
@@ -99,7 +99,7 @@ pkgc_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer d
 static void
 pkgc_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	PkNetworkEnum state;
 	const gchar *color;
 	g_object_get (control, "network-state", &state, NULL);
@@ -133,7 +133,7 @@ pkgc_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar 
 static void
 pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	PkExitEnum exit_enum;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *transaction_id = NULL;
@@ -241,7 +241,7 @@ pkgc_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 static void
 pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	GDBusProxy *bus_proxy = G_DBUS_PROXY (user_data);
 	PkRoleEnum role;
 	PkStatusEnum status;
@@ -342,7 +342,7 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 }
 
 static void
-pkgc_monitor_list_print (PkgctlContext *ctx, PkTransactionList *tlist)
+pkgc_monitor_list_print (PkgcliContext *ctx, PkTransactionList *tlist)
 {
 	g_auto(GStrv) list = NULL;
 
@@ -402,7 +402,7 @@ pkgc_monitor_transaction_list_changed_cb (PkControl *control, gchar **transactio
 static void
 pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	g_print ("\n%s%s▶ Transaction started:%s %s%s%s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN),
@@ -420,7 +420,7 @@ pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *t
 static void
 pkgc_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
 {
-	PkgctlContext *ctx = g_context;
+	PkgcliContext *ctx = g_context;
 	g_print ("%s%s◀ Transaction finished:%s %s%s%s\n\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BLUE),
@@ -443,7 +443,7 @@ pkgc_control_properties_cb (PkControl *control, GAsyncResult *res, gpointer user
  * pkgc_cmd_monitor:
  */
 static int
-pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
+pkgc_cmd_monitor (PkgcliContext *ctx, PkgcliCommand *cmd, int argc, char **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_auto(GStrv) transaction_ids = NULL;
@@ -456,13 +456,13 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		NULL,
-		/* TRANSLATORS: Description for pkgctl monitor */
+		/* TRANSLATORS: Description for pkgcli monitor */
 		_("Monitor PackageKit D-Bus events"));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		pkgc_print_error (ctx, "JSON mode is not supported for 'monitor' command");
 		return PKGC_EXIT_SYNTAX_ERROR;
 	}
@@ -552,12 +552,12 @@ pkgc_cmd_monitor (PkgctlContext *ctx, PkgctlCommand *cmd, int argc, char **argv)
  * pkgc_register_monitor_commands:
  */
 void
-pkgc_register_monitor_commands (PkgctlContext *ctx)
+pkgc_register_monitor_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
 		ctx,
 		"monitor",
 		pkgc_cmd_monitor,
-		/* TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor */
+		/* TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor */
 		_("Monitor PackageKit bus events"));
 }

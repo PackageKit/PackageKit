@@ -56,7 +56,7 @@
  * pkgc_util_setup_proxy:
  */
 gboolean
-pkgc_util_setup_proxy (PkgctlContext *ctx, GError **error)
+pkgc_util_setup_proxy (PkgcliContext *ctx, GError **error)
 {
 	const gchar *http_proxy = NULL;
 	const gchar *ftp_proxy = NULL;
@@ -84,7 +84,7 @@ pkgc_util_setup_proxy (PkgctlContext *ctx, GError **error)
  * pkgc_util_check_connection:
  */
 gboolean
-pkgc_util_check_connection (PkgctlContext *ctx, GError **error)
+pkgc_util_check_connection (PkgcliContext *ctx, GError **error)
 {
 	gboolean connected = FALSE;
 
@@ -166,7 +166,7 @@ pkgc_util_format_time (guint seconds)
  * get_color:
  */
 static const gchar *
-get_color (PkgctlContext *ctx, const gchar *color)
+get_color (PkgcliContext *ctx, const gchar *color)
 {
 	if (ctx->no_color || !ctx->is_tty)
 		return "";
@@ -178,7 +178,7 @@ get_color (PkgctlContext *ctx, const gchar *color)
  * get_reset_color:
  */
 static const gchar *
-get_reset_color (PkgctlContext *ctx)
+get_reset_color (PkgcliContext *ctx)
 {
 	return get_color (ctx, COLOR_RESET);
 }
@@ -189,7 +189,7 @@ get_reset_color (PkgctlContext *ctx)
  * Returns the ANSI color code for a given color.
  */
 const gchar *
-pkgc_get_ansi_color (PkgctlContext *ctx, PkgcColor color)
+pkgc_get_ansi_color (PkgcliContext *ctx, PkgcColor color)
 {
 	switch (color) {
 	case PKGC_COLOR_RESET:
@@ -230,18 +230,18 @@ pkgc_print_json_decref (json_t *root)
 }
 
 static void
-print_colored (PkgctlContext *ctx, const gchar *color, const gchar *format, va_list args)
+print_colored (PkgcliContext *ctx, const gchar *color, const gchar *format, va_list args)
     G_GNUC_PRINTF (3, 0);
 
 /**
  * print_colored:
  */
 static void
-print_colored (PkgctlContext *ctx, const gchar *color, const gchar *format, va_list args)
+print_colored (PkgcliContext *ctx, const gchar *color, const gchar *format, va_list args)
 {
 	g_autofree gchar *message = g_strdup_vprintf (format, args);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		/* JSON output handled separately */
 		return;
 	}
@@ -255,7 +255,7 @@ print_colored (PkgctlContext *ctx, const gchar *color, const gchar *format, va_l
  * Print an error message to stderr, or return it as JSON.
  */
 void
-pkgc_print_error (PkgctlContext *ctx, const gchar *format, ...)
+pkgc_print_error (PkgcliContext *ctx, const gchar *format, ...)
 {
 	va_list args;
 	g_autofree gchar *message = NULL;
@@ -264,7 +264,7 @@ pkgc_print_error (PkgctlContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "error", json_string (message));
 		pkgc_print_json_decref (root);
@@ -282,7 +282,7 @@ pkgc_print_error (PkgctlContext *ctx, const gchar *format, ...)
  * Print a warning message.
  */
 void
-pkgc_print_warning (PkgctlContext *ctx, const gchar *format, ...)
+pkgc_print_warning (PkgcliContext *ctx, const gchar *format, ...)
 {
 	va_list args;
 	g_autofree gchar *message = NULL;
@@ -291,7 +291,7 @@ pkgc_print_warning (PkgctlContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = NULL;
 		root = json_object ();
 		json_object_set_new (root, "warning", json_string (message));
@@ -313,11 +313,11 @@ pkgc_print_warning (PkgctlContext *ctx, const gchar *format, ...)
  * Print an informational message.
  */
 void
-pkgc_print_info (PkgctlContext *ctx, const gchar *format, ...)
+pkgc_print_info (PkgcliContext *ctx, const gchar *format, ...)
 {
 	va_list args;
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = NULL;
 		g_autofree gchar *message = NULL;
 
@@ -343,7 +343,7 @@ pkgc_print_info (PkgctlContext *ctx, const gchar *format, ...)
  * Print a success message, return it as JSON in JSON mode.
  */
 void
-pkgc_print_success (PkgctlContext *ctx, const gchar *format, ...)
+pkgc_print_success (PkgcliContext *ctx, const gchar *format, ...)
 {
 	va_list args;
 	g_autofree gchar *message = NULL;
@@ -352,11 +352,11 @@ pkgc_print_success (PkgctlContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "success", json_string (message));
 		pkgc_print_json_decref (root);
-	} else if (ctx->output_mode != PKGCTL_MODE_QUIET) {
+	} else if (ctx->output_mode != PKGCLI_MODE_QUIET) {
 		g_print ("%s%s%s %s\n",
 			 get_color (ctx, COLOR_GREEN),
 			 SYMBOL_CHECK,
@@ -388,8 +388,8 @@ void pkgc_println (const char* format, ...)
  * Create a GOptionContext for a specific command.
  */
 GOptionContext*
-pkgc_option_context_for_command(PkgctlContext *ctx,
-								PkgctlCommand *cmd,
+pkgc_option_context_for_command(PkgcliContext *ctx,
+								PkgcliCommand *cmd,
 								const gchar *parameter_summary,
 								const gchar *description)
 {
@@ -413,8 +413,8 @@ pkgc_option_context_for_command(PkgctlContext *ctx,
  * Parse command options and check for minimum argument count.
  */
 gboolean
-pkgc_parse_command_options(PkgctlContext	*ctx,
-						   PkgctlCommand	*cmd,
+pkgc_parse_command_options(PkgcliContext	*ctx,
+						   PkgcliCommand	*cmd,
 						   GOptionContext	*option_context,
 						   gint				*argc,
 						   gchar			***argv,
@@ -423,14 +423,14 @@ pkgc_parse_command_options(PkgctlContext	*ctx,
 	g_autoptr(GError) error = NULL;
 
 	if (!g_option_context_parse (option_context, argc, argv, &error)) {
-		/* TRANSLATORS: Failed to parse command-line options in pkgctl */
+		/* TRANSLATORS: Failed to parse command-line options in pkgcli */
 		pkgc_print_error (ctx, _("Failed to parse options: %s"), error->message);
 		return FALSE;
 	}
 
 	if (*argc < min_arg_count) {
-		/* TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters */
-		pkgc_print_error (ctx, _("Usage: %s %s %s"), "pkgctl", cmd->name, cmd->param_summary);
+		/* TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters */
+		pkgc_print_error (ctx, _("Usage: %s %s %s"), "pkgcli", cmd->name, cmd->param_summary);
 		return FALSE;
 	}
 
@@ -443,7 +443,7 @@ pkgc_parse_command_options(PkgctlContext	*ctx,
  * Check if a package name refers to a local package file.
  */
 gboolean
-pkgc_is_local_package(const gchar *package_name)
+pkgc_is_local_package (const gchar *package_name)
 {
 	/* without dot there is no file-extension, so the package cannot be local */
 	if (g_strstr_len (package_name, -1, ".") == NULL)
@@ -464,7 +464,7 @@ pkgc_is_local_package(const gchar *package_name)
  * Print package information based on the output mode.
  */
 void
-pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
+pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 {
 	const gchar *package_id;
 	PkInfoEnum info;
@@ -526,7 +526,7 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
 		break;
 	}
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "name", json_string (name));
 		json_object_set_new (root, "version", json_string (version));
@@ -575,7 +575,7 @@ pkgc_print_package (PkgctlContext *ctx, PkPackage *package)
  * Print detailed package information based on the output mode.
  */
 void
-pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details)
+pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 {
 	const gchar *package_id = NULL;
 	const gchar *summary = NULL;
@@ -605,7 +605,7 @@ pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details)
 	if (split == NULL)
 		return;
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "name", json_string (split[PK_PACKAGE_ID_NAME]));
 		json_object_set_new (root, "version", json_string (split[PK_PACKAGE_ID_VERSION]));
@@ -691,7 +691,7 @@ pkgc_print_package_detail (PkgctlContext *ctx, PkDetails *details)
  * Print detailed update information based on the output mode.
  */
 void
-pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update)
+pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 {
 	PkRestartEnum restart;
 	PkUpdateStateEnum state;
@@ -741,7 +741,7 @@ pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update)
 
 	package = pk_package_id_to_printable (package_id);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "package", json_string (package));
 
@@ -879,7 +879,7 @@ pkgc_print_update_detail (PkgctlContext *ctx, PkUpdateDetail *update)
  * Print repository information based on the output mode.
  */
 void
-pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo)
+pkgc_print_repo (PkgcliContext *ctx, PkRepoDetail *repo)
 {
 	const gchar *repo_id;
 	const gchar *description;
@@ -897,7 +897,7 @@ pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo)
 		      &enabled,
 		      NULL);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "id", json_string (repo_id));
 		json_object_set_new (root,
@@ -926,7 +926,7 @@ pkgc_print_repo (PkgctlContext *ctx, PkRepoDetail *repo)
  * Print transaction information based on the output mode.
  */
 void
-pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction)
+pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 {
 	PkRoleEnum role;
 	const gchar *role_text;
@@ -966,7 +966,7 @@ pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction)
 
 	role_text = pk_role_enum_to_string (role);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "tid", json_string (tid));
 		json_object_set_new (root, "role", json_string (role_text));
@@ -1090,7 +1090,7 @@ pkgc_print_transaction (PkgctlContext *ctx, PkTransactionPast *transaction)
  * Returns: (transfer full): the resolved package_id, or %NULL on error
  */
 gchar *
-pkgc_resolve_package (PkgctlContext *ctx,
+pkgc_resolve_package (PkgcliContext *ctx,
 		      PkBitfield filters,
 		      const gchar *package_name,
 		      GError **error)
@@ -1197,7 +1197,7 @@ pkgc_resolve_package (PkgctlContext *ctx,
  * Returns: (transfer full): array of resolved package_ids, or %NULL on error
  */
 gchar **
-pkgc_resolve_packages (PkgctlContext *ctx, PkBitfield filters, gchar **packages, GError **error)
+pkgc_resolve_packages (PkgcliContext *ctx, PkBitfield filters, gchar **packages, GError **error)
 {
 	guint len;
 	gchar *package_id;

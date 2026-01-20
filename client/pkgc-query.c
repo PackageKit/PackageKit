@@ -34,7 +34,7 @@
 static void
 pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	PkgctlContext *ctx = user_data;
+	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) array = NULL;
@@ -80,7 +80,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 		package_id = pk_files_get_package_id (files);
 		filelist = pk_files_get_files (files);
 
-		if (ctx->output_mode == PKGCTL_MODE_JSON) {
+		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			json_t *root;
 			json_t *files_array;
 
@@ -111,7 +111,7 @@ out:
 static void
 pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	PkgctlContext *ctx = user_data;
+	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 
@@ -149,7 +149,7 @@ out:
  * Show system status.
  */
 static gint
-pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_autofree gchar *backend_name = NULL;
@@ -162,7 +162,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		NULL,
-		/* TRANSLATORS: Description for pkgctl backend */
+		/* TRANSLATORS: Description for pkgcli backend */
 		_("Show PackageKit backend information."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -181,7 +181,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 
 	roles_str = pk_role_bitfield_to_string (roles);
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root;
 		json_t *backend_obj;
 
@@ -232,7 +232,7 @@ pkgc_backend_info (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
  * Print transaction history.
  */
 static gint
-pkgc_history (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	guint limit = 10;
@@ -241,7 +241,7 @@ pkgc_history (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"[LIMIT]",
-		/* TRANSLATORS: Description for pkgctl history */
+		/* TRANSLATORS: Description for pkgcli history */
 		_("Show recent package management transactions."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -271,7 +271,7 @@ pkgc_history (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
  * pkgc_query_search:
  */
 static gint
-pkgc_query_search (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	const gchar *search_mode = "details";
 	const gchar **search_terms;
@@ -280,7 +280,7 @@ pkgc_query_search (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
-	/* TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated! */
+	/* TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated! */
 	cmd_description = _("Search for packages matching the given patterns. If MODE is not specified, \n"
 						"'details' search is performed.\n"
 						"Possible search MODEs are:\n"
@@ -359,7 +359,7 @@ pkgc_query_search (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **ar
  * pkgc_query_list:
  */
 static gint
-pkgc_query_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_list (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -367,7 +367,7 @@ pkgc_query_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"[PATTERN]",
-		/* TRANSLATORS: Description for pkgctl list */
+		/* TRANSLATORS: Description for pkgcli list */
 		_("List all packages or those matching a pattern."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -401,7 +401,7 @@ pkgc_query_list (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
  * pkgc_query_show:
  */
 static gint
-pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_show (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_auto(GStrv) package_ids = NULL;
@@ -411,7 +411,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl show */
+		/* TRANSLATORS: Description for pkgcli show */
 		_("Show information about one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -459,7 +459,7 @@ pkgc_query_show (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv
  * Display which other packages this package depends on.
  */
 static gint
-pkgc_query_depends_on (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_depends_on (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean recursive = FALSE;
 	g_auto(GStrv) package_ids = NULL;
@@ -476,7 +476,7 @@ pkgc_query_depends_on (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar 
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl depends-on */
+		/* TRANSLATORS: Description for pkgcli depends-on */
 		_("Show dependencies for one or more packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
@@ -508,7 +508,7 @@ pkgc_query_depends_on (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar 
  * pkgc_query_what_provides:
  */
 static gint
-pkgc_query_what_provides (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_what_provides (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -516,7 +516,7 @@ pkgc_query_what_provides (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"CAPABILITY...",
-		/* TRANSLATORS: Description for pkgctl what-provides */
+		/* TRANSLATORS: Description for pkgcli what-provides */
 		_("Show which packages provide the specified capability."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -538,7 +538,7 @@ pkgc_query_what_provides (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
  * pkgc_query_files:
  */
 static gint
-pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_files (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_autoptr(GError) error = NULL;
@@ -547,7 +547,7 @@ pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl files */
+		/* TRANSLATORS: Description for pkgcli files */
 		_("List all files contained in one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -591,7 +591,7 @@ pkgc_query_files (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **arg
 static void
 pkgc_on_updates_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	PkgctlContext *ctx = user_data;
+	PkgcliContext *ctx = user_data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
 
@@ -634,7 +634,7 @@ pkgc_on_updates_finished_cb (GObject *source_object, GAsyncResult *res, gpointer
  * pkgc_updates_list_updates:
  */
 static gint
-pkgc_updates_list_updates (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_updates_list_updates (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -642,7 +642,7 @@ pkgc_updates_list_updates (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gc
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		NULL,
-		/* TRANSLATORS: Description for pkgctl list-updates */
+		/* TRANSLATORS: Description for pkgcli list-updates */
 		_("List all currently available package updates."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -664,7 +664,7 @@ pkgc_updates_list_updates (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gc
  * pkgc_updates_show_update:
  */
 static gint
-pkgc_updates_show_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_updates_show_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_auto(GStrv) package_ids = NULL;
@@ -674,7 +674,7 @@ pkgc_updates_show_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl show-update */
+		/* TRANSLATORS: Description for pkgcli show-update */
 		_("Show detailed information about the specified package update."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -703,7 +703,7 @@ pkgc_updates_show_update (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gch
  * pkgc_query_resolve:
  */
 static gint
-pkgc_query_resolve (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_resolve (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	PkBitfield filters;
@@ -712,7 +712,7 @@ pkgc_query_resolve (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **a
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl resolve */
+		/* TRANSLATORS: Description for pkgcli resolve */
 		_("Resolve package names to package IDs."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -738,7 +738,7 @@ pkgc_query_resolve (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **a
  * pkgc_query_required_by:
  */
 static gint
-pkgc_query_required_by (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_required_by (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	gboolean recursive = FALSE;
 	g_auto(GStrv) package_ids = NULL;
@@ -755,7 +755,7 @@ pkgc_query_required_by (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgctl required-by */
+		/* TRANSLATORS: Description for pkgcli required-by */
 		_("Show which packages require the specified packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
@@ -788,7 +788,7 @@ pkgc_query_required_by (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar
  * pkgc_query_organization:
  */
 static gint
-pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_autofree gchar *text = NULL;
@@ -798,7 +798,7 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		NULL,
-		/* TRANSLATORS: Description for pkgctl organization */
+		/* TRANSLATORS: Description for pkgcli organization */
 		_("List all available filters, groups and categories for package organization."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -854,7 +854,7 @@ pkgc_query_organization (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gcha
  * pkgc_query_show_os_upgrade:
  */
 static gint
-pkgc_query_show_os_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_show_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 
@@ -862,7 +862,7 @@ pkgc_query_show_os_upgrade (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, g
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		NULL,
-		/* TRANSLATORS: Description for pkgctl show-distro-upgrade */
+		/* TRANSLATORS: Description for pkgcli show-distro-upgrade */
 		_("Show distribution version upgrades, if any are available."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -886,7 +886,7 @@ static void
 pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	guint time_s;
-	PkgctlContext *ctx = (PkgctlContext *) data;
+	PkgcliContext *ctx = (PkgcliContext *) data;
 	g_autoptr(GError) error = NULL;
 
 	/* get the results */
@@ -898,7 +898,7 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 		goto out;
 	}
 
-	if (ctx->output_mode == PKGCTL_MODE_JSON) {
+	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root;
 
 		root = json_object ();
@@ -920,7 +920,7 @@ out:
  * Get time since last action.
  */
 static gint
-pkgc_query_last_time (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv)
+pkgc_query_last_time (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 {
 	g_autoptr(GOptionContext) option_context = NULL;
 	const gchar *value = NULL;
@@ -930,7 +930,7 @@ pkgc_query_last_time (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar *
 	option_context = pkgc_option_context_for_command (
 		ctx, cmd,
 		"[ROLE]",
-		/* TRANSLATORS: Description for pkgctl last-time */
+		/* TRANSLATORS: Description for pkgcli last-time */
 		_("Get time in seconds since the last specified action."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -964,7 +964,7 @@ pkgc_query_last_time (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar *
  * pkgc_register_query_commands:
  */
 void
-pkgc_register_query_commands (PkgctlContext *ctx)
+pkgc_register_query_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
 		ctx,

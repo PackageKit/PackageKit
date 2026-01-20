@@ -7,7 +7,7 @@ client/pkgc-monitor.c
 client/pkgc-query.c
 client/pkgc-repo.c
 client/pkgc-util.c
-client/pkgctl.c
+client/pkgcli.c
 client/pkcon/pk-console.c
 client/pkcon/pk-monitor.c
 client/pk-offline-update.c

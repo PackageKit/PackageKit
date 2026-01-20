@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <refentry xmlns="http://docbook.org/ns/docbook" version="5.0">
   <info>
-    <title>pkgctl</title>
+    <title>pkgcli</title>
     <productname>PackageKit</productname>
     <author>
       <personname>
@@ -20,23 +20,23 @@
       <contrib>Developer</contrib>
     </author>
     <copyright>
-      <year>2012-2025</year>
+      <year>2012-2026</year>
       <holder>Matthias Klumpp</holder>
     </copyright>
     <date>26. November 2025</date>
   </info>
   <refmeta>
-    <refentrytitle>pkgctl</refentrytitle>
+    <refentrytitle>pkgcli</refentrytitle>
     <manvolnum>1</manvolnum>
   </refmeta>
   <refnamediv>
-    <refname>pkgctl</refname>
+    <refname>pkgcli</refname>
     <refpurpose>command-line client for PackageKit</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>pkgctl</command>
+      <command>pkgcli</command>
       <arg choice="opt" rep="repeat"><option>GLOBAL-OPTIONS</option></arg>
       <arg choice="plain"><replaceable>COMMAND</replaceable></arg>
       <arg choice="opt" rep="repeat"><option>COMMAND-OPTIONS</option></arg>
@@ -47,15 +47,15 @@
   <refsect1>
     <title>DESCRIPTION</title>
     <para>
-      <command>pkgctl</command> is a command line client for PackageKit, a
+      <command>pkgcli</command> is a command line client for PackageKit, a
       distribution-neutral interface to the operating system's package manager.
       It provides a set of subcommands for querying and managing software
       packages, repositories and transaction history.
     </para>
     <para>
-      Use <command>pkgctl</command> <option>--help</option> to get a list
+      Use <command>pkgcli</command> <option>--help</option> to get a list
       of available commands, and
-      <command>pkgctl</command> <replaceable>COMMAND</replaceable>
+      <command>pkgcli</command> <replaceable>COMMAND</replaceable>
       <option>--help</option> for command-specific help.
     </para>
   </refsect1>
@@ -70,7 +70,7 @@
       <varlistentry>
         <term><option>-v</option>, <option>--version</option></term>
         <listitem>
-          <para>Show the <command>pkgctl</command> version and exit.</para>
+          <para>Show the <command>pkgcli</command> version and exit.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -126,7 +126,7 @@
             Apply one or more filters when querying  packages, such as
             restricting results to installed or  available packages.
             You can view all supported filter options by running
-            <command>pkgctl organization</command>.
+            <command>pkgcli organization</command>.
           </para>
         </listitem>
       </varlistentry>
@@ -431,7 +431,7 @@
       </varlistentry>
     </variablelist>
     <para>
-      Use <command>pkgctl</command> <replaceable>COMMAND</replaceable>
+      Use <command>pkgcli</command> <replaceable>COMMAND</replaceable>
       <option>--help</option> for detailed usage information
       including supported options and arguments for each command.
     </para>
@@ -440,7 +440,7 @@
   <refsect1>
     <title>EXIT STATUS</title>
     <para>
-      The following exit codes are used by <command>pkgctl</command>:
+      The following exit codes are used by <command>pkgcli</command>:
     </para>
     <variablelist>
       <varlistentry>
@@ -518,7 +518,7 @@
         <term>Search for packages related to text editors</term>
         <listitem>
           <para>
-            <command>pkgctl search editor</command>
+            <command>pkgcli search editor</command>
           </para>
         </listitem>
       </varlistentry>
@@ -526,7 +526,7 @@
         <term>Search only in package names</term>
         <listitem>
           <para>
-            <command>pkgctl search name python3</command>
+            <command>pkgcli search name python3</command>
           </para>
         </listitem>
       </varlistentry>
@@ -534,7 +534,7 @@
         <term>Show detailed information about a package</term>
         <listitem>
           <para>
-            <command>pkgctl show nano</command>
+            <command>pkgcli show nano</command>
           </para>
         </listitem>
       </varlistentry>
@@ -542,7 +542,7 @@
         <term>Install a package non-interactively</term>
         <listitem>
           <para>
-            <command>pkgctl --yes install nano</command>
+            <command>pkgcli --yes install nano</command>
           </para>
         </listitem>
       </varlistentry>
@@ -550,7 +550,7 @@
         <term>List all installed packages</term>
         <listitem>
           <para>
-            <command>pkgctl --filter=installed list</command>
+            <command>pkgcli --filter=installed list</command>
           </para>
         </listitem>
       </varlistentry>
@@ -558,7 +558,7 @@
         <term>Check for available updates</term>
         <listitem>
           <para>
-            <command>pkgctl refresh &amp;&amp; pkgctl list-updates</command>
+            <command>pkgcli refresh &amp;&amp; pkgcli list-updates</command>
           </para>
         </listitem>
       </varlistentry>
@@ -566,7 +566,7 @@
         <term>List dependencies of a package</term>
         <listitem>
           <para>
-            <command>pkgctl list-depends inkscape</command>
+            <command>pkgcli list-depends inkscape</command>
           </para>
         </listitem>
       </varlistentry>
@@ -574,7 +574,7 @@
         <term>Find which package provides the AV1 GStreamer codec</term>
         <listitem>
           <para>
-            <command>pkgctl what-provides "gstreamer1(decoder-video/x-av1)"</command>
+            <command>pkgcli what-provides "gstreamer1(decoder-video/x-av1)"</command>
           </para>
         </listitem>
       </varlistentry>

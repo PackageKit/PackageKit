@@ -219,7 +219,7 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %dir %{_localstatedir}/cache/app-info/icons
 %dir %{_localstatedir}/cache/app-info/xmls
 %dir %{_localstatedir}/cache/PackageKit
-%{_datadir}/bash-completion/completions/pkgctl
+%{_datadir}/bash-completion/completions/pkgcli
 %{_datadir}/bash-completion/completions/pkcon
 %dir %{_libdir}/packagekit-backend
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
@@ -235,7 +235,7 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_libexecdir}/packagekit-direct
 %{_bindir}/pkmon
 %{_bindir}/pkcon
-%{_bindir}/pkgctl
+%{_bindir}/pkgcli
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
 %{_libdir}/packagekit-backend/libpk_backend_test_*.so

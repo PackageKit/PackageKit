@@ -41,22 +41,22 @@ G_BEGIN_DECLS
 
 /**
  * OutputMode:
- * @PKGCTL_MODE_NORMAL: Normal output mode
- * @PKGCTL_MODE_QUIET: Minimal output
- * @PKGCTL_MODE_JSON: Output in JSON format
- * @PKGCTL_MODE_VERBOSE: Verbose output
+ * @PKGCLI_MODE_NORMAL:		Normal output mode
+ * @PKGCLI_MODE_QUIET:		Minimal output
+ * @PKGCLI_MODE_JSON:		Output in JSON format
+ * @PKGCLI_MODE_VERBOSE:	Verbose output
  */
 typedef enum {
-	PKGCTL_MODE_NORMAL,
-	PKGCTL_MODE_QUIET,
-	PKGCTL_MODE_JSON,
-	PKGCTL_MODE_VERBOSE
-} PkgctlMode;
+	PKGCLI_MODE_NORMAL,
+	PKGCLI_MODE_QUIET,
+	PKGCLI_MODE_JSON,
+	PKGCLI_MODE_VERBOSE
+} PkgcliMode;
 
 /**
  * PkgctlContext:
  *
- * Context structure for pkgctl
+ * Context structure for pkgcli
  */
 typedef struct {
 	PkControl     *control;
@@ -72,7 +72,7 @@ typedef struct {
 	gboolean       is_tty;
 
 	/* Global Options */
-	PkgctlMode     output_mode;
+	PkgcliMode     output_mode;
 	gboolean       no_color;
 	gboolean       noninteractive;
 	gboolean       only_download;
@@ -88,37 +88,42 @@ typedef struct {
 	gint	       exit_code;
 	gboolean       transaction_running;
 
-} PkgctlContext;
+} PkgcliContext;
 
 /**
  * PkgctlCommand:
  *
- * Structure defining a pkgctl command
+ * Structure defining a pkgcli command
  */
-typedef struct PkgctlCommand PkgctlCommand;
-struct PkgctlCommand {
+typedef struct PkgcliCommand PkgcliCommand;
+struct PkgcliCommand {
 	gchar *name;
 	gchar *summary;
 	gchar *param_summary;
 
-	gint (*handler) (PkgctlContext *ctx,
-					 PkgctlCommand *cmd,
+	gint (*handler) (PkgcliContext *ctx,
+					 PkgcliCommand *cmd,
 					 gint argc,
 					 gchar **argv);
 };
 
 GQuark			 pkgc_error_quark (void);
-PkgctlContext	    *pkgc_context_new (void);
-void		     pkgc_context_free (PkgctlContext *ctx);
-gboolean	     pkgc_context_init (PkgctlContext *ctx, GError **error);
-void		     pkgc_context_apply_settings (PkgctlContext *ctx);
+PkgcliContext	    *pkgc_context_new (void);
+void		     pkgc_context_free (PkgcliContext *ctx);
+gboolean	     pkgc_context_init (PkgcliContext *ctx, GError **error);
+void		     pkgc_context_apply_settings (PkgcliContext *ctx);
 
-void		     pkgc_context_register_command (PkgctlContext *ctx,
+void		     pkgc_context_register_command (PkgcliContext *ctx,
 						    const gchar	  *name,
-						    gint (*handler) (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv),
+						    gint (*handler) (PkgcliContext *ctx,
+						    				 PkgcliCommand *cmd,
+						    				 gint argc,
+						    				 gchar **argv),
 						    const gchar *summary);
-PkgctlCommand	*pkgc_context_find_command (PkgctlContext *ctx, const char *name);
+PkgcliCommand	*pkgc_context_find_command (PkgcliContext *ctx, const char *name);
 
-void pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data);
+void			pkgc_context_on_progress_cb (PkProgress *progress,
+											 PkProgressType type,
+											 gpointer user_data);
 
 G_END_DECLS

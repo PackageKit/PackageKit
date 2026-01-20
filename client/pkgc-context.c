@@ -31,19 +31,19 @@
 /**
  * pkgc_error_quark:
  *
- * An error quark for pkgctl.
+ * An error quark for pkgcli.
  *
  * Return value: an error quark.
  **/
 G_DEFINE_QUARK (pkgc-error-quark, pkgc_error)
 
 /**
- * pkgctl_command_free:
+ * pkgc_command_free:
  */
 static void
-pkgctl_command_free (gpointer data)
+pkgc_command_free (gpointer data)
 {
-	PkgctlCommand *cmd = data;
+	PkgcliCommand *cmd = data;
 	if (cmd == NULL)
 		return;
 
@@ -60,20 +60,20 @@ pkgctl_command_free (gpointer data)
  *
  * Returns: (transfer full): a new #PkgctlContext
  */
-PkgctlContext *
+PkgcliContext *
 pkgc_context_new (void)
 {
-	PkgctlContext *ctx = g_new0 (PkgctlContext, 1);
+	PkgcliContext *ctx = g_new0 (PkgcliContext, 1);
 
 	ctx->cache_age = -1; /* use default cache age */
-	ctx->output_mode = PKGCTL_MODE_NORMAL;
+	ctx->output_mode = PKGCLI_MODE_NORMAL;
 	ctx->exit_code = PKGC_EXIT_SUCCESS;
 	ctx->is_tty = isatty (fileno (stdout));
 
 	ctx->loop = g_main_loop_new (NULL, FALSE);
 	ctx->cancellable = g_cancellable_new ();
 
-	ctx->commands = g_ptr_array_new_with_free_func (pkgctl_command_free);
+	ctx->commands = g_ptr_array_new_with_free_func (pkgc_command_free);
 
 	/* assume arch filter and newest packages by default */
 	pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_ARCH);
@@ -89,7 +89,7 @@ pkgc_context_new (void)
  * Free a #PkgctlContext and all its associated resources.
  */
 void
-pkgc_context_free (PkgctlContext *ctx)
+pkgc_context_free (PkgcliContext *ctx)
 {
 	if (ctx == NULL)
 		return;
@@ -119,7 +119,7 @@ pkgc_context_free (PkgctlContext *ctx)
 static void
 pkgc_context_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointer data)
 {
-	PkgctlContext *ctx = (PkgctlContext *) data;
+	PkgcliContext *ctx = (PkgcliContext *) data;
 	gboolean connected;
 
 	/* if the daemon crashed, don't hang around */
@@ -145,7 +145,7 @@ pkgc_context_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointe
  * Returns: %TRUE on success
  */
 gboolean
-pkgc_context_init (PkgctlContext *ctx, GError **error)
+pkgc_context_init (PkgcliContext *ctx, GError **error)
 {
 	struct winsize w;
 	int bar_size = 34;
@@ -157,8 +157,8 @@ pkgc_context_init (PkgctlContext *ctx, GError **error)
 
 	/* create progress bar for TTY */
 	g_clear_object (&ctx->progressbar);
-	if (ctx->is_tty && ctx->output_mode != PKGCTL_MODE_JSON &&
-		ctx->output_mode != PKGCTL_MODE_QUIET) {
+	if (ctx->is_tty && ctx->output_mode != PKGCLI_MODE_JSON &&
+		ctx->output_mode != PKGCLI_MODE_QUIET) {
 		/* adjust progress bar size for small terminals */
 		if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
 			int col_diff = (int) w.ws_col - 52;
@@ -170,7 +170,7 @@ pkgc_context_init (PkgctlContext *ctx, GError **error)
 
 		/* unless we are verbose, we just use one progress bar and update it many times */
 		pk_progress_bar_set_allow_restart (ctx->progressbar,
-			ctx->output_mode != PKGCTL_MODE_VERBOSE);
+			ctx->output_mode != PKGCLI_MODE_VERBOSE);
 	}
 
 	/* create control object */
@@ -206,7 +206,7 @@ pkgc_context_init (PkgctlContext *ctx, GError **error)
  * #PkTaskText.
  */
 void
-pkgc_context_apply_settings (PkgctlContext *ctx)
+pkgc_context_apply_settings (PkgcliContext *ctx)
 {
 	gboolean do_simulate;
 
@@ -241,14 +241,14 @@ pkgc_context_apply_settings (PkgctlContext *ctx)
  * Register a command in the given #PkgctlContext.
  */
 void
-pkgc_context_register_command (PkgctlContext *ctx,
+pkgc_context_register_command (PkgcliContext *ctx,
 							   const gchar *name,
-							   gint (*handler) (PkgctlContext *ctx, PkgctlCommand *cmd, gint argc, gchar **argv),
+							   gint (*handler) (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv),
 							   const gchar *summary)
 {
-	PkgctlCommand *cmd;
+	PkgcliCommand *cmd;
 
-	cmd = g_new0 (PkgctlCommand, 1);
+	cmd = g_new0 (PkgcliCommand, 1);
 	cmd->name = g_strdup (name);
 	cmd->handler = handler;
 	cmd->summary = g_strdup (summary);
@@ -265,14 +265,14 @@ pkgc_context_register_command (PkgctlContext *ctx,
  *
  * Returns: (transfer none): a pointer to the #PkgctlCommand, or %NULL if not found
  */
-PkgctlCommand *
-pkgc_context_find_command (PkgctlContext *ctx, const char *name)
+PkgcliCommand *
+pkgc_context_find_command (PkgcliContext *ctx, const char *name)
 {
 	if (!name)
 		return NULL;
 
 	for (guint i = 0; i < ctx->commands->len; i++) {
-		PkgctlCommand *cmd = g_ptr_array_index (ctx->commands, i);
+		PkgcliCommand *cmd = g_ptr_array_index (ctx->commands, i);
 		if (g_strcmp0 (cmd->name, name) == 0)
 			return cmd;
 	}
@@ -291,14 +291,14 @@ pkgc_context_find_command (PkgctlContext *ctx, const char *name)
 void
 pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer user_data)
 {
-	PkgctlContext *ctx = user_data;
+	PkgcliContext *ctx = user_data;
 	gint percentage;
 	PkStatusEnum status;
 	PkRoleEnum role;
 	guint64 transaction_flags;
 
-	if (ctx->progressbar == NULL || ctx->output_mode == PKGCTL_MODE_JSON ||
-	    ctx->output_mode == PKGCTL_MODE_QUIET)
+	if (ctx->progressbar == NULL || ctx->output_mode == PKGCLI_MODE_JSON ||
+	    ctx->output_mode == PKGCLI_MODE_QUIET)
 		return;
 
 	/* role */
