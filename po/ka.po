@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-01 16:38+0100\n"
+"POT-Creation-Date: 2026-01-20 14:52+0100\n"
 "PO-Revision-Date: 2026-01-02 17:01+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/packagekit/translations/ka/>\n"
@@ -73,7 +73,7 @@ msgstr "მაქსიმალური მეტამონაცემე�
 msgid "SECONDS"
 msgstr "წამი"
 
-#. TRANSLATORS: Description for pkgctl refresh
+#. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
 msgstr "პაკეტის მეტამონაცემების კეშის განახლება."
@@ -82,7 +82,7 @@ msgstr "პაკეტის მეტამონაცემების კ�
 msgid "Package metadata refreshed"
 msgstr "პაკეტის მეტამონაცემები განახლდა"
 
-#. TRANSLATORS: Description for pkgctl install
+#. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
 msgstr "ერთი, ან მეტი პაკეტის, ან ლოკალური პაკეტის ფაილების დაყენება."
@@ -90,62 +90,62 @@ msgstr "ერთი, ან მეტი პაკეტის, ან ლო�
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:308 client/pkgc-manage.c:321
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "ხელმისაწვდომი პაკეტები აღმოჩენილი არაა: %s"
 
-#: client/pkgc-manage.c:326
+#: client/pkgc-manage.c:325
 msgid "The selected package is already installed."
 msgstr "არჩეული პაკეტი უკვე დაყენებულია."
 
-#. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:366
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
 msgid "Remove one or more packages from the system."
 msgstr "ერთი ან მეტი პაკეტის წაშლა სისტემიდან."
 
-#: client/pkgc-manage.c:383
+#: client/pkgc-manage.c:382
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "დაყენებული პაკეტების აღმოჩენა შეუძლებელია: %s"
 
-#. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:423
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
 msgid "Download packages to the specified directory without installing."
 msgstr "პაკეტების გადმოწერა მითითებულ საქაღალდეში, დაყენების გარეშე."
 
-#: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "ვერ ვიპოვე პაკეტები: %s"
 
-#: client/pkgc-manage.c:445
+#: client/pkgc-manage.c:444
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "საქაღალდე არ არსებობს: %s"
 
-#. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:488
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "ყველა, ან მითითებული პაკეტების განახლება უკანასკნელ ვერსიამდე."
 
-#: client/pkgc-manage.c:511
+#: client/pkgc-manage.c:510
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "განახლებისთვის პაკეტები აღმოჩენილი არაა: %s"
 
-#: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "განახლებების მიღების შეცდომა: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 msgid "No packages require updating"
 msgstr "პაკეტებს განახლება არ სჭირდებათ"
 
-#. TRANSLATORS: Description of pkgctl upgrade.
+#. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:591
+#: client/pkgc-manage.c:590
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -155,64 +155,64 @@ msgstr ""
 "\n"
 "ტიპები: minimal, default, complete"
 
-#: client/pkgc-manage.c:687
+#: client/pkgc-manage.c:686
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "ინტერნეტგარეშე განახლების ქმედების წაკითხვა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:697
+#: client/pkgc-manage.c:696
 msgid "Offline update is not triggered."
 msgstr "ინტერნეტგარეშე განახლება დატრიგერებული არაა."
 
-#: client/pkgc-manage.c:705
+#: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "დატრიგერებულია ინტერნეტგარეშე განახლება. ქმედება განახლების შემდეგ: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:716
+#: client/pkgc-manage.c:715
 msgid "Prepared packages:"
 msgstr "მომზადებული პაკეტები:"
 
-#: client/pkgc-manage.c:730
+#: client/pkgc-manage.c:729
 msgid "No offline update is prepared."
 msgstr "ინტერნეტგარეშე განახლება მომზადებული არაა."
 
-#: client/pkgc-manage.c:732
+#: client/pkgc-manage.c:731
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "მომზადებული ინტერნეტგარეშე განახლებების წაკითხვა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:742
+#: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
 msgstr "ბოლო ინტერნეტგარეშე განახლებიდან შედეგები ხელმისაწვდომი არაა."
 
-#: client/pkgc-manage.c:749
+#: client/pkgc-manage.c:748
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "ბოლო ინტერნეტგარეშე განახლება ჩავარდა: %s: %s"
 
-#: client/pkgc-manage.c:756
+#: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
 msgstr "ბოლო ინტერნეტგარეშე განახლება წარმატებით დასრულდა"
 
-#: client/pkgc-manage.c:767
+#: client/pkgc-manage.c:766
 #, c-format
 msgid "Updated: %s"
 msgstr "განახლდა: %s"
 
-#: client/pkgc-manage.c:788
+#: client/pkgc-manage.c:787
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "ინტერნეტგარეშე განახლების დატრიგერების შეცდომა: %s"
 
-#: client/pkgc-manage.c:792
+#: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "ინტერნეტგარეშე განახლება დაგეგმილია. სისტემა შემდეგი გადატვირთვისას განახლდება."
 
-#. TRANSLATORS: Description of the pkgctl offline-update command.
+#. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:812
+#: client/pkgc-manage.c:811
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -230,81 +230,81 @@ msgstr ""
 "  cancel  - დაგეგმილი ინტერნეტგარესე განახლების გაუქმება\n"
 "  status  - სტატუსის ინფორმაციის ჩვენება დაგეგმილი, ან დასრულებული ინტერნეტგარეშე განახლების შესახებ"
 
-#: client/pkgc-manage.c:836
+#: client/pkgc-manage.c:835
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "ინტერნეტგარეშე განახლების გაუქმების შეცდომა: %s"
 
-#: client/pkgc-manage.c:840
+#: client/pkgc-manage.c:839
 msgid "Offline update cancelled"
 msgstr "ინტერნეტგარეშე განახლება გაუქმდა"
 
-#: client/pkgc-manage.c:897
+#: client/pkgc-manage.c:896
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "უცნობი ინტერნეტგარეშე განახლების მოთხოვნა: %s"
 
-#. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:917
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
 msgid "Install a package signature for GPG verification."
 msgstr "პაკეტის ხელმოწერის დაყენება GPG-ით გადასამოწმებლად."
 
-#. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:952
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
 msgid "Attempt to repair the package management system."
 msgstr "პაკეტების მართვის სისტემის შეკეთების ცდა."
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:967
 msgid "System repaired successfully"
 msgstr "სისტემის რემონტი წარმატებულია"
 
-#. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:989
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
 msgid "Safely terminate the PackageKit daemon."
 msgstr "PackageKit-ის დემონის უსაფრთხო გათიშვა."
 
-#: client/pkgc-manage.c:995
+#: client/pkgc-manage.c:994
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "დემონისთვის გასვლის მოთხოვნის გაგზავნა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:1014
+#: client/pkgc-manage.c:1013
 msgid "Refresh package metadata"
 msgstr "პაკეტის მეტამონაცემების განახლება"
 
-#: client/pkgc-manage.c:1020
+#: client/pkgc-manage.c:1019
 msgid "Install packages"
 msgstr "პაკეტების დაყენება"
 
-#: client/pkgc-manage.c:1026
+#: client/pkgc-manage.c:1025
 msgid "Remove packages"
 msgstr "პაკეტების წაშლა"
 
-#: client/pkgc-manage.c:1032
+#: client/pkgc-manage.c:1031
 msgid "Update packages"
 msgstr "პაკეტების განახლება"
 
-#: client/pkgc-manage.c:1038
+#: client/pkgc-manage.c:1037
 msgid "Upgrade the system"
 msgstr "სისტემის ვერსიის აწევა"
 
-#: client/pkgc-manage.c:1044
+#: client/pkgc-manage.c:1043
 msgid "Download packages"
 msgstr "პაკეტების გადმოწერა"
 
-#: client/pkgc-manage.c:1050
+#: client/pkgc-manage.c:1049
 msgid "Manage offline system updates"
 msgstr "სისტემის ინტერნეტგარეშე განახლებების მართვა"
 
-#: client/pkgc-manage.c:1056
+#: client/pkgc-manage.c:1055
 msgid "Install package signature"
 msgstr "პაკეტის ხელმოწერის დაყენება"
 
-#: client/pkgc-manage.c:1062
+#: client/pkgc-manage.c:1061
 msgid "Repair package system"
 msgstr "პაკეტის სისტემის შეკეთება"
 
-#: client/pkgc-manage.c:1068
+#: client/pkgc-manage.c:1067
 msgid "Safely stop the PackageKit daemon"
 msgstr "PackageKit-ის დემონის უსაფრთხო გაჩერება"
 
@@ -316,17 +316,17 @@ msgstr "დემონის მდგომარეობის მიღე�
 msgid "Failed to get properties"
 msgstr "თვისებების მიღება ჩავარდა"
 
-#. TRANSLATORS: Description for pkgctl monitor
+#. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
 msgstr "PackageKit-ის D-Bus-ის მოვლენების მონიტორინგი"
 
-#. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
 msgid "Monitor PackageKit bus events"
 msgstr "PackageKit-ის სალტეს მოვლენების მონიტორინგი"
 
-#. TRANSLATORS: Description for pkgctl backend
+#. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
 msgstr "PackageKit-ის უკანაბოლოს ინფორმაციის ჩვენება."
@@ -353,12 +353,12 @@ msgstr "ავტორი: %s"
 msgid "Roles: %s"
 msgstr "როლები: %s"
 
-#. TRANSLATORS: Description for pkgctl history
+#. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
 msgstr "უახლესი პაკეტის მართვის ტრანზაქციების ჩვენება."
 
-#. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
@@ -381,12 +381,12 @@ msgstr ""
 msgid "No search pattern specified"
 msgstr "ძებნის ნიმუში მითითებული არაა"
 
-#. TRANSLATORS: Description for pkgctl list
+#. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
 msgstr "ყველა, ან ნიმუშის შესაბამისი პაკეტის ჩვენება."
 
-#. TRANSLATORS: Description for pkgctl show
+#. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
 msgstr "ინფორმაციის ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
@@ -395,7 +395,7 @@ msgstr "ინფორმაციის ჩვენება ერთი, �
 msgid "Check dependencies recursively"
 msgstr "დამოკიდებულებების რეკურსიული შემოწმება"
 
-#. TRANSLATORS: Description for pkgctl depends-on
+#. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
 msgstr "დამოკიდებულებების ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
@@ -405,37 +405,37 @@ msgstr "დამოკიდებულებების ჩვენებ�
 msgid "Could not resolve packages: %s"
 msgstr "პაკეტების ამოხსნა შეუძლებელია: %s"
 
-#. TRANSLATORS: Description for pkgctl what-provides
+#. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
 msgstr "ჩვენება, რომელი პაკეტი მოგაწვდით მითითებულ შესაძლებლობას."
 
-#. TRANSLATORS: Description for pkgctl files
+#. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
 msgstr "ერთ ან მეტ პაკეტში არსებული ფაილების სრული სია."
 
-#. TRANSLATORS: Description for pkgctl list-updates
+#. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:646
 msgid "List all currently available package updates."
 msgstr "ამჟამად ხელმისაწვდომი პაკეტის განახლებების ჩამონათვალი."
 
-#. TRANSLATORS: Description for pkgctl show-update
+#. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
 msgstr "დეტალური ინფორმაციის ჩვენება მითითებული პაკეტის განახლების შესახებ."
 
-#. TRANSLATORS: Description for pkgctl resolve
+#. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
 msgstr "პაკეტის სახელების ამოხსნა პაკეტის ID-ებში."
 
-#. TRANSLATORS: Description for pkgctl required-by
+#. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
 msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტებს."
 
-#. TRANSLATORS: Description for pkgctl organization
+#. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
 msgstr "ხელმისაწვდომი ფილტრების, ჯგუფებისა და კატეგორიების სია პაკეტის ორგანიზაციისთვის."
@@ -455,7 +455,7 @@ msgstr "ჯგუფები:"
 msgid "Categories:"
 msgstr "კატეგორიები:"
 
-#. TRANSLATORS: Description for pkgctl show-distro-upgrade
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
 msgstr "დისტრიბუტივის ვერსიის განახლებების ჩვენება მათი ხელმისაწვდომობის შემთხვევაში."
@@ -471,7 +471,7 @@ msgstr "ბოლოს დასრულებული ქმედები�
 msgid "Elapsed time"
 msgstr "გასული დრო"
 
-#. TRANSLATORS: Description for pkgctl last-time
+#. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "ბოლოს მითითებული ქმედების შემდეგ გასული დრო წამებში."
@@ -550,12 +550,12 @@ msgstr "ხელმისაწვდომი დისტრიბუტი�
 msgid "Get time since last action"
 msgstr "ბოლო ქმედების შემდეგ გასული დროის მიღება"
 
-#. TRANSLATORS: Description for pkgctl repo-list
+#. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
 msgstr "ყველა მორგებული პაკეტის რეპოზიტორიების სია."
 
-#. TRANSLATORS: Description for pkgctl repo-enable
+#. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
 msgstr "მითითებული რეპოზიტორიის ჩართვა."
@@ -565,7 +565,7 @@ msgstr "მითითებული რეპოზიტორიის ჩ�
 msgid "Repository '%s' enabled"
 msgstr "რეპოზიტორია '%s' ჩაირთო"
 
-#. TRANSLATORS: Description for pkgctl repo-disable
+#. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:155
 msgid "Disable the specified repository."
 msgstr "მითითებული რეპოზიტორიის გამორთვა."
@@ -579,7 +579,7 @@ msgstr "რეპოზიტორია '%s' გამოირთო"
 msgid "Automatically remove orphaned packages"
 msgstr "მიტოვებული პაკეტების ავტომატური წაშლა"
 
-#. TRANSLATORS: Description for pkgctl repo-remove
+#. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:204
 msgid "Remove the specified repository."
 msgstr "მითითებული რეპოზიტორიის წაშლა."
@@ -660,13 +660,13 @@ msgstr "შეცდომა"
 msgid "Warning:"
 msgstr "გაფრთხილება:"
 
-#. TRANSLATORS: Failed to parse command-line options in pkgctl
-#: client/pkgc-util.c:427 client/pkgctl.c:188
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:427 client/pkgcli.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "არგუმენტების დამუშავების შეცდომა: %s"
 
-#. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
@@ -674,267 +674,271 @@ msgstr "გამოყენება: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:606 client/pkgc-util.c:760
+#: client/pkgc-util.c:627 client/pkgc-util.c:781
 msgid "Package:"
 msgstr "პაკეტი:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:610
+#: client/pkgc-util.c:631
 msgid "Version:"
 msgstr "ვერსია:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:617
+#: client/pkgc-util.c:638
 msgid "Summary:"
 msgstr "შეჯამება:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:625
+#: client/pkgc-util.c:646
 msgid "Description:"
 msgstr "აღწერა:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:632
+#: client/pkgc-util.c:653
 msgid "License:"
 msgstr "ლიცენზია:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:639
+#: client/pkgc-util.c:660
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:667
 msgid "Group:"
 msgstr "ჯგუფი:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:654
+#: client/pkgc-util.c:675
 msgid "Installed Size:"
 msgstr "დაყენებულის ზომა:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:662
+#: client/pkgc-util.c:683
 msgid "Download Size:"
 msgstr "გადმოწერილის ზომა:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:756
+#: client/pkgc-util.c:777
 msgid "Update Details:"
 msgstr "განახლების დეტალები:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:767
+#: client/pkgc-util.c:788
 msgid "Updates:"
 msgstr "განახლებები:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:776
+#: client/pkgc-util.c:797
 msgid "Obsoletes:"
 msgstr "მოძველებულად მონიშნავს:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:785
+#: client/pkgc-util.c:806
 msgid "Vendor:"
 msgstr "მომწოდებელი:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:794
+#: client/pkgc-util.c:815
 msgid "Issue Tracker:"
 msgstr "პრობლემების ტრეკერი:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:803
+#: client/pkgc-util.c:824
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:811
+#: client/pkgc-util.c:832
 msgid "Restart:"
 msgstr "გადატვირთვა:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:820
+#: client/pkgc-util.c:841
 msgid "Update text:"
 msgstr "განახლების ტექსტი:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:827
+#: client/pkgc-util.c:848
 msgid "Changes:"
 msgstr "ცვლილებები:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:834
+#: client/pkgc-util.c:855
 msgid "State:"
 msgstr "მდგომარეობა:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:843
+#: client/pkgc-util.c:864
 msgid "Issued:"
 msgstr "გამოშვებულია:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:850
+#: client/pkgc-util.c:871
 msgid "Updated:"
 msgstr "განახლდა:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:967
+#: client/pkgc-util.c:988
 msgid "Transaction:"
 msgstr "ტრანზაქცია:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:971
+#: client/pkgc-util.c:992
 msgid "System time:"
 msgstr "სისტემური დრო:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:975
+#: client/pkgc-util.c:996
 msgid "Succeeded:"
 msgstr "წარმატებულია:"
 
-#: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "ჭეშმარიტი"
 
-#: client/pkgc-util.c:980 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "მცდარი"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:984
+#: client/pkgc-util.c:1005
 msgid "Role:"
 msgstr "როლი:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:991
+#: client/pkgc-util.c:1012
 msgid "Duration:"
 msgstr "ხანგრძლივობა:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:998
+#: client/pkgc-util.c:1019
 msgid "Command line:"
 msgstr "ბრძანების სტრიქონი:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1004
+#: client/pkgc-util.c:1025
 msgid "User ID:"
 msgstr "მომხმარებლის ID:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1013
+#: client/pkgc-util.c:1034
 msgid "Username:"
 msgstr "მომხმარებლის სახელი:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1040
 msgid "Real name:"
 msgstr "ნამდვილი სახელი:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1031 client/pkgc-util.c:1050
+#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "შეიცვლება პაკეტები:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1053
+#: client/pkgc-util.c:1074
 msgid "None"
 msgstr "არცერთი"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1142 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "ემთხვევა ერთზე მეტი პაკეტი:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1154 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "აირჩიეთ სწორი პაკეტი: "
 
-#: client/pkgc-util.c:1198
+#: client/pkgc-util.c:1219
 #, c-format
 msgid "Package not found: %s"
 msgstr "პაკეტი აღმოჩენილი არაა: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkgctl.c:76
-msgid "Show pkgctl version"
+#: client/pkgcli.c:76
+#, fuzzy
+#| msgid "Show pkgctl version"
+msgid "Show pkgcli version"
 msgstr "pkgctl-ის ვერსიის ჩვენება"
 
-#: client/pkgctl.c:78
+#: client/pkgcli.c:78
 msgid "Show help"
 msgstr "დახმარების ჩვენება"
 
-#: client/pkgctl.c:80
+#: client/pkgcli.c:80
 msgid "Only provide minimal output"
 msgstr "მინიმალური ინფორმაციის გამოტანა"
 
-#: client/pkgctl.c:82
+#: client/pkgcli.c:82
 msgid "Show more detailed output"
 msgstr "უფრო დეტალური ინფორმაციის გამოტანა"
 
-#: client/pkgctl.c:84
+#: client/pkgcli.c:84
 msgid "Output in JSON format"
 msgstr "გამოტანა JSON ფორმატში"
 
-#: client/pkgctl.c:86
+#: client/pkgcli.c:86
 msgid "Disable colored output"
 msgstr "ფერადი გამოტანის გამორთვა"
 
 #. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgctl.c:89
+#: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
 msgstr "'დიახ' პასუხის გაცემა ყველა კითხვაზე"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
 msgstr "პაკეტების ფილტრი (დაყენებულია, ხელმისაწვდომია, ა.შ.)"
 
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "FILTER"
 msgstr "ფილტრი"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
+#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "პროგრამის გაშვება უქმე ქსელის გამტარობაზე და ნაკლები ენერგიის დახარჯვა"
 
-#: client/pkgctl.c:118
+#: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
 msgstr "ბრძანება მითითებული არაა. გამოყენების ინფორმაციისთვის გამოიყენეთ --help."
 
-#: client/pkgctl.c:126
+#: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
 msgstr "უცნობი ბრძანება: %s"
 
-#: client/pkgctl.c:135
+#: client/pkgcli.c:135
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "PackageKit-თან დაკავშირების შეცდომა: %s"
 
-#: client/pkgctl.c:196
+#: client/pkgcli.c:196
 #, c-format
 msgid "Version: %s"
 msgstr "ვერსია: %s"
 
-#: client/pkgctl.c:211
+#: client/pkgcli.c:211
 msgid "Available Commands:"
 msgstr "ხელმისაწვდომი ბრძანებები:"
 
-#: client/pkgctl.c:217
-msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+#: client/pkgcli.c:217
+#, fuzzy
+#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "ბრძანებისთვის სპეციფიკური დახმარების მისაღებად გამოიყენეთ 'pkgctl COMMAND --help'."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkgctl.c:254 client/pkcon/pk-console.c:1842
+#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
 msgid "The filter specified was invalid"
 msgstr "მითითებული ფილტრი არასწორია"
 

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-01 16:38+0100\n"
+"POT-Creation-Date: 2026-01-20 14:52+0100\n"
 "PO-Revision-Date: 2025-12-02 06:00+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
@@ -72,7 +72,7 @@ msgstr "הגיל המרבי של מטמון נתוני העל בשניות"
 msgid "SECONDS"
 msgstr "שניות"
 
-#. TRANSLATORS: Description for pkgctl refresh
+#. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
 msgstr "ריענון מטמון נתוני העל של החבילות."
@@ -81,7 +81,7 @@ msgstr "ריענון מטמון נתוני העל של החבילות."
 msgid "Package metadata refreshed"
 msgstr "נתוני העל של החבילה התעדכנו"
 
-#. TRANSLATORS: Description for pkgctl install
+#. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
 msgstr "התקנת חבילה או יותר או קובצי חבילות מקומיים."
@@ -89,62 +89,62 @@ msgstr "התקנת חבילה או יותר או קובצי חבילות מקו�
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:308 client/pkgc-manage.c:321
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "לא ניתן למצוא אף חבילה זמינה: %s"
 
-#: client/pkgc-manage.c:326
+#: client/pkgc-manage.c:325
 msgid "The selected package is already installed."
 msgstr "החבילה הנבחרת כבר מותקנת."
 
-#. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:366
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
 msgid "Remove one or more packages from the system."
 msgstr "הסרת חבילה אחת או יותר מהמערכת."
 
-#: client/pkgc-manage.c:383
+#: client/pkgc-manage.c:382
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "לא ניתן למצוא חבילות מותקנות: %s"
 
-#. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:423
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
 msgid "Download packages to the specified directory without installing."
 msgstr "להוריד חבילות לתיקייה שנבחרה מבלי להתקין אותן."
 
-#: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "לא ניתן למצוא חבילות: %s"
 
-#: client/pkgc-manage.c:445
+#: client/pkgc-manage.c:444
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "התיקייה לא קיימת: %s"
 
-#. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:488
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "עדכון כל החבילות או חבילות מסוימות לגרסאות העדכניות ביותר שלהן."
 
-#: client/pkgc-manage.c:511
+#: client/pkgc-manage.c:510
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "לא ניתן למצוא חבילות לעדכון: %s"
 
-#: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "קבלת העדכונים נכשלה: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 msgid "No packages require updating"
 msgstr "אין חבילות שדורשות עדכון"
 
-#. TRANSLATORS: Description of pkgctl upgrade.
+#. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:591
+#: client/pkgc-manage.c:590
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -154,64 +154,64 @@ msgstr ""
 "\n"
 "סוגים: minimal,‏ default,‏ complete (מזערי, ברירת מחדל, מלא בהתאמה)"
 
-#: client/pkgc-manage.c:687
+#: client/pkgc-manage.c:686
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "קריאת פעולת עדכון בלתי מקוון נכשלה: %s"
 
-#: client/pkgc-manage.c:697
+#: client/pkgc-manage.c:696
 msgid "Offline update is not triggered."
 msgstr "עדכון בלתי מקוון לא הוזנק."
 
-#: client/pkgc-manage.c:705
+#: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "הוקפץ עדכון בלתי מקוון. פעולה לאחר העדכון: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:716
+#: client/pkgc-manage.c:715
 msgid "Prepared packages:"
 msgstr "חבילות שהוכנו:"
 
-#: client/pkgc-manage.c:730
+#: client/pkgc-manage.c:729
 msgid "No offline update is prepared."
 msgstr "לא הוכן עדכון בלתי מקוון."
 
-#: client/pkgc-manage.c:732
+#: client/pkgc-manage.c:731
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "קריאת עדכונים בלתי מקוונים שהוכנו מראש נכשלה: %s"
 
-#: client/pkgc-manage.c:742
+#: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
 msgstr "אין תוצאות זמינות מהעדכון הבלתי מקוון האחרון."
 
-#: client/pkgc-manage.c:749
+#: client/pkgc-manage.c:748
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "העדכון הבלתי מקוון האחרון נכשל: %s: %s"
 
-#: client/pkgc-manage.c:756
+#: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
 msgstr "העדכון הבלתי מקוון האחרון הושלם בהצלחה"
 
-#: client/pkgc-manage.c:767
+#: client/pkgc-manage.c:766
 #, c-format
 msgid "Updated: %s"
 msgstr "עודכן: %s"
 
-#: client/pkgc-manage.c:788
+#: client/pkgc-manage.c:787
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "הזנקת עדכון בלתי מקוון נכשלה: %s"
 
-#: client/pkgc-manage.c:792
+#: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "תוזמן עדכון בלתי מקוון. המערכת תתעדכן בהפעלה הבאה מחדש."
 
-#. TRANSLATORS: Description of the pkgctl offline-update command.
+#. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:812
+#: client/pkgc-manage.c:811
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -229,81 +229,81 @@ msgstr ""
 "  cancel  - ביטול עדכון בלתי מקוון שתוכנן\n"
 "  status  - הצגת פרטי מצב על עדכון בלתי מקוון שהוכן או הסתיים"
 
-#: client/pkgc-manage.c:836
+#: client/pkgc-manage.c:835
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "ביטול העדכון הבלתי מקוון נכשל: %s"
 
-#: client/pkgc-manage.c:840
+#: client/pkgc-manage.c:839
 msgid "Offline update cancelled"
 msgstr "עדכון בלתי מקוון בוטל"
 
-#: client/pkgc-manage.c:897
+#: client/pkgc-manage.c:896
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "בקשת עדכון בלתי מקוון לא ידועה: %s"
 
-#. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:917
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
 msgid "Install a package signature for GPG verification."
 msgstr "התקנת חתימת חבילה לאימות GPG."
 
-#. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:952
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
 msgid "Attempt to repair the package management system."
 msgstr "לנסות לתקן את מערכת ניהול החבילות."
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:967
 msgid "System repaired successfully"
 msgstr "המערכת תוקנה בהצלחה"
 
-#. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:989
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
 msgid "Safely terminate the PackageKit daemon."
 msgstr "חיסול סוכן PackageKit בבטחה."
 
-#: client/pkgc-manage.c:995
+#: client/pkgc-manage.c:994
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "שליחת בקשת יציאה לסוכן נכשלה: %s"
 
-#: client/pkgc-manage.c:1014
+#: client/pkgc-manage.c:1013
 msgid "Refresh package metadata"
 msgstr "ריענון נתוני על של חבילה"
 
-#: client/pkgc-manage.c:1020
+#: client/pkgc-manage.c:1019
 msgid "Install packages"
 msgstr "התקנת חבילות"
 
-#: client/pkgc-manage.c:1026
+#: client/pkgc-manage.c:1025
 msgid "Remove packages"
 msgstr "הסרת חבילות"
 
-#: client/pkgc-manage.c:1032
+#: client/pkgc-manage.c:1031
 msgid "Update packages"
 msgstr "עדכון חבילות"
 
-#: client/pkgc-manage.c:1038
+#: client/pkgc-manage.c:1037
 msgid "Upgrade the system"
 msgstr "לשדרג את המערכת"
 
-#: client/pkgc-manage.c:1044
+#: client/pkgc-manage.c:1043
 msgid "Download packages"
 msgstr "הורדת חבילות"
 
-#: client/pkgc-manage.c:1050
+#: client/pkgc-manage.c:1049
 msgid "Manage offline system updates"
 msgstr "ניהול עדכוני מערכת בלתי מקוונים"
 
-#: client/pkgc-manage.c:1056
+#: client/pkgc-manage.c:1055
 msgid "Install package signature"
 msgstr "התקנת חתימת חבילה"
 
-#: client/pkgc-manage.c:1062
+#: client/pkgc-manage.c:1061
 msgid "Repair package system"
 msgstr "תיקון מערכת חבילות"
 
-#: client/pkgc-manage.c:1068
+#: client/pkgc-manage.c:1067
 msgid "Safely stop the PackageKit daemon"
 msgstr "עצירת סוכן PackageKit בבטחה"
 
@@ -315,17 +315,17 @@ msgstr "לא ניתן לקבל מצב סוכן"
 msgid "Failed to get properties"
 msgstr "קבלת המאפיינים נכשלה"
 
-#. TRANSLATORS: Description for pkgctl monitor
+#. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
 msgstr "מעקב אחר אירועי D-Bus של PackageKit"
 
-#. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
 msgid "Monitor PackageKit bus events"
 msgstr "מעקב אחר אירועי אפיק PackageKit"
 
-#. TRANSLATORS: Description for pkgctl backend
+#. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
 msgstr "הצגת פרטי מנגנון PackageKit."
@@ -352,12 +352,12 @@ msgstr "יצירה: %s"
 msgid "Roles: %s"
 msgstr "תפקידים: %s"
 
-#. TRANSLATORS: Description for pkgctl history
+#. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
 msgstr "הצגת פעולות ניהול חבילות אחרונות."
 
-#. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
@@ -380,12 +380,12 @@ msgstr ""
 msgid "No search pattern specified"
 msgstr "לא צוינה תבנית חיפוש"
 
-#. TRANSLATORS: Description for pkgctl list
+#. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
 msgstr "הצגת כל החבילות או רק את אלו שעונות על תבנית חיפוש."
 
-#. TRANSLATORS: Description for pkgctl show
+#. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
 msgstr "הצגת פרטים על חבילה אחת או יותר."
@@ -394,7 +394,7 @@ msgstr "הצגת פרטים על חבילה אחת או יותר."
 msgid "Check dependencies recursively"
 msgstr "בדיקת תלויות באופן נסוג (רקורסיבי)"
 
-#. TRANSLATORS: Description for pkgctl depends-on
+#. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
 msgstr "הצגת תלויות לחבילה או יותר."
@@ -404,37 +404,37 @@ msgstr "הצגת תלויות לחבילה או יותר."
 msgid "Could not resolve packages: %s"
 msgstr "לא ניתן לפתור את החבילות: %s"
 
-#. TRANSLATORS: Description for pkgctl what-provides
+#. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
 msgstr "הצגת אילו חבילות מספקות יכולות מסוימות."
 
-#. TRANSLATORS: Description for pkgctl files
+#. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
 msgstr "הצגת כל הקבצים שנכללים בחבילה אחת או יותר."
 
-#. TRANSLATORS: Description for pkgctl list-updates
+#. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:646
 msgid "List all currently available package updates."
 msgstr "הצגת כל עדכוני החבילות הזמינים."
 
-#. TRANSLATORS: Description for pkgctl show-update
+#. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
 msgstr "הצגת פרטים מפורטים על עדכון החבילה שצוין."
 
-#. TRANSLATORS: Description for pkgctl resolve
+#. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
 msgstr "פתרון שמות חבילות למזהי חבילות."
 
-#. TRANSLATORS: Description for pkgctl required-by
+#. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
 msgstr "הצגת אילו חבילות דורשות חבילות מסוימות."
 
-#. TRANSLATORS: Description for pkgctl organization
+#. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
 msgstr "הצגת כל המסננים, הקבוצות והקטגוריות הזמינים לסידור חבילות."
@@ -454,7 +454,7 @@ msgstr "קבוצות:"
 msgid "Categories:"
 msgstr "קטגוריות:"
 
-#. TRANSLATORS: Description for pkgctl show-distro-upgrade
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
 msgstr "הצגת שדרוגי גרסת הפצה, אם יש כאלה."
@@ -470,7 +470,7 @@ msgstr "נכשלה קבלת הזמן שעבר מאז שהפעולה הושלמה
 msgid "Elapsed time"
 msgstr "זמן שעבר"
 
-#. TRANSLATORS: Description for pkgctl last-time
+#. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "קבלת הזמן בשניות מאז הפעולה האחרונה שצוינה."
@@ -549,12 +549,12 @@ msgstr "הצגת שדרוגי הפצות זמינים"
 msgid "Get time since last action"
 msgstr "קבלת הזמן מאז הפעולה האחרונה"
 
-#. TRANSLATORS: Description for pkgctl repo-list
+#. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
 msgstr "הצגת כל מאגרי החבילות המוגדרים."
 
-#. TRANSLATORS: Description for pkgctl repo-enable
+#. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
 msgstr "הפעלת המאגר שצוין."
@@ -564,7 +564,7 @@ msgstr "הפעלת המאגר שצוין."
 msgid "Repository '%s' enabled"
 msgstr "המאגר ‚%s’ הופעל"
 
-#. TRANSLATORS: Description for pkgctl repo-disable
+#. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:155
 msgid "Disable the specified repository."
 msgstr "השבתת התיקייה שצוינה."
@@ -578,7 +578,7 @@ msgstr "המאגר ‚%s’ הושבת"
 msgid "Automatically remove orphaned packages"
 msgstr "להסיר חבילות יתומות אוטומטית"
 
-#. TRANSLATORS: Description for pkgctl repo-remove
+#. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:204
 msgid "Remove the specified repository."
 msgstr "הסרת המאגר שצוין."
@@ -659,13 +659,13 @@ msgstr "שגיאה"
 msgid "Warning:"
 msgstr "אזהרה:"
 
-#. TRANSLATORS: Failed to parse command-line options in pkgctl
-#: client/pkgc-util.c:427 client/pkgctl.c:188
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:427 client/pkgcli.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "פענוח האפשרויות נכשל: %s"
 
-#. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
@@ -673,267 +673,271 @@ msgstr "שימוש: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:606 client/pkgc-util.c:760
+#: client/pkgc-util.c:627 client/pkgc-util.c:781
 msgid "Package:"
 msgstr "חבילה:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:610
+#: client/pkgc-util.c:631
 msgid "Version:"
 msgstr "גרסה:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:617
+#: client/pkgc-util.c:638
 msgid "Summary:"
 msgstr "תקציר:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:625
+#: client/pkgc-util.c:646
 msgid "Description:"
 msgstr "תיאור:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:632
+#: client/pkgc-util.c:653
 msgid "License:"
 msgstr "רישיון:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:639
+#: client/pkgc-util.c:660
 msgid "URL:"
 msgstr "כתובת:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:667
 msgid "Group:"
 msgstr "קבוצה:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:654
+#: client/pkgc-util.c:675
 msgid "Installed Size:"
 msgstr "גודל מותקן:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:662
+#: client/pkgc-util.c:683
 msgid "Download Size:"
 msgstr "גודל הורדה:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:756
+#: client/pkgc-util.c:777
 msgid "Update Details:"
 msgstr "פרטי עדכון:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:767
+#: client/pkgc-util.c:788
 msgid "Updates:"
 msgstr "עדכונים:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:776
+#: client/pkgc-util.c:797
 msgid "Obsoletes:"
 msgstr "מיושנות:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:785
+#: client/pkgc-util.c:806
 msgid "Vendor:"
 msgstr "ספק:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:794
+#: client/pkgc-util.c:815
 msgid "Issue Tracker:"
 msgstr "עוקב תקלות:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:803
+#: client/pkgc-util.c:824
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:811
+#: client/pkgc-util.c:832
 msgid "Restart:"
 msgstr "הפעלה מחדש:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:820
+#: client/pkgc-util.c:841
 msgid "Update text:"
 msgstr "טקסט עדכון:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:827
+#: client/pkgc-util.c:848
 msgid "Changes:"
 msgstr "שינויים:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:834
+#: client/pkgc-util.c:855
 msgid "State:"
 msgstr "מצב:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:843
+#: client/pkgc-util.c:864
 msgid "Issued:"
 msgstr "הונפק:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:850
+#: client/pkgc-util.c:871
 msgid "Updated:"
 msgstr "עודכן:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:967
+#: client/pkgc-util.c:988
 msgid "Transaction:"
 msgstr "פעולה:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:971
+#: client/pkgc-util.c:992
 msgid "System time:"
 msgstr "שעת המערכת:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:975
+#: client/pkgc-util.c:996
 msgid "Succeeded:"
 msgstr "הצליחה:"
 
-#: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "אמת"
 
-#: client/pkgc-util.c:980 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "שקר"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:984
+#: client/pkgc-util.c:1005
 msgid "Role:"
 msgstr "תפקיד:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:991
+#: client/pkgc-util.c:1012
 msgid "Duration:"
 msgstr "משך:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:998
+#: client/pkgc-util.c:1019
 msgid "Command line:"
 msgstr "שורת פקודות:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1004
+#: client/pkgc-util.c:1025
 msgid "User ID:"
 msgstr "מזהה משתמש:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1013
+#: client/pkgc-util.c:1034
 msgid "Username:"
 msgstr "שם משתמש:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1040
 msgid "Real name:"
 msgstr "שם אמיתי:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1031 client/pkgc-util.c:1050
+#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "חבילות מושפעות:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1053
+#: client/pkgc-util.c:1074
 msgid "None"
 msgstr "אין"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1142 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "יש יותר מחבילה מתאימה אחת:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1154 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "נא לבחור את החבילה הנכונה: "
 
-#: client/pkgc-util.c:1198
+#: client/pkgc-util.c:1219
 #, c-format
 msgid "Package not found: %s"
 msgstr "החבילה לא נמצאה: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkgctl.c:76
-msgid "Show pkgctl version"
+#: client/pkgcli.c:76
+#, fuzzy
+#| msgid "Show pkgctl version"
+msgid "Show pkgcli version"
 msgstr "הצגת גרסת pkgctl"
 
-#: client/pkgctl.c:78
+#: client/pkgcli.c:78
 msgid "Show help"
 msgstr "הצגת העזרה"
 
-#: client/pkgctl.c:80
+#: client/pkgcli.c:80
 msgid "Only provide minimal output"
 msgstr "לספק פלט תמציתי בלבד"
 
-#: client/pkgctl.c:82
+#: client/pkgcli.c:82
 msgid "Show more detailed output"
 msgstr "הצגת פלט מפורט יותר"
 
-#: client/pkgctl.c:84
+#: client/pkgcli.c:84
 msgid "Output in JSON format"
 msgstr "פלט בתבנית JSON"
 
-#: client/pkgctl.c:86
+#: client/pkgcli.c:86
 msgid "Disable colored output"
 msgstr "השבתת פלט צבעוני"
 
 #. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgctl.c:89
+#: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
 msgstr "לענות ב‚כן’ על כל השאלות"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
 msgstr "סינון חבילות (מותקנות, זמינות וכו׳)"
 
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "FILTER"
 msgstr "מסנן"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
+#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "הרץ את הפקודה הזאת תוך שימוש ברוחב פס סרק וגם השתמש בפחות כוח"
 
-#: client/pkgctl.c:118
+#: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
 msgstr "לא צוינה פקודה. יש להשתמש ב־‎--help להסבר על השימוש."
 
-#: client/pkgctl.c:126
+#: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
 msgstr "פקודה לא ידועה: %s"
 
-#: client/pkgctl.c:135
+#: client/pkgcli.c:135
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "החיבור מול PackageKit נכשל: %s"
 
-#: client/pkgctl.c:196
+#: client/pkgcli.c:196
 #, c-format
 msgid "Version: %s"
 msgstr "גרסה: %s"
 
-#: client/pkgctl.c:211
+#: client/pkgcli.c:211
 msgid "Available Commands:"
 msgstr "פקודות זמינות:"
 
-#: client/pkgctl.c:217
-msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+#: client/pkgcli.c:217
+#, fuzzy
+#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "אפשר להשתמש ב־‚pkgctl COMMAND --help’ לקבלת עזרה עם פקודה מסוימת (שם הפקודה במקום COMMAND)."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkgctl.c:254 client/pkcon/pk-console.c:1842
+#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
 msgid "The filter specified was invalid"
 msgstr "מסנן החיפוש לא תקין"
 

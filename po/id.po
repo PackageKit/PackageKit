@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-01 16:38+0100\n"
+"POT-Creation-Date: 2026-01-20 14:52+0100\n"
 "PO-Revision-Date: 2026-01-09 19:01+0000\n"
 "Last-Translator: Arif Budiman <arifpedia@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/packagekit/translations/id/>\n"
@@ -74,7 +74,7 @@ msgstr "Usia maksimum cache metadata dalam detik"
 msgid "SECONDS"
 msgstr "DETIK"
 
-#. TRANSLATORS: Description for pkgctl refresh
+#. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
 msgstr "Segarkan cache metadata paket."
@@ -83,7 +83,7 @@ msgstr "Segarkan cache metadata paket."
 msgid "Package metadata refreshed"
 msgstr "Metadata paket disegarkan"
 
-#. TRANSLATORS: Description for pkgctl install
+#. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:246
 msgid "Install one or more packages or local package files."
 msgstr "Pasang satu atau lebih paket atau berkas paket lokal."
@@ -91,62 +91,62 @@ msgstr "Pasang satu atau lebih paket atau berkas paket lokal."
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:308 client/pkgc-manage.c:321
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "Tidak dapat menemukan paket yang tersedia: %s"
 
-#: client/pkgc-manage.c:326
+#: client/pkgc-manage.c:325
 msgid "The selected package is already installed."
 msgstr "Paket yang dipilih sudah terpasang."
 
-#. TRANSLATORS: Description for pkgctl remove
-#: client/pkgc-manage.c:366
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
 msgid "Remove one or more packages from the system."
 msgstr "Hapus satu atau lebih paket dari sistem."
 
-#: client/pkgc-manage.c:383
+#: client/pkgc-manage.c:382
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "Tidak dapat menemukan paket yang terpasang: %s"
 
-#. TRANSLATORS: Description for pkgctl download
-#: client/pkgc-manage.c:423
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
 msgid "Download packages to the specified directory without installing."
 msgstr "Unduh paket ke direktori yang ditentukan tanpa memasang."
 
-#: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Tidak dapat menemukan paket: %s"
 
-#: client/pkgc-manage.c:445
+#: client/pkgc-manage.c:444
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "Direktori tidak ada: %s"
 
-#. TRANSLATORS: Description for pkgctl update
-#: client/pkgc-manage.c:488
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Perbarui semua paket atau paket tertentu ke versi terbaru."
 
-#: client/pkgc-manage.c:511
+#: client/pkgc-manage.c:510
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "Tidak dapat menemukan paket untuk diperbarui: %s"
 
-#: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Gagal mendapatkan pembaruan: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 msgid "No packages require updating"
 msgstr "Tidak ada paket yang memerlukan pembaruan"
 
-#. TRANSLATORS: Description of pkgctl upgrade.
+#. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:591
+#: client/pkgc-manage.c:590
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -156,64 +156,64 @@ msgstr ""
 "\n"
 "Jenis: minimal, default, lengkap"
 
-#: client/pkgc-manage.c:687
+#: client/pkgc-manage.c:686
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "Gagal membaca tindakan pembaruan luring: %s"
 
-#: client/pkgc-manage.c:697
+#: client/pkgc-manage.c:696
 msgid "Offline update is not triggered."
 msgstr "Pembaruan luring tidak dipicu."
 
-#: client/pkgc-manage.c:705
+#: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Pembaruan luring dipicu. Tindakan setelah pembaruan: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:716
+#: client/pkgc-manage.c:715
 msgid "Prepared packages:"
 msgstr "Paket yang disiapkan:"
 
-#: client/pkgc-manage.c:730
+#: client/pkgc-manage.c:729
 msgid "No offline update is prepared."
 msgstr "Tidak ada pembaruan luring yang disiapkan."
 
-#: client/pkgc-manage.c:732
+#: client/pkgc-manage.c:731
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Gagal membaca pembaruan luring yang disiapkan: %s"
 
-#: client/pkgc-manage.c:742
+#: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
 msgstr "Tidak ada hasil dari pembaruan luring terakhir yang tersedia."
 
-#: client/pkgc-manage.c:749
+#: client/pkgc-manage.c:748
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "Pembaruan luring terakhir gagal: %s: %s"
 
-#: client/pkgc-manage.c:756
+#: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
 msgstr "Pembaruan luring terakhir selesai dengan sukses"
 
-#: client/pkgc-manage.c:767
+#: client/pkgc-manage.c:766
 #, c-format
 msgid "Updated: %s"
 msgstr "Diperbarui: %s"
 
-#: client/pkgc-manage.c:788
+#: client/pkgc-manage.c:787
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "Gagal memicu pembaruan luring: %s"
 
-#: client/pkgc-manage.c:792
+#: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "Pembaruan luring dijadwalkan. Sistem akan memperbarui pada reboot berikutnya."
 
-#. TRANSLATORS: Description of the pkgctl offline-update command.
+#. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:812
+#: client/pkgc-manage.c:811
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -231,81 +231,81 @@ msgstr ""
 "  cancel  - membatalkan pembaruan luring yang direncanakan\n"
 "  status  - menampilkan informasi status tentang pembaruan luring yang disiapkan atau yang telah selesai"
 
-#: client/pkgc-manage.c:836
+#: client/pkgc-manage.c:835
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "Gagal membatalkan pembaruan luring: %s"
 
-#: client/pkgc-manage.c:840
+#: client/pkgc-manage.c:839
 msgid "Offline update cancelled"
 msgstr "Pembaruan luring dibatalkan"
 
-#: client/pkgc-manage.c:897
+#: client/pkgc-manage.c:896
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "Permintaan offline-update tidak dikenal: %s"
 
-#. TRANSLATORS: Description for pkgctl install-sig
-#: client/pkgc-manage.c:917
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
 msgid "Install a package signature for GPG verification."
 msgstr "Pasang tanda tangan paket untuk verifikasi GPG."
 
-#. TRANSLATORS: Description for pkgctl repair
-#: client/pkgc-manage.c:952
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
 msgid "Attempt to repair the package management system."
 msgstr "Mencoba memperbaiki sistem manajemen paket."
 
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:967
 msgid "System repaired successfully"
 msgstr "Sistem berhasil diperbaiki"
 
-#. TRANSLATORS: Description for pkgctl quit
-#: client/pkgc-manage.c:989
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
 msgid "Safely terminate the PackageKit daemon."
 msgstr "Akhiri daemon PackageKit dengan aman."
 
-#: client/pkgc-manage.c:995
+#: client/pkgc-manage.c:994
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "Gagal mengirim permintaan penghentian daemon: %s"
 
-#: client/pkgc-manage.c:1014
+#: client/pkgc-manage.c:1013
 msgid "Refresh package metadata"
 msgstr "Segarkan metadata paket"
 
-#: client/pkgc-manage.c:1020
+#: client/pkgc-manage.c:1019
 msgid "Install packages"
 msgstr "Pasang paket"
 
-#: client/pkgc-manage.c:1026
+#: client/pkgc-manage.c:1025
 msgid "Remove packages"
 msgstr "Hapus paket"
 
-#: client/pkgc-manage.c:1032
+#: client/pkgc-manage.c:1031
 msgid "Update packages"
 msgstr "Perbarui paket"
 
-#: client/pkgc-manage.c:1038
+#: client/pkgc-manage.c:1037
 msgid "Upgrade the system"
 msgstr "Tingkatkan sistem"
 
-#: client/pkgc-manage.c:1044
+#: client/pkgc-manage.c:1043
 msgid "Download packages"
 msgstr "Unduh paket"
 
-#: client/pkgc-manage.c:1050
+#: client/pkgc-manage.c:1049
 msgid "Manage offline system updates"
 msgstr "Kelola pembaruan sistem luring"
 
-#: client/pkgc-manage.c:1056
+#: client/pkgc-manage.c:1055
 msgid "Install package signature"
 msgstr "Pasang tanda tangan paket"
 
-#: client/pkgc-manage.c:1062
+#: client/pkgc-manage.c:1061
 msgid "Repair package system"
 msgstr "Perbaiki sistem paket"
 
-#: client/pkgc-manage.c:1068
+#: client/pkgc-manage.c:1067
 msgid "Safely stop the PackageKit daemon"
 msgstr "Hentikan daemon PackageKit dengan aman"
 
@@ -317,17 +317,17 @@ msgstr "Gagal mendapat keadaan daemon"
 msgid "Failed to get properties"
 msgstr "Gagal mendapatkan properti"
 
-#. TRANSLATORS: Description for pkgctl monitor
+#. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Pantau peristiwa D-Bus PackageKit"
 
-#. TRANSLATORS: Summary for pkgctl monitor, the PK D-Bus monitor
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
 msgid "Monitor PackageKit bus events"
 msgstr "Pantau peristiwa bus PackageKit"
 
-#. TRANSLATORS: Description for pkgctl backend
+#. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
 msgstr "Tampilkan informasi backend PackageKit."
@@ -354,12 +354,12 @@ msgstr "Penulis: %s"
 msgid "Roles: %s"
 msgstr "Peran: %s"
 
-#. TRANSLATORS: Description for pkgctl history
+#. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
 msgstr "Tampilkan transaksi manajemen paket terbaru."
 
-#. TRANSLATORS: Description of the pkgctl search command. MODE values must not be translated!
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
@@ -382,12 +382,12 @@ msgstr ""
 msgid "No search pattern specified"
 msgstr "Tidak ada pola pencarian yang ditentukan"
 
-#. TRANSLATORS: Description for pkgctl list
+#. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
 msgstr "Daftar semua paket atau yang cocok dengan sebuah pola."
 
-#. TRANSLATORS: Description for pkgctl show
+#. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
 msgstr "Tampilkan informasi tentang satu atau lebih paket."
@@ -396,7 +396,7 @@ msgstr "Tampilkan informasi tentang satu atau lebih paket."
 msgid "Check dependencies recursively"
 msgstr "Periksa dependensi secara rekursif"
 
-#. TRANSLATORS: Description for pkgctl depends-on
+#. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
 msgstr "Tampilkan dependensi untuk satu atau lebih paket."
@@ -406,37 +406,37 @@ msgstr "Tampilkan dependensi untuk satu atau lebih paket."
 msgid "Could not resolve packages: %s"
 msgstr "Tidak dapat menyelesaikan paket: %s"
 
-#. TRANSLATORS: Description for pkgctl what-provides
+#. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
 msgstr "Tampilkan paket mana yang menyediakan kapabilitas yang ditentukan."
 
-#. TRANSLATORS: Description for pkgctl files
+#. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
 msgstr "Daftar semua berkas yang terkandung dalam satu atau lebih paket."
 
-#. TRANSLATORS: Description for pkgctl list-updates
+#. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:646
 msgid "List all currently available package updates."
 msgstr "Cantumkan semua pembaruan paket yang saat ini tersedia."
 
-#. TRANSLATORS: Description for pkgctl show-update
+#. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
 msgstr "Tampilkan informasi terperinci tentang pembaruan paket yang ditentukan."
 
-#. TRANSLATORS: Description for pkgctl resolve
+#. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
 msgstr "Urai nama paket menjadi ID paket."
 
-#. TRANSLATORS: Description for pkgctl required-by
+#. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
 msgstr "Tampilkan paket mana yang memerlukan paket yang ditentukan."
 
-#. TRANSLATORS: Description for pkgctl organization
+#. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
 msgstr "Daftar semua filter, grup, dan kategori yang tersedia untuk pengorganisasian paket."
@@ -456,7 +456,7 @@ msgstr "Grup:"
 msgid "Categories:"
 msgstr "Kategori:"
 
-#. TRANSLATORS: Description for pkgctl show-distro-upgrade
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
 msgstr "Tampilkan peningkatan versi distribusi, jika ada yang tersedia."
@@ -472,7 +472,7 @@ msgstr "Gagal mendapatkan waktu sejak tindakan ini terakhir diselesaikan"
 msgid "Elapsed time"
 msgstr "Waktu berlalu"
 
-#. TRANSLATORS: Description for pkgctl last-time
+#. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "Dapatkan waktu dalam detik sejak tindakan tertentu terakhir kali dilakukan."
@@ -551,12 +551,12 @@ msgstr "Tampilkan peningkatan distribusi yang tersedia"
 msgid "Get time since last action"
 msgstr "Dapatkan waktu sejak tindakan terakhir"
 
-#. TRANSLATORS: Description for pkgctl repo-list
+#. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
 msgstr "Daftar semua repositori paket yang dikonfigurasi."
 
-#. TRANSLATORS: Description for pkgctl repo-enable
+#. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
 msgstr "Aktifkan repositori yang ditentukan."
@@ -566,7 +566,7 @@ msgstr "Aktifkan repositori yang ditentukan."
 msgid "Repository '%s' enabled"
 msgstr "Repositori '%s' diaktifkan"
 
-#. TRANSLATORS: Description for pkgctl repo-disable
+#. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:155
 msgid "Disable the specified repository."
 msgstr "Nonaktifkan repositori yang ditentukan."
@@ -580,7 +580,7 @@ msgstr "Repositori '%s' dinonaktifkan"
 msgid "Automatically remove orphaned packages"
 msgstr "Hapus paket yatim piatu secara otomatis"
 
-#. TRANSLATORS: Description for pkgctl repo-remove
+#. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:204
 msgid "Remove the specified repository."
 msgstr "Hapus repositori yang ditentukan."
@@ -661,13 +661,13 @@ msgstr "Kesalahan"
 msgid "Warning:"
 msgstr "Peringatan:"
 
-#. TRANSLATORS: Failed to parse command-line options in pkgctl
-#: client/pkgc-util.c:427 client/pkgctl.c:188
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:427 client/pkgcli.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Gagal mengurai opsi: %s"
 
-#. TRANSLATORS: Usage summary in pkgctl if the user has provided the wrong number of parameters
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:433
 #, c-format
 msgid "Usage: %s %s %s"
@@ -675,267 +675,271 @@ msgstr "Penggunaan: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:606 client/pkgc-util.c:760
+#: client/pkgc-util.c:627 client/pkgc-util.c:781
 msgid "Package:"
 msgstr "Paket:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:610
+#: client/pkgc-util.c:631
 msgid "Version:"
 msgstr "Versi:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:617
+#: client/pkgc-util.c:638
 msgid "Summary:"
 msgstr "Ringkasan:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:625
+#: client/pkgc-util.c:646
 msgid "Description:"
 msgstr "Deskripsi:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:632
+#: client/pkgc-util.c:653
 msgid "License:"
 msgstr "Lisensi:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:639
+#: client/pkgc-util.c:660
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:667
 msgid "Group:"
 msgstr "Grup:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:654
+#: client/pkgc-util.c:675
 msgid "Installed Size:"
 msgstr "Ukuran Terpasang:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:662
+#: client/pkgc-util.c:683
 msgid "Download Size:"
 msgstr "Ukuran Unduhan:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:756
+#: client/pkgc-util.c:777
 msgid "Update Details:"
 msgstr "Detail Pembaruan:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:767
+#: client/pkgc-util.c:788
 msgid "Updates:"
 msgstr "Pembaruan:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:776
+#: client/pkgc-util.c:797
 msgid "Obsoletes:"
 msgstr "Menjadi usang:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:785
+#: client/pkgc-util.c:806
 msgid "Vendor:"
 msgstr "Vendor:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:794
+#: client/pkgc-util.c:815
 msgid "Issue Tracker:"
 msgstr "Pelacak Isu:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:803
+#: client/pkgc-util.c:824
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:811
+#: client/pkgc-util.c:832
 msgid "Restart:"
 msgstr "Mulai ulang:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:820
+#: client/pkgc-util.c:841
 msgid "Update text:"
 msgstr "Teks pembaruan:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:827
+#: client/pkgc-util.c:848
 msgid "Changes:"
 msgstr "Perubahan:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:834
+#: client/pkgc-util.c:855
 msgid "State:"
 msgstr "Status:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:843
+#: client/pkgc-util.c:864
 msgid "Issued:"
 msgstr "Diterbitkan:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:850
+#: client/pkgc-util.c:871
 msgid "Updated:"
 msgstr "Diperbarui:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:967
+#: client/pkgc-util.c:988
 msgid "Transaction:"
 msgstr "Transaksi:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:971
+#: client/pkgc-util.c:992
 msgid "System time:"
 msgstr "Waktu sistem:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:975
+#: client/pkgc-util.c:996
 msgid "Succeeded:"
 msgstr "Berhasil:"
 
-#: client/pkgc-util.c:979 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "Benar"
 
-#: client/pkgc-util.c:980 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "Salah"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:984
+#: client/pkgc-util.c:1005
 msgid "Role:"
 msgstr "Peran:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:991
+#: client/pkgc-util.c:1012
 msgid "Duration:"
 msgstr "Durasi:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:998
+#: client/pkgc-util.c:1019
 msgid "Command line:"
 msgstr "Baris perintah:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1004
+#: client/pkgc-util.c:1025
 msgid "User ID:"
 msgstr "ID pengguna:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1013
+#: client/pkgc-util.c:1034
 msgid "Username:"
 msgstr "Nama pengguna:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1040
 msgid "Real name:"
 msgstr "Nama sebenarnya:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1031 client/pkgc-util.c:1050
+#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "Paket yang berkaitan:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1053
+#: client/pkgc-util.c:1074
 msgid "None"
 msgstr "Tidak ada"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1142 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "Lebih dari satu paket cocok:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1154 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Silakan pilih paket yang benar:"
 
-#: client/pkgc-util.c:1198
+#: client/pkgc-util.c:1219
 #, c-format
 msgid "Package not found: %s"
 msgstr "Paket tidak ditemukan: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkgctl.c:76
-msgid "Show pkgctl version"
+#: client/pkgcli.c:76
+#, fuzzy
+#| msgid "Show pkgctl version"
+msgid "Show pkgcli version"
 msgstr "Tampilkan versi pkgctl"
 
-#: client/pkgctl.c:78
+#: client/pkgcli.c:78
 msgid "Show help"
 msgstr "Tampilkan bantuan"
 
-#: client/pkgctl.c:80
+#: client/pkgcli.c:80
 msgid "Only provide minimal output"
 msgstr "Hanya berikan keluaran minimal"
 
-#: client/pkgctl.c:82
+#: client/pkgcli.c:82
 msgid "Show more detailed output"
 msgstr "Tampilkan keluaran yang lebih terperinci"
 
-#: client/pkgctl.c:84
+#: client/pkgcli.c:84
 msgid "Output in JSON format"
 msgstr "Keluaran dalam format JSON"
 
-#: client/pkgctl.c:86
+#: client/pkgcli.c:86
 msgid "Disable colored output"
 msgstr "Nonaktifkan keluaran berwarna"
 
 #. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgctl.c:89
+#: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
 msgstr "Jawab 'ya' untuk semua pertanyaan"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
 msgstr "Filter paket (terpasang, tersedia, dll.)"
 
-#: client/pkgctl.c:92
+#: client/pkgcli.c:92
 msgid "FILTER"
 msgstr "FILTER"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgctl.c:95 client/pkcon/pk-console.c:1725
+#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga menggunakan daya yang lebih kecil"
 
-#: client/pkgctl.c:118
+#: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
 msgstr "Tidak ada perintah yang ditentukan. Gunakan --help untuk informasi penggunaan."
 
-#: client/pkgctl.c:126
+#: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
 msgstr "Perintah tidak dikenal: %s"
 
-#: client/pkgctl.c:135
+#: client/pkgcli.c:135
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "Gagal terhubung ke PackageKit: %s"
 
-#: client/pkgctl.c:196
+#: client/pkgcli.c:196
 #, c-format
 msgid "Version: %s"
 msgstr "Versi: %s"
 
-#: client/pkgctl.c:211
+#: client/pkgcli.c:211
 msgid "Available Commands:"
 msgstr "Perintah yang tersedia:"
 
-#: client/pkgctl.c:217
-msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+#: client/pkgcli.c:217
+#, fuzzy
+#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Gunakan 'pkgctl COMMAND --help' untuk bantuan khusus perintah."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkgctl.c:254 client/pkcon/pk-console.c:1842
+#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
 msgid "The filter specified was invalid"
 msgstr "Filter ditentukan tidak valid"
 
