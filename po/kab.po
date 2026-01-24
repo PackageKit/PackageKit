@@ -1,13 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PackageKit package.
-# ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>, 2025.
+# ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2025-11-02 00:51+0000\n"
+"PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Kabyle <https://hosted.weblate.org/projects/packagekit/translations/kab/>\n"
 "Language: kab\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
-msgstr ""
+msgstr "Afaylu n tawila ur yettwaf ara."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
@@ -291,22 +291,16 @@ msgid "Download packages"
 msgstr "Azdam n ikemmusen"
 
 #: client/pkgc-manage.c:1049
-#, fuzzy
-#| msgid "Installing updates"
 msgid "Manage offline system updates"
-msgstr "Asebded n yileqman"
+msgstr "Sefrek ileqman n unagraw s war tuqqna"
 
 #: client/pkgc-manage.c:1055
-#, fuzzy
-#| msgid "Install package"
 msgid "Install package signature"
-msgstr "Sebded akemmus"
+msgstr "Asebeddi n uzmul n ukemmus"
 
 #: client/pkgc-manage.c:1061
-#, fuzzy
-#| msgid "Repair System"
 msgid "Repair package system"
-msgstr "Seggem anagraw"
+msgstr "Seggem akemmus n unagraw"
 
 #: client/pkgc-manage.c:1067
 msgid "Safely stop the PackageKit daemon"
@@ -345,16 +339,14 @@ msgid "Backend: %s"
 msgstr ""
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
+#, c-format
 msgid "Description: %s"
-msgstr "Aglam"
+msgstr "Aglam: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
+#, c-format
 msgid "Author: %s"
-msgstr "Ameskar"
+msgstr "Ameskar: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
@@ -456,10 +448,8 @@ msgstr ""
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
 msgid "Categories:"
-msgstr "Taggayt"
+msgstr "Taggayin:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
@@ -537,10 +527,8 @@ msgid "List packages providing a capability"
 msgstr ""
 
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Downloading packages"
 msgid "Show files in package"
-msgstr "Azdam n ikemmusen"
+msgstr "Beqqeḍ ifuyla yellan deg ukemmus"
 
 #: client/pkgc-query.c:1027
 #, fuzzy
@@ -617,7 +605,7 @@ msgstr ""
 
 #: client/pkgc-repo.c:247
 msgid "Enable a repository"
-msgstr ""
+msgstr "Rmed akufi"
 
 #: client/pkgc-repo.c:253
 msgid "Disable a repository"
@@ -676,7 +664,7 @@ msgstr ""
 
 #: client/pkgc-util.c:275
 msgid "Error"
-msgstr ""
+msgstr "Tuccḍa"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:307
@@ -698,39 +686,33 @@ msgstr ""
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:627 client/pkgc-util.c:781
-#, fuzzy
-#| msgid "Package"
 msgid "Package:"
-msgstr "Akemmus"
+msgstr "Akemmus:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:631
 msgid "Version:"
-msgstr ""
+msgstr "Lqem:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:638
-#, fuzzy
-#| msgid "Summary"
 msgid "Summary:"
-msgstr "Agzul"
+msgstr "Agzul:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:646
-#, fuzzy
-#| msgid "Description"
 msgid "Description:"
-msgstr "Aglam"
+msgstr "Aglam:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:653
 msgid "License:"
-msgstr ""
+msgstr "Turegt:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:660
 msgid "URL:"
-msgstr ""
+msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:667
@@ -760,10 +742,8 @@ msgstr "Ileqman"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:788
-#, fuzzy
-#| msgid "Updates"
 msgid "Updates:"
-msgstr "Ileqman"
+msgstr "Ileqman:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:797
@@ -772,10 +752,8 @@ msgstr ""
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:806
-#, fuzzy
-#| msgid "Vendor"
 msgid "Vendor:"
-msgstr "Imefki"
+msgstr "Imefki:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:815
@@ -785,14 +763,12 @@ msgstr ""
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:824
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:832
-#, fuzzy
-#| msgid "Restart"
 msgid "Restart:"
-msgstr "Tulsa n usekker"
+msgstr "Allus n usekker:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:841
@@ -803,17 +779,13 @@ msgstr "Leqqem aseɣẓan"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:848
-#, fuzzy
-#| msgid "Changes"
 msgid "Changes:"
-msgstr "Isenfal"
+msgstr "Isenfal:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:855
-#, fuzzy
-#| msgid "State"
 msgid "State:"
-msgstr "Addad"
+msgstr "Addad:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:864
@@ -858,17 +830,13 @@ msgstr ""
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1005
-#, fuzzy
-#| msgid "Role"
 msgid "Role:"
-msgstr "Tamlilt"
+msgstr "Tamlilt:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1012
-#, fuzzy
-#| msgid "Duration"
 msgid "Duration:"
-msgstr "Tanzagt"
+msgstr "Tanzagt:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1019
@@ -879,17 +847,13 @@ msgstr "Izirig n inezḍayen"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1025
-#, fuzzy
-#| msgid "User ID"
 msgid "User ID:"
-msgstr "Asulay ID n useqdac"
+msgstr "Asulay ID n useqdac:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1034
-#, fuzzy
-#| msgid "Username"
 msgid "Username:"
-msgstr "Isem n useqdac"
+msgstr "Isem n useqdac:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1040
@@ -922,10 +886,9 @@ msgid "Please choose the correct package: "
 msgstr ""
 
 #: client/pkgc-util.c:1219
-#, fuzzy, c-format
-#| msgid "Package not found"
+#, c-format
 msgid "Package not found: %s"
-msgstr "Akemmus ur yettwaf ara"
+msgstr "Akemmus ur yettwaf ara: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
@@ -1400,7 +1363,7 @@ msgstr ""
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
 msgid "Show the program version and exit"
-msgstr ""
+msgstr "Ad d-yesken lqem n useɣẓan syin ad yeffeɣ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkcon/pk-console.c:1709
@@ -2254,7 +2217,7 @@ msgstr ""
 #. TRANSLATORS: ask the user if they want to import
 #: lib/packagekit-glib2/pk-task-text.c:138
 msgid "Do you accept this signature?"
-msgstr ""
+msgstr "Ad tt-qebleḍ azmul-a?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:143
