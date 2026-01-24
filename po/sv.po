@@ -10,13 +10,13 @@
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sebastian Rasmussen <sebras@gmail.com>, 2015
 # Sebastian Rasmussen <sebras@gmail.com>, 2015-2016
-# Anders Jonsson <anders.jonsson@norsjovallen.se>, 2025.
+# Anders Jonsson <anders.jonsson@norsjovallen.se>, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2025-12-02 06:00+0000\n"
+"PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -867,10 +867,8 @@ msgstr "Paketet hittades inte: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show pkgctl version"
 msgid "Show pkgcli version"
-msgstr "Visa pkgctl-version"
+msgstr "Visa pkgcli-version"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -935,10 +933,8 @@ msgid "Available Commands:"
 msgstr "Tillgängliga kommandon:"
 
 #: client/pkgcli.c:217
-#, fuzzy
-#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Använd ”pkgctl KOMMANDO --help” för kommandospecifik hjälp."
+msgstr "Använd ”pkgcli KOMMANDO --help” för kommandospecifik hjälp."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
