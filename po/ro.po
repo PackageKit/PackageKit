@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2024-2025
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2024-2025, 2026.
 # Richard Hughes <richard@hughsie.com>, 2011
 # Sergiu Bivol <sergiu@cip.md>, 2020
 msgid ""
@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2025-12-02 06:00+0000\n"
+"PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -862,10 +862,8 @@ msgstr "Pachetul nu a fost găsit: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show pkgctl version"
 msgid "Show pkgcli version"
-msgstr "Afișează versiunea pkgctl"
+msgstr "Afișează versiunea pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -930,10 +928,8 @@ msgid "Available Commands:"
 msgstr "Comenzi disponibile:"
 
 #: client/pkgcli.c:217
-#, fuzzy
-#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Utilizați «pkgctl COMANDA --help» pentru ajutor specific comenzii."
+msgstr "Utilizați «pkgcli COMANDA --help» pentru ajutor specific comenzii."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
