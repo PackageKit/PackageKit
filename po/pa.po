@@ -9,17 +9,21 @@
 # A S Alam, 2011-2014,2016
 # Jaswinder Singh <jsingh@redhat.com>, 2009
 # Richard Hughes <richard@hughsie.com>, 2011
+# Aman Alam <aalam@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-01 16:38+0100\n"
-"Language-Team: Panjabi (Punjabi) (http://app.transifex.com/freedesktop/packagekit/language/pa/)\n"
+"PO-Revision-Date: 2026-01-24 03:01+0000\n"
+"Last-Translator: Aman Alam <aalam@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Punjabi <https://hosted.weblate.org/projects/packagekit/translations/pa/>\n"
 "Language: pa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -27,10 +31,9 @@ msgstr ""
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
-#, fuzzy, c-format
-#| msgid "Failed to load the config file"
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "ਸੰਰਚਨਾ ਫਾਇਲ ਨੂੰ ਲੋਡ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ"
+msgstr "ਸੰਰਚਨਾ ਫਾਇਲ ਨੂੰ ਲੋਡ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -46,17 +49,13 @@ msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਲਈ ਤਿਆਰੀ ਕੇਵਲ ਪੈ�
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
 msgid "Allow package downgrades"
-msgstr "ਟਰਾਂਜੈਕਸ਼ਨ ਦੇ ਦੌਰਾਨ ਪੈਕੇਜਾਂ ਨੂੰ ਡਾਊਨਗਰੇਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+msgstr "ਪੈਕੇਜਡਾਊਨਗਰੇਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
 msgid "Allow package re-installations"
-msgstr "ਟਰਾਂਜੈਕਸ਼ਨ ਦੇ ਦੌਰਾਨ ਪੈਕੇਜਾਂ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+msgstr "ਪੈਕੇਜ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
@@ -77,18 +76,16 @@ msgstr ""
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "ਸਕਿੰਟ"
 
 #. TRANSLATORS: Description for pkgctl refresh
 #: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refresh the cache"
 msgid "Refresh the package metadata cache."
-msgstr "ਕੈਸ਼ ਨੂੰ ਤਾਜ਼ਾ ਕਰੋ"
+msgstr "ਪੈਕੇਜ ਮੇਟਾਡਾਟੇ ਕੈਸ਼ ਨੂੰ ਤਾਜ਼ਾ ਕਰੋ।"
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "ਪੈਕੇਜ ਮੇਟਾਡਾਟੇ ਕੈਸ਼ ਤਾਜ਼ਾ ਕੀਤਾ"
 
 #. TRANSLATORS: Description for pkgctl install
 #: client/pkgc-manage.c:246
@@ -105,37 +102,33 @@ msgid "Could not find any available package: %s"
 msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #: client/pkgc-manage.c:326
-#, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The selected package is already installed."
-msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਵੇਗਾ:"
+msgstr "ਚੁਣਿਆ ਪੈਕੇਜ ਪਹਿਲਾਂ ਹੀ ਇੰਸਟਾਲ ਹੈ।"
 
 #. TRANSLATORS: Description for pkgctl remove
 #: client/pkgc-manage.c:366
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "ਸਿਸਟਮ ਤੋਂ ਇੱਕ ਜਾਂ ਵੱਧ ਪੈਕੇਜਾਂ ਨੂੰ ਹਟਾਓ।"
 
 #: client/pkgc-manage.c:383
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "ਇਹ ਟੂਲ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
+msgstr "ਇੰਸਟਾਲ ਹੋਇਆ ਪੈਕੇਜ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ: %s"
 
 #. TRANSLATORS: Description for pkgctl download
 #: client/pkgc-manage.c:423
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "ਪੈਕੇਜ ਨੂੰ ਬਿਨਾਂ ਇੰਸਟਾਲ ਕੀਤੇ ਹੀ ਚੁਣੀ ਗਈ ਡਾਇਰੈਕਟਰੀ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰੋ।"
 
 #: client/pkgc-manage.c:437 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "ਇਹ ਟੂਲ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
+msgstr "ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
 #: client/pkgc-manage.c:445
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "ਡਾਇਰੈਕਟਰੀ ਮੌਜੂਦ ਨਹੀਂ ਹੈ: %s"
 
 #. TRANSLATORS: Description for pkgctl update
 #: client/pkgc-manage.c:488
@@ -143,22 +136,18 @@ msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "ਇਹ ਟੂਲ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
+msgstr "ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਪੈਕੇਜ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:642 client/pkgc-manage.c:868
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "ਡੈਮਨ ਹਾਲਤ ਪਤਾ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ।"
+msgstr "ਅੱਪਡੇਟ ਲੈਣ ਲਈ ਫ਼ੇਲ੍ਹ: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:651 client/pkgc-manage.c:876
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
 msgid "No packages require updating"
-msgstr "ਨਵੇਂ ਵਰਜਨ ਲਈ ਅੱਪਡੇਟ ਕਰਨ ਵਾਸਤੇ ਕਿਸੇ ਪੈਕੇਜ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।"
+msgstr "ਕਿਸੇ ਪੈਕੇਜ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ"
 
 #. TRANSLATORS: Description of pkgctl upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -189,10 +178,8 @@ msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟਾਂ ਨੂੰ ਬਦਲੋ"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:716
-#, fuzzy
-#| msgid "Prepared updates:"
 msgid "Prepared packages:"
-msgstr "ਤਿਆਰ ਕੀਤੇ ਅੱਪਡੇਟ:"
+msgstr "ਤਿਆਰ ਕੀਤੇ ਪੈਕੇਜ:"
 
 #: client/pkgc-manage.c:730
 #, fuzzy
@@ -225,10 +212,9 @@ msgid "Last offline update completed successfully"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰੋ"
 
 #: client/pkgc-manage.c:767
-#, fuzzy, c-format
-#| msgid "Updated"
+#, c-format
 msgid "Updated: %s"
-msgstr "ਅੱਪਡੇਟ ਕੀਤੇ"
+msgstr "ਅੱਪਡੇਟ ਕੀਤੇ: %s"
 
 #: client/pkgc-manage.c:788
 #, fuzzy, c-format
@@ -238,7 +224,7 @@ msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟਾਂ ਨੂੰ ਬਦਲੋ"
 
 #: client/pkgc-manage.c:792
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "ਆਫ਼ਲਾਈਨ ਅੱਪਡੇਟ ਸੈਡਿਊਲ ਕੀਤਾ ਹੈ। ਅਗਲੀ ਵਾਰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਸਮੇਂ ਸਿਸਟਮ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾਵੇਗਾ।"
 
 #. TRANSLATORS: Description of the pkgctl offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -303,34 +289,24 @@ msgid "Refresh package metadata"
 msgstr ""
 
 #: client/pkgc-manage.c:1020
-#, fuzzy
-#| msgid "Install package"
 msgid "Install packages"
-msgstr "ਪੈਕੇਜ ਨੂੰ ਇੰਸਟਾਲ ਕਰੋ"
+msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਇੰਸਟਾਲ ਕਰੋ"
 
 #: client/pkgc-manage.c:1026
-#, fuzzy
-#| msgid "Remove package"
 msgid "Remove packages"
-msgstr "ਪੈਕੇਜ ਹਟਾਓ"
+msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਹਟਾਓ"
 
 #: client/pkgc-manage.c:1032
-#, fuzzy
-#| msgid "Updating packages"
 msgid "Update packages"
-msgstr "ਪੈਕੇਜ ਅੱਪਡੇਟ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
+msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ"
 
 #: client/pkgc-manage.c:1038
-#, fuzzy
-#| msgid "Upgrade System"
 msgid "Upgrade the system"
 msgstr "ਸਿਸਟਮ ਨੂੰ ਅੱਪਗਰੇਡ ਕਰੋ"
 
 #: client/pkgc-manage.c:1044
-#, fuzzy
-#| msgid "Downloading packages"
 msgid "Download packages"
-msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰੋ"
 
 #: client/pkgc-manage.c:1050
 #, fuzzy
@@ -339,14 +315,10 @@ msgid "Manage offline system updates"
 msgstr "ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਹੈ।"
 
 #: client/pkgc-manage.c:1056
-#, fuzzy
-#| msgid "Installing signature"
 msgid "Install package signature"
-msgstr "ਦਸਤਖਤ ਇੰਸਟਾਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
+msgstr "ਦਸਤਖਤ ਇੰਸਟਾਲ ਕਰੋ"
 
 #: client/pkgc-manage.c:1062
-#, fuzzy
-#| msgid "Repair System"
 msgid "Repair package system"
 msgstr "ਸਿਸਟਮ ਨੂੰ ਰਿਪੇਅਰ ਕਰੋ"
 
@@ -384,27 +356,24 @@ msgstr ""
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "ਬੈਕਐਂਡ: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
+#, c-format
 msgid "Description: %s"
-msgstr "ਵੇਰਵਾ"
+msgstr "ਵਰਣਨ: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
+#, c-format
 msgid "Author: %s"
-msgstr "ਲੇਖਕ"
+msgstr "ਲੇਖਕ: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
+#, c-format
 msgid "Roles: %s"
-msgstr "ਰੋਲ"
+msgstr "ਰੋਲ: %s"
 
 #. TRANSLATORS: Description for pkgctl history
 #: client/pkgc-query.c:245
@@ -494,19 +463,17 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
 msgid "Filters:"
-msgstr ""
+msgstr "ਫ਼ਿਲਟਰ:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:825
 msgid "Groups:"
-msgstr ""
+msgstr "ਗਰੁੱਪ:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
 msgid "Categories:"
-msgstr "ਕੈਟਾਗਰੀ"
+msgstr "ਕੈਟਾਗਰੀਆਂ:"
 
 #. TRANSLATORS: Description for pkgctl show-distro-upgrade
 #: client/pkgc-query.c:866
@@ -546,22 +513,16 @@ msgid "A correct role is required"
 msgstr "ਠੀਕ ਰੋਲ ਲੋੜੀਦਾ ਹੈ"
 
 #: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
 msgid "Show backend information"
-msgstr "ਜਾਣਕਾਰੀ ਲਈ ਜਾ ਰਹੀ ਹੈ"
+msgstr "ਬੈਕਐਂਡ ਜਾਣਕਾਰੀ ਵੇਖਾਓ"
 
 #: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
 msgid "Show transaction history"
-msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਫੇਲ੍ਹ ਹੋਈ"
+msgstr "ਟਰਾਂਸੈਕਸ਼ਨ ਅਤੀਤ ਵੇਖਾਓ"
 
 #: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Search by names"
 msgid "Search for packages"
-msgstr "ਨਾਂ ਨਾਲ ਖੋਜੋ"
+msgstr "ਪੈਕੇਜਾਂ ਨੂੰ ਲੱਭੋ"
 
 #: client/pkgc-query.c:991
 #, fuzzy
@@ -600,8 +561,6 @@ msgid "Show files in package"
 msgstr "ਪੈਕੇਜ ਬਰਤਰਫ਼ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
 msgid "Get available updates"
 msgstr "ਅੱਪਡੇਟ ਲਏ ਜਾ ਰਹੇ ਹਨ"
 
