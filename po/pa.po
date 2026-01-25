@@ -15,7 +15,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2026-01-24 03:01+0000\n"
+"PO-Revision-Date: 2026-01-25 23:47+0000\n"
 "Last-Translator: Aman Alam <aalam@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Punjabi <https://hosted.weblate.org/projects/packagekit/translations/pa/>\n"
 "Language: pa\n"
@@ -133,7 +133,7 @@ msgstr "ਡਾਇਰੈਕਟਰੀ ਮੌਜੂਦ ਨਹੀਂ ਹੈ: %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "ਸਾਰੇ ਜਾਂ ਖਾਸ ਪੈਕੇਜਾਂ ਨੂੰ ਉਹਨਾਂ ਦੇ ਨਵੇਂ ਵਰਜ਼ਨਾਂ ਲਈ ਅੱਪਡੇਟ ਕਰੋ।"
 
 #: client/pkgc-manage.c:510
 #, c-format
@@ -159,10 +159,9 @@ msgid ""
 msgstr ""
 
 #: client/pkgc-manage.c:686
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟਾਂ ਨੂੰ ਬਦਲੋ"
+msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਕਾਰਵਾਈ ਪੜ੍ਹਨ ਲਈ ਫੇਲ੍ਹ: %s"
 
 #: client/pkgc-manage.c:696
 #, fuzzy
@@ -200,16 +199,13 @@ msgid "No results from last offline update available."
 msgstr "ਅੱਪਡੇਟ ਜਾਣਕਾਰੀ ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
 #: client/pkgc-manage.c:748
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰੋ"
+msgstr "ਆਖਰੀ ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਫੇਲ੍ਹ: %s: %s"
 
 #: client/pkgc-manage.c:755
-#, fuzzy
-#| msgid "Clear offline update message"
 msgid "Last offline update completed successfully"
-msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰੋ"
+msgstr "ਆਖਰੀ ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਕਾਮਯਾਬੀ ਨਾਲ ਪੂਰੇ ਹੋਏ"
 
 #: client/pkgc-manage.c:766
 #, c-format
