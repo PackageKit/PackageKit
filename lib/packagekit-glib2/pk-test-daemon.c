@@ -29,7 +29,7 @@
 #include "pk-client.h"
 #include "pk-client-helper.h"
 #include "pk-control.h"
-#include "pk-console-shared.h"
+#include "pk-console-private.h"
 #include "pk-offline.h"
 #include "pk-offline-private.h"
 #include "pk-package-ids.h"

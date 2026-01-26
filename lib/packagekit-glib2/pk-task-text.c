@@ -30,7 +30,7 @@
 #include <packagekit-glib2/pk-task.h>
 
 #include "pk-task-text.h"
-#include "pk-console-shared.h"
+#include "pk-console-private.h"
 
 struct _PkTaskText
 {

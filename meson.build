@@ -62,8 +62,13 @@ if get_option('daemon_tests')
   add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
 endif
 
-# Ensure functions like realpath(3) and other "default" functions are available
-add_project_arguments ('-D_DEFAULT_SOURCE', language: 'c')
+# Ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
+add_project_arguments ([
+  '-D_DEFAULT_SOURCE',
+  '-D_XOPEN_SOURCE=700'
+  ],
+  language: 'c'
+)
 
 add_project_arguments (
   '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_@0@_@1@'.format(glib_major, glib_minor),

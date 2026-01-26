@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2024-2025 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (C) 2024-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -31,6 +31,7 @@
 #include <sys/ioctl.h>
 
 #include "pk-progress-bar.h"
+#include "pk-console-private.h"
 
 typedef struct {
 	guint			 position;
@@ -62,88 +63,30 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_progress_bar_get_instance_private (o))
 
 /**
- * pk_text_truncate:
- * @text: the UTF-8 string to truncate
- * @max_chars: maximum number of characters to keep
- *
- * Truncate a UTF-8 string to fit within a given character width
- */
-static gchar*
-pk_text_truncate (const gchar *text, guint max_chars)
-{
-	const gchar *p;
-	guint chars = 0;
-
-	if (text == NULL)
-		return g_strdup ("");
-
-	if (max_chars == 0)
-		return g_strdup ("");
-
-	p = text;
-	while (*p != '\0' && chars < max_chars) {
-		const gchar *next = g_utf8_next_char (p);
-		chars++;
-		p = next;
-	}
-
-	if (*p == '\0') {
-		/* String fits completely */
-		return g_strdup (text);
-	} else {
-		/* String needs truncation  */
-		gsize byte_len = p - text;
-
-		/* If we have room for ellipsis, add it */
-		if (max_chars > 3) {
-			gchar *result;
-			guint ellipsis_chars = 0;
-
-			/* Find position for ellipsis (max_chars - 3) */
-			p = text;
-			while (*p != '\0' && ellipsis_chars < max_chars - 3) {
-				p = g_utf8_next_char (p);
-				ellipsis_chars++;
-			}
-
-			byte_len = p - text;
-			result = g_malloc0 (byte_len + 4); /* +3 for "..." +1 for \0 */
-			memcpy (result, text, byte_len);
-			memcpy (result + byte_len, "...", 3);
-
-			return result;
-		}
-
-		/* Not enough room for ellipsis, just truncate */
-		return g_strndup (text, byte_len);
-	}
-}
-
-/**
  * pk_pad_string:
  * @text: the UTF-8 string to pad
- * @width: desired display width in characters
+ * @width: desired display width in terminal columns
  *
  * Pad a UTF-8 string to exactly the specified display width
  */
 static gchar *
 pk_pad_string (const gchar *text, guint width)
 {
-	guint chars;
+	guint display_width;
 	guint padding_needed;
 	GString *result;
 
 	if (text == NULL)
 		return g_strnfill (width, ' ');
 
-	/* Count actual UTF-8 characters in the string */
-	chars = g_utf8_strlen (text, -1);
+	/* Calculate actual display width */
+	display_width = pk_console_str_width (text);
 
-	if (chars >= width)
+	if (display_width >= width)
 		return g_strdup (text);
 
 	/* Add padding to reach desired width */
-	padding_needed = width - chars;
+	padding_needed = width - display_width;
 	result = g_string_new (text);
 	g_string_append_printf (result, "%*s", (int)padding_needed, "");
 
@@ -175,8 +118,8 @@ static void
 pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
-	gssize count;
-	gssize written;
+	size_t count;
+	ssize_t written;
 
 	if (priv->tty_fd < 0)
 		return;
@@ -186,10 +129,10 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 		return;
 
 	written = write (priv->tty_fd, tmp, count);
-	if (written != count) {
+	if (written < 0 || (size_t)written != count) {
 		g_warning ("Only wrote %" G_GSSIZE_FORMAT
 			   " of %" G_GSSIZE_FORMAT " bytes",
-			   written, count);
+			   written, (gssize)count);
 	}
 }
 
@@ -277,13 +220,16 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 		bar_width = 10;
 
 	/* text width is what's left */
-	text_width = available_width - bar_width - 3; /* -3 for space and brackets */
+	if (available_width > bar_width + 3)
+		text_width = available_width - bar_width - 3; /* -3 for space and brackets */
+	else
+		text_width = 0;
 
 	/* truncate and pad the current text to exact width */
 	if (priv->old_start_text != NULL && text_width > 0) {
 		g_autofree gchar *truncated = NULL;
 		g_autofree gchar *display_text = NULL;
-		truncated = pk_text_truncate (priv->old_start_text, text_width);
+		truncated = pk_console_text_truncate (priv->old_start_text, text_width);
 		display_text = pk_pad_string (truncated, text_width);
 		g_string_append (str, display_text);
 	} else {
@@ -383,13 +329,16 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	if (bar_width < 10)
 		bar_width = 10;
 
-	text_width = available - bar_width - 3;
+	if (available > bar_width + 3)
+		text_width = available - bar_width - 3;
+	else
+		text_width = 0;
 
 	/* truncate and pad the current text to exact width */
 	if (priv->old_start_text != NULL && text_width > 0) {
 		g_autofree gchar *truncated = NULL;
 		g_autofree gchar *display_text = NULL;
-		truncated = pk_text_truncate (priv->old_start_text, text_width);
+		truncated = pk_console_text_truncate (priv->old_start_text, text_width);
 		display_text = pk_pad_string (truncated, text_width);
 		g_string_append (str, display_text);
 	} else {

@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -27,15 +28,138 @@
 #include <errno.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/pk-client.h>
-#include <packagekit-glib2/pk-bitfield.h>
+#include <wchar.h>
 #include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-package-id.h>
 
-#include "pk-error.h"
-#include "pk-client-sync.h"
-#include "pk-console-shared.h"
+#include "pk-console-private.h"
+
+/**
+ * pk_console_str_width:
+ * @text: the UTF-8 string to measure
+ *
+ * Calculate the display width of a UTF-8 string in terminal columns.
+ *
+ * Returns: the display width in terminal columns
+ */
+guint
+pk_console_str_width (const gchar *text)
+{
+	guint width = 0;
+	const gchar *p;
+	wchar_t wc;
+	gint char_width;
+	mbstate_t state;
+
+	if (text == NULL)
+		return 0;
+
+	memset (&state, 0, sizeof (mbstate_t));
+	p = text;
+
+	while (*p != '\0') {
+		size_t bytes = mbrtowc (&wc, p, MB_CUR_MAX, &state);
+
+		if (bytes == (size_t)-1 || bytes == (size_t)-2) {
+			/* Invalid multibyte sequence, treat as single-width */
+			width++;
+			p++;
+			memset (&state, 0, sizeof (mbstate_t));
+			continue;
+		}
+
+		if (bytes == 0)
+			break;
+
+		char_width = wcwidth (wc);
+		if (char_width < 0) {
+			/* Non-printable character, treat as zero-width */
+			char_width = 0;
+		}
+
+		width += char_width;
+		p += bytes;
+	}
+
+	return width;
+}
+
+/**
+ * pk_console_text_truncate:
+ * @text: the UTF-8 string to truncate
+ * @max_width: maximum display width in terminal columns
+ *
+ * Truncate a UTF-8 string to fit within a given display width
+ */
+gchar*
+pk_console_text_truncate (const gchar *text, guint max_width)
+{
+	const gchar *p;
+	guint width = 0;
+	wchar_t wc;
+	gint char_width;
+	mbstate_t state;
+	guint target_width;
+	gboolean use_ellipsis;
+	gsize byte_len;
+	gchar *result;
+
+	if (text == NULL)
+		return g_strdup ("");
+
+	if (max_width == 0)
+		return g_strdup ("");
+
+	/* Check if the string already fits */
+	if (pk_console_str_width (text) <= max_width)
+		return g_strdup (text);
+
+	/* String needs truncation */
+	memset (&state, 0, sizeof (mbstate_t));
+	p = text;
+
+	/* Reserve space for ellipsis if possible */
+	target_width = max_width;
+	use_ellipsis = max_width > 3;
+	if (use_ellipsis)
+		target_width = max_width - 3;
+
+	while (*p != '\0') {
+		size_t bytes = mbrtowc (&wc, p, MB_CUR_MAX, &state);
+
+		if (bytes == (size_t)-1 || bytes == (size_t)-2) {
+			/* Invalid multibyte sequence */
+			if (width + 1 > target_width)
+				break;
+			width++;
+			p++;
+			memset (&state, 0, sizeof (mbstate_t));
+			continue;
+		}
+
+		if (bytes == 0)
+			break;
+
+		char_width = wcwidth (wc);
+		if (char_width < 0)
+			char_width = 0;
+
+		if (width + char_width > target_width)
+			break;
+
+		width += char_width;
+		p += bytes;
+	}
+
+	byte_len = p - text;
+	if (use_ellipsis) {
+		result = g_malloc0 (byte_len + 4);
+		memcpy (result, text, byte_len);
+		memcpy (result + byte_len, "...", 3);
+		return result;
+	}
+
+	return g_strndup (text, byte_len);
+}
 
 /**
  * pk_console_get_number:
@@ -350,4 +474,3 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 	}
 	return text;
 }
-

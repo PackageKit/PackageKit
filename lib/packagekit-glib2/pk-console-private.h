@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -19,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __PK_CONSOLE_SHARED_H
-#define __PK_CONSOLE_SHARED_H
+#ifndef __PK_CONSOLE_PRIVATE_H
+#define __PK_CONSOLE_PRIVATE_H
 
 #include <glib.h>
 #include <packagekit-glib2/pk-client.h>
@@ -29,12 +30,15 @@
 
 G_BEGIN_DECLS
 
-guint		 pk_console_get_number			(const gchar	*question,
-							 guint		 maxnum);
-gboolean	 pk_console_get_prompt			(const gchar	*question,
-							 gboolean	 defaultyes);
+guint			pk_console_str_width (const gchar *text);
+gchar		   *pk_console_text_truncate (const gchar *text,
+										  guint max_width);
+
+guint			pk_console_get_number (const gchar	*question,
+										guint		 maxnum);
+gboolean		pk_console_get_prompt (const gchar	*question,
+										gboolean	 defaultyes);
 
 G_END_DECLS
 
-#endif /* __PK_CONSOLE_SHARED_H */
-
+#endif /* __PK_CONSOLE_PRIVATE_H */

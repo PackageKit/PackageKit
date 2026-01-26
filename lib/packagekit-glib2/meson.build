@@ -108,8 +108,8 @@ pk_enum_type = gnome.mkenums(
 packagekitprivate_sources = files(
   'packagekit-private.h',
   'pk-common-private.h',
-  'pk-console-shared.c',
-  'pk-console-shared.h',
+  'pk-console-private.c',
+  'pk-console-private.h',
   'pk-progress-private.h',
   'pk-progress-bar.c',
   'pk-progress-bar.h',
