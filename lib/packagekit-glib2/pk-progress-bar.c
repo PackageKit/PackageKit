@@ -46,7 +46,7 @@ struct PkProgressBarPrivate
 	PkProgressBarPulseState	 pulse_state;
 	gint			 tty_fd;
 	gchar			*old_start_text;
-	guint			 term_width;
+	guint			 area_width;
 	gboolean		 use_unicode;
 
 	gboolean		 allow_restart;
@@ -63,10 +63,12 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_progress_bar_get_instance_private (o))
 
 /**
- * pk_progress_bar_get_terminal_width:
+ * pk_progress_bar_get_draw_area_width:
+ *
+ * Get our drawing area width in characters.
  */
 static guint
-pk_progress_bar_get_terminal_width (PkProgressBar *self)
+pk_progress_bar_get_draw_area_width (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	struct winsize w;
@@ -74,8 +76,10 @@ pk_progress_bar_get_terminal_width (PkProgressBar *self)
 	if (priv->tty_fd < 0)
 		return 80;
 
-	if (ioctl (priv->tty_fd, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
-		return w.ws_col;
+	if (ioctl (priv->tty_fd, TIOCGWINSZ, &w) == 0 && w.ws_col > 0) {
+		/* we may have very long terminals, so cap the area to a reasonable maximum size */
+		return w.ws_col >= 110 ? 110 : w.ws_col;
+	}
 
 	return 80;
 }
@@ -134,7 +138,6 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	g_autoptr(GString) str = NULL;
-	guint term_width;
 	guint available_width;
 	guint bar_width;
 	guint text_width;
@@ -154,10 +157,8 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 	/* move cursor to start of line and clear it */
 	g_string_append (str, "\r\033[K");
 
-	term_width = pk_progress_bar_get_terminal_width (self);
-
 	/* calculate available width for text + bar */
-	available_width = term_width > PK_PERCENT_TEXT_WIDTH ? term_width - PK_PERCENT_TEXT_WIDTH : term_width;
+	available_width = priv->area_width > PK_PERCENT_TEXT_WIDTH ? priv->area_width - PK_PERCENT_TEXT_WIDTH : priv->area_width;
 
 	/* determine bar width (use configured size or auto-calculate) */
 	bar_width = priv->size;
@@ -243,7 +244,6 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
 	g_autoptr(GString) str = NULL;
-	guint term_width;
 	guint available;
 	guint bar_width;
 	guint text_width;
@@ -267,8 +267,7 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	g_string_append (str, "\r\033[K");
 
 	/* calculate dimensions */
-	term_width = pk_progress_bar_get_terminal_width (self);
-	available = term_width > PK_PERCENT_TEXT_WIDTH ? term_width - PK_PERCENT_TEXT_WIDTH : term_width;
+	available = priv->area_width > PK_PERCENT_TEXT_WIDTH ? priv->area_width - PK_PERCENT_TEXT_WIDTH : priv->area_width;
 
 	bar_width = priv->size;
 	if (bar_width > available / 2)
@@ -404,6 +403,9 @@ pk_progress_bar_start (PkProgressBar *progress_bar, const gchar *text)
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
 
+	/* update our drawing area size, in case it has changed */
+	priv->area_width = pk_progress_bar_get_draw_area_width (progress_bar);
+
 	/* same as last time */
 	if (priv->old_start_text != NULL && text != NULL) {
 		if (g_strcmp0 (priv->old_start_text, text) == 0)
@@ -515,7 +517,7 @@ pk_progress_bar_init (PkProgressBar *self)
 	priv->size = PK_PROGRESS_BAR_DEFAULT_SIZE;
 	priv->percentage = G_MININT;
 	priv->timer_id = 0;
-	priv->term_width = 80;
+	priv->area_width = 80;
 
 	/* check if we can use Unicode */
 	codeset = nl_langinfo (CODESET);
@@ -532,7 +534,7 @@ pk_progress_bar_init (PkProgressBar *self)
 
 	/* get initial terminal width */
 	if (priv->tty_fd >= 0)
-		priv->term_width = pk_progress_bar_get_terminal_width (self);
+		priv->area_width = pk_progress_bar_get_draw_area_width (self);
 }
 
 /**

@@ -148,7 +148,7 @@ gboolean
 pkgc_context_init (PkgcliContext *ctx, GError **error)
 {
 	struct winsize w;
-	int bar_size = 34;
+	int bar_size = 40;
 
 	if (ctx->control != NULL) {
 		g_critical ("Tried to initialize an already initialized PkgctlContext");
@@ -161,8 +161,8 @@ pkgc_context_init (PkgcliContext *ctx, GError **error)
 		ctx->output_mode != PKGCLI_MODE_QUIET) {
 		/* adjust progress bar size for small terminals */
 		if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
-			int col_diff = (int) w.ws_col - 52;
-			bar_size = MAX (0, MIN (col_diff, bar_size));
+			gint col_diff = (gint) w.ws_col - 52;
+			bar_size = MAX (8, MIN (col_diff, bar_size));
 		}
 
 		ctx->progressbar = pk_progress_bar_new ();
