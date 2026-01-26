@@ -59,13 +59,13 @@ public:
         string SourceFile;
         uint Deb822StanzaIdx;
 
-        string joinedSections(const std::string &separator = " ");
+        string joinedSections(const std::string &separator = " ") const;
         string niceName();
         string repoId();
-        bool hasSection(const char *component);
+        bool hasSection(const char *component) const;
 
         bool SetType(string);
-        string GetType();
+        string GetType() const;
         bool SetURI(string);
         bool SetURIs(const std::vector<std::string> &newURIs);
 
@@ -95,9 +95,9 @@ public:
     list<VendorRecord *> VendorRecords;
 
 private:
-    SourceRecord *AddSourceNode(SourceRecord &);
+    SourceRecord *AddSourceNode(const SourceRecord &);
     VendorRecord *AddVendorNode(VendorRecord &);
-    bool OpenConfigurationFileFd(std::string const &File, FileFd &Fd);
+    static bool OpenConfigurationFileFd(std::string const &File, FileFd &Fd);
     bool ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsigned int const stanzaIdx, FileFd &Fd);
     bool UpdateSourceLegacy(const std::string &filename);
     bool UpdateSourceDeb822(const std::string &filename);
@@ -114,8 +114,8 @@ public:
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);
     void SwapSources(SourceRecord *&, SourceRecord *&);
-    bool ReadSourceDeb822(string listpath);
-    bool ReadSourceLegacy(string listpath);
+    bool ReadSourceDeb822(const string& listpath);
+    bool ReadSourceLegacy(const string& listpath);
     bool ReadSourcePart(string listpath);
     bool ReadSourceDir(string Dir);
     bool ReadSources();

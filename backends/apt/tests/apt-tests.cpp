@@ -348,7 +348,8 @@ _test_sample_sources(const std::string &testSourcesDir)
         testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
         testSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
         testSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla:main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
-        testSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | disabled"
+        testSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | disabled",
+        testSourcesDir + "/ppa-1.sources:deb:https://ppa.launchpadcontent.net/ximion/syntalos/ubuntu/:resolute:main | main | Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main) | enabled"
     };
 
     set<string> foundSources;
@@ -388,7 +389,8 @@ apt_test_sources_write (void)
         wtestSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | disabled",
         wtestSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
         wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla:main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
-        wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled"
+        wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled",
+        wtestSourcesDir + "/ppa-1.sources:deb:https://ppa.launchpadcontent.net/ximion/syntalos/ubuntu/:resolute:main | main | Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main) | enabled"
     };
 
     // read data and write it back, ensure we do not change anything

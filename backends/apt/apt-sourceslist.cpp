@@ -74,7 +74,7 @@ SourcesList::~SourcesList()
     }
 }
 
-SourcesList::SourceRecord *SourcesList::AddSourceNode(SourceRecord &rec)
+SourcesList::SourceRecord *SourcesList::AddSourceNode(const SourceRecord &rec)
 {
     SourceRecord *newrec = new SourceRecord;
     *newrec = rec;
@@ -83,7 +83,7 @@ SourcesList::SourceRecord *SourcesList::AddSourceNode(SourceRecord &rec)
     return newrec;
 }
 
-bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd) /*{{{*/
+bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd)
 {
     int const fd = open(File.c_str(), O_RDONLY | O_CLOEXEC | O_NOCTTY);
     if (fd == -1)
@@ -171,7 +171,7 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
     return true;
 }
 
-bool SourcesList::ReadSourceDeb822(string listpath)
+bool SourcesList::ReadSourceDeb822(const string &listpath)
 {
     FileFd Fd;
     if (OpenConfigurationFileFd(listpath, Fd) == false)
@@ -196,7 +196,7 @@ bool SourcesList::ReadSourceDeb822(string listpath)
     return true;
 }
 
-bool SourcesList::ReadSourceLegacy(string listpath)
+bool SourcesList::ReadSourceLegacy(const string &listpath)
 {
     char buf[512];
     const char *p;
@@ -629,7 +629,7 @@ bool SourcesList::SourceRecord::SetType(string S)
     return true;
 }
 
-string SourcesList::SourceRecord::GetType()
+string SourcesList::SourceRecord::GetType() const
 {
     if ((Type & Deb) != 0) {
         return "deb";
@@ -677,7 +677,7 @@ bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
     return ret;
 }
 
-string SourcesList::SourceRecord::joinedSections(const std::string &separator)
+string SourcesList::SourceRecord::joinedSections(const std::string &separator) const
 {
     string ret;
     for (unsigned int i = 0; i < NumSections; ++i) {
@@ -728,6 +728,7 @@ string SourcesList::SourceRecord::niceName()
             uri_info.pop_back();
     }
 
+    // Known distributions
     if (g_pattern_match_simple("*.debian.org/*", uri_info.c_str()))
         return "Debian " + ret;
     if (g_pattern_match_simple("*.ubuntu.com/*", uri_info.c_str()))
@@ -735,13 +736,33 @@ string SourcesList::SourceRecord::niceName()
     if (g_pattern_match_simple("*.pureos.net/*", uri_info.c_str()))
         return "PureOS " + ret;
 
+    // Launchpad PPA
+    if (g_pattern_match_simple("ppa.launchpadcontent.net/*", uri_info.c_str())) {
+        // Extract owner/ppa/distro segment from uri_info
+        size_t first_slash = uri_info.find('/');
+        if (first_slash != std::string::npos) {
+            std::string ppa_path = uri_info.substr(first_slash + 1);
+            return "Launchpad PPA: " + ppa_path + " - " + ret;
+        }
+    }
+
     return uri_info + " - " + ret;
 }
 
 string SourcesList::SourceRecord::repoId()
 {
     string ret;
-    ret = SourceFile;
+    // create a slightly more compact repo-id string
+    if (SourceFile == "/etc/apt/sources.list") {
+        ret = "sources";
+    } else {
+        ret = SourceFile;
+        // Strip out "/etc/apt/sources.list.d/" prefix if present
+        const string sources_list_d = "/etc/apt/sources.list.d/";
+        size_t pos = ret.find(sources_list_d);
+        if (pos == 0)
+            ret = ret.substr(sources_list_d.length());
+    }
     ret += ":" + GetType() + ":";
     ret += PrimaryURI + ":";
     ret += Dist + ":";
@@ -749,7 +770,7 @@ string SourcesList::SourceRecord::repoId()
     return ret;
 }
 
-bool SourcesList::SourceRecord::hasSection(const char *component)
+bool SourcesList::SourceRecord::hasSection(const char *component) const
 {
     for (unsigned int i = 0; i < NumSections; ++i) {
         if (Sections[i].compare(component) == 0) {
