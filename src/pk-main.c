@@ -159,6 +159,12 @@ main (int argc, char *argv[])
 #ifdef HAVE_CLEARENV
 	if (!keep_environment)
 		clearenv ();
+#else
+	if (!keep_environment) {
+		extern char **environ;
+		if (environ)
+			environ[0] = NULL;
+	}
 #endif
 
 	/* get values from the config file */

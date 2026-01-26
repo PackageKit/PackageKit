@@ -91,7 +91,7 @@ cc = meson.get_compiler('c')
 if cc.has_function('setpriority')
   conf.set('HAVE_SETPRIORITY', '1')
 endif
-if cc.has_function('clearenv')
+if cc.has_header_symbol('stdlib.h', 'clearenv')
   conf.set('HAVE_CLEARENV', '1')
 endif
 if cc.has_header('unistd.h')
