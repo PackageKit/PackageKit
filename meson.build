@@ -62,19 +62,18 @@ if get_option('daemon_tests')
   add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
 endif
 
-# Ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
-add_project_arguments ([
-  '-D_DEFAULT_SOURCE',
-  '-D_XOPEN_SOURCE=700',
-  '-D_POSIX_C_SOURCE=200809L',
-  ],
-  language: 'c'
-)
+# ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
+feature_args = [
+    '-D_DEFAULT_SOURCE',
+    '-D_XOPEN_SOURCE=700',
+    '-D_POSIX_C_SOURCE=200809L',
+]
 
-add_project_arguments (
-  '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_@0@_@1@'.format(glib_major, glib_minor),
-  language: 'c'
-)
+# set our minimum GLib version
+feature_args += '-DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_@0@_@1@'.format(glib_major, glib_minor)
+
+# project arguments
+add_project_arguments (feature_args, language: 'c')
 
 # allow the daemon to include library files directly
 add_project_arguments ('-DPK_COMPILATION', language: ['c', 'cpp'])
@@ -88,13 +87,13 @@ conf.set_quoted('PROJECT_NAME', meson.project_name())
 conf.set_quoted('PROJECT_VERSION', meson.project_version())
 
 cc = meson.get_compiler('c')
-if cc.has_function('setpriority')
+if cc.has_function('setpriority', args: feature_args)
   conf.set('HAVE_SETPRIORITY', '1')
 endif
-if cc.has_header_symbol('stdlib.h', 'clearenv')
+if cc.has_header_symbol('stdlib.h', 'clearenv', args: feature_args)
   conf.set('HAVE_CLEARENV', '1')
 endif
-if cc.has_header('unistd.h')
+if cc.has_header('unistd.h', args: feature_args)
   conf.set('HAVE_UNISTD_H', '1')
 endif
 
