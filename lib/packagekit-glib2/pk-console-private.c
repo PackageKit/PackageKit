@@ -26,9 +26,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <wchar.h>
+#include <strings.h>
 #include <gio/gio.h>
 #include <glib/gi18n.h>
-#include <wchar.h>
 #include <packagekit-glib2/pk-enum.h>
 
 #include "pk-console-private.h"
