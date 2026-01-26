@@ -367,12 +367,12 @@ pk_test_package_id_func (void)
 
 	/* test printable */
 	text = pk_package_id_to_printable ("moo;0.0.1;i386;fedora");
-	g_assert_cmpstr (text, ==, "moo-0.0.1.i386");
+	g_assert_cmpstr (text, ==, "moo_0.0.1.i386");
 	g_free (text);
 
 	/* test printable no arch */
 	text = pk_package_id_to_printable ("moo;0.0.1;;");
-	g_assert_cmpstr (text, ==, "moo-0.0.1");
+	g_assert_cmpstr (text, ==, "moo_0.0.1");
 	g_free (text);
 
 	/* test printable just name */
@@ -963,4 +963,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
