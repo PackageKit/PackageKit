@@ -162,6 +162,36 @@ pk_console_text_truncate (const gchar *text, guint max_width)
 }
 
 /**
+ * pk_console_strpad:
+ * @text: the UTF-8 string to pad
+ * @width: desired display width in terminal columns
+ *
+ * Pad a UTF-8 string to exactly the specified display width
+ */
+gchar *
+pk_console_strpad (const gchar *text, guint width)
+{
+	guint display_width;
+	guint padding_needed;
+	g_autofree gchar *padding = NULL;
+
+	if (text == NULL)
+		return g_strnfill (width, ' ');
+
+	/* Calculate actual display width */
+	display_width = pk_console_str_width (text);
+
+	if (display_width >= width)
+		return g_strdup (text);
+
+	/* Add padding to reach desired width */
+	padding_needed = width - display_width;
+
+	padding = g_strnfill (padding_needed, ' ');
+	return g_strdup_printf ("%s%s", text, padding);
+}
+
+/**
  * pk_console_get_number:
  * @question: question to ask user
  * @maxnum: maximum number allowed

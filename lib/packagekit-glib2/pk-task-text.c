@@ -312,21 +312,16 @@ package_sort_func (gconstpointer a, gconstpointer b)
 	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
 }
 
-/*
+/**
  * pk_task_text_simulate_question:
- **/
+ */
 static void
 pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 {
-	guint i;
+	guint max_width = 0;
 	gboolean ret;
-	gchar *printable;
-	PkInfoEnum info;
-	gchar *package_id;
-	gchar *summary;
-	GList *l;
 	PkPackage *package;
-	GPtrArray *array;
+	g_autoptr(GPtrArray) array = NULL;
 	g_autoptr(GHashTable) table = NULL;
 	g_autoptr(GList) list = NULL;
 
@@ -339,7 +334,8 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	/* put data in a hash table for easier sorting */
 	table = g_hash_table_new_full (g_direct_hash, g_direct_equal,
 	                               NULL, (GDestroyNotify) g_ptr_array_unref);
-	for (i = 0; i < array->len; i++) {
+	for (guint i = 0; i < array->len; i++) {
+		PkInfoEnum info;
 		g_autoptr(GPtrArray) package_array = NULL;
 
 		package = g_ptr_array_index (array, i);
@@ -357,9 +353,38 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		                     g_ptr_array_ref (package_array));
 	}
 
-	/* go over the data we now have in a hash table */
+	/* calculate the maximum package name width for proper alignment */
+	max_width = 0;
 	list = g_hash_table_get_keys (table);
-	for (l = list; l != NULL; l = l->next) {
+	for (GList *l = list; l != NULL; l = l->next) {
+		GPtrArray *package_array;
+
+		package_array = g_hash_table_lookup (table, l->data);
+		for (guint i = 0; i < package_array->len; i++) {
+			guint width;
+			g_autofree gchar *package_id = NULL;
+			g_autofree gchar *printable = NULL;
+
+			package = g_ptr_array_index (package_array, i);
+			g_object_get (package, "package-id", &package_id, NULL);
+			/* NOTE: We could put this into an array to not invoke pk_package_id_to_printable()
+			 * multiple times and save allocations, but this is simpler code.
+			 * If this becomes a problem in future, PkPackage should get a function to
+			 * generate & cache a printable name, */
+			printable = pk_package_id_to_printable (package_id);
+
+			width = pk_console_str_width (printable);
+			if (width > max_width)
+				max_width = width;
+		}
+	}
+
+	/* add a minimum spacing of 2 characters between columns */
+	max_width += 2;
+
+	/* go over the data we now have in a hash table and print */
+	for (GList *l = list; l != NULL; l = l->next) {
+		PkInfoEnum info;
 		GPtrArray *package_array;
 		const gchar *title;
 
@@ -375,17 +400,22 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		/* sort the packages and print */
 		package_array = g_hash_table_lookup (table, l->data);
 		g_ptr_array_sort (package_array, package_sort_func);
-		for (i = 0; i < package_array->len; i++) {
+		for (guint i = 0; i < package_array->len; i++) {
+			g_autofree gchar *package_id = NULL;
+			g_autofree gchar *summary = NULL;
+			g_autofree gchar *printable = NULL;
+			g_autofree gchar *printable_pad = NULL;
+
 			package = g_ptr_array_index (package_array, i);
 			g_object_get (package,
 				      "package-id", &package_id,
 				      "summary", &summary,
 				      NULL);
 			printable = pk_package_id_to_printable (package_id);
-			g_print (" %s\t%s\n", printable, summary);
-			g_free (printable);
-			g_free (package_id);
-			g_free (summary);
+
+			/* pad the package name to align descriptions */
+			printable_pad = pk_console_strpad (printable, max_width);
+			g_print (" %s%s\n", printable_pad, summary);
 		}
 	}
 
@@ -398,8 +428,6 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 		g_print ("%s\n", _("The transaction did not proceed."));
 		pk_task_user_declined (task, request);
 	}
-
-	g_ptr_array_unref (array);
 }
 
 /*

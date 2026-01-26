@@ -206,7 +206,7 @@ pk_package_id_to_printable (const gchar *package_id)
 
 	/* version if present */
 	if (parts[PK_PACKAGE_ID_VERSION][0] != '\0')
-		g_string_append_printf (string, "-%s", parts[PK_PACKAGE_ID_VERSION]);
+		g_string_append_printf (string, "_%s", parts[PK_PACKAGE_ID_VERSION]);
 
 	/* arch if present */
 	if (parts[PK_PACKAGE_ID_ARCH][0] != '\0')

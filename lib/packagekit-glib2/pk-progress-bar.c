@@ -63,37 +63,6 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkProgressBar, pk_progress_bar, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_progress_bar_get_instance_private (o))
 
 /**
- * pk_pad_string:
- * @text: the UTF-8 string to pad
- * @width: desired display width in terminal columns
- *
- * Pad a UTF-8 string to exactly the specified display width
- */
-static gchar *
-pk_pad_string (const gchar *text, guint width)
-{
-	guint display_width;
-	guint padding_needed;
-	GString *result;
-
-	if (text == NULL)
-		return g_strnfill (width, ' ');
-
-	/* Calculate actual display width */
-	display_width = pk_console_str_width (text);
-
-	if (display_width >= width)
-		return g_strdup (text);
-
-	/* Add padding to reach desired width */
-	padding_needed = width - display_width;
-	result = g_string_new (text);
-	g_string_append_printf (result, "%*s", (int)padding_needed, "");
-
-	return g_string_free (result, FALSE);
-}
-
-/**
  * pk_progress_bar_get_terminal_width:
  */
 static guint
@@ -230,7 +199,7 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 		g_autofree gchar *truncated = NULL;
 		g_autofree gchar *display_text = NULL;
 		truncated = pk_console_text_truncate (priv->old_start_text, text_width);
-		display_text = pk_pad_string (truncated, text_width);
+		display_text = pk_console_strpad (truncated, text_width);
 		g_string_append (str, display_text);
 	} else {
 		gsize old_len = str->len;
@@ -339,7 +308,7 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 		g_autofree gchar *truncated = NULL;
 		g_autofree gchar *display_text = NULL;
 		truncated = pk_console_text_truncate (priv->old_start_text, text_width);
-		display_text = pk_pad_string (truncated, text_width);
+		display_text = pk_console_strpad (truncated, text_width);
 		g_string_append (str, display_text);
 	} else {
 		gsize old_len = str->len;
