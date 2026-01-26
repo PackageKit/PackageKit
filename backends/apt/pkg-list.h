@@ -75,7 +75,7 @@ public:
     /**
      * Return if the given vector contain a package
      */
-    bool contains(const pkgCache::PkgIterator &pkg);
+    bool contains(const pkgCache::PkgIterator &pkg) const;
 
     /**
      * Sort the package list

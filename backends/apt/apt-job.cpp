@@ -1417,6 +1417,16 @@ bool AptJob::getUpdates(
         }
     }
 
+    // DistUpgrade() marks ALL packages for upgrade in the cache.
+    // We need to clear these marks again, to not interfere with later actions
+    // where e.g. the user only selected *some* package for upgrade.
+    // We do this by creating a temporary ActionGroup scope that will be discarded.
+    {
+        pkgDepCache::ActionGroup clearGroup(*m_cache);
+        for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg)
+            (*m_cache)->MarkKeep(pkg, false);
+    }
+
     return true;
 }
 

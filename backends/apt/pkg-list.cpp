@@ -93,7 +93,7 @@ void PkgList::append(const pkgCache::VerIterator &verIter, PkgAction action)
     this->push_back(PkgInfo(verIter, action));
 }
 
-bool PkgList::contains(const pkgCache::PkgIterator &pkg)
+bool PkgList::contains(const pkgCache::PkgIterator &pkg) const
 {
     for (const PkgInfo &info : *this) {
         if (info.ver.ParentPkg() == pkg) {
