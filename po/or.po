@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-20 14:52+0100\n"
+"POT-Creation-Date: 2026-01-26 12:34+0100\n"
 "Language-Team: Odia (http://app.transifex.com/freedesktop/packagekit/language/or/)\n"
 "Language: or\n"
 "MIME-Version: 1.0\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
+#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
 msgstr ""
 
 #. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
+#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, fuzzy, c-format
 #| msgid "Failed to search for file"
 msgid "Failed to load config file: %s"
@@ -734,230 +734,230 @@ msgstr ""
 msgid "%u days"
 msgstr ""
 
-#: client/pkgc-util.c:275
+#: client/pkgc-util.c:276
 msgid "Error"
 msgstr ""
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:307
+#: client/pkgc-util.c:309
 msgid "Warning:"
 msgstr ""
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:427 client/pkgcli.c:188
+#: client/pkgc-util.c:431 client/pkgcli.c:188
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to parse options: %s"
 msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:433
+#: client/pkgc-util.c:437
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr ""
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:627 client/pkgc-util.c:781
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
 #, fuzzy
 #| msgid "Package files"
 msgid "Package:"
 msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:631
+#: client/pkgc-util.c:635
 msgid "Version:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:638
+#: client/pkgc-util.c:642
 #, fuzzy
 #| msgid "Summary"
 msgid "Summary:"
 msgstr "ସାରାଂଶ"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:650
 #, fuzzy
 #| msgid "Distribution"
 msgid "Description:"
 msgstr "ବଣ୍ଟନ"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:653
+#: client/pkgc-util.c:657
 msgid "License:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:660
+#: client/pkgc-util.c:664
 msgid "URL:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:667
+#: client/pkgc-util.c:671
 msgid "Group:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:675
+#: client/pkgc-util.c:679
 #, fuzzy
 #| msgid "Installed"
 msgid "Installed Size:"
 msgstr "ସ୍ଥାପିତ"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:683
+#: client/pkgc-util.c:687
 #, fuzzy
 #| msgid "Downloaded"
 msgid "Download Size:"
 msgstr "ଆହରଣ ହୋଇଛି"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:777
+#: client/pkgc-util.c:781
 #, fuzzy
 #| msgid "Update text"
 msgid "Update Details:"
 msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:788
+#: client/pkgc-util.c:792
 #, fuzzy
 #| msgid "Updates"
 msgid "Updates:"
 msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:797
+#: client/pkgc-util.c:801
 #, fuzzy
 #| msgid "Obsoletes"
 msgid "Obsoletes:"
 msgstr "ଅଚଳଗୁଡ଼ିକ"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:806
+#: client/pkgc-util.c:810
 #, fuzzy
 #| msgid "Vendor"
 msgid "Vendor:"
 msgstr "ବିକ୍ରେତା"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:815
+#: client/pkgc-util.c:819
 msgid "Issue Tracker:"
 msgstr ""
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:824
+#: client/pkgc-util.c:828
 msgid "CVE:"
 msgstr ""
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:832
+#: client/pkgc-util.c:836
 #, fuzzy
 #| msgid "Restart"
 msgid "Restart:"
 msgstr "ପୁନଃଚାଳନ"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:841
+#: client/pkgc-util.c:845
 #, fuzzy
 #| msgid "Update text"
 msgid "Update text:"
 msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:848
+#: client/pkgc-util.c:852
 #, fuzzy
 #| msgid "Changes"
 msgid "Changes:"
 msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:855
+#: client/pkgc-util.c:859
 #, fuzzy
 #| msgid "State"
 msgid "State:"
 msgstr "ଅବସ୍ଥା"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:864
+#: client/pkgc-util.c:868
 #, fuzzy
 #| msgid "Issued"
 msgid "Issued:"
 msgstr "ପ୍ରଦତ୍ତ"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:871
+#: client/pkgc-util.c:875
 #, fuzzy
 #| msgid "Updated"
 msgid "Updated:"
 msgstr "ଅଦ୍ୟତିତ"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:988
+#: client/pkgc-util.c:992
 #, fuzzy
 #| msgid "Transaction"
 msgid "Transaction:"
 msgstr "କାରବାର"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:992
+#: client/pkgc-util.c:996
 #, fuzzy
 #| msgid "System time"
 msgid "System time:"
 msgstr "ତନ୍ତ୍ର ସମୟ"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:996
+#: client/pkgc-util.c:1000
 #, fuzzy
 #| msgid "Succeeded"
 msgid "Succeeded:"
 msgstr "ସଫଳ ହୋଇଛି"
 
-#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "True (ସତ୍ୟ)"
 
-#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "False (ମିଥ୍ୟା)"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1005
+#: client/pkgc-util.c:1009
 #, fuzzy
 #| msgid "Role"
 msgid "Role:"
 msgstr "ଭୂମିକା"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1012
+#: client/pkgc-util.c:1016
 #, fuzzy
 #| msgid "Duration"
 msgid "Duration:"
 msgstr "ଅବଧି"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1023
 #, fuzzy
 #| msgid "Command line"
 msgid "Command line:"
 msgstr "ପାଠ୍ୟ ନିର୍ଦ୍ଦେଶ"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1025
+#: client/pkgc-util.c:1029
 #, fuzzy
 #| msgid "User ID"
 msgid "User ID:"
 msgstr "ଚାଳକ ID"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1034
+#: client/pkgc-util.c:1038
 #, fuzzy
 #| msgid "Username"
 msgid "Username:"
 msgstr "ଚାଳକ ନାମ"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1040
+#: client/pkgc-util.c:1044
 #, fuzzy
 #| msgid "Real name"
 msgid "Real name:"
@@ -965,30 +965,30 @@ msgstr "ପ୍ରକୃତ ନାମ"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
+#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1074
+#: client/pkgc-util.c:1078
 msgid "None"
 msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "ଗୋଟିଏରୁ ଅଧିକ ପ୍ୟାକେଜ ମେଳ ଖାଉଛି:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "ଦୟାକରି ସଠିକ ପ୍ୟାକେଜ ବାଛନ୍ତୁ: "
 
-#: client/pkgc-util.c:1219
+#: client/pkgc-util.c:1223
 #, fuzzy, c-format
 #| msgid "PackageKit Monitor"
 msgid "Package not found: %s"
@@ -1825,195 +1825,195 @@ msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଦୟାକରି ଗ�
 msgid "User aborted selection"
 msgstr ""
 
-#: lib/packagekit-glib2/pk-console-shared.c:73
+#: lib/packagekit-glib2/pk-console-private.c:228
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "ଦୟାକରି 1 ରୁ %i ଭିତରେ ଥିବା ଗୋଟିଏ ସଂଖ୍ୟାକୁ ଭରଣ କରନ୍ତୁ: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-shared.c:202
+#: lib/packagekit-glib2/pk-console-private.c:357
 msgid "Unknown state"
 msgstr "ଅଜଣା ସ୍ଥିତି"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-shared.c:206
+#: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Starting"
 msgstr "ଆରମ୍ଭ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-shared.c:210
+#: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Waiting in queue"
 msgstr "ଧାଡ଼ିରେ ଅପେକ୍ଷା କରିଅଛି"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-shared.c:214
+#: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Running"
 msgstr "ଚାଲୁଅଛି"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-shared.c:218
+#: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Querying"
 msgstr "ଅନୁସନ୍ଧାନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:222
+#: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
 msgstr "ସୂଚନା ଗ୍ରହଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-shared.c:226
+#: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Removing packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-console-private.c:385
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
 msgstr "ପ୍ୟାକେଜ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-shared.c:234
+#: lib/packagekit-glib2/pk-console-private.c:389
 msgid "Installing packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-shared.c:238
+#: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Refreshing software list"
 msgstr "ସଫ୍ଟୱେର ତାଲିକାକୁ ସତେଜ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-shared.c:242
+#: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Installing updates"
 msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-shared.c:246
+#: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Cleaning up packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସଫା କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-shared.c:250
+#: lib/packagekit-glib2/pk-console-private.c:405
 msgid "Obsoleting packages"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପ୍ରତ୍ୟାଖାନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-shared.c:254
+#: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Resolving dependencies"
 msgstr "ନିର୍ଭରତାଗୁଡ଼ିକୁ ସମାଧାନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-shared.c:258
+#: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Checking signatures"
 msgstr "ହସ୍ତାକ୍ଷରଗୁଡ଼ିକୁ ଯାଞ୍ଚକରୁଅଛି"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-shared.c:262
+#: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Testing changes"
 msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ପରୀକ୍ଷଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-shared.c:266
+#: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
 msgstr "ସମର୍ପଣ ପରିବର୍ତିତ"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:270
+#: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Requesting data"
 msgstr "ତଥ୍ୟ ଅନୁରୋଧ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-shared.c:274
+#: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Finished"
 msgstr "ସମ୍ପନ୍ନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-shared.c:278
+#: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Cancelling"
 msgstr "ବାତିଲ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:282
+#: lib/packagekit-glib2/pk-console-private.c:437
 msgid "Downloading repository information"
 msgstr "ସଂଗ୍ରହାଳୟ ସୂଚନା ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:286
+#: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading list of packages"
 msgstr "ପ୍ୟାକେଜ ତାଲିକାଗୁଡ଼ିକୁ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:290
+#: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading file lists"
 msgstr "ଫାଇଲ ତାଲିକା ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:294
+#: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading lists of changes"
 msgstr "ପରିବର୍ତ୍ତନ ତାଲିକାଗୁଡ଼ିକୁ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:298
+#: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading groups"
 msgstr "ସମୂହକୁ ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:302
+#: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading update information"
 msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-shared.c:306
+#: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Repackaging files"
 msgstr "ଫାଇଲଗୁଡ଼ିକ ପୁନଃପ୍ୟାକେଜ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-shared.c:310
+#: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Loading cache"
 msgstr "କ୍ୟାଶେ ଧଆରଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-shared.c:314
+#: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Scanning applications"
 msgstr "ପ୍ରୟୋଗଗୁଡ଼ିକୁ କ୍ରମବୀକ୍ଷଣ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-shared.c:318
+#: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Generating package lists"
 msgstr "ପ୍ୟାକେଜ ତାଲିକା ସୃଷ୍ଟି କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-shared.c:322
+#: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Waiting for package manager lock"
 msgstr "ପ୍ୟାକେଜ ପରିଚାଳକଙ୍କୁ ଅପେକ୍ଷା କରିଅଛି।"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-shared.c:326
+#: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for authentication"
 msgstr "ବୈଧିକରଣ ପାଇଁ ଅପେକ୍ଷା କରିଅଛି"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-shared.c:330
+#: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Updating running applications"
 msgstr "ଚାଲୁଥିବା ପ୍ରୟୋଗଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:334
+#: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Checking applications in use"
 msgstr "ବ୍ୟବହାରରେ ଥିବା ପ୍ରୟୋଗଗୁଡ଼ିକୁ ଯାଞ୍ଚକରୁଅଛି"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:338
+#: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking libraries in use"
 msgstr "ବ୍ୟବହାରରେ ଥିବା ଲାଇବ୍ରେରୀଗୁଡ଼ିକୁ ଯାଞ୍ଚକରୁଅଛି"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:342
+#: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Copying files"
 msgstr "ଫାଇଲଗୁଡ଼ିକୁ ନକଲ କରୁଅଛି"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:346
+#: lib/packagekit-glib2/pk-console-private.c:501
 #, fuzzy
 #| msgid "Running"
 msgid "Running hooks"
@@ -2471,12 +2471,12 @@ msgid "The following packages are untrusted:"
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବାକୁ ହେବ:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:393
+#: lib/packagekit-glib2/pk-task-text.c:423
 msgid "Proceed with changes?"
 msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ ସହିତ ଅଗ୍ରସର ହେବେ କି?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:398
+#: lib/packagekit-glib2/pk-task-text.c:428
 msgid "The transaction did not proceed."
 msgstr "କାରବାର ଅଗ୍ରସର ହୋଇନଥିଲା।"
 
@@ -2856,14 +2856,14 @@ msgstr "PackageKit ସର୍ଭିସ"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:215
+#: src/pk-main.c:221
 #, fuzzy, c-format
 #| msgid "Failed to launch:"
 msgid "Failed to resolve auto: %s"
 msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:239
+#: src/pk-main.c:245
 #, fuzzy, c-format
 #| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend: %s"

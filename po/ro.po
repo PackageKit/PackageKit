@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-20 14:52+0100\n"
+"POT-Creation-Date: 2026-01-26 12:34+0100\n"
 "PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
@@ -21,12 +21,12 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
+#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
 msgstr "Fișierul de configurare nu a fost găsit."
 
 #. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
+#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, c-format
 msgid "Failed to load config file: %s"
 msgstr "Încărcarea fișierului de configurare a eșuat: %s"
@@ -650,212 +650,212 @@ msgstr "%u zile %u oră(e)"
 msgid "%u days"
 msgstr "%u zile"
 
-#: client/pkgc-util.c:275
+#: client/pkgc-util.c:276
 msgid "Error"
 msgstr "Eroare"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:307
+#: client/pkgc-util.c:309
 msgid "Warning:"
 msgstr "Avertisment:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:427 client/pkgcli.c:188
+#: client/pkgc-util.c:431 client/pkgcli.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Nu s-au putut analiza opțiunile: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:433
+#: client/pkgc-util.c:437
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Utilizare: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:627 client/pkgc-util.c:781
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
 msgid "Package:"
 msgstr "Pachet:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:631
+#: client/pkgc-util.c:635
 msgid "Version:"
 msgstr "Versiunea:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:638
+#: client/pkgc-util.c:642
 msgid "Summary:"
 msgstr "Sumar:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:650
 msgid "Description:"
 msgstr "Descriere:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:653
+#: client/pkgc-util.c:657
 msgid "License:"
 msgstr "Licență:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:660
+#: client/pkgc-util.c:664
 msgid "URL:"
 msgstr "Adresa URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:667
+#: client/pkgc-util.c:671
 msgid "Group:"
 msgstr "Grup:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:675
+#: client/pkgc-util.c:679
 msgid "Installed Size:"
 msgstr "Dimensiunea instalată:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:683
+#: client/pkgc-util.c:687
 msgid "Download Size:"
 msgstr "Dimensiunea de descărcat:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:777
+#: client/pkgc-util.c:781
 msgid "Update Details:"
 msgstr "Detalii actualizare:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:788
+#: client/pkgc-util.c:792
 msgid "Updates:"
 msgstr "Actualizări:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:797
+#: client/pkgc-util.c:801
 msgid "Obsoletes:"
 msgstr "Învechite:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:806
+#: client/pkgc-util.c:810
 msgid "Vendor:"
 msgstr "Furnizor:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:815
+#: client/pkgc-util.c:819
 msgid "Issue Tracker:"
 msgstr "Sistemul de urmărire al problemelor:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:824
+#: client/pkgc-util.c:828
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:832
+#: client/pkgc-util.c:836
 msgid "Restart:"
 msgstr "Repornire:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:841
+#: client/pkgc-util.c:845
 msgid "Update text:"
 msgstr "Textul actualizării:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:848
+#: client/pkgc-util.c:852
 msgid "Changes:"
 msgstr "Modificări:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:855
+#: client/pkgc-util.c:859
 msgid "State:"
 msgstr "Stare:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:864
+#: client/pkgc-util.c:868
 msgid "Issued:"
 msgstr "Emisă:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:871
+#: client/pkgc-util.c:875
 msgid "Updated:"
 msgstr "Actualizat:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:988
+#: client/pkgc-util.c:992
 msgid "Transaction:"
 msgstr "Tranzacție:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:992
+#: client/pkgc-util.c:996
 msgid "System time:"
 msgstr "Ora sistemului:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:996
+#: client/pkgc-util.c:1000
 msgid "Succeeded:"
 msgstr "Reușită:"
 
-#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "Adevărat"
 
-#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "Fals"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1005
+#: client/pkgc-util.c:1009
 msgid "Role:"
 msgstr "Rol:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1012
+#: client/pkgc-util.c:1016
 msgid "Duration:"
 msgstr "Durata:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1023
 msgid "Command line:"
 msgstr "Linia de comandă:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1025
+#: client/pkgc-util.c:1029
 msgid "User ID:"
 msgstr "ID utilizator:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1034
+#: client/pkgc-util.c:1038
 msgid "Username:"
 msgstr "Numele utilizatorului:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1040
+#: client/pkgc-util.c:1044
 msgid "Real name:"
 msgstr "Numele real:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
+#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "Pachete afectate:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1074
+#: client/pkgc-util.c:1078
 msgid "None"
 msgstr "Niciunul"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "Mai mult de un pachet se potrivește:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Alegeți pachetul corect: "
 
-#: client/pkgc-util.c:1219
+#: client/pkgc-util.c:1223
 #, c-format
 msgid "Package not found: %s"
 msgstr "Pachetul nu a fost găsit: %s"
@@ -1652,195 +1652,195 @@ msgstr "Alegeți un pachet pentru a fi instalat"
 msgid "User aborted selection"
 msgstr "Utilizatorul a anulat selecția"
 
-#: lib/packagekit-glib2/pk-console-shared.c:73
+#: lib/packagekit-glib2/pk-console-private.c:228
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Introduceți un număr între 1 și %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-shared.c:202
+#: lib/packagekit-glib2/pk-console-private.c:357
 msgid "Unknown state"
 msgstr "Stare necunoscută"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-shared.c:206
+#: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Starting"
 msgstr "Se pornește"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-shared.c:210
+#: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Waiting in queue"
 msgstr "Se așteaptă la coadă"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-shared.c:214
+#: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Running"
 msgstr "Se rulează"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-shared.c:218
+#: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Querying"
 msgstr "Se interoghează"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:222
+#: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
 msgstr "Se obțin informații"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-shared.c:226
+#: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Removing packages"
 msgstr "Se elimină pachetele"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-console-private.c:385
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
 msgstr "Se descarcă pachetele"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-shared.c:234
+#: lib/packagekit-glib2/pk-console-private.c:389
 msgid "Installing packages"
 msgstr "Se instalează pachetele"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-shared.c:238
+#: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Refreshing software list"
 msgstr "Se împrospătează lista de software"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-shared.c:242
+#: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Installing updates"
 msgstr "Se instalează actualizările"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-shared.c:246
+#: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Cleaning up packages"
 msgstr "Se curăță pachetele"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-shared.c:250
+#: lib/packagekit-glib2/pk-console-private.c:405
 msgid "Obsoleting packages"
 msgstr "Se marchează ca învechite, pachetele anterioare"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-shared.c:254
+#: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Resolving dependencies"
 msgstr "Se rezolvă dependențele"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-shared.c:258
+#: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Checking signatures"
 msgstr "Se verifică semnăturile"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-shared.c:262
+#: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Testing changes"
 msgstr "Se testează modificările"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-shared.c:266
+#: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
 msgstr "Se efectueazăt modificările"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:270
+#: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Requesting data"
 msgstr "Se cer date"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-shared.c:274
+#: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Finished"
 msgstr "Încheiat"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-shared.c:278
+#: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Cancelling"
 msgstr "Se renunță"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:282
+#: lib/packagekit-glib2/pk-console-private.c:437
 msgid "Downloading repository information"
 msgstr "Se descarcă informații din depozit"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:286
+#: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading list of packages"
 msgstr "Se descarcă lista de pachete"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:290
+#: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading file lists"
 msgstr "Se descarcă listele cu fișiere"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:294
+#: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading lists of changes"
 msgstr "Se descarcă listele cu modificări"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:298
+#: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading groups"
 msgstr "Se descarcă grupuri"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:302
+#: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading update information"
 msgstr "Se descarcă informațiile despre actualizări"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-shared.c:306
+#: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Repackaging files"
 msgstr "Se reîmpachetează fișiere"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-shared.c:310
+#: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Loading cache"
 msgstr "Se încarcă conținutul spațiului de prestocare (cache)"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-shared.c:314
+#: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Scanning applications"
 msgstr "Se citesc aplicațiile"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-shared.c:318
+#: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Generating package lists"
 msgstr "Se generează listele de pachete"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-shared.c:322
+#: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Waiting for package manager lock"
 msgstr "Se așteaptă blocajul gestionarului de pachete"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-shared.c:326
+#: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for authentication"
 msgstr "Se așteaptă autentificarea"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-shared.c:330
+#: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Updating running applications"
 msgstr "Se actualizează aplicațiile ce rulează"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:334
+#: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Checking applications in use"
 msgstr "Se verifică aplicațiile în uz"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:338
+#: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking libraries in use"
 msgstr "Se verifică bibliotecile în uz"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:342
+#: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Copying files"
 msgstr "Se copiază fișiere"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:346
+#: lib/packagekit-glib2/pk-console-private.c:501
 msgid "Running hooks"
 msgstr "Se execută scripturile aferente tranzacției"
 
@@ -2276,12 +2276,12 @@ msgid "The following packages are untrusted:"
 msgstr "Următoarele pachete nu sunt de încredere:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:393
+#: lib/packagekit-glib2/pk-task-text.c:423
 msgid "Proceed with changes?"
 msgstr "Continuați cu modificările?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:398
+#: lib/packagekit-glib2/pk-task-text.c:428
 msgid "The transaction did not proceed."
 msgstr "Tranzacția nu a continuat."
 
@@ -2601,13 +2601,13 @@ msgstr "Serviciul PackageKit"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:215
+#: src/pk-main.c:221
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "Nu s-a reușit să se rezolve automat: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:239
+#: src/pk-main.c:245
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"

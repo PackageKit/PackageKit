@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-20 14:52+0100\n"
+"POT-Creation-Date: 2026-01-26 12:34+0100\n"
 "PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
@@ -26,12 +26,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
+#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
 msgstr "Konfigurationsfil hittades inte."
 
 #. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:175
+#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, c-format
 msgid "Failed to load config file: %s"
 msgstr "Misslyckades med att läsa in konfigurationsfil: %s"
@@ -655,212 +655,212 @@ msgstr "%u dagar %u h"
 msgid "%u days"
 msgstr "%u dagar"
 
-#: client/pkgc-util.c:275
+#: client/pkgc-util.c:276
 msgid "Error"
 msgstr "Fel"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:307
+#: client/pkgc-util.c:309
 msgid "Warning:"
 msgstr "Varning:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:427 client/pkgcli.c:188
+#: client/pkgc-util.c:431 client/pkgcli.c:188
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Misslyckades med att tolka flaggor: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:433
+#: client/pkgc-util.c:437
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Användning: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:627 client/pkgc-util.c:781
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
 msgid "Package:"
 msgstr "Paket:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:631
+#: client/pkgc-util.c:635
 msgid "Version:"
 msgstr "Version:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:638
+#: client/pkgc-util.c:642
 msgid "Summary:"
 msgstr "Sammandrag:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:646
+#: client/pkgc-util.c:650
 msgid "Description:"
 msgstr "Beskrivning:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:653
+#: client/pkgc-util.c:657
 msgid "License:"
 msgstr "Licens:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:660
+#: client/pkgc-util.c:664
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:667
+#: client/pkgc-util.c:671
 msgid "Group:"
 msgstr "Grupp:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:675
+#: client/pkgc-util.c:679
 msgid "Installed Size:"
 msgstr "Installerad storlek:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:683
+#: client/pkgc-util.c:687
 msgid "Download Size:"
 msgstr "Hämtningsstorlek:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:777
+#: client/pkgc-util.c:781
 msgid "Update Details:"
 msgstr "Uppdateringsdetaljer:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:788
+#: client/pkgc-util.c:792
 msgid "Updates:"
 msgstr "Uppdaterar:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:797
+#: client/pkgc-util.c:801
 msgid "Obsoletes:"
 msgstr "Föråldrar:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:806
+#: client/pkgc-util.c:810
 msgid "Vendor:"
 msgstr "Leverantör:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:815
+#: client/pkgc-util.c:819
 msgid "Issue Tracker:"
 msgstr "Ärendehanteringssystem:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:824
+#: client/pkgc-util.c:828
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:832
+#: client/pkgc-util.c:836
 msgid "Restart:"
 msgstr "Omstart:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:841
+#: client/pkgc-util.c:845
 msgid "Update text:"
 msgstr "Uppdateringstext:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:848
+#: client/pkgc-util.c:852
 msgid "Changes:"
 msgstr "Ändringar:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:855
+#: client/pkgc-util.c:859
 msgid "State:"
 msgstr "Tillstånd:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:864
+#: client/pkgc-util.c:868
 msgid "Issued:"
 msgstr "Utfärdad:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:871
+#: client/pkgc-util.c:875
 msgid "Updated:"
 msgstr "Uppdaterad:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:988
+#: client/pkgc-util.c:992
 msgid "Transaction:"
 msgstr "Transaktion:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:992
+#: client/pkgc-util.c:996
 msgid "System time:"
 msgstr "Systemtid:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:996
+#: client/pkgc-util.c:1000
 msgid "Succeeded:"
 msgstr "Lyckades:"
 
-#: client/pkgc-util.c:1000 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
 msgid "True"
 msgstr "Sant"
 
-#: client/pkgc-util.c:1001 client/pkcon/pk-console.c:169
+#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
 msgid "False"
 msgstr "Falskt"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1005
+#: client/pkgc-util.c:1009
 msgid "Role:"
 msgstr "Roll:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1012
+#: client/pkgc-util.c:1016
 msgid "Duration:"
 msgstr "Längd:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1019
+#: client/pkgc-util.c:1023
 msgid "Command line:"
 msgstr "Kommandorad:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1025
+#: client/pkgc-util.c:1029
 msgid "User ID:"
 msgstr "Användar-ID:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1034
+#: client/pkgc-util.c:1038
 msgid "Username:"
 msgstr "Användarnamn:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1040
+#: client/pkgc-util.c:1044
 msgid "Real name:"
 msgstr "Verkligt namn:"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1052 client/pkgc-util.c:1071
+#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
 #: client/pkcon/pk-console.c:201
 msgid "Affected packages:"
 msgstr "Påverkade paket:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1074
+#: client/pkgc-util.c:1078
 msgid "None"
 msgstr "Inga"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkgc-util.c:1163 client/pkcon/pk-console.c:932
+#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
 msgid "More than one package matches:"
 msgstr "Det finns fler än ett paket som matchar:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1175 client/pkcon/pk-console.c:944
+#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Välj det korrekta paketet: "
 
-#: client/pkgc-util.c:1219
+#: client/pkgc-util.c:1223
 #, c-format
 msgid "Package not found: %s"
 msgstr "Paketet hittades inte: %s"
@@ -1657,195 +1657,195 @@ msgstr "Välj ett paket att installera"
 msgid "User aborted selection"
 msgstr "Användaren avbröt markeringen"
 
-#: lib/packagekit-glib2/pk-console-shared.c:73
+#: lib/packagekit-glib2/pk-console-private.c:228
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "Ange ett tal från 1 till %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-shared.c:202
+#: lib/packagekit-glib2/pk-console-private.c:357
 msgid "Unknown state"
 msgstr "Okänt tillstånd"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-shared.c:206
+#: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Starting"
 msgstr "Startar"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-shared.c:210
+#: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Waiting in queue"
 msgstr "Väntar i kö"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-shared.c:214
+#: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Running"
 msgstr "Kör"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-shared.c:218
+#: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Querying"
 msgstr "Frågar"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:222
+#: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
 msgstr "Hämtar information"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-shared.c:226
+#: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Removing packages"
 msgstr "Tar bort paket"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-shared.c:230
+#: lib/packagekit-glib2/pk-console-private.c:385
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
 msgstr "Hämtar paket"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-shared.c:234
+#: lib/packagekit-glib2/pk-console-private.c:389
 msgid "Installing packages"
 msgstr "Installerar paket"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-shared.c:238
+#: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Refreshing software list"
 msgstr "Uppdaterar programlista"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-shared.c:242
+#: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Installing updates"
 msgstr "Installerar uppdateringar"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-shared.c:246
+#: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Cleaning up packages"
 msgstr "Rensar upp paket"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-shared.c:250
+#: lib/packagekit-glib2/pk-console-private.c:405
 msgid "Obsoleting packages"
 msgstr "Föråldrar paket"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-shared.c:254
+#: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Resolving dependencies"
 msgstr "Löser beroenden"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-shared.c:258
+#: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Checking signatures"
 msgstr "Kontrollerar signaturer"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-shared.c:262
+#: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Testing changes"
 msgstr "Testar ändringar"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-shared.c:266
+#: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
 msgstr "Verkställer ändringar"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-shared.c:270
+#: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Requesting data"
 msgstr "Begär data"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-shared.c:274
+#: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Finished"
 msgstr "Färdigställd"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-shared.c:278
+#: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Cancelling"
 msgstr "Avbryter"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:282
+#: lib/packagekit-glib2/pk-console-private.c:437
 msgid "Downloading repository information"
 msgstr "Hämtar förrådsinformation"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:286
+#: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading list of packages"
 msgstr "Hämtar lista över paket"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:290
+#: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading file lists"
 msgstr "Hämtar fillistor"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:294
+#: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading lists of changes"
 msgstr "Hämtar listor över ändringar"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:298
+#: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading groups"
 msgstr "Hämtar grupper"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-shared.c:302
+#: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading update information"
 msgstr "Hämtar uppdateringsinformation"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-shared.c:306
+#: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Repackaging files"
 msgstr "Paketerar om filer"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-shared.c:310
+#: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Loading cache"
 msgstr "Läser in cache"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-shared.c:314
+#: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Scanning applications"
 msgstr "Söker igenom program"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-shared.c:318
+#: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Generating package lists"
 msgstr "Genererar paketlistor"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-shared.c:322
+#: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Waiting for package manager lock"
 msgstr "Väntar på låset för pakethanteraren"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-shared.c:326
+#: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for authentication"
 msgstr "Väntar på autentisering"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-shared.c:330
+#: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Updating running applications"
 msgstr "Uppdaterar körande program"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:334
+#: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Checking applications in use"
 msgstr "Kontrollerar använda program"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-shared.c:338
+#: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking libraries in use"
 msgstr "Kontrollerar använda bibliotek"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:342
+#: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Copying files"
 msgstr "Kopierar filer"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-shared.c:346
+#: lib/packagekit-glib2/pk-console-private.c:501
 msgid "Running hooks"
 msgstr "Exekverar krokar"
 
@@ -2281,12 +2281,12 @@ msgid "The following packages are untrusted:"
 msgstr "Följande paket är inte pålitliga:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:393
+#: lib/packagekit-glib2/pk-task-text.c:423
 msgid "Proceed with changes?"
 msgstr "Fortsätt med ändringar?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:398
+#: lib/packagekit-glib2/pk-task-text.c:428
 msgid "The transaction did not proceed."
 msgstr "Transaktionen fortsatte inte."
 
@@ -2606,13 +2606,13 @@ msgstr "PackageKit-tjänst"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:215
+#: src/pk-main.c:221
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "Misslyckades med att slå upp auto: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:239
+#: src/pk-main.c:245
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "Misslyckades med att läsa in bakänden: %s"
