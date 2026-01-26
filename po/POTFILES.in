@@ -12,7 +12,7 @@ client/pkcon/pk-console.c
 client/pkcon/pk-monitor.c
 client/pk-offline-update.c
 contrib/command-not-found/pk-command-not-found.c
-lib/packagekit-glib2/pk-console-shared.c
+lib/packagekit-glib2/pk-console-private.c
 lib/packagekit-glib2/pk-debug.c
 lib/packagekit-glib2/pk-enum.c
 lib/packagekit-glib2/pk-progress-bar.c
