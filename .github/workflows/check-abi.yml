@@ -3,7 +3,7 @@ name: Check ABI
 on: [push, pull_request]
 
 env:
-  LAST_ABI_BREAK: 0f33069752fe06f6daf3d977cd09665b059494d8
+  LAST_ABI_BREAK: 931102d676f8f358880984156ac7ba3039f75523
 
 jobs:
   check-abi:
