@@ -65,7 +65,8 @@ endif
 # Ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
 add_project_arguments ([
   '-D_DEFAULT_SOURCE',
-  '-D_XOPEN_SOURCE=700'
+  '-D_XOPEN_SOURCE=700',
+  '-D_POSIX_C_SOURCE=200809L',
   ],
   language: 'c'
 )
