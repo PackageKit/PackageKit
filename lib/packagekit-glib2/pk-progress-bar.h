@@ -63,12 +63,6 @@ gboolean	 pk_progress_bar_end			(PkProgressBar	*progress_bar);
 void		 pk_progress_bar_set_allow_restart	(PkProgressBar	*progress_bar,
 												 gboolean	 allow_restart);
 
-/* DEPRECATED */
-
-G_DEPRECATED
-gboolean	 pk_progress_bar_set_padding		(PkProgressBar	*progress_bar,
-							 guint		 padding);
-
 G_END_DECLS
 
 #endif /* __PK_PROGRESS_BAR_H */

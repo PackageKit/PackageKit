@@ -106,28 +106,6 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 }
 
 /**
- * pk_progress_bar_set_padding:
- * @progress_bar: a valid #PkProgressBar instance
- * @padding: minimum size of progress bar text.
- *
- * Set minimum size of progress bar text - it will be padded with spaces to meet this requirement.
- *
- * This function is deprecated as of PackageKit 1.3.3 and has no effect.
- * Since this release, the progress bar text is automatically adjusted to fit the terminal width
- * and the progress bar is right-aligned in the terminal..
- *
- * Return value: %TRUE if changed
- */
-gboolean
-pk_progress_bar_set_padding (PkProgressBar *progress_bar, guint padding)
-{
-	g_return_val_if_fail (PK_IS_PROGRESS_BAR (progress_bar), FALSE);
-	g_return_val_if_fail (padding < 1000, FALSE);
-
-	return TRUE;
-}
-
-/**
  * pk_progress_bar_set_size:
  * @progress_bar: a valid #PkProgressBar instance
  * @size: width of progress bar in characters.
