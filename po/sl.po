@@ -5,13 +5,13 @@
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010
 # Jure Repinc <jlp@holodeck1.com>, 2024
-# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022, 2025.
+# Martin Srebotnjak <miles@filmsi.net>, 2012-2015,2021-2022, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2025-12-02 06:00+0000\n"
+"PO-Revision-Date: 2026-01-26 22:01+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -862,10 +862,8 @@ msgstr "Paketa ni mogoče najti: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show pkgctl version"
 msgid "Show pkgcli version"
-msgstr "Pokaži različico pkgctl"
+msgstr "Pokaži različico pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -930,10 +928,8 @@ msgid "Available Commands:"
 msgstr "Razpoložljivi ukazi:"
 
 #: client/pkgcli.c:217
-#, fuzzy
-#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Uporabite 'pkgctl UKAZ --help' za specifično pomoč pri ukazih."
+msgstr "Uporabite 'pkgcli UKAZ --help' za specifično pomoč pri ukazih."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
