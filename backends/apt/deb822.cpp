@@ -35,7 +35,7 @@ bool Deb822File::isFieldStanza(const Stanza &stanza)
 
 Deb822File::Line Deb822File::parseDeb822Line(const std::string &line) const
 {
-    Deb822File::Line l;
+    Line l;
     l.content = line;
 
     // we return empty and comment-lines verbatim
@@ -69,7 +69,7 @@ bool Deb822File::loadFromStream(std::istream &stream)
 
     Stanza stanza;
     std::string line;
-    Line *lastField = nullptr;
+    ssize_t lastFieldIdx = -1;
 
     while (std::getline(stream, line)) {
         if (line.empty()) {
@@ -81,31 +81,32 @@ bool Deb822File::loadFromStream(std::istream &stream)
                 }
 
                 stanza.clear();
-                lastField = nullptr;
+                lastFieldIdx = -1;
             }
             continue;
         }
 
         auto parsed = parseDeb822Line(line);
 
-        if (parsed.isContinuation && lastField) {
+        if (parsed.isContinuation && lastFieldIdx != -1) {
             // append to last field value (with newline)
-            lastField->value += "\n" + parsed.content;
+            stanza[lastFieldIdx].value += "\n" + parsed.content;
+            // also add continuation line to stanza so it's preserved when saving
+            stanza.push_back(parsed);
         } else {
             stanza.push_back(parsed);
             if (parsed.isField())
-                lastField = &stanza.back();
+                lastFieldIdx = stanza.size() - 1;
             else
-                lastField = nullptr;
+                lastFieldIdx = -1;
         }
     }
 
     if (!stanza.empty()) {
         size_t index = m_allStanzas.size();
         m_allStanzas.push_back(stanza);
-        if (isFieldStanza(stanza)) {
+        if (isFieldStanza(stanza))
             m_fieldStanzaIndices.push_back(index);
-        }
     }
 
     return true;

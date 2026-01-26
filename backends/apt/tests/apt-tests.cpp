@@ -224,6 +224,8 @@ Package: testpkg
 Version: 2.0.0
 # Intermediate comment
 Description: This is a test
+ for multiline
+ field.
 NewField: hello
  world
 
@@ -390,7 +392,7 @@ apt_test_sources_write (void)
         wtestSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
         wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla:main | main | packages.mozilla.org/apt - Mozilla (main) | enabled",
         wtestSourcesDir + "/mozilla.list:deb:https://packages.mozilla.org/apt/:mozilla-disabled:main | main | packages.mozilla.org/apt - Mozilla disabled (main) | enabled",
-        wtestSourcesDir + "/ppa-1.sources:deb:https://ppa.launchpadcontent.net/ximion/syntalos/ubuntu/:resolute:main | main | Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main) | enabled"
+        wtestSourcesDir + "/ppa-1.sources:deb:https://ppa.launchpadcontent.net/ximion/syntalos/ubuntu/:resolute:main | main | Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main) | disabled"
     };
 
     // read data and write it back, ensure we do not change anything
@@ -410,6 +412,8 @@ apt_test_sources_write (void)
             sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
         else if (sourceRecord->niceName() == "packages.mozilla.org/apt - Mozilla disabled (main)")
             sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main)")
+            sourceRecord->Type |= SourcesList::Disabled;
     }
     g_assert_true (sourcesList->UpdateSources());
 
@@ -441,6 +445,8 @@ apt_test_sources_write (void)
             sourceRecord->Type |= SourcesList::Disabled;
         else if (sourceRecord->niceName() == "packages.mozilla.org/apt - Mozilla disabled (main)")
             sourceRecord->Type |= SourcesList::Disabled;
+        else if (sourceRecord->niceName() == "Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main)")
+            sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
     }
     g_assert_true (sourcesList->UpdateSources());
 
