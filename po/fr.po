@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-20 14:52+0100\n"
-"PO-Revision-Date: 2026-01-13 03:01+0000\n"
+"PO-Revision-Date: 2026-01-26 22:01+0000\n"
 "Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
 "Language: fr\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:168
 msgid "Config file was not found."
@@ -869,10 +869,8 @@ msgstr "Paquet non trouvé : %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show pkgctl version"
 msgid "Show pkgcli version"
-msgstr "Afficher la version de pkgctl"
+msgstr "Afficher la version de pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -937,10 +935,8 @@ msgid "Available Commands:"
 msgstr "Commandes disponibles :"
 
 #: client/pkgcli.c:217
-#, fuzzy
-#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Utilisez \"pkgctl COMMANDE --help\" pour une aide spécifique à la commande."
+msgstr "Utilisez \"pkgcli COMMANDE --help\" pour une aide spécifique à la commande."
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
