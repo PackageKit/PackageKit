@@ -281,6 +281,18 @@ pkgc_context_find_command (PkgcliContext *ctx, const char *name)
 }
 
 /**
+ * pkgc_context_stop_progress_bar:
+ * @ctx: a valid #PkgctlContext
+ *
+ * Stop the progress bar in the given #PkgctlContext.
+ */
+void pkgc_context_stop_progress_bar (PkgcliContext* ctx)
+{
+	if (ctx->progressbar != NULL)
+		pk_progress_bar_end (ctx->progressbar);
+}
+
+/**
  * pkgc_context_on_progress_cb:
  * @progress: a valid #PkProgress
  * @type: the type of progress update

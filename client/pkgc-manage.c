@@ -299,7 +299,7 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 			/* the the error was not "no package found", or we did allow reinstallations
 			 * (and therefore didn't filter out already installed packages) we show the
 			 * emitted error immediately. */
-			if (!g_error_matches (error, PKGC_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
+			if (g_error_matches (error, PKGC_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
 				 opt_allow_reinstall) {
 				pkgc_print_error (ctx,
 							/* TRANSLATORS: There was an error finding a package

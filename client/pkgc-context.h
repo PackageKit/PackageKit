@@ -121,6 +121,7 @@ void		     pkgc_context_register_command (PkgcliContext *ctx,
 						    				 gchar **argv),
 						    const gchar *summary);
 PkgcliCommand	*pkgc_context_find_command (PkgcliContext *ctx, const char *name);
+void			pkgc_context_stop_progress_bar (PkgcliContext *ctx);
 
 void			pkgc_context_on_progress_cb (PkProgress *progress,
 											 PkProgressType type,

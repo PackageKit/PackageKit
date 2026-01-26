@@ -264,6 +264,7 @@ pkgc_print_error (PkgcliContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
+	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "error", json_string (message));
@@ -291,6 +292,7 @@ pkgc_print_warning (PkgcliContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
+	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = NULL;
 		root = json_object ();
@@ -317,6 +319,7 @@ pkgc_print_info (PkgcliContext *ctx, const gchar *format, ...)
 {
 	va_list args;
 
+	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = NULL;
 		g_autofree gchar *message = NULL;
@@ -352,6 +355,7 @@ pkgc_print_success (PkgcliContext *ctx, const gchar *format, ...)
 	message = g_strdup_vprintf (format, args);
 	va_end (args);
 
+	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		json_t *root = json_object ();
 		json_object_set_new (root, "success", json_string (message));
@@ -388,10 +392,10 @@ void pkgc_println (const char* format, ...)
  * Create a GOptionContext for a specific command.
  */
 GOptionContext*
-pkgc_option_context_for_command(PkgcliContext *ctx,
-								PkgcliCommand *cmd,
-								const gchar *parameter_summary,
-								const gchar *description)
+pkgc_option_context_for_command (PkgcliContext *ctx,
+								 PkgcliCommand *cmd,
+								 const gchar *parameter_summary,
+								 const gchar *description)
 {
 	GOptionContext *option_context = NULL;
 
@@ -413,12 +417,12 @@ pkgc_option_context_for_command(PkgcliContext *ctx,
  * Parse command options and check for minimum argument count.
  */
 gboolean
-pkgc_parse_command_options(PkgcliContext	*ctx,
-						   PkgcliCommand	*cmd,
-						   GOptionContext	*option_context,
-						   gint				*argc,
-						   gchar			***argv,
-						   gint				min_arg_count)
+pkgc_parse_command_options (PkgcliContext	*ctx,
+							PkgcliCommand	*cmd,
+							GOptionContext	*option_context,
+							gint				*argc,
+							gchar			***argv,
+							gint				min_arg_count)
 {
 	g_autoptr(GError) error = NULL;
 
