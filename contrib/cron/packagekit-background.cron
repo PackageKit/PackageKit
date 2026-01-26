@@ -20,12 +20,7 @@ fi
 [ -z "$SYSTEM_NAME" ] && SYSTEM_NAME=$(hostname)
 
 PKTMP=$(mktemp /var/run/packagekit-cron.XXXXXX)
-PKCON_OPTIONS="--background --noninteractive --plain"
-if [ "$UPDATE_OFFLINE" = "yes" ]; then
-	ONLY_DOWNLOAD="--only-download"
-else
-	ONLY_DOWNLOAD=""
-fi
+PKGCLI_OPTIONS="--background --yes --no-color --quiet"
 
 # wait a random amount of time to avoid hammering the servers
 [ -z "$SLEEP_MAX" ] && SLEEP_MAX=$RANDOM
@@ -33,18 +28,20 @@ sleep $(( $RANDOM % $SLEEP_MAX + 1 ))
 
 # do action
 if [ "$CHECK_ONLY" = "yes" ]; then
-	pkcon $PKCON_OPTIONS get-updates &> $PKTMP
-	PKCON_RETVAL=$?
+	pkgcli $PKGCLI_OPTIONS list-updates &> $PKTMP
+	PKGCLI_RETVAL=$?
 else
-	pkcon $PKCON_OPTIONS $ONLY_DOWNLOAD update &> $PKTMP
-	PKCON_RETVAL=$?
-	if [ $PKCON_RETVAL -eq 0 -a "$UPDATE_OFFLINE" = "yes" ]; then
-		pkcon $PKCON_OPTIONS offline-trigger &>> $PKTMP
+	if [ "$UPDATE_OFFLINE" = "yes" ]; then
+		pkgcli $PKGCLI_OPTIONS offline-update &>> $PKTMP
+		PKGCLI_RETVAL=$?
+	else
+		pkgcli $PKGCLI_OPTIONS update &> $PKTMP
+		PKGCLI_RETVAL=$?
 	fi
 fi
 
 # this is when something useful was done
-if [ $PKCON_RETVAL -ne 5 ]; then
+if [ $PKGCLI_RETVAL -ne 5 ]; then
 	# send email
 	if [ -n "$MAILTO" ]; then
 		mail -s "System updates available: $SYSTEM_NAME" $MAILTO < $PKTMP
