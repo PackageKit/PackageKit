@@ -9,16 +9,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
-"Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/"
+"translations/ro/>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -31,17 +33,729 @@ msgstr "Fișierul de configurare nu a fost găsit."
 msgid "Failed to load config file: %s"
 msgstr "Încărcarea fișierului de configurare a eșuat: %s"
 
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
+msgid "Installing System Upgrade"
+msgstr "Se instalează înnoirea sistemului"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
+msgid "Installing Updates"
+msgstr "Se instalează actualizările"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
+msgid "Rebooting after installing updates…"
+msgstr "Se repornește după instalarea actualizărilor…"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
+msgstr "Se oprește calculatorul după instalarea actualizărilor…"
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
+msgstr "Se instalează actualizările, aceasta ar putea dura..."
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+#: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
+msgid "Transaction"
+msgstr "Tranzacție"
+
+#. TRANSLATORS: this is the time the transaction was started in system timezone
+#: client/pkcon/pk-console.c:167
+msgid "System time"
+msgstr "Ora sistemului"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "Fals"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+#: client/pkcon/pk-console.c:169
+msgid "Succeeded"
+msgstr "Reușită"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "Adevărat"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+#: client/pkcon/pk-console.c:171
+msgid "Role"
+msgstr "Rol"
+
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(secunde)"
+
+#. TRANSLATORS: this is The duration of the transaction
+#: client/pkcon/pk-console.c:176
+msgid "Duration"
+msgstr "Durata"
+
+#. TRANSLATORS: this is The command line used to do the action
+#: client/pkcon/pk-console.c:180
+msgid "Command line"
+msgstr "Linia de comandă"
+
+#. TRANSLATORS: this is the user ID of the user that started the action
+#: client/pkcon/pk-console.c:182
+msgid "User ID"
+msgstr "ID utilizator"
+
+#. TRANSLATORS: this is the username, e.g. hughsie
+#: client/pkcon/pk-console.c:189
+msgid "Username"
+msgstr "Nume utilizator"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+#: client/pkcon/pk-console.c:193
+msgid "Real name"
+msgstr "Numele real"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "Pachete afectate:"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:204
+msgid "Affected packages: None"
+msgstr "Pachete afectate: niciunul"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+#: client/pkcon/pk-console.c:230
+msgid "Distribution"
+msgstr "Distribuție"
+
+#. TRANSLATORS: this is type of update, stable or testing
+#: client/pkcon/pk-console.c:232
+msgid "Type"
+msgstr "Tip"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
+msgid "Summary"
+msgstr "Sumar"
+
+#. TRANSLATORS: this is the group category name
+#: client/pkcon/pk-console.c:256
+msgid "Category"
+msgstr "Categorie"
+
+#. TRANSLATORS: this is group identifier
+#: client/pkcon/pk-console.c:258
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is the parent group
+#: client/pkcon/pk-console.c:261
+msgid "Parent"
+msgstr "Părinte"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+#: client/pkcon/pk-console.c:264 client/pkcon/pk-console.c:2340
+msgid "Name"
+msgstr "Denumire"
+
+#. TRANSLATORS: this is preferred icon for the group
+#: client/pkcon/pk-console.c:270
+msgid "Icon"
+msgstr "Pictogramă"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: client/pkcon/pk-console.c:308
+msgid "Details about the update:"
+msgstr "Detalii despre actualizare:"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
+#: lib/packagekit-glib2/pk-task-text.c:107
+#: lib/packagekit-glib2/pk-task-text.c:178
+msgid "Package"
+msgstr "Pachet"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+#: client/pkcon/pk-console.c:319
+msgid "Updates"
+msgstr "Actualizări"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+#: client/pkcon/pk-console.c:326
+msgid "Obsoletes"
+msgstr "Învechite"
+
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
+msgid "Vendor"
+msgstr "Furnizor"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+#: client/pkcon/pk-console.c:338
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+#: client/pkcon/pk-console.c:344
+msgid "CVE"
+msgstr "CVE"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+#: client/pkcon/pk-console.c:350
+msgid "Restart"
+msgstr "Repornește"
+
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+#: client/pkcon/pk-console.c:355
+msgid "Update text"
+msgstr "Textul actualizării"
+
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+#: client/pkcon/pk-console.c:360
+msgid "Changes"
+msgstr "Modificări"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+#: client/pkcon/pk-console.c:365
+msgid "State"
+msgstr "Stare"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+#: client/pkcon/pk-console.c:370
+msgid "Issued"
+msgstr "Emisă"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+#: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
+msgid "Updated"
+msgstr "Actualizat"
+
+#. TRANSLATORS: if the repo is enabled
+#: client/pkcon/pk-console.c:397
+msgid "Enabled"
+msgstr "Activat"
+
+#. TRANSLATORS: if the repo is disabled
+#: client/pkcon/pk-console.c:400
+msgid "Disabled"
+msgstr "Dezactivat"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#: client/pkcon/pk-console.c:429
+msgid "System restart required by:"
+msgstr "Repornirea sistemului este cerută de:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#: client/pkcon/pk-console.c:432
+msgid "Session restart required:"
+msgstr "Este necesară repornirea sesiunii:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+#: client/pkcon/pk-console.c:436
+msgid "System restart (security) required by:"
+msgstr "Repornirea sistemului (securitate) este cerută de:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+#: client/pkcon/pk-console.c:440
+msgid "Session restart (security) required:"
+msgstr "Repornirea sesiunii (securitate) cerută:"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: client/pkcon/pk-console.c:443
+msgid "Application restart required by:"
+msgstr "Repornirea aplicației este cerută de:"
+
+#. TRANSLATORS: This a list of details about the package
+#: client/pkcon/pk-console.c:488
+msgid "Package description"
+msgstr "Descriere pachet"
+
+#. TRANSLATORS: This where the package has no files
+#: client/pkcon/pk-console.c:509
+msgid "No files"
+msgstr "Niciun fișier"
+
+#. TRANSLATORS: This a list files contained in the package
+#: client/pkcon/pk-console.c:514
+msgid "Package files"
+msgstr "Fișiere din pachet"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: client/pkcon/pk-console.c:610
+msgid "Percentage"
+msgstr "Procentaj"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: client/pkcon/pk-console.c:633
+msgid "Status"
+msgstr "Stare"
+
+#. TRANSLATORS: the results from the transaction
+#: client/pkcon/pk-console.c:671
+msgid "Results:"
+msgstr "Rezultate:"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+#: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
+msgid "Fatal error"
+msgstr "Eroare fatală"
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+#: client/pkcon/pk-console.c:702
+msgid "There are no packages to update."
+msgstr "Nu sunt pachete de actualizat."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: client/pkcon/pk-console.c:706
+#: contrib/command-not-found/pk-command-not-found.c:670
+msgid "The transaction failed"
+msgstr "Tranzacția a eșuat"
+
+#. TRANSLATORS: print a message when there are no updates
+#: client/pkcon/pk-console.c:735
+msgid "There are no updates available at this time."
+msgstr "Nu sunt actualizări disponibile în acest moment."
+
+#: client/pkcon/pk-console.c:758
+msgid "There are no upgrades available at this time."
+msgstr "Nu sunt înnoiri disponibile în acest moment."
+
+#. TRANSLATORS: a package needs to restart their system
+#: client/pkcon/pk-console.c:820
+msgid "Please restart the computer to complete the update."
+msgstr "Reporniți calculatorul pentru a completa actualizarea."
+
+#. TRANSLATORS: a package needs to restart the session
+#: client/pkcon/pk-console.c:823
+msgid "Please logout and login to complete the update."
+msgstr ""
+"Ieșiți din sesiune și autentificați-vă din nou pentru a completa "
+"actualizarea."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: client/pkcon/pk-console.c:826
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost "
+"instalate actualizări de securitate importante."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: client/pkcon/pk-console.c:829
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza "
+"actualizarea deoarece au fost instalate actualizări de securitate importante."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "Mai mult de un pachet se potrivește:"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "Alegeți pachetul corect: "
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+#: client/pkcon/pk-console.c:981
+msgid "Package not found"
+msgstr "Pachetul nu a fost găsit"
+
+#. TRANSLATORS: we couldn't find anything
+#: client/pkcon/pk-console.c:999
+msgid "No packages were found"
+msgstr "Nu a fost găsit niciun pachet"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#: client/pkcon/pk-console.c:1024
+#, c-format
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"Se aștepta un nume de pachet, dar s-a primit fișier. Încercați să folosiți "
+"«pkcon install-local %s» în loc."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#: client/pkcon/pk-console.c:1059
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Acest instrument nu a putut găsi niciun pachet disponibil: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkcon/pk-console.c:1076
+msgid "This tool could not find any available package."
+msgstr "Acest instrument nu a putut găsi niciun pachet disponibil."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+#: client/pkcon/pk-console.c:1085
+msgid "The selected packages may already be installed."
+msgstr "Este posibil ca pachetele selectate să fie deja instalate."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pkcon/pk-console.c:1113
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Acest instrument nu a putut găsi pachetul instalat: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Acest instrument nu a putut găsi pachetul: %s"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+#: client/pkcon/pk-console.c:1220
+msgid "No packages require updating to newer versions."
+msgstr "Niciun pachet nu necesită actualizarea la versiuni mai noi."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#: client/pkcon/pk-console.c:1258 client/pkcon/pk-console.c:1287
+#: client/pkcon/pk-console.c:1326 client/pkcon/pk-console.c:1385
+#: client/pkcon/pk-console.c:1413
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Acest instrument nu a putut găsi toate pachetele: %s"
+
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
 msgid "The daemon crashed mid-transaction!"
 msgstr "Demonul a eșuat în mijlocul tranzacției!"
 
+#. TRANSLATORS: This is the header to the --help menu
+#: client/pkcon/pk-console.c:1472
+msgid "PackageKit Console Interface"
+msgstr "Interfața pentru consolă a PackageKit"
+
+#. these are commands we can use with pkcon
+#: client/pkcon/pk-console.c:1474
+msgid "Subcommands:"
+msgstr "Subcomenzi:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr ""
+"A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkcon/pk-console.c:1576
+msgid "Time since"
+msgstr "Timp trecut"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+#: client/pkcon/pk-console.c:1596
+msgid "Prepared updates:"
+msgstr "Actualizări pregătite:"
+
+#. TRANSLATORS: The network settings could not be sent
+#: client/pkcon/pk-console.c:1665
+msgid "The proxy could not be set"
+msgstr "Proxy-ul nu a putut fi definit"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
+msgid "Show the program version and exit"
+msgstr "Afișează versiunea programului și iese"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkcon/pk-console.c:1709
+msgid "Set the filter, e.g. installed"
+msgstr "Definește filtrul, de exemplu: instalat"
+
+#. command line argument, do we ask questions
+#: client/pkcon/pk-console.c:1712
+msgid "Install the packages without asking for confirmation"
+msgstr "Instalează pachetele fără a cere confirmare"
+
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
 msgid "Prepare the transaction by downloading packages only"
 msgstr "Pregătește tranzacția doar prin descărcarea pachetelor"
+
+#. command line argument, do we allow package downgrades
+#: client/pkcon/pk-console.c:1718
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Permite retrogradarea pachetelor în timpul tranzacției"
+
+#: client/pkcon/pk-console.c:1720
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Permite reinstalarea pachetelor în timpul tranzacției"
+
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr "Elimină automat dependențele nefolosite"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pkcon/pk-console.c:1728
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"În locul utilizării unor controale animate, afișează pe ecran o ieșire ce "
+"poate fi interpretată ușor de un program"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pkcon/pk-console.c:1731
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr ""
+"Vechimea maximă a spațiului de prestocare (cache) a metadatelor (în "
+"secunde). Utilizați „-1” pentru a utiliza numai spațiul de prestocare, „1” "
+"pentru a reîncărca conținutul spațiului de prestocare."
+
+#. command line argument, do we ask questions
+#: client/pkcon/pk-console.c:1734
+msgid "Allow untrusted packages to be installed."
+msgstr "Permite instalarea pachetelor care nu sunt de încredere."
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pkcon/pk-console.c:1769
+msgid "Failed to parse command line"
+msgstr "Analizarea datelor din linia de comandă a eșuat"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pkcon/pk-console.c:1779
+msgid "Failed to contact PackageKit"
+msgstr "Nu s-a putut contacta PackageKit"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "Filtrul specificat nu este valid"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+#: client/pkcon/pk-console.c:1868
+msgid "A search type is required, e.g. name"
+msgstr "Este necesar un tip de căutare, de exemplu: nume"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+#: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
+#: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
+msgid "A search term is required"
+msgstr "Este necesar un termen de căutare"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pkcon/pk-console.c:1955
+msgid "A package name to install is required"
+msgstr "Este necesar un nume de pachet pentru instalare"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pkcon/pk-console.c:1969
+msgid "A filename to install is required"
+msgstr "Este necesar un nume de fișier pentru instalare"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pkcon/pk-console.c:1985
+msgid "A type, key_id and package_id are required"
+msgstr "Sunt necesare un tip, key_id și package_id"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+#: client/pkcon/pk-console.c:2003
+msgid "A package name to remove is required"
+msgstr "Este necesar un nume de pachet de eliminat"
+
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+#: client/pkcon/pk-console.c:2016
+msgid "A destination directory and the package names to download are required"
+msgstr "Sunt necesare un dosar de destinație și numele pachetelor de descărcat"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+#: client/pkcon/pk-console.c:2026
+msgid "Directory not found"
+msgstr "Dosarul nu a fost găsit"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pkcon/pk-console.c:2041
+msgid "A licence identifier (eula-id) is required"
+msgstr "Este necesar un identificator de licență (eula-id)"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+#: client/pkcon/pk-console.c:2067
+msgid "A package name to resolve is required"
+msgstr "Este necesar un nume de pachet de rezolvat"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+#: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
+msgid "A repository name is required"
+msgstr "Este necesar un nume de depozit"
+
+#: client/pkcon/pk-console.c:2117
+msgid "A repo name, parameter and value are required"
+msgstr "Sunt necesare un nume de depozit, un parametru și o valoare"
+
+#: client/pkcon/pk-console.c:2134
+msgid "A repo id and autoremove required"
+msgstr "Se necesită un id de depozit și comanda «autoremove»"
+
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Este necesară o acțiune, de exemplu, „update-packages”"
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+msgid "A correct role is required"
+msgstr "Este necesar un rol corect"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+#: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
+#: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
+#: client/pkcon/pk-console.c:2283
+msgid "A package name is required"
+msgstr "Este necesar un nume de pachet"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+#: client/pkcon/pk-console.c:2234
+msgid "A package provide string is required"
+msgstr "Este necesar un șir cu ce furnizează (ce conține) pachetul"
+
+#: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
+msgid "A filename is required"
+msgstr "Este necesar un nume de fișier"
+
+#. TRANSLATORS: this is the description of the backend
+#: client/pkcon/pk-console.c:2344
+msgid "Description"
+msgstr "Descriere"
+
+#. TRANSLATORS: this is the author of the backend
+#: client/pkcon/pk-console.c:2348
+msgid "Author"
+msgstr "Autor"
+
+#. TRANSLATORS: The user did not provide a distro name
+#: client/pkcon/pk-console.c:2418
+msgid "You need to specify a list file to create"
+msgstr "Trebuie să specificați un fișier cu listă de creat"
+
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#: client/pkcon/pk-console.c:2431
+#, c-format
+msgid "File already exists: %s"
+msgstr "Fișierul există deja: %s"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#: client/pkcon/pk-console.c:2449
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Opțiunea „%s” nu este acceptată"
+
+#. TRANSLATORS: Generic failure of what they asked to do
+#: client/pkcon/pk-console.c:2459
+msgid "Command failed"
+msgstr "Comandă eșuată"
+
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr "Obținerea stării demonului a eșuat"
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+msgid "Failed to get properties"
+msgstr "Obținerea proprietăților a eșuat"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: client/pkcon/pk-monitor.c:341
+msgid "PackageKit Monitor"
+msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
@@ -59,14 +773,10 @@ msgid "Allow installation of untrusted packages"
 msgstr "Permite instalarea pachetelor care nu sunt de încredere"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr "Elimină automat dependențele nefolosite"
-
-#. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr "Vechimea maximă a spațiului de stocare (cache) a metadatelor (în secunde)"
+msgstr ""
+"Vechimea maximă a spațiului de stocare (cache) a metadatelor (în secunde)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -75,7 +785,9 @@ msgstr "SECUNDE"
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
-msgstr "Împrospătează conținutul spațiului de stocare (cache) al metadatelor pachetelor."
+msgstr ""
+"Împrospătează conținutul spațiului de stocare (cache) al metadatelor "
+"pachetelor."
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
@@ -126,7 +838,9 @@ msgstr "Directorul nu există: %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
-msgstr "Actualizează toate pachetele sau anumite pachete la cele mai recente versiuni ale acestora."
+msgstr ""
+"Actualizează toate pachetele sau anumite pachete la cele mai recente "
+"versiuni ale acestora."
 
 #: client/pkgc-manage.c:510
 #, c-format
@@ -166,7 +880,9 @@ msgstr "Actualizarea fără conexiune la Internet nu este declanșată."
 #: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Actualizarea fără conexiune la Internet este declanșată. Acțiunea după actualizare: %s"
+msgstr ""
+"Actualizarea fără conexiune la Internet este declanșată. Acțiunea după "
+"actualizare: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:715
@@ -180,11 +896,14 @@ msgstr "Nu este pregătită nicio actualizare fără conexiune la Internet."
 #: client/pkgc-manage.c:731
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Citirea actualizărilor fără conexiune la Internet pregătite, a eșuat: %s"
+msgstr ""
+"Citirea actualizărilor fără conexiune la Internet pregătite, a eșuat: %s"
 
 #: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
-msgstr "Nu sunt disponibile rezultate de la ultima actualizare fără conexiune la Internet."
+msgstr ""
+"Nu sunt disponibile rezultate de la ultima actualizare fără conexiune la "
+"Internet."
 
 #: client/pkgc-manage.c:748
 #, c-format
@@ -193,7 +912,8 @@ msgstr "Ultima actualizare fără conexiune la Internet a eșuat: %s: %s"
 
 #: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
-msgstr "Ultima actualizare fără conexiune la Internet a fost finalizată cu succes"
+msgstr ""
+"Ultima actualizare fără conexiune la Internet a fost finalizată cu succes"
 
 #: client/pkgc-manage.c:766
 #, c-format
@@ -207,7 +927,9 @@ msgstr "Declanșarea actualizării fără conectare la Internet a eșuat: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr "Actualizare fără conexiune la Internet programată. Sistemul se va actualiza la următoarea repornire."
+msgstr ""
+"Actualizare fără conexiune la Internet programată. Sistemul se va actualiza "
+"la următoarea repornire."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -219,15 +941,20 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
+"  status  - show status information about a prepared or finished offline "
+"update"
 msgstr ""
-"Declanșează și gestionează actualizările fără conexiune la Internet ale sistemului.\n"
+"Declanșează și gestionează actualizările fără conexiune la Internet ale "
+"sistemului.\n"
 "\n"
 "Puteți selecta una dintre următoarele solicitări:\n"
-"  prepare - pregătește o actualizare fără conexiune la Internet și o declanșează (implicit)\n"
-"  trigger - declanșează o actualizare fără conexiune la Internet (pregătită manual)\n"
+"  prepare - pregătește o actualizare fără conexiune la Internet și o "
+"declanșează (implicit)\n"
+"  trigger - declanșează o actualizare fără conexiune la Internet (pregătită "
+"manual)\n"
 "  cancel  - anulează o actualizare fără conexiune la Internet planificată\n"
-"  status  - afișează informații despre starea unei actualizări fără conexiune la Internet pregătite sau finalizate"
+"  status  - afișează informații despre starea unei actualizări fără "
+"conexiune la Internet pregătite sau finalizate"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -307,14 +1034,6 @@ msgstr "Repară sistemul de gestionare al pachetelor"
 msgid "Safely stop the PackageKit daemon"
 msgstr "Oprește în siguranță demonul PackageKit"
 
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "Obținerea stării demonului a eșuat"
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
-msgid "Failed to get properties"
-msgstr "Obținerea proprietăților a eșuat"
-
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
@@ -368,7 +1087,8 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Caută pachetele care corespund modelelor date. Dacă MODUL nu este specificat, \n"
+"Caută pachetele care corespund modelelor date. Dacă MODUL nu este "
+"specificat, \n"
 "se efectuează o căutare după „detalii” (details).\n"
 "Modurile de căutare posibile sunt:\n"
 "  name    - căutare după numele pachetului\n"
@@ -422,7 +1142,8 @@ msgstr "Listează toate actualizările de pachete disponibile în prezent."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr "Afișează informații detaliate despre actualizarea pachetului specificat."
+msgstr ""
+"Afișează informații detaliate despre actualizarea pachetului specificat."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -436,8 +1157,11 @@ msgstr "Afișează pachetele care necesită pachetele specificate."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr "Listează toate filtrele, grupurile și categoriile disponibile pentru organizarea pachetelor."
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+"Listează toate filtrele, grupurile și categoriile disponibile pentru "
+"organizarea pachetelor."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -457,13 +1181,8 @@ msgstr "Categorii:"
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr "Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr "A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
+msgstr ""
+"Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
@@ -474,20 +1193,6 @@ msgstr "Timpul scurs"
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "Obține timpul în secunde de la ultima acțiune specificată."
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Este necesară o acțiune, de exemplu, „update-packages”"
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-msgid "A correct role is required"
-msgstr "Este necesar un rol corect"
 
 #: client/pkgc-query.c:973
 msgid "Show backend information"
@@ -792,14 +1497,6 @@ msgstr "Ora sistemului:"
 msgid "Succeeded:"
 msgstr "Reușită:"
 
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "Adevărat"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "Fals"
-
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
 msgid "Role:"
@@ -830,30 +1527,10 @@ msgstr "Numele utilizatorului:"
 msgid "Real name:"
 msgstr "Numele real:"
 
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "Pachete afectate:"
-
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1078
 msgid "None"
 msgstr "Niciunul"
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "Mai mult de un pachet se potrivește:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "Alegeți pachetul corect: "
 
 #: client/pkgc-util.c:1223
 #, c-format
@@ -890,23 +1567,20 @@ msgstr "Dezactivează ieșirea colorată"
 msgid "Answer 'yes' to all questions"
 msgstr "Răspunde afirmativ la toate întrebările"
 
+#: client/pkgcli.c:92
+msgid "FILTER"
+msgstr "FILTRU"
+
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
 msgstr "Filtrează pachetele (instalate, disponibile etc.)"
 
-#: client/pkgcli.c:92
-msgid "FILTER"
-msgstr "FILTRU"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
-
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr "Nu s-a specificat nicio comandă. Utilizați „--help” pentru informații despre utilizare."
+msgstr ""
+"Nu s-a specificat nicio comandă. Utilizați „--help” pentru informații despre "
+"utilizare."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -931,628 +1605,6 @@ msgstr "Comenzi disponibile:"
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Utilizați «pkgcli COMANDA --help» pentru ajutor specific comenzii."
 
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "Filtrul specificat nu este valid"
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-#: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
-msgid "Transaction"
-msgstr "Tranzacție"
-
-#. TRANSLATORS: this is the time the transaction was started in system timezone
-#: client/pkcon/pk-console.c:167
-msgid "System time"
-msgstr "Ora sistemului"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pkcon/pk-console.c:169
-msgid "Succeeded"
-msgstr "Reușită"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pkcon/pk-console.c:171
-msgid "Role"
-msgstr "Rol"
-
-#. TRANSLATORS: this is The duration of the transaction
-#: client/pkcon/pk-console.c:176
-msgid "Duration"
-msgstr "Durata"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(secunde)"
-
-#. TRANSLATORS: this is The command line used to do the action
-#: client/pkcon/pk-console.c:180
-msgid "Command line"
-msgstr "Linia de comandă"
-
-#. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pkcon/pk-console.c:182
-msgid "User ID"
-msgstr "ID utilizator"
-
-#. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pkcon/pk-console.c:189
-msgid "Username"
-msgstr "Nume utilizator"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pkcon/pk-console.c:193
-msgid "Real name"
-msgstr "Numele real"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:204
-msgid "Affected packages: None"
-msgstr "Pachete afectate: niciunul"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pkcon/pk-console.c:230
-msgid "Distribution"
-msgstr "Distribuție"
-
-#. TRANSLATORS: this is type of update, stable or testing
-#: client/pkcon/pk-console.c:232
-msgid "Type"
-msgstr "Tip"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
-msgid "Summary"
-msgstr "Sumar"
-
-#. TRANSLATORS: this is the group category name
-#: client/pkcon/pk-console.c:256
-msgid "Category"
-msgstr "Categorie"
-
-#. TRANSLATORS: this is group identifier
-#: client/pkcon/pk-console.c:258
-msgid "ID"
-msgstr "ID"
-
-#. TRANSLATORS: this is the parent group
-#: client/pkcon/pk-console.c:261
-msgid "Parent"
-msgstr "Părinte"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-#: client/pkcon/pk-console.c:264 client/pkcon/pk-console.c:2340
-msgid "Name"
-msgstr "Denumire"
-
-#. TRANSLATORS: this is preferred icon for the group
-#: client/pkcon/pk-console.c:270
-msgid "Icon"
-msgstr "Pictogramă"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-#: client/pkcon/pk-console.c:308
-msgid "Details about the update:"
-msgstr "Detalii despre actualizare:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-#: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
-#: lib/packagekit-glib2/pk-task-text.c:107
-#: lib/packagekit-glib2/pk-task-text.c:178
-msgid "Package"
-msgstr "Pachet"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-#: client/pkcon/pk-console.c:319
-msgid "Updates"
-msgstr "Actualizări"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-#: client/pkcon/pk-console.c:326
-msgid "Obsoletes"
-msgstr "Învechite"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
-msgid "Vendor"
-msgstr "Furnizor"
-
-#. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pkcon/pk-console.c:338
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-#. TRANSLATORS: details about the update, the CVE URLs
-#: client/pkcon/pk-console.c:344
-msgid "CVE"
-msgstr "CVE"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-#: client/pkcon/pk-console.c:350
-msgid "Restart"
-msgstr "Repornește"
-
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-#: client/pkcon/pk-console.c:355
-msgid "Update text"
-msgstr "Textul actualizării"
-
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-#: client/pkcon/pk-console.c:360
-msgid "Changes"
-msgstr "Modificări"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-#: client/pkcon/pk-console.c:365
-msgid "State"
-msgstr "Stare"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-#: client/pkcon/pk-console.c:370
-msgid "Issued"
-msgstr "Emisă"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-#: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
-msgid "Updated"
-msgstr "Actualizat"
-
-#. TRANSLATORS: if the repo is enabled
-#: client/pkcon/pk-console.c:397
-msgid "Enabled"
-msgstr "Activat"
-
-#. TRANSLATORS: if the repo is disabled
-#: client/pkcon/pk-console.c:400
-msgid "Disabled"
-msgstr "Dezactivat"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#: client/pkcon/pk-console.c:429
-msgid "System restart required by:"
-msgstr "Repornirea sistemului este cerută de:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#: client/pkcon/pk-console.c:432
-msgid "Session restart required:"
-msgstr "Este necesară repornirea sesiunii:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:436
-msgid "System restart (security) required by:"
-msgstr "Repornirea sistemului (securitate) este cerută de:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:440
-msgid "Session restart (security) required:"
-msgstr "Repornirea sesiunii (securitate) cerută:"
-
-#. TRANSLATORS: a package requires the application to be restarted
-#: client/pkcon/pk-console.c:443
-msgid "Application restart required by:"
-msgstr "Repornirea aplicației este cerută de:"
-
-#. TRANSLATORS: This a list of details about the package
-#: client/pkcon/pk-console.c:488
-msgid "Package description"
-msgstr "Descriere pachet"
-
-#. TRANSLATORS: This where the package has no files
-#: client/pkcon/pk-console.c:509
-msgid "No files"
-msgstr "Niciun fișier"
-
-#. TRANSLATORS: This a list files contained in the package
-#: client/pkcon/pk-console.c:514
-msgid "Package files"
-msgstr "Fișiere din pachet"
-
-#. TRANSLATORS: the percentage complete of the transaction
-#: client/pkcon/pk-console.c:610
-msgid "Percentage"
-msgstr "Procentaj"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pkcon/pk-console.c:633
-msgid "Status"
-msgstr "Stare"
-
-#. TRANSLATORS: the results from the transaction
-#: client/pkcon/pk-console.c:671
-msgid "Results:"
-msgstr "Rezultate:"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-#: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
-msgid "Fatal error"
-msgstr "Eroare fatală"
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-#: client/pkcon/pk-console.c:702
-msgid "There are no packages to update."
-msgstr "Nu sunt pachete de actualizat."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pkcon/pk-console.c:706
-#: contrib/command-not-found/pk-command-not-found.c:670
-msgid "The transaction failed"
-msgstr "Tranzacția a eșuat"
-
-#. TRANSLATORS: print a message when there are no updates
-#: client/pkcon/pk-console.c:735
-msgid "There are no updates available at this time."
-msgstr "Nu sunt actualizări disponibile în acest moment."
-
-#: client/pkcon/pk-console.c:758
-msgid "There are no upgrades available at this time."
-msgstr "Nu sunt înnoiri disponibile în acest moment."
-
-#. TRANSLATORS: a package needs to restart their system
-#: client/pkcon/pk-console.c:820
-msgid "Please restart the computer to complete the update."
-msgstr "Reporniți calculatorul pentru a completa actualizarea."
-
-#. TRANSLATORS: a package needs to restart the session
-#: client/pkcon/pk-console.c:823
-msgid "Please logout and login to complete the update."
-msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a completa actualizarea."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pkcon/pk-console.c:826
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pkcon/pk-console.c:829
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-#: client/pkcon/pk-console.c:981
-msgid "Package not found"
-msgstr "Pachetul nu a fost găsit"
-
-#. TRANSLATORS: we couldn't find anything
-#: client/pkcon/pk-console.c:999
-msgid "No packages were found"
-msgstr "Nu a fost găsit niciun pachet"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#: client/pkcon/pk-console.c:1024
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Se aștepta un nume de pachet, dar s-a primit fișier. Încercați să folosiți «pkcon install-local %s» în loc."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#: client/pkcon/pk-console.c:1059
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Acest instrument nu a putut găsi niciun pachet disponibil: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkcon/pk-console.c:1076
-msgid "This tool could not find any available package."
-msgstr "Acest instrument nu a putut găsi niciun pachet disponibil."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-#: client/pkcon/pk-console.c:1085
-msgid "The selected packages may already be installed."
-msgstr "Este posibil ca pachetele selectate să fie deja instalate."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1113
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Acest instrument nu a putut găsi pachetul instalat: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Acest instrument nu a putut găsi pachetul: %s"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-#: client/pkcon/pk-console.c:1220
-msgid "No packages require updating to newer versions."
-msgstr "Niciun pachet nu necesită actualizarea la versiuni mai noi."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#: client/pkcon/pk-console.c:1258 client/pkcon/pk-console.c:1287
-#: client/pkcon/pk-console.c:1326 client/pkcon/pk-console.c:1385
-#: client/pkcon/pk-console.c:1413
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Acest instrument nu a putut găsi toate pachetele: %s"
-
-#. TRANSLATORS: This is the header to the --help menu
-#: client/pkcon/pk-console.c:1472
-msgid "PackageKit Console Interface"
-msgstr "Interfața pentru consolă a PackageKit"
-
-#. these are commands we can use with pkcon
-#: client/pkcon/pk-console.c:1474
-msgid "Subcommands:"
-msgstr "Subcomenzi:"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkcon/pk-console.c:1576
-msgid "Time since"
-msgstr "Timp trecut"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-#: client/pkcon/pk-console.c:1596
-msgid "Prepared updates:"
-msgstr "Actualizări pregătite:"
-
-#. TRANSLATORS: The network settings could not be sent
-#: client/pkcon/pk-console.c:1665
-msgid "The proxy could not be set"
-msgstr "Proxy-ul nu a putut fi definit"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
-msgid "Show the program version and exit"
-msgstr "Afișează versiunea programului și iese"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkcon/pk-console.c:1709
-msgid "Set the filter, e.g. installed"
-msgstr "Definește filtrul, de exemplu: instalat"
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1712
-msgid "Install the packages without asking for confirmation"
-msgstr "Instalează pachetele fără a cere confirmare"
-
-#. command line argument, do we allow package downgrades
-#: client/pkcon/pk-console.c:1718
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Permite retrogradarea pachetelor în timpul tranzacției"
-
-#: client/pkcon/pk-console.c:1720
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Permite reinstalarea pachetelor în timpul tranzacției"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "În locul utilizării unor controale animate, afișează pe ecran o ieșire ce poate fi interpretată ușor de un program"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "Vechimea maximă a spațiului de prestocare (cache) a metadatelor (în secunde). Utilizați „-1” pentru a utiliza numai spațiul de prestocare, „1” pentru a reîncărca conținutul spațiului de prestocare."
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1734
-msgid "Allow untrusted packages to be installed."
-msgstr "Permite instalarea pachetelor care nu sunt de încredere."
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1769
-msgid "Failed to parse command line"
-msgstr "Analizarea datelor din linia de comandă a eșuat"
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1779
-msgid "Failed to contact PackageKit"
-msgstr "Nu s-a putut contacta PackageKit"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-#: client/pkcon/pk-console.c:1868
-msgid "A search type is required, e.g. name"
-msgstr "Este necesar un tip de căutare, de exemplu: nume"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-#: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
-#: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
-msgid "A search term is required"
-msgstr "Este necesar un termen de căutare"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1955
-msgid "A package name to install is required"
-msgstr "Este necesar un nume de pachet pentru instalare"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1969
-msgid "A filename to install is required"
-msgstr "Este necesar un nume de fișier pentru instalare"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:1985
-msgid "A type, key_id and package_id are required"
-msgstr "Sunt necesare un tip, key_id și package_id"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-#: client/pkcon/pk-console.c:2003
-msgid "A package name to remove is required"
-msgstr "Este necesar un nume de pachet de eliminat"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-#: client/pkcon/pk-console.c:2016
-msgid "A destination directory and the package names to download are required"
-msgstr "Sunt necesare un dosar de destinație și numele pachetelor de descărcat"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-#: client/pkcon/pk-console.c:2026
-msgid "Directory not found"
-msgstr "Dosarul nu a fost găsit"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:2041
-msgid "A licence identifier (eula-id) is required"
-msgstr "Este necesar un identificator de licență (eula-id)"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-#: client/pkcon/pk-console.c:2067
-msgid "A package name to resolve is required"
-msgstr "Este necesar un nume de pachet de rezolvat"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-#: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
-msgid "A repository name is required"
-msgstr "Este necesar un nume de depozit"
-
-#: client/pkcon/pk-console.c:2117
-msgid "A repo name, parameter and value are required"
-msgstr "Sunt necesare un nume de depozit, un parametru și o valoare"
-
-#: client/pkcon/pk-console.c:2134
-msgid "A repo id and autoremove required"
-msgstr "Se necesită un id de depozit și comanda «autoremove»"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-#: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
-#: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
-#: client/pkcon/pk-console.c:2283
-msgid "A package name is required"
-msgstr "Este necesar un nume de pachet"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-#: client/pkcon/pk-console.c:2234
-msgid "A package provide string is required"
-msgstr "Este necesar un șir cu ce furnizează (ce conține) pachetul"
-
-#: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
-msgid "A filename is required"
-msgstr "Este necesar un nume de fișier"
-
-#. TRANSLATORS: this is the description of the backend
-#: client/pkcon/pk-console.c:2344
-msgid "Description"
-msgstr "Descriere"
-
-#. TRANSLATORS: this is the author of the backend
-#: client/pkcon/pk-console.c:2348
-msgid "Author"
-msgstr "Autor"
-
-#. TRANSLATORS: The user did not provide a distro name
-#: client/pkcon/pk-console.c:2418
-msgid "You need to specify a list file to create"
-msgstr "Trebuie să specificați un fișier cu listă de creat"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#: client/pkcon/pk-console.c:2431
-#, c-format
-msgid "File already exists: %s"
-msgstr "Fișierul există deja: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#: client/pkcon/pk-console.c:2449
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Opțiunea „%s” nu este acceptată"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#: client/pkcon/pk-console.c:2459
-msgid "Command failed"
-msgstr "Comandă eșuată"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pkcon/pk-monitor.c:341
-msgid "PackageKit Monitor"
-msgstr "Monitor PackageKit"
-
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
-#, c-format
-msgid "%i%%"
-msgstr "%i%%"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
-msgid "Installing System Upgrade"
-msgstr "Se instalează înnoirea sistemului"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
-msgid "Installing Updates"
-msgstr "Se instalează actualizările"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-msgid "Rebooting after installing updates…"
-msgstr "Se repornește după instalarea actualizărilor…"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
-msgstr "Se oprește calculatorul după instalarea actualizărilor…"
-
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
-msgstr "Se instalează actualizările, aceasta ar putea dura..."
-
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Se instalează înnoirea sistemului, aceasta ar putea dura..."
-
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
 msgid "Downloading details about the software repositories."
@@ -1561,7 +1613,8 @@ msgstr "Se descarcă detaliile despre depozitele cu software."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
+msgstr ""
+"Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2294,8 +2347,11 @@ msgid "Cancel foreign task"
 msgstr "Întrerupe sarcina străină"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită de dvs."
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită "
+"de dvs."
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2361,8 +2417,12 @@ msgid "Trust a key used for signing software"
 msgstr "Acordă încredere unei chei folosite la semnarea software-ului"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Este necesară autentificarea pentru a acorda încredere unei chei folosite la semnarea software-ului"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr ""
+"Este necesară autentificarea pentru a acorda încredere unei chei folosite la "
+"semnarea software-ului"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2418,7 +2478,9 @@ msgstr "Schimbă parametrii depozitului de software"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr "Este necesară autentificarea pentru a schimba parametrii depozitului de software"
+msgstr ""
+"Este necesară autentificarea pentru a schimba parametrii depozitului de "
+"software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2439,8 +2501,12 @@ msgid "Set network proxy"
 msgstr "Definește proxy-ul de rețea"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la descărcarea programelor"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr ""
+"Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la "
+"descărcarea programelor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2481,7 +2547,9 @@ msgstr "Declanșează actualizări fără conectare la Internet"
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr "Este necesară autentificarea pentru a declanșa actualizări fără conectare la Internet"
+msgstr ""
+"Este necesară autentificarea pentru a declanșa actualizări fără conectare la "
+"Internet"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2492,7 +2560,9 @@ msgstr "Curăță mesajul despre actualizarea fără conectare la Internet"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Este necesară autentificarea pentru a curăța mesajul despre actualizările fără conectare la Internet"
+msgstr ""
+"Este necesară autentificarea pentru a curăța mesajul despre actualizările "
+"fără conectare la Internet"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2587,7 +2657,8 @@ msgstr "Iese după o mică întârziere"
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:129
 msgid "Exit after the engine has loaded"
-msgstr "Iese după ce motorul de împachetare/despachetare a pachetelor a fost încărcat"
+msgstr ""
+"Iese după ce motorul de împachetare/despachetare a pachetelor a fost încărcat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
@@ -2610,7 +2681,8 @@ msgstr "Nu s-a reușit să se rezolve automat: %s"
 #: src/pk-main.c:245
 #, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"
+msgstr ""
+"Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
@@ -2619,19 +2691,27 @@ msgstr "Software-ul nu este dintr-o sursă de încredere."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Nu actualizați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
+msgstr ""
+"Nu actualizați acest pachet decât dacă aveți certitudinea că este sigur să "
+"faceți asta."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Nu actualizați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
+msgstr ""
+"Nu actualizați aceste pachete decât dacă aveți certitudinea că este sigur să "
+"faceți asta."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Nu instalați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
+msgstr ""
+"Nu instalați acest pachet decât dacă aveți certitudinea că este sigur să "
+"faceți asta."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
+msgstr ""
+"Nu instalați aceste pachete decât dacă aveți certitudinea că este sigur să "
+"faceți asta."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

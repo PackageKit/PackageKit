@@ -15,16 +15,18 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-14 06:01+0000\n"
 "Last-Translator: Mateus Liberale Gomes <sergiogomes209403@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/packagekit/translations/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"packagekit/translations/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
+"1000000 == 0 ? 1 : 2;\n"
 "X-Generator: Weblate 5.15.2-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -37,17 +39,727 @@ msgstr "O arquivo de configuração não foi encontrado."
 msgid "Failed to load config file: %s"
 msgstr "Falha ao carregar o arquivo de configuração: %s"
 
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
+#, c-format
+msgid "%i%%"
+msgstr "%i%%"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
+msgid "Installing System Upgrade"
+msgstr "Instalando atualização de sistema"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
+msgid "Installing Updates"
+msgstr "Instalando atualizações"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
+msgid "Rebooting after installing updates…"
+msgstr "Reiniciando após instalar atualizações…"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
+msgstr "Desligando após instalar atualizações…"
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
+msgstr "Instalando atualizações; isto pode levar um tempo…"
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Instalando atualização do sistema; isto pode levar um tempo…"
+
+#. TRANSLATORS: this is an atomic transaction
+#. TRANSLATORS: the role is the point of the transaction,
+#. * e.g. update-packages
+#: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
+msgid "Transaction"
+msgstr "Transação"
+
+#. TRANSLATORS: this is the time the transaction was started in system timezone
+#: client/pkcon/pk-console.c:167
+msgid "System time"
+msgstr "Horário do sistema"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "Falso"
+
+#. TRANSLATORS: this is if the transaction succeeded or not
+#: client/pkcon/pk-console.c:169
+msgid "Succeeded"
+msgstr "Bem-sucedido"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "Verdadeiro"
+
+#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
+#: client/pkcon/pk-console.c:171
+msgid "Role"
+msgstr "Modo"
+
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(segundos)"
+
+#. TRANSLATORS: this is The duration of the transaction
+#: client/pkcon/pk-console.c:176
+msgid "Duration"
+msgstr "Duração"
+
+#. TRANSLATORS: this is The command line used to do the action
+#: client/pkcon/pk-console.c:180
+msgid "Command line"
+msgstr "Linha de comando"
+
+#. TRANSLATORS: this is the user ID of the user that started the action
+#: client/pkcon/pk-console.c:182
+msgid "User ID"
+msgstr "ID do usuário"
+
+#. TRANSLATORS: this is the username, e.g. hughsie
+#: client/pkcon/pk-console.c:189
+msgid "Username"
+msgstr "Nome de usuário"
+
+#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
+#: client/pkcon/pk-console.c:193
+msgid "Real name"
+msgstr "Nome real"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "Pacotes afetados:"
+
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:204
+msgid "Affected packages: None"
+msgstr "Pacotes afetados: nenhum"
+
+#. TRANSLATORS: this is the distro, e.g. Fedora 10
+#: client/pkcon/pk-console.c:230
+msgid "Distribution"
+msgstr "Distribuição"
+
+#. TRANSLATORS: this is type of update, stable or testing
+#: client/pkcon/pk-console.c:232
+msgid "Type"
+msgstr "Tipo"
+
+#. TRANSLATORS: this is any summary text describing the upgrade
+#. TRANSLATORS: this is the summary of the group
+#: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
+msgid "Summary"
+msgstr "Sumário"
+
+#. TRANSLATORS: this is the group category name
+#: client/pkcon/pk-console.c:256
+msgid "Category"
+msgstr "Categoria"
+
+#. TRANSLATORS: this is group identifier
+#: client/pkcon/pk-console.c:258
+msgid "ID"
+msgstr "ID"
+
+#. TRANSLATORS: this is the parent group
+#: client/pkcon/pk-console.c:261
+msgid "Parent"
+msgstr "Pai"
+
+#. TRANSLATORS: this is the name of the parent group
+#. TRANSLATORS: this is the name of the backend
+#: client/pkcon/pk-console.c:264 client/pkcon/pk-console.c:2340
+msgid "Name"
+msgstr "Nome"
+
+#. TRANSLATORS: this is preferred icon for the group
+#: client/pkcon/pk-console.c:270
+msgid "Icon"
+msgstr "Ícone"
+
+#. TRANSLATORS: this is a header for the package that can be updated
+#: client/pkcon/pk-console.c:308
+msgid "Details about the update:"
+msgstr "Detalhes sobre a atualização:"
+
+#. TRANSLATORS: details about the update, package name and version
+#. TRANSLATORS: the package that is being processed
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
+#: lib/packagekit-glib2/pk-task-text.c:107
+#: lib/packagekit-glib2/pk-task-text.c:178
+msgid "Package"
+msgstr "Pacote"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update updates
+#: client/pkcon/pk-console.c:319
+msgid "Updates"
+msgstr "Atualiza"
+
+#. TRANSLATORS: details about the update, any packages that
+#. * this update obsoletes
+#: client/pkcon/pk-console.c:326
+msgid "Obsoletes"
+msgstr "Obsoletos"
+
+#. TRANSLATORS: details about the update, the vendor URLs
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
+msgid "Vendor"
+msgstr "Fornecedor"
+
+#. TRANSLATORS: details about the update, the bugzilla URLs
+#: client/pkcon/pk-console.c:338
+msgid "Bugzilla"
+msgstr "Bugzilla"
+
+#. TRANSLATORS: details about the update, the CVE URLs
+#: client/pkcon/pk-console.c:344
+msgid "CVE"
+msgstr "CVE"
+
+#. TRANSLATORS: details about the update, if the package
+#. * requires a restart
+#: client/pkcon/pk-console.c:350
+msgid "Restart"
+msgstr "Reinício"
+
+#. TRANSLATORS: details about the update, any description of
+#. * the update
+#: client/pkcon/pk-console.c:355
+msgid "Update text"
+msgstr "Descrição da atualização"
+
+#. TRANSLATORS: details about the update, the changelog for
+#. * the package
+#: client/pkcon/pk-console.c:360
+msgid "Changes"
+msgstr "Alterações"
+
+#. TRANSLATORS: details about the update, the ongoing state
+#. * of the update
+#: client/pkcon/pk-console.c:365
+msgid "State"
+msgstr "Estado"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was issued
+#: client/pkcon/pk-console.c:370
+msgid "Issued"
+msgstr "Emissão"
+
+#. TRANSLATORS: details about the update, date the update
+#. * was updated
+#. TRANSLATORS: The action of the package, in past tense
+#: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
+msgid "Updated"
+msgstr "Atualizado em"
+
+#. TRANSLATORS: if the repo is enabled
+#: client/pkcon/pk-console.c:397
+msgid "Enabled"
+msgstr "Habilitado"
+
+#. TRANSLATORS: if the repo is disabled
+#: client/pkcon/pk-console.c:400
+msgid "Disabled"
+msgstr "Desabilitado"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#: client/pkcon/pk-console.c:429
+msgid "System restart required by:"
+msgstr "O reinício do sistema é necessário para:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#: client/pkcon/pk-console.c:432
+msgid "Session restart required:"
+msgstr "É necessário reiniciar a sessão:"
+
+#. TRANSLATORS: a package requires the system to be restarted
+#. * due to a security update
+#: client/pkcon/pk-console.c:436
+msgid "System restart (security) required by:"
+msgstr "O reinício do sistema (por segurança) é necessário por:"
+
+#. TRANSLATORS: a package requires the session to be restarted
+#. * due to a security update
+#: client/pkcon/pk-console.c:440
+msgid "Session restart (security) required:"
+msgstr "É necessário reiniciar a sessão (por segurança):"
+
+#. TRANSLATORS: a package requires the application to be restarted
+#: client/pkcon/pk-console.c:443
+msgid "Application restart required by:"
+msgstr "O reinício do aplicativo é necessário para:"
+
+#. TRANSLATORS: This a list of details about the package
+#: client/pkcon/pk-console.c:488
+msgid "Package description"
+msgstr "Descrição do pacote"
+
+#. TRANSLATORS: This where the package has no files
+#: client/pkcon/pk-console.c:509
+msgid "No files"
+msgstr "Nenhum arquivo"
+
+#. TRANSLATORS: This a list files contained in the package
+#: client/pkcon/pk-console.c:514
+msgid "Package files"
+msgstr "Arquivos do pacote"
+
+#. TRANSLATORS: the percentage complete of the transaction
+#: client/pkcon/pk-console.c:610
+msgid "Percentage"
+msgstr "Porcentagem"
+
+#. TRANSLATORS: the status of the transaction (e.g. downloading)
+#: client/pkcon/pk-console.c:633
+msgid "Status"
+msgstr "Status"
+
+#. TRANSLATORS: the results from the transaction
+#: client/pkcon/pk-console.c:671
+msgid "Results:"
+msgstr "Resultados:"
+
+#. TRANSLATORS: we failed to get any results, which is pretty
+#. * fatal in my book
+#: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
+msgid "Fatal error"
+msgstr "Erro fatal"
+
+#. TRANSLATORS: the user asked to update everything,
+#. * but there is nothing that can be updated
+#: client/pkcon/pk-console.c:702
+msgid "There are no packages to update."
+msgstr "Não há pacotes a serem atualizados."
+
+#. TRANSLATORS: the transaction failed in a way we could
+#. * not expect
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: client/pkcon/pk-console.c:706
+#: contrib/command-not-found/pk-command-not-found.c:670
+msgid "The transaction failed"
+msgstr "A transação falhou"
+
+#. TRANSLATORS: print a message when there are no updates
+#: client/pkcon/pk-console.c:735
+msgid "There are no updates available at this time."
+msgstr "Não há atualizações disponíveis neste momento."
+
+#: client/pkcon/pk-console.c:758
+msgid "There are no upgrades available at this time."
+msgstr "Não há atualizações disponíveis no momento."
+
+#. TRANSLATORS: a package needs to restart their system
+#: client/pkcon/pk-console.c:820
+msgid "Please restart the computer to complete the update."
+msgstr "Por favor, reinicie o computador para completar a atualização."
+
+#. TRANSLATORS: a package needs to restart the session
+#: client/pkcon/pk-console.c:823
+msgid "Please logout and login to complete the update."
+msgstr ""
+"Por favor, encerre a sessão e inicie-a novamente para completar a "
+"atualização."
+
+#. TRANSLATORS: a package needs to restart their system (due to security)
+#: client/pkcon/pk-console.c:826
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Por favor, reinicie o computador para completar a atualização, pois "
+"importantes atualizações de segurança foram instaladas."
+
+#. TRANSLATORS: a package needs to restart the session (due to security)
+#: client/pkcon/pk-console.c:829
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"Por favor, encerre a sessão e inicie-a novamente para completar a "
+"atualização pois importantes atualizações de segurança foram instaladas."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "Há mais de um pacote correspondente:"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "Por favor, escolha o pacote correto: "
+
+#. TRANSLATORS: we asked to install a package
+#. * that could not be found in any repo
+#: client/pkcon/pk-console.c:981
+msgid "Package not found"
+msgstr "Pacote não encontrado"
+
+#. TRANSLATORS: we couldn't find anything
+#: client/pkcon/pk-console.c:999
+msgid "No packages were found"
+msgstr "Nenhuma pacote foi encontrado"
+
+#. TRANSLATORS: The user used
+#. * 'pkcon install dave.rpm' rather than
+#. * 'pkcon install-local dave.rpm'
+#: client/pkcon/pk-console.c:1024
+#, c-format
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar "
+"\"pkcon install-local %s\"."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#: client/pkcon/pk-console.c:1059
+#, c-format
+msgid "This tool could not find any available package: %s"
+msgstr "Esta ferramenta não pôde localizar nenhum pacote disponível: %s"
+
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkcon/pk-console.c:1076
+msgid "This tool could not find any available package."
+msgstr "Esta ferramenta não pôde localizar nenhum pacote disponível."
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation, it may already be installed.
+#: client/pkcon/pk-console.c:1085
+msgid "The selected packages may already be installed."
+msgstr "Os pacotes selecionados podem já estar instalados."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pkcon/pk-console.c:1113
+#, c-format
+msgid "This tool could not find the installed package: %s"
+msgstr "Esta ferramenta não pôde localizar o pacote instalado: %s"
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
+#, c-format
+msgid "This tool could not find the package: %s"
+msgstr "Esta ferramenta não pôde localizar o pacote: %s"
+
+#. TRANSLATORS: there are no updates, so nothing to do
+#: client/pkcon/pk-console.c:1220
+msgid "No packages require updating to newer versions."
+msgstr "Nenhum pacote requer atualização para versão mais nova."
+
+#. TRANSLATORS: There was an error getting the list
+#. * of files for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * dependencies for the package. The detailed error follows
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#. TRANSLATORS: The package name was not found in
+#. * any software repositories. The detailed error follows
+#: client/pkcon/pk-console.c:1258 client/pkcon/pk-console.c:1287
+#: client/pkcon/pk-console.c:1326 client/pkcon/pk-console.c:1385
+#: client/pkcon/pk-console.c:1413
+#, c-format
+msgid "This tool could not find all the packages: %s"
+msgstr "Esta ferramenta não pôde localizar todos os pacotes: %s"
+
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
 msgid "The daemon crashed mid-transaction!"
 msgstr "O daemon travou no meio da transação!"
 
+#. TRANSLATORS: This is the header to the --help menu
+#: client/pkcon/pk-console.c:1472
+msgid "PackageKit Console Interface"
+msgstr "Interface em console do PackageKit"
+
+#. these are commands we can use with pkcon
+#: client/pkcon/pk-console.c:1474
+msgid "Subcommands:"
+msgstr "Subcomandos:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr "Falha ao obter o tempo em que essa ação foi completada pela última vez"
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkcon/pk-console.c:1576
+msgid "Time since"
+msgstr "Tempo desde"
+
+#. TRANSLATORS: There follows a list of packages downloaded and ready
+#. * to be updated
+#: client/pkcon/pk-console.c:1596
+msgid "Prepared updates:"
+msgstr "Atualizações preparadas:"
+
+#. TRANSLATORS: The network settings could not be sent
+#: client/pkcon/pk-console.c:1665
+msgid "The proxy could not be set"
+msgstr "O proxy não pode ser configurado"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
+msgid "Show the program version and exit"
+msgstr "Mostra a versão do programa e sai"
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkcon/pk-console.c:1709
+msgid "Set the filter, e.g. installed"
+msgstr "Define o filtro, p. ex.: instalados"
+
+#. command line argument, do we ask questions
+#: client/pkcon/pk-console.c:1712
+msgid "Install the packages without asking for confirmation"
+msgstr "Instala os pacotes sem pedir confirmação"
+
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
 msgid "Prepare the transaction by downloading packages only"
 msgstr "Prepara a transação baixando pacotes apenas"
+
+#. command line argument, do we allow package downgrades
+#: client/pkcon/pk-console.c:1718
+msgid "Allow packages to be downgraded during transaction"
+msgstr "Permite que pacotes sejam desatualizados durante a transação"
+
+#: client/pkcon/pk-console.c:1720
+msgid "Allow packages to be reinstalled during transaction"
+msgstr "Permite que pacotes sejam reinstalados durante a transação"
+
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr "Remove automaticamente dependências não usada"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Executa o comando usando a banda de rede ociosa e usando também menos energia"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pkcon/pk-console.c:1728
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
+
+#. TRANSLATORS: command line argument, just output without fancy formatting
+#: client/pkcon/pk-console.c:1731
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr ""
+"A idade máxima do cache de metadados (em segundos). Use -1 para usar somente "
+"o cache, 1 para recarregar o cache."
+
+#. command line argument, do we ask questions
+#: client/pkcon/pk-console.c:1734
+msgid "Allow untrusted packages to be installed."
+msgstr "Permite que pacotes não confiáveis sejam instalado."
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pkcon/pk-console.c:1769
+msgid "Failed to parse command line"
+msgstr "Falha ao processar a linha de comando"
+
+#. TRANSLATORS: we failed to contact the daemon
+#: client/pkcon/pk-console.c:1779
+msgid "Failed to contact PackageKit"
+msgstr "Falha ao contatar o PackageKit"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "O filtro especificado era inválido"
+
+#. TRANSLATORS: a search type can
+#. * be name, details, file, etc
+#: client/pkcon/pk-console.c:1868
+msgid "A search type is required, e.g. name"
+msgstr "Um tipo de pesquisa é requerido, ex.: nome"
+
+#. TRANSLATORS: the user
+#. * needs to provide a search term
+#. TRANSLATORS: the user needs
+#. * to provide a search term
+#: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
+#: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
+msgid "A search term is required"
+msgstr "Um termo de pesquisa é requerido"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pkcon/pk-console.c:1955
+msgid "A package name to install is required"
+msgstr "O nome do pacote a ser instalado é requerido"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to install
+#: client/pkcon/pk-console.c:1969
+msgid "A filename to install is required"
+msgstr "O nome do arquivo a ser instalado é requerido"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pkcon/pk-console.c:1985
+msgid "A type, key_id and package_id are required"
+msgstr "Um tipo, key_id e package_id são requeridos"
+
+#. TRANSLATORS: the user did not
+#. * specify what they wanted to remove
+#: client/pkcon/pk-console.c:2003
+msgid "A package name to remove is required"
+msgstr "O nome do pacote para remoção é requerido"
+
+#. TRANSLATORS: the user did not
+#. * specify anything about what to
+#. * download or where
+#: client/pkcon/pk-console.c:2016
+msgid "A destination directory and the package names to download are required"
+msgstr ""
+"O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
+
+#. TRANSLATORS: the directory does
+#. * not exist, so we can't continue
+#: client/pkcon/pk-console.c:2026
+msgid "Directory not found"
+msgstr "Diretório não encontrado"
+
+#. TRANSLATORS: geeky error, real
+#. * users won't see this
+#: client/pkcon/pk-console.c:2041
+msgid "A licence identifier (eula-id) is required"
+msgstr "Um identificador de licença (eula-id) é requerido"
+
+#. TRANSLATORS: The user did not
+#. * specify a package name
+#: client/pkcon/pk-console.c:2067
+msgid "A package name to resolve is required"
+msgstr "O nome de pacote a ser analisado é requerido"
+
+#. TRANSLATORS: The user did not
+#. * specify a repository name
+#: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
+msgid "A repository name is required"
+msgstr "O nome do repositório é requerido"
+
+#: client/pkcon/pk-console.c:2117
+msgid "A repo name, parameter and value are required"
+msgstr "Um nome de repositório, parâmetro e um valor são requeridos"
+
+#: client/pkcon/pk-console.c:2134
+msgid "A repo id and autoremove required"
+msgstr "Um autoremove e um repo id são necessários"
+
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Uma ação, ex.: \"update-packages\", é requerida"
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+msgid "A correct role is required"
+msgstr "Um modo correto é requerido"
+
+#. TRANSLATORS: The user did not
+#. * provide a package name
+#: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
+#: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
+#: client/pkcon/pk-console.c:2283
+msgid "A package name is required"
+msgstr "O nome do pacote é requerido"
+
+#. TRANSLATORS: each package
+#. * "provides" certain things, e.g.
+#. * mime(gstreamer-decoder-mp3),
+#. * the user didn't specify it
+#: client/pkcon/pk-console.c:2234
+msgid "A package provide string is required"
+msgstr "É necessário especificar o que o pacote fornece"
+
+#: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
+msgid "A filename is required"
+msgstr "Um nome de arquivo é requerido"
+
+#. TRANSLATORS: this is the description of the backend
+#: client/pkcon/pk-console.c:2344
+msgid "Description"
+msgstr "Descrição"
+
+#. TRANSLATORS: this is the author of the backend
+#: client/pkcon/pk-console.c:2348
+msgid "Author"
+msgstr "Autor"
+
+#. TRANSLATORS: The user did not provide a distro name
+#: client/pkcon/pk-console.c:2418
+msgid "You need to specify a list file to create"
+msgstr "Você precisa especificar um arquivo de lista para criar"
+
+#. TRANSLATORS: There was an error
+#. * getting the list of packages.
+#. * The filename follows
+#: client/pkcon/pk-console.c:2431
+#, c-format
+msgid "File already exists: %s"
+msgstr "Arquivo já existe: %s"
+
+#. TRANSLATORS: The user tried to use an
+#. * unsupported option on the command line
+#: client/pkcon/pk-console.c:2449
+#, c-format
+msgid "Option '%s' is not supported"
+msgstr "Não há suporte à opção \"%s\""
+
+#. TRANSLATORS: Generic failure of what they asked to do
+#: client/pkcon/pk-console.c:2459
+msgid "Command failed"
+msgstr "O comando falhou"
+
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr "Falha ao obter o estado do daemon"
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+msgid "Failed to get properties"
+msgstr "Falha ao obter as propriedades"
+
+#. TRANSLATORS: this is a program that monitors PackageKit
+#: client/pkcon/pk-monitor.c:341
+msgid "PackageKit Monitor"
+msgstr "Monitor do PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
@@ -63,11 +775,6 @@ msgstr "Permite que pacotes sejam reinstalados"
 #: client/pkgc-manage.c:61
 msgid "Allow installation of untrusted packages"
 msgstr "Permitir a instalação de pacotes não confiáveis"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr "Remove automaticamente dependências não usada"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
@@ -225,7 +932,8 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
+"  status  - show status information about a prepared or finished offline "
+"update"
 msgstr ""
 "Atualizações offline do sistema marcadas e gerenciadas.\n"
 "\n"
@@ -233,7 +941,8 @@ msgstr ""
 "  preparar   - prepare uma atualização offline e a marca(padrão)\n"
 "  acionar  - acione uma atualização offline (preparada manualmente)\n"
 "  cancelar  - cancele uma atualização planejada offline\n"
-"  status  - Mostrar informações de status sobre uma atualização offline pronta ou finalizada"
+"  status  - Mostrar informações de status sobre uma atualização offline "
+"pronta ou finalizada"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -313,14 +1022,6 @@ msgstr "Reparar os pacotes do sistema"
 msgid "Safely stop the PackageKit daemon"
 msgstr "É seguro parar o controlador do conjunto de pacotes"
 
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "Falha ao obter o estado do daemon"
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
-msgid "Failed to get properties"
-msgstr "Falha ao obter as propriedades"
-
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
 msgid "Monitor PackageKit D-Bus events"
@@ -374,7 +1075,8 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Procure pacotes que correspondam aos padrões fornecidos. Se o MODO não for especificado, \n"
+"Procure pacotes que correspondam aos padrões fornecidos. Se o MODO não for "
+"especificado, \n"
 "A busca por 'detalhes' é realizada.\n"
 "Possível pesquisa de MODOS são:\n"
 "nome    - pesquisa pelo nome do pacote\n"
@@ -428,7 +1130,8 @@ msgstr "Liste todas as atualizações de pacotes atualmente disponíveis."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr "Mostre informações detalhadas sobre a atualização do pacote especificada."
+msgstr ""
+"Mostre informações detalhadas sobre a atualização do pacote especificada."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -442,8 +1145,11 @@ msgstr "Mostre quais pacotes exigem os pacotes especificados."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr "Liste todos os filtros, grupos e categorias disponíveis para organização de pacotes."
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+"Liste todos os filtros, grupos e categorias disponíveis para organização de "
+"pacotes."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -465,12 +1171,6 @@ msgstr "Categorias:"
 msgid "Show distribution version upgrades, if any are available."
 msgstr "Mostre atualizações de versões de distribuição, se houver disponíveis."
 
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr "Falha ao obter o tempo em que essa ação foi completada pela última vez"
-
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
 msgid "Elapsed time"
@@ -480,20 +1180,6 @@ msgstr "Tempo decorrido"
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "Obtenha o tempo em segundos desde a última ação especificada."
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Uma ação, ex.: \"update-packages\", é requerida"
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-msgid "A correct role is required"
-msgstr "Um modo correto é requerido"
 
 #: client/pkgc-query.c:973
 msgid "Show backend information"
@@ -798,14 +1484,6 @@ msgstr "Horário do sistema:"
 msgid "Succeeded:"
 msgstr "Bem-sucedido:"
 
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "Verdadeiro"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "Falso"
-
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
 msgid "Role:"
@@ -836,30 +1514,10 @@ msgstr "Nome de usuário:"
 msgid "Real name:"
 msgstr "Nome verdadeiro:"
 
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "Pacotes afetados:"
-
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1078
 msgid "None"
 msgstr "Nenhum"
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "Há mais de um pacote correspondente:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "Por favor, escolha o pacote correto: "
 
 #: client/pkgc-util.c:1223
 #, c-format
@@ -869,7 +1527,6 @@ msgstr "Pacote não encontrado: %s"
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
 #, fuzzy
-#| msgid "Show pkgctl version"
 msgid "Show pkgcli version"
 msgstr "Mostrar a versão do pacote"
 
@@ -898,19 +1555,14 @@ msgstr "Desativar saída colorida"
 msgid "Answer 'yes' to all questions"
 msgstr "Responda 'sim' para todas a solicitações"
 
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
-msgid "Filter packages (installed, available, etc.)"
-msgstr "Filtrar pacotes (Instalados, disponíveis, etc.)"
-
 #: client/pkgcli.c:92
 msgid "FILTER"
 msgstr "FILTRO"
 
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Executa o comando usando a banda de rede ociosa e usando também menos energia"
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkgcli.c:92
+msgid "Filter packages (installed, available, etc.)"
+msgstr "Filtrar pacotes (Instalados, disponíveis, etc.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
@@ -937,631 +1589,8 @@ msgstr "Comandos Disponíveis"
 
 #: client/pkgcli.c:217
 #, fuzzy
-#| msgid "Use 'pkgctl COMMAND --help' for command-specific help."
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Use 'pkgctl COMMAND --help' para ajuda no comando especificado."
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "O filtro especificado era inválido"
-
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-#: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
-msgid "Transaction"
-msgstr "Transação"
-
-#. TRANSLATORS: this is the time the transaction was started in system timezone
-#: client/pkcon/pk-console.c:167
-msgid "System time"
-msgstr "Horário do sistema"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pkcon/pk-console.c:169
-msgid "Succeeded"
-msgstr "Bem-sucedido"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pkcon/pk-console.c:171
-msgid "Role"
-msgstr "Modo"
-
-#. TRANSLATORS: this is The duration of the transaction
-#: client/pkcon/pk-console.c:176
-msgid "Duration"
-msgstr "Duração"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(segundos)"
-
-#. TRANSLATORS: this is The command line used to do the action
-#: client/pkcon/pk-console.c:180
-msgid "Command line"
-msgstr "Linha de comando"
-
-#. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pkcon/pk-console.c:182
-msgid "User ID"
-msgstr "ID do usuário"
-
-#. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pkcon/pk-console.c:189
-msgid "Username"
-msgstr "Nome de usuário"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pkcon/pk-console.c:193
-msgid "Real name"
-msgstr "Nome real"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:204
-msgid "Affected packages: None"
-msgstr "Pacotes afetados: nenhum"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pkcon/pk-console.c:230
-msgid "Distribution"
-msgstr "Distribuição"
-
-#. TRANSLATORS: this is type of update, stable or testing
-#: client/pkcon/pk-console.c:232
-msgid "Type"
-msgstr "Tipo"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
-msgid "Summary"
-msgstr "Sumário"
-
-#. TRANSLATORS: this is the group category name
-#: client/pkcon/pk-console.c:256
-msgid "Category"
-msgstr "Categoria"
-
-#. TRANSLATORS: this is group identifier
-#: client/pkcon/pk-console.c:258
-msgid "ID"
-msgstr "ID"
-
-#. TRANSLATORS: this is the parent group
-#: client/pkcon/pk-console.c:261
-msgid "Parent"
-msgstr "Pai"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-#: client/pkcon/pk-console.c:264 client/pkcon/pk-console.c:2340
-msgid "Name"
-msgstr "Nome"
-
-#. TRANSLATORS: this is preferred icon for the group
-#: client/pkcon/pk-console.c:270
-msgid "Icon"
-msgstr "Ícone"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-#: client/pkcon/pk-console.c:308
-msgid "Details about the update:"
-msgstr "Detalhes sobre a atualização:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-#: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
-#: lib/packagekit-glib2/pk-task-text.c:107
-#: lib/packagekit-glib2/pk-task-text.c:178
-msgid "Package"
-msgstr "Pacote"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-#: client/pkcon/pk-console.c:319
-msgid "Updates"
-msgstr "Atualiza"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-#: client/pkcon/pk-console.c:326
-msgid "Obsoletes"
-msgstr "Obsoletos"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
-msgid "Vendor"
-msgstr "Fornecedor"
-
-#. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pkcon/pk-console.c:338
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-#. TRANSLATORS: details about the update, the CVE URLs
-#: client/pkcon/pk-console.c:344
-msgid "CVE"
-msgstr "CVE"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-#: client/pkcon/pk-console.c:350
-msgid "Restart"
-msgstr "Reinício"
-
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-#: client/pkcon/pk-console.c:355
-msgid "Update text"
-msgstr "Descrição da atualização"
-
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-#: client/pkcon/pk-console.c:360
-msgid "Changes"
-msgstr "Alterações"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-#: client/pkcon/pk-console.c:365
-msgid "State"
-msgstr "Estado"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-#: client/pkcon/pk-console.c:370
-msgid "Issued"
-msgstr "Emissão"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-#: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
-msgid "Updated"
-msgstr "Atualizado em"
-
-#. TRANSLATORS: if the repo is enabled
-#: client/pkcon/pk-console.c:397
-msgid "Enabled"
-msgstr "Habilitado"
-
-#. TRANSLATORS: if the repo is disabled
-#: client/pkcon/pk-console.c:400
-msgid "Disabled"
-msgstr "Desabilitado"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#: client/pkcon/pk-console.c:429
-msgid "System restart required by:"
-msgstr "O reinício do sistema é necessário para:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#: client/pkcon/pk-console.c:432
-msgid "Session restart required:"
-msgstr "É necessário reiniciar a sessão:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:436
-msgid "System restart (security) required by:"
-msgstr "O reinício do sistema (por segurança) é necessário por:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:440
-msgid "Session restart (security) required:"
-msgstr "É necessário reiniciar a sessão (por segurança):"
-
-#. TRANSLATORS: a package requires the application to be restarted
-#: client/pkcon/pk-console.c:443
-msgid "Application restart required by:"
-msgstr "O reinício do aplicativo é necessário para:"
-
-#. TRANSLATORS: This a list of details about the package
-#: client/pkcon/pk-console.c:488
-msgid "Package description"
-msgstr "Descrição do pacote"
-
-#. TRANSLATORS: This where the package has no files
-#: client/pkcon/pk-console.c:509
-msgid "No files"
-msgstr "Nenhum arquivo"
-
-#. TRANSLATORS: This a list files contained in the package
-#: client/pkcon/pk-console.c:514
-msgid "Package files"
-msgstr "Arquivos do pacote"
-
-#. TRANSLATORS: the percentage complete of the transaction
-#: client/pkcon/pk-console.c:610
-msgid "Percentage"
-msgstr "Porcentagem"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pkcon/pk-console.c:633
-msgid "Status"
-msgstr "Status"
-
-#. TRANSLATORS: the results from the transaction
-#: client/pkcon/pk-console.c:671
-msgid "Results:"
-msgstr "Resultados:"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-#: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
-msgid "Fatal error"
-msgstr "Erro fatal"
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-#: client/pkcon/pk-console.c:702
-msgid "There are no packages to update."
-msgstr "Não há pacotes a serem atualizados."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pkcon/pk-console.c:706
-#: contrib/command-not-found/pk-command-not-found.c:670
-msgid "The transaction failed"
-msgstr "A transação falhou"
-
-#. TRANSLATORS: print a message when there are no updates
-#: client/pkcon/pk-console.c:735
-msgid "There are no updates available at this time."
-msgstr "Não há atualizações disponíveis neste momento."
-
-#: client/pkcon/pk-console.c:758
-msgid "There are no upgrades available at this time."
-msgstr "Não há atualizações disponíveis no momento."
-
-#. TRANSLATORS: a package needs to restart their system
-#: client/pkcon/pk-console.c:820
-msgid "Please restart the computer to complete the update."
-msgstr "Por favor, reinicie o computador para completar a atualização."
-
-#. TRANSLATORS: a package needs to restart the session
-#: client/pkcon/pk-console.c:823
-msgid "Please logout and login to complete the update."
-msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pkcon/pk-console.c:826
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Por favor, reinicie o computador para completar a atualização, pois importantes atualizações de segurança foram instaladas."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pkcon/pk-console.c:829
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização pois importantes atualizações de segurança foram instaladas."
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-#: client/pkcon/pk-console.c:981
-msgid "Package not found"
-msgstr "Pacote não encontrado"
-
-#. TRANSLATORS: we couldn't find anything
-#: client/pkcon/pk-console.c:999
-msgid "No packages were found"
-msgstr "Nenhuma pacote foi encontrado"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#: client/pkcon/pk-console.c:1024
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar \"pkcon install-local %s\"."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#: client/pkcon/pk-console.c:1059
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Esta ferramenta não pôde localizar nenhum pacote disponível: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkcon/pk-console.c:1076
-msgid "This tool could not find any available package."
-msgstr "Esta ferramenta não pôde localizar nenhum pacote disponível."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-#: client/pkcon/pk-console.c:1085
-msgid "The selected packages may already be installed."
-msgstr "Os pacotes selecionados podem já estar instalados."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1113
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Esta ferramenta não pôde localizar o pacote instalado: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Esta ferramenta não pôde localizar o pacote: %s"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-#: client/pkcon/pk-console.c:1220
-msgid "No packages require updating to newer versions."
-msgstr "Nenhum pacote requer atualização para versão mais nova."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#: client/pkcon/pk-console.c:1258 client/pkcon/pk-console.c:1287
-#: client/pkcon/pk-console.c:1326 client/pkcon/pk-console.c:1385
-#: client/pkcon/pk-console.c:1413
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Esta ferramenta não pôde localizar todos os pacotes: %s"
-
-#. TRANSLATORS: This is the header to the --help menu
-#: client/pkcon/pk-console.c:1472
-msgid "PackageKit Console Interface"
-msgstr "Interface em console do PackageKit"
-
-#. these are commands we can use with pkcon
-#: client/pkcon/pk-console.c:1474
-msgid "Subcommands:"
-msgstr "Subcomandos:"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkcon/pk-console.c:1576
-msgid "Time since"
-msgstr "Tempo desde"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-#: client/pkcon/pk-console.c:1596
-msgid "Prepared updates:"
-msgstr "Atualizações preparadas:"
-
-#. TRANSLATORS: The network settings could not be sent
-#: client/pkcon/pk-console.c:1665
-msgid "The proxy could not be set"
-msgstr "O proxy não pode ser configurado"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
-msgid "Show the program version and exit"
-msgstr "Mostra a versão do programa e sai"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkcon/pk-console.c:1709
-msgid "Set the filter, e.g. installed"
-msgstr "Define o filtro, p. ex.: instalados"
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1712
-msgid "Install the packages without asking for confirmation"
-msgstr "Instala os pacotes sem pedir confirmação"
-
-#. command line argument, do we allow package downgrades
-#: client/pkcon/pk-console.c:1718
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Permite que pacotes sejam desatualizados durante a transação"
-
-#: client/pkcon/pk-console.c:1720
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Permite que pacotes sejam reinstalados durante a transação"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "A idade máxima do cache de metadados (em segundos). Use -1 para usar somente o cache, 1 para recarregar o cache."
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1734
-msgid "Allow untrusted packages to be installed."
-msgstr "Permite que pacotes não confiáveis sejam instalado."
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1769
-msgid "Failed to parse command line"
-msgstr "Falha ao processar a linha de comando"
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1779
-msgid "Failed to contact PackageKit"
-msgstr "Falha ao contatar o PackageKit"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-#: client/pkcon/pk-console.c:1868
-msgid "A search type is required, e.g. name"
-msgstr "Um tipo de pesquisa é requerido, ex.: nome"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-#: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
-#: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
-msgid "A search term is required"
-msgstr "Um termo de pesquisa é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1955
-msgid "A package name to install is required"
-msgstr "O nome do pacote a ser instalado é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1969
-msgid "A filename to install is required"
-msgstr "O nome do arquivo a ser instalado é requerido"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:1985
-msgid "A type, key_id and package_id are required"
-msgstr "Um tipo, key_id e package_id são requeridos"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-#: client/pkcon/pk-console.c:2003
-msgid "A package name to remove is required"
-msgstr "O nome do pacote para remoção é requerido"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-#: client/pkcon/pk-console.c:2016
-msgid "A destination directory and the package names to download are required"
-msgstr "O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-#: client/pkcon/pk-console.c:2026
-msgid "Directory not found"
-msgstr "Diretório não encontrado"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:2041
-msgid "A licence identifier (eula-id) is required"
-msgstr "Um identificador de licença (eula-id) é requerido"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-#: client/pkcon/pk-console.c:2067
-msgid "A package name to resolve is required"
-msgstr "O nome de pacote a ser analisado é requerido"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-#: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
-msgid "A repository name is required"
-msgstr "O nome do repositório é requerido"
-
-#: client/pkcon/pk-console.c:2117
-msgid "A repo name, parameter and value are required"
-msgstr "Um nome de repositório, parâmetro e um valor são requeridos"
-
-#: client/pkcon/pk-console.c:2134
-msgid "A repo id and autoremove required"
-msgstr "Um autoremove e um repo id são necessários"
-
-#. TRANSLATORS: The user did not
-#. * provide a package name
-#: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
-#: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
-#: client/pkcon/pk-console.c:2283
-msgid "A package name is required"
-msgstr "O nome do pacote é requerido"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-#: client/pkcon/pk-console.c:2234
-msgid "A package provide string is required"
-msgstr "É necessário especificar o que o pacote fornece"
-
-#: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
-msgid "A filename is required"
-msgstr "Um nome de arquivo é requerido"
-
-#. TRANSLATORS: this is the description of the backend
-#: client/pkcon/pk-console.c:2344
-msgid "Description"
-msgstr "Descrição"
-
-#. TRANSLATORS: this is the author of the backend
-#: client/pkcon/pk-console.c:2348
-msgid "Author"
-msgstr "Autor"
-
-#. TRANSLATORS: The user did not provide a distro name
-#: client/pkcon/pk-console.c:2418
-msgid "You need to specify a list file to create"
-msgstr "Você precisa especificar um arquivo de lista para criar"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#: client/pkcon/pk-console.c:2431
-#, c-format
-msgid "File already exists: %s"
-msgstr "Arquivo já existe: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#: client/pkcon/pk-console.c:2449
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "Não há suporte à opção \"%s\""
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#: client/pkcon/pk-console.c:2459
-msgid "Command failed"
-msgstr "O comando falhou"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pkcon/pk-monitor.c:341
-msgid "PackageKit Monitor"
-msgstr "Monitor do PackageKit"
-
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
-#, c-format
-msgid "%i%%"
-msgstr "%i%%"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
-msgid "Installing System Upgrade"
-msgstr "Instalando atualização de sistema"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
-msgid "Installing Updates"
-msgstr "Instalando atualizações"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-msgid "Rebooting after installing updates…"
-msgstr "Reiniciando após instalar atualizações…"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
-msgstr "Desligando após instalar atualizações…"
-
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
-msgstr "Instalando atualizações; isto pode levar um tempo…"
-
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Instalando atualização do sistema; isto pode levar um tempo…"
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1571,7 +1600,8 @@ msgstr "Baixando detalhes sobre os repositórios de software."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
+msgstr ""
+"Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2304,8 +2334,11 @@ msgid "Cancel foreign task"
 msgstr "Cancelar tarefa externa"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por você"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Autenticação é necessária para cancelar uma tarefa que não foi iniciada por "
+"você"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2371,8 +2404,12 @@ msgid "Trust a key used for signing software"
 msgstr "Confiar em uma chave para assinar softwares"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Autenticação é necessária para considerar como confiável uma chave usada para assinar softwares"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr ""
+"Autenticação é necessária para considerar como confiável uma chave usada "
+"para assinar softwares"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2428,7 +2465,9 @@ msgstr "Alterar parâmetros de repositório de software"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr "Autenticação é necessária para alterar os parâmetros de repositório de software"
+msgstr ""
+"Autenticação é necessária para alterar os parâmetros de repositório de "
+"software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2449,8 +2488,11 @@ msgid "Set network proxy"
 msgstr "Definir um proxy de rede"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Autenticação é necessária para definir um proxy de rede para baixar softwares"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr ""
+"Autenticação é necessária para definir um proxy de rede para baixar softwares"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2629,19 +2671,27 @@ msgstr "O software não vem de uma fonte confiável."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Não atualize este pacote a não ser que você esteja certo de que é seguro fazer isso."
+msgstr ""
+"Não atualize este pacote a não ser que você esteja certo de que é seguro "
+"fazer isso."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
+msgstr ""
+"Não atualize estes pacotes a não ser que você esteja certo de que é seguro "
+"fazer isso."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
+msgstr ""
+"Não instale este pacote a não ser que você esteja certo de que é seguro "
+"fazer isso."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
+msgstr ""
+"Não instale estes pacotes a não ser que você esteja certo de que é seguro "
+"fazer isso."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

@@ -17,9 +17,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
-"Language-Team: Japanese (http://app.transifex.com/freedesktop/packagekit/language/ja/)\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"Language-Team: Japanese (http://app.transifex.com/freedesktop/packagekit/"
+"language/ja/)\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -36,1063 +37,44 @@ msgstr "設定ファイルが見つかりませんでした。"
 msgid "Failed to load config file: %s"
 msgstr "設定ファイルのロードに失敗しました: %s"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
-msgid "The daemon crashed mid-transaction!"
-msgstr "トランザクション中にデーモンがクラッシュしました!"
-
-#. TRANSLATORS: command line argument, do we just download or apply changes
-#. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
-msgid "Prepare the transaction by downloading packages only"
-msgstr "パッケージをダウンロードのみ実行することにより、トランザクションを準備する"
-
-#. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
-msgid "Allow package downgrades"
-msgstr "トランザクション中にパッケージをダウングレードできるようにする"
-
-#. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
-msgid "Allow package re-installations"
-msgstr "トランザクション中にパッケージを再インストールできるようにする"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install older version of installed package"
-msgid "Allow installation of untrusted packages"
-msgstr "インストール済みパッケージの古いバージョンをインストール"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr "未使用の依存関係を自動的に削除する"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
-msgstr ""
-
-#: client/pkgc-manage.c:75
-msgid "SECONDS"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refresh the cache"
-msgid "Refresh the package metadata cache."
-msgstr "キャッシュをリフレッシュ"
-
-#: client/pkgc-manage.c:222
-msgid "Package metadata refreshed"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
-msgid "Install one or more packages or local package files."
-msgstr ""
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
-#, fuzzy, c-format
-#| msgid "This tool could not find any available package: %s"
-msgid "Could not find any available package: %s"
-msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
-
-#: client/pkgc-manage.c:325
-#, fuzzy
-#| msgid "The selected packages may already be installed."
-msgid "The selected package is already installed."
-msgstr "選択したパッケージはすでにインストールされている可能性があります。"
-
-#. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
-msgid "Remove one or more packages from the system."
-msgstr ""
-
-#: client/pkgc-manage.c:382
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find installed packages: %s"
-msgstr "このツールではパッケージを見つけられません: %s"
-
-#. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
-msgid "Download packages to the specified directory without installing."
-msgstr ""
-
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages: %s"
-msgstr "このツールではパッケージを見つけられません: %s"
-
-#: client/pkgc-manage.c:444
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
 #, c-format
-msgid "Directory does not exist: %s"
+msgid "%i%%"
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
-msgid "Update all packages or specific packages to their latest versions."
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
+msgid "Installing System Upgrade"
+msgstr "システムアップグレードのインストール"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
+msgid "Installing Updates"
+msgstr "更新をインストール中"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
+msgid "Rebooting after installing updates…"
+msgstr "更新をインストールしたので再起動します…"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
+msgstr "更新をインストールしたのでシャットダウンします…"
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
+msgstr "更新のインストール; しばらく時間がかかる場合があります..."
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
 msgstr ""
-
-#: client/pkgc-manage.c:510
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages to update: %s"
-msgstr "このツールではパッケージを見つけられません: %s"
-
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to get updates: %s"
-msgstr "デーモンの状態を得るのに失敗しました"
-
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
-msgid "No packages require updating"
-msgstr "新しいバージョンに更新する必要があるパッケージはありません。"
-
-#. TRANSLATORS: Description of pkgcli upgrade.
-#. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
-msgid ""
-"Upgrade all packages or perform a distribution upgrade.\n"
-"\n"
-"Types: minimal, default, complete"
-msgstr ""
-
-#: client/pkgc-manage.c:686
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to read offline update action: %s"
-msgstr "オフライン更新の開始"
-
-#: client/pkgc-manage.c:696
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Offline update is not triggered."
-msgstr "オフライン更新メッセージの削除"
-
-#: client/pkgc-manage.c:704
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Offline update is triggered. Action after update: %s"
-msgstr "オフライン更新の開始"
-
-#. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
-#, fuzzy
-#| msgid "Prepared updates:"
-msgid "Prepared packages:"
-msgstr "準備されたアップデート:"
-
-#: client/pkgc-manage.c:729
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "No offline update is prepared."
-msgstr "オフライン更新メッセージの削除"
-
-#: client/pkgc-manage.c:731
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to read prepared offline updates: %s"
-msgstr "オフライン更新の開始"
-
-#: client/pkgc-manage.c:741
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "No results from last offline update available."
-msgstr "更新情報をダウンロード中"
-
-#: client/pkgc-manage.c:748
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
-msgid "Last offline update failed: %s: %s"
-msgstr "オフライン更新メッセージの削除"
-
-#: client/pkgc-manage.c:755
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Last offline update completed successfully"
-msgstr "オフライン更新メッセージの削除"
-
-#: client/pkgc-manage.c:766
-#, fuzzy, c-format
-#| msgid "Updated"
-msgid "Updated: %s"
-msgstr "更新済"
-
-#: client/pkgc-manage.c:787
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to trigger offline update: %s"
-msgstr "オフライン更新の開始"
-
-#: client/pkgc-manage.c:791
-msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli offline-update command.
-#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
-msgid ""
-"Trigger & manage offline system updates.\n"
-"\n"
-"You can select one of these requests:\n"
-"  prepare - prepare an offline update and trigger it (default)\n"
-"  trigger - trigger a (manually prepared) offline update\n"
-"  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
-msgstr ""
-
-#: client/pkgc-manage.c:835
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Failed to cancel offline update: %s"
-msgstr "自動解決が失敗しました:: %s"
-
-#: client/pkgc-manage.c:839
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Offline update cancelled"
-msgstr "オフライン更新メッセージの削除"
-
-#: client/pkgc-manage.c:896
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
-msgid "Unknown offline-update request: %s"
-msgstr "オフライン更新メッセージの削除"
-
-#. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
-#, fuzzy
-#| msgid "Install the packages without asking for confirmation"
-msgid "Install a package signature for GPG verification."
-msgstr "確認を要求せずにパッケージをインストールする"
-
-#. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
-msgid "Attempt to repair the package management system."
-msgstr ""
-
-#: client/pkgc-manage.c:967
-msgid "System repaired successfully"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
-msgid "Safely terminate the PackageKit daemon."
-msgstr ""
-
-#: client/pkgc-manage.c:994
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to send daemon quit request: %s"
-msgstr "デーモンの状態を得るのに失敗しました"
-
-#: client/pkgc-manage.c:1013
-msgid "Refresh package metadata"
-msgstr ""
-
-#: client/pkgc-manage.c:1019
-#, fuzzy
-#| msgid "Install package"
-msgid "Install packages"
-msgstr "パッケージをインストール"
-
-#: client/pkgc-manage.c:1025
-#, fuzzy
-#| msgid "Remove package"
-msgid "Remove packages"
-msgstr "パッケージを削除"
-
-#: client/pkgc-manage.c:1031
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Update packages"
-msgstr "パッケージを更新中"
-
-#: client/pkgc-manage.c:1037
-#, fuzzy
-#| msgid "Upgrade System"
-msgid "Upgrade the system"
-msgstr "システムをアップグレード"
-
-#: client/pkgc-manage.c:1043
-#, fuzzy
-#| msgid "Downloading packages"
-msgid "Download packages"
-msgstr "パッケージをダウンロード中"
-
-#: client/pkgc-manage.c:1049
-#, fuzzy
-#| msgid "There are no packages to update."
-msgid "Manage offline system updates"
-msgstr "更新が必要なパッケージはありません。"
-
-#: client/pkgc-manage.c:1055
-#, fuzzy
-#| msgid "Installing signature"
-msgid "Install package signature"
-msgstr "署名をインストール中"
-
-#: client/pkgc-manage.c:1061
-#, fuzzy
-#| msgid "Repair System"
-msgid "Repair package system"
-msgstr "システムの復旧"
-
-#: client/pkgc-manage.c:1067
-msgid "Safely stop the PackageKit daemon"
-msgstr ""
-
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "デーモンの状態を得るのに失敗しました"
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
-msgid "Failed to get properties"
-msgstr "プロパティの取得に失敗しました"
-
-#. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit サービス"
-
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit bus events"
-msgstr "PackageKit サービス"
-
-#. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:166
-msgid "Show PackageKit backend information."
-msgstr ""
-
-#: client/pkgc-query.c:211
-#, c-format
-msgid "Backend: %s"
-msgstr ""
-
-#: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
-msgid "Description: %s"
-msgstr "説明"
-
-#: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
-msgid "Author: %s"
-msgstr "著者"
-
-#. add some extra space before the potentially long roles list
-#. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
-msgid "Roles: %s"
-msgstr "ロール"
-
-#. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
-msgid "Show recent package management transactions."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
-msgid ""
-"Search for packages matching the given patterns. If MODE is not specified, \n"
-"'details' search is performed.\n"
-"Possible search MODEs are:\n"
-"  name    - search by package name\n"
-"  details - search by package details (default)\n"
-"  file    - search by file name\n"
-"  group   - search by package group"
-msgstr ""
-
-#: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A search term is required"
-msgid "No search pattern specified"
-msgstr "検索語が必要です"
-
-#. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
-msgid "List all packages or those matching a pattern."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
-msgid "Show information about one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
-msgid "Check dependencies recursively"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
-msgid "Show dependencies for one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Could not resolve packages: %s"
-msgstr "自動解決が失敗しました:: %s"
-
-#. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
-msgid "Show which packages provide the specified capability."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
-msgid "List all files contained in one or more packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
-msgid "List all currently available package updates."
-msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
-
-#. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
-msgid "Show detailed information about the specified package update."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
-msgid "Resolve package names to package IDs."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
-msgid "Show which packages require the specified packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
-msgid "Filters:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
-msgid "Groups:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
-msgid "Categories:"
-msgstr "カテゴリ"
-
-#. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
-msgid "Show distribution version upgrades, if any are available."
-msgstr ""
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr "このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
-msgid "Elapsed time"
-msgstr "システム時刻"
-
-#. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
-msgid "Get time in seconds since the last specified action."
-msgstr ""
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "'update-packages' のようなアクションが必要です"
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-msgid "A correct role is required"
-msgstr "正しいロールが必要です"
-
-#: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
-msgid "Show backend information"
-msgstr "情報の取得中"
-
-#: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
-msgid "Show transaction history"
-msgstr "トランザクションが失敗しました"
-
-#: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Search by names"
-msgid "Search for packages"
-msgstr "名前で検索"
-
-#: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Install package"
-msgid "List packages"
-msgstr "パッケージをインストール"
-
-#: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "Show package information"
-msgstr "更新情報をダウンロード中"
-
-#: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
-msgid "List package dependencies"
-msgstr "依存関係を解決中"
-
-#: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages requiring this package"
-msgstr "このファイルを提供しているパッケージは:"
-
-#: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages providing a capability"
-msgstr "このファイルを提供しているパッケージは:"
-
-#: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Obsoleting packages"
-msgid "Show files in package"
-msgstr "旧パッケージを区分中"
-
-#: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
-msgid "Get available updates"
-msgstr "更新の取得中"
-
-#: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Getting update details"
-msgid "Get update details"
-msgstr "更新の詳細の取得中"
-
-#: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
-msgid "Resolve package names"
-msgstr "パッケージを削除"
-
-#: client/pkgc-query.c:1045
-msgid "List available filters and categories"
-msgstr ""
-
-#: client/pkgc-query.c:1051
-msgid "Show available distribution upgrades"
-msgstr ""
-
-#: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting transactions"
-msgid "Get time since last action"
-msgstr "トランザクションの取得中"
-
-#. TRANSLATORS: Description for pkgcli repo-list
-#: client/pkgc-repo.c:82
-msgid "List all configured package repositories."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
-msgid "Enable the specified repository."
-msgstr ""
-
-#: client/pkgc-repo.c:134
-#, c-format
-msgid "Repository '%s' enabled"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
-#, fuzzy
-#| msgid "Disable the idle timer"
-msgid "Disable the specified repository."
-msgstr "待機タイマーを無効にする"
-
-#: client/pkgc-repo.c:174
-#, c-format
-msgid "Repository '%s' disabled"
-msgstr ""
-
-#: client/pkgc-repo.c:194
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
-msgid "Automatically remove orphaned packages"
-msgstr "未使用の依存関係を自動的に削除する"
-
-#. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Remove the specified repository."
-msgstr "リポジトリの削除"
-
-#: client/pkgc-repo.c:224
-#, fuzzy, c-format
-#| msgid "A repository name is required"
-msgid "Repository '%s' removed"
-msgstr "リポジトリ名が必要です"
-
-#: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "List repositories"
-msgstr "リポジトリの取得中"
-
-#: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Enable a repository"
-msgstr "リポジトリの削除"
-
-#: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Disable a repository"
-msgstr "リポジトリの削除"
-
-#: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Remove a repository"
-msgstr "リポジトリの削除"
-
-#: client/pkgc-util.c:94
-msgid "Not connected to PackageKit daemon"
-msgstr ""
-
-#. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
-msgid "%u seconds"
-msgstr "(秒)"
-
-#. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
-#, c-format
-msgid "%u min %u sec"
-msgstr ""
-
-#. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
-#, c-format
-msgid "%u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
-#, c-format
-msgid "%u h %u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
-#, c-format
-msgid "%u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
-#, c-format
-msgid "%u days %u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
-#, c-format
-msgid "%u days"
-msgstr ""
-
-#: client/pkgc-util.c:276
-msgid "Error"
-msgstr ""
-
-#. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
-msgid "Warning:"
-msgstr ""
-
-#. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Failed to parse options: %s"
-msgstr "自動解決が失敗しました:: %s"
-
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr ""
-
-#. TRANSLATORS: Label for the package name in package details
-#. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
-#, fuzzy
-#| msgid "Package"
-msgid "Package:"
-msgstr "パッケージ"
-
-#. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
-msgid "Version:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
-#, fuzzy
-#| msgid "Summary"
-msgid "Summary:"
-msgstr "概要"
-
-#. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
-#, fuzzy
-#| msgid "Description"
-msgid "Description:"
-msgstr "説明"
-
-#. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
-msgid "License:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
-msgid "URL:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
-msgid "Group:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
-#, fuzzy
-#| msgid "Installed"
-msgid "Installed Size:"
-msgstr "インストール済み"
-
-#. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:687
-#, fuzzy
-#| msgid "Downloaded"
-msgid "Download Size:"
-msgstr "ダウンロード済み"
-
-#. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:781
-#, fuzzy
-#| msgid "Update text"
-msgid "Update Details:"
-msgstr "更新テキスト"
-
-#. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:792
-#, fuzzy
-#| msgid "Updates"
-msgid "Updates:"
-msgstr "更新"
-
-#. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:801
-#, fuzzy
-#| msgid "Obsoletes"
-msgid "Obsoletes:"
-msgstr "旧版"
-
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:810
-#, fuzzy
-#| msgid "Vendor"
-msgid "Vendor:"
-msgstr "供給元"
-
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:819
-msgid "Issue Tracker:"
-msgstr ""
-
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:828
-msgid "CVE:"
-msgstr ""
-
-#. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:836
-#, fuzzy
-#| msgid "Restart"
-msgid "Restart:"
-msgstr "再起動"
-
-#. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:845
-#, fuzzy
-#| msgid "Update text"
-msgid "Update text:"
-msgstr "更新テキスト"
-
-#. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:852
-#, fuzzy
-#| msgid "Changes"
-msgid "Changes:"
-msgstr "変更"
-
-#. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:859
-#, fuzzy
-#| msgid "State"
-msgid "State:"
-msgstr "状態"
-
-#. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:868
-#, fuzzy
-#| msgid "Issued"
-msgid "Issued:"
-msgstr "発行済"
-
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:875
-#, fuzzy
-#| msgid "Updated"
-msgid "Updated:"
-msgstr "更新済"
-
-#. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:992
-#, fuzzy
-#| msgid "Transaction"
-msgid "Transaction:"
-msgstr "トランザクション"
-
-#. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:996
-#, fuzzy
-#| msgid "System time"
-msgid "System time:"
-msgstr "システム時刻"
-
-#. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1000
-#, fuzzy
-#| msgid "Succeeded"
-msgid "Succeeded:"
-msgstr "成功"
-
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "真"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "偽"
-
-#. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1009
-#, fuzzy
-#| msgid "Role"
-msgid "Role:"
-msgstr "ロール"
-
-#. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1016
-#, fuzzy
-#| msgid "Duration"
-msgid "Duration:"
-msgstr "期間"
-
-#. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1023
-#, fuzzy
-#| msgid "Command line"
-msgid "Command line:"
-msgstr "コマンドライン"
-
-#. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1029
-#, fuzzy
-#| msgid "User ID"
-msgid "User ID:"
-msgstr "ユーザー ID"
-
-#. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1038
-#, fuzzy
-#| msgid "Username"
-msgid "Username:"
-msgstr "ユーザー名"
-
-#. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1044
-#, fuzzy
-#| msgid "Real name"
-msgid "Real name:"
-msgstr "本名"
-
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "影響するパッケージ:"
-
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
-msgid "None"
-msgstr ""
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "複数のパッケージが一致しています:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "適切なパッケージを選択してください: "
-
-#: client/pkgc-util.c:1223
-#, fuzzy, c-format
-#| msgid "Package not found"
-msgid "Package not found: %s"
-msgstr "パッケージが見つかりません"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show version and exit"
-msgid "Show pkgcli version"
-msgstr "バージョンを表示して終了"
-
-#: client/pkgcli.c:78
-msgid "Show help"
-msgstr ""
-
-#: client/pkgcli.c:80
-msgid "Only provide minimal output"
-msgstr ""
-
-#: client/pkgcli.c:82
-msgid "Show more detailed output"
-msgstr ""
-
-#: client/pkgcli.c:84
-msgid "Output in JSON format"
-msgstr ""
-
-#: client/pkgcli.c:86
-msgid "Disable colored output"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgcli.c:89
-msgid "Answer 'yes' to all questions"
-msgstr ""
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
-msgid "Filter packages (installed, available, etc.)"
-msgstr ""
-
-#: client/pkgcli.c:92
-msgid "FILTER"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "アイドル状態のネットワーク帯域幅とより少ない電力を使用してコマンドを実行する"
-
-#: client/pkgcli.c:118
-msgid "No command specified. Use --help for usage information."
-msgstr ""
-
-#: client/pkgcli.c:126
-#, c-format
-msgid "Unknown command: %s"
-msgstr ""
-
-#: client/pkgcli.c:135
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
-msgid "Failed to connect to PackageKit: %s"
-msgstr "PackageKit への接続に失敗"
-
-#: client/pkgcli.c:196
-#, c-format
-msgid "Version: %s"
-msgstr ""
-
-#: client/pkgcli.c:211
-#, fuzzy
-#| msgid "Available"
-msgid "Available Commands:"
-msgstr "利用可能"
-
-#: client/pkgcli.c:217
-msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "指定されたフィルタは無効です"
+"システムアップグレードのインストール; しばらく時間がかかる場合があります..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1106,24 +88,32 @@ msgstr "トランザクション"
 msgid "System time"
 msgstr "システム時刻"
 
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "偽"
+
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
 msgstr "成功"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "真"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
 msgid "Role"
 msgstr "ロール"
 
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(秒)"
+
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:176
 msgid "Duration"
 msgstr "期間"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(秒)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pkcon/pk-console.c:180
@@ -1144,6 +134,13 @@ msgstr "ユーザー名"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
 msgstr "本名"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "影響するパッケージ:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:204
@@ -1380,13 +377,34 @@ msgstr "更新を完了するために再ログインしてください。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するためにコンピュータを再起動してください。"
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"重大なセキュリティ更新がインストールされたので、更新を完了するためにコン"
+"ピュータを再起動してください。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するために再ログインしてください。"
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"重大なセキュリティ更新がインストールされたので、更新を完了するために再ログイ"
+"ンしてください。"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "複数のパッケージが一致しています:"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "適切なパッケージを選択してください: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -1404,8 +422,12 @@ msgstr "1つもパッケージが見つかりませんでした"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "パッケージ名が想定される箇所で、ファイルが入力されました。代わりに 'pkcon install-local %s' を使用してみてください。"
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"パッケージ名が想定される箇所で、ファイルが入力されました。代わりに 'pkcon "
+"install-local %s' を使用してみてください。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -1459,6 +481,12 @@ msgstr "新しいバージョンに更新する必要があるパッケージは
 msgid "This tool could not find all the packages: %s"
 msgstr "このツールでは全パッケージを見つけられません: %s"
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+msgid "The daemon crashed mid-transaction!"
+msgstr "トランザクション中にデーモンがクラッシュしました!"
+
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
@@ -1468,6 +496,13 @@ msgstr "PackageKit コンソールインタフェース"
 #: client/pkcon/pk-console.c:1474
 msgid "Subcommands:"
 msgstr "サブコマンド:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr ""
+"このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -1500,6 +535,13 @@ msgstr "フィルタを設定する (例: installed)"
 msgid "Install the packages without asking for confirmation"
 msgstr "確認を要求せずにパッケージをインストールする"
 
+#. TRANSLATORS: command line argument, do we just download or apply changes
+#. command line argument, do we just download or apply changes
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
+"パッケージをダウンロードのみ実行することにより、トランザクションを準備する"
+
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
 msgid "Allow packages to be downgraded during transaction"
@@ -1509,15 +551,31 @@ msgstr "トランザクション中にパッケージをダウングレードで
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "トランザクション中にパッケージを再インストールできるようにする"
 
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr "未使用の依存関係を自動的に削除する"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"アイドル状態のネットワーク帯域幅とより少ない電力を使用してコマンドを実行する"
+
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
 msgstr "アニメーション表示の代わりに、マシンリーダブルな出力を画面に表示する"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "メタデータ・キャッシュの最大保存期間 (秒) です。キャッシュのみを使用する場合は -1、キャッシュをリロードする場合は 1 を使用します。"
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr ""
+"メタデータ・キャッシュの最大保存期間 (秒) です。キャッシュのみを使用する場合"
+"は -1、キャッシュをリロードする場合は 1 を使用します。"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -1533,6 +591,12 @@ msgstr "コマンドラインの解析に失敗しました"
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit への接続に失敗"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "指定されたフィルタは無効です"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
@@ -1612,6 +676,20 @@ msgstr "リポジトリ名と、パラメータ、値が必要です"
 msgid "A repo id and autoremove required"
 msgstr "リポジトリIDと自動削除が必要です"
 
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "'update-packages' のようなアクションが必要です"
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+msgid "A correct role is required"
+msgstr "正しいロールが必要です"
+
 #. TRANSLATORS: The user did not
 #. * provide a package name
 #: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
@@ -1667,48 +745,898 @@ msgstr "オプション '%s' はサポートされていません"
 msgid "Command failed"
 msgstr "コマンド失敗"
 
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr "デーモンの状態を得るのに失敗しました"
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+msgid "Failed to get properties"
+msgstr "プロパティの取得に失敗しました"
+
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
 msgstr "PackageKit モニタ"
 
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
-#, c-format
-msgid "%i%%"
+#. TRANSLATORS: command line argument, do we allow package downgrades
+#: client/pkgc-manage.c:47
+#, fuzzy
+msgid "Allow package downgrades"
+msgstr "トランザクション中にパッケージをダウングレードできるようにする"
+
+#. TRANSLATORS: command line argument, do we allow package re-installations
+#: client/pkgc-manage.c:54
+#, fuzzy
+msgid "Allow package re-installations"
+msgstr "トランザクション中にパッケージを再インストールできるようにする"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:61
+#, fuzzy
+msgid "Allow installation of untrusted packages"
+msgstr "インストール済みパッケージの古いバージョンをインストール"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:75
+msgid "Maximum metadata cache age in seconds"
 msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
-msgid "Installing System Upgrade"
-msgstr "システムアップグレードのインストール"
+#: client/pkgc-manage.c:75
+msgid "SECONDS"
+msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
-msgid "Installing Updates"
-msgstr "更新をインストール中"
+#. TRANSLATORS: Description for pkgcli refresh
+#: client/pkgc-manage.c:196
+#, fuzzy
+msgid "Refresh the package metadata cache."
+msgstr "キャッシュをリフレッシュ"
 
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-msgid "Rebooting after installing updates…"
-msgstr "更新をインストールしたので再起動します…"
+#: client/pkgc-manage.c:222
+msgid "Package metadata refreshed"
+msgstr ""
 
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
-msgstr "更新をインストールしたのでシャットダウンします…"
+#. TRANSLATORS: Description for pkgcli install
+#: client/pkgc-manage.c:246
+msgid "Install one or more packages or local package files."
+msgstr ""
 
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
-msgstr "更新のインストール; しばらく時間がかかる場合があります..."
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#, fuzzy, c-format
+msgid "Could not find any available package: %s"
+msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
 
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
-msgstr "システムアップグレードのインストール; しばらく時間がかかる場合があります..."
+#: client/pkgc-manage.c:325
+#, fuzzy
+msgid "The selected package is already installed."
+msgstr "選択したパッケージはすでにインストールされている可能性があります。"
+
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
+msgid "Remove one or more packages from the system."
+msgstr ""
+
+#: client/pkgc-manage.c:382
+#, fuzzy, c-format
+msgid "Could not find installed packages: %s"
+msgstr "このツールではパッケージを見つけられません: %s"
+
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
+msgid "Download packages to the specified directory without installing."
+msgstr ""
+
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#, fuzzy, c-format
+msgid "Could not find packages: %s"
+msgstr "このツールではパッケージを見つけられません: %s"
+
+#: client/pkgc-manage.c:444
+#, c-format
+msgid "Directory does not exist: %s"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
+msgid "Update all packages or specific packages to their latest versions."
+msgstr ""
+
+#: client/pkgc-manage.c:510
+#, fuzzy, c-format
+msgid "Could not find packages to update: %s"
+msgstr "このツールではパッケージを見つけられません: %s"
+
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#, fuzzy, c-format
+msgid "Failed to get updates: %s"
+msgstr "デーモンの状態を得るのに失敗しました"
+
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#, fuzzy
+msgid "No packages require updating"
+msgstr "新しいバージョンに更新する必要があるパッケージはありません。"
+
+#. TRANSLATORS: Description of pkgcli upgrade.
+#. * No not translate "minimal, default, complete", those are parameters
+#: client/pkgc-manage.c:590
+msgid ""
+"Upgrade all packages or perform a distribution upgrade.\n"
+"\n"
+"Types: minimal, default, complete"
+msgstr ""
+
+#: client/pkgc-manage.c:686
+#, fuzzy, c-format
+msgid "Failed to read offline update action: %s"
+msgstr "オフライン更新の開始"
+
+#: client/pkgc-manage.c:696
+#, fuzzy
+msgid "Offline update is not triggered."
+msgstr "オフライン更新メッセージの削除"
+
+#: client/pkgc-manage.c:704
+#, fuzzy, c-format
+msgid "Offline update is triggered. Action after update: %s"
+msgstr "オフライン更新の開始"
+
+#. TRANSLATORS: Packages that were prepared for an offline update
+#: client/pkgc-manage.c:715
+#, fuzzy
+msgid "Prepared packages:"
+msgstr "準備されたアップデート:"
+
+#: client/pkgc-manage.c:729
+#, fuzzy
+msgid "No offline update is prepared."
+msgstr "オフライン更新メッセージの削除"
+
+#: client/pkgc-manage.c:731
+#, fuzzy, c-format
+msgid "Failed to read prepared offline updates: %s"
+msgstr "オフライン更新の開始"
+
+#: client/pkgc-manage.c:741
+#, fuzzy
+msgid "No results from last offline update available."
+msgstr "更新情報をダウンロード中"
+
+#: client/pkgc-manage.c:748
+#, fuzzy, c-format
+msgid "Last offline update failed: %s: %s"
+msgstr "オフライン更新メッセージの削除"
+
+#: client/pkgc-manage.c:755
+#, fuzzy
+msgid "Last offline update completed successfully"
+msgstr "オフライン更新メッセージの削除"
+
+#: client/pkgc-manage.c:766
+#, fuzzy, c-format
+msgid "Updated: %s"
+msgstr "更新済"
+
+#: client/pkgc-manage.c:787
+#, fuzzy, c-format
+msgid "Failed to trigger offline update: %s"
+msgstr "オフライン更新の開始"
+
+#: client/pkgc-manage.c:791
+msgid "Offline update scheduled. System will update on next reboot."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli offline-update command.
+#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
+#: client/pkgc-manage.c:811
+msgid ""
+"Trigger & manage offline system updates.\n"
+"\n"
+"You can select one of these requests:\n"
+"  prepare - prepare an offline update and trigger it (default)\n"
+"  trigger - trigger a (manually prepared) offline update\n"
+"  cancel  - cancel a planned offline update\n"
+"  status  - show status information about a prepared or finished offline "
+"update"
+msgstr ""
+
+#: client/pkgc-manage.c:835
+#, fuzzy, c-format
+msgid "Failed to cancel offline update: %s"
+msgstr "自動解決が失敗しました:: %s"
+
+#: client/pkgc-manage.c:839
+#, fuzzy
+msgid "Offline update cancelled"
+msgstr "オフライン更新メッセージの削除"
+
+#: client/pkgc-manage.c:896
+#, fuzzy, c-format
+msgid "Unknown offline-update request: %s"
+msgstr "オフライン更新メッセージの削除"
+
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
+#, fuzzy
+msgid "Install a package signature for GPG verification."
+msgstr "確認を要求せずにパッケージをインストールする"
+
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
+msgid "Attempt to repair the package management system."
+msgstr ""
+
+#: client/pkgc-manage.c:967
+msgid "System repaired successfully"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
+msgid "Safely terminate the PackageKit daemon."
+msgstr ""
+
+#: client/pkgc-manage.c:994
+#, fuzzy, c-format
+msgid "Failed to send daemon quit request: %s"
+msgstr "デーモンの状態を得るのに失敗しました"
+
+#: client/pkgc-manage.c:1013
+msgid "Refresh package metadata"
+msgstr ""
+
+#: client/pkgc-manage.c:1019
+#, fuzzy
+msgid "Install packages"
+msgstr "パッケージをインストール"
+
+#: client/pkgc-manage.c:1025
+#, fuzzy
+msgid "Remove packages"
+msgstr "パッケージを削除"
+
+#: client/pkgc-manage.c:1031
+#, fuzzy
+msgid "Update packages"
+msgstr "パッケージを更新中"
+
+#: client/pkgc-manage.c:1037
+#, fuzzy
+msgid "Upgrade the system"
+msgstr "システムをアップグレード"
+
+#: client/pkgc-manage.c:1043
+#, fuzzy
+msgid "Download packages"
+msgstr "パッケージをダウンロード中"
+
+#: client/pkgc-manage.c:1049
+#, fuzzy
+msgid "Manage offline system updates"
+msgstr "更新が必要なパッケージはありません。"
+
+#: client/pkgc-manage.c:1055
+#, fuzzy
+msgid "Install package signature"
+msgstr "署名をインストール中"
+
+#: client/pkgc-manage.c:1061
+#, fuzzy
+msgid "Repair package system"
+msgstr "システムの復旧"
+
+#: client/pkgc-manage.c:1067
+msgid "Safely stop the PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli monitor
+#: client/pkgc-monitor.c:460
+#, fuzzy
+msgid "Monitor PackageKit D-Bus events"
+msgstr "PackageKit サービス"
+
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#: client/pkgc-monitor.c:562
+#, fuzzy
+msgid "Monitor PackageKit bus events"
+msgstr "PackageKit サービス"
+
+#. TRANSLATORS: Description for pkgcli backend
+#: client/pkgc-query.c:166
+msgid "Show PackageKit backend information."
+msgstr ""
+
+#: client/pkgc-query.c:211
+#, c-format
+msgid "Backend: %s"
+msgstr ""
+
+#: client/pkgc-query.c:214
+#, fuzzy, c-format
+msgid "Description: %s"
+msgstr "説明"
+
+#: client/pkgc-query.c:217
+#, fuzzy, c-format
+msgid "Author: %s"
+msgstr "著者"
+
+#. add some extra space before the potentially long roles list
+#. TRANSLATORS: List of backend-roles
+#: client/pkgc-query.c:222
+#, fuzzy, c-format
+msgid "Roles: %s"
+msgstr "ロール"
+
+#. TRANSLATORS: Description for pkgcli history
+#: client/pkgc-query.c:245
+msgid "Show recent package management transactions."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
+#: client/pkgc-query.c:284
+msgid ""
+"Search for packages matching the given patterns. If MODE is not specified, \n"
+"'details' search is performed.\n"
+"Possible search MODEs are:\n"
+"  name    - search by package name\n"
+"  details - search by package details (default)\n"
+"  file    - search by file name\n"
+"  group   - search by package group"
+msgstr ""
+
+#: client/pkgc-query.c:311
+#, fuzzy
+msgid "No search pattern specified"
+msgstr "検索語が必要です"
+
+#. TRANSLATORS: Description for pkgcli list
+#: client/pkgc-query.c:371
+msgid "List all packages or those matching a pattern."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli show
+#: client/pkgc-query.c:415
+msgid "Show information about one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:471 client/pkgc-query.c:750
+msgid "Check dependencies recursively"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli depends-on
+#: client/pkgc-query.c:480
+msgid "Show dependencies for one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#, fuzzy, c-format
+msgid "Could not resolve packages: %s"
+msgstr "自動解決が失敗しました:: %s"
+
+#. TRANSLATORS: Description for pkgcli what-provides
+#: client/pkgc-query.c:520
+msgid "Show which packages provide the specified capability."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli files
+#: client/pkgc-query.c:551
+msgid "List all files contained in one or more packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli list-updates
+#: client/pkgc-query.c:646
+#, fuzzy
+msgid "List all currently available package updates."
+msgstr "このツールでは取り扱えるパッケージを見つけられません: %s"
+
+#. TRANSLATORS: Description for pkgcli show-update
+#: client/pkgc-query.c:678
+msgid "Show detailed information about the specified package update."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli resolve
+#: client/pkgc-query.c:716
+msgid "Resolve package names to package IDs."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli required-by
+#: client/pkgc-query.c:759
+msgid "Show which packages require the specified packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli organization
+#: client/pkgc-query.c:802
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package filters
+#: client/pkgc-query.c:810
+msgid "Filters:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package groups
+#: client/pkgc-query.c:825
+msgid "Groups:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package categories
+#: client/pkgc-query.c:840
+#, fuzzy
+msgid "Categories:"
+msgstr "カテゴリ"
+
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
+#: client/pkgc-query.c:866
+msgid "Show distribution version upgrades, if any are available."
+msgstr ""
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkgc-query.c:910
+#, fuzzy
+msgid "Elapsed time"
+msgstr "システム時刻"
+
+#. TRANSLATORS: Description for pkgcli last-time
+#: client/pkgc-query.c:934
+msgid "Get time in seconds since the last specified action."
+msgstr ""
+
+#: client/pkgc-query.c:973
+#, fuzzy
+msgid "Show backend information"
+msgstr "情報の取得中"
+
+#: client/pkgc-query.c:979
+#, fuzzy
+msgid "Show transaction history"
+msgstr "トランザクションが失敗しました"
+
+#: client/pkgc-query.c:985
+#, fuzzy
+msgid "Search for packages"
+msgstr "名前で検索"
+
+#: client/pkgc-query.c:991
+#, fuzzy
+msgid "List packages"
+msgstr "パッケージをインストール"
+
+#: client/pkgc-query.c:997
+#, fuzzy
+msgid "Show package information"
+msgstr "更新情報をダウンロード中"
+
+#: client/pkgc-query.c:1003
+#, fuzzy
+msgid "List package dependencies"
+msgstr "依存関係を解決中"
+
+#: client/pkgc-query.c:1009
+#, fuzzy
+msgid "List packages requiring this package"
+msgstr "このファイルを提供しているパッケージは:"
+
+#: client/pkgc-query.c:1015
+#, fuzzy
+msgid "List packages providing a capability"
+msgstr "このファイルを提供しているパッケージは:"
+
+#: client/pkgc-query.c:1021
+#, fuzzy
+msgid "Show files in package"
+msgstr "旧パッケージを区分中"
+
+#: client/pkgc-query.c:1027
+#, fuzzy
+msgid "Get available updates"
+msgstr "更新の取得中"
+
+#: client/pkgc-query.c:1033
+#, fuzzy
+msgid "Get update details"
+msgstr "更新の詳細の取得中"
+
+#: client/pkgc-query.c:1039
+#, fuzzy
+msgid "Resolve package names"
+msgstr "パッケージを削除"
+
+#: client/pkgc-query.c:1045
+msgid "List available filters and categories"
+msgstr ""
+
+#: client/pkgc-query.c:1051
+msgid "Show available distribution upgrades"
+msgstr ""
+
+#: client/pkgc-query.c:1057
+#, fuzzy
+msgid "Get time since last action"
+msgstr "トランザクションの取得中"
+
+#. TRANSLATORS: Description for pkgcli repo-list
+#: client/pkgc-repo.c:82
+msgid "List all configured package repositories."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-enable
+#: client/pkgc-repo.c:115
+msgid "Enable the specified repository."
+msgstr ""
+
+#: client/pkgc-repo.c:134
+#, c-format
+msgid "Repository '%s' enabled"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-disable
+#: client/pkgc-repo.c:155
+#, fuzzy
+msgid "Disable the specified repository."
+msgstr "待機タイマーを無効にする"
+
+#: client/pkgc-repo.c:174
+#, c-format
+msgid "Repository '%s' disabled"
+msgstr ""
+
+#: client/pkgc-repo.c:194
+#, fuzzy
+msgid "Automatically remove orphaned packages"
+msgstr "未使用の依存関係を自動的に削除する"
+
+#. TRANSLATORS: Description for pkgcli repo-remove
+#: client/pkgc-repo.c:204
+#, fuzzy
+msgid "Remove the specified repository."
+msgstr "リポジトリの削除"
+
+#: client/pkgc-repo.c:224
+#, fuzzy, c-format
+msgid "Repository '%s' removed"
+msgstr "リポジトリ名が必要です"
+
+#: client/pkgc-repo.c:241
+#, fuzzy
+msgid "List repositories"
+msgstr "リポジトリの取得中"
+
+#: client/pkgc-repo.c:247
+#, fuzzy
+msgid "Enable a repository"
+msgstr "リポジトリの削除"
+
+#: client/pkgc-repo.c:253
+#, fuzzy
+msgid "Disable a repository"
+msgstr "リポジトリの削除"
+
+#: client/pkgc-repo.c:259
+#, fuzzy
+msgid "Remove a repository"
+msgstr "リポジトリの削除"
+
+#: client/pkgc-util.c:94
+msgid "Not connected to PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: A duration in seconds
+#: client/pkgc-util.c:131
+#, fuzzy, c-format
+msgid "%u seconds"
+msgstr "(秒)"
+
+#. TRANSLATORS: A duration in minutes & seconds
+#: client/pkgc-util.c:137
+#, c-format
+msgid "%u min %u sec"
+msgstr ""
+
+#. TRANSLATORS: A duration in minutes
+#: client/pkgc-util.c:140
+#, c-format
+msgid "%u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours & remaining minutes
+#: client/pkgc-util.c:147
+#, c-format
+msgid "%u h %u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours
+#: client/pkgc-util.c:150
+#, c-format
+msgid "%u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days & remaining hours
+#: client/pkgc-util.c:157
+#, c-format
+msgid "%u days %u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days
+#: client/pkgc-util.c:160
+#, c-format
+msgid "%u days"
+msgstr ""
+
+#: client/pkgc-util.c:276
+msgid "Error"
+msgstr ""
+
+#. TRANSLATORS: A warning message prefix, displayed on the command-line
+#: client/pkgc-util.c:309
+msgid "Warning:"
+msgstr ""
+
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:431 client/pkgcli.c:188
+#, fuzzy, c-format
+msgid "Failed to parse options: %s"
+msgstr "自動解決が失敗しました:: %s"
+
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
+#: client/pkgc-util.c:437
+#, c-format
+msgid "Usage: %s %s %s"
+msgstr ""
+
+#. TRANSLATORS: Label for the package name in package details
+#. TRANSLATORS: Label for package update infos
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#, fuzzy
+msgid "Package:"
+msgstr "パッケージ"
+
+#. TRANSLATORS: Label for the package version in package details
+#: client/pkgc-util.c:635
+msgid "Version:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package summary in package details
+#: client/pkgc-util.c:642
+#, fuzzy
+msgid "Summary:"
+msgstr "概要"
+
+#. TRANSLATORS: Label for the package description in package details
+#: client/pkgc-util.c:650
+#, fuzzy
+msgid "Description:"
+msgstr "説明"
+
+#. TRANSLATORS: Label for the package license in package details
+#: client/pkgc-util.c:657
+msgid "License:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package URL in package details
+#: client/pkgc-util.c:664
+msgid "URL:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package group in package details
+#: client/pkgc-util.c:671
+msgid "Group:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package size in package details
+#: client/pkgc-util.c:679
+#, fuzzy
+msgid "Installed Size:"
+msgstr "インストール済み"
+
+#. TRANSLATORS: Label for the package download size in package details
+#: client/pkgc-util.c:687
+#, fuzzy
+msgid "Download Size:"
+msgstr "ダウンロード済み"
+
+#. TRANSLATORS: Header for the update details section
+#: client/pkgc-util.c:781
+#, fuzzy
+msgid "Update Details:"
+msgstr "更新テキスト"
+
+#. TRANSLATORS: Label for update details
+#: client/pkgc-util.c:792
+#, fuzzy
+msgid "Updates:"
+msgstr "更新"
+
+#. TRANSLATORS: Label for obsoleted packages in update details
+#: client/pkgc-util.c:801
+#, fuzzy
+msgid "Obsoletes:"
+msgstr "旧版"
+
+#. TRANSLATORS: Label for vendor in update details
+#: client/pkgc-util.c:810
+#, fuzzy
+msgid "Vendor:"
+msgstr "供給元"
+
+#. TRANSLATORS: Label for issue-tracker in update details
+#: client/pkgc-util.c:819
+msgid "Issue Tracker:"
+msgstr ""
+
+#. TRANSLATORS: Label for CVE information in update details
+#: client/pkgc-util.c:828
+msgid "CVE:"
+msgstr ""
+
+#. TRANSLATORS: Label for restart information in update details
+#: client/pkgc-util.c:836
+#, fuzzy
+msgid "Restart:"
+msgstr "再起動"
+
+#. TRANSLATORS: Label for update text in update details
+#: client/pkgc-util.c:845
+#, fuzzy
+msgid "Update text:"
+msgstr "更新テキスト"
+
+#. TRANSLATORS: Label for changelog in update details
+#: client/pkgc-util.c:852
+#, fuzzy
+msgid "Changes:"
+msgstr "変更"
+
+#. TRANSLATORS: Label for update state in update details
+#: client/pkgc-util.c:859
+#, fuzzy
+msgid "State:"
+msgstr "状態"
+
+#. TRANSLATORS: Label for issued date in update details
+#: client/pkgc-util.c:868
+#, fuzzy
+msgid "Issued:"
+msgstr "発行済"
+
+#. TRANSLATORS: Label for updated date in update details
+#: client/pkgc-util.c:875
+#, fuzzy
+msgid "Updated:"
+msgstr "更新済"
+
+#. TRANSLATORS: Label for transaction information
+#: client/pkgc-util.c:992
+#, fuzzy
+msgid "Transaction:"
+msgstr "トランザクション"
+
+#. TRANSLATORS: Label for system time of the transaction
+#: client/pkgc-util.c:996
+#, fuzzy
+msgid "System time:"
+msgstr "システム時刻"
+
+#. TRANSLATORS: Label for transaction success status
+#: client/pkgc-util.c:1000
+#, fuzzy
+msgid "Succeeded:"
+msgstr "成功"
+
+#. TRANSLATORS: Label for transaction role
+#: client/pkgc-util.c:1009
+#, fuzzy
+msgid "Role:"
+msgstr "ロール"
+
+#. TRANSLATORS: Label for transaction duration
+#: client/pkgc-util.c:1016
+#, fuzzy
+msgid "Duration:"
+msgstr "期間"
+
+#. TRANSLATORS: Label for transaction command line
+#: client/pkgc-util.c:1023
+#, fuzzy
+msgid "Command line:"
+msgstr "コマンドライン"
+
+#. TRANSLATORS: Label for transaction user ID
+#: client/pkgc-util.c:1029
+#, fuzzy
+msgid "User ID:"
+msgstr "ユーザー ID"
+
+#. TRANSLATORS: Label for transaction username
+#: client/pkgc-util.c:1038
+#, fuzzy
+msgid "Username:"
+msgstr "ユーザー名"
+
+#. TRANSLATORS: Label for transaction real name
+#: client/pkgc-util.c:1044
+#, fuzzy
+msgid "Real name:"
+msgstr "本名"
+
+#. TRANSLATORS: No packages were affected by the transaction
+#: client/pkgc-util.c:1078
+msgid "None"
+msgstr ""
+
+#: client/pkgc-util.c:1223
+#, fuzzy, c-format
+msgid "Package not found: %s"
+msgstr "パッケージが見つかりません"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkgcli.c:76
+#, fuzzy
+msgid "Show pkgcli version"
+msgstr "バージョンを表示して終了"
+
+#: client/pkgcli.c:78
+msgid "Show help"
+msgstr ""
+
+#: client/pkgcli.c:80
+msgid "Only provide minimal output"
+msgstr ""
+
+#: client/pkgcli.c:82
+msgid "Show more detailed output"
+msgstr ""
+
+#: client/pkgcli.c:84
+msgid "Output in JSON format"
+msgstr ""
+
+#: client/pkgcli.c:86
+msgid "Disable colored output"
+msgstr ""
+
+#. TRANSLATORS: command line argument, do we ask questions
+#: client/pkgcli.c:89
+msgid "Answer 'yes' to all questions"
+msgstr ""
+
+#: client/pkgcli.c:92
+msgid "FILTER"
+msgstr ""
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkgcli.c:92
+msgid "Filter packages (installed, available, etc.)"
+msgstr ""
+
+#: client/pkgcli.c:118
+msgid "No command specified. Use --help for usage information."
+msgstr ""
+
+#: client/pkgcli.c:126
+#, c-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: client/pkgcli.c:135
+#, fuzzy, c-format
+msgid "Failed to connect to PackageKit: %s"
+msgstr "PackageKit への接続に失敗"
+
+#: client/pkgcli.c:196
+#, c-format
+msgid "Version: %s"
+msgstr ""
+
+#: client/pkgcli.c:211
+#, fuzzy
+msgid "Available Commands:"
+msgstr "利用可能"
+
+#: client/pkgcli.c:217
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1788,7 +1716,8 @@ msgstr "このファイルを提供しているパッケージは:"
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
+msgstr ""
+"コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
@@ -2068,28 +1997,24 @@ msgstr "利用不可"
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 #, fuzzy
-#| msgid "Installed"
 msgid "Install"
 msgstr "インストール済み"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 #, fuzzy
-#| msgid "Removed"
 msgid "Remove"
 msgstr "削除済み"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
 #, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "旧ファイル分類済み"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 #, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
 msgstr "ダウンロード済み"
 
@@ -2298,7 +2223,6 @@ msgstr "システムアップグレードの取得中"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
 #, fuzzy
-#| msgid "Repair System"
 msgid "Repairing system"
 msgstr "システムの復旧"
 
@@ -2461,7 +2385,8 @@ msgid "Cancel foreign task"
 msgstr "他人のタスクをキャンセル"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "ユーザー自身が開始していないタスクをキャンセルするには認証が必要です"
 
 #. SECURITY:
@@ -2528,8 +2453,12 @@ msgid "Trust a key used for signing software"
 msgstr "ソフトウェアの署名に使用されるキーを信頼する"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "ソフトウェアの署名に使用されるキーを信頼できるものと見なすには、認証が必要です"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr ""
+"ソフトウェアの署名に使用されるキーを信頼できるものと見なすには、認証が必要で"
+"す"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2606,8 +2535,12 @@ msgid "Set network proxy"
 msgstr "ネットワークプロキシをセット"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "ソフトウェアのダウンロードに使用するネットワークプロキシを設定するには、認証が必要です"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr ""
+"ソフトウェアのダウンロードに使用するネットワークプロキシを設定するには、認証"
+"が必要です"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2790,15 +2723,19 @@ msgstr "安全だという確証がない限り、このパッケージを更新
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "安全だという確証がない限り、これらのパッケージ群を更新しないでください。"
+msgstr ""
+"安全だという確証がない限り、これらのパッケージ群を更新しないでください。"
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "安全だという確証がない限り、このパッケージをインストールしないでください。"
+msgstr ""
+"安全だという確証がない限り、このパッケージをインストールしないでください。"
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "安全だという確証がない限り、これらのパッケージ群をインストールしないでください。"
+msgstr ""
+"安全だという確証がない限り、これらのパッケージ群をインストールしないでくださ"
+"い。"
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

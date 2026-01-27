@@ -10,9 +10,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
-"Language-Team: Basque (http://app.transifex.com/freedesktop/packagekit/language/eu/)\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"Language-Team: Basque (http://app.transifex.com/freedesktop/packagekit/"
+"language/eu/)\n"
 "Language: eu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -29,1063 +30,43 @@ msgstr "Ez da konfigurazio-fitxategia aurkitu."
 msgid "Failed to load config file: %s"
 msgstr "Huts egin du konfigurazio-fitxategiaren kargak: %s"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
-msgid "The daemon crashed mid-transaction!"
-msgstr "Deabruak huts egin du transakzioaren erdian!"
-
-#. TRANSLATORS: command line argument, do we just download or apply changes
-#. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
-msgid "Prepare the transaction by downloading packages only"
-msgstr "Prestatu transakzioa paketeak deskargatuz soilik"
-
-#. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "Allow packages to be downgraded during transaction"
-msgid "Allow package downgrades"
-msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
-
-#. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "Allow packages to be reinstalled during transaction"
-msgid "Allow package re-installations"
-msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install older version of installed package"
-msgid "Allow installation of untrusted packages"
-msgstr "Instalatu lehendik instalatuta dagoen paketearen bertsio zaharragoa"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
-msgstr ""
-
-#: client/pkgc-manage.c:75
-msgid "SECONDS"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refresh the cache"
-msgid "Refresh the package metadata cache."
-msgstr "Freskatu cachea"
-
-#: client/pkgc-manage.c:222
-msgid "Package metadata refreshed"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
-msgid "Install one or more packages or local package files."
-msgstr ""
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
-#, fuzzy, c-format
-#| msgid "This tool could not find any available package: %s"
-msgid "Could not find any available package: %s"
-msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
-
-#: client/pkgc-manage.c:325
-#, fuzzy
-#| msgid "The selected packages may already be installed."
-msgid "The selected package is already installed."
-msgstr "Hautatutako paketeak agian instalatuta daude."
-
-#. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
-msgid "Remove one or more packages from the system."
-msgstr ""
-
-#: client/pkgc-manage.c:382
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find installed packages: %s"
-msgstr "Tresna honek ez du aurkitu paketea: %s"
-
-#. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
-msgid "Download packages to the specified directory without installing."
-msgstr ""
-
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages: %s"
-msgstr "Tresna honek ez du aurkitu paketea: %s"
-
-#: client/pkgc-manage.c:444
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
 #, c-format
-msgid "Directory does not exist: %s"
+msgid "%i%%"
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
-msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-
-#: client/pkgc-manage.c:510
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages to update: %s"
-msgstr "Tresna honek ez du aurkitu paketea: %s"
-
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to get updates: %s"
-msgstr "Ezin izan da deabruaren egoera ezagutu"
-
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
-#, fuzzy
-#| msgid "No packages require updating to newer versions."
-msgid "No packages require updating"
-msgstr "Ez dago bertsio berrietara eguneratzerik behar duen paketerik."
-
-#. TRANSLATORS: Description of pkgcli upgrade.
-#. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
-msgid ""
-"Upgrade all packages or perform a distribution upgrade.\n"
-"\n"
-"Types: minimal, default, complete"
-msgstr ""
-
-#: client/pkgc-manage.c:686
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to read offline update action: %s"
-msgstr "Abiarazi lineaz kanpoko eguneraketak"
-
-#: client/pkgc-manage.c:696
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Offline update is not triggered."
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#: client/pkgc-manage.c:704
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Offline update is triggered. Action after update: %s"
-msgstr "Abiarazi lineaz kanpoko eguneraketak"
-
-#. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
-#, fuzzy
-#| msgid "Prepared updates:"
-msgid "Prepared packages:"
-msgstr "Prest dauden eguneraketak:"
-
-#: client/pkgc-manage.c:729
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "No offline update is prepared."
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#: client/pkgc-manage.c:731
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to read prepared offline updates: %s"
-msgstr "Abiarazi lineaz kanpoko eguneraketak"
-
-#: client/pkgc-manage.c:741
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "No results from last offline update available."
-msgstr "Eguneraketa-informazioa deskargatzen"
-
-#: client/pkgc-manage.c:748
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
-msgid "Last offline update failed: %s: %s"
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#: client/pkgc-manage.c:755
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Last offline update completed successfully"
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#: client/pkgc-manage.c:766
-#, fuzzy, c-format
-#| msgid "Updated"
-msgid "Updated: %s"
-msgstr "Eguneratua"
-
-#: client/pkgc-manage.c:787
-#, fuzzy, c-format
-#| msgid "Trigger offline updates"
-msgid "Failed to trigger offline update: %s"
-msgstr "Abiarazi lineaz kanpoko eguneraketak"
-
-#: client/pkgc-manage.c:791
-msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli offline-update command.
-#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
-msgid ""
-"Trigger & manage offline system updates.\n"
-"\n"
-"You can select one of these requests:\n"
-"  prepare - prepare an offline update and trigger it (default)\n"
-"  trigger - trigger a (manually prepared) offline update\n"
-"  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
-msgstr ""
-
-#: client/pkgc-manage.c:835
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Failed to cancel offline update: %s"
-msgstr "Huts egin du automatikoak ebazteak: %s"
-
-#: client/pkgc-manage.c:839
-#, fuzzy
-#| msgid "Clear offline update message"
-msgid "Offline update cancelled"
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#: client/pkgc-manage.c:896
-#, fuzzy, c-format
-#| msgid "Clear offline update message"
-msgid "Unknown offline-update request: %s"
-msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
-
-#. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
-#, fuzzy
-#| msgid "Install the packages without asking for confirmation"
-msgid "Install a package signature for GPG verification."
-msgstr "Instalatu paketeak baieztapena eskatu gabe"
-
-#. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
-msgid "Attempt to repair the package management system."
-msgstr ""
-
-#: client/pkgc-manage.c:967
-msgid "System repaired successfully"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
-msgid "Safely terminate the PackageKit daemon."
-msgstr ""
-
-#: client/pkgc-manage.c:994
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to send daemon quit request: %s"
-msgstr "Ezin izan da deabruaren egoera ezagutu"
-
-#: client/pkgc-manage.c:1013
-msgid "Refresh package metadata"
-msgstr ""
-
-#: client/pkgc-manage.c:1019
-#, fuzzy
-#| msgid "Install package"
-msgid "Install packages"
-msgstr "Instalatu paketea"
-
-#: client/pkgc-manage.c:1025
-#, fuzzy
-#| msgid "Remove package"
-msgid "Remove packages"
-msgstr "Kendu paketea"
-
-#: client/pkgc-manage.c:1031
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Update packages"
-msgstr "Paketeak eguneratzen"
-
-#: client/pkgc-manage.c:1037
-#, fuzzy
-#| msgid "Upgrade System"
-msgid "Upgrade the system"
-msgstr "Eguneratu sistema"
-
-#: client/pkgc-manage.c:1043
-#, fuzzy
-#| msgid "Downloading packages"
-msgid "Download packages"
-msgstr "Paketeak deskargatzen"
-
-#: client/pkgc-manage.c:1049
-#, fuzzy
-#| msgid "There are no packages to update."
-msgid "Manage offline system updates"
-msgstr "Ez da paketerik eguneratu behar."
-
-#: client/pkgc-manage.c:1055
-#, fuzzy
-#| msgid "Installing signature"
-msgid "Install package signature"
-msgstr "Sinadura instalatzen"
-
-#: client/pkgc-manage.c:1061
-#, fuzzy
-#| msgid "Repair System"
-msgid "Repair package system"
-msgstr "Konpondu sistema"
-
-#: client/pkgc-manage.c:1067
-msgid "Safely stop the PackageKit daemon"
-msgstr ""
-
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "Ezin izan da deabruaren egoera ezagutu"
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
-msgid "Failed to get properties"
-msgstr "Ezin izan da propietateak eskuratu"
-
-#. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit zerbitzua"
-
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit bus events"
-msgstr "PackageKit zerbitzua"
-
-#. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:166
-msgid "Show PackageKit backend information."
-msgstr ""
-
-#: client/pkgc-query.c:211
-#, c-format
-msgid "Backend: %s"
-msgstr ""
-
-#: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
-msgid "Description: %s"
-msgstr "Deskribapena"
-
-#: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
-msgid "Author: %s"
-msgstr "Egilea"
-
-#. add some extra space before the potentially long roles list
-#. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
-msgid "Roles: %s"
-msgstr "Eginkizuna"
-
-#. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
-msgid "Show recent package management transactions."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
-msgid ""
-"Search for packages matching the given patterns. If MODE is not specified, \n"
-"'details' search is performed.\n"
-"Possible search MODEs are:\n"
-"  name    - search by package name\n"
-"  details - search by package details (default)\n"
-"  file    - search by file name\n"
-"  group   - search by package group"
-msgstr ""
-
-#: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A search term is required"
-msgid "No search pattern specified"
-msgstr "Bilaketa-hitza behar da"
-
-#. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
-msgid "List all packages or those matching a pattern."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
-msgid "Show information about one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
-msgid "Check dependencies recursively"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
-msgid "Show dependencies for one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Could not resolve packages: %s"
-msgstr "Huts egin du automatikoak ebazteak: %s"
-
-#. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
-msgid "Show which packages provide the specified capability."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
-msgid "List all files contained in one or more packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
-msgid "List all currently available package updates."
-msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
-
-#. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
-msgid "Show detailed information about the specified package update."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
-msgid "Resolve package names to package IDs."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
-msgid "Show which packages require the specified packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
-msgid "Filters:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
-msgid "Groups:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
-msgid "Categories:"
-msgstr "Kategoria"
-
-#. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
-msgid "Show distribution version upgrades, if any are available."
-msgstr ""
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr "Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
-msgid "Elapsed time"
-msgstr "Sistemaren ordua"
-
-#. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
-msgid "Get time in seconds since the last specified action."
-msgstr ""
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Ekintza bat, adib. 'update-packages', derrigorrezkoa da"
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-msgid "A correct role is required"
-msgstr "Eginkizun zuzena behar da"
-
-#: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
-msgid "Show backend information"
-msgstr "Informazioa eskuratzen"
-
-#: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
-msgid "Show transaction history"
-msgstr "Transakzioak huts egin du"
-
-#: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Search by names"
-msgid "Search for packages"
-msgstr "Bilatu izenen arabera"
-
-#: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Install package"
-msgid "List packages"
-msgstr "Instalatu paketea"
-
-#: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "Show package information"
-msgstr "Eguneraketa-informazioa deskargatzen"
-
-#: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
-msgid "List package dependencies"
-msgstr "Mendekotasunak ebazten"
-
-#: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages requiring this package"
-msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
-
-#: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages providing a capability"
-msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
-
-#: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Obsoleting packages"
-msgid "Show files in package"
-msgstr "Paketeak zaharkitzen"
-
-#: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
-msgid "Get available updates"
-msgstr "Eguneraketak eskuratzen"
-
-#: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Getting update details"
-msgid "Get update details"
-msgstr "Eguneraketa-xehetasunak eskuratzen"
-
-#: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
-msgid "Resolve package names"
-msgstr "Kendu paketea"
-
-#: client/pkgc-query.c:1045
-msgid "List available filters and categories"
-msgstr ""
-
-#: client/pkgc-query.c:1051
-msgid "Show available distribution upgrades"
-msgstr ""
-
-#: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting transactions"
-msgid "Get time since last action"
-msgstr "Transakzioak eskuratzen"
-
-#. TRANSLATORS: Description for pkgcli repo-list
-#: client/pkgc-repo.c:82
-msgid "List all configured package repositories."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
-msgid "Enable the specified repository."
-msgstr ""
-
-#: client/pkgc-repo.c:134
-#, c-format
-msgid "Repository '%s' enabled"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
-#, fuzzy
-#| msgid "Disable the idle timer"
-msgid "Disable the specified repository."
-msgstr "Desgaitu inaktibitate-kronometroa"
-
-#: client/pkgc-repo.c:174
-#, c-format
-msgid "Repository '%s' disabled"
-msgstr ""
-
-#: client/pkgc-repo.c:194
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
-msgid "Automatically remove orphaned packages"
-msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
-
-#. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Remove the specified repository."
-msgstr "Biltegia kentzen"
-
-#: client/pkgc-repo.c:224
-#, fuzzy, c-format
-#| msgid "A repository name is required"
-msgid "Repository '%s' removed"
-msgstr "Biltegi-izen bat behar da"
-
-#: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "List repositories"
-msgstr "Biltegiak eskuratzen"
-
-#: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Enable a repository"
-msgstr "Biltegia kentzen"
-
-#: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Disable a repository"
-msgstr "Biltegia kentzen"
-
-#: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing repository"
-msgid "Remove a repository"
-msgstr "Biltegia kentzen"
-
-#: client/pkgc-util.c:94
-msgid "Not connected to PackageKit daemon"
-msgstr ""
-
-#. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
-msgid "%u seconds"
-msgstr "(segundo)"
-
-#. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
-#, c-format
-msgid "%u min %u sec"
-msgstr ""
-
-#. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
-#, c-format
-msgid "%u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
-#, c-format
-msgid "%u h %u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
-#, c-format
-msgid "%u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
-#, c-format
-msgid "%u days %u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
-#, c-format
-msgid "%u days"
-msgstr ""
-
-#: client/pkgc-util.c:276
-msgid "Error"
-msgstr ""
-
-#. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
-msgid "Warning:"
-msgstr ""
-
-#. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
-#, fuzzy, c-format
-#| msgid "Failed to resolve auto: %s"
-msgid "Failed to parse options: %s"
-msgstr "Huts egin du automatikoak ebazteak: %s"
-
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr ""
-
-#. TRANSLATORS: Label for the package name in package details
-#. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
-#, fuzzy
-#| msgid "Package"
-msgid "Package:"
-msgstr "Paketea"
-
-#. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
-msgid "Version:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
-#, fuzzy
-#| msgid "Summary"
-msgid "Summary:"
-msgstr "Laburpena"
-
-#. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
-#, fuzzy
-#| msgid "Description"
-msgid "Description:"
-msgstr "Deskribapena"
-
-#. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
-msgid "License:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
-msgid "URL:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
-msgid "Group:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
-#, fuzzy
-#| msgid "Installed"
-msgid "Installed Size:"
-msgstr "Instalatua"
-
-#. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:687
-#, fuzzy
-#| msgid "Downloaded"
-msgid "Download Size:"
-msgstr "Deskargatua"
-
-#. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:781
-#, fuzzy
-#| msgid "Update text"
-msgid "Update Details:"
-msgstr "Eguneraketa-testua"
-
-#. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:792
-#, fuzzy
-#| msgid "Updates"
-msgid "Updates:"
-msgstr "Eguneraketak"
-
-#. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:801
-#, fuzzy
-#| msgid "Obsoletes"
-msgid "Obsoletes:"
-msgstr "Zaharkituak"
-
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:810
-#, fuzzy
-#| msgid "Vendor"
-msgid "Vendor:"
-msgstr "Hornitzailea"
-
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:819
-msgid "Issue Tracker:"
-msgstr ""
-
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:828
-msgid "CVE:"
-msgstr ""
-
-#. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:836
-#, fuzzy
-#| msgid "Restart"
-msgid "Restart:"
-msgstr "Berrabiarazi"
-
-#. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:845
-#, fuzzy
-#| msgid "Update text"
-msgid "Update text:"
-msgstr "Eguneraketa-testua"
-
-#. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:852
-#, fuzzy
-#| msgid "Changes"
-msgid "Changes:"
-msgstr "Aldaketak"
-
-#. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:859
-#, fuzzy
-#| msgid "State"
-msgid "State:"
-msgstr "Egoera"
-
-#. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:868
-#, fuzzy
-#| msgid "Issued"
-msgid "Issued:"
-msgstr "Igorria"
-
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:875
-#, fuzzy
-#| msgid "Updated"
-msgid "Updated:"
-msgstr "Eguneratua"
-
-#. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:992
-#, fuzzy
-#| msgid "Transaction"
-msgid "Transaction:"
-msgstr "Transakzioa"
-
-#. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:996
-#, fuzzy
-#| msgid "System time"
-msgid "System time:"
-msgstr "Sistemaren ordua"
-
-#. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1000
-#, fuzzy
-#| msgid "Succeeded"
-msgid "Succeeded:"
-msgstr "Arrakasta"
-
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "Egia"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "Gezurra"
-
-#. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1009
-#, fuzzy
-#| msgid "Role"
-msgid "Role:"
-msgstr "Eginkizuna"
-
-#. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1016
-#, fuzzy
-#| msgid "Duration"
-msgid "Duration:"
-msgstr "Iraupena"
-
-#. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1023
-#, fuzzy
-#| msgid "Command line"
-msgid "Command line:"
-msgstr "Komando-lerroa"
-
-#. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1029
-#, fuzzy
-#| msgid "User ID"
-msgid "User ID:"
-msgstr "Erabiltzaile-IDa"
-
-#. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1038
-#, fuzzy
-#| msgid "Username"
-msgid "Username:"
-msgstr "Erabiltzaile-izena"
-
-#. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1044
-#, fuzzy
-#| msgid "Real name"
-msgid "Real name:"
-msgstr "Benetako izena"
-
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "Aldatuko diren paketeak:"
-
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
-msgid "None"
-msgstr ""
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "Pakete bat baino gehiago dator bat:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "Hautatu pakete zuzena: "
-
-#: client/pkgc-util.c:1223
-#, fuzzy, c-format
-#| msgid "Package not found"
-msgid "Package not found: %s"
-msgstr "Paketea ez da aurkitu"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show version and exit"
-msgid "Show pkgcli version"
-msgstr "Erakutsi bertsioa eta irten"
-
-#: client/pkgcli.c:78
-msgid "Show help"
-msgstr ""
-
-#: client/pkgcli.c:80
-msgid "Only provide minimal output"
-msgstr ""
-
-#: client/pkgcli.c:82
-msgid "Show more detailed output"
-msgstr ""
-
-#: client/pkgcli.c:84
-msgid "Output in JSON format"
-msgstr ""
-
-#: client/pkgcli.c:86
-msgid "Disable colored output"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgcli.c:89
-msgid "Answer 'yes' to all questions"
-msgstr ""
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
-msgid "Filter packages (installed, available, etc.)"
-msgstr ""
-
-#: client/pkgcli.c:92
-msgid "FILTER"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
-
-#: client/pkgcli.c:118
-msgid "No command specified. Use --help for usage information."
-msgstr ""
-
-#: client/pkgcli.c:126
-#, c-format
-msgid "Unknown command: %s"
-msgstr ""
-
-#: client/pkgcli.c:135
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
-msgid "Failed to connect to PackageKit: %s"
-msgstr "Ezin izan da PackageKit-ekin kontaktatau"
-
-#: client/pkgcli.c:196
-#, c-format
-msgid "Version: %s"
-msgstr ""
-
-#: client/pkgcli.c:211
-#, fuzzy
-#| msgid "Available"
-msgid "Available Commands:"
-msgstr "Eskuragarri"
-
-#: client/pkgcli.c:217
-msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "Adierazitako iragazkia baliogabea da"
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
+msgid "Installing System Upgrade"
+msgstr "Sistemaren bertsio-berritzea instalatzen"
+
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
+msgid "Installing Updates"
+msgstr "Eguneraketak instalatzen"
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
+msgid "Rebooting after installing updates…"
+msgstr "Berrabiarazten eguneraketak instalatu ondoren..."
+
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
+msgstr "Itzaltzen eguneraketak instalatu ondoren..."
+
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
+msgstr "Eguneraketak instalatzen; denbora-tartetxo bat behar du horrek..."
+
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
+msgstr "Sistemaren bertsio-berritzea instalatzen; horrek denbora behar du..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1099,24 +80,32 @@ msgstr "Transakzioa"
 msgid "System time"
 msgstr "Sistemaren ordua"
 
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "Gezurra"
+
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
 msgstr "Arrakasta"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "Egia"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
 msgid "Role"
 msgstr "Eginkizuna"
 
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(segundo)"
+
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:176
 msgid "Duration"
 msgstr "Iraupena"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(segundo)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pkcon/pk-console.c:180
@@ -1137,6 +126,13 @@ msgstr "Erabiltzaile-izena"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
 msgstr "Benetako izena"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "Aldatuko diren paketeak:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:204
@@ -1373,13 +369,34 @@ msgstr "Amaitu saioa eta hasi saioa eguneraketa osatzeko."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"Berrabiarazi ordenagailua eguneraketa osatzeko, segurtasun-eguneraketa "
+"garrantzitsuak instalatu baitira."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-eguneraketa garrantzitsuak instalatu baitira."
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"Amaitu saioa eta hasi berriro saioa eguneraketa osatzeko, segurtasun-"
+"eguneraketa garrantzitsuak instalatu baitira."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "Pakete bat baino gehiago dator bat:"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "Hautatu pakete zuzena: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -1397,8 +414,12 @@ msgstr "Ez da paketerik aurkitu"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-local %s' erabiltzen."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
+msgstr ""
+"Pakete-izena espero zen, fitxategia eskuratu da. Saiatu  'pkcon install-"
+"local %s' erabiltzen."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -1452,6 +473,12 @@ msgstr "Ez dago bertsio berrietara eguneratzerik behar duen paketerik."
 msgid "This tool could not find all the packages: %s"
 msgstr "Tresna honek ez du aurkitu pakete guztiak: %s"
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+msgid "The daemon crashed mid-transaction!"
+msgstr "Deabruak huts egin du transakzioaren erdian!"
+
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
@@ -1461,6 +488,13 @@ msgstr "PackageKit-en kontsola-interfazea"
 #: client/pkcon/pk-console.c:1474
 msgid "Subcommands:"
 msgstr "Azpikomandoak:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr ""
+"Ezin izan da jakin ekintza hau azken aldiz egin zenetik igaro den denbora"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -1493,6 +527,12 @@ msgstr "Ezarri iragazkia, adib. 'instalatua'"
 msgid "Install the packages without asking for confirmation"
 msgstr "Instalatu paketeak baieztapena eskatu gabe"
 
+#. TRANSLATORS: command line argument, do we just download or apply changes
+#. command line argument, do we just download or apply changes
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
+msgid "Prepare the transaction by downloading packages only"
+msgstr "Prestatu transakzioa paketeak deskargatuz soilik"
+
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
 msgid "Allow packages to be downgraded during transaction"
@@ -1502,15 +542,33 @@ msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
 
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+"Exekutatu komandoa banda-zabalera inaktiboa eta energia gutxiago erabilita"
+
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili ordez"
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"Idatzi pantailan makinak irakur dezakeen irteera, widget animatuak erabili "
+"ordez"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "Metadatu-cachearen gehieneko adina (segundotan). Erabili -1 cachea soilik erabiltzeko, 1 cachea kargatzeko."
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
+msgstr ""
+"Metadatu-cachearen gehieneko adina (segundotan). Erabili -1 cachea soilik "
+"erabiltzeko, 1 cachea kargatzeko."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -1526,6 +584,12 @@ msgstr "Ezin izan da komando-lerroa analizatu"
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
 msgstr "Ezin izan da PackageKit-ekin kontaktatau"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "Adierazitako iragazkia baliogabea da"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
@@ -1605,6 +669,20 @@ msgstr "Biltegi-izen bat, parametro bat eta balio bat behar dira"
 msgid "A repo id and autoremove required"
 msgstr "Biltegi baten IDa eta kentze automatikoa derrigorrezkoak"
 
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Ekintza bat, adib. 'update-packages', derrigorrezkoa da"
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+msgid "A correct role is required"
+msgstr "Eginkizun zuzena behar da"
+
 #. TRANSLATORS: The user did not
 #. * provide a package name
 #: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
@@ -1660,48 +738,898 @@ msgstr "'%s' aukera ez dago onartuta"
 msgid "Command failed"
 msgstr "Komandoak huts egin du"
 
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr "Ezin izan da deabruaren egoera ezagutu"
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+msgid "Failed to get properties"
+msgstr "Ezin izan da propietateak eskuratu"
+
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
 msgstr "PackageKit monitorea"
 
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
-#, c-format
-msgid "%i%%"
+#. TRANSLATORS: command line argument, do we allow package downgrades
+#: client/pkgc-manage.c:47
+#, fuzzy
+msgid "Allow package downgrades"
+msgstr "Onartu paketeen bertsio zaharrak instalatzea transakzioan zehar"
+
+#. TRANSLATORS: command line argument, do we allow package re-installations
+#: client/pkgc-manage.c:54
+#, fuzzy
+msgid "Allow package re-installations"
+msgstr "Onartu paketeak berrinstalatzea transakzioan zehar"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:61
+#, fuzzy
+msgid "Allow installation of untrusted packages"
+msgstr "Instalatu lehendik instalatuta dagoen paketearen bertsio zaharragoa"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:75
+msgid "Maximum metadata cache age in seconds"
 msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
-msgid "Installing System Upgrade"
-msgstr "Sistemaren bertsio-berritzea instalatzen"
+#: client/pkgc-manage.c:75
+msgid "SECONDS"
+msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
-msgid "Installing Updates"
-msgstr "Eguneraketak instalatzen"
+#. TRANSLATORS: Description for pkgcli refresh
+#: client/pkgc-manage.c:196
+#, fuzzy
+msgid "Refresh the package metadata cache."
+msgstr "Freskatu cachea"
 
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-msgid "Rebooting after installing updates…"
-msgstr "Berrabiarazten eguneraketak instalatu ondoren..."
+#: client/pkgc-manage.c:222
+msgid "Package metadata refreshed"
+msgstr ""
 
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
-msgstr "Itzaltzen eguneraketak instalatu ondoren..."
+#. TRANSLATORS: Description for pkgcli install
+#: client/pkgc-manage.c:246
+msgid "Install one or more packages or local package files."
+msgstr ""
 
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
-msgstr "Eguneraketak instalatzen; denbora-tartetxo bat behar du horrek..."
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#, fuzzy, c-format
+msgid "Could not find any available package: %s"
+msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
 
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
-msgstr "Sistemaren bertsio-berritzea instalatzen; horrek denbora behar du..."
+#: client/pkgc-manage.c:325
+#, fuzzy
+msgid "The selected package is already installed."
+msgstr "Hautatutako paketeak agian instalatuta daude."
+
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
+msgid "Remove one or more packages from the system."
+msgstr ""
+
+#: client/pkgc-manage.c:382
+#, fuzzy, c-format
+msgid "Could not find installed packages: %s"
+msgstr "Tresna honek ez du aurkitu paketea: %s"
+
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
+msgid "Download packages to the specified directory without installing."
+msgstr ""
+
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#, fuzzy, c-format
+msgid "Could not find packages: %s"
+msgstr "Tresna honek ez du aurkitu paketea: %s"
+
+#: client/pkgc-manage.c:444
+#, c-format
+msgid "Directory does not exist: %s"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
+msgid "Update all packages or specific packages to their latest versions."
+msgstr ""
+
+#: client/pkgc-manage.c:510
+#, fuzzy, c-format
+msgid "Could not find packages to update: %s"
+msgstr "Tresna honek ez du aurkitu paketea: %s"
+
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#, fuzzy, c-format
+msgid "Failed to get updates: %s"
+msgstr "Ezin izan da deabruaren egoera ezagutu"
+
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#, fuzzy
+msgid "No packages require updating"
+msgstr "Ez dago bertsio berrietara eguneratzerik behar duen paketerik."
+
+#. TRANSLATORS: Description of pkgcli upgrade.
+#. * No not translate "minimal, default, complete", those are parameters
+#: client/pkgc-manage.c:590
+msgid ""
+"Upgrade all packages or perform a distribution upgrade.\n"
+"\n"
+"Types: minimal, default, complete"
+msgstr ""
+
+#: client/pkgc-manage.c:686
+#, fuzzy, c-format
+msgid "Failed to read offline update action: %s"
+msgstr "Abiarazi lineaz kanpoko eguneraketak"
+
+#: client/pkgc-manage.c:696
+#, fuzzy
+msgid "Offline update is not triggered."
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#: client/pkgc-manage.c:704
+#, fuzzy, c-format
+msgid "Offline update is triggered. Action after update: %s"
+msgstr "Abiarazi lineaz kanpoko eguneraketak"
+
+#. TRANSLATORS: Packages that were prepared for an offline update
+#: client/pkgc-manage.c:715
+#, fuzzy
+msgid "Prepared packages:"
+msgstr "Prest dauden eguneraketak:"
+
+#: client/pkgc-manage.c:729
+#, fuzzy
+msgid "No offline update is prepared."
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#: client/pkgc-manage.c:731
+#, fuzzy, c-format
+msgid "Failed to read prepared offline updates: %s"
+msgstr "Abiarazi lineaz kanpoko eguneraketak"
+
+#: client/pkgc-manage.c:741
+#, fuzzy
+msgid "No results from last offline update available."
+msgstr "Eguneraketa-informazioa deskargatzen"
+
+#: client/pkgc-manage.c:748
+#, fuzzy, c-format
+msgid "Last offline update failed: %s: %s"
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#: client/pkgc-manage.c:755
+#, fuzzy
+msgid "Last offline update completed successfully"
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#: client/pkgc-manage.c:766
+#, fuzzy, c-format
+msgid "Updated: %s"
+msgstr "Eguneratua"
+
+#: client/pkgc-manage.c:787
+#, fuzzy, c-format
+msgid "Failed to trigger offline update: %s"
+msgstr "Abiarazi lineaz kanpoko eguneraketak"
+
+#: client/pkgc-manage.c:791
+msgid "Offline update scheduled. System will update on next reboot."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli offline-update command.
+#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
+#: client/pkgc-manage.c:811
+msgid ""
+"Trigger & manage offline system updates.\n"
+"\n"
+"You can select one of these requests:\n"
+"  prepare - prepare an offline update and trigger it (default)\n"
+"  trigger - trigger a (manually prepared) offline update\n"
+"  cancel  - cancel a planned offline update\n"
+"  status  - show status information about a prepared or finished offline "
+"update"
+msgstr ""
+
+#: client/pkgc-manage.c:835
+#, fuzzy, c-format
+msgid "Failed to cancel offline update: %s"
+msgstr "Huts egin du automatikoak ebazteak: %s"
+
+#: client/pkgc-manage.c:839
+#, fuzzy
+msgid "Offline update cancelled"
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#: client/pkgc-manage.c:896
+#, fuzzy, c-format
+msgid "Unknown offline-update request: %s"
+msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
+
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
+#, fuzzy
+msgid "Install a package signature for GPG verification."
+msgstr "Instalatu paketeak baieztapena eskatu gabe"
+
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
+msgid "Attempt to repair the package management system."
+msgstr ""
+
+#: client/pkgc-manage.c:967
+msgid "System repaired successfully"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
+msgid "Safely terminate the PackageKit daemon."
+msgstr ""
+
+#: client/pkgc-manage.c:994
+#, fuzzy, c-format
+msgid "Failed to send daemon quit request: %s"
+msgstr "Ezin izan da deabruaren egoera ezagutu"
+
+#: client/pkgc-manage.c:1013
+msgid "Refresh package metadata"
+msgstr ""
+
+#: client/pkgc-manage.c:1019
+#, fuzzy
+msgid "Install packages"
+msgstr "Instalatu paketea"
+
+#: client/pkgc-manage.c:1025
+#, fuzzy
+msgid "Remove packages"
+msgstr "Kendu paketea"
+
+#: client/pkgc-manage.c:1031
+#, fuzzy
+msgid "Update packages"
+msgstr "Paketeak eguneratzen"
+
+#: client/pkgc-manage.c:1037
+#, fuzzy
+msgid "Upgrade the system"
+msgstr "Eguneratu sistema"
+
+#: client/pkgc-manage.c:1043
+#, fuzzy
+msgid "Download packages"
+msgstr "Paketeak deskargatzen"
+
+#: client/pkgc-manage.c:1049
+#, fuzzy
+msgid "Manage offline system updates"
+msgstr "Ez da paketerik eguneratu behar."
+
+#: client/pkgc-manage.c:1055
+#, fuzzy
+msgid "Install package signature"
+msgstr "Sinadura instalatzen"
+
+#: client/pkgc-manage.c:1061
+#, fuzzy
+msgid "Repair package system"
+msgstr "Konpondu sistema"
+
+#: client/pkgc-manage.c:1067
+msgid "Safely stop the PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli monitor
+#: client/pkgc-monitor.c:460
+#, fuzzy
+msgid "Monitor PackageKit D-Bus events"
+msgstr "PackageKit zerbitzua"
+
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#: client/pkgc-monitor.c:562
+#, fuzzy
+msgid "Monitor PackageKit bus events"
+msgstr "PackageKit zerbitzua"
+
+#. TRANSLATORS: Description for pkgcli backend
+#: client/pkgc-query.c:166
+msgid "Show PackageKit backend information."
+msgstr ""
+
+#: client/pkgc-query.c:211
+#, c-format
+msgid "Backend: %s"
+msgstr ""
+
+#: client/pkgc-query.c:214
+#, fuzzy, c-format
+msgid "Description: %s"
+msgstr "Deskribapena"
+
+#: client/pkgc-query.c:217
+#, fuzzy, c-format
+msgid "Author: %s"
+msgstr "Egilea"
+
+#. add some extra space before the potentially long roles list
+#. TRANSLATORS: List of backend-roles
+#: client/pkgc-query.c:222
+#, fuzzy, c-format
+msgid "Roles: %s"
+msgstr "Eginkizuna"
+
+#. TRANSLATORS: Description for pkgcli history
+#: client/pkgc-query.c:245
+msgid "Show recent package management transactions."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
+#: client/pkgc-query.c:284
+msgid ""
+"Search for packages matching the given patterns. If MODE is not specified, \n"
+"'details' search is performed.\n"
+"Possible search MODEs are:\n"
+"  name    - search by package name\n"
+"  details - search by package details (default)\n"
+"  file    - search by file name\n"
+"  group   - search by package group"
+msgstr ""
+
+#: client/pkgc-query.c:311
+#, fuzzy
+msgid "No search pattern specified"
+msgstr "Bilaketa-hitza behar da"
+
+#. TRANSLATORS: Description for pkgcli list
+#: client/pkgc-query.c:371
+msgid "List all packages or those matching a pattern."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli show
+#: client/pkgc-query.c:415
+msgid "Show information about one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:471 client/pkgc-query.c:750
+msgid "Check dependencies recursively"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli depends-on
+#: client/pkgc-query.c:480
+msgid "Show dependencies for one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#, fuzzy, c-format
+msgid "Could not resolve packages: %s"
+msgstr "Huts egin du automatikoak ebazteak: %s"
+
+#. TRANSLATORS: Description for pkgcli what-provides
+#: client/pkgc-query.c:520
+msgid "Show which packages provide the specified capability."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli files
+#: client/pkgc-query.c:551
+msgid "List all files contained in one or more packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli list-updates
+#: client/pkgc-query.c:646
+#, fuzzy
+msgid "List all currently available package updates."
+msgstr "Tresna honek ez du aurkitu paketerik eskuragarri: %s"
+
+#. TRANSLATORS: Description for pkgcli show-update
+#: client/pkgc-query.c:678
+msgid "Show detailed information about the specified package update."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli resolve
+#: client/pkgc-query.c:716
+msgid "Resolve package names to package IDs."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli required-by
+#: client/pkgc-query.c:759
+msgid "Show which packages require the specified packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli organization
+#: client/pkgc-query.c:802
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package filters
+#: client/pkgc-query.c:810
+msgid "Filters:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package groups
+#: client/pkgc-query.c:825
+msgid "Groups:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package categories
+#: client/pkgc-query.c:840
+#, fuzzy
+msgid "Categories:"
+msgstr "Kategoria"
+
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
+#: client/pkgc-query.c:866
+msgid "Show distribution version upgrades, if any are available."
+msgstr ""
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkgc-query.c:910
+#, fuzzy
+msgid "Elapsed time"
+msgstr "Sistemaren ordua"
+
+#. TRANSLATORS: Description for pkgcli last-time
+#: client/pkgc-query.c:934
+msgid "Get time in seconds since the last specified action."
+msgstr ""
+
+#: client/pkgc-query.c:973
+#, fuzzy
+msgid "Show backend information"
+msgstr "Informazioa eskuratzen"
+
+#: client/pkgc-query.c:979
+#, fuzzy
+msgid "Show transaction history"
+msgstr "Transakzioak huts egin du"
+
+#: client/pkgc-query.c:985
+#, fuzzy
+msgid "Search for packages"
+msgstr "Bilatu izenen arabera"
+
+#: client/pkgc-query.c:991
+#, fuzzy
+msgid "List packages"
+msgstr "Instalatu paketea"
+
+#: client/pkgc-query.c:997
+#, fuzzy
+msgid "Show package information"
+msgstr "Eguneraketa-informazioa deskargatzen"
+
+#: client/pkgc-query.c:1003
+#, fuzzy
+msgid "List package dependencies"
+msgstr "Mendekotasunak ebazten"
+
+#: client/pkgc-query.c:1009
+#, fuzzy
+msgid "List packages requiring this package"
+msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
+
+#: client/pkgc-query.c:1015
+#, fuzzy
+msgid "List packages providing a capability"
+msgstr "Fitxategi honetaz hornitzen duen paketea hau da:"
+
+#: client/pkgc-query.c:1021
+#, fuzzy
+msgid "Show files in package"
+msgstr "Paketeak zaharkitzen"
+
+#: client/pkgc-query.c:1027
+#, fuzzy
+msgid "Get available updates"
+msgstr "Eguneraketak eskuratzen"
+
+#: client/pkgc-query.c:1033
+#, fuzzy
+msgid "Get update details"
+msgstr "Eguneraketa-xehetasunak eskuratzen"
+
+#: client/pkgc-query.c:1039
+#, fuzzy
+msgid "Resolve package names"
+msgstr "Kendu paketea"
+
+#: client/pkgc-query.c:1045
+msgid "List available filters and categories"
+msgstr ""
+
+#: client/pkgc-query.c:1051
+msgid "Show available distribution upgrades"
+msgstr ""
+
+#: client/pkgc-query.c:1057
+#, fuzzy
+msgid "Get time since last action"
+msgstr "Transakzioak eskuratzen"
+
+#. TRANSLATORS: Description for pkgcli repo-list
+#: client/pkgc-repo.c:82
+msgid "List all configured package repositories."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-enable
+#: client/pkgc-repo.c:115
+msgid "Enable the specified repository."
+msgstr ""
+
+#: client/pkgc-repo.c:134
+#, c-format
+msgid "Repository '%s' enabled"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-disable
+#: client/pkgc-repo.c:155
+#, fuzzy
+msgid "Disable the specified repository."
+msgstr "Desgaitu inaktibitate-kronometroa"
+
+#: client/pkgc-repo.c:174
+#, c-format
+msgid "Repository '%s' disabled"
+msgstr ""
+
+#: client/pkgc-repo.c:194
+#, fuzzy
+msgid "Automatically remove orphaned packages"
+msgstr "Kendu automatikoki erabili gabeko mendekotasunak"
+
+#. TRANSLATORS: Description for pkgcli repo-remove
+#: client/pkgc-repo.c:204
+#, fuzzy
+msgid "Remove the specified repository."
+msgstr "Biltegia kentzen"
+
+#: client/pkgc-repo.c:224
+#, fuzzy, c-format
+msgid "Repository '%s' removed"
+msgstr "Biltegi-izen bat behar da"
+
+#: client/pkgc-repo.c:241
+#, fuzzy
+msgid "List repositories"
+msgstr "Biltegiak eskuratzen"
+
+#: client/pkgc-repo.c:247
+#, fuzzy
+msgid "Enable a repository"
+msgstr "Biltegia kentzen"
+
+#: client/pkgc-repo.c:253
+#, fuzzy
+msgid "Disable a repository"
+msgstr "Biltegia kentzen"
+
+#: client/pkgc-repo.c:259
+#, fuzzy
+msgid "Remove a repository"
+msgstr "Biltegia kentzen"
+
+#: client/pkgc-util.c:94
+msgid "Not connected to PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: A duration in seconds
+#: client/pkgc-util.c:131
+#, fuzzy, c-format
+msgid "%u seconds"
+msgstr "(segundo)"
+
+#. TRANSLATORS: A duration in minutes & seconds
+#: client/pkgc-util.c:137
+#, c-format
+msgid "%u min %u sec"
+msgstr ""
+
+#. TRANSLATORS: A duration in minutes
+#: client/pkgc-util.c:140
+#, c-format
+msgid "%u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours & remaining minutes
+#: client/pkgc-util.c:147
+#, c-format
+msgid "%u h %u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours
+#: client/pkgc-util.c:150
+#, c-format
+msgid "%u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days & remaining hours
+#: client/pkgc-util.c:157
+#, c-format
+msgid "%u days %u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days
+#: client/pkgc-util.c:160
+#, c-format
+msgid "%u days"
+msgstr ""
+
+#: client/pkgc-util.c:276
+msgid "Error"
+msgstr ""
+
+#. TRANSLATORS: A warning message prefix, displayed on the command-line
+#: client/pkgc-util.c:309
+msgid "Warning:"
+msgstr ""
+
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:431 client/pkgcli.c:188
+#, fuzzy, c-format
+msgid "Failed to parse options: %s"
+msgstr "Huts egin du automatikoak ebazteak: %s"
+
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
+#: client/pkgc-util.c:437
+#, c-format
+msgid "Usage: %s %s %s"
+msgstr ""
+
+#. TRANSLATORS: Label for the package name in package details
+#. TRANSLATORS: Label for package update infos
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#, fuzzy
+msgid "Package:"
+msgstr "Paketea"
+
+#. TRANSLATORS: Label for the package version in package details
+#: client/pkgc-util.c:635
+msgid "Version:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package summary in package details
+#: client/pkgc-util.c:642
+#, fuzzy
+msgid "Summary:"
+msgstr "Laburpena"
+
+#. TRANSLATORS: Label for the package description in package details
+#: client/pkgc-util.c:650
+#, fuzzy
+msgid "Description:"
+msgstr "Deskribapena"
+
+#. TRANSLATORS: Label for the package license in package details
+#: client/pkgc-util.c:657
+msgid "License:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package URL in package details
+#: client/pkgc-util.c:664
+msgid "URL:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package group in package details
+#: client/pkgc-util.c:671
+msgid "Group:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package size in package details
+#: client/pkgc-util.c:679
+#, fuzzy
+msgid "Installed Size:"
+msgstr "Instalatua"
+
+#. TRANSLATORS: Label for the package download size in package details
+#: client/pkgc-util.c:687
+#, fuzzy
+msgid "Download Size:"
+msgstr "Deskargatua"
+
+#. TRANSLATORS: Header for the update details section
+#: client/pkgc-util.c:781
+#, fuzzy
+msgid "Update Details:"
+msgstr "Eguneraketa-testua"
+
+#. TRANSLATORS: Label for update details
+#: client/pkgc-util.c:792
+#, fuzzy
+msgid "Updates:"
+msgstr "Eguneraketak"
+
+#. TRANSLATORS: Label for obsoleted packages in update details
+#: client/pkgc-util.c:801
+#, fuzzy
+msgid "Obsoletes:"
+msgstr "Zaharkituak"
+
+#. TRANSLATORS: Label for vendor in update details
+#: client/pkgc-util.c:810
+#, fuzzy
+msgid "Vendor:"
+msgstr "Hornitzailea"
+
+#. TRANSLATORS: Label for issue-tracker in update details
+#: client/pkgc-util.c:819
+msgid "Issue Tracker:"
+msgstr ""
+
+#. TRANSLATORS: Label for CVE information in update details
+#: client/pkgc-util.c:828
+msgid "CVE:"
+msgstr ""
+
+#. TRANSLATORS: Label for restart information in update details
+#: client/pkgc-util.c:836
+#, fuzzy
+msgid "Restart:"
+msgstr "Berrabiarazi"
+
+#. TRANSLATORS: Label for update text in update details
+#: client/pkgc-util.c:845
+#, fuzzy
+msgid "Update text:"
+msgstr "Eguneraketa-testua"
+
+#. TRANSLATORS: Label for changelog in update details
+#: client/pkgc-util.c:852
+#, fuzzy
+msgid "Changes:"
+msgstr "Aldaketak"
+
+#. TRANSLATORS: Label for update state in update details
+#: client/pkgc-util.c:859
+#, fuzzy
+msgid "State:"
+msgstr "Egoera"
+
+#. TRANSLATORS: Label for issued date in update details
+#: client/pkgc-util.c:868
+#, fuzzy
+msgid "Issued:"
+msgstr "Igorria"
+
+#. TRANSLATORS: Label for updated date in update details
+#: client/pkgc-util.c:875
+#, fuzzy
+msgid "Updated:"
+msgstr "Eguneratua"
+
+#. TRANSLATORS: Label for transaction information
+#: client/pkgc-util.c:992
+#, fuzzy
+msgid "Transaction:"
+msgstr "Transakzioa"
+
+#. TRANSLATORS: Label for system time of the transaction
+#: client/pkgc-util.c:996
+#, fuzzy
+msgid "System time:"
+msgstr "Sistemaren ordua"
+
+#. TRANSLATORS: Label for transaction success status
+#: client/pkgc-util.c:1000
+#, fuzzy
+msgid "Succeeded:"
+msgstr "Arrakasta"
+
+#. TRANSLATORS: Label for transaction role
+#: client/pkgc-util.c:1009
+#, fuzzy
+msgid "Role:"
+msgstr "Eginkizuna"
+
+#. TRANSLATORS: Label for transaction duration
+#: client/pkgc-util.c:1016
+#, fuzzy
+msgid "Duration:"
+msgstr "Iraupena"
+
+#. TRANSLATORS: Label for transaction command line
+#: client/pkgc-util.c:1023
+#, fuzzy
+msgid "Command line:"
+msgstr "Komando-lerroa"
+
+#. TRANSLATORS: Label for transaction user ID
+#: client/pkgc-util.c:1029
+#, fuzzy
+msgid "User ID:"
+msgstr "Erabiltzaile-IDa"
+
+#. TRANSLATORS: Label for transaction username
+#: client/pkgc-util.c:1038
+#, fuzzy
+msgid "Username:"
+msgstr "Erabiltzaile-izena"
+
+#. TRANSLATORS: Label for transaction real name
+#: client/pkgc-util.c:1044
+#, fuzzy
+msgid "Real name:"
+msgstr "Benetako izena"
+
+#. TRANSLATORS: No packages were affected by the transaction
+#: client/pkgc-util.c:1078
+msgid "None"
+msgstr ""
+
+#: client/pkgc-util.c:1223
+#, fuzzy, c-format
+msgid "Package not found: %s"
+msgstr "Paketea ez da aurkitu"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkgcli.c:76
+#, fuzzy
+msgid "Show pkgcli version"
+msgstr "Erakutsi bertsioa eta irten"
+
+#: client/pkgcli.c:78
+msgid "Show help"
+msgstr ""
+
+#: client/pkgcli.c:80
+msgid "Only provide minimal output"
+msgstr ""
+
+#: client/pkgcli.c:82
+msgid "Show more detailed output"
+msgstr ""
+
+#: client/pkgcli.c:84
+msgid "Output in JSON format"
+msgstr ""
+
+#: client/pkgcli.c:86
+msgid "Disable colored output"
+msgstr ""
+
+#. TRANSLATORS: command line argument, do we ask questions
+#: client/pkgcli.c:89
+msgid "Answer 'yes' to all questions"
+msgstr ""
+
+#: client/pkgcli.c:92
+msgid "FILTER"
+msgstr ""
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkgcli.c:92
+msgid "Filter packages (installed, available, etc.)"
+msgstr ""
+
+#: client/pkgcli.c:118
+msgid "No command specified. Use --help for usage information."
+msgstr ""
+
+#: client/pkgcli.c:126
+#, c-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: client/pkgcli.c:135
+#, fuzzy, c-format
+msgid "Failed to connect to PackageKit: %s"
+msgstr "Ezin izan da PackageKit-ekin kontaktatau"
+
+#: client/pkgcli.c:196
+#, c-format
+msgid "Version: %s"
+msgstr ""
+
+#: client/pkgcli.c:211
+#, fuzzy
+msgid "Available Commands:"
+msgstr "Eskuragarri"
+
+#: client/pkgcli.c:217
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
+msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1711,7 +1639,8 @@ msgstr "Software-biltegiei buruzko xehetasunak deskargatzen."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan dezake)."
+msgstr ""
+"Fitxategi-zerrendak deskargatzen (honek denbora pixka bat behar izan dezake)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2061,28 +1990,24 @@ msgstr "Ez dago eskuragarri"
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 #, fuzzy
-#| msgid "Installed"
 msgid "Install"
 msgstr "Instalatua"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 #, fuzzy
-#| msgid "Removed"
 msgid "Remove"
 msgstr "Kendua"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
 #, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "Zaharkitua"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 #, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
 msgstr "Deskargatua"
 
@@ -2291,7 +2216,6 @@ msgstr "Sistemaren bertsio-berritzeak eskuratzen"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
 #, fuzzy
-#| msgid "Repair System"
 msgid "Repairing system"
 msgstr "Konpondu sistema"
 
@@ -2454,8 +2378,11 @@ msgid "Cancel foreign task"
 msgstr "Utzi zeregin arrotza"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan behera uzteko"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
+msgstr ""
+"Autentifikazioa behar da zerorrek abiarazi ez duzun zeregin bat bertan "
+"behera uzteko"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2521,8 +2448,12 @@ msgid "Trust a key used for signing software"
 msgstr "Fidatu softwarea sinatzeko erabili den gako batez"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Autentifikazioa behar da softwarea sinatzeko erabilitako gakoa fidagarrizat hartzeko"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
+msgstr ""
+"Autentifikazioa behar da softwarea sinatzeko erabilitako gakoa fidagarrizat "
+"hartzeko"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2599,8 +2530,12 @@ msgid "Set network proxy"
 msgstr "Ezarri sarearen proxy-a"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Autentifikazioa behar da softwarea deskargatzeko erabiliko den sare-proxya ezartzeko"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
+msgstr ""
+"Autentifikazioa behar da softwarea deskargatzeko erabiliko den sare-proxya "
+"ezartzeko"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2641,7 +2576,8 @@ msgstr "Abiarazi lineaz kanpoko eguneraketak"
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketak abiarazteko"
+msgstr ""
+"Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketak abiarazteko"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2652,7 +2588,9 @@ msgstr "Garbitu lineaz kanpoko eguneraketa-mezua"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketa-mezuak garbitzeko"
+msgstr ""
+"Autentifikatzea derrigorrezkoa da lineaz kanpoko eguneraketa-mezuak "
+"garbitzeko"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99

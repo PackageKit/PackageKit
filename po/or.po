@@ -8,9 +8,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
-"Language-Team: Odia (http://app.transifex.com/freedesktop/packagekit/language/or/)\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"Language-Team: Odia (http://app.transifex.com/freedesktop/packagekit/"
+"language/or/)\n"
 "Language: or\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,1057 +25,49 @@ msgstr ""
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, fuzzy, c-format
-#| msgid "Failed to search for file"
 msgid "Failed to load config file: %s"
 msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
-msgid "The daemon crashed mid-transaction!"
-msgstr "ଡେମନ ମଧ୍ଯ-କାରବାରକୁ ନଷ୍ଟ କରିଛି!"
-
-#. TRANSLATORS: command line argument, do we just download or apply changes
-#. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
-msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "The following packages have to be downgraded:"
-msgid "Allow package downgrades"
-msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପଦ ଅବନତି କରିବାକୁ ହେବ:"
-
-#. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:54
-#, fuzzy
-#| msgid "The following packages have to be reinstalled:"
-msgid "Allow package re-installations"
-msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପୁନଃ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install signed package"
-msgid "Allow installation of untrusted packages"
-msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜକୁ ସ୍ଥାପନ କରନ୍ତୁ"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
-msgstr ""
-
-#: client/pkgc-manage.c:75
-msgid "SECONDS"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "Refreshing cache"
-msgid "Refresh the package metadata cache."
-msgstr "କ୍ୟାଶେକୁ ସତେଜ କରୁଅଛି"
-
-#: client/pkgc-manage.c:222
-msgid "Package metadata refreshed"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
-msgid "Install one or more packages or local package files."
-msgstr ""
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
-#, fuzzy, c-format
-#| msgid "This tool could not find any available package: %s"
-msgid "Could not find any available package: %s"
-msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
-
-#: client/pkgc-manage.c:325
-#, fuzzy
-#| msgid "The following packages have to be installed:"
-msgid "The selected package is already installed."
-msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
-
-#. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
-msgid "Remove one or more packages from the system."
-msgstr ""
-
-#: client/pkgc-manage.c:382
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find installed packages: %s"
-msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
-
-#. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
-msgid "Download packages to the specified directory without installing."
-msgstr ""
-
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages: %s"
-msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
-
-#: client/pkgc-manage.c:444
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
 #, c-format
-msgid "Directory does not exist: %s"
+msgid "%i%%"
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
-msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-
-#: client/pkgc-manage.c:510
-#, fuzzy, c-format
-#| msgid "This tool could not find the package: %s"
-msgid "Could not find packages to update: %s"
-msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
-
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to get updates: %s"
-msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
-
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
 #, fuzzy
-#| msgid "A package name is required"
-msgid "No packages require updating"
-msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
-
-#. TRANSLATORS: Description of pkgcli upgrade.
-#. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
-msgid ""
-"Upgrade all packages or perform a distribution upgrade.\n"
-"\n"
-"Types: minimal, default, complete"
-msgstr ""
-
-#: client/pkgc-manage.c:686
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to read offline update action: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#: client/pkgc-manage.c:696
-msgid "Offline update is not triggered."
-msgstr ""
-
-#: client/pkgc-manage.c:704
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Offline update is triggered. Action after update: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Prepared packages:"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରୁଅଛି"
-
-#: client/pkgc-manage.c:729
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "No offline update is prepared."
-msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
-
-#: client/pkgc-manage.c:731
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to read prepared offline updates: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#: client/pkgc-manage.c:741
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "No results from last offline update available."
-msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
-
-#: client/pkgc-manage.c:748
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Last offline update failed: %s: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#: client/pkgc-manage.c:755
-msgid "Last offline update completed successfully"
-msgstr ""
-
-#: client/pkgc-manage.c:766
-#, fuzzy, c-format
-#| msgid "Updated"
-msgid "Updated: %s"
-msgstr "ଅଦ୍ୟତିତ"
-
-#: client/pkgc-manage.c:787
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to trigger offline update: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#: client/pkgc-manage.c:791
-msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli offline-update command.
-#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
-msgid ""
-"Trigger & manage offline system updates.\n"
-"\n"
-"You can select one of these requests:\n"
-"  prepare - prepare an offline update and trigger it (default)\n"
-"  trigger - trigger a (manually prepared) offline update\n"
-"  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
-msgstr ""
-
-#: client/pkgc-manage.c:835
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to cancel offline update: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#: client/pkgc-manage.c:839
-msgid "Offline update cancelled"
-msgstr ""
-
-#: client/pkgc-manage.c:896
-#, c-format
-msgid "Unknown offline-update request: %s"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
-#, fuzzy
-#| msgid "Install the packages without asking for confirmation"
-msgid "Install a package signature for GPG verification."
-msgstr "ନିଶ୍ଚିତକରଣ ବିନା ପ୍ୟାକେଟଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ"
-
-#. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
-msgid "Attempt to repair the package management system."
-msgstr ""
-
-#: client/pkgc-manage.c:967
-msgid "System repaired successfully"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
-msgid "Safely terminate the PackageKit daemon."
-msgstr ""
-
-#: client/pkgc-manage.c:994
-#, fuzzy, c-format
-#| msgid "Failed to get daemon state"
-msgid "Failed to send daemon quit request: %s"
-msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
-
-#: client/pkgc-manage.c:1013
-msgid "Refresh package metadata"
-msgstr ""
-
-#: client/pkgc-manage.c:1019
-#, fuzzy
-#| msgid "Installing packages"
-msgid "Install packages"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
-
-#: client/pkgc-manage.c:1025
-#, fuzzy
-#| msgid "Remove package"
-msgid "Remove packages"
-msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
-
-#: client/pkgc-manage.c:1031
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Update packages"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରୁଅଛି"
-
-#: client/pkgc-manage.c:1037
-msgid "Upgrade the system"
-msgstr ""
-
-#: client/pkgc-manage.c:1043
-#, fuzzy
-#| msgid "Downloading packages"
-msgid "Download packages"
-msgstr "ପ୍ୟାକେଜ ଆହରଣ କରୁଅଛି"
-
-#: client/pkgc-manage.c:1049
-#, fuzzy
-#| msgid "The following packages have to be updated:"
-msgid "Manage offline system updates"
-msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବାକୁ ହେବ:"
-
-#: client/pkgc-manage.c:1055
-#, fuzzy
-#| msgid "Installing signature"
-msgid "Install package signature"
+msgid "Installing System Upgrade"
 msgstr "ହସ୍ତାକ୍ଷରଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
 #, fuzzy
-#| msgid "Removing packages"
-msgid "Repair package system"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ୁଅଛି"
+msgid "Installing Updates"
+msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
-#: client/pkgc-manage.c:1067
-msgid "Safely stop the PackageKit daemon"
-msgstr ""
-
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
 #, fuzzy
-#| msgid "Failed to get daemon state"
-msgid "Failed to get properties"
-msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
+msgid "Rebooting after installing updates…"
+msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
-#. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit ସର୍ଭିସ"
-
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit bus events"
-msgstr "PackageKit ସର୍ଭିସ"
-
-#. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:166
-msgid "Show PackageKit backend information."
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
 msgstr ""
 
-#: client/pkgc-query.c:211
-#, c-format
-msgid "Backend: %s"
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
 msgstr ""
 
-#: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Distribution"
-msgid "Description: %s"
-msgstr "ବଣ୍ଟନ"
-
-#: client/pkgc-query.c:217
-#, c-format
-msgid "Author: %s"
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
 msgstr ""
-
-#. add some extra space before the potentially long roles list
-#. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
-msgid "Roles: %s"
-msgstr "ଭୂମିକା"
-
-#. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
-msgid "Show recent package management transactions."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
-msgid ""
-"Search for packages matching the given patterns. If MODE is not specified, \n"
-"'details' search is performed.\n"
-"Possible search MODEs are:\n"
-"  name    - search by package name\n"
-"  details - search by package details (default)\n"
-"  file    - search by file name\n"
-"  group   - search by package group"
-msgstr ""
-
-#: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A search term is required"
-msgid "No search pattern specified"
-msgstr "ଗୋଟିଏ ସନ୍ଧାନ ନିତି ଆବଶ୍ୟକ"
-
-#. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
-msgid "List all packages or those matching a pattern."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
-msgid "Show information about one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
-msgid "Check dependencies recursively"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
-msgid "Show dependencies for one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Could not resolve packages: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
-msgid "Show which packages provide the specified capability."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
-msgid "List all files contained in one or more packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
-#, fuzzy
-#| msgid "This tool could not find any available package: %s"
-msgid "List all currently available package updates."
-msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
-
-#. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
-msgid "Show detailed information about the specified package update."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
-msgid "Resolve package names to package IDs."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
-msgid "Show which packages require the specified packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
-msgid "Filters:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
-msgid "Groups:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
-msgid "Categories:"
-msgstr "ବିଭାଗ"
-
-#. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
-msgid "Show distribution version upgrades, if any are available."
-msgstr ""
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr "ଏହି କାର୍ଯ୍ୟଟି ଶେଷରେ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଥିବା ହେତୁ ସମୟ ପାଇବାରେ ବିଫଳ"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
-msgid "Elapsed time"
-msgstr "ତନ୍ତ୍ର ସମୟ"
-
-#. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
-msgid "Get time in seconds since the last specified action."
-msgstr ""
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-msgid "A correct role is required"
-msgstr "ଗୋଟିଏ ସଠିକ ଭୂମିକା ଆବଶ୍ୟକ"
-
-#: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
-msgid "Show backend information"
-msgstr "ସୂଚନା ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
-msgid "Show transaction history"
-msgstr "କାରବାର ବିଫଳ ହୋଇଛି"
-
-#: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Searching by name"
-msgid "Search for packages"
-msgstr "ନାମ ଦ୍ୱାରା ସନ୍ଧାନ କରୁଅଛି"
-
-#: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Installing packages"
-msgid "List packages"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
-
-#: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Downloading update information"
-msgid "Show package information"
-msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
-
-#: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
-msgid "List package dependencies"
-msgstr "ନିର୍ଭରତାଗୁଡ଼ିକୁ ସମାଧାନ କରୁଅଛି"
-
-#: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages requiring this package"
-msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
-
-#: client/pkgc-query.c:1015
-#, fuzzy
-#| msgid "The package providing this file is:"
-msgid "List packages providing a capability"
-msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
-
-#: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Obsoleting packages"
-msgid "Show files in package"
-msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପ୍ରତ୍ୟାଖାନ କରୁଅଛି"
-
-#: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Getting updates"
-msgid "Get available updates"
-msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Getting update details"
-msgid "Get update details"
-msgstr "ଅଦ୍ୟତନ ବିବରଣୀଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
-msgid "Resolve package names"
-msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
-
-#: client/pkgc-query.c:1045
-msgid "List available filters and categories"
-msgstr ""
-
-#: client/pkgc-query.c:1051
-msgid "Show available distribution upgrades"
-msgstr ""
-
-#: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting transactions"
-msgid "Get time since last action"
-msgstr "କାରବାରଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#. TRANSLATORS: Description for pkgcli repo-list
-#: client/pkgc-repo.c:82
-msgid "List all configured package repositories."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
-msgid "Enable the specified repository."
-msgstr ""
-
-#: client/pkgc-repo.c:134
-#, c-format
-msgid "Repository '%s' enabled"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
-#, fuzzy
-#| msgid "Disable the idle timer"
-msgid "Disable the specified repository."
-msgstr "ଅଚଳ ସମୟ ମାପକକୁ ନିଷ୍କ୍ରିୟ କରନ୍ତୁ"
-
-#: client/pkgc-repo.c:174
-#, c-format
-msgid "Repository '%s' disabled"
-msgstr ""
-
-#: client/pkgc-repo.c:194
-msgid "Automatically remove orphaned packages"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "Remove the specified repository."
-msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-repo.c:224
-#, fuzzy, c-format
-#| msgid "A repository name is required"
-msgid "Repository '%s' removed"
-msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ ନାମ ଆବଶ୍ୟକ"
-
-#: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "List repositories"
-msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "Enable a repository"
-msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "Disable a repository"
-msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Getting repositories"
-msgid "Remove a repository"
-msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
-
-#: client/pkgc-util.c:94
-msgid "Not connected to PackageKit daemon"
-msgstr ""
-
-#. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
-msgid "%u seconds"
-msgstr "(ସେକଣ୍ଡ)"
-
-#. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
-#, c-format
-msgid "%u min %u sec"
-msgstr ""
-
-#. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
-#, c-format
-msgid "%u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
-#, c-format
-msgid "%u h %u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
-#, c-format
-msgid "%u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
-#, c-format
-msgid "%u days %u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
-#, c-format
-msgid "%u days"
-msgstr ""
-
-#: client/pkgc-util.c:276
-msgid "Error"
-msgstr ""
-
-#. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
-msgid "Warning:"
-msgstr ""
-
-#. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to parse options: %s"
-msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
-
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr ""
-
-#. TRANSLATORS: Label for the package name in package details
-#. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
-#, fuzzy
-#| msgid "Package files"
-msgid "Package:"
-msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
-
-#. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
-msgid "Version:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
-#, fuzzy
-#| msgid "Summary"
-msgid "Summary:"
-msgstr "ସାରାଂଶ"
-
-#. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
-#, fuzzy
-#| msgid "Distribution"
-msgid "Description:"
-msgstr "ବଣ୍ଟନ"
-
-#. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
-msgid "License:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
-msgid "URL:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
-msgid "Group:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
-#, fuzzy
-#| msgid "Installed"
-msgid "Installed Size:"
-msgstr "ସ୍ଥାପିତ"
-
-#. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:687
-#, fuzzy
-#| msgid "Downloaded"
-msgid "Download Size:"
-msgstr "ଆହରଣ ହୋଇଛି"
-
-#. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:781
-#, fuzzy
-#| msgid "Update text"
-msgid "Update Details:"
-msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
-
-#. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:792
-#, fuzzy
-#| msgid "Updates"
-msgid "Updates:"
-msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକ"
-
-#. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:801
-#, fuzzy
-#| msgid "Obsoletes"
-msgid "Obsoletes:"
-msgstr "ଅଚଳଗୁଡ଼ିକ"
-
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:810
-#, fuzzy
-#| msgid "Vendor"
-msgid "Vendor:"
-msgstr "ବିକ୍ରେତା"
-
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:819
-msgid "Issue Tracker:"
-msgstr ""
-
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:828
-msgid "CVE:"
-msgstr ""
-
-#. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:836
-#, fuzzy
-#| msgid "Restart"
-msgid "Restart:"
-msgstr "ପୁନଃଚାଳନ"
-
-#. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:845
-#, fuzzy
-#| msgid "Update text"
-msgid "Update text:"
-msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
-
-#. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:852
-#, fuzzy
-#| msgid "Changes"
-msgid "Changes:"
-msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"
-
-#. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:859
-#, fuzzy
-#| msgid "State"
-msgid "State:"
-msgstr "ଅବସ୍ଥା"
-
-#. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:868
-#, fuzzy
-#| msgid "Issued"
-msgid "Issued:"
-msgstr "ପ୍ରଦତ୍ତ"
-
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:875
-#, fuzzy
-#| msgid "Updated"
-msgid "Updated:"
-msgstr "ଅଦ୍ୟତିତ"
-
-#. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:992
-#, fuzzy
-#| msgid "Transaction"
-msgid "Transaction:"
-msgstr "କାରବାର"
-
-#. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:996
-#, fuzzy
-#| msgid "System time"
-msgid "System time:"
-msgstr "ତନ୍ତ୍ର ସମୟ"
-
-#. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1000
-#, fuzzy
-#| msgid "Succeeded"
-msgid "Succeeded:"
-msgstr "ସଫଳ ହୋଇଛି"
-
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "True (ସତ୍ୟ)"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "False (ମିଥ୍ୟା)"
-
-#. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1009
-#, fuzzy
-#| msgid "Role"
-msgid "Role:"
-msgstr "ଭୂମିକା"
-
-#. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1016
-#, fuzzy
-#| msgid "Duration"
-msgid "Duration:"
-msgstr "ଅବଧି"
-
-#. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1023
-#, fuzzy
-#| msgid "Command line"
-msgid "Command line:"
-msgstr "ପାଠ୍ୟ ନିର୍ଦ୍ଦେଶ"
-
-#. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1029
-#, fuzzy
-#| msgid "User ID"
-msgid "User ID:"
-msgstr "ଚାଳକ ID"
-
-#. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1038
-#, fuzzy
-#| msgid "Username"
-msgid "Username:"
-msgstr "ଚାଳକ ନାମ"
-
-#. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1044
-#, fuzzy
-#| msgid "Real name"
-msgid "Real name:"
-msgstr "ପ୍ରକୃତ ନାମ"
-
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ:"
-
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
-msgid "None"
-msgstr ""
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "ଗୋଟିଏରୁ ଅଧିକ ପ୍ୟାକେଜ ମେଳ ଖାଉଛି:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "ଦୟାକରି ସଠିକ ପ୍ୟାକେଜ ବାଛନ୍ତୁ: "
-
-#: client/pkgc-util.c:1223
-#, fuzzy, c-format
-#| msgid "PackageKit Monitor"
-msgid "Package not found: %s"
-msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show version and exit"
-msgid "Show pkgcli version"
-msgstr "ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
-
-#: client/pkgcli.c:78
-msgid "Show help"
-msgstr ""
-
-#: client/pkgcli.c:80
-msgid "Only provide minimal output"
-msgstr ""
-
-#: client/pkgcli.c:82
-msgid "Show more detailed output"
-msgstr ""
-
-#: client/pkgcli.c:84
-msgid "Output in JSON format"
-msgstr ""
-
-#: client/pkgcli.c:86
-msgid "Disable colored output"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgcli.c:89
-msgid "Answer 'yes' to all questions"
-msgstr ""
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
-msgid "Filter packages (installed, available, etc.)"
-msgstr ""
-
-#: client/pkgcli.c:92
-msgid "FILTER"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "ସ୍ଥିର ନେଟୱର୍କ ବ୍ୟାଣ୍ଡୱିଡ଼ଥ ବ୍ୟବହାର କରି ନିର୍ଦ୍ଦେଶକୁ ଚଲାନ୍ତୁ ଏବଂ କମ ବିଦ୍ୟୁତ ଶକ୍ତି ବ୍ୟବହାର କରି"
-
-#: client/pkgcli.c:118
-msgid "No command specified. Use --help for usage information."
-msgstr ""
-
-#: client/pkgcli.c:126
-#, c-format
-msgid "Unknown command: %s"
-msgstr ""
-
-#: client/pkgcli.c:135
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
-msgid "Failed to connect to PackageKit: %s"
-msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
-
-#: client/pkgcli.c:196
-#, c-format
-msgid "Version: %s"
-msgstr ""
-
-#: client/pkgcli.c:211
-#, fuzzy
-#| msgid "Available"
-msgid "Available Commands:"
-msgstr "ଉପଲବ୍ଧ"
-
-#: client/pkgcli.c:217
-msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "ଉଲ୍ଲିଖିତ ଛାଣକଟି ଅବୈଧ ଅଟେ"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1088,24 +81,32 @@ msgstr "କାରବାର"
 msgid "System time"
 msgstr "ତନ୍ତ୍ର ସମୟ"
 
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "False (ମିଥ୍ୟା)"
+
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
 msgstr "ସଫଳ ହୋଇଛି"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "True (ସତ୍ୟ)"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
 msgid "Role"
 msgstr "ଭୂମିକା"
 
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(ସେକଣ୍ଡ)"
+
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:176
 msgid "Duration"
 msgstr "ଅବଧି"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(ସେକଣ୍ଡ)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pkcon/pk-console.c:180
@@ -1126,6 +127,13 @@ msgstr "ଚାଳକ ନାମ"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
 msgstr "ପ୍ରକୃତ ନାମ"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "ପ୍ରଭାବିତ ପ୍ୟାକେଜଗୁଡ଼ିକ:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:204
@@ -1187,7 +195,6 @@ msgstr "ଅଦ୍ୟତନ ବିଷୟରେ ବିସ୍ତୃତ ବିବର
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
 #, fuzzy
-#| msgid "Package files"
 msgid "Package"
 msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
 
@@ -1333,7 +340,6 @@ msgstr "ମାରାତ୍ମକ ତ୍ରୁଟି"
 #. * but there is nothing that can be updated
 #: client/pkcon/pk-console.c:702
 #, fuzzy
-#| msgid "The following packages have to be updated:"
 msgid "There are no packages to update."
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବାକୁ ହେବ:"
 
@@ -1352,7 +358,6 @@ msgstr "ଏହି ସମୟରେ କୌଣସି ଅଦ୍ୟତନ ଉପଲ�
 
 #: client/pkcon/pk-console.c:758
 #, fuzzy
-#| msgid "There are no updates available at this time."
 msgid "There are no upgrades available at this time."
 msgstr "ଏହି ସମୟରେ କୌଣସି ଅଦ୍ୟତନ ଉପଲବ୍ଧ ନାହିଁ।"
 
@@ -1368,19 +373,39 @@ msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା 
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
+msgstr ""
+"ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ "
+"ସ୍ଥାପିତ ହୋଇସାରିଛି।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
+msgstr ""
+"ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା "
+"ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "ଗୋଟିଏରୁ ଅଧିକ ପ୍ୟାକେଜ ମେଳ ଖାଉଛି:"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "ଦୟାକରି ସଠିକ ପ୍ୟାକେଜ ବାଛନ୍ତୁ: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 #: client/pkcon/pk-console.c:981
 #, fuzzy
-#| msgid "PackageKit Monitor"
 msgid "Package not found"
 msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
 
@@ -1394,7 +419,9 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -1407,7 +434,6 @@ msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟା�
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1076
 #, fuzzy
-#| msgid "This tool could not find any available package: %s"
 msgid "This tool could not find any available package."
 msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
 
@@ -1415,7 +441,6 @@ msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟା�
 #. * for installation, it may already be installed.
 #: client/pkcon/pk-console.c:1085
 #, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The selected packages may already be installed."
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
 
@@ -1453,6 +478,12 @@ msgstr ""
 msgid "This tool could not find all the packages: %s"
 msgstr "ଏହି ସାଧନ ସମସ୍ତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+msgid "The daemon crashed mid-transaction!"
+msgstr "ଡେମନ ମଧ୍ଯ-କାରବାରକୁ ନଷ୍ଟ କରିଛି!"
+
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
@@ -1462,6 +493,12 @@ msgstr "PackageKit କୋନସୋଲ ଅନ୍ତରାପୃଷ୍ଠ"
 #: client/pkcon/pk-console.c:1474
 msgid "Subcommands:"
 msgstr "ଉପ ନିର୍ଦ୍ଦେଶଗୁଡ଼ିକ:"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr "ଏହି କାର୍ଯ୍ୟଟି ଶେଷରେ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଥିବା ହେତୁ ସମୟ ପାଇବାରେ ବିଫଳ"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -1494,40 +531,57 @@ msgstr "ଛାଣକ ସେଟ କରନ୍ତୁ, ଯେପରିକି ସ୍�
 msgid "Install the packages without asking for confirmation"
 msgstr "ନିଶ୍ଚିତକରଣ ବିନା ପ୍ୟାକେଟଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
+#. TRANSLATORS: command line argument, do we just download or apply changes
+#. command line argument, do we just download or apply changes
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
+
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
 #, fuzzy
-#| msgid "The following packages have to be downgraded:"
 msgid "Allow packages to be downgraded during transaction"
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପଦ ଅବନତି କରିବାକୁ ହେବ:"
 
 #: client/pkcon/pk-console.c:1720
 #, fuzzy
-#| msgid "The following packages have to be reinstalled:"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପୁନଃ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
 
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "ସ୍ଥିର ନେଟୱର୍କ ବ୍ୟାଣ୍ଡୱିଡ଼ଥ ବ୍ୟବହାର କରି ନିର୍ଦ୍ଦେଶକୁ ଚଲାନ୍ତୁ ଏବଂ କମ ବିଦ୍ୟୁତ ଶକ୍ତି ବ୍ୟବହାର କରି"
+
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "ଜୀବନାୟନ ୱିଜେଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପରିବର୍ତ୍ତେ ପରଦାରେ ଗୋଟିଏ ଯନ୍ତ୍ର ପଠନ ଯୋଗ୍ୟ ଫଳାଫଳକୁ ମୁଦ୍ରଣ କରନ୍ତୁ"
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
+msgstr ""
+"ଜୀବନାୟନ ୱିଜେଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପରିବର୍ତ୍ତେ ପରଦାରେ ଗୋଟିଏ ଯନ୍ତ୍ର ପଠନ ଯୋଗ୍ୟ ଫଳାଫଳକୁ ମୁଦ୍ରଣ "
+"କରନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
 #, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "Allow untrusted packages to be installed."
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1769
 #, fuzzy
-#| msgid "Failed to search for file"
 msgid "Failed to parse command line"
 msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
@@ -1535,6 +589,12 @@ msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
+
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "ଉଲ୍ଲିଖିତ ଛାଣକଟି ଅବୈଧ ଅଟେ"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
@@ -1612,9 +672,22 @@ msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ, ପ୍ରାଚଳ ଏବ�
 
 #: client/pkcon/pk-console.c:2134
 #, fuzzy
-#| msgid "A repository name is required"
 msgid "A repo id and autoremove required"
 msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ ନାମ ଆବଶ୍ୟକ"
+
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr ""
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+msgid "A correct role is required"
+msgstr "ଗୋଟିଏ ସଠିକ ଭୂମିକା ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -1634,14 +707,12 @@ msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ପ୍ରଦତ୍ତ ବାକ୍
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
 #, fuzzy
-#| msgid "A filename to install is required"
 msgid "A filename is required"
 msgstr "ସ୍ଥାପନ କରିବା ପାଇଁ ଗୋଟିଏ ଫାଇଲ ନାମ ଆବଶ୍ୟକ"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
 #, fuzzy
-#| msgid "Distribution"
 msgid "Description"
 msgstr "ବଣ୍ଟନ"
 
@@ -1675,53 +746,893 @@ msgstr "ବିକଳ୍ପ '%s' ଟି ସମର୍ଥିତ ନୁହଁ"
 msgid "Command failed"
 msgstr "ନିର୍ଦ୍ଦେଶ ବିଫଳ ହୋଇଛି"
 
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+#, fuzzy
+msgid "Failed to get properties"
+msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
+
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
 msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
 
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
-#, c-format
-msgid "%i%%"
+#. TRANSLATORS: command line argument, do we allow package downgrades
+#: client/pkgc-manage.c:47
+#, fuzzy
+msgid "Allow package downgrades"
+msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପଦ ଅବନତି କରିବାକୁ ହେବ:"
+
+#. TRANSLATORS: command line argument, do we allow package re-installations
+#: client/pkgc-manage.c:54
+#, fuzzy
+msgid "Allow package re-installations"
+msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପୁନଃ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:61
+#, fuzzy
+msgid "Allow installation of untrusted packages"
+msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜକୁ ସ୍ଥାପନ କରନ୍ତୁ"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:75
+msgid "Maximum metadata cache age in seconds"
 msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
+#: client/pkgc-manage.c:75
+msgid "SECONDS"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli refresh
+#: client/pkgc-manage.c:196
 #, fuzzy
-#| msgid "Installing signature"
-msgid "Installing System Upgrade"
+msgid "Refresh the package metadata cache."
+msgstr "କ୍ୟାଶେକୁ ସତେଜ କରୁଅଛି"
+
+#: client/pkgc-manage.c:222
+msgid "Package metadata refreshed"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli install
+#: client/pkgc-manage.c:246
+msgid "Install one or more packages or local package files."
+msgstr ""
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#, fuzzy, c-format
+msgid "Could not find any available package: %s"
+msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
+
+#: client/pkgc-manage.c:325
+#, fuzzy
+msgid "The selected package is already installed."
+msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
+
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
+msgid "Remove one or more packages from the system."
+msgstr ""
+
+#: client/pkgc-manage.c:382
+#, fuzzy, c-format
+msgid "Could not find installed packages: %s"
+msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
+
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
+msgid "Download packages to the specified directory without installing."
+msgstr ""
+
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#, fuzzy, c-format
+msgid "Could not find packages: %s"
+msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
+
+#: client/pkgc-manage.c:444
+#, c-format
+msgid "Directory does not exist: %s"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
+msgid "Update all packages or specific packages to their latest versions."
+msgstr ""
+
+#: client/pkgc-manage.c:510
+#, fuzzy, c-format
+msgid "Could not find packages to update: %s"
+msgstr "ଏହି ସାଧନ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଖୋଜି ପାଇଲା ନାହିଁ: %s"
+
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#, fuzzy, c-format
+msgid "Failed to get updates: %s"
+msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
+
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#, fuzzy
+msgid "No packages require updating"
+msgstr "ଗୋଟିଏ ପ୍ୟାକେଜ ନାମ ଆବଶ୍ୟକ"
+
+#. TRANSLATORS: Description of pkgcli upgrade.
+#. * No not translate "minimal, default, complete", those are parameters
+#: client/pkgc-manage.c:590
+msgid ""
+"Upgrade all packages or perform a distribution upgrade.\n"
+"\n"
+"Types: minimal, default, complete"
+msgstr ""
+
+#: client/pkgc-manage.c:686
+#, fuzzy, c-format
+msgid "Failed to read offline update action: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#: client/pkgc-manage.c:696
+msgid "Offline update is not triggered."
+msgstr ""
+
+#: client/pkgc-manage.c:704
+#, fuzzy, c-format
+msgid "Offline update is triggered. Action after update: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#. TRANSLATORS: Packages that were prepared for an offline update
+#: client/pkgc-manage.c:715
+#, fuzzy
+msgid "Prepared packages:"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରୁଅଛି"
+
+#: client/pkgc-manage.c:729
+#, fuzzy
+msgid "No offline update is prepared."
+msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
+
+#: client/pkgc-manage.c:731
+#, fuzzy, c-format
+msgid "Failed to read prepared offline updates: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#: client/pkgc-manage.c:741
+#, fuzzy
+msgid "No results from last offline update available."
+msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
+
+#: client/pkgc-manage.c:748
+#, fuzzy, c-format
+msgid "Last offline update failed: %s: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#: client/pkgc-manage.c:755
+msgid "Last offline update completed successfully"
+msgstr ""
+
+#: client/pkgc-manage.c:766
+#, fuzzy, c-format
+msgid "Updated: %s"
+msgstr "ଅଦ୍ୟତିତ"
+
+#: client/pkgc-manage.c:787
+#, fuzzy, c-format
+msgid "Failed to trigger offline update: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#: client/pkgc-manage.c:791
+msgid "Offline update scheduled. System will update on next reboot."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli offline-update command.
+#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
+#: client/pkgc-manage.c:811
+msgid ""
+"Trigger & manage offline system updates.\n"
+"\n"
+"You can select one of these requests:\n"
+"  prepare - prepare an offline update and trigger it (default)\n"
+"  trigger - trigger a (manually prepared) offline update\n"
+"  cancel  - cancel a planned offline update\n"
+"  status  - show status information about a prepared or finished offline "
+"update"
+msgstr ""
+
+#: client/pkgc-manage.c:835
+#, fuzzy, c-format
+msgid "Failed to cancel offline update: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#: client/pkgc-manage.c:839
+msgid "Offline update cancelled"
+msgstr ""
+
+#: client/pkgc-manage.c:896
+#, c-format
+msgid "Unknown offline-update request: %s"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
+#, fuzzy
+msgid "Install a package signature for GPG verification."
+msgstr "ନିଶ୍ଚିତକରଣ ବିନା ପ୍ୟାକେଟଗୁଡ଼ିକୁ ସ୍ଥାପନ କରନ୍ତୁ"
+
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
+msgid "Attempt to repair the package management system."
+msgstr ""
+
+#: client/pkgc-manage.c:967
+msgid "System repaired successfully"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
+msgid "Safely terminate the PackageKit daemon."
+msgstr ""
+
+#: client/pkgc-manage.c:994
+#, fuzzy, c-format
+msgid "Failed to send daemon quit request: %s"
+msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
+
+#: client/pkgc-manage.c:1013
+msgid "Refresh package metadata"
+msgstr ""
+
+#: client/pkgc-manage.c:1019
+#, fuzzy
+msgid "Install packages"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
+
+#: client/pkgc-manage.c:1025
+#, fuzzy
+msgid "Remove packages"
+msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
+
+#: client/pkgc-manage.c:1031
+#, fuzzy
+msgid "Update packages"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରୁଅଛି"
+
+#: client/pkgc-manage.c:1037
+msgid "Upgrade the system"
+msgstr ""
+
+#: client/pkgc-manage.c:1043
+#, fuzzy
+msgid "Download packages"
+msgstr "ପ୍ୟାକେଜ ଆହରଣ କରୁଅଛି"
+
+#: client/pkgc-manage.c:1049
+#, fuzzy
+msgid "Manage offline system updates"
+msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବାକୁ ହେବ:"
+
+#: client/pkgc-manage.c:1055
+#, fuzzy
+msgid "Install package signature"
 msgstr "ହସ୍ତାକ୍ଷରଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
+#: client/pkgc-manage.c:1061
 #, fuzzy
-#| msgid "Installing updates"
-msgid "Installing Updates"
-msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
+msgid "Repair package system"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ କାଢ଼ୁଅଛି"
 
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Rebooting after installing updates…"
-msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
+#: client/pkgc-manage.c:1067
+msgid "Safely stop the PackageKit daemon"
 msgstr ""
 
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
+#. TRANSLATORS: Description for pkgcli monitor
+#: client/pkgc-monitor.c:460
+#, fuzzy
+msgid "Monitor PackageKit D-Bus events"
+msgstr "PackageKit ସର୍ଭିସ"
+
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#: client/pkgc-monitor.c:562
+#, fuzzy
+msgid "Monitor PackageKit bus events"
+msgstr "PackageKit ସର୍ଭିସ"
+
+#. TRANSLATORS: Description for pkgcli backend
+#: client/pkgc-query.c:166
+msgid "Show PackageKit backend information."
 msgstr ""
 
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
+#: client/pkgc-query.c:211
+#, c-format
+msgid "Backend: %s"
+msgstr ""
+
+#: client/pkgc-query.c:214
+#, fuzzy, c-format
+msgid "Description: %s"
+msgstr "ବଣ୍ଟନ"
+
+#: client/pkgc-query.c:217
+#, c-format
+msgid "Author: %s"
+msgstr ""
+
+#. add some extra space before the potentially long roles list
+#. TRANSLATORS: List of backend-roles
+#: client/pkgc-query.c:222
+#, fuzzy, c-format
+msgid "Roles: %s"
+msgstr "ଭୂମିକା"
+
+#. TRANSLATORS: Description for pkgcli history
+#: client/pkgc-query.c:245
+msgid "Show recent package management transactions."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
+#: client/pkgc-query.c:284
+msgid ""
+"Search for packages matching the given patterns. If MODE is not specified, \n"
+"'details' search is performed.\n"
+"Possible search MODEs are:\n"
+"  name    - search by package name\n"
+"  details - search by package details (default)\n"
+"  file    - search by file name\n"
+"  group   - search by package group"
+msgstr ""
+
+#: client/pkgc-query.c:311
+#, fuzzy
+msgid "No search pattern specified"
+msgstr "ଗୋଟିଏ ସନ୍ଧାନ ନିତି ଆବଶ୍ୟକ"
+
+#. TRANSLATORS: Description for pkgcli list
+#: client/pkgc-query.c:371
+msgid "List all packages or those matching a pattern."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli show
+#: client/pkgc-query.c:415
+msgid "Show information about one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:471 client/pkgc-query.c:750
+msgid "Check dependencies recursively"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli depends-on
+#: client/pkgc-query.c:480
+msgid "Show dependencies for one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#, fuzzy, c-format
+msgid "Could not resolve packages: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#. TRANSLATORS: Description for pkgcli what-provides
+#: client/pkgc-query.c:520
+msgid "Show which packages provide the specified capability."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli files
+#: client/pkgc-query.c:551
+msgid "List all files contained in one or more packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli list-updates
+#: client/pkgc-query.c:646
+#, fuzzy
+msgid "List all currently available package updates."
+msgstr "ଏହି ସାଧନ କୌଣସି ଉପଲବ୍ଧ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପାଇ ପାରିଲା ନାହିଁ: %s"
+
+#. TRANSLATORS: Description for pkgcli show-update
+#: client/pkgc-query.c:678
+msgid "Show detailed information about the specified package update."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli resolve
+#: client/pkgc-query.c:716
+msgid "Resolve package names to package IDs."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli required-by
+#: client/pkgc-query.c:759
+msgid "Show which packages require the specified packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli organization
+#: client/pkgc-query.c:802
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package filters
+#: client/pkgc-query.c:810
+msgid "Filters:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package groups
+#: client/pkgc-query.c:825
+msgid "Groups:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package categories
+#: client/pkgc-query.c:840
+#, fuzzy
+msgid "Categories:"
+msgstr "ବିଭାଗ"
+
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
+#: client/pkgc-query.c:866
+msgid "Show distribution version upgrades, if any are available."
+msgstr ""
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkgc-query.c:910
+#, fuzzy
+msgid "Elapsed time"
+msgstr "ତନ୍ତ୍ର ସମୟ"
+
+#. TRANSLATORS: Description for pkgcli last-time
+#: client/pkgc-query.c:934
+msgid "Get time in seconds since the last specified action."
+msgstr ""
+
+#: client/pkgc-query.c:973
+#, fuzzy
+msgid "Show backend information"
+msgstr "ସୂଚନା ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-query.c:979
+#, fuzzy
+msgid "Show transaction history"
+msgstr "କାରବାର ବିଫଳ ହୋଇଛି"
+
+#: client/pkgc-query.c:985
+#, fuzzy
+msgid "Search for packages"
+msgstr "ନାମ ଦ୍ୱାରା ସନ୍ଧାନ କରୁଅଛି"
+
+#: client/pkgc-query.c:991
+#, fuzzy
+msgid "List packages"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
+
+#: client/pkgc-query.c:997
+#, fuzzy
+msgid "Show package information"
+msgstr "ଅଦ୍ୟତନ ସୂଚନା ଆହରଣ କରୁଅଛି"
+
+#: client/pkgc-query.c:1003
+#, fuzzy
+msgid "List package dependencies"
+msgstr "ନିର୍ଭରତାଗୁଡ଼ିକୁ ସମାଧାନ କରୁଅଛି"
+
+#: client/pkgc-query.c:1009
+#, fuzzy
+msgid "List packages requiring this package"
+msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
+
+#: client/pkgc-query.c:1015
+#, fuzzy
+msgid "List packages providing a capability"
+msgstr "ଏହି ଫାଇଲ ପ୍ରଦାନ କରିଥିବା ପ୍ୟାକେଜଟି ହେଉଛି:"
+
+#: client/pkgc-query.c:1021
+#, fuzzy
+msgid "Show files in package"
+msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ପ୍ରତ୍ୟାଖାନ କରୁଅଛି"
+
+#: client/pkgc-query.c:1027
+#, fuzzy
+msgid "Get available updates"
+msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-query.c:1033
+#, fuzzy
+msgid "Get update details"
+msgstr "ଅଦ୍ୟତନ ବିବରଣୀଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-query.c:1039
+#, fuzzy
+msgid "Resolve package names"
+msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
+
+#: client/pkgc-query.c:1045
+msgid "List available filters and categories"
+msgstr ""
+
+#: client/pkgc-query.c:1051
+msgid "Show available distribution upgrades"
+msgstr ""
+
+#: client/pkgc-query.c:1057
+#, fuzzy
+msgid "Get time since last action"
+msgstr "କାରବାରଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#. TRANSLATORS: Description for pkgcli repo-list
+#: client/pkgc-repo.c:82
+msgid "List all configured package repositories."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-enable
+#: client/pkgc-repo.c:115
+msgid "Enable the specified repository."
+msgstr ""
+
+#: client/pkgc-repo.c:134
+#, c-format
+msgid "Repository '%s' enabled"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-disable
+#: client/pkgc-repo.c:155
+#, fuzzy
+msgid "Disable the specified repository."
+msgstr "ଅଚଳ ସମୟ ମାପକକୁ ନିଷ୍କ୍ରିୟ କରନ୍ତୁ"
+
+#: client/pkgc-repo.c:174
+#, c-format
+msgid "Repository '%s' disabled"
+msgstr ""
+
+#: client/pkgc-repo.c:194
+msgid "Automatically remove orphaned packages"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-remove
+#: client/pkgc-repo.c:204
+#, fuzzy
+msgid "Remove the specified repository."
+msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-repo.c:224
+#, fuzzy, c-format
+msgid "Repository '%s' removed"
+msgstr "ଗୋଟିଏ ସଂଗ୍ରହାଳୟ ନାମ ଆବଶ୍ୟକ"
+
+#: client/pkgc-repo.c:241
+#, fuzzy
+msgid "List repositories"
+msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-repo.c:247
+#, fuzzy
+msgid "Enable a repository"
+msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-repo.c:253
+#, fuzzy
+msgid "Disable a repository"
+msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-repo.c:259
+#, fuzzy
+msgid "Remove a repository"
+msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
+
+#: client/pkgc-util.c:94
+msgid "Not connected to PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: A duration in seconds
+#: client/pkgc-util.c:131
+#, fuzzy, c-format
+msgid "%u seconds"
+msgstr "(ସେକଣ୍ଡ)"
+
+#. TRANSLATORS: A duration in minutes & seconds
+#: client/pkgc-util.c:137
+#, c-format
+msgid "%u min %u sec"
+msgstr ""
+
+#. TRANSLATORS: A duration in minutes
+#: client/pkgc-util.c:140
+#, c-format
+msgid "%u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours & remaining minutes
+#: client/pkgc-util.c:147
+#, c-format
+msgid "%u h %u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours
+#: client/pkgc-util.c:150
+#, c-format
+msgid "%u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days & remaining hours
+#: client/pkgc-util.c:157
+#, c-format
+msgid "%u days %u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days
+#: client/pkgc-util.c:160
+#, c-format
+msgid "%u days"
+msgstr ""
+
+#: client/pkgc-util.c:276
+msgid "Error"
+msgstr ""
+
+#. TRANSLATORS: A warning message prefix, displayed on the command-line
+#: client/pkgc-util.c:309
+msgid "Warning:"
+msgstr ""
+
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:431 client/pkgcli.c:188
+#, fuzzy, c-format
+msgid "Failed to parse options: %s"
+msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
+
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
+#: client/pkgc-util.c:437
+#, c-format
+msgid "Usage: %s %s %s"
+msgstr ""
+
+#. TRANSLATORS: Label for the package name in package details
+#. TRANSLATORS: Label for package update infos
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#, fuzzy
+msgid "Package:"
+msgstr "ପ୍ୟାକେଜ ଫାଇଲଗୁଡ଼ିକ"
+
+#. TRANSLATORS: Label for the package version in package details
+#: client/pkgc-util.c:635
+msgid "Version:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package summary in package details
+#: client/pkgc-util.c:642
+#, fuzzy
+msgid "Summary:"
+msgstr "ସାରାଂଶ"
+
+#. TRANSLATORS: Label for the package description in package details
+#: client/pkgc-util.c:650
+#, fuzzy
+msgid "Description:"
+msgstr "ବଣ୍ଟନ"
+
+#. TRANSLATORS: Label for the package license in package details
+#: client/pkgc-util.c:657
+msgid "License:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package URL in package details
+#: client/pkgc-util.c:664
+msgid "URL:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package group in package details
+#: client/pkgc-util.c:671
+msgid "Group:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package size in package details
+#: client/pkgc-util.c:679
+#, fuzzy
+msgid "Installed Size:"
+msgstr "ସ୍ଥାପିତ"
+
+#. TRANSLATORS: Label for the package download size in package details
+#: client/pkgc-util.c:687
+#, fuzzy
+msgid "Download Size:"
+msgstr "ଆହରଣ ହୋଇଛି"
+
+#. TRANSLATORS: Header for the update details section
+#: client/pkgc-util.c:781
+#, fuzzy
+msgid "Update Details:"
+msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
+
+#. TRANSLATORS: Label for update details
+#: client/pkgc-util.c:792
+#, fuzzy
+msgid "Updates:"
+msgstr "ଅଦ୍ୟତନଗୁଡ଼ିକ"
+
+#. TRANSLATORS: Label for obsoleted packages in update details
+#: client/pkgc-util.c:801
+#, fuzzy
+msgid "Obsoletes:"
+msgstr "ଅଚଳଗୁଡ଼ିକ"
+
+#. TRANSLATORS: Label for vendor in update details
+#: client/pkgc-util.c:810
+#, fuzzy
+msgid "Vendor:"
+msgstr "ବିକ୍ରେତା"
+
+#. TRANSLATORS: Label for issue-tracker in update details
+#: client/pkgc-util.c:819
+msgid "Issue Tracker:"
+msgstr ""
+
+#. TRANSLATORS: Label for CVE information in update details
+#: client/pkgc-util.c:828
+msgid "CVE:"
+msgstr ""
+
+#. TRANSLATORS: Label for restart information in update details
+#: client/pkgc-util.c:836
+#, fuzzy
+msgid "Restart:"
+msgstr "ପୁନଃଚାଳନ"
+
+#. TRANSLATORS: Label for update text in update details
+#: client/pkgc-util.c:845
+#, fuzzy
+msgid "Update text:"
+msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
+
+#. TRANSLATORS: Label for changelog in update details
+#: client/pkgc-util.c:852
+#, fuzzy
+msgid "Changes:"
+msgstr "ପରିବର୍ତ୍ତନଗୁଡ଼ିକ"
+
+#. TRANSLATORS: Label for update state in update details
+#: client/pkgc-util.c:859
+#, fuzzy
+msgid "State:"
+msgstr "ଅବସ୍ଥା"
+
+#. TRANSLATORS: Label for issued date in update details
+#: client/pkgc-util.c:868
+#, fuzzy
+msgid "Issued:"
+msgstr "ପ୍ରଦତ୍ତ"
+
+#. TRANSLATORS: Label for updated date in update details
+#: client/pkgc-util.c:875
+#, fuzzy
+msgid "Updated:"
+msgstr "ଅଦ୍ୟତିତ"
+
+#. TRANSLATORS: Label for transaction information
+#: client/pkgc-util.c:992
+#, fuzzy
+msgid "Transaction:"
+msgstr "କାରବାର"
+
+#. TRANSLATORS: Label for system time of the transaction
+#: client/pkgc-util.c:996
+#, fuzzy
+msgid "System time:"
+msgstr "ତନ୍ତ୍ର ସମୟ"
+
+#. TRANSLATORS: Label for transaction success status
+#: client/pkgc-util.c:1000
+#, fuzzy
+msgid "Succeeded:"
+msgstr "ସଫଳ ହୋଇଛି"
+
+#. TRANSLATORS: Label for transaction role
+#: client/pkgc-util.c:1009
+#, fuzzy
+msgid "Role:"
+msgstr "ଭୂମିକା"
+
+#. TRANSLATORS: Label for transaction duration
+#: client/pkgc-util.c:1016
+#, fuzzy
+msgid "Duration:"
+msgstr "ଅବଧି"
+
+#. TRANSLATORS: Label for transaction command line
+#: client/pkgc-util.c:1023
+#, fuzzy
+msgid "Command line:"
+msgstr "ପାଠ୍ୟ ନିର୍ଦ୍ଦେଶ"
+
+#. TRANSLATORS: Label for transaction user ID
+#: client/pkgc-util.c:1029
+#, fuzzy
+msgid "User ID:"
+msgstr "ଚାଳକ ID"
+
+#. TRANSLATORS: Label for transaction username
+#: client/pkgc-util.c:1038
+#, fuzzy
+msgid "Username:"
+msgstr "ଚାଳକ ନାମ"
+
+#. TRANSLATORS: Label for transaction real name
+#: client/pkgc-util.c:1044
+#, fuzzy
+msgid "Real name:"
+msgstr "ପ୍ରକୃତ ନାମ"
+
+#. TRANSLATORS: No packages were affected by the transaction
+#: client/pkgc-util.c:1078
+msgid "None"
+msgstr ""
+
+#: client/pkgc-util.c:1223
+#, fuzzy, c-format
+msgid "Package not found: %s"
+msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkgcli.c:76
+#, fuzzy
+msgid "Show pkgcli version"
+msgstr "ସଂସ୍କରଣ ଦର୍ଶାନ୍ତୁ ଏବଂ ପ୍ରସ୍ଥାନ କରନ୍ତୁ"
+
+#: client/pkgcli.c:78
+msgid "Show help"
+msgstr ""
+
+#: client/pkgcli.c:80
+msgid "Only provide minimal output"
+msgstr ""
+
+#: client/pkgcli.c:82
+msgid "Show more detailed output"
+msgstr ""
+
+#: client/pkgcli.c:84
+msgid "Output in JSON format"
+msgstr ""
+
+#: client/pkgcli.c:86
+msgid "Disable colored output"
+msgstr ""
+
+#. TRANSLATORS: command line argument, do we ask questions
+#: client/pkgcli.c:89
+msgid "Answer 'yes' to all questions"
+msgstr ""
+
+#: client/pkgcli.c:92
+msgid "FILTER"
+msgstr ""
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkgcli.c:92
+msgid "Filter packages (installed, available, etc.)"
+msgstr ""
+
+#: client/pkgcli.c:118
+msgid "No command specified. Use --help for usage information."
+msgstr ""
+
+#: client/pkgcli.c:126
+#, c-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: client/pkgcli.c:135
+#, fuzzy, c-format
+msgid "Failed to connect to PackageKit: %s"
+msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
+
+#: client/pkgcli.c:196
+#, c-format
+msgid "Version: %s"
+msgstr ""
+
+#: client/pkgcli.c:211
+#, fuzzy
+msgid "Available Commands:"
+msgstr "ଉପଲବ୍ଧ"
+
+#: client/pkgcli.c:217
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
@@ -1769,7 +1680,6 @@ msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରି�
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
 #, fuzzy
-#| msgid "Directory not found"
 msgid "command not found"
 msgstr "ଡିରେକ୍ଟୋରୀ ମିଳୁନାହିଁ"
 
@@ -2015,7 +1925,6 @@ msgstr "ଫାଇଲଗୁଡ଼ିକୁ ନକଲ କରୁଅଛି"
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:501
 #, fuzzy
-#| msgid "Running"
 msgid "Running hooks"
 msgstr "ଚାଲୁଅଛି"
 
@@ -2081,35 +1990,30 @@ msgstr "ଉପଲବ୍ଧ"
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
 #, fuzzy
-#| msgid "Available"
 msgid "Unavailable"
 msgstr "ଉପଲବ୍ଧ"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 #, fuzzy
-#| msgid "Installed"
 msgid "Install"
 msgstr "ସ୍ଥାପିତ"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 #, fuzzy
-#| msgid "Removed"
 msgid "Remove"
 msgstr "କଢ଼ାଯାଇଛି"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
 #, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "ଅଚଳ ହୋଇଛି"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 #, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
 msgstr "ଆହରଣ ହୋଇଛି"
 
@@ -2253,7 +2157,6 @@ msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କର�
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1221
 #, fuzzy
-#| msgid "Getting repositories"
 msgid "Modifying repository"
 msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
 
@@ -2265,7 +2168,6 @@ msgstr "ତଥ୍ୟ ବିନ୍ୟାସ କରୁଅଛି"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
 #, fuzzy
-#| msgid "Getting repositories"
 msgid "Removing repository"
 msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
 
@@ -2317,7 +2219,6 @@ msgstr "କାରବାରଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛ�
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1274
 #, fuzzy
-#| msgid "Getting upgrades"
 msgid "Getting system upgrades"
 msgstr "ଉନ୍ନୟନଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
 
@@ -2459,14 +2360,12 @@ msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକ�
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
 #, fuzzy
-#| msgid "The following packages have to be installed:"
 msgid "The following packages have to be obsoleted:"
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରିବାକୁ ହେବ:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
 #, fuzzy
-#| msgid "The following packages have to be updated:"
 msgid "The following packages are untrusted:"
 msgstr "ନିମ୍ନଲିଖିତ ପ୍ୟାକେଜଗୁଡ଼ିକୁ ଅଦ୍ୟତନ କରିବାକୁ ହେବ:"
 
@@ -2489,7 +2388,8 @@ msgid "Cancel foreign task"
 msgstr "ବାହାରର କାର୍ଯ୍ୟକୁ ବାତିଲ କରନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2503,7 +2403,6 @@ msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜ�
 
 #: policy/org.freedesktop.packagekit.policy.in:40
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2518,7 +2417,6 @@ msgstr "ବିଶ୍ୱସ୍ତ ସ୍ଥାନୀୟ ଫାଇଲକୁ ସ୍
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install untrusted software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2530,13 +2428,11 @@ msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈ
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
 #, fuzzy
-#| msgid "Install signed package"
 msgid "Install already installed package again"
 msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to reinstall software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2548,13 +2444,11 @@ msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈ
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
 #, fuzzy
-#| msgid "Install signed package"
 msgid "Install older version of installed package"
 msgstr "ହସ୍ତାକ୍ଷର ହୋଇଥିବା ପ୍ଯାକେଜକୁ ସ୍ଥାପନ କରନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to downgrade software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2569,8 +2463,9 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
 #, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
-msgid "Authentication is required to consider a key used for signing software as trusted"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2601,7 +2496,6 @@ msgstr "ପ୍ୟାକେଜ କାଢ଼ନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to remove software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2613,13 +2507,11 @@ msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈ
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
 #, fuzzy
-#| msgid "Update text"
 msgid "Update software"
 msgstr "ପାଠ୍ୟ ଅଦ୍ୟତନ କରନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to update software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2633,7 +2525,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 #, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
 msgid "Authentication is required to change software repository parameters"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2642,13 +2533,11 @@ msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋ�
 #. cache, as this doesn't actually install or remove software.
 #: policy/org.freedesktop.packagekit.policy.in:198
 #, fuzzy
-#| msgid "Getting repositories"
 msgid "Refresh system repositories"
 msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
 
 #: policy/org.freedesktop.packagekit.policy.in:199
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to refresh the system repositories"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2661,8 +2550,9 @@ msgstr "ନେଟୱର୍କ ପ୍ରକ୍ସି ସେଟ କରନ୍ତୁ
 
 #: policy/org.freedesktop.packagekit.policy.in:214
 #, fuzzy
-#| msgid "Authentication is required to cancel a task that was not started by yourself"
-msgid "Authentication is required to set the network proxy used for downloading software"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2675,7 +2565,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to upgrade the operating system"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2689,7 +2578,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to repair the installed software"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2708,7 +2596,6 @@ msgstr ""
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to trigger offline updates"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2721,7 +2608,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to clear the offline updates message"
 msgstr "ଗୋଟିଏ EULA ଗ୍ରହଣ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
@@ -2743,84 +2629,72 @@ msgstr "ବ୍ୟବହାର କରିବା ପାଇଁ ପୃଷ୍ଠଭୂ
 #. TRANSLATORS: command description
 #: src/pk-direct.c:424
 #, fuzzy
-#| msgid "Refreshing cache"
 msgid "Refresh the cache"
 msgstr "କ୍ୟାଶେକୁ ସତେଜ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:428
 #, fuzzy
-#| msgid "Refreshing cache"
 msgid "Refresh the cache (forced)"
 msgstr "କ୍ୟାଶେକୁ ସତେଜ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Search by names"
 msgstr "ନାମ ଦ୍ୱାରା ସନ୍ଧାନ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
 #, fuzzy
-#| msgid "Searching by details"
 msgid "Search by details"
 msgstr "ବିବରଣୀ ଦ୍ୱାରା ସନ୍ଧାନ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
 #, fuzzy
-#| msgid "Searching by file"
 msgid "Search by files"
 msgstr "ଫାଇଲ ଦ୍ୱାରା ସନ୍ଧାନ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
 #, fuzzy
-#| msgid "Installing packages"
 msgid "Install package"
 msgstr "ପ୍ୟାକେଜଗୁଡ଼ିକୁ ସ୍ଥାପନ କରୁଅଛି"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
 #, fuzzy
-#| msgid "Getting repositories"
 msgid "Set repository options"
 msgstr "ସଂଗ୍ରହାଳୟଗୁଡ଼ିକୁ ଗ୍ରହଣ କରୁଅଛି"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:465
 #, fuzzy
-#| msgid "PackageKit Monitor"
 msgid "PackageKit"
 msgstr "PackageKit ପ୍ରଦର୍ଶିକା"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
 #, fuzzy
-#| msgid "Failed to get daemon state"
 msgid "Failed to parse arguments"
 msgstr "ଡେମନ ସ୍ଥିତି ପାଇବାରେ ବିଫଳ"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
 #, fuzzy
-#| msgid "Failed to search for file"
 msgid "Failed to load the config file"
 msgstr "ଫାଇଲ ସନ୍ଧାନ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
 #, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend"
 msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
 #, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to unload the backend"
 msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
 
@@ -2858,14 +2732,12 @@ msgstr "PackageKit ସର୍ଭିସ"
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:221
 #, fuzzy, c-format
-#| msgid "Failed to launch:"
 msgid "Failed to resolve auto: %s"
 msgstr "ଆରମ୍ଭ କରିବାରେ ବିଫଳ:"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:245
 #, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend: %s"
 msgstr "PackageKit ସହିତ ଯୋଗାଯୋଗ କରିବାରେ ବିଫଳ"
 
@@ -2876,19 +2748,27 @@ msgstr "ଏହି ସଫ୍ଟୱେରଟି ବିଶ୍ୱସ୍ତ ଉତ୍
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr ""
+"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
+"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr ""
+"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
+"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr ""
+"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
+"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr ""
+"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
+"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #, fuzzy
 #~| msgid "Installing updates"

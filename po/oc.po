@@ -10,9 +10,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-26 12:34+0100\n"
-"Language-Team: Occitan (post 1500) (http://app.transifex.com/freedesktop/packagekit/language/oc/)\n"
+"Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
+"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"Language-Team: Occitan (post 1500) (http://app.transifex.com/freedesktop/"
+"packagekit/language/oc/)\n"
 "Language: oc\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -26,1052 +27,49 @@ msgstr ""
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, fuzzy, c-format
-#| msgid "Failed to parse command line"
 msgid "Failed to load config file: %s"
 msgstr "Impossible d'analisar la linha de comanda"
 
-#. TRANSLATORS: This is when the daemon crashed, and we are up
-#. * shit creek without a paddle
-#: client/pkgc-context.c:132 client/pkcon/pk-console.c:1440
-msgid "The daemon crashed mid-transaction!"
-msgstr "Lo demòni a fracassat en cors de transaccion."
-
-#. TRANSLATORS: command line argument, do we just download or apply changes
-#. command line argument, do we just download or apply changes
-#: client/pkgc-manage.c:40 client/pkcon/pk-console.c:1715
-msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:47
-#, fuzzy
-#| msgid "The following packages have to be removed:"
-msgid "Allow package downgrades"
-msgstr "Los paquets seguents van èsser desinstallats :"
-
-#. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:54
-msgid "Allow package re-installations"
-msgstr ""
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:61
-#, fuzzy
-#| msgid "Install signed package"
-msgid "Allow installation of untrusted packages"
-msgstr "Installar un paquet signat"
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68 client/pkcon/pk-console.c:1722
-msgid "Automatically remove unused dependencies"
-msgstr ""
-
-#. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
-msgstr ""
-
-#: client/pkgc-manage.c:75
-msgid "SECONDS"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
-#, fuzzy
-#| msgid "More than one package matches:"
-msgid "Refresh the package metadata cache."
-msgstr "I a mantun paquet correspondent :"
-
-#: client/pkgc-manage.c:222
-msgid "Package metadata refreshed"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
-msgid "Install one or more packages or local package files."
-msgstr ""
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
-#, fuzzy, c-format
-#| msgid "Installing packages"
-msgid "Could not find any available package: %s"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-manage.c:325
-#, fuzzy
-#| msgid "The following packages have to be removed:"
-msgid "The selected package is already installed."
-msgstr "Los paquets seguents van èsser desinstallats :"
-
-#. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
-msgid "Remove one or more packages from the system."
-msgstr ""
-
-#: client/pkgc-manage.c:382
-#, fuzzy, c-format
-#| msgid "Installing packages"
-msgid "Could not find installed packages: %s"
-msgstr "Installacion dels paquets"
-
-#. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
-msgid "Download packages to the specified directory without installing."
-msgstr ""
-
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
-#| msgid "Installing packages"
-msgid "Could not find packages: %s"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-manage.c:444
+#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
+#: client/pk-offline-update.c:171
 #, c-format
-msgid "Directory does not exist: %s"
+msgid "%i%%"
 msgstr ""
 
-#. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
-msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-
-#: client/pkgc-manage.c:510
-#, fuzzy, c-format
-#| msgid "Installing packages"
-msgid "Could not find packages to update: %s"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
-#, fuzzy, c-format
-#| msgid "Failed to install packages"
-msgid "Failed to get updates: %s"
-msgstr "Impossibke d'installar los paquets"
-
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing system upgrades
+#: client/pk-offline-update.c:177
 #, fuzzy
-#| msgid "A package name is required"
-msgid "No packages require updating"
-msgstr "Vos cal indicar un nom de paquet"
-
-#. TRANSLATORS: Description of pkgcli upgrade.
-#. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
-msgid ""
-"Upgrade all packages or perform a distribution upgrade.\n"
-"\n"
-"Types: minimal, default, complete"
-msgstr ""
-
-#: client/pkgc-manage.c:686
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to read offline update action: %s"
-msgstr "Impossible d'aviar :"
-
-#: client/pkgc-manage.c:696
-msgid "Offline update is not triggered."
-msgstr ""
-
-#: client/pkgc-manage.c:704
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Offline update is triggered. Action after update: %s"
-msgstr "Impossible d'aviar :"
-
-#. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Prepared packages:"
-msgstr "Mesa a jorn dels paquets"
-
-#: client/pkgc-manage.c:729
-#, fuzzy
-#| msgid "Getting information"
-msgid "No offline update is prepared."
-msgstr "Obtencion d'informacions"
-
-#: client/pkgc-manage.c:731
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to read prepared offline updates: %s"
-msgstr "Impossible d'aviar :"
-
-#: client/pkgc-manage.c:741
-#, fuzzy
-#| msgid "Getting information"
-msgid "No results from last offline update available."
-msgstr "Obtencion d'informacions"
-
-#: client/pkgc-manage.c:748
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Last offline update failed: %s: %s"
-msgstr "Impossible d'aviar :"
-
-#: client/pkgc-manage.c:755
-msgid "Last offline update completed successfully"
-msgstr ""
-
-#: client/pkgc-manage.c:766
-#, fuzzy, c-format
-#| msgid "Updated"
-msgid "Updated: %s"
-msgstr "Mes a jorn"
-
-#: client/pkgc-manage.c:787
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to trigger offline update: %s"
-msgstr "Impossible d'aviar :"
-
-#: client/pkgc-manage.c:791
-msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli offline-update command.
-#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
-msgid ""
-"Trigger & manage offline system updates.\n"
-"\n"
-"You can select one of these requests:\n"
-"  prepare - prepare an offline update and trigger it (default)\n"
-"  trigger - trigger a (manually prepared) offline update\n"
-"  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline update"
-msgstr ""
-
-#: client/pkgc-manage.c:835
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to cancel offline update: %s"
-msgstr "Impossible d'aviar :"
-
-#: client/pkgc-manage.c:839
-msgid "Offline update cancelled"
-msgstr ""
-
-#: client/pkgc-manage.c:896
-#, c-format
-msgid "Unknown offline-update request: %s"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
-msgid "Install a package signature for GPG verification."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
-msgid "Attempt to repair the package management system."
-msgstr ""
-
-#: client/pkgc-manage.c:967
-msgid "System repaired successfully"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
-msgid "Safely terminate the PackageKit daemon."
-msgstr ""
-
-#: client/pkgc-manage.c:994
-#, fuzzy, c-format
-#| msgid "Failed to install packages"
-msgid "Failed to send daemon quit request: %s"
-msgstr "Impossibke d'installar los paquets"
-
-#: client/pkgc-manage.c:1013
-msgid "Refresh package metadata"
-msgstr ""
-
-#: client/pkgc-manage.c:1019
-#, fuzzy
-#| msgid "Installing packages"
-msgid "Install packages"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-manage.c:1025
-#, fuzzy
-#| msgid "Remove package"
-msgid "Remove packages"
-msgstr "Suprimir un paquet"
-
-#: client/pkgc-manage.c:1031
-#, fuzzy
-#| msgid "Updating packages"
-msgid "Update packages"
-msgstr "Mesa a jorn dels paquets"
-
-#: client/pkgc-manage.c:1037
-msgid "Upgrade the system"
-msgstr ""
-
-#: client/pkgc-manage.c:1043
-#, fuzzy
-#| msgid "Downloading packages"
-msgid "Download packages"
-msgstr "Telecargament dels paquets"
-
-#: client/pkgc-manage.c:1049
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Manage offline system updates"
+msgid "Installing System Upgrade"
 msgstr "Installar las mesas a jorn"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: this is the message we send plymouth to
+#. * advise of the new percentage completion when installing updates
+#: client/pk-offline-update.c:181
 #, fuzzy
-#| msgid "Installing updates"
-msgid "Install package signature"
+msgid "Installing Updates"
 msgstr "Installar las mesas a jorn"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:214
 #, fuzzy
-#| msgid "Removing packages"
-msgid "Repair package system"
-msgstr "Supression dels paquets"
-
-#: client/pkgc-manage.c:1067
-msgid "Safely stop the PackageKit daemon"
-msgstr ""
-
-#: client/pkgc-monitor.c:381 client/pkcon/pk-monitor.c:267
-msgid "Failed to get daemon state"
-msgstr ""
-
-#: client/pkgc-monitor.c:439 client/pkcon/pk-monitor.c:310
-#, fuzzy
-#| msgid "Failed to install packages"
-msgid "Failed to get properties"
-msgstr "Impossibke d'installar los paquets"
-
-#. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit D-Bus events"
-msgstr "Servici PackageKit"
-
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
-#, fuzzy
-#| msgid "PackageKit service"
-msgid "Monitor PackageKit bus events"
-msgstr "Servici PackageKit"
-
-#. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:166
-msgid "Show PackageKit backend information."
-msgstr ""
-
-#: client/pkgc-query.c:211
-#, c-format
-msgid "Backend: %s"
-msgstr ""
-
-#: client/pkgc-query.c:214
-#, fuzzy, c-format
-#| msgid "Description"
-msgid "Description: %s"
-msgstr "Descripcion"
-
-#: client/pkgc-query.c:217
-#, fuzzy, c-format
-#| msgid "Author"
-msgid "Author: %s"
-msgstr "Autor"
-
-#. add some extra space before the potentially long roles list
-#. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:222
-#, fuzzy, c-format
-#| msgid "Role"
-msgid "Roles: %s"
-msgstr "Ròtle"
-
-#. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
-msgid "Show recent package management transactions."
-msgstr ""
-
-#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
-msgid ""
-"Search for packages matching the given patterns. If MODE is not specified, \n"
-"'details' search is performed.\n"
-"Possible search MODEs are:\n"
-"  name    - search by package name\n"
-"  details - search by package details (default)\n"
-"  file    - search by file name\n"
-"  group   - search by package group"
-msgstr ""
-
-#: client/pkgc-query.c:311
-#, fuzzy
-#| msgid "A package name is required"
-msgid "No search pattern specified"
-msgstr "Vos cal indicar un nom de paquet"
-
-#. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
-msgid "List all packages or those matching a pattern."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
-msgid "Show information about one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
-msgid "Check dependencies recursively"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
-msgid "Show dependencies for one or more packages."
-msgstr ""
-
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Could not resolve packages: %s"
-msgstr "Impossible d'aviar :"
-
-#. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
-msgid "Show which packages provide the specified capability."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
-msgid "List all files contained in one or more packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
-msgid "List all currently available package updates."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
-msgid "Show detailed information about the specified package update."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
-msgid "Resolve package names to package IDs."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
-msgid "Show which packages require the specified packages."
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
-msgid "List all available filters, groups and categories for package organization."
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
-msgid "Filters:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
-msgid "Groups:"
-msgstr ""
-
-#. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
-#, fuzzy
-#| msgid "Category"
-msgid "Categories:"
-msgstr "Categoria"
-
-#. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
-msgid "Show distribution version upgrades, if any are available."
-msgstr ""
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkgc-query.c:897 client/pkcon/pk-console.c:1572
-msgid "Failed to get the time since this action was last completed"
-msgstr ""
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
-#, fuzzy
-#| msgid "System time"
-msgid "Elapsed time"
-msgstr "Ora del sistèma"
-
-#. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
-msgid "Get time in seconds since the last specified action."
-msgstr ""
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkgc-query.c:944 client/pkcon/pk-console.c:2161
-msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkgc-query.c:951 client/pkcon/pk-console.c:2171
-#, fuzzy
-#| msgid "A package name is required"
-msgid "A correct role is required"
-msgstr "Vos cal indicar un nom de paquet"
-
-#: client/pkgc-query.c:973
-#, fuzzy
-#| msgid "Getting information"
-msgid "Show backend information"
-msgstr "Obtencion d'informacions"
-
-#: client/pkgc-query.c:979
-#, fuzzy
-#| msgid "The transaction failed"
-msgid "Show transaction history"
-msgstr "La transaccion a fracassat"
-
-#: client/pkgc-query.c:985
-#, fuzzy
-#| msgid "Searching by name"
-msgid "Search for packages"
-msgstr "Recèrca per nom"
-
-#: client/pkgc-query.c:991
-#, fuzzy
-#| msgid "Installing packages"
-msgid "List packages"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-query.c:997
-#, fuzzy
-#| msgid "Getting information"
-msgid "Show package information"
-msgstr "Obtencion d'informacions"
-
-#: client/pkgc-query.c:1003
-#, fuzzy
-#| msgid "Resolving dependencies"
-msgid "List package dependencies"
-msgstr "Resolucion de las dependéncias"
-
-#: client/pkgc-query.c:1009
-#, fuzzy
-#| msgid "A package name is required"
-msgid "List packages requiring this package"
-msgstr "Vos cal indicar un nom de paquet"
-
-#: client/pkgc-query.c:1015
-msgid "List packages providing a capability"
-msgstr ""
-
-#: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Installing packages"
-msgid "Show files in package"
-msgstr "Installacion dels paquets"
-
-#: client/pkgc-query.c:1027
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Get available updates"
+msgid "Rebooting after installing updates…"
 msgstr "Installar las mesas a jorn"
 
-#: client/pkgc-query.c:1033
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Get update details"
-msgstr "Installar las mesas a jorn"
-
-#: client/pkgc-query.c:1039
-#, fuzzy
-#| msgid "Remove package"
-msgid "Resolve package names"
-msgstr "Suprimir un paquet"
-
-#: client/pkgc-query.c:1045
-msgid "List available filters and categories"
+#. TRANSLATORS: we've finished doing offline updates
+#: client/pk-offline-update.c:256
+msgid "Shutting down after installing updates…"
 msgstr ""
 
-#: client/pkgc-query.c:1051
-msgid "Show available distribution upgrades"
+#. TRANSLATORS: we've started doing offline updates
+#: client/pk-offline-update.c:401
+msgid "Installing updates; this could take a while..."
 msgstr ""
 
-#: client/pkgc-query.c:1057
-#, fuzzy
-#| msgid "Getting information"
-msgid "Get time since last action"
-msgstr "Obtencion d'informacions"
-
-#. TRANSLATORS: Description for pkgcli repo-list
-#: client/pkgc-repo.c:82
-msgid "List all configured package repositories."
+#. TRANSLATORS: we've started doing offline system upgrade
+#: client/pk-offline-update.c:438
+msgid "Installing system upgrade; this could take a while..."
 msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
-msgid "Enable the specified repository."
-msgstr ""
-
-#: client/pkgc-repo.c:134
-#, c-format
-msgid "Repository '%s' enabled"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
-#, fuzzy
-#| msgid "Disable the idle timer"
-msgid "Disable the specified repository."
-msgstr "Desactiva la minutariá d'inactivitat"
-
-#: client/pkgc-repo.c:174
-#, c-format
-msgid "Repository '%s' disabled"
-msgstr ""
-
-#: client/pkgc-repo.c:194
-msgid "Automatically remove orphaned packages"
-msgstr ""
-
-#. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
-#, fuzzy
-#| msgid "Removing packages"
-msgid "Remove the specified repository."
-msgstr "Supression dels paquets"
-
-#: client/pkgc-repo.c:224
-#, fuzzy, c-format
-#| msgid "A repository name is required"
-msgid "Repository '%s' removed"
-msgstr "Vos cal indicar un nom de depaus"
-
-#: client/pkgc-repo.c:241
-#, fuzzy
-#| msgid "Getting information"
-msgid "List repositories"
-msgstr "Obtencion d'informacions"
-
-#: client/pkgc-repo.c:247
-#, fuzzy
-#| msgid "Removing packages"
-msgid "Enable a repository"
-msgstr "Supression dels paquets"
-
-#: client/pkgc-repo.c:253
-#, fuzzy
-#| msgid "Removing packages"
-msgid "Disable a repository"
-msgstr "Supression dels paquets"
-
-#: client/pkgc-repo.c:259
-#, fuzzy
-#| msgid "Removing packages"
-msgid "Remove a repository"
-msgstr "Supression dels paquets"
-
-#: client/pkgc-util.c:94
-msgid "Not connected to PackageKit daemon"
-msgstr ""
-
-#. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
-#, fuzzy, c-format
-#| msgid "(seconds)"
-msgid "%u seconds"
-msgstr "(segondas)"
-
-#. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
-#, c-format
-msgid "%u min %u sec"
-msgstr ""
-
-#. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
-#, c-format
-msgid "%u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
-#, c-format
-msgid "%u h %u min"
-msgstr ""
-
-#. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
-#, c-format
-msgid "%u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
-#, c-format
-msgid "%u days %u h"
-msgstr ""
-
-#. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
-#, c-format
-msgid "%u days"
-msgstr ""
-
-#: client/pkgc-util.c:276
-msgid "Error"
-msgstr ""
-
-#. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
-msgid "Warning:"
-msgstr ""
-
-#. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
-#, fuzzy, c-format
-#| msgid "Failed to launch:"
-msgid "Failed to parse options: %s"
-msgstr "Impossible d'aviar :"
-
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr ""
-
-#. TRANSLATORS: Label for the package name in package details
-#. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
-#, fuzzy
-#| msgid "PackageKit"
-msgid "Package:"
-msgstr "PackageKit"
-
-#. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
-msgid "Version:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
-#, fuzzy
-#| msgid "Summary"
-msgid "Summary:"
-msgstr "Resumit"
-
-#. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
-#, fuzzy
-#| msgid "Description"
-msgid "Description:"
-msgstr "Descripcion"
-
-#. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
-msgid "License:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
-msgid "URL:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
-msgid "Group:"
-msgstr ""
-
-#. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
-#, fuzzy
-#| msgid "Installed"
-msgid "Installed Size:"
-msgstr "Installat"
-
-#. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:687
-#, fuzzy
-#| msgid "Downloaded"
-msgid "Download Size:"
-msgstr "Telecargat"
-
-#. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:781
-#, fuzzy
-#| msgid "Update text"
-msgid "Update Details:"
-msgstr "Informacions de mesa a jorn"
-
-#. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:792
-#, fuzzy
-#| msgid "Updates"
-msgid "Updates:"
-msgstr "Mesas a jorn"
-
-#. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:801
-#, fuzzy
-#| msgid "Obsoletes"
-msgid "Obsoletes:"
-msgstr "Despassats"
-
-#. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:810
-#, fuzzy
-#| msgid "Vendor"
-msgid "Vendor:"
-msgstr "Vendeire"
-
-#. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:819
-msgid "Issue Tracker:"
-msgstr ""
-
-#. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:828
-msgid "CVE:"
-msgstr ""
-
-#. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:836
-#, fuzzy
-#| msgid "Restart"
-msgid "Restart:"
-msgstr "Reaviar"
-
-#. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:845
-#, fuzzy
-#| msgid "Update text"
-msgid "Update text:"
-msgstr "Informacions de mesa a jorn"
-
-#. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:852
-#, fuzzy
-#| msgid "Changes"
-msgid "Changes:"
-msgstr "Cambiaments"
-
-#. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:859
-#, fuzzy
-#| msgid "State"
-msgid "State:"
-msgstr "Estat"
-
-#. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:868
-#, fuzzy
-#| msgid "Issued"
-msgid "Issued:"
-msgstr "Publicat"
-
-#. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:875
-#, fuzzy
-#| msgid "Updated"
-msgid "Updated:"
-msgstr "Mes a jorn"
-
-#. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:992
-#, fuzzy
-#| msgid "Transaction"
-msgid "Transaction:"
-msgstr "Transaccion"
-
-#. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:996
-#, fuzzy
-#| msgid "System time"
-msgid "System time:"
-msgstr "Ora del sistèma"
-
-#. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1000
-#, fuzzy
-#| msgid "Succeeded"
-msgid "Succeeded:"
-msgstr "Capitat"
-
-#: client/pkgc-util.c:1004 client/pkcon/pk-console.c:169
-msgid "True"
-msgstr "Verai"
-
-#: client/pkgc-util.c:1005 client/pkcon/pk-console.c:169
-msgid "False"
-msgstr "Fals"
-
-#. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1009
-#, fuzzy
-#| msgid "Role"
-msgid "Role:"
-msgstr "Ròtle"
-
-#. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1016
-#, fuzzy
-#| msgid "Duration"
-msgid "Duration:"
-msgstr "Durada"
-
-#. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1023
-#, fuzzy
-#| msgid "Command line"
-msgid "Command line:"
-msgstr "Linha de comanda"
-
-#. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1029
-#, fuzzy
-#| msgid "User ID"
-msgid "User ID:"
-msgstr "Identificant d'utilizaire"
-
-#. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1038
-#, fuzzy
-#| msgid "Username"
-msgid "Username:"
-msgstr "Nom d'utilizaire"
-
-#. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1044
-#, fuzzy
-#| msgid "Real name"
-msgid "Real name:"
-msgstr "Nom vertadièr"
-
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkgc-util.c:1056 client/pkgc-util.c:1075
-#: client/pkcon/pk-console.c:201
-msgid "Affected packages:"
-msgstr "Paquets concernits :"
-
-#. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
-msgid "None"
-msgstr ""
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkgc-util.c:1167 client/pkcon/pk-console.c:932
-msgid "More than one package matches:"
-msgstr "I a mantun paquet correspondent :"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkgc-util.c:1179 client/pkcon/pk-console.c:944
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "Causissètz lo paquet corrècte : "
-
-#: client/pkgc-util.c:1223
-#, fuzzy, c-format
-#| msgid "PackageKit Monitor"
-msgid "Package not found: %s"
-msgstr "Contrarotlador PackageKit"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkgcli.c:76
-#, fuzzy
-#| msgid "Show version and exit"
-msgid "Show pkgcli version"
-msgstr "Aficha la version e quita"
-
-#: client/pkgcli.c:78
-msgid "Show help"
-msgstr ""
-
-#: client/pkgcli.c:80
-msgid "Only provide minimal output"
-msgstr ""
-
-#: client/pkgcli.c:82
-msgid "Show more detailed output"
-msgstr ""
-
-#: client/pkgcli.c:84
-msgid "Output in JSON format"
-msgstr ""
-
-#: client/pkgcli.c:86
-msgid "Disable colored output"
-msgstr ""
-
-#. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgcli.c:89
-msgid "Answer 'yes' to all questions"
-msgstr ""
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
-msgid "Filter packages (installed, available, etc.)"
-msgstr ""
-
-#: client/pkgcli.c:92
-msgid "FILTER"
-msgstr ""
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkgcli.c:95 client/pkcon/pk-console.c:1725
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-
-#: client/pkgcli.c:118
-msgid "No command specified. Use --help for usage information."
-msgstr ""
-
-#: client/pkgcli.c:126
-#, c-format
-msgid "Unknown command: %s"
-msgstr ""
-
-#: client/pkgcli.c:135
-#, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
-msgid "Failed to connect to PackageKit: %s"
-msgstr "Impossible de contactar PackageKit"
-
-#: client/pkgcli.c:196
-#, c-format
-msgid "Version: %s"
-msgstr ""
-
-#: client/pkgcli.c:211
-#, fuzzy
-#| msgid "Available"
-msgid "Available Commands:"
-msgstr "Disponible"
-
-#: client/pkgcli.c:217
-msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkgcli.c:254 client/pkcon/pk-console.c:1842
-msgid "The filter specified was invalid"
-msgstr "Lo filtre indicat èra invalid"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -1085,24 +83,32 @@ msgstr "Transaccion"
 msgid "System time"
 msgstr "Ora del sistèma"
 
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+msgid "False"
+msgstr "Fals"
+
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
 msgstr "Capitat"
+
+#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+msgid "True"
+msgstr "Verai"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
 msgid "Role"
 msgstr "Ròtle"
 
+#: client/pkcon/pk-console.c:176
+msgid "(seconds)"
+msgstr "(segondas)"
+
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:176
 msgid "Duration"
 msgstr "Durada"
-
-#: client/pkcon/pk-console.c:176
-msgid "(seconds)"
-msgstr "(segondas)"
 
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pkcon/pk-console.c:180
@@ -1123,6 +129,13 @@ msgstr "Nom d'utilizaire"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
 msgstr "Nom vertadièr"
+
+#. TRANSLATORS: Label for affected packages in transaction
+#. TRANSLATORS: these are packages touched by the transaction
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
+#: client/pkgc-util.c:1075
+msgid "Affected packages:"
+msgstr "Paquets concernits :"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:204
@@ -1184,7 +197,6 @@ msgstr "Informacions complementàrias a prepaus de la mesa a jorn :"
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
 #, fuzzy
-#| msgid "PackageKit"
 msgid "Package"
 msgstr "PackageKit"
 
@@ -1277,7 +289,6 @@ msgstr "Reaviada de la session requesida per :"
 #. * due to a security update
 #: client/pkcon/pk-console.c:436
 #, fuzzy
-#| msgid "System restart required by:"
 msgid "System restart (security) required by:"
 msgstr "Reaviada del sistèma requesida per :"
 
@@ -1285,14 +296,12 @@ msgstr "Reaviada del sistèma requesida per :"
 #. * due to a security update
 #: client/pkcon/pk-console.c:440
 #, fuzzy
-#| msgid "Session restart required:"
 msgid "Session restart (security) required:"
 msgstr "Reaviada de la session requesida per :"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: client/pkcon/pk-console.c:443
 #, fuzzy
-#| msgid "System restart required by:"
 msgid "Application restart required by:"
 msgstr "Reaviada del sistèma requesida per :"
 
@@ -1368,22 +377,36 @@ msgstr "Reconnectatz per acabar la mesa a jorn."
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
 #, fuzzy
-#| msgid "Please restart the computer to complete the update."
-msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgid ""
+"Please restart the computer to complete the update as important security "
+"updates have been installed."
 msgstr "Reamodatz l'ordenador per acabar la mesa a jorn."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
 #, fuzzy
-#| msgid "Please logout and login to complete the update."
-msgid "Please logout and login to complete the update as important security updates have been installed."
+msgid ""
+"Please logout and login to complete the update as important security updates "
+"have been installed."
 msgstr "Reconnectatz per acabar la mesa a jorn."
+
+#. TRANSLATORS: more than one package could be found that matched,
+#. * to follow is a list of possible packages
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+msgid "More than one package matches:"
+msgstr "I a mantun paquet correspondent :"
+
+#. prompt user for selection
+#. TRANSLATORS: This finds out which package in the list to use
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "Causissètz lo paquet corrècte : "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 #: client/pkcon/pk-console.c:981
 #, fuzzy
-#| msgid "PackageKit Monitor"
 msgid "Package not found"
 msgstr "Contrarotlador PackageKit"
 
@@ -1397,7 +420,9 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgid ""
+"Expected package name, actually got file. Try using 'pkcon install-local %s' "
+"instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -1452,6 +477,12 @@ msgstr ""
 msgid "This tool could not find all the packages: %s"
 msgstr ""
 
+#. TRANSLATORS: This is when the daemon crashed, and we are up
+#. * shit creek without a paddle
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+msgid "The daemon crashed mid-transaction!"
+msgstr "Lo demòni a fracassat en cors de transaccion."
+
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
@@ -1461,6 +492,12 @@ msgstr "Interfàcia PackageKit en consòla"
 #: client/pkcon/pk-console.c:1474
 msgid "Subcommands:"
 msgstr "Soscomandas :"
+
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+msgid "Failed to get the time since this action was last completed"
+msgstr ""
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -1493,6 +530,12 @@ msgstr "Szlecciona lo filtre, per ex. : installat"
 msgid "Install the packages without asking for confirmation"
 msgstr ""
 
+#. TRANSLATORS: command line argument, do we just download or apply changes
+#. command line argument, do we just download or apply changes
+#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
+msgid "Prepare the transaction by downloading packages only"
+msgstr ""
+
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
 msgid "Allow packages to be downgraded during transaction"
@@ -1502,14 +545,27 @@ msgstr ""
 msgid "Allow packages to be reinstalled during transaction"
 msgstr ""
 
+#. TRANSLATORS: command line argument
+#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+msgid "Automatically remove unused dependencies"
+msgstr ""
+
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr ""
+
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgid ""
+"Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgid ""
+"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
+"reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -1527,6 +583,12 @@ msgstr "Impossible d'analisar la linha de comanda"
 msgid "Failed to contact PackageKit"
 msgstr "Impossible de contactar PackageKit"
 
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+msgid "The filter specified was invalid"
+msgstr "Lo filtre indicat èra invalid"
+
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 #: client/pkcon/pk-console.c:1868
@@ -1540,7 +602,6 @@ msgstr ""
 #: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
 #: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A search term is required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1548,7 +609,6 @@ msgstr "Vos cal indicar un nom de paquet"
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1955
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A package name to install is required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1556,7 +616,6 @@ msgstr "Vos cal indicar un nom de paquet"
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1969
 #, fuzzy
-#| msgid "A repository name is required"
 msgid "A filename to install is required"
 msgstr "Vos cal indicar un nom de depaus"
 
@@ -1564,7 +623,6 @@ msgstr "Vos cal indicar un nom de depaus"
 #. * users won't see this
 #: client/pkcon/pk-console.c:1985
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A type, key_id and package_id are required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1572,7 +630,6 @@ msgstr "Vos cal indicar un nom de paquet"
 #. * specify what they wanted to remove
 #: client/pkcon/pk-console.c:2003
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A package name to remove is required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1599,7 +656,6 @@ msgstr ""
 #. * specify a package name
 #: client/pkcon/pk-console.c:2067
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A package name to resolve is required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1615,9 +671,23 @@ msgstr ""
 
 #: client/pkcon/pk-console.c:2134
 #, fuzzy
-#| msgid "A repository name is required"
 msgid "A repo id and autoremove required"
 msgstr "Vos cal indicar un nom de depaus"
+
+#. TRANSLATORS: The user didn't specify what action to use
+#. TRANSLATORS: The user didn't
+#. * specify what action to use
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+msgid "An action, e.g. 'update-packages' is required"
+msgstr ""
+
+#. TRANSLATORS: The user specified an invalid action
+#. TRANSLATORS: The user specified
+#. * an invalid action
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+#, fuzzy
+msgid "A correct role is required"
+msgstr "Vos cal indicar un nom de paquet"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -1633,13 +703,11 @@ msgstr "Vos cal indicar un nom de paquet"
 #. * the user didn't specify it
 #: client/pkcon/pk-console.c:2234
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A package provide string is required"
 msgstr "Vos cal indicar un nom de paquet"
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
 #, fuzzy
-#| msgid "A package name is required"
 msgid "A filename is required"
 msgstr "Vos cal indicar un nom de paquet"
 
@@ -1678,53 +746,889 @@ msgstr "L'opcion « %s » es pas presa en carga"
 msgid "Command failed"
 msgstr "La comanda a fracassat"
 
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+msgid "Failed to get daemon state"
+msgstr ""
+
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+#, fuzzy
+msgid "Failed to get properties"
+msgstr "Impossibke d'installar los paquets"
+
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
 msgstr "Contrarotlador PackageKit"
 
-#. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
+#. TRANSLATORS: command line argument, do we allow package downgrades
+#: client/pkgc-manage.c:47
+#, fuzzy
+msgid "Allow package downgrades"
+msgstr "Los paquets seguents van èsser desinstallats :"
+
+#. TRANSLATORS: command line argument, do we allow package re-installations
+#: client/pkgc-manage.c:54
+msgid "Allow package re-installations"
+msgstr ""
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:61
+#, fuzzy
+msgid "Allow installation of untrusted packages"
+msgstr "Installar un paquet signat"
+
+#. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:75
+msgid "Maximum metadata cache age in seconds"
+msgstr ""
+
+#: client/pkgc-manage.c:75
+msgid "SECONDS"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli refresh
+#: client/pkgc-manage.c:196
+#, fuzzy
+msgid "Refresh the package metadata cache."
+msgstr "I a mantun paquet correspondent :"
+
+#: client/pkgc-manage.c:222
+msgid "Package metadata refreshed"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli install
+#: client/pkgc-manage.c:246
+msgid "Install one or more packages or local package files."
+msgstr ""
+
+#. TRANSLATORS: There was an error finding a package
+#. * for installation. The detailed error follows.
+#. TRANSLATORS: We were unable to find a package for installation.
+#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#, fuzzy, c-format
+msgid "Could not find any available package: %s"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-manage.c:325
+#, fuzzy
+msgid "The selected package is already installed."
+msgstr "Los paquets seguents van èsser desinstallats :"
+
+#. TRANSLATORS: Description for pkgcli remove
+#: client/pkgc-manage.c:365
+msgid "Remove one or more packages from the system."
+msgstr ""
+
+#: client/pkgc-manage.c:382
+#, fuzzy, c-format
+msgid "Could not find installed packages: %s"
+msgstr "Installacion dels paquets"
+
+#. TRANSLATORS: Description for pkgcli download
+#: client/pkgc-manage.c:422
+msgid "Download packages to the specified directory without installing."
+msgstr ""
+
+#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#, fuzzy, c-format
+msgid "Could not find packages: %s"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-manage.c:444
 #, c-format
-msgid "%i%%"
+msgid "Directory does not exist: %s"
 msgstr ""
 
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Installing System Upgrade"
-msgstr "Installar las mesas a jorn"
-
-#. TRANSLATORS: this is the message we send plymouth to
-#. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Installing Updates"
-msgstr "Installar las mesas a jorn"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
-#, fuzzy
-#| msgid "Installing updates"
-msgid "Rebooting after installing updates…"
-msgstr "Installar las mesas a jorn"
-
-#. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
-msgid "Shutting down after installing updates…"
+#. TRANSLATORS: Description for pkgcli update
+#: client/pkgc-manage.c:487
+msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
-msgid "Installing updates; this could take a while..."
+#: client/pkgc-manage.c:510
+#, fuzzy, c-format
+msgid "Could not find packages to update: %s"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#, fuzzy, c-format
+msgid "Failed to get updates: %s"
+msgstr "Impossibke d'installar los paquets"
+
+#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#, fuzzy
+msgid "No packages require updating"
+msgstr "Vos cal indicar un nom de paquet"
+
+#. TRANSLATORS: Description of pkgcli upgrade.
+#. * No not translate "minimal, default, complete", those are parameters
+#: client/pkgc-manage.c:590
+msgid ""
+"Upgrade all packages or perform a distribution upgrade.\n"
+"\n"
+"Types: minimal, default, complete"
 msgstr ""
 
-#. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
-msgid "Installing system upgrade; this could take a while..."
+#: client/pkgc-manage.c:686
+#, fuzzy, c-format
+msgid "Failed to read offline update action: %s"
+msgstr "Impossible d'aviar :"
+
+#: client/pkgc-manage.c:696
+msgid "Offline update is not triggered."
+msgstr ""
+
+#: client/pkgc-manage.c:704
+#, fuzzy, c-format
+msgid "Offline update is triggered. Action after update: %s"
+msgstr "Impossible d'aviar :"
+
+#. TRANSLATORS: Packages that were prepared for an offline update
+#: client/pkgc-manage.c:715
+#, fuzzy
+msgid "Prepared packages:"
+msgstr "Mesa a jorn dels paquets"
+
+#: client/pkgc-manage.c:729
+#, fuzzy
+msgid "No offline update is prepared."
+msgstr "Obtencion d'informacions"
+
+#: client/pkgc-manage.c:731
+#, fuzzy, c-format
+msgid "Failed to read prepared offline updates: %s"
+msgstr "Impossible d'aviar :"
+
+#: client/pkgc-manage.c:741
+#, fuzzy
+msgid "No results from last offline update available."
+msgstr "Obtencion d'informacions"
+
+#: client/pkgc-manage.c:748
+#, fuzzy, c-format
+msgid "Last offline update failed: %s: %s"
+msgstr "Impossible d'aviar :"
+
+#: client/pkgc-manage.c:755
+msgid "Last offline update completed successfully"
+msgstr ""
+
+#: client/pkgc-manage.c:766
+#, fuzzy, c-format
+msgid "Updated: %s"
+msgstr "Mes a jorn"
+
+#: client/pkgc-manage.c:787
+#, fuzzy, c-format
+msgid "Failed to trigger offline update: %s"
+msgstr "Impossible d'aviar :"
+
+#: client/pkgc-manage.c:791
+msgid "Offline update scheduled. System will update on next reboot."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli offline-update command.
+#. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
+#: client/pkgc-manage.c:811
+msgid ""
+"Trigger & manage offline system updates.\n"
+"\n"
+"You can select one of these requests:\n"
+"  prepare - prepare an offline update and trigger it (default)\n"
+"  trigger - trigger a (manually prepared) offline update\n"
+"  cancel  - cancel a planned offline update\n"
+"  status  - show status information about a prepared or finished offline "
+"update"
+msgstr ""
+
+#: client/pkgc-manage.c:835
+#, fuzzy, c-format
+msgid "Failed to cancel offline update: %s"
+msgstr "Impossible d'aviar :"
+
+#: client/pkgc-manage.c:839
+msgid "Offline update cancelled"
+msgstr ""
+
+#: client/pkgc-manage.c:896
+#, c-format
+msgid "Unknown offline-update request: %s"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli install-sig
+#: client/pkgc-manage.c:916
+msgid "Install a package signature for GPG verification."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repair
+#: client/pkgc-manage.c:951
+msgid "Attempt to repair the package management system."
+msgstr ""
+
+#: client/pkgc-manage.c:967
+msgid "System repaired successfully"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli quit
+#: client/pkgc-manage.c:988
+msgid "Safely terminate the PackageKit daemon."
+msgstr ""
+
+#: client/pkgc-manage.c:994
+#, fuzzy, c-format
+msgid "Failed to send daemon quit request: %s"
+msgstr "Impossibke d'installar los paquets"
+
+#: client/pkgc-manage.c:1013
+msgid "Refresh package metadata"
+msgstr ""
+
+#: client/pkgc-manage.c:1019
+#, fuzzy
+msgid "Install packages"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-manage.c:1025
+#, fuzzy
+msgid "Remove packages"
+msgstr "Suprimir un paquet"
+
+#: client/pkgc-manage.c:1031
+#, fuzzy
+msgid "Update packages"
+msgstr "Mesa a jorn dels paquets"
+
+#: client/pkgc-manage.c:1037
+msgid "Upgrade the system"
+msgstr ""
+
+#: client/pkgc-manage.c:1043
+#, fuzzy
+msgid "Download packages"
+msgstr "Telecargament dels paquets"
+
+#: client/pkgc-manage.c:1049
+#, fuzzy
+msgid "Manage offline system updates"
+msgstr "Installar las mesas a jorn"
+
+#: client/pkgc-manage.c:1055
+#, fuzzy
+msgid "Install package signature"
+msgstr "Installar las mesas a jorn"
+
+#: client/pkgc-manage.c:1061
+#, fuzzy
+msgid "Repair package system"
+msgstr "Supression dels paquets"
+
+#: client/pkgc-manage.c:1067
+msgid "Safely stop the PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli monitor
+#: client/pkgc-monitor.c:460
+#, fuzzy
+msgid "Monitor PackageKit D-Bus events"
+msgstr "Servici PackageKit"
+
+#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#: client/pkgc-monitor.c:562
+#, fuzzy
+msgid "Monitor PackageKit bus events"
+msgstr "Servici PackageKit"
+
+#. TRANSLATORS: Description for pkgcli backend
+#: client/pkgc-query.c:166
+msgid "Show PackageKit backend information."
+msgstr ""
+
+#: client/pkgc-query.c:211
+#, c-format
+msgid "Backend: %s"
+msgstr ""
+
+#: client/pkgc-query.c:214
+#, fuzzy, c-format
+msgid "Description: %s"
+msgstr "Descripcion"
+
+#: client/pkgc-query.c:217
+#, fuzzy, c-format
+msgid "Author: %s"
+msgstr "Autor"
+
+#. add some extra space before the potentially long roles list
+#. TRANSLATORS: List of backend-roles
+#: client/pkgc-query.c:222
+#, fuzzy, c-format
+msgid "Roles: %s"
+msgstr "Ròtle"
+
+#. TRANSLATORS: Description for pkgcli history
+#: client/pkgc-query.c:245
+msgid "Show recent package management transactions."
+msgstr ""
+
+#. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
+#: client/pkgc-query.c:284
+msgid ""
+"Search for packages matching the given patterns. If MODE is not specified, \n"
+"'details' search is performed.\n"
+"Possible search MODEs are:\n"
+"  name    - search by package name\n"
+"  details - search by package details (default)\n"
+"  file    - search by file name\n"
+"  group   - search by package group"
+msgstr ""
+
+#: client/pkgc-query.c:311
+#, fuzzy
+msgid "No search pattern specified"
+msgstr "Vos cal indicar un nom de paquet"
+
+#. TRANSLATORS: Description for pkgcli list
+#: client/pkgc-query.c:371
+msgid "List all packages or those matching a pattern."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli show
+#: client/pkgc-query.c:415
+msgid "Show information about one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:471 client/pkgc-query.c:750
+msgid "Check dependencies recursively"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli depends-on
+#: client/pkgc-query.c:480
+msgid "Show dependencies for one or more packages."
+msgstr ""
+
+#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#, fuzzy, c-format
+msgid "Could not resolve packages: %s"
+msgstr "Impossible d'aviar :"
+
+#. TRANSLATORS: Description for pkgcli what-provides
+#: client/pkgc-query.c:520
+msgid "Show which packages provide the specified capability."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli files
+#: client/pkgc-query.c:551
+msgid "List all files contained in one or more packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli list-updates
+#: client/pkgc-query.c:646
+msgid "List all currently available package updates."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli show-update
+#: client/pkgc-query.c:678
+msgid "Show detailed information about the specified package update."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli resolve
+#: client/pkgc-query.c:716
+msgid "Resolve package names to package IDs."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli required-by
+#: client/pkgc-query.c:759
+msgid "Show which packages require the specified packages."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli organization
+#: client/pkgc-query.c:802
+msgid ""
+"List all available filters, groups and categories for package organization."
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package filters
+#: client/pkgc-query.c:810
+msgid "Filters:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package groups
+#: client/pkgc-query.c:825
+msgid "Groups:"
+msgstr ""
+
+#. TRANSLATORS: Header for list of available package categories
+#: client/pkgc-query.c:840
+#, fuzzy
+msgid "Categories:"
+msgstr "Categoria"
+
+#. TRANSLATORS: Description for pkgcli show-distro-upgrade
+#: client/pkgc-query.c:866
+msgid "Show distribution version upgrades, if any are available."
+msgstr ""
+
+#. TRANSLATORS: this is the time since this role was used
+#: client/pkgc-query.c:910
+#, fuzzy
+msgid "Elapsed time"
+msgstr "Ora del sistèma"
+
+#. TRANSLATORS: Description for pkgcli last-time
+#: client/pkgc-query.c:934
+msgid "Get time in seconds since the last specified action."
+msgstr ""
+
+#: client/pkgc-query.c:973
+#, fuzzy
+msgid "Show backend information"
+msgstr "Obtencion d'informacions"
+
+#: client/pkgc-query.c:979
+#, fuzzy
+msgid "Show transaction history"
+msgstr "La transaccion a fracassat"
+
+#: client/pkgc-query.c:985
+#, fuzzy
+msgid "Search for packages"
+msgstr "Recèrca per nom"
+
+#: client/pkgc-query.c:991
+#, fuzzy
+msgid "List packages"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-query.c:997
+#, fuzzy
+msgid "Show package information"
+msgstr "Obtencion d'informacions"
+
+#: client/pkgc-query.c:1003
+#, fuzzy
+msgid "List package dependencies"
+msgstr "Resolucion de las dependéncias"
+
+#: client/pkgc-query.c:1009
+#, fuzzy
+msgid "List packages requiring this package"
+msgstr "Vos cal indicar un nom de paquet"
+
+#: client/pkgc-query.c:1015
+msgid "List packages providing a capability"
+msgstr ""
+
+#: client/pkgc-query.c:1021
+#, fuzzy
+msgid "Show files in package"
+msgstr "Installacion dels paquets"
+
+#: client/pkgc-query.c:1027
+#, fuzzy
+msgid "Get available updates"
+msgstr "Installar las mesas a jorn"
+
+#: client/pkgc-query.c:1033
+#, fuzzy
+msgid "Get update details"
+msgstr "Installar las mesas a jorn"
+
+#: client/pkgc-query.c:1039
+#, fuzzy
+msgid "Resolve package names"
+msgstr "Suprimir un paquet"
+
+#: client/pkgc-query.c:1045
+msgid "List available filters and categories"
+msgstr ""
+
+#: client/pkgc-query.c:1051
+msgid "Show available distribution upgrades"
+msgstr ""
+
+#: client/pkgc-query.c:1057
+#, fuzzy
+msgid "Get time since last action"
+msgstr "Obtencion d'informacions"
+
+#. TRANSLATORS: Description for pkgcli repo-list
+#: client/pkgc-repo.c:82
+msgid "List all configured package repositories."
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-enable
+#: client/pkgc-repo.c:115
+msgid "Enable the specified repository."
+msgstr ""
+
+#: client/pkgc-repo.c:134
+#, c-format
+msgid "Repository '%s' enabled"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-disable
+#: client/pkgc-repo.c:155
+#, fuzzy
+msgid "Disable the specified repository."
+msgstr "Desactiva la minutariá d'inactivitat"
+
+#: client/pkgc-repo.c:174
+#, c-format
+msgid "Repository '%s' disabled"
+msgstr ""
+
+#: client/pkgc-repo.c:194
+msgid "Automatically remove orphaned packages"
+msgstr ""
+
+#. TRANSLATORS: Description for pkgcli repo-remove
+#: client/pkgc-repo.c:204
+#, fuzzy
+msgid "Remove the specified repository."
+msgstr "Supression dels paquets"
+
+#: client/pkgc-repo.c:224
+#, fuzzy, c-format
+msgid "Repository '%s' removed"
+msgstr "Vos cal indicar un nom de depaus"
+
+#: client/pkgc-repo.c:241
+#, fuzzy
+msgid "List repositories"
+msgstr "Obtencion d'informacions"
+
+#: client/pkgc-repo.c:247
+#, fuzzy
+msgid "Enable a repository"
+msgstr "Supression dels paquets"
+
+#: client/pkgc-repo.c:253
+#, fuzzy
+msgid "Disable a repository"
+msgstr "Supression dels paquets"
+
+#: client/pkgc-repo.c:259
+#, fuzzy
+msgid "Remove a repository"
+msgstr "Supression dels paquets"
+
+#: client/pkgc-util.c:94
+msgid "Not connected to PackageKit daemon"
+msgstr ""
+
+#. TRANSLATORS: A duration in seconds
+#: client/pkgc-util.c:131
+#, fuzzy, c-format
+msgid "%u seconds"
+msgstr "(segondas)"
+
+#. TRANSLATORS: A duration in minutes & seconds
+#: client/pkgc-util.c:137
+#, c-format
+msgid "%u min %u sec"
+msgstr ""
+
+#. TRANSLATORS: A duration in minutes
+#: client/pkgc-util.c:140
+#, c-format
+msgid "%u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours & remaining minutes
+#: client/pkgc-util.c:147
+#, c-format
+msgid "%u h %u min"
+msgstr ""
+
+#. TRANSLATORS: A duration in hours
+#: client/pkgc-util.c:150
+#, c-format
+msgid "%u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days & remaining hours
+#: client/pkgc-util.c:157
+#, c-format
+msgid "%u days %u h"
+msgstr ""
+
+#. TRANSLATORS: A duration in days
+#: client/pkgc-util.c:160
+#, c-format
+msgid "%u days"
+msgstr ""
+
+#: client/pkgc-util.c:276
+msgid "Error"
+msgstr ""
+
+#. TRANSLATORS: A warning message prefix, displayed on the command-line
+#: client/pkgc-util.c:309
+msgid "Warning:"
+msgstr ""
+
+#. TRANSLATORS: Failed to parse command-line options in pkgcli
+#: client/pkgc-util.c:431 client/pkgcli.c:188
+#, fuzzy, c-format
+msgid "Failed to parse options: %s"
+msgstr "Impossible d'aviar :"
+
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
+#: client/pkgc-util.c:437
+#, c-format
+msgid "Usage: %s %s %s"
+msgstr ""
+
+#. TRANSLATORS: Label for the package name in package details
+#. TRANSLATORS: Label for package update infos
+#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#, fuzzy
+msgid "Package:"
+msgstr "PackageKit"
+
+#. TRANSLATORS: Label for the package version in package details
+#: client/pkgc-util.c:635
+msgid "Version:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package summary in package details
+#: client/pkgc-util.c:642
+#, fuzzy
+msgid "Summary:"
+msgstr "Resumit"
+
+#. TRANSLATORS: Label for the package description in package details
+#: client/pkgc-util.c:650
+#, fuzzy
+msgid "Description:"
+msgstr "Descripcion"
+
+#. TRANSLATORS: Label for the package license in package details
+#: client/pkgc-util.c:657
+msgid "License:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package URL in package details
+#: client/pkgc-util.c:664
+msgid "URL:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package group in package details
+#: client/pkgc-util.c:671
+msgid "Group:"
+msgstr ""
+
+#. TRANSLATORS: Label for the package size in package details
+#: client/pkgc-util.c:679
+#, fuzzy
+msgid "Installed Size:"
+msgstr "Installat"
+
+#. TRANSLATORS: Label for the package download size in package details
+#: client/pkgc-util.c:687
+#, fuzzy
+msgid "Download Size:"
+msgstr "Telecargat"
+
+#. TRANSLATORS: Header for the update details section
+#: client/pkgc-util.c:781
+#, fuzzy
+msgid "Update Details:"
+msgstr "Informacions de mesa a jorn"
+
+#. TRANSLATORS: Label for update details
+#: client/pkgc-util.c:792
+#, fuzzy
+msgid "Updates:"
+msgstr "Mesas a jorn"
+
+#. TRANSLATORS: Label for obsoleted packages in update details
+#: client/pkgc-util.c:801
+#, fuzzy
+msgid "Obsoletes:"
+msgstr "Despassats"
+
+#. TRANSLATORS: Label for vendor in update details
+#: client/pkgc-util.c:810
+#, fuzzy
+msgid "Vendor:"
+msgstr "Vendeire"
+
+#. TRANSLATORS: Label for issue-tracker in update details
+#: client/pkgc-util.c:819
+msgid "Issue Tracker:"
+msgstr ""
+
+#. TRANSLATORS: Label for CVE information in update details
+#: client/pkgc-util.c:828
+msgid "CVE:"
+msgstr ""
+
+#. TRANSLATORS: Label for restart information in update details
+#: client/pkgc-util.c:836
+#, fuzzy
+msgid "Restart:"
+msgstr "Reaviar"
+
+#. TRANSLATORS: Label for update text in update details
+#: client/pkgc-util.c:845
+#, fuzzy
+msgid "Update text:"
+msgstr "Informacions de mesa a jorn"
+
+#. TRANSLATORS: Label for changelog in update details
+#: client/pkgc-util.c:852
+#, fuzzy
+msgid "Changes:"
+msgstr "Cambiaments"
+
+#. TRANSLATORS: Label for update state in update details
+#: client/pkgc-util.c:859
+#, fuzzy
+msgid "State:"
+msgstr "Estat"
+
+#. TRANSLATORS: Label for issued date in update details
+#: client/pkgc-util.c:868
+#, fuzzy
+msgid "Issued:"
+msgstr "Publicat"
+
+#. TRANSLATORS: Label for updated date in update details
+#: client/pkgc-util.c:875
+#, fuzzy
+msgid "Updated:"
+msgstr "Mes a jorn"
+
+#. TRANSLATORS: Label for transaction information
+#: client/pkgc-util.c:992
+#, fuzzy
+msgid "Transaction:"
+msgstr "Transaccion"
+
+#. TRANSLATORS: Label for system time of the transaction
+#: client/pkgc-util.c:996
+#, fuzzy
+msgid "System time:"
+msgstr "Ora del sistèma"
+
+#. TRANSLATORS: Label for transaction success status
+#: client/pkgc-util.c:1000
+#, fuzzy
+msgid "Succeeded:"
+msgstr "Capitat"
+
+#. TRANSLATORS: Label for transaction role
+#: client/pkgc-util.c:1009
+#, fuzzy
+msgid "Role:"
+msgstr "Ròtle"
+
+#. TRANSLATORS: Label for transaction duration
+#: client/pkgc-util.c:1016
+#, fuzzy
+msgid "Duration:"
+msgstr "Durada"
+
+#. TRANSLATORS: Label for transaction command line
+#: client/pkgc-util.c:1023
+#, fuzzy
+msgid "Command line:"
+msgstr "Linha de comanda"
+
+#. TRANSLATORS: Label for transaction user ID
+#: client/pkgc-util.c:1029
+#, fuzzy
+msgid "User ID:"
+msgstr "Identificant d'utilizaire"
+
+#. TRANSLATORS: Label for transaction username
+#: client/pkgc-util.c:1038
+#, fuzzy
+msgid "Username:"
+msgstr "Nom d'utilizaire"
+
+#. TRANSLATORS: Label for transaction real name
+#: client/pkgc-util.c:1044
+#, fuzzy
+msgid "Real name:"
+msgstr "Nom vertadièr"
+
+#. TRANSLATORS: No packages were affected by the transaction
+#: client/pkgc-util.c:1078
+msgid "None"
+msgstr ""
+
+#: client/pkgc-util.c:1223
+#, fuzzy, c-format
+msgid "Package not found: %s"
+msgstr "Contrarotlador PackageKit"
+
+#. TRANSLATORS: command line argument, just show the version string
+#: client/pkgcli.c:76
+#, fuzzy
+msgid "Show pkgcli version"
+msgstr "Aficha la version e quita"
+
+#: client/pkgcli.c:78
+msgid "Show help"
+msgstr ""
+
+#: client/pkgcli.c:80
+msgid "Only provide minimal output"
+msgstr ""
+
+#: client/pkgcli.c:82
+msgid "Show more detailed output"
+msgstr ""
+
+#: client/pkgcli.c:84
+msgid "Output in JSON format"
+msgstr ""
+
+#: client/pkgcli.c:86
+msgid "Disable colored output"
+msgstr ""
+
+#. TRANSLATORS: command line argument, do we ask questions
+#: client/pkgcli.c:89
+msgid "Answer 'yes' to all questions"
+msgstr ""
+
+#: client/pkgcli.c:92
+msgid "FILTER"
+msgstr ""
+
+#. TRANSLATORS: command line argument, use a filter to narrow down results
+#: client/pkgcli.c:92
+msgid "Filter packages (installed, available, etc.)"
+msgstr ""
+
+#: client/pkgcli.c:118
+msgid "No command specified. Use --help for usage information."
+msgstr ""
+
+#: client/pkgcli.c:126
+#, c-format
+msgid "Unknown command: %s"
+msgstr ""
+
+#: client/pkgcli.c:135
+#, fuzzy, c-format
+msgid "Failed to connect to PackageKit: %s"
+msgstr "Impossible de contactar PackageKit"
+
+#: client/pkgcli.c:196
+#, c-format
+msgid "Version: %s"
+msgstr ""
+
+#: client/pkgcli.c:211
+#, fuzzy
+msgid "Available Commands:"
+msgstr "Disponible"
+
+#: client/pkgcli.c:217
+msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr ""
 
 #. TRANSLATORS: downloading repo data so we can search
@@ -1745,14 +1649,12 @@ msgstr ""
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
 #, fuzzy
-#| msgid "Downloading packages"
 msgid "Loading list of packages."
 msgstr "Telecargament dels paquets"
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
 #, fuzzy
-#| msgid "Failed to parse command line"
 msgid "Failed to search for file"
 msgstr "Impossible d'analisar la linha de comanda"
 
@@ -1776,7 +1678,6 @@ msgstr "Impossibke d'installar los paquets"
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
 #, fuzzy
-#| msgid "Directory not found"
 msgid "command not found"
 msgstr "Impossible de trobar lo repertòri"
 
@@ -1788,7 +1689,6 @@ msgstr "Comanda similara :"
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: contrib/command-not-found/pk-command-not-found.c:815
 #, fuzzy
-#| msgid "Similar command is:"
 msgid "Run similar command:"
 msgstr "Comanda similara :"
 
@@ -1797,7 +1697,6 @@ msgstr "Comanda similara :"
 #: contrib/command-not-found/pk-command-not-found.c:827
 #: contrib/command-not-found/pk-command-not-found.c:836
 #, fuzzy
-#| msgid "Similar command is:"
 msgid "Similar commands are:"
 msgstr "Comanda similara :"
 
@@ -1825,14 +1724,12 @@ msgstr ""
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: contrib/command-not-found/pk-command-not-found.c:903
 #, fuzzy
-#| msgid "Affected packages:"
 msgid "Suitable packages are:"
 msgstr "Paquets concernits :"
 
 #. TRANSLATORS: ask the user to choose a file to install
 #: contrib/command-not-found/pk-command-not-found.c:911
 #, fuzzy
-#| msgid "Please choose the correct package: "
 msgid "Please choose a package to install"
 msgstr "Causissètz lo paquet corrècte : "
 
@@ -1910,7 +1807,6 @@ msgstr "Netejatge dels paquets"
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/packagekit-glib2/pk-console-private.c:405
 #, fuzzy
-#| msgid "Installing packages"
 msgid "Obsoleting packages"
 msgstr "Installacion dels paquets"
 
@@ -1957,49 +1853,42 @@ msgstr ""
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:441
 #, fuzzy
-#| msgid "Downloading packages"
 msgid "Downloading list of packages"
 msgstr "Telecargament dels paquets"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:445
 #, fuzzy
-#| msgid "Downloading packages"
 msgid "Downloading file lists"
 msgstr "Telecargament dels paquets"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:449
 #, fuzzy
-#| msgid "Downloading packages"
 msgid "Downloading lists of changes"
 msgstr "Telecargament dels paquets"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:453
 #, fuzzy
-#| msgid "Downloading"
 msgid "Downloading groups"
 msgstr "Telecargament"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:457
 #, fuzzy
-#| msgid "Getting information"
 msgid "Downloading update information"
 msgstr "Obtencion d'informacions"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 #: lib/packagekit-glib2/pk-console-private.c:461
 #, fuzzy
-#| msgid "Package files"
 msgid "Repackaging files"
 msgstr "Fichièrs del paquet"
 
 #. TRANSLATORS: transaction state, loading databases
 #: lib/packagekit-glib2/pk-console-private.c:465
 #, fuzzy
-#| msgid "Downloading packages"
 msgid "Loading cache"
 msgstr "Telecargament dels paquets"
 
@@ -2011,7 +1900,6 @@ msgstr ""
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: lib/packagekit-glib2/pk-console-private.c:473
 #, fuzzy
-#| msgid "Updating packages"
 msgid "Generating package lists"
 msgstr "Mesa a jorn dels paquets"
 
@@ -2038,7 +1926,6 @@ msgstr ""
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
 #: lib/packagekit-glib2/pk-console-private.c:493
 #, fuzzy
-#| msgid "Checking signatures"
 msgid "Checking libraries in use"
 msgstr "Verificacion de las signaturas"
 
@@ -2050,7 +1937,6 @@ msgstr "Còpia de fichièrs"
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:501
 #, fuzzy
-#| msgid "Running"
 msgid "Running hooks"
 msgstr "En cors"
 
@@ -2116,35 +2002,30 @@ msgstr "Disponible"
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
 #, fuzzy
-#| msgid "Available"
 msgid "Unavailable"
 msgstr "Disponible"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
 #, fuzzy
-#| msgid "Installed"
 msgid "Install"
 msgstr "Installat"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 #, fuzzy
-#| msgid "Removed"
 msgid "Remove"
 msgstr "Suprimit"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
 #, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsolete"
 msgstr "Obsolèt"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 #, fuzzy
-#| msgid "Downloaded"
 msgid "Downgrade"
 msgstr "Telecargat"
 
@@ -2178,14 +2059,12 @@ msgstr "Netejatge"
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
 #, fuzzy
-#| msgid "Obsoleted"
 msgid "Obsoleting"
 msgstr "Obsolèt"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
 #, fuzzy
-#| msgid "Installing"
 msgid "Reinstalling"
 msgstr "Installacion en cors"
 
@@ -2202,7 +2081,6 @@ msgstr "Suprimit"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1119
 #, fuzzy
-#| msgid "Cleaning up"
 msgid "Cleaned up"
 msgstr "Netejatge"
 
@@ -2219,28 +2097,24 @@ msgstr "Reïnstallat"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1152
 #, fuzzy
-#| msgid "Unknown state"
 msgid "Unknown role type"
 msgstr "Estat desconegut"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1156
 #, fuzzy
-#| msgid "Resolving dependencies"
 msgid "Getting dependencies"
 msgstr "Resolucion de las dependéncias"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1160
 #, fuzzy
-#| msgid "Installing updates"
 msgid "Getting update details"
 msgstr "Installar las mesas a jorn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1165
 #, fuzzy
-#| msgid "Requesting data"
 msgid "Getting details"
 msgstr "Requèsta de donadas"
 
@@ -2252,28 +2126,24 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1173
 #, fuzzy
-#| msgid "Installing updates"
 msgid "Getting updates"
 msgstr "Installar las mesas a jorn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1177
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Searching by details"
 msgstr "Recèrca per nom"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1181
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Searching by file"
 msgstr "Recèrca per nom"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1185
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Searching groups"
 msgstr "Recèrca per nom"
 
@@ -2285,14 +2155,12 @@ msgstr "Recèrca per nom"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1201
 #, fuzzy
-#| msgid "Installing"
 msgid "Installing files"
 msgstr "Installacion en cors"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1205
 #, fuzzy
-#| msgid "Refreshing software list"
 msgid "Refreshing cache"
 msgstr "Mesa a jorn de la lista dels logicials"
 
@@ -2304,14 +2172,12 @@ msgstr "Mesa a jorn dels paquets"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
 #, fuzzy
-#| msgid "Cancelling"
 msgid "Canceling"
 msgstr "Anullacion"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
 #, fuzzy
-#| msgid "Getting information"
 msgid "Getting repositories"
 msgstr "Obtencion d'informacions"
 
@@ -2323,14 +2189,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1225
 #, fuzzy
-#| msgid "Requesting data"
 msgid "Setting data"
 msgstr "Requèsta de donadas"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
 #, fuzzy
-#| msgid "Removing packages"
 msgid "Removing repository"
 msgstr "Supression dels paquets"
 
@@ -2342,7 +2206,6 @@ msgstr "Resolucion"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1238
 #, fuzzy
-#| msgid "Copying files"
 msgid "Getting file list"
 msgstr "Còpia de fichièrs"
 
@@ -2354,21 +2217,18 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1246
 #, fuzzy
-#| msgid "Installing updates"
 msgid "Installing signature"
 msgstr "Installar las mesas a jorn"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1250
 #, fuzzy
-#| msgid "Updating packages"
 msgid "Getting packages"
 msgstr "Mesa a jorn dels paquets"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1254
 #, fuzzy
-#| msgid "Accept EULA"
 msgid "Accepting EULA"
 msgstr "Acceptar la licéncia del logicial"
 
@@ -2380,14 +2240,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1266
 #, fuzzy
-#| msgid "Testing changes"
 msgid "Getting categories"
 msgstr "Tèst dels cambiaments"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1270
 #, fuzzy
-#| msgid "Getting information"
 msgid "Getting transactions"
 msgstr "Obtencion d'informacions"
 
@@ -2409,14 +2267,12 @@ msgstr ""
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:59
 #, fuzzy
-#| msgid "The signature was not accepted."
 msgid "The unsigned software will not be installed."
 msgstr "La signatura es pas estada acceptada."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
 #: lib/packagekit-glib2/pk-task-text.c:104
 #, fuzzy
-#| msgid "Session restart required:"
 msgid "Software source signature required"
 msgstr "Reaviada de la session requesida per :"
 
@@ -2428,7 +2284,6 @@ msgstr ""
 #. TRANSLATORS: the key URL
 #: lib/packagekit-glib2/pk-task-text.c:113
 #, fuzzy
-#| msgid "Key ID"
 msgid "Key URL"
 msgstr "Identificant de la clau"
 
@@ -2480,7 +2335,6 @@ msgstr "Acceptatz aqueste contracte ?"
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:193
 #, fuzzy
-#| msgid "The signature was not accepted."
 msgid "The agreement was not accepted."
 msgstr "La signatura es pas estada acceptada."
 
@@ -2507,14 +2361,12 @@ msgstr "Tèxte"
 #. TRANSLATORS: ask the user to insert the media
 #: lib/packagekit-glib2/pk-task-text.c:243
 #, fuzzy
-#| msgid "Please choose the correct package: "
 msgid "Please insert the correct media"
 msgstr "Causissètz lo paquet corrècte : "
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: lib/packagekit-glib2/pk-task-text.c:248
 #, fuzzy
-#| msgid "The signature was not accepted."
 msgid "The correct media was not inserted."
 msgstr "La signatura es pas estada acceptada."
 
@@ -2526,42 +2378,36 @@ msgstr "Los paquets seguents van èsser desinstallats :"
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:268
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages have to be installed:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:273
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages have to be updated:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:278
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages have to be reinstalled:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:283
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages have to be downgraded:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages have to be obsoleted:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
 #, fuzzy
-#| msgid "The following packages have to be removed:"
 msgid "The following packages are untrusted:"
 msgstr "Los paquets seguents van èsser desinstallats :"
 
@@ -2573,7 +2419,6 @@ msgstr ""
 #. TRANSLATORS: tell the user we didn't do anything
 #: lib/packagekit-glib2/pk-task-text.c:428
 #, fuzzy
-#| msgid "The transaction failed"
 msgid "The transaction did not proceed."
 msgstr "La transaccion a fracassat"
 
@@ -2587,8 +2432,8 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:23
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
-msgid "Authentication is required to cancel a task that was not started by yourself"
+msgid ""
+"Authentication is required to cancel a task that was not started by yourself"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
 #. SECURITY:
@@ -2602,7 +2447,6 @@ msgstr "Installar un paquet signat"
 
 #: policy/org.freedesktop.packagekit.policy.in:40
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2617,7 +2461,6 @@ msgstr "Installar un fichièr local pas signat"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to install untrusted software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2629,13 +2472,11 @@ msgstr "Autentificacion requesida per acceptar una licéncia"
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
 #, fuzzy
-#| msgid "Install signed package"
 msgid "Install already installed package again"
 msgstr "Installar un paquet signat"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to reinstall software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2647,13 +2488,11 @@ msgstr "Autentificacion requesida per acceptar una licéncia"
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
 #, fuzzy
-#| msgid "Install signed package"
 msgid "Install older version of installed package"
 msgstr "Installar un paquet signat"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to downgrade software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2667,7 +2506,9 @@ msgid "Trust a key used for signing software"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid "Authentication is required to consider a key used for signing software as trusted"
+msgid ""
+"Authentication is required to consider a key used for signing software as "
+"trusted"
 msgstr ""
 
 #. SECURITY:
@@ -2698,7 +2539,6 @@ msgstr "Suprimir un paquet"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to remove software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2710,13 +2550,11 @@ msgstr "Autentificacion requesida per acceptar una licéncia"
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
 #, fuzzy
-#| msgid "Update text"
 msgid "Update software"
 msgstr "Informacions de mesa a jorn"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to update software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2730,7 +2568,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to change software repository parameters"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2743,7 +2580,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:199
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to refresh the system repositories"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2755,7 +2591,9 @@ msgid "Set network proxy"
 msgstr "Configurar lo proxy de ret"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid "Authentication is required to set the network proxy used for downloading software"
+msgid ""
+"Authentication is required to set the network proxy used for downloading "
+"software"
 msgstr ""
 
 #. SECURITY:
@@ -2768,7 +2606,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to upgrade the operating system"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2782,7 +2619,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to repair the installed software"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2801,7 +2637,6 @@ msgstr ""
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to trigger offline updates"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2814,7 +2649,6 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 #, fuzzy
-#| msgid "Authentication is required to accept a EULA"
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Autentificacion requesida per acceptar una licéncia"
 
@@ -2846,28 +2680,24 @@ msgstr ""
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Search by names"
 msgstr "Recèrca per nom"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Search by details"
 msgstr "Recèrca per nom"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
 #, fuzzy
-#| msgid "Searching by name"
 msgid "Search by files"
 msgstr "Recèrca per nom"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
 #, fuzzy
-#| msgid "Installing packages"
 msgid "Install package"
 msgstr "Installacion dels paquets"
 
@@ -2884,28 +2714,24 @@ msgstr "PackageKit"
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
 #, fuzzy
-#| msgid "Failed to parse command line"
 msgid "Failed to parse arguments"
 msgstr "Impossible d'analisar la linha de comanda"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
 #, fuzzy
-#| msgid "Failed to parse command line"
 msgid "Failed to load the config file"
 msgstr "Impossible d'analisar la linha de comanda"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
 #, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend"
 msgstr "Impossible de contactar PackageKit"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
 #, fuzzy
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to unload the backend"
 msgstr "Impossible de contactar PackageKit"
 
@@ -2943,14 +2769,12 @@ msgstr "Servici PackageKit"
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:221
 #, fuzzy, c-format
-#| msgid "Failed to launch:"
 msgid "Failed to resolve auto: %s"
 msgstr "Impossible d'aviar :"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:245
 #, fuzzy, c-format
-#| msgid "Failed to contact PackageKit"
 msgid "Failed to load the backend: %s"
 msgstr "Impossible de contactar PackageKit"
 

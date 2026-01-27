@@ -21,8 +21,9 @@ run_target ('make-linguas',
 
 # maintainer shortcut for updating l10n data
 run_target ('l10n-update',
-    command: ['ninja', '-C', meson.project_build_root(),
-              'make-linguas',
-              pk_gettext_domain + '-pot',
+    command: [
+        'ninja', '-C', meson.project_build_root(),
+        'make-linguas',
+        pk_gettext_domain + '-pot',
     ]
 )
