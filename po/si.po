@@ -8,8 +8,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Sinhala (http://app.transifex.com/freedesktop/packagekit/"
-"language/si/)\n"
+"Language-Team: Sinhala (http://app.transifex.com/freedesktop/packagekit/language/si/)\n"
 "Language: si\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -365,21 +364,13 @@ msgstr "යාවත්කාලීනය සම්පූර්ණ කිරී�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"වැදගත් ආරක්ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය "
-"නැවත අරඹන්න."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "වැදගත් ආරක්ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පරිගණකය නැවත අරඹන්න."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"වැදගත් ආරක්‍ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය "
-"වන්න."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "වැදගත් ආරක්‍ෂක යාවත්කාලීන ස්ථාපනය කර ඇති බැවින් යාවත්කාලීනය සම්පූර්ණ කිරීමට කරුණාකර පිටවී පුරනය වන්න."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -410,12 +401,8 @@ msgstr "පැකේජ කිසිවක් හමු නොවීය"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"අපේක්ෂිත පැකේජයේ නම, ඇත්ත වශයෙන්ම ගොනුව ලැබී ඇත. ඒ වෙනුවට 'pkcon install-local %s' "
-"භාවිතා කිරීමට උත්සාහ කරන්න."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "අපේක්ෂිත පැකේජයේ නම, ඇත්ත වශයෙන්ම ගොනුව ලැබී ඇත. ඒ වෙනුවට 'pkcon install-local %s' භාවිතා කිරීමට උත්සාහ කරන්න."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -545,21 +532,16 @@ msgstr "භාවිතයට නොගත් පරායත්තතා ස්
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"idle network bandwidth භාවිතයෙන් සහ අඩු බලයක් භාවිතා කරමින් විධානය ක්‍රියාත්මක කරන්න"
+msgstr "idle network bandwidth භාවිතයෙන් සහ අඩු බලයක් භාවිතා කරමින් විධානය ක්‍රියාත්මක කරන්න"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"සජීවිකරණ විජට් භාවිතා කරනවාට වඩා යන්ත්‍රයෙන් කියවිය හැකි ප්‍රතිදානයක් තිරගත කිරීමට මුද්‍රණය කරන්න"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "සජීවිකරණ විජට් භාවිතා කරනවාට වඩා යන්ත්‍රයෙන් කියවිය හැකි ප්‍රතිදානයක් තිරගත කිරීමට මුද්‍රණය කරන්න"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -922,8 +904,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1132,8 +1113,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2369,8 +2349,7 @@ msgid "Cancel foreign task"
 msgstr "විදේශීය කාර්යය අවලංගු කරන්න"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ඔබ විසින් ආරම්භ නොකළ කාර්යයක් අවලංගු කිරීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 #. SECURITY:
@@ -2437,11 +2416,8 @@ msgid "Trust a key used for signing software"
 msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාස කරන්න"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාසදායක ලෙස සලකා බැලීමට සත්‍යාපනය අවශ්‍ය වේ"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "මෘදුකාංග අත්සන් කිරීම සඳහා භාවිතා කරන යතුරක් විශ්වාසදායක ලෙස සලකා බැලීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2518,9 +2494,7 @@ msgid "Set network proxy"
 msgstr "ජාල ප්‍රොක්සි සකසන්න"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "මෘදුකාංග බාගත කිරීම සඳහා භාවිතා කරන ජාල ප්‍රොක්සි සැකසීමට සත්‍යාපනය අවශ්‍ය වේ"
 
 #. SECURITY:

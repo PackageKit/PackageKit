@@ -10,8 +10,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Odia (http://app.transifex.com/freedesktop/packagekit/"
-"language/or/)\n"
+"Language-Team: Odia (http://app.transifex.com/freedesktop/packagekit/language/or/)\n"
 "Language: or\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -373,21 +372,13 @@ msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା 
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ "
-"ସ୍ଥାପିତ ହୋଇସାରିଛି।"
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ କମ୍ପୁଟରକୁ ପୁନଃଚାଳନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା "
-"ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "ଅଦ୍ୟତନକୁ ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ ଦୟାକରି ଲଗଆଉଟ କରିସାରି ପୁଣି ଲଗଇନ କରନ୍ତୁ, ଯେହେତୁ ଆବଶ୍ୟକୀୟ ସୁରକ୍ଷା ଅଦ୍ୟତନଗୁଡ଼ିକ ସ୍ଥାପିତ ହୋଇସାରିଛି।"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -419,9 +410,7 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -560,17 +549,12 @@ msgstr "ସ୍ଥିର ନେଟୱର୍କ ବ୍ୟାଣ୍ଡୱିଡ଼�
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"ଜୀବନାୟନ ୱିଜେଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପରିବର୍ତ୍ତେ ପରଦାରେ ଗୋଟିଏ ଯନ୍ତ୍ର ପଠନ ଯୋଗ୍ୟ ଫଳାଫଳକୁ ମୁଦ୍ରଣ "
-"କରନ୍ତୁ"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "ଜୀବନାୟନ ୱିଜେଟଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ପରିବର୍ତ୍ତେ ପରଦାରେ ଗୋଟିଏ ଯନ୍ତ୍ର ପଠନ ଯୋଗ୍ୟ ଫଳାଫଳକୁ ମୁଦ୍ରଣ କରନ୍ତୁ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -937,8 +921,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1145,8 +1128,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2388,8 +2370,7 @@ msgid "Cancel foreign task"
 msgstr "ବାହାରର କାର୍ଯ୍ୟକୁ ବାତିଲ କରନ୍ତୁ"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2463,9 +2444,7 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
 #, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2550,9 +2529,7 @@ msgstr "ନେଟୱର୍କ ପ୍ରକ୍ସି ସେଟ କରନ୍ତୁ
 
 #: policy/org.freedesktop.packagekit.policy.in:214
 #, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "ଆପଣଙ୍କ ନିଜ ଦ୍ୱାରା ଆରମ୍ଭ ହୋଇନଥିବା କାର୍ଯ୍ୟଟିକୁ ବାତିଲ କରିବା ପାଇଁ ବୈଧିକରଣ ଆବଶ୍ୟକ"
 
 #. SECURITY:
@@ -2748,27 +2725,19 @@ msgstr "ଏହି ସଫ୍ଟୱେରଟି ବିଶ୍ୱସ୍ତ ଉତ୍
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
-"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
-"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
-"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି "
-"ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
+msgstr "ଏହାକୁ କରିବା ସୁରକ୍ଷିତ କି ନାହିଁ, ତାହା ଯେ ପର୍ଯ୍ୟନ୍ତ ଆପଣ ନିଶ୍ଚିତ ହୋଇନାହାନ୍ତି, ସେପର୍ଯ୍ୟନ୍ତ ଏହି ପ୍ୟାକେଜକୁ ଅଦ୍ୟତନ କରନ୍ତୁ ନାହିଁ।"
 
 #, fuzzy
 #~| msgid "Installing updates"

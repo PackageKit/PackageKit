@@ -14,8 +14,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Catalan (http://app.transifex.com/freedesktop/packagekit/"
-"language/ca/)\n"
+"Language-Team: Catalan (http://app.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -68,8 +67,7 @@ msgstr "Instal·lació de les actualitzacions; això pot trigar una estona..."
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-"Instal·lació de l'actualització del sistema; això pot trigar una estona..."
+msgstr "Instal·lació de l'actualització del sistema; això pot trigar una estona..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -358,9 +356,7 @@ msgstr "En aquest moment no hi ha disponible cap actualització."
 
 #: client/pkcon/pk-console.c:758
 msgid "There are no upgrades available at this time."
-msgstr ""
-"En aquest moment no hi ha disponible cap actualització a nivell de "
-"llançament."
+msgstr "En aquest moment no hi ha disponible cap actualització a nivell de llançament."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
@@ -374,21 +370,13 @@ msgstr "Si us plau, sortiu i torneu a entrar per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"S'han instal·lat actualitzacions de seguretat importants. Reinicieu "
-"l'ordinador per completar l'actualització."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "S'han instal·lat actualitzacions de seguretat importants. Reinicieu l'ordinador per completar l'actualització."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"S'han instal·lat actualitzacions de seguretat importants. Sortiu i torneu a "
-"entrar per completar l'actualització."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "S'han instal·lat actualitzacions de seguretat importants. Sortiu i torneu a entrar per completar l'actualització."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -419,12 +407,8 @@ msgstr "No s'han trobat els paquets"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"S'esperava el nom d'un paquet i es va obtenir el nom d'un fitxer. En lloc "
-"seu, proveu «pkcon install-local %s»."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "S'esperava el nom d'un paquet i es va obtenir el nom d'un fitxer. En lloc seu, proveu «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -463,8 +447,7 @@ msgstr "Aquesta eina no ha pogut trobar el paquet: %s"
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pkcon/pk-console.c:1220
 msgid "No packages require updating to newer versions."
-msgstr ""
-"No hi ha paquets que requereixin l'actualització a versions més recents."
+msgstr "No hi ha paquets que requereixin l'actualització a versions més recents."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -501,9 +484,7 @@ msgstr "Subordres:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"No s'ha pogut obtenir l'hora des que aquesta acció es va completar per "
-"darrera vegada"
+msgstr "No s'ha pogut obtenir l'hora des que aquesta acció es va completar per darrera vegada"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -559,23 +540,16 @@ msgstr "Elimina automàticament les dependències no utilitzades"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Executa l'ordre mitjançant l'amplada de banda inactiva de la xarxa i també "
-"amb menys energia"
+msgstr "Executa l'ordre mitjançant l'amplada de banda inactiva de la xarxa i també amb menys energia"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Imprimeix per pantalla una sortida que pugui llegir la màquina, en lloc "
-"d'utilitzar els ginys animats"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Imprimeix per pantalla una sortida que pugui llegir la màquina, en lloc d'utilitzar els ginys animats"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -643,9 +617,7 @@ msgstr "Es requereix un nom de paquet per eliminar"
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Es requereix el directori de destinació i els noms dels paquets per a la "
-"baixada"
+msgstr "Es requereix el directori de destinació i els noms dels paquets per a la baixada"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -859,8 +831,7 @@ msgstr "S'ha produït un error en obtenir l'estat del dimoni"
 #: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 #, fuzzy
 msgid "No packages require updating"
-msgstr ""
-"No hi ha paquets que requereixin l'actualització a versions més recents."
+msgstr "No hi ha paquets que requereixin l'actualització a versions més recents."
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -941,8 +912,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1151,8 +1121,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -1650,8 +1619,7 @@ msgstr "Baixada dels detalls quant als dipòsits de programari."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"Baixada de la llista de fitxers (pot trigar una estona en completar-se)."
+msgstr "Baixada de la llista de fitxers (pot trigar una estona en completar-se)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2389,10 +2357,8 @@ msgid "Cancel foreign task"
 msgstr "Cancel·la tasca externa"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Es requereix autenticació per cancel·lar una tasca que no la vàreu iniciar"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Es requereix autenticació per cancel·lar una tasca que no la vàreu iniciar"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2458,12 +2424,8 @@ msgid "Trust a key used for signing software"
 msgstr "Confia en una clau que s'utilitzi per a la signatura de paquets"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Es requereix autenticació per tenir en consideració una clau utilitzada per "
-"signar els paquets com de confiança"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Es requereix autenticació per tenir en consideració una clau utilitzada per signar els paquets com de confiança"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2519,9 +2481,7 @@ msgstr "Canvia els paràmetres del dipòsit de sistema"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Es requereix autenticació per canviar els paràmetres del dipòsit de "
-"programari"
+msgstr "Es requereix autenticació per canviar els paràmetres del dipòsit de programari"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2542,12 +2502,8 @@ msgid "Set network proxy"
 msgstr "Estableix el servidor intermediari"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Es requereix autenticació per establir el servidor intermediari de xarxa que "
-"s'utilitza per baixar el programari"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Es requereix autenticació per establir el servidor intermediari de xarxa que s'utilitza per baixar el programari"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2588,8 +2544,7 @@ msgstr "Dispara les actualitzacions sense connexió"
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
-"Es requereix autenticació per disparar les actualitzacions sense connexió"
+msgstr "Es requereix autenticació per disparar les actualitzacions sense connexió"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2600,9 +2555,7 @@ msgstr "Neteja els missatges de les actualitzacions sense connexió"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Es requereix autenticació per netejar els missatges de les actualitzacions "
-"sense connexió"
+msgstr "Es requereix autenticació per netejar els missatges de les actualitzacions sense connexió"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2729,24 +2682,19 @@ msgstr "El programari no prové d'un origen de confiança."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"No actualitzeu aquest paquet a menys que estigueu segur que és segur fer-ho."
+msgstr "No actualitzeu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"No actualitzeu aquests paquets a menys que estigueu segur que és segur fer-"
-"ho."
+msgstr "No actualitzeu aquests paquets a menys que estigueu segur que és segur fer-ho."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"No instal·leu aquest paquet a menys que estigueu segur que és segur fer-ho."
+msgstr "No instal·leu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"No instal·leu aquests paquets a menys que estigueu segur que és segur fer-ho."
+msgstr "No instal·leu aquests paquets a menys que estigueu segur que és segur fer-ho."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

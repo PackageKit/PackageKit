@@ -11,14 +11,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-10-22 12:02+0000\n"
 "Last-Translator: jonnysemon <jonnysemon@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Arabic <https://hosted.weblate.org/projects/packagekit/"
-"translations/ar/>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/packagekit/translations/ar/>\n"
 "Language: ar\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 "X-Generator: Weblate 5.14-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -375,16 +373,12 @@ msgstr ""
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr ""
 
 #. TRANSLATORS: more than one package could be found that matched,
@@ -417,9 +411,7 @@ msgstr "الحزمة غير موجودة"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -554,15 +546,12 @@ msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr ""
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -918,8 +907,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1115,8 +1103,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2310,8 +2297,7 @@ msgid "Cancel foreign task"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "الاستيثاق مطلوب لإلغاء مهمة لم تبدأها بنفسك"
 
 #. SECURITY:
@@ -2378,9 +2364,7 @@ msgid "Trust a key used for signing software"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "الاستيثاق مطلوب لاعتبار مفتاح يستخدم لتوقيع البرامج على أنه موثوق به"
 
 #. SECURITY:
@@ -2459,9 +2443,7 @@ msgid "Set network proxy"
 msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "الاستيثاق مطلوب لتعيين وكيل شبكة سيستخدم لتنزيل البرامج"
 
 #. SECURITY:

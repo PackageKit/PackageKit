@@ -13,8 +13,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Greek (http://app.transifex.com/freedesktop/packagekit/"
-"language/el/)\n"
+"Language-Team: Greek (http://app.transifex.com/freedesktop/packagekit/language/el/)\n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -364,33 +363,22 @@ msgstr "Δεν υπάρχουν διαθέσιμες αναβαθμίσεις α
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
 msgid "Please restart the computer to complete the update."
-msgstr ""
-"Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
+msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση."
 
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
 msgid "Please logout and login to complete the update."
-msgstr ""
-"Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
-"ενημέρωση."
+msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η "
-"ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Παρακαλούμε, επανεκκινήστε τον υπολογιστή σας για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η "
-"ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Παρακαλούμε, αποσυνδεθείτε και συνδεθείτε εκ νέου για να ολοκληρωθεί η ενημέρωση, καθώς εγκαταστάθηκαν σημαντικές ενημερώσεις ασφαλείας."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -421,12 +409,8 @@ msgstr "Δεν βρέθηκε κανένα πακέτο"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Αναμενόταν όνομα πακέτου, στην πραγματικότητα λήφθηκε αρχείο. Δοκιμάστε να "
-"χρησιμοποιήσετε το 'pkcon install-local %s' αντ' αυτού."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Αναμενόταν όνομα πακέτου, στην πραγματικότητα λήφθηκε αρχείο. Δοκιμάστε να χρησιμοποιήσετε το 'pkcon install-local %s' αντ' αυτού."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -502,9 +486,7 @@ msgstr "Υποεντολές:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Αποτυχία λήψης του χρόνου που είχε ολοκληρωθεί για τελευταία φορά αυτή η "
-"ενέργεια"
+msgstr "Αποτυχία λήψης του χρόνου που είχε ολοκληρωθεί για τελευταία φορά αυτή η ενέργεια"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -560,23 +542,16 @@ msgstr ""
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Εκτέλεση της εντολής χρησιμοποιώντας αδρανές εύρος ζώνης δικτύου και επίσης "
-"χρησιμοποιώντας λιγότερη ενέργεια"
+msgstr "Εκτέλεση της εντολής χρησιμοποιώντας αδρανές εύρος ζώνης δικτύου και επίσης χρησιμοποιώντας λιγότερη ενέργεια"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Εκτύπωση στην οθόνη μιας εξόδου αναγνώσιμης από μηχάνημα, αντί της χρήσης "
-"γραφικών στοιχείων κινούμενων εικόνων"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Εκτύπωση στην οθόνη μιας εξόδου αναγνώσιμης από μηχάνημα, αντί της χρήσης γραφικών στοιχείων κινούμενων εικόνων"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -631,9 +606,7 @@ msgstr "Πρέπει να οριστεί όνομα αρχείου προς εγ
 #. * users won't see this
 #: client/pkcon/pk-console.c:1985
 msgid "A type, key_id and package_id are required"
-msgstr ""
-"Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου "
-"(package_id)"
+msgstr "Πρέπει να οριστεί ο τύπος, το όνομα κλειδιού (key_id) και το όνομα πακέτου (package_id)"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -646,9 +619,7 @@ msgstr "Πρέπει να οριστεί όνομα πακέτου προς αφ
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα "
-"ληφθούν"
+msgstr "Πρέπει να οριστεί ο κατάλογος προορισμού και τα ονόματα των πακέτων που θα ληφθούν"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -943,8 +914,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1153,8 +1123,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2393,11 +2362,8 @@ msgid "Cancel foreign task"
 msgstr "Ακύρωση ενέργειας άλλου χρήστη"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει "
-"εσείς"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Απαιτείται πιστοποίηση για την ακύρωση ενέργειας που δεν είχατε εκκινήσει εσείς"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2460,16 +2426,11 @@ msgstr "Απαιτείται πιστοποίηση για την υποβάθμ
 #. - This is not kept as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
-"Εμπιστευθείτε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού"
+msgstr "Εμπιστευθείτε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Απαιτείται πιστοποίηση για να θεωρήσετε ένα κλειδί που χρησιμοποιείται για "
-"την υπογραφή λογισμικού ως έμπιστο"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Απαιτείται πιστοποίηση για να θεωρήσετε ένα κλειδί που χρησιμοποιείται για την υπογραφή λογισμικού ως έμπιστο"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2539,8 +2500,7 @@ msgstr "Λήψη αποθετηρίων"
 #: policy/org.freedesktop.packagekit.policy.in:199
 #, fuzzy
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-"Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
+msgstr "Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -2550,12 +2510,8 @@ msgid "Set network proxy"
 msgstr "Ορισμός διαμεσολαβητή δικτύου"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Απαιτείται πιστοποίηση για τον ορισμό του διαμεσολαβητή δικτύου που "
-"χρησιμοποιείται για τη λήψη λογισμικού"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Απαιτείται πιστοποίηση για τον ορισμό του διαμεσολαβητή δικτύου που χρησιμοποιείται για τη λήψη λογισμικού"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2581,8 +2537,7 @@ msgstr "Επιδιόρθωση συστήματος "
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
-"Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
+msgstr "Απαιτείται πιστοποίηση για την επιδιόρθωση του εγκατεστημένου λογισμικού"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2610,9 +2565,7 @@ msgstr "Εκκαθάριση μηνύματος ενημερώσεων εκτό�
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Απαιτείται πιστοποίηση για την εκκαθάριση μηνύματος ενημερώσεων εκτός "
-"σύνδεσης"
+msgstr "Απαιτείται πιστοποίηση για την εκκαθάριση μηνύματος ενημερώσεων εκτός σύνδεσης"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99

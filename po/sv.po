@@ -18,8 +18,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
-"Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/"
-"translations/sv/>\n"
+"Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -376,21 +375,13 @@ msgstr "Logga ut och logga in igen för att färdigställa uppdateringen."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Starta om datorn för att färdigställa uppdateringen eftersom viktiga "
-"säkerhetsuppdateringar har installerats."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Starta om datorn för att färdigställa uppdateringen eftersom viktiga säkerhetsuppdateringar har installerats."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Logga ut och logga in igen för att färdigställa uppdateringen eftersom "
-"viktiga säkerhetsuppdateringar har installerats."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Logga ut och logga in igen för att färdigställa uppdateringen eftersom viktiga säkerhetsuppdateringar har installerats."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -421,12 +412,8 @@ msgstr "Inga paket hittades"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Förväntade paketnamn men fick fil. Prova att använda ”pkcon install-local "
-"%s” istället."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Förväntade paketnamn men fick fil. Prova att använda ”pkcon install-local %s” istället."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -560,20 +547,13 @@ msgstr "Kör kommandot med inaktiv nätverksbandbredd och även med mindre strö
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Skriv ut maskinläsbart utdata på skärmen istället för att använda animerade "
-"widgetar"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Skriv ut maskinläsbart utdata på skärmen istället för att använda animerade widgetar"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Maximal cacheålder för metadata (i sekunder). Använd -1 för att endast "
-"använda cache, 1 för att läsa in cache igen."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Maximal cacheålder för metadata (i sekunder). Använd -1 för att endast använda cache, 1 för att läsa in cache igen."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -834,8 +814,7 @@ msgstr "Katalogen finns inte: %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-"Uppdatera alla paket eller specifika paket till sina senaste versioner."
+msgstr "Uppdatera alla paket eller specifika paket till sina senaste versioner."
 
 #: client/pkgc-manage.c:510
 #, c-format
@@ -916,9 +895,7 @@ msgstr "Misslyckades med att utlösa frånkopplad uppdatering: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Frånkopplad uppdatering schemalagd. Systemet kommer uppdateras vid nästa "
-"omstart."
+msgstr "Frånkopplad uppdatering schemalagd. Systemet kommer uppdateras vid nästa omstart."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -930,8 +907,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Utlös & hantera frånkopplade systemuppdateringar.\n"
 "\n"
@@ -939,8 +915,7 @@ msgstr ""
 "  prepare - förbered en frånkopplad uppdatering och utlös den (standard)\n"
 "  trigger - utlös en (manuellt förberedd) frånkopplad uppdatering\n"
 "  cancel  - avbryt en planerad frånkopplad uppdatering\n"
-"  status  - visa statusinformation om en förberedd eller slutförd "
-"frånkopplad uppdatering"
+"  status  - visa statusinformation om en förberedd eller slutförd frånkopplad uppdatering"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1141,10 +1116,8 @@ msgstr "Visa vilka paket som kräver de angivna paketen."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Lista alla tillgängliga filter, grupper och kategorier för paketorganisation."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Lista alla tillgängliga filter, grupper och kategorier för paketorganisation."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -2326,10 +2299,8 @@ msgid "Cancel foreign task"
 msgstr "Avbryt främmande åtgärd"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Autentisering krävs för att avbryta en åtgärd som inte startades av dig själv"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Autentisering krävs för att avbryta en åtgärd som inte startades av dig själv"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2395,12 +2366,8 @@ msgid "Trust a key used for signing software"
 msgstr "Lita på en nyckel som använts för att signera programvara"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Autentisering krävs för att anse en nyckel som använts för att signera "
-"programvara som pålitlig"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Autentisering krävs för att anse en nyckel som använts för att signera programvara som pålitlig"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2477,12 +2444,8 @@ msgid "Set network proxy"
 msgstr "Ange nätverksproxyserver"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Autentisering krävs för att ställa in nätverksproxyn som används för att "
-"hämta ner programvara"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Autentisering krävs för att ställa in nätverksproxyn som används för att hämta ner programvara"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2661,23 +2624,19 @@ msgstr "Programvaran kommer inte från en pålitlig källa."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Uppdatera inte detta paket såvida inte du vet att det är säkert att göra så."
+msgstr "Uppdatera inte detta paket såvida inte du vet att det är säkert att göra så."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Uppdatera inte dessa paket såvida inte du vet att det är säkert att göra så."
+msgstr "Uppdatera inte dessa paket såvida inte du vet att det är säkert att göra så."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Installera inte detta paket såvida inte du vet att det är säkert att göra så."
+msgstr "Installera inte detta paket såvida inte du vet att det är säkert att göra så."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Installera inte dessa paket såvida inte du vet att det är säkert att göra så."
+msgstr "Installera inte dessa paket såvida inte du vet att det är säkert att göra så."
 
 #~ msgid "Preparing offline update..."
 #~ msgstr "Förbereder frånkopplad uppdatering…"

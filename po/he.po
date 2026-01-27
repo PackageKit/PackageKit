@@ -13,8 +13,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-12-02 06:00+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
-"Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/"
-"translations/he/>\n"
+"Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -371,20 +370,13 @@ msgstr "נא לצאת מהחשבון לצורך השלמת העדכון."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"נא להפעיל את המחשב מחדש לצורך השלמת העדכון, מכיוון שעדכוני אבטחה חשובים "
-"התוקנו."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "נא להפעיל את המחשב מחדש לצורך השלמת העדכון, מכיוון שעדכוני אבטחה חשובים התוקנו."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"נא לצאת מהחשבון לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה חשובים."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "נא לצאת מהחשבון לצורך השלמת העדכון, מכיוון שהותקנו עדכוני אבטחה חשובים."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -415,12 +407,8 @@ msgstr "לא נמצאו חבילות"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"אמורה הייתה להיות שם חבילה, במקום התקבל קובץ. כדאי לנסות להשתמש ב־‚pkcon "
-"install-local %s’ במקום."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "אמורה הייתה להיות שם חבילה, במקום התקבל קובץ. כדאי לנסות להשתמש ב־‚pkcon install-local %s’ במקום."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -554,18 +542,13 @@ msgstr "הרץ את הפקודה הזאת תוך שימוש ברוחב פס סר
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "להציג פלט למסך לקריאה ע״י מכונה במקום וידג׳טים מונפשים"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"גיל נתוני העל המרבי (בשניות). יש להשתמש ב־‎-1 כדי להשתמש במטמון בלבד או ב־1 "
-"כדי לרענן את המטמון."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "גיל נתוני העל המרבי (בשניות). יש להשתמש ב־‎-1 כדי להשתמש במטמון בלבד או ב־1 כדי לרענן את המטמון."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -919,8 +902,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "הזנקה וניהול עדכוני מערכת בלתי מקוונים.\n"
 "\n"
@@ -1129,8 +1111,7 @@ msgstr "הצגת אילו חבילות דורשות חבילות מסוימות.
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr "הצגת כל המסננים, הקבוצות והקטגוריות הזמינים לסידור חבילות."
 
 #. TRANSLATORS: Header for list of available package filters
@@ -1572,9 +1553,7 @@ msgstr "פקודות זמינות:"
 #: client/pkgcli.c:217
 #, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-"אפשר להשתמש ב־‚pkgctl COMMAND --help’ לקבלת עזרה עם פקודה מסוימת (שם הפקודה "
-"במקום COMMAND)."
+msgstr "אפשר להשתמש ב־‚pkgctl COMMAND --help’ לקבלת עזרה עם פקודה מסוימת (שם הפקודה במקום COMMAND)."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -2317,8 +2296,7 @@ msgid "Cancel foreign task"
 msgstr "ביטול משימה זרה"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "נדרש אימות כדי לבטל משימה שלא התחלת בעצמך"
 
 #. SECURITY:
@@ -2385,9 +2363,7 @@ msgid "Trust a key used for signing software"
 msgstr "לתת אמון במפתח שמשמש לחתימת תכנה"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "נדרש אימות כדי להתייחס למפתח שמשמש לחתימה על תכנה כמהימן"
 
 #. SECURITY:
@@ -2465,9 +2441,7 @@ msgid "Set network proxy"
 msgstr "הגדרת מתווך לרשת"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "נדרש אימות כדי להגדיר את מתווך הרשת לטובת הורדת תכנה"
 
 #. SECURITY:

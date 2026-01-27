@@ -14,14 +14,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-12-01 15:39+0000\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
-"Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/"
-"translations/hr/>\n"
+"Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/translations/hr/>\n"
 "Language: hr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -373,21 +371,13 @@ msgstr "Odjavite se i ponovno prijavite za završetak nadopune."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Ponovno pokrenite računalo za završetak nadopune jer su bitne sigurnosne "
-"nadopune instalirane."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Ponovno pokrenite računalo za završetak nadopune jer su bitne sigurnosne nadopune instalirane."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Odjavite se i ponovno prijavite za završetak nadopune jer su bitne "
-"sigurnosne nadopune instalirane."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Odjavite se i ponovno prijavite za završetak nadopune jer su bitne sigurnosne nadopune instalirane."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -418,12 +408,8 @@ msgstr "Nema pronađenih paketa"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Očekivani naziv datoteke, zapravo sadrži datoteku. Pokušajte umjesto "
-"koristiti 'pkcon install-local %s'."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Očekivani naziv datoteke, zapravo sadrži datoteku. Pokušajte umjesto koristiti 'pkcon install-local %s'."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -543,8 +529,7 @@ msgstr "Dopusti vraćanje paketa na prijašnju inačicu tijekom prijenosa"
 
 #: client/pkcon/pk-console.c:1720
 msgid "Allow packages to be reinstalled during transaction"
-msgstr ""
-"Dopusti ponovnu instalaciju paketa na prijašnju inačicu tijekom prijenosa"
+msgstr "Dopusti ponovnu instalaciju paketa na prijašnju inačicu tijekom prijenosa"
 
 #. TRANSLATORS: command line argument
 #: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
@@ -554,25 +539,17 @@ msgstr "Automatski ukloni nekorištene zavisnosti"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Pokreni naredbu koristeći mrežnu propusnost mirovanja uz manju upotrebu "
-"energije"
+msgstr "Pokreni naredbu koristeći mrežnu propusnost mirovanja uz manju upotrebu energije"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Prikazuj na zaslonu strojno čitljiv zapis, radije nego animirane widgete"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Prikazuj na zaslonu strojno čitljiv zapis, radije nego animirane widgete"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Maksimalna starost predmemorije metapodataka (u sekundama). Koristi −1 za "
-"korištenje samo predmemorije, 1 za ponovno učitavanje predmemorije."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Maksimalna starost predmemorije metapodataka (u sekundama). Koristi −1 za korištenje samo predmemorije, 1 za ponovno učitavanje predmemorije."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -765,8 +742,7 @@ msgstr "Dopusti vraćanje paketa na prijašnju inačicu tijekom prijenosa"
 #: client/pkgc-manage.c:54
 #, fuzzy
 msgid "Allow package re-installations"
-msgstr ""
-"Dopusti ponovnu instalaciju paketa na prijašnju inačicu tijekom prijenosa"
+msgstr "Dopusti ponovnu instalaciju paketa na prijašnju inačicu tijekom prijenosa"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
@@ -932,8 +908,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1142,8 +1117,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2375,8 +2349,7 @@ msgid "Cancel foreign task"
 msgstr "Prekini vanjski zadatak"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Potrebna je ovjera za prekidanje zadatka koji ti nisi pokrenuo/la"
 
 #. SECURITY:
@@ -2443,12 +2416,8 @@ msgid "Trust a key used for signing software"
 msgstr "Vjeruj ključu korištenom za potpisivanje softvera"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Potrebna je ovjera za uzimanje u obzir ključa korištenog za potpisivanje "
-"softvera kao pouzdanog"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Potrebna je ovjera za uzimanje u obzir ključa korištenog za potpisivanje softvera kao pouzdanog"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2461,8 +2430,7 @@ msgstr "Prihvati ugovor licence krajnjeg korisnika (EULA)"
 
 #: policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr ""
-"Potrebna je ovjera za prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
+msgstr "Potrebna je ovjera za prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -2526,9 +2494,7 @@ msgid "Set network proxy"
 msgstr "Postavi mrežni proxy"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Potrebna je ovjera za postavljanje mrežnog proxya preuzimanja softvera"
 
 #. SECURITY:
@@ -2708,9 +2674,7 @@ msgstr "Softver ne dolazi iz pouzdanog repozitorija."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne nadopunjujte ovaj paket osim ako niste sigurni da dolazi iz pouzdanog "
-"repozitorija."
+msgstr "Ne nadopunjujte ovaj paket osim ako niste sigurni da dolazi iz pouzdanog repozitorija."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."

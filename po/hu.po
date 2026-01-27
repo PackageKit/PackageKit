@@ -16,8 +16,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Hungarian (http://app.transifex.com/freedesktop/packagekit/"
-"language/hu/)\n"
+"Language-Team: Hungarian (http://app.transifex.com/freedesktop/packagekit/language/hu/)\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -373,21 +372,13 @@ msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos "
-"biztonsági frissítések kerültek telepítésre."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Indítsa újra a számítógépet a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági "
-"frissítések kerültek telepítésre."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Jelentkezzen ki, majd be a frissítés befejezéséhez, mivel fontos biztonsági frissítések kerültek telepítésre."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -418,12 +409,8 @@ msgstr "Nem találhatók csomagok"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"A várt csomagnév helyett fájl érkezett. Inkább a „pkcon install-local %s” "
-"parancsot próbálja kiadni."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "A várt csomagnév helyett fájl érkezett. Inkább a „pkcon install-local %s” parancsot próbálja kiadni."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -553,22 +540,16 @@ msgstr "Nem használt függőségek automatikus eltávolítása"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb "
-"energiát is használ"
+msgstr "Parancsot használva kihasználatlan hálózati sávszélességet és kevesebb energiát is használ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Gép által olvasható kimenetre írás, mint hogy az animált widgetek használata"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Gép által olvasható kimenetre írás, mint hogy az animált widgetek használata"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -931,8 +912,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1141,8 +1121,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -1710,8 +1689,7 @@ msgstr "A fájlt biztosító csomag:"
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
-"Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
+msgstr "Telepíti a(z) „%s” csomagot, amely a következő parancsot biztosítja: „%s”?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
@@ -2379,8 +2357,7 @@ msgid "Cancel foreign task"
 msgstr "Külső feladat megszakítása"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Hitelesítés szükséges a nem Ön által indított feladat megszakításához"
 
 #. SECURITY:
@@ -2447,12 +2424,8 @@ msgid "Trust a key used for signing software"
 msgstr "Szoftver aláírására használt kulcs megbízhatóvá nyilvánítása"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Hitelesítés szükséges a szoftver aláírásához használt kulcs megbízhatóvá "
-"nyilvánításához"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Hitelesítés szükséges a szoftver aláírásához használt kulcs megbízhatóvá nyilvánításához"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2529,12 +2502,8 @@ msgid "Set network proxy"
 msgstr "Hálózati proxy beállítása"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Hitelesítés szükséges a szoftver letöltéséhez használt hálózati proxy "
-"beállításához"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Hitelesítés szükséges a szoftver letöltéséhez használt hálózati proxy beállításához"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2713,23 +2682,19 @@ msgstr "A szoftver nem hiteles forrásból származik."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+msgstr "Ne frissítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+msgstr "Ne frissítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
+msgstr "Ne telepítse ezt a csomagot, hacsak nem biztos benne, hogy így biztonságos."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
+msgstr "Ne telepítse ezeket a csomagokat, ha nem biztos benne, hogy ez biztonságos."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

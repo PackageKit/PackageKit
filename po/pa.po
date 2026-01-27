@@ -17,8 +17,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-25 23:47+0000\n"
 "Last-Translator: Aman Alam <aalam@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Punjabi <https://hosted.weblate.org/projects/packagekit/"
-"translations/pa/>\n"
+"Language-Team: Punjabi <https://hosted.weblate.org/projects/packagekit/translations/pa/>\n"
 "Language: pa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -375,18 +374,13 @@ msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਲ�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਕੰਪਿਊਟਰ ਮੁੜ-ਚਾਲੂ ਕਰੋ ਜੀ, ਕਿਉਂਕਿ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਹੋਏ ਹਨ।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਲਾਗਆਉਟ ਕਰਕੇ ਲਾਗਇਨ ਕਰੋ ਜੀ, ਕਿਉਂਕਿ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਹਨ।"
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "ਅੱਪਡੇਟ ਨੂੰ ਪੂਰਾ ਕਰਨ ਵਾਸਤੇ ਲਾਗਆਉਟ ਕਰਕੇ ਲਾਗਇਨ ਕਰੋ ਜੀ, ਕਿਉਂਕਿ ਸੁਰੱਖਿਆ ਅੱਪਡੇਟ ਇੰਸਟਾਲ ਕੀਤੇ ਹਨ।"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -417,9 +411,7 @@ msgstr "ਕੋਈ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭਿਆ"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr "ਚਾਹੀਦਾ ਪੈਕੇਜ ਨਾਂ, ਅਸਲ 'ਚ ਫਾਇਲ ਮਿਲੀ। 'pkcon install-local %s'  ਵਰਤੇ ਕੇ ਵੇਖੋ।"
 
 #. TRANSLATORS: There was an error finding a package
@@ -556,15 +548,12 @@ msgstr "ਕਮਾਂਡ ਨੂੰ ਵੇਹਲੀ ਨੈੱਟਵਰਕ ਬੈ�
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "ਐਨੀਮੇਟਡ ਵਿਡਜੈੱਟ ਵਰਤਣ ਦੀ ਬਜਾਏ, ਮਸ਼ੀਨ ਦੇ ਪੜ੍ਹਨ ਯੋਗ ਜਾਣਕਾਰੀ ਸਕਰੀਨ ਤੇ ਪਰਿੰਟ ਕਰੋ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -908,8 +897,7 @@ msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟਾਂ ਨੂੰ ਬਦਲੋ"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"ਆਫ਼ਲਾਈਨ ਅੱਪਡੇਟ ਸੈਡਿਊਲ ਕੀਤਾ ਹੈ। ਅਗਲੀ ਵਾਰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਸਮੇਂ ਸਿਸਟਮ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾਵੇਗਾ।"
+msgstr "ਆਫ਼ਲਾਈਨ ਅੱਪਡੇਟ ਸੈਡਿਊਲ ਕੀਤਾ ਹੈ। ਅਗਲੀ ਵਾਰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਸਮੇਂ ਸਿਸਟਮ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਜਾਵੇਗਾ।"
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -921,8 +909,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1124,8 +1111,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2356,8 +2342,7 @@ msgid "Cancel foreign task"
 msgstr "ਬਾਹਰੀ ਟਾਸਕ ਰੱਦ ਕਰੋ"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ਤੁਹਾਡੇ ਵਲੋਂ ਨਾ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ ਟਾਸਕ ਨੂੰ ਰੱਦ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਦੀ ਲੋੜ ਹੈ"
 
 #. SECURITY:
@@ -2424,9 +2409,7 @@ msgid "Trust a key used for signing software"
 msgstr "ਸਾਫਟਵੇਅਰ ਸਾਈਨ ਕਰਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਉੱਤੇ ਭਰੋਸੇ"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "ਸਾਫਟਵੇਅਰ ਦਸਤਖਤ ਕਰਨ ਲਈ ਵਰਤੀ ਕੁੰਜੀ ਨੂੰ ਭਰੋਸੇਯੋਗ ਮੰਨਣ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:
@@ -2504,9 +2487,7 @@ msgid "Set network proxy"
 msgstr "ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰੋ"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "ਸਾਫਟਵੇਅਰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਨੈੱਟਵਰਕ ਪਰਾਕਸੀ ਸੈੱਟ ਕਰਨ ਲਈ ਪਰਮਾਣਕਿਤਾ ਚਾਹੀਦੀ ਹੈ"
 
 #. SECURITY:

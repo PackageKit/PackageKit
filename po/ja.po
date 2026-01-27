@@ -19,8 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Japanese (http://app.transifex.com/freedesktop/packagekit/"
-"language/ja/)\n"
+"Language-Team: Japanese (http://app.transifex.com/freedesktop/packagekit/language/ja/)\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -73,8 +72,7 @@ msgstr "更新のインストール; しばらく時間がかかる場合があ�
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-"システムアップグレードのインストール; しばらく時間がかかる場合があります..."
+msgstr "システムアップグレードのインストール; しばらく時間がかかる場合があります..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -377,21 +375,13 @@ msgstr "更新を完了するために再ログインしてください。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"重大なセキュリティ更新がインストールされたので、更新を完了するためにコン"
-"ピュータを再起動してください。"
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するためにコンピュータを再起動してください。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"重大なセキュリティ更新がインストールされたので、更新を完了するために再ログイ"
-"ンしてください。"
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "重大なセキュリティ更新がインストールされたので、更新を完了するために再ログインしてください。"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -422,12 +412,8 @@ msgstr "1つもパッケージが見つかりませんでした"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"パッケージ名が想定される箇所で、ファイルが入力されました。代わりに 'pkcon "
-"install-local %s' を使用してみてください。"
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "パッケージ名が想定される箇所で、ファイルが入力されました。代わりに 'pkcon install-local %s' を使用してみてください。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -501,8 +487,7 @@ msgstr "サブコマンド:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
+msgstr "このアクションは直前に完了したものだったので、時刻を得るのに失敗しました"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -539,8 +524,7 @@ msgstr "確認を要求せずにパッケージをインストールする"
 #. command line argument, do we just download or apply changes
 #: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
-"パッケージをダウンロードのみ実行することにより、トランザクションを準備する"
+msgstr "パッケージをダウンロードのみ実行することにより、トランザクションを準備する"
 
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
@@ -559,23 +543,17 @@ msgstr "未使用の依存関係を自動的に削除する"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"アイドル状態のネットワーク帯域幅とより少ない電力を使用してコマンドを実行する"
+msgstr "アイドル状態のネットワーク帯域幅とより少ない電力を使用してコマンドを実行する"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "アニメーション表示の代わりに、マシンリーダブルな出力を画面に表示する"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"メタデータ・キャッシュの最大保存期間 (秒) です。キャッシュのみを使用する場合"
-"は -1、キャッシュをリロードする場合は 1 を使用します。"
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "メタデータ・キャッシュの最大保存期間 (秒) です。キャッシュのみを使用する場合は -1、キャッシュをリロードする場合は 1 を使用します。"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -937,8 +915,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1147,8 +1124,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -1716,8 +1692,7 @@ msgstr "このファイルを提供しているパッケージは:"
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
-"コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
+msgstr "コマンド %2$s' を提供するためにパッケージ '%1$s' をインストールしますか?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
@@ -2385,8 +2360,7 @@ msgid "Cancel foreign task"
 msgstr "他人のタスクをキャンセル"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ユーザー自身が開始していないタスクをキャンセルするには認証が必要です"
 
 #. SECURITY:
@@ -2453,12 +2427,8 @@ msgid "Trust a key used for signing software"
 msgstr "ソフトウェアの署名に使用されるキーを信頼する"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"ソフトウェアの署名に使用されるキーを信頼できるものと見なすには、認証が必要で"
-"す"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "ソフトウェアの署名に使用されるキーを信頼できるものと見なすには、認証が必要です"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2535,12 +2505,8 @@ msgid "Set network proxy"
 msgstr "ネットワークプロキシをセット"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"ソフトウェアのダウンロードに使用するネットワークプロキシを設定するには、認証"
-"が必要です"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "ソフトウェアのダウンロードに使用するネットワークプロキシを設定するには、認証が必要です"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2723,19 +2689,15 @@ msgstr "安全だという確証がない限り、このパッケージを更新
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"安全だという確証がない限り、これらのパッケージ群を更新しないでください。"
+msgstr "安全だという確証がない限り、これらのパッケージ群を更新しないでください。"
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"安全だという確証がない限り、このパッケージをインストールしないでください。"
+msgstr "安全だという確証がない限り、このパッケージをインストールしないでください。"
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"安全だという確証がない限り、これらのパッケージ群をインストールしないでくださ"
-"い。"
+msgstr "安全だという確証がない限り、これらのパッケージ群をインストールしないでください。"
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

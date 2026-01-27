@@ -19,8 +19,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-12-23 05:00+0000\n"
 "Last-Translator: Emir <bitigchi@me.com>\n"
-"Language-Team: Turkish <https://hosted.weblate.org/projects/packagekit/"
-"translations/tr/>\n"
+"Language-Team: Turkish <https://hosted.weblate.org/projects/packagekit/translations/tr/>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -368,8 +367,7 @@ msgstr "Şimdilik yükseltme yok."
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
 msgid "Please restart the computer to complete the update."
-msgstr ""
-"Lütfen güncelleme işlemini tamamlamak için bilgisayarınızı yeniden başlatın."
+msgstr "Lütfen güncelleme işlemini tamamlamak için bilgisayarınızı yeniden başlatın."
 
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
@@ -378,21 +376,13 @@ msgstr "Lütfen güncelleme işlemini tamamlamak için oturumu kapatıp açın."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için "
-"lütfen bilgisayarınızı yeniden başlatın."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen bilgisayarınızı yeniden başlatın."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için "
-"lütfen oturumunuzu kapatın ve yeniden oturum açın."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Önemli güvenlik güncellemeleri kurulduğundan güncellemeyi tamamlamak için lütfen oturumunuzu kapatın ve yeniden oturum açın."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -423,12 +413,8 @@ msgstr "Hiçbir paket bulunamadı"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Paket adı bekleniyordu, dosya alındı. Bunun yerine “pkcon install-local %s” "
-"kullanmayı deneyin."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Paket adı bekleniyordu, dosya alındı. Bunun yerine “pkcon install-local %s” kullanmayı deneyin."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -562,19 +548,13 @@ msgstr "Komutu ağ kullanılmadığında çalıştır ve daha az güç harca"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Ekrana canlandırmalı araç takımları yerine makine okuyabilir bir çıktı yazdır"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Ekrana canlandırmalı araç takımları yerine makine okuyabilir bir çıktı yazdır"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"En büyük üst veri önbelleği yaşı (saniye türünden). Yalnızca önbelleği "
-"kullanmak için -1, önbelleği yeniden yüklemek için 1 kullanın."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "En büyük üst veri önbelleği yaşı (saniye türünden). Yalnızca önbelleği kullanmak için -1, önbelleği yeniden yüklemek için 1 kullanın."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -916,9 +896,7 @@ msgstr "Çevrimdışı güncelleme tetiklenemedi: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Çevrimdışı güncellemeler zamanlandı. Sistem, bir sonraki yeniden başlatmada "
-"güncellenecek."
+msgstr "Çevrimdışı güncellemeler zamanlandı. Sistem, bir sonraki yeniden başlatmada güncellenecek."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -930,18 +908,15 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Çevrimdışı sistem güncellemelerini tetikleyin ve yönetin.\n"
 "\n"
 "Aşağıdaki isteklerden birini seçebilirsiniz:\n"
-"  prepare - bir çevrimdışı güncellemeyi hazırlayın ve tetikleyin "
-"(öntanımlı)\n"
+"  prepare - bir çevrimdışı güncellemeyi hazırlayın ve tetikleyin (öntanımlı)\n"
 "  trigger - (elle hazırlanmış) bir çevrimdışı güncellemeyi tetikleyin\n"
 "  cancel - planlı bir çevrimdışı güncellemeyi iptal edin\n"
-"  status - hazırlanmış veya bitmiş bir çevrimdışı güncellemenin durumuna "
-"bakın"
+"  status - hazırlanmış veya bitmiş bir çevrimdışı güncellemenin durumuna bakın"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1142,11 +1117,8 @@ msgstr "Belirtilen paketleri hangi paketlerin gerektirdiğini gösterin."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Paket organizasyonu için kullanılabilir tüm süzgeçleri, grupları ve "
-"kategorileri listeleyin."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Paket organizasyonu için kullanılabilir tüm süzgeçleri, grupları ve kategorileri listeleyin."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -2330,11 +2302,8 @@ msgid "Cancel foreign task"
 msgstr "Yabancı görevi iptal et"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Sizin tarafınızdan başlatılmayan bir görevi iptal etmek için kimlik "
-"doğrulaması gerekiyor"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Sizin tarafınızdan başlatılmayan bir görevi iptal etmek için kimlik doğrulaması gerekiyor"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2400,12 +2369,8 @@ msgid "Trust a key used for signing software"
 msgstr "Yazılım imzalamak için kullanılan anahtara güven"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Yazılımı imzalamakta kullanılan anahtarı güvenilir kabul etmek için kimlik "
-"doğrulaması gerekiyor"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Yazılımı imzalamakta kullanılan anahtarı güvenilir kabul etmek için kimlik doğrulaması gerekiyor"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2418,9 +2383,7 @@ msgstr "Son kullanıcı lisans sözleşmesini kabul et"
 
 #: policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr ""
-"Son kullanıcı lisans sözleşmesini kabul etmek için kimlik doğrulaması "
-"gerekiyor"
+msgstr "Son kullanıcı lisans sözleşmesini kabul etmek için kimlik doğrulaması gerekiyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -2463,8 +2426,7 @@ msgstr "Yazılım depo parametrelerini değiştir"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Yazılım depo parametrelerini değiştirmek için kimlik doğrulaması gerekiyor"
+msgstr "Yazılım depo parametrelerini değiştirmek için kimlik doğrulaması gerekiyor"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2485,12 +2447,8 @@ msgid "Set network proxy"
 msgstr "Vekil sunucuyu ayarla"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Yazılım indirmek üzere vekil sunucuyu ayarlamak için kimlik doğrulaması "
-"gerekiyor"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Yazılım indirmek üzere vekil sunucuyu ayarlamak için kimlik doğrulaması gerekiyor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2542,9 +2500,7 @@ msgstr "Çevrimdışı güncelleme iletilerini temizle"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Çevrimdışı güncelleme iletilerini temizlemek için kimlik doğrulaması "
-"gerekiyor"
+msgstr "Çevrimdışı güncelleme iletilerini temizlemek için kimlik doğrulaması gerekiyor"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2671,13 +2627,11 @@ msgstr "Bu yazılım güvenilir bir kaynaktan gelmiyor."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Bunu yapmanın güvenli olduğundan emin değilseniz bu paketi güncellemeyin."
+msgstr "Bunu yapmanın güvenli olduğundan emin değilseniz bu paketi güncellemeyin."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Bunu yapmanın güvenli olduğundan emin değilseniz bu paketleri güncellemeyin."
+msgstr "Bunu yapmanın güvenli olduğundan emin değilseniz bu paketleri güncellemeyin."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
@@ -2685,8 +2639,7 @@ msgstr "Bunu yapmanın güvenli olduğundan emin değilseniz bu paketi kurmayın
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Bunu yapmanın güvenli olduğundan emin değilseniz bu paketleri kurmayın."
+msgstr "Bunu yapmanın güvenli olduğundan emin değilseniz bu paketleri kurmayın."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

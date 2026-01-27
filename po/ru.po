@@ -23,15 +23,12 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Russian (http://app.transifex.com/freedesktop/packagekit/"
-"language/ru/)\n"
+"Language-Team: Russian (http://app.transifex.com/freedesktop/packagekit/language/ru/)\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
-"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -382,21 +379,13 @@ msgstr "Выйдите из системы и войдите в неё снов�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Установлены важные обновления по безопасности, перезагрузите компьютер для "
-"завершения обновления."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Установлены важные обновления по безопасности, перезагрузите компьютер для завершения обновления."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Установлены важные обновления безопасности, выйдите из системы и войдите в "
-"неё снова."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Установлены важные обновления безопасности, выйдите из системы и войдите в неё снова."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -427,12 +416,8 @@ msgstr "Пакеты не найдены"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Ожидалось имя пакета, а получено имя файла. Попробуйте команду «pkcon "
-"install-local %s»."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Ожидалось имя пакета, а получено имя файла. Попробуйте команду «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -506,8 +491,7 @@ msgstr "Подкоманды:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Не удалось получить информацию о том, как давно было совершено это действие"
+msgstr "Не удалось получить информацию о том, как давно было совершено это действие"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -563,24 +547,17 @@ msgstr "Автоматически удалять неиспользуемые �
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Выполнить команду, используя простои в сетевом трафике, и при меньших "
-"затратах энергии"
+msgstr "Выполнить команду, используя простои в сетевом трафике, и при меньших затратах энергии"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "Вывести на экран в простом формате без анимации элементов"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Максимальный возраст кэша метаданных (в секундах). Значение -1 для "
-"использования только кэшированных данных; значение 1 - перезагрузка кэша."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Максимальный возраст кэша метаданных (в секундах). Значение -1 для использования только кэшированных данных; значение 1 - перезагрузка кэша."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -942,8 +919,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1152,8 +1128,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2389,8 +2364,7 @@ msgid "Cancel foreign task"
 msgstr "Отменить внешнюю задачу"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Для отмены задачи, запущенной не вами, требуется аутентификация"
 
 #. SECURITY:
@@ -2417,8 +2391,7 @@ msgstr "Установить локальный файл из ненадёжны
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr ""
-"Для установки приложений из ненадёжных источников требуется аутентификация"
+msgstr "Для установки приложений из ненадёжных источников требуется аутентификация"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2458,12 +2431,8 @@ msgid "Trust a key used for signing software"
 msgstr "Доверять ключу, используемому для подписи приложений"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Для признания ключа, используемого для подписи приложений как надёжного, "
-"требуется аутентификация"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Для признания ключа, используемого для подписи приложений как надёжного, требуется аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2519,8 +2488,7 @@ msgstr "Изменить параметры репозитория прилож�
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Для изменения параметров репозитория приложений необходима аутентификация"
+msgstr "Для изменения параметров репозитория приложений необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2541,12 +2509,8 @@ msgid "Set network proxy"
 msgstr "Указать прокси-сервер"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Для настройки прокси-сервера, используемого для загрузки приложений, "
-"необходима аутентификация"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Для настройки прокси-сервера, используемого для загрузки приложений, необходима аутентификация"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2733,13 +2697,11 @@ msgstr "Не обновляйте эти пакеты, если не увере�
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Не устанавливайте этот пакет, если не уверены в том, что это безопасно."
+msgstr "Не устанавливайте этот пакет, если не уверены в том, что это безопасно."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Не устанавливайте эти пакеты, если не уверены в том, что это безопасно."
+msgstr "Не устанавливайте эти пакеты, если не уверены в том, что это безопасно."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

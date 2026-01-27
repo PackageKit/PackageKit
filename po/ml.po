@@ -9,8 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Malayalam (http://app.transifex.com/freedesktop/packagekit/"
-"language/ml/)\n"
+"Language-Team: Malayalam (http://app.transifex.com/freedesktop/packagekit/language/ml/)\n"
 "Language: ml\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -372,21 +371,13 @@ msgstr "പരിഷ്കരണങ്ങള്‍ പൂര്‍ത്തി�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ "
-"വീണ്ടും ആരംഭിക്കുക."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി നിങ്ങളുടെ കമ്പ്യൂട്ടര്‍ വീണ്ടും ആരംഭിക്കുക."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ "
-"ചെയ്യുക."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "പ്രധാന സുരക്ഷാ പുതുമകള്‍ കാരണം പരിഷ്കരണം പൂര്‍ത്തിയാക്കുന്നതിനായി ദയവായി ലോഗൌട്ട് ചെയ്ത് ലോഗിന്‍ ചെയ്യുക."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -418,9 +409,7 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -559,17 +548,12 @@ msgstr "സ്ഥിരമായ നെറ്റ്‌വര്‍ക്ക് �
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"ആനിമേറ്റഡ് വിഡ്ജറ്റുകള്‍ ഉപയോഗിക്കുന്നതിനേക്കാള്‍ മഷീന്‍ മനസ്സിലാക്കുന്ന ഔട്ട്പുട്ട് സ്ക്രീനിലേക്ക് "
-"പ്രിന്റ് ചെയ്യുക"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "ആനിമേറ്റഡ് വിഡ്ജറ്റുകള്‍ ഉപയോഗിക്കുന്നതിനേക്കാള്‍ മഷീന്‍ മനസ്സിലാക്കുന്ന ഔട്ട്പുട്ട് സ്ക്രീനിലേക്ക് പ്രിന്റ് ചെയ്യുക"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -936,8 +920,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1144,8 +1127,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2387,8 +2369,7 @@ msgid "Cancel foreign task"
 msgstr "പുറമേ നിന്നുള്ള ജോലി റദ്ദാക്കുക"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
 #. SECURITY:
@@ -2462,9 +2443,7 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
 #, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
 #. SECURITY:
@@ -2549,9 +2528,7 @@ msgstr "നെറ്റ്‌വര്‍ക്ക് പ്രോക്സി �
 
 #: policy/org.freedesktop.packagekit.policy.in:214
 #, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "നിങ്ങളായി ആരംഭിച്ചിട്ടില്ലാത്ത ഒരു ജോലി റദ്ദാക്കുന്നതിനായി ആധികാരികത ആവശ്യമുണ്ടു്"
 
 #. SECURITY:

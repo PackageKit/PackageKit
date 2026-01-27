@@ -21,14 +21,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-11-05 08:51+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
-"Language-Team: Czech <https://hosted.weblate.org/projects/packagekit/"
-"translations/cs/>\n"
+"Language-Team: Czech <https://hosted.weblate.org/projects/packagekit/translations/cs/>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
-"<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 "X-Generator: Weblate 5.14.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -376,26 +374,17 @@ msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena."
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
 msgid "Please logout and login to complete the update."
-msgstr ""
-"Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena."
+msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Restartujte prosím počítač, aby aktualizace mohla být dokončena, protože "
-"byly nainstalovány důležité bezpečnostní aktualizace."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Restartujte prosím počítač, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být "
-"dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Odhlašte se prosím a znovu se přihlašte, aby aktualizace mohla být dokončena, protože byly nainstalovány důležité bezpečnostní aktualizace."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -426,12 +415,8 @@ msgstr "Nebyly nalezeny žádné balíčky"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Byl očekáván název balíčku, ve skutečnosti však byl obdržen soubor. Zkuste "
-"místo toho použít „pkcon install-local %s“."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Byl očekáván název balíčku, ve skutečnosti však byl obdržen soubor. Zkuste místo toho použít „pkcon install-local %s“."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -505,9 +490,7 @@ msgstr "Dílčí příkazy:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Nepodařilo se zjistit čas uplynulý od doby, kdy tato akce byla naposledy "
-"dokončena"
+msgstr "Nepodařilo se zjistit čas uplynulý od doby, kdy tato akce byla naposledy dokončena"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -563,25 +546,17 @@ msgstr "Automaticky odstranit nepoužívané závislosti"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Spustit příkaz za použití nevyžívané šířky pásma sítě a rovněž méně energie"
+msgstr "Spustit příkaz za použití nevyžívané šířky pásma sítě a rovněž méně energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Vypisovat na obrazovku strojově čitelný výstup, namísto animovaných prvků"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Vypisovat na obrazovku strojově čitelný výstup, namísto animovaných prvků"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Nejdelší umožněné stáří mezipaměti metadat (v sekundách). Pokud má být "
-"používána pouze mezipaměť, použijte -1 (pokud má být mezipaměť přenačtena "
-"znovu, pak 1)."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Nejdelší umožněné stáří mezipaměti metadat (v sekundách). Pokud má být používána pouze mezipaměť, použijte -1 (pokud má být mezipaměť přenačtena znovu, pak 1)."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -943,8 +918,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1153,8 +1127,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2386,8 +2359,7 @@ msgid "Cancel foreign task"
 msgstr "Zrušit cizí úlohu"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno ověření"
 
 #. SECURITY:
@@ -2454,12 +2426,8 @@ msgid "Trust a key used for signing software"
 msgstr "Důvěřovat klíči použitému pro podepsání softwaru"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Pro zvážení důvěryhodnosti klíče použitého k podepsání softwaru je "
-"vyžadováno ověření"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Pro zvážení důvěryhodnosti klíče použitého k podepsání softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2536,12 +2504,8 @@ msgid "Set network proxy"
 msgstr "Nastavit síťovou proxy"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Pro nastavení síťové proxy, které se použije ke stažení softwaru, je "
-"vyžadováno ověření"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Pro nastavení síťové proxy, které se použije ke stažení softwaru, je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2593,9 +2557,7 @@ msgstr "Vymazat zprávu o aktualizaci při odpojení"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je "
-"vyžadováno ověření"
+msgstr "Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je vyžadováno ověření"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2726,8 +2688,7 @@ msgstr "Tento balíček aktualizujte, jen když jste přesvědčeni, že je bezp
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Tyto balíčky aktualizujte, jen když jste přesvědčeni, že jsou bezpečné."
+msgstr "Tyto balíčky aktualizujte, jen když jste přesvědčeni, že jsou bezpečné."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."

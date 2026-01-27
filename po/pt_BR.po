@@ -19,14 +19,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-14 06:01+0000\n"
 "Last-Translator: Mateus Liberale Gomes <sergiogomes209403@gmail.com>\n"
-"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
-"packagekit/translations/pt_BR/>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/packagekit/translations/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
-"1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 "X-Generator: Weblate 5.15.2-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -374,27 +372,17 @@ msgstr "Por favor, reinicie o computador para completar a atualização."
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
 msgid "Please logout and login to complete the update."
-msgstr ""
-"Por favor, encerre a sessão e inicie-a novamente para completar a "
-"atualização."
+msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Por favor, reinicie o computador para completar a atualização, pois "
-"importantes atualizações de segurança foram instaladas."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Por favor, reinicie o computador para completar a atualização, pois importantes atualizações de segurança foram instaladas."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Por favor, encerre a sessão e inicie-a novamente para completar a "
-"atualização pois importantes atualizações de segurança foram instaladas."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Por favor, encerre a sessão e inicie-a novamente para completar a atualização pois importantes atualizações de segurança foram instaladas."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -425,12 +413,8 @@ msgstr "Nenhuma pacote foi encontrado"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar "
-"\"pkcon install-local %s\"."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Era esperado um nome de pacote, mas foi recebido um arquivo. Tente usar \"pkcon install-local %s\"."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -560,24 +544,17 @@ msgstr "Remove automaticamente dependências não usada"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Executa o comando usando a banda de rede ociosa e usando também menos energia"
+msgstr "Executa o comando usando a banda de rede ociosa e usando também menos energia"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Exibe na tela uma saída legível pela máquina, em vez de usar widgets animados"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"A idade máxima do cache de metadados (em segundos). Use -1 para usar somente "
-"o cache, 1 para recarregar o cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "A idade máxima do cache de metadados (em segundos). Use -1 para usar somente o cache, 1 para recarregar o cache."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -644,8 +621,7 @@ msgstr "O nome do pacote para remoção é requerido"
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
+msgstr "O diretório de destino e os nomes dos pacotes a serem baixados são requeridos"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -932,8 +908,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Atualizações offline do sistema marcadas e gerenciadas.\n"
 "\n"
@@ -941,8 +916,7 @@ msgstr ""
 "  preparar   - prepare uma atualização offline e a marca(padrão)\n"
 "  acionar  - acione uma atualização offline (preparada manualmente)\n"
 "  cancelar  - cancele uma atualização planejada offline\n"
-"  status  - Mostrar informações de status sobre uma atualização offline "
-"pronta ou finalizada"
+"  status  - Mostrar informações de status sobre uma atualização offline pronta ou finalizada"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1075,8 +1049,7 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Procure pacotes que correspondam aos padrões fornecidos. Se o MODO não for "
-"especificado, \n"
+"Procure pacotes que correspondam aos padrões fornecidos. Se o MODO não for especificado, \n"
 "A busca por 'detalhes' é realizada.\n"
 "Possível pesquisa de MODOS são:\n"
 "nome    - pesquisa pelo nome do pacote\n"
@@ -1130,8 +1103,7 @@ msgstr "Liste todas as atualizações de pacotes atualmente disponíveis."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
-"Mostre informações detalhadas sobre a atualização do pacote especificada."
+msgstr "Mostre informações detalhadas sobre a atualização do pacote especificada."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -1145,11 +1117,8 @@ msgstr "Mostre quais pacotes exigem os pacotes especificados."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Liste todos os filtros, grupos e categorias disponíveis para organização de "
-"pacotes."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Liste todos os filtros, grupos e categorias disponíveis para organização de pacotes."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -1600,8 +1569,7 @@ msgstr "Baixando detalhes sobre os repositórios de software."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
+msgstr "Baixando listas de arquivos (isso pode levar algum tempo para ser concluído)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2334,11 +2302,8 @@ msgid "Cancel foreign task"
 msgstr "Cancelar tarefa externa"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Autenticação é necessária para cancelar uma tarefa que não foi iniciada por "
-"você"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Autenticação é necessária para cancelar uma tarefa que não foi iniciada por você"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2404,12 +2369,8 @@ msgid "Trust a key used for signing software"
 msgstr "Confiar em uma chave para assinar softwares"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Autenticação é necessária para considerar como confiável uma chave usada "
-"para assinar softwares"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Autenticação é necessária para considerar como confiável uma chave usada para assinar softwares"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2465,9 +2426,7 @@ msgstr "Alterar parâmetros de repositório de software"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Autenticação é necessária para alterar os parâmetros de repositório de "
-"software"
+msgstr "Autenticação é necessária para alterar os parâmetros de repositório de software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2488,11 +2447,8 @@ msgid "Set network proxy"
 msgstr "Definir um proxy de rede"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Autenticação é necessária para definir um proxy de rede para baixar softwares"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Autenticação é necessária para definir um proxy de rede para baixar softwares"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2671,27 +2627,19 @@ msgstr "O software não vem de uma fonte confiável."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Não atualize este pacote a não ser que você esteja certo de que é seguro "
-"fazer isso."
+msgstr "Não atualize este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Não atualize estes pacotes a não ser que você esteja certo de que é seguro "
-"fazer isso."
+msgstr "Não atualize estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Não instale este pacote a não ser que você esteja certo de que é seguro "
-"fazer isso."
+msgstr "Não instale este pacote a não ser que você esteja certo de que é seguro fazer isso."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Não instale estes pacotes a não ser que você esteja certo de que é seguro "
-"fazer isso."
+msgstr "Não instale estes pacotes a não ser que você esteja certo de que é seguro fazer isso."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

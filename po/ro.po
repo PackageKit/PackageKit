@@ -13,14 +13,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-24 21:01+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
-"Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/"
-"translations/ro/>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
-"20)) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -368,27 +366,17 @@ msgstr "Reporniți calculatorul pentru a completa actualizarea."
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
 msgid "Please logout and login to complete the update."
-msgstr ""
-"Ieșiți din sesiune și autentificați-vă din nou pentru a completa "
-"actualizarea."
+msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a completa actualizarea."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost "
-"instalate actualizări de securitate importante."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Reporniți calculatorul pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza "
-"actualizarea deoarece au fost instalate actualizări de securitate importante."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Ieșiți din sesiune și autentificați-vă din nou pentru a finaliza actualizarea deoarece au fost instalate actualizări de securitate importante."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -419,12 +407,8 @@ msgstr "Nu a fost găsit niciun pachet"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Se aștepta un nume de pachet, dar s-a primit fișier. Încercați să folosiți "
-"«pkcon install-local %s» în loc."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Se aștepta un nume de pachet, dar s-a primit fișier. Încercați să folosiți «pkcon install-local %s» în loc."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -498,8 +482,7 @@ msgstr "Subcomenzi:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
+msgstr "A eșuat obținerea timpului trecut de la ultima completare a acestei acțiuni"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -555,26 +538,17 @@ msgstr "Elimină automat dependențele nefolosite"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
+msgstr "Rulează comanda folosind lățimea de bandă neutilizată și mai puțină energie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"În locul utilizării unor controale animate, afișează pe ecran o ieșire ce "
-"poate fi interpretată ușor de un program"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "În locul utilizării unor controale animate, afișează pe ecran o ieșire ce poate fi interpretată ușor de un program"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Vechimea maximă a spațiului de prestocare (cache) a metadatelor (în "
-"secunde). Utilizați „-1” pentru a utiliza numai spațiul de prestocare, „1” "
-"pentru a reîncărca conținutul spațiului de prestocare."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Vechimea maximă a spațiului de prestocare (cache) a metadatelor (în secunde). Utilizați „-1” pentru a utiliza numai spațiul de prestocare, „1” pentru a reîncărca conținutul spațiului de prestocare."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -775,8 +749,7 @@ msgstr "Permite instalarea pachetelor care nu sunt de încredere"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds"
-msgstr ""
-"Vechimea maximă a spațiului de stocare (cache) a metadatelor (în secunde)"
+msgstr "Vechimea maximă a spațiului de stocare (cache) a metadatelor (în secunde)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -785,9 +758,7 @@ msgstr "SECUNDE"
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:196
 msgid "Refresh the package metadata cache."
-msgstr ""
-"Împrospătează conținutul spațiului de stocare (cache) al metadatelor "
-"pachetelor."
+msgstr "Împrospătează conținutul spațiului de stocare (cache) al metadatelor pachetelor."
 
 #: client/pkgc-manage.c:222
 msgid "Package metadata refreshed"
@@ -838,9 +809,7 @@ msgstr "Directorul nu există: %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-"Actualizează toate pachetele sau anumite pachete la cele mai recente "
-"versiuni ale acestora."
+msgstr "Actualizează toate pachetele sau anumite pachete la cele mai recente versiuni ale acestora."
 
 #: client/pkgc-manage.c:510
 #, c-format
@@ -880,9 +849,7 @@ msgstr "Actualizarea fără conexiune la Internet nu este declanșată."
 #: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr ""
-"Actualizarea fără conexiune la Internet este declanșată. Acțiunea după "
-"actualizare: %s"
+msgstr "Actualizarea fără conexiune la Internet este declanșată. Acțiunea după actualizare: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:715
@@ -896,14 +863,11 @@ msgstr "Nu este pregătită nicio actualizare fără conexiune la Internet."
 #: client/pkgc-manage.c:731
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr ""
-"Citirea actualizărilor fără conexiune la Internet pregătite, a eșuat: %s"
+msgstr "Citirea actualizărilor fără conexiune la Internet pregătite, a eșuat: %s"
 
 #: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
-msgstr ""
-"Nu sunt disponibile rezultate de la ultima actualizare fără conexiune la "
-"Internet."
+msgstr "Nu sunt disponibile rezultate de la ultima actualizare fără conexiune la Internet."
 
 #: client/pkgc-manage.c:748
 #, c-format
@@ -912,8 +876,7 @@ msgstr "Ultima actualizare fără conexiune la Internet a eșuat: %s: %s"
 
 #: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
-msgstr ""
-"Ultima actualizare fără conexiune la Internet a fost finalizată cu succes"
+msgstr "Ultima actualizare fără conexiune la Internet a fost finalizată cu succes"
 
 #: client/pkgc-manage.c:766
 #, c-format
@@ -927,9 +890,7 @@ msgstr "Declanșarea actualizării fără conectare la Internet a eșuat: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Actualizare fără conexiune la Internet programată. Sistemul se va actualiza "
-"la următoarea repornire."
+msgstr "Actualizare fără conexiune la Internet programată. Sistemul se va actualiza la următoarea repornire."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -941,20 +902,15 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
-"Declanșează și gestionează actualizările fără conexiune la Internet ale "
-"sistemului.\n"
+"Declanșează și gestionează actualizările fără conexiune la Internet ale sistemului.\n"
 "\n"
 "Puteți selecta una dintre următoarele solicitări:\n"
-"  prepare - pregătește o actualizare fără conexiune la Internet și o "
-"declanșează (implicit)\n"
-"  trigger - declanșează o actualizare fără conexiune la Internet (pregătită "
-"manual)\n"
+"  prepare - pregătește o actualizare fără conexiune la Internet și o declanșează (implicit)\n"
+"  trigger - declanșează o actualizare fără conexiune la Internet (pregătită manual)\n"
 "  cancel  - anulează o actualizare fără conexiune la Internet planificată\n"
-"  status  - afișează informații despre starea unei actualizări fără "
-"conexiune la Internet pregătite sau finalizate"
+"  status  - afișează informații despre starea unei actualizări fără conexiune la Internet pregătite sau finalizate"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1087,8 +1043,7 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Caută pachetele care corespund modelelor date. Dacă MODUL nu este "
-"specificat, \n"
+"Caută pachetele care corespund modelelor date. Dacă MODUL nu este specificat, \n"
 "se efectuează o căutare după „detalii” (details).\n"
 "Modurile de căutare posibile sunt:\n"
 "  name    - căutare după numele pachetului\n"
@@ -1142,8 +1097,7 @@ msgstr "Listează toate actualizările de pachete disponibile în prezent."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
-"Afișează informații detaliate despre actualizarea pachetului specificat."
+msgstr "Afișează informații detaliate despre actualizarea pachetului specificat."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -1157,11 +1111,8 @@ msgstr "Afișează pachetele care necesită pachetele specificate."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Listează toate filtrele, grupurile și categoriile disponibile pentru "
-"organizarea pachetelor."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Listează toate filtrele, grupurile și categoriile disponibile pentru organizarea pachetelor."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -1181,8 +1132,7 @@ msgstr "Categorii:"
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
-"Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
+msgstr "Afișează actualizările versiunii de distribuție, dacă sunt disponibile."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
@@ -1578,9 +1528,7 @@ msgstr "Filtrează pachetele (instalate, disponibile etc.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
-"Nu s-a specificat nicio comandă. Utilizați „--help” pentru informații despre "
-"utilizare."
+msgstr "Nu s-a specificat nicio comandă. Utilizați „--help” pentru informații despre utilizare."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -1613,8 +1561,7 @@ msgstr "Se descarcă detaliile despre depozitele cu software."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
+msgstr "Se descarcă lista fișierelor (această operațiune poate dura ceva timp)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2347,11 +2294,8 @@ msgid "Cancel foreign task"
 msgstr "Întrerupe sarcina străină"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită "
-"de dvs."
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Este necesară autentificarea pentru a anula o sarcină ce nu a fost pornită de dvs."
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2417,12 +2361,8 @@ msgid "Trust a key used for signing software"
 msgstr "Acordă încredere unei chei folosite la semnarea software-ului"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Este necesară autentificarea pentru a acorda încredere unei chei folosite la "
-"semnarea software-ului"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Este necesară autentificarea pentru a acorda încredere unei chei folosite la semnarea software-ului"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2478,9 +2418,7 @@ msgstr "Schimbă parametrii depozitului de software"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Este necesară autentificarea pentru a schimba parametrii depozitului de "
-"software"
+msgstr "Este necesară autentificarea pentru a schimba parametrii depozitului de software"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2501,12 +2439,8 @@ msgid "Set network proxy"
 msgstr "Definește proxy-ul de rețea"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la "
-"descărcarea programelor"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Este necesară autentificarea pentru a stabili proxy-ul de rețea folosit la descărcarea programelor"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2547,9 +2481,7 @@ msgstr "Declanșează actualizări fără conectare la Internet"
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
-"Este necesară autentificarea pentru a declanșa actualizări fără conectare la "
-"Internet"
+msgstr "Este necesară autentificarea pentru a declanșa actualizări fără conectare la Internet"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2560,9 +2492,7 @@ msgstr "Curăță mesajul despre actualizarea fără conectare la Internet"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Este necesară autentificarea pentru a curăța mesajul despre actualizările "
-"fără conectare la Internet"
+msgstr "Este necesară autentificarea pentru a curăța mesajul despre actualizările fără conectare la Internet"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2657,8 +2587,7 @@ msgstr "Iese după o mică întârziere"
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:129
 msgid "Exit after the engine has loaded"
-msgstr ""
-"Iese după ce motorul de împachetare/despachetare a pachetelor a fost încărcat"
+msgstr "Iese după ce motorul de împachetare/despachetare a pachetelor a fost încărcat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
@@ -2681,8 +2610,7 @@ msgstr "Nu s-a reușit să se rezolve automat: %s"
 #: src/pk-main.c:245
 #, c-format
 msgid "Failed to load the backend: %s"
-msgstr ""
-"Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"
+msgstr "Încărcarea motorului de împachetare/despachetare a pachetelor a eșuat: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
@@ -2691,27 +2619,19 @@ msgstr "Software-ul nu este dintr-o sursă de încredere."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Nu actualizați acest pachet decât dacă aveți certitudinea că este sigur să "
-"faceți asta."
+msgstr "Nu actualizați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Nu actualizați aceste pachete decât dacă aveți certitudinea că este sigur să "
-"faceți asta."
+msgstr "Nu actualizați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Nu instalați acest pachet decât dacă aveți certitudinea că este sigur să "
-"faceți asta."
+msgstr "Nu instalați acest pachet decât dacă aveți certitudinea că este sigur să faceți asta."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Nu instalați aceste pachete decât dacă aveți certitudinea că este sigur să "
-"faceți asta."
+msgstr "Nu instalați aceste pachete decât dacă aveți certitudinea că este sigur să faceți asta."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

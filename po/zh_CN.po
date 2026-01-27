@@ -24,8 +24,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-12-25 20:00+0000\n"
 "Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
-"Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
-"projects/packagekit/translations/zh_Hans/>\n"
+"Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hans/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -382,16 +381,12 @@ msgstr "请注销并登录以完成更新。"
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr "由于安装了重要安全更新，请重新启动计算机以完成更新。"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
+msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr "由于安装了重要安全更新，请注销并登录以完成更新。"
 
 #. TRANSLATORS: more than one package could be found that matched,
@@ -423,11 +418,8 @@ msgstr "找不到软件包"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"预期为软件包名，但实际得到了文件。试一下改用“pkcon install-local %s”安装。"
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "预期为软件包名，但实际得到了文件。试一下改用“pkcon install-local %s”安装。"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -561,18 +553,13 @@ msgstr "用空闲网络带宽和更低功耗运行命令"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "只在屏幕上显示机器可读的输出，而不使用动画部件"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"元数据缓存的最大过期时间（单位：秒）。使用 -1 表示仅使用缓存，使用 1 表示重新"
-"加载缓存。"
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "元数据缓存的最大过期时间（单位：秒）。使用 -1 表示仅使用缓存，使用 1 表示重新加载缓存。"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -926,8 +913,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "触发并管理离线系统更新。\n"
 "\n"
@@ -1136,8 +1122,7 @@ msgstr "显示哪些软件包需要指定的软件包。"
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr "列出所有可用于包组织的筛选条件、分组和分类。"
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2322,8 +2307,7 @@ msgid "Cancel foreign task"
 msgstr "取消其他用户的任务"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "取消一项不是由您启动的任务需要认证"
 
 #. SECURITY:
@@ -2390,9 +2374,7 @@ msgid "Trust a key used for signing software"
 msgstr "信任签名软件所用的密钥"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "信任软件包签名所用的密钥需要认证"
 
 #. SECURITY:
@@ -2470,9 +2452,7 @@ msgid "Set network proxy"
 msgstr "设置网络代理"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "设置下载软件所用的代理服务器需要认证"
 
 #. SECURITY:

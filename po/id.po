@@ -15,8 +15,7 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-09 19:01+0000\n"
 "Last-Translator: Arif Budiman <arifpedia@gmail.com>\n"
-"Language-Team: Indonesian <https://hosted.weblate.org/projects/packagekit/"
-"translations/id/>\n"
+"Language-Team: Indonesian <https://hosted.weblate.org/projects/packagekit/translations/id/>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -373,21 +372,13 @@ msgstr "Silakan logout dan login untuk menyelesaikan pembaruan."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan "
-"penting untuk keamanan telah diinstal."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Silakan restart komputer untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan "
-"penting untuk keamanan telah diinstal."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Silakan logout dan login untuk menyelesaikan pembaruan karena pembaruan penting untuk keamanan telah diinstal."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -418,12 +409,8 @@ msgstr "Tak ada paket yang ditemukan"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon "
-"install-lokal %s' sebagai gantinya."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Mengharapkan nama paket, malah memperoleh berkas. Coba gunakan 'pkcon install-lokal %s' sebagai gantinya."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -553,26 +540,17 @@ msgstr "Secara otomatis hapus dependensi yang tidak dipakai"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga "
-"menggunakan daya yang lebih kecil"
+msgstr "Jalankan perintah menggunakan bandwidth menganggur jaringan dan juga menggunakan daya yang lebih kecil"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget "
-"animasi"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Cetak ke layar output mesin yang dapat dibaca, daripada menggunakan widget animasi"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Umur singgahan metadata maksimum (dalam detik). Gunakan -1 untuk hanya "
-"memakai singgahan, 1 untuk memuat ulang singgahan."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Umur singgahan metadata maksimum (dalam detik). Gunakan -1 untuk hanya memakai singgahan, 1 untuk memuat ulang singgahan."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -639,8 +617,7 @@ msgstr "Diperlukan nama sebuah paket yang akan dihapus"
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
+msgstr "Sebuah direktori tujuan dan nama paket yang dibutuhkan untuk men-download"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -915,8 +892,7 @@ msgstr "Gagal memicu pembaruan luring: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Pembaruan luring dijadwalkan. Sistem akan memperbarui pada reboot berikutnya."
+msgstr "Pembaruan luring dijadwalkan. Sistem akan memperbarui pada reboot berikutnya."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -928,8 +904,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Picu & kelola pembaruan sistem luring.\n"
 "\n"
@@ -937,8 +912,7 @@ msgstr ""
 "  prepare - menyiapkan pembaruan luring dan memicunya (default)\n"
 "  trigger - memicu pembaruan luring (yang disiapkan secara manual)\n"
 "  cancel  - membatalkan pembaruan luring yang direncanakan\n"
-"  status  - menampilkan informasi status tentang pembaruan luring yang "
-"disiapkan atau yang telah selesai"
+"  status  - menampilkan informasi status tentang pembaruan luring yang disiapkan atau yang telah selesai"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1071,8 +1045,7 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Cari paket yang cocok dengan pola yang diberikan. Jika MODE tidak "
-"ditentukan, \n"
+"Cari paket yang cocok dengan pola yang diberikan. Jika MODE tidak ditentukan, \n"
 "'pencarian detail' dilakukan.\n"
 "MODE pencarian yang mungkin adalah:\n"
 "  name    - cari berdasarkan nama paket\n"
@@ -1126,8 +1099,7 @@ msgstr "Cantumkan semua pembaruan paket yang saat ini tersedia."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
-"Tampilkan informasi terperinci tentang pembaruan paket yang ditentukan."
+msgstr "Tampilkan informasi terperinci tentang pembaruan paket yang ditentukan."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -1141,11 +1113,8 @@ msgstr "Tampilkan paket mana yang memerlukan paket yang ditentukan."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Daftar semua filter, grup, dan kategori yang tersedia untuk pengorganisasian "
-"paket."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Daftar semua filter, grup, dan kategori yang tersedia untuk pengorganisasian paket."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -1175,8 +1144,7 @@ msgstr "Waktu berlalu"
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
-msgstr ""
-"Dapatkan waktu dalam detik sejak tindakan tertentu terakhir kali dilakukan."
+msgstr "Dapatkan waktu dalam detik sejak tindakan tertentu terakhir kali dilakukan."
 
 #: client/pkgc-query.c:973
 msgid "Show backend information"
@@ -1563,9 +1531,7 @@ msgstr "Filter paket (terpasang, tersedia, dll.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
-"Tidak ada perintah yang ditentukan. Gunakan --help untuk informasi "
-"penggunaan."
+msgstr "Tidak ada perintah yang ditentukan. Gunakan --help untuk informasi penggunaan."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -2332,11 +2298,8 @@ msgid "Cancel foreign task"
 msgstr "Batalkan tugas asing"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Otentikasi diperlukan untuk membatalkan suatu tugas yang tak dimulai oleh "
-"Anda sendiri"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Otentikasi diperlukan untuk membatalkan suatu tugas yang tak dimulai oleh Anda sendiri"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2362,8 +2325,7 @@ msgstr "Pasang berkas lokal yang tak terpercaya"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr ""
-"Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
+msgstr "Otentikasi diperlukan untuk memasang perangkat lunak yang tak dipercaya"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2403,12 +2365,8 @@ msgid "Trust a key used for signing software"
 msgstr "Percayai suatu kunci yang dipakai untuk menandatangani perangkat lunka"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Otentikasi diperlukan untuk menganggap suatu kunci yang dipakai untuk "
-"menandatangani perangkat lunak sebagai terpercaya"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Otentikasi diperlukan untuk menganggap suatu kunci yang dipakai untuk menandatangani perangkat lunak sebagai terpercaya"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2464,8 +2422,7 @@ msgstr "Ubah parameter repositori perangkat lunak"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Otentikasi diperlukan untuk mengubah parameter repositori perangkat lunak"
+msgstr "Otentikasi diperlukan untuk mengubah parameter repositori perangkat lunak"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2486,12 +2443,8 @@ msgid "Set network proxy"
 msgstr "Tata proksi jaringan"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Otentikasi diperlukan untuk menata proksi jaringan yang dipakai untuk "
-"mengunduh perangkat lunak"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Otentikasi diperlukan untuk menata proksi jaringan yang dipakai untuk mengunduh perangkat lunak"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2515,8 +2468,7 @@ msgstr "Perbaiki Sistem"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
-"Otentikasi diperlukan untuk memperbaiki perangkat lunak yang telah terpasang"
+msgstr "Otentikasi diperlukan untuk memperbaiki perangkat lunak yang telah terpasang"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2675,9 +2627,7 @@ msgstr "Jangan mutakhirkan paket ini kecuali Anda yakin aman untuk dilakukan."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk "
-"melakukannya."
+msgstr "Jangan mutakhirkan paket-paket ini kecuali Anda yakin aman untuk melakukannya."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
@@ -2685,8 +2635,7 @@ msgstr "Jangan pasang paket ini kecuali Anda yakin aman untuk dilakukan."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Jangan pasang paket-paket ini kecuali Anda yakin aman untuk memasangnya."
+msgstr "Jangan pasang paket-paket ini kecuali Anda yakin aman untuk memasangnya."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

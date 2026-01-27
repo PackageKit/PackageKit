@@ -12,16 +12,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-11-23 22:51+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
-"Language-Team: Ukrainian <https://hosted.weblate.org/projects/packagekit/"
-"translations/uk/>\n"
+"Language-Team: Ukrainian <https://hosted.weblate.org/projects/packagekit/translations/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 "X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -373,20 +369,13 @@ msgstr "Щоб завершити оновлення, вийдіть з облі
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"перезавантажте систему, щоб завершити встановлення важливих оновлень безпеки."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "перезавантажте систему, щоб завершити встановлення важливих оновлень безпеки."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Щоб завершити встановлення важливих оновлень безпеки вийдіть з облікового "
-"запису і увійдіть до нього знову."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Щоб завершити встановлення важливих оновлень безпеки вийдіть з облікового запису і увійдіть до нього знову."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -417,12 +406,8 @@ msgstr "Пакунків не знайдено"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Мало бути передано назву пакунка, передано файл. Спробуйте скористатися "
-"командою «pkcon install-local %s»."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Мало бути передано назву пакунка, передано файл. Спробуйте скористатися командою «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -552,26 +537,17 @@ msgstr "Автоматично вилучати невикористані за�
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Виконати команду з мінімальним використанням мережевого каналу і меншою "
-"витратою ресурсів системи"
+msgstr "Виконати команду з мінімальним використанням мережевого каналу і меншою витратою ресурсів системи"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Вивести дані про поступ у простому текстовому форматі, без використання "
-"анімованих віджетів"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Вивести дані про поступ у простому текстовому форматі, без використання анімованих віджетів"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Максимальний вік кешу метаданих (у секундах). Скористайтеся -1, щоб "
-"використовувати лише кешовані дані; 1 — перезавантажити кеш."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Максимальний вік кешу метаданих (у секундах). Скористайтеся -1, щоб використовувати лише кешовані дані; 1 — перезавантажити кеш."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -638,8 +614,7 @@ msgstr "Слід вказати назву пакунка, який потріб
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
+msgstr "Слід вказати каталог призначення і назви пакунків, які потрібно звантажити"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -915,9 +890,7 @@ msgstr "Не вдалося активувати автономне оновле
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Заплановане автономне оновлення. Систему буде оновлено під час наступного "
-"перезавантаження."
+msgstr "Заплановане автономне оновлення. Систему буде оновлено під час наступного перезавантаження."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -929,18 +902,15 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Увімкнути автономні оновлення системи і керувати ними.\n"
 "\n"
 "Ви можете вибрати один з таких запитів:\n"
-"  prepare - приготувати автономне оновлення і увімкнути його (типовий "
-"варіант)\n"
+"  prepare - приготувати автономне оновлення і увімкнути його (типовий варіант)\n"
 "  trigger - увімкнути (приготоване вручну) автономне оновлення\n"
 "  cancel  - скасувати заплановане автномне оновлення\n"
-"  status  - показати відомості щодо стану щодо приготованого або завершеного "
-"автономного оновлення"
+"  status  - показати відомості щодо стану щодо приготованого або завершеного автономного оновлення"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1117,8 +1087,7 @@ msgstr "Показати, які пакунки надають вказану м
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
-msgstr ""
-"Вивести список усіх файлів, які містяться в одному або декількох пакунках."
+msgstr "Вивести список усіх файлів, які містяться в одному або декількох пакунках."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:646
@@ -1142,11 +1111,8 @@ msgstr "Показати, які пакунки потребують вказа�
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Вивести список усіх доступних фільтрів, груп і категорій для упорядковування "
-"пакунків."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Вивести список усіх доступних фільтрів, груп і категорій для упорядковування пакунків."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -1566,9 +1532,7 @@ msgstr "Фільтрувати пакунки (встановлені, дост�
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
-"Не вказано команди. Скористайтеся --help, щоб отримати відомості щодо "
-"користування."
+msgstr "Не вказано команди. Скористайтеся --help, щоб отримати відомості щодо користування."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -1592,9 +1556,7 @@ msgstr "Доступні команди:"
 #: client/pkgcli.c:217
 #, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-"Скористайтеся командою «pkgctl КОМАНДА --help» для отримання довідки щодо "
-"певної команди."
+msgstr "Скористайтеся командою «pkgctl КОМАНДА --help» для отримання довідки щодо певної команди."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1604,8 +1566,7 @@ msgstr "Отримуємо подробиці щодо сховищ програ
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
+msgstr "Звантаження списків файлів (виконання цієї дії може бути досить тривалим)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2237,8 +2198,7 @@ msgstr "Підпис не було підтверджено."
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/packagekit-glib2/pk-task-text.c:175
 msgid "End user licence agreement required"
-msgstr ""
-"Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
+msgstr "Потрібне підтвердження ліцензійної угоди з кінцевим користувачем (EULA)"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/packagekit-glib2/pk-task-text.c:184
@@ -2339,8 +2299,7 @@ msgid "Cancel foreign task"
 msgstr "Скасування сторонніх завдань"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Для скасування дії, започаткованої не вами, слід пройти розпізнавання"
 
 #. SECURITY:
@@ -2367,9 +2326,7 @@ msgstr "Встановлення ненадійного локального ф�
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr ""
-"Для встановлення програмного забезпечення з ненадійних джерел слід пройти "
-"розпізнавання"
+msgstr "Для встановлення програмного забезпечення з ненадійних джерел слід пройти розпізнавання"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2383,9 +2340,7 @@ msgstr "Встановлення вже встановленого пакунк�
 
 #: policy/org.freedesktop.packagekit.policy.in:76
 msgid "Authentication is required to reinstall software"
-msgstr ""
-"Для повторного встановлення програмного забезпечення слід пройти "
-"розпізнавання"
+msgstr "Для повторного встановлення програмного забезпечення слід пройти розпізнавання"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -2399,9 +2354,7 @@ msgstr "Встановлення старішої версії встановл�
 
 #: policy/org.freedesktop.packagekit.policy.in:94
 msgid "Authentication is required to downgrade software"
-msgstr ""
-"Для встановлення старішої версії встановленого пакунка слід пройти "
-"розпізнавання"
+msgstr "Для встановлення старішої версії встановленого пакунка слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -2410,16 +2363,11 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
-"Довіряти ключу, використаному для підписування програмного забезпечення"
+msgstr "Довіряти ключу, використаному для підписування програмного забезпечення"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Для визнання ключа, використаного для підписування пакунків, надійним слід "
-"пройти розпізнавання"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Для визнання ключа, використаного для підписування пакунків, надійним слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2475,9 +2423,7 @@ msgstr "Зміна параметрів сховища програмного з
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Для зміни параметрів сховища програмного забезпечення слід пройти "
-"розпізнавання"
+msgstr "Для зміни параметрів сховища програмного забезпечення слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2498,12 +2444,8 @@ msgid "Set network proxy"
 msgstr "Встановлення проксі-сервер"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Для визначення проксі-сервера, який буде використано для отримання "
-"програмного забезпечення, слід пройти розпізнавання"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Для визначення проксі-сервера, який буде використано для отримання програмного забезпечення, слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2527,9 +2469,7 @@ msgstr "Відновити систему"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
-"Для відновлення встановленого програмного забезпечення слід пройти "
-"розпізнавання"
+msgstr "Для відновлення встановленого програмного забезпечення слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2546,23 +2486,18 @@ msgstr "Увімкнути або вимкнути оновлення без з�
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
-"Щоб увімкнути або вимкнути оновлення без з’єднання з інтернетом, слід пройти "
-"розпізнавання"
+msgstr "Щоб увімкнути або вимкнути оновлення без з’єднання з інтернетом, слід пройти розпізнавання"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr ""
-"Спорожнити повідомлення щодо оновлень без потреби у з’єднанні з інтернетом"
+msgstr "Спорожнити повідомлення щодо оновлень без потреби у з’єднанні з інтернетом"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Щоб спорожнити повідомлення щодо оновлень без з’єднання з інтернетом, слід "
-"пройти розпізнавання"
+msgstr "Щоб спорожнити повідомлення щодо оновлень без з’єднання з інтернетом, слід пройти розпізнавання"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2689,8 +2624,7 @@ msgstr "Програмне забезпечення надійшло з нена
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
+msgstr "Не оновлюйте цей пакунок, якщо не певні, що таке оновлення є безпечним."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
@@ -2698,13 +2632,11 @@ msgstr "Не оновлюйте ці пакунки, якщо не певні, �
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є безпечним."
+msgstr "Не встановлюйте цей пакунок, якщо не певні, що таке встановлення є безпечним."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
+msgstr "Не встановлюйте ці пакунки, якщо не певні, що таке встановлення є безпечним."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

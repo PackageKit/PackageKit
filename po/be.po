@@ -11,15 +11,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2025-11-16 08:51+0000\n"
 "Last-Translator: Yauhen <bugomol@users.noreply.hosted.weblate.org>\n"
-"Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/"
-"translations/be/>\n"
+"Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/translations/be/>\n"
 "Language: be\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
-"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 "X-Generator: Weblate 5.15-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -371,21 +368,13 @@ msgstr "Выйдзіце з сеанса і ўвайдзіце зноў, каб 
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Перазапусціце камп'ютар, каб завяршыць усталяванне важных абнаўленняў "
-"бяспекі."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Перазапусціце камп'ютар, каб завяршыць усталяванне важных абнаўленняў бяспекі."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Выйдзіце з сеанса і ўвайдзіце зноў, каб завяршыць усталяванне важных "
-"абнаўленняў бяспекі."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Выйдзіце з сеанса і ўвайдзіце зноў, каб завяршыць усталяванне важных абнаўленняў бяспекі."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -416,12 +405,8 @@ msgstr "Пакеты не знойдзены"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Чакалася назва пакета, але атрыманы файл. Паспрабуйце выкарыстаць каманду "
-"«pkcon install-local %s»."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Чакалася назва пакета, але атрыманы файл. Паспрабуйце выкарыстаць каманду «pkcon install-local %s»."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -555,19 +540,13 @@ msgstr "Выконваць каманду калі сетка не задзей�
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Вывад на экран у машынным фармаце, замест выкарыстання аніміраваных віджэтаў"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Вывад на экран у машынным фармаце, замест выкарыстання аніміраваных віджэтаў"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Максімальны час выкарыстання кэшу метаданых (у секундах). Значэнне -1, каб "
-"выкарыстоўваць толькі кэш, 1 — каб перазагружаць кэш."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Максімальны час выкарыстання кэшу метаданых (у секундах). Значэнне -1, каб выкарыстоўваць толькі кэш, 1 — каб перазагружаць кэш."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -634,9 +613,7 @@ msgstr "Патрабуецца ўказаць назву пакета, які н
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Патрабуецца ўказаць каталог прызначэння і назвы пакетаў, якія неабходна "
-"спампаваць"
+msgstr "Патрабуецца ўказаць каталог прызначэння і назвы пакетаў, якія неабходна спампаваць"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -931,8 +908,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1141,8 +1117,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2374,8 +2349,7 @@ msgid "Cancel foreign task"
 msgstr "Скасаваць чужую задачу"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Каб скасаваць чужую задачу, патрабуецца аўтэнтыфікацыя"
 
 #. SECURITY:
@@ -2442,12 +2416,8 @@ msgid "Trust a key used for signing software"
 msgstr "Давяраць ключу, якім падпісана праграма"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Каб пазначыць ключ, якім падпісана праграма, як давераны, патрабуецца "
-"аўтэнтыфікацыя"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Каб пазначыць ключ, якім падпісана праграма, як давераны, патрабуецца аўтэнтыфікацыя"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2524,9 +2494,7 @@ msgid "Set network proxy"
 msgstr "Задаць проксі-сервер"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "Каб задаць проксі-сервер, патрабуецца аўтэнтыфікацыя"
 
 #. SECURITY:
@@ -2579,9 +2547,7 @@ msgstr "Ачысціць паведамленне пазасеткавага а�
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Каб ачысціць паведамленне пазасеткавага абнаўлення, патрабуецца "
-"аўтэнтыфікацыя"
+msgstr "Каб ачысціць паведамленне пазасеткавага абнаўлення, патрабуецца аўтэнтыфікацыя"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99

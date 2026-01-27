@@ -13,8 +13,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Dutch (http://app.transifex.com/freedesktop/packagekit/"
-"language/nl/)\n"
+"Language-Team: Dutch (http://app.transifex.com/freedesktop/packagekit/language/nl/)\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -371,21 +370,13 @@ msgstr "Log uit en weer in om de update af te maken."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Herstart de computer om de update af te maken omdat belangrijke "
-"beveiligingsupdates geïnstalleerd zijn."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Herstart de computer om de update af te maken omdat belangrijke beveiligingsupdates geïnstalleerd zijn."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Log uit en weer in om de update af te maken omdat belangrijke beveiliging "
-"vernieuwingen geïnstalleerd zijn."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Log uit en weer in om de update af te maken omdat belangrijke beveiliging vernieuwingen geïnstalleerd zijn."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -416,12 +407,8 @@ msgstr "Geen pakketten gevonden"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Verwachtte pakketnaam, maar kreeg een bestand. Probeer in plaats daarvan "
-"'pkcon install-local %s' te gebruiken."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Verwachtte pakketnaam, maar kreeg een bestand. Probeer in plaats daarvan 'pkcon install-local %s' te gebruiken."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -497,9 +484,7 @@ msgstr "Sub-opdrachten:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Verkrijgen van de tijd die verlopen is sinds deze actie voor het laatst werd "
-"afgerond faalde"
+msgstr "Verkrijgen van de tijd die verlopen is sinds deze actie voor het laatst werd afgerond faalde"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -555,23 +540,16 @@ msgstr ""
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Voer het commando uit met gebruik van onbenutte netwerkbandbreedte en ook "
-"met minder stroomverbruik"
+msgstr "Voer het commando uit met gebruik van onbenutte netwerkbandbreedte en ook met minder stroomverbruik"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Print op het scherm een machine-leesbare output, in plaats van geanimeerde "
-"widgets te gebruiken"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Print op het scherm een machine-leesbare output, in plaats van geanimeerde widgets te gebruiken"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -934,8 +912,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1144,8 +1121,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -2382,11 +2358,8 @@ msgid "Cancel foreign task"
 msgstr "Breek taak van anderen af"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Authenticatie wordt vereist om een taak af te breken die niet door jou is "
-"gestart"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Authenticatie wordt vereist om een taak af te breken die niet door jou is gestart"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2452,12 +2425,8 @@ msgid "Trust a key used for signing software"
 msgstr "Vertrouw sleutel gebruikt bij signeren software "
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Authenticatie vereist indien men een sleutel die gebruikt is voor signeren "
-"van software als vertrouwd wil aanmerken"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Authenticatie vereist indien men een sleutel die gebruikt is voor signeren van software als vertrouwd wil aanmerken"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2527,8 +2496,7 @@ msgstr "Repositories ophalen"
 #: policy/org.freedesktop.packagekit.policy.in:199
 #, fuzzy
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-"Authenticatie is vereist om de geïnstalleerde software te kunnen repareren"
+msgstr "Authenticatie is vereist om de geïnstalleerde software te kunnen repareren"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -2538,12 +2506,8 @@ msgid "Set network proxy"
 msgstr "Stel netwerkproxy in"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Authenticatie is vereist bij instellen van een netwerkproxy die gebruikt "
-"wordt voor het downloaden van software"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Authenticatie is vereist bij instellen van een netwerkproxy die gebruikt wordt voor het downloaden van software"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2567,8 +2531,7 @@ msgstr "Repareer Systeem"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
-"Authenticatie is vereist om de geïnstalleerde software te kunnen repareren"
+msgstr "Authenticatie is vereist om de geïnstalleerde software te kunnen repareren"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2723,27 +2686,19 @@ msgstr "De software is niet van een vertrouwde bron."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Update dit pakket niet behalve als je zeker weet dat het veilig is om dat te "
-"doen."
+msgstr "Update dit pakket niet behalve als je zeker weet dat het veilig is om dat te doen."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Update deze pakketten niet behalve als je zeker weet dat het veilig is om "
-"dat te doen."
+msgstr "Update deze pakketten niet behalve als je zeker weet dat het veilig is om dat te doen."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Installeer dit pakket niet behalve als je zeker weet dat het veilig is om "
-"dat te doen."
+msgstr "Installeer dit pakket niet behalve als je zeker weet dat het veilig is om dat te doen."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"Installeer deze pakketten niet behalve als je zeker weet dat het veilig is "
-"om te doen."
+msgstr "Installeer deze pakketten niet behalve als je zeker weet dat het veilig is om te doen."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

@@ -13,14 +13,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-26 22:01+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
-"Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/"
-"translations/sl/>\n"
+"Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
-"n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -372,21 +370,13 @@ msgstr "Odjavite se in se znova prijavite za dokončanje posodobitve."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"Ponovno zaženite računalnik za končanje posodobitve, saj so bile nameščene "
-"pomembne varnostne posodobitve."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "Ponovno zaženite računalnik za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"Odjavite se in se ponovno prijavite za končanje posodobitve, saj so bile "
-"nameščene pomembne varnostne posodobitve."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "Odjavite se in se ponovno prijavite za končanje posodobitve, saj so bile nameščene pomembne varnostne posodobitve."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -417,12 +407,8 @@ msgstr "Ni najdenih paketov"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Pričakovano je bilo ime paketa, pridobljena je bila datoteka. Namesto tega "
-"poskusite z uporabo 'pkcon install local %s'."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Pričakovano je bilo ime paketa, pridobljena je bila datoteka. Namesto tega poskusite z uporabo 'pkcon install local %s'."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -552,25 +538,17 @@ msgstr "Samodejno odstrani neuporabljene odvisnosti"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Požene ukaz z uporabo pasovne širine nedejavnega omrežja in tudi porabi manj "
-"energije"
+msgstr "Požene ukaz z uporabo pasovne širine nedejavnega omrežja in tudi porabi manj energije"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Izpiše zaslon na strojno berljiv izhod namesto uporabe animiranih gradnikov"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Izpiše zaslon na strojno berljiv izhod namesto uporabe animiranih gradnikov"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"Najvišja starost predpomnilnika metapodatkov (v sekundah). Uporabite -1 samo "
-"za uporabo predpomnilnika, 1 za ponovno nalaganje predpomnilnika."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "Najvišja starost predpomnilnika metapodatkov (v sekundah). Uporabite -1 samo za uporabo predpomnilnika, 1 za ponovno nalaganje predpomnilnika."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -889,8 +867,7 @@ msgstr "Branje pripravljenih posodobitev brez povezave ni uspelo: %s"
 
 #: client/pkgc-manage.c:741
 msgid "No results from last offline update available."
-msgstr ""
-"Rezultati o zadnji razpoložljivi posodobitvi brez povezave niso na voljo."
+msgstr "Rezultati o zadnji razpoložljivi posodobitvi brez povezave niso na voljo."
 
 #: client/pkgc-manage.c:748
 #, c-format
@@ -913,9 +890,7 @@ msgstr "Ni uspelo sprožiti posodobitve brez povezave: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Načrtovana je posodobitev brez povezave. Sistem se bo ob naslednjem ponovnem "
-"zagonu posodobil."
+msgstr "Načrtovana je posodobitev brez povezave. Sistem se bo ob naslednjem ponovnem zagonu posodobil."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -927,8 +902,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Sprožite in upravljajte posodobitve sistema brez povezave.\n"
 "\n"
@@ -936,8 +910,7 @@ msgstr ""
 "  prepare - pripravi posodobitev brez povezave in jo sproži (privzeto)\n"
 "  trigger - sproži (ročno pripravljeno) posodobitev brez povezave\n"
 "  cancel  - prekliče načrtovano posodobitev brez povezave\n"
-"  status  - pokaže podatke o stanju pripravljene ali dokončane posodobitev "
-"brez povezave"
+"  status  - pokaže podatke o stanju pripravljene ali dokončane posodobitev brez povezave"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1138,11 +1111,8 @@ msgstr "Pokaži, kateri paketi zahtevajo navedene pakete."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Izpiši vse razpoložljive filtre, skupine in kategorije za organizacijo "
-"paketov."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Izpiši vse razpoložljive filtre, skupine in kategorije za organizacijo paketov."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -2324,8 +2294,7 @@ msgid "Cancel foreign task"
 msgstr "Prekliči tujo nalogo"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "Za preklic opravila, ki ga niste začeli sami, je zahtevana overitev"
 
 #. SECURITY:
@@ -2392,12 +2361,8 @@ msgid "Trust a key used for signing software"
 msgstr "Zaupaj ključu za podpisovanje programja"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Za upoštevanje ključa za podpisovanje programja kot zaupanja vrednega je "
-"obvezna overitev"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Za upoštevanje ključa za podpisovanje programja kot zaupanja vrednega je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2474,12 +2439,8 @@ msgid "Set network proxy"
 msgstr "Nastavi posredniški strežnik omrežja"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Za nastavitev omrežnega posredniškega strežnika, uporabljenega za prejem "
-"programja, je obvezna overitev"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Za nastavitev omrežnega posredniškega strežnika, uporabljenega za prejem programja, je obvezna overitev"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2531,9 +2492,7 @@ msgstr "Počisti sporočilo o posodobitvi v stanju nepovezanosti"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potrebno "
-"overjanje"
+msgstr "Za odstranitev sporočila o posodobitvah v stanju nepovezanosti je potrebno overjanje"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2660,9 +2619,7 @@ msgstr "Ta program ni iz zaupanega vira."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne posodabljajte paketa, v kolikor niste povsem prepričani, da je namestitev "
-"varna."
+msgstr "Ne posodabljajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
@@ -2670,9 +2627,7 @@ msgstr "Ne posodobite teh paketov, če niste prepričani, da je to varno."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne nameščajte paketa, v kolikor niste povsem prepričani, da je namestitev "
-"varna."
+msgstr "Ne nameščajte paketa, v kolikor niste povsem prepričani, da je namestitev varna."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."

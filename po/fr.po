@@ -20,14 +20,12 @@ msgstr ""
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
 "PO-Revision-Date: 2026-01-26 22:01+0000\n"
 "Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
-"Language-Team: French <https://hosted.weblate.org/projects/packagekit/"
-"translations/fr/>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
-"1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 "X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
@@ -71,15 +69,12 @@ msgstr "Arrêt du système après l'installation des mises à jour…"
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:401
 msgid "Installing updates; this could take a while..."
-msgstr ""
-"Installation des mises à jour ; cela pourrait prendre un certain temps..."
+msgstr "Installation des mises à jour ; cela pourrait prendre un certain temps..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
-"Installation de la mise à jour système ; cela pourrait prendre un certain "
-"temps..."
+msgstr "Installation de la mise à jour système ; cela pourrait prendre un certain temps..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -382,21 +377,13 @@ msgstr "Veuillez vous reconnecter pour terminer la mise à jour."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"En raison de l'installation de mises à jour de sécurité importantes, "
-"veuillez redémarrer l'ordinateur pour terminer la mise à jour."
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "En raison de l'installation de mises à jour de sécurité importantes, veuillez redémarrer l'ordinateur pour terminer la mise à jour."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"En raison de l'installation de mises à jour de sécurité importantes, "
-"veuillez vous déconnecter et vous reconnecter."
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "En raison de l'installation de mises à jour de sécurité importantes, veuillez vous déconnecter et vous reconnecter."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -427,12 +414,8 @@ msgstr "Aucun paquet n'a été trouvé"
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
-msgstr ""
-"Nom de paquet attendu, mais un fichier a été obtenu. Essayez d'utiliser "
-"\"pkcon install-local %s\" à la place."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+msgstr "Nom de paquet attendu, mais un fichier a été obtenu. Essayez d'utiliser \"pkcon install-local %s\" à la place."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -506,9 +489,7 @@ msgstr "Sous-commandes :"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
-"Impossible de déterminer le moment où cette action a été accomplie pour la "
-"dernière fois"
+msgstr "Impossible de déterminer le moment où cette action a été accomplie pour la dernière fois"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
@@ -550,9 +531,7 @@ msgstr "Préparer la transaction en téléchargeant les paquets uniquement"
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
 msgid "Allow packages to be downgraded during transaction"
-msgstr ""
-"Autoriser l'installation de versions antérieures des paquets pendant la "
-"transaction"
+msgstr "Autoriser l'installation de versions antérieures des paquets pendant la transaction"
 
 #: client/pkcon/pk-console.c:1720
 msgid "Allow packages to be reinstalled during transaction"
@@ -566,26 +545,17 @@ msgstr "Retirer automatiquement les dépendances inutilisées"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
-"Lancer la commande en utilisant la bande passante réseau inutilisée, et en "
-"consommant moins d'énergie"
+msgstr "Lancer la commande en utilisant la bande passante réseau inutilisée, et en consommant moins d'énergie"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Afficher à l'écran une sortie lisible par la machine plutôt qu'une utilisant "
-"des widgets animés"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Afficher à l'écran une sortie lisible par la machine plutôt qu'une utilisant des widgets animés"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
-msgstr ""
-"L'âge maximum du cache de métadonnées (en secondes). Utilisez -1 pour "
-"utiliser uniquement le cache, et 1 pour recharger le cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgstr "L'âge maximum du cache de métadonnées (en secondes). Utilisez -1 pour utiliser uniquement le cache, et 1 pour recharger le cache."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -652,8 +622,7 @@ msgstr "Un nom de paquet à supprimer est requis"
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
-"Un répertoire de destination et le nom des paquets à télécharger sont requis"
+msgstr "Un répertoire de destination et le nom des paquets à télécharger sont requis"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -832,9 +801,7 @@ msgstr "Impossible de trouver les paquets installés : %s"
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:422
 msgid "Download packages to the specified directory without installing."
-msgstr ""
-"Télécharger des paquets sans les installer, et les enregistrer dans le "
-"répertoire spécifié."
+msgstr "Télécharger des paquets sans les installer, et les enregistrer dans le répertoire spécifié."
 
 #: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
@@ -849,9 +816,7 @@ msgstr "Le répertoire n'existe pas : %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:487
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
-"Mettre à jour tout ou partie des paquets vers leur dernière version "
-"respective."
+msgstr "Mettre à jour tout ou partie des paquets vers leur dernière version respective."
 
 #: client/pkgc-manage.c:510
 #, c-format
@@ -875,8 +840,7 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
-"Mettre à jour tous les paquets ou effectuer une mise à jour de "
-"distribution.\n"
+"Mettre à jour tous les paquets ou effectuer une mise à jour de distribution.\n"
 "\n"
 "Types : minimal, default, complete"
 
@@ -892,8 +856,7 @@ msgstr "La mise à jour hors ligne n'est pas déclenchée."
 #: client/pkgc-manage.c:704
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr ""
-"La mise à jour hors ligne est déclenchée. Action après mise à jour : %s"
+msgstr "La mise à jour hors ligne est déclenchée. Action après mise à jour : %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:715
@@ -934,9 +897,7 @@ msgstr "Échec du déclenchement de la mise à jour hors ligne : %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
-"Mise à jour hors ligne planifiée. Le système sera mis à jour au prochain "
-"redémarrage."
+msgstr "Mise à jour hors ligne planifiée. Le système sera mis à jour au prochain redémarrage."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -948,18 +909,15 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 "Déclencher et gérer les mises à jour système hors ligne.\n"
 "\n"
 "Vous pouvez sélectionner une de ces requêtes :\n"
-"  prepare - préparer une mise à jour hors ligne et la déclencher (par "
-"défaut)\n"
+"  prepare - préparer une mise à jour hors ligne et la déclencher (par défaut)\n"
 "  trigger - déclencher une mise à jour hors ligne (préparée manuellement)\n"
 "  cancel - annuler une mise à jour hors ligne planifiée\n"
-"  status - afficher des informations sur l'état d'une mise à jour hors ligne "
-"préparée ou terminée"
+"  status - afficher des informations sur l'état d'une mise à jour hors ligne préparée ou terminée"
 
 #: client/pkgc-manage.c:835
 #, c-format
@@ -1092,8 +1050,7 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
-"Rechercher des paquets correspondant aux motifs donnés. Si MODE n'est pas "
-"spécifié,\n"
+"Rechercher des paquets correspondant aux motifs donnés. Si MODE n'est pas spécifié,\n"
 "une recherche \"details\" est effectuée.\n"
 "Les MODEs de recherche disponibles sont :\n"
 "  name - rechercher par nom de paquet\n"
@@ -1147,9 +1104,7 @@ msgstr "Lister toutes les mises à jour de paquets actuellement disponibles."
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
-"Afficher des informations détaillées à propos de la mise à jour de paquet "
-"spécifiée."
+msgstr "Afficher des informations détaillées à propos de la mise à jour de paquet spécifiée."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
@@ -1163,11 +1118,8 @@ msgstr "Afficher la liste des paquets demandant les paquets spécifiés."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
-msgstr ""
-"Lister tous les filtres, groupes et catégories disponibles pour "
-"l'organisation des paquets."
+msgid "List all available filters, groups and categories for package organization."
+msgstr "Lister tous les filtres, groupes et catégories disponibles pour l'organisation des paquets."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
@@ -1583,9 +1535,7 @@ msgstr "Filtrer les paquets (installés, disponibles, etc.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
-"Aucune commande spécifiée. Utilisez --help pour obtenir des informations "
-"d'utilisation."
+msgstr "Aucune commande spécifiée. Utilisez --help pour obtenir des informations d'utilisation."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -1608,8 +1558,7 @@ msgstr "Commandes disponibles :"
 
 #: client/pkgcli.c:217
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
-"Utilisez \"pkgcli COMMANDE --help\" pour une aide spécifique à la commande."
+msgstr "Utilisez \"pkgcli COMMANDE --help\" pour une aide spécifique à la commande."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1619,8 +1568,7 @@ msgstr "Téléchargement des détails à propos des dépôts des logiciels."
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"Téléchargement des listes de fichiers (cela peut prendre un certain temps)."
+msgstr "Téléchargement des listes de fichiers (cela peut prendre un certain temps)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -2322,8 +2270,7 @@ msgstr "Les paquets suivants doivent être réinstallés :"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:283
 msgid "The following packages have to be downgraded:"
-msgstr ""
-"Les paquets suivants doivent être rétrogradés à une version inférieure :"
+msgstr "Les paquets suivants doivent être rétrogradés à une version inférieure :"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
@@ -2354,11 +2301,8 @@ msgid "Cancel foreign task"
 msgstr "Annulation de la tâche externe"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
-"Une authentification est nécessaire pour annuler une tâche non initiée par "
-"vos soins"
+msgid "Authentication is required to cancel a task that was not started by yourself"
+msgstr "Une authentification est nécessaire pour annuler une tâche non initiée par vos soins"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2384,8 +2328,7 @@ msgstr "Installer un fichier local non signé"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr ""
-"Une authentification est nécessaire pour installer un logiciel non certifié"
+msgstr "Une authentification est nécessaire pour installer un logiciel non certifié"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2425,12 +2368,8 @@ msgid "Trust a key used for signing software"
 msgstr "Faire confiance à une clé utilisée pour la signature de logiciel"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
-msgstr ""
-"Une authentification est nécessaire pour considérer une clé utilisée pour la "
-"signature de logiciel comme fiable"
+msgid "Authentication is required to consider a key used for signing software as trusted"
+msgstr "Une authentification est nécessaire pour considérer une clé utilisée pour la signature de logiciel comme fiable"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2486,9 +2425,7 @@ msgstr "Changer les paramètres du dépôt des logiciels"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
-"Une authentification est nécessaire pour changer les paramètres du dépôt des "
-"logiciels"
+msgstr "Une authentification est nécessaire pour changer les paramètres du dépôt des logiciels"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2499,8 +2436,7 @@ msgstr "Actualiser les dépôts du système"
 
 #: policy/org.freedesktop.packagekit.policy.in:199
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
-"Une authentification est nécessaire pour rafraîchir les dépôts du système"
+msgstr "Une authentification est nécessaire pour rafraîchir les dépôts du système"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -2510,12 +2446,8 @@ msgid "Set network proxy"
 msgstr "Configurer le proxy réseau"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
-msgstr ""
-"Une authentification est nécessaire pour configurer le serveur mandataire "
-"utilisé pour le téléchargement de logiciels"
+msgid "Authentication is required to set the network proxy used for downloading software"
+msgstr "Une authentification est nécessaire pour configurer le serveur mandataire utilisé pour le téléchargement de logiciels"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2527,9 +2459,7 @@ msgstr "Mettre le système à niveau"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
-"Une authentification est nécessaire pour mettre à niveau le système "
-"d'exploitation"
+msgstr "Une authentification est nécessaire pour mettre à niveau le système d'exploitation"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -2541,8 +2471,7 @@ msgstr "Réparer le système"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
-"Une authentification est nécessaire pour réparer les logiciels installés"
+msgstr "Une authentification est nécessaire pour réparer les logiciels installés"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2559,8 +2488,7 @@ msgstr "Lancer des mises à jour hors ligne"
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
-"Une authentification est nécessaire pour lancer des mises à jour hors ligne"
+msgstr "Une authentification est nécessaire pour lancer des mises à jour hors ligne"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -2571,9 +2499,7 @@ msgstr "Effacer le message de mise à jour hors ligne"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
-"Une authentification est nécessaire pour effacer le message de mise à jour "
-"hors ligne"
+msgstr "Une authentification est nécessaire pour effacer le message de mise à jour hors ligne"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2700,27 +2626,19 @@ msgstr "Le logiciel ne provient pas d'une source sûre."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"Ne mettez pas à jour ce paquet à moins que vous ne soyez sûr que cela est "
-"sans danger."
+msgstr "Ne mettez pas à jour ce paquet à moins que vous ne soyez sûr que cela est sans danger."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"Ne mettez pas à jour ces paquets à moins que vous ne soyez sûr que cela est "
-"sans danger."
+msgstr "Ne mettez pas à jour ces paquets à moins que vous ne soyez sûr que cela est sans danger."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"N'installez pas ce paquet à moins que vous ne soyez sûr que cela est sans "
-"danger."
+msgstr "N'installez pas ce paquet à moins que vous ne soyez sûr que cela est sans danger."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"N'installez pas ces paquets à moins que vous ne soyez sûr que cela est sans "
-"danger."
+msgstr "N'installez pas ces paquets à moins que vous ne soyez sûr que cela est sans danger."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

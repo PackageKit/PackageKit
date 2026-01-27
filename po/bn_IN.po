@@ -11,8 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-27 11:36+0100\n"
-"Language-Team: Bengali (India) (http://app.transifex.com/freedesktop/"
-"packagekit/language/bn_IN/)\n"
+"Language-Team: Bengali (India) (http://app.transifex.com/freedesktop/packagekit/language/bn_IN/)\n"
 "Language: bn_IN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -374,21 +373,13 @@ msgstr "আপডেট সম্পন্ন করার জন্য অন�
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
-msgid ""
-"Please restart the computer to complete the update as important security "
-"updates have been installed."
-msgstr ""
-"নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। আপডেট সম্পূর্ণ করার জন্য অনুগ্রহ করে "
-"কম্পিউটার পুনরায় আরম্ভ করুন।"
+msgid "Please restart the computer to complete the update as important security updates have been installed."
+msgstr "নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। আপডেট সম্পূর্ণ করার জন্য অনুগ্রহ করে কম্পিউটার পুনরায় আরম্ভ করুন।"
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
-msgid ""
-"Please logout and login to complete the update as important security updates "
-"have been installed."
-msgstr ""
-"নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। ।আপডেট সম্পন্ন করার জন্য অনুগ্রহ "
-"করে লগ-আউট করে পুনরায় লগ-ইন করুন।"
+msgid "Please logout and login to complete the update as important security updates have been installed."
+msgstr "নিরাপত্তা বিষয়ক গুরুত্বপূর্ণ আপডেট ইনস্টল করা হয়েছে। ।আপডেট সম্পন্ন করার জন্য অনুগ্রহ করে লগ-আউট করে পুনরায় লগ-ইন করুন।"
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -420,9 +411,7 @@ msgstr ""
 #. * 'pkcon install-local dave.rpm'
 #: client/pkcon/pk-console.c:1024
 #, c-format
-msgid ""
-"Expected package name, actually got file. Try using 'pkcon install-local %s' "
-"instead."
+msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
@@ -561,16 +550,12 @@ msgstr "Run the command using idle network bandwidth and also using less power"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
-msgid ""
-"Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
-"Print to screen a machine readable output, rather than using animated widgets"
+msgid "Print to screen a machine readable output, rather than using animated widgets"
+msgstr "Print to screen a machine readable output, rather than using animated widgets"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
-msgid ""
-"The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to "
-"reload cache."
+msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr ""
 
 #. command line argument, do we ask questions
@@ -937,8 +922,7 @@ msgid ""
 "  prepare - prepare an offline update and trigger it (default)\n"
 "  trigger - trigger a (manually prepared) offline update\n"
 "  cancel  - cancel a planned offline update\n"
-"  status  - show status information about a prepared or finished offline "
-"update"
+"  status  - show status information about a prepared or finished offline update"
 msgstr ""
 
 #: client/pkgc-manage.c:835
@@ -1145,8 +1129,7 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
-msgid ""
-"List all available filters, groups and categories for package organization."
+msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
@@ -1643,8 +1626,7 @@ msgstr ""
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
-"ফাইলের তালিকা ডাউনলোড করা হচ্ছে (এই কাজে কিছু সময় ব্যয় হওয়ার সম্ভাবনা রয়েছে)।"
+msgstr "ফাইলের তালিকা ডাউনলোড করা হচ্ছে (এই কাজে কিছু সময় ব্যয় হওয়ার সম্ভাবনা রয়েছে)।"
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
@@ -1715,9 +1697,7 @@ msgstr "এই প্যাকেজ উপলব্ধকারী ফাইল
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
-"'%s' প্যাকেজটি ইনস্টল করা হবে কি? এটি সাহায্যে '%s' কমান্ডটি ব্যবহারের উদ্দেশ্যে "
-"উপলব্ধ করা হবে।"
+msgstr "'%s' প্যাকেজটি ইনস্টল করা হবে কি? এটি সাহায্যে '%s' কমান্ডটি ব্যবহারের উদ্দেশ্যে উপলব্ধ করা হবে।"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
@@ -2391,8 +2371,7 @@ msgid "Cancel foreign task"
 msgstr "বহিস্থিত কর্ম বাতিল করুন"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
-msgid ""
-"Authentication is required to cancel a task that was not started by yourself"
+msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "আপনার দ্বারা আরম্ভ না করা কোনো কর্ম বন্ধ করার জন্য অনুমোদন প্রয়োজন"
 
 #. SECURITY:
@@ -2466,9 +2445,7 @@ msgstr ""
 
 #: policy/org.freedesktop.packagekit.policy.in:112
 #, fuzzy
-msgid ""
-"Authentication is required to consider a key used for signing software as "
-"trusted"
+msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "আপনার দ্বারা আরম্ভ না করা কোনো কর্ম বন্ধ করার জন্য অনুমোদন প্রয়োজন"
 
 #. SECURITY:
@@ -2553,9 +2530,7 @@ msgstr "নেটওয়ার্ক প্রক্সি নির্ধার�
 
 #: policy/org.freedesktop.packagekit.policy.in:214
 #, fuzzy
-msgid ""
-"Authentication is required to set the network proxy used for downloading "
-"software"
+msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "আপনার দ্বারা আরম্ভ না করা কোনো কর্ম বন্ধ করার জন্য অনুমোদন প্রয়োজন"
 
 #. SECURITY:
@@ -2751,27 +2726,19 @@ msgstr "বিশ্বস্ত উৎসস্থল থেকে সফ্ট
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
-"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা "
-"উচিত।"
+msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
-"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজগুলি আপডেট না করা "
-"উচিত।"
+msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজগুলি আপডেট না করা উচিত।"
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
-"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি ইনস্টল না করা "
-"উচিত।"
+msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি ইনস্টল না করা উচিত।"
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
-"প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা "
-"উচিত।"
+msgstr "প্যাকেজের নিরাপত্তা সম্পর্কের সম্পূর্ণরূপে নিশ্চিত না হলে এই প্যাকেজটি আপডেট না করা উচিত।"
 
 #, fuzzy
 #~| msgid "Installing updates"
