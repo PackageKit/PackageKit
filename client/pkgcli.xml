@@ -416,6 +416,8 @@
             Completely remove a repository from the system configuration.
             This is permanent and the repository will need to be re-added
             if needed later.
+
+            Takes a repository-ID as parameter.
           </para>
         </listitem>
       </varlistentry>
