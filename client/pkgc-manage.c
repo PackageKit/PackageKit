@@ -31,7 +31,7 @@ static gboolean opt_download_only = FALSE;
 static gboolean opt_allow_downgrade = FALSE;
 static gboolean opt_allow_reinstall = FALSE;
 static gboolean opt_allow_untrusted = FALSE;
-static gboolean opt_autoremove = FALSE;
+static gboolean opt_no_autoremove = FALSE;
 static gint opt_cache_age = -1;
 
 static const GOptionEntry option_download_only[] = {
@@ -62,10 +62,10 @@ static const GOptionEntry option_allow_untrusted[] = {
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
-static const GOptionEntry option_autoremove[] = {
-	{ "autoremove", 0, 0, G_OPTION_ARG_NONE, &opt_autoremove,
+static const GOptionEntry option_no_autoremove[] = {
+	{ "no-autoremove", 0, 0, G_OPTION_ARG_NONE, &opt_no_autoremove,
 		/* TRANSLATORS: command line argument */
-	  N_("Automatically remove unused dependencies"), NULL },
+		N_("Do not automatically remove unused dependencies"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -88,7 +88,7 @@ pkgc_manage_reset_options (void)
 	opt_allow_downgrade = FALSE;
 	opt_allow_reinstall = FALSE;
 	opt_allow_untrusted = FALSE;
-	opt_autoremove = FALSE;
+	opt_no_autoremove = FALSE;
 	opt_cache_age = PKGC_DEFAULT_CACHE_AGE_SEC;
 }
 
@@ -251,7 +251,7 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_reinstall, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_untrusted, NULL);
-	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
+	g_option_context_add_main_entries (option_context, option_no_autoremove, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -365,7 +365,7 @@ pkgc_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		"PACKAGE...",
 		/* TRANSLATORS: Description for pkgcli remove */
 		_("Remove one or more packages from the system."));
-	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
+	g_option_context_add_main_entries (option_context, option_no_autoremove, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -390,7 +390,7 @@ pkgc_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	pk_task_remove_packages_async (PK_TASK (ctx->task),
 				       package_ids,
 				       TRUE, /* allow deps */
-				       opt_autoremove,
+				       !opt_no_autoremove, /* autoremove */
 				       ctx->cancellable,
 				       pkgc_context_on_progress_cb,
 				       ctx,
@@ -489,7 +489,6 @@ pkgc_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		_("Update all packages or specific packages to their latest versions."));
 	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
-	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -591,7 +590,6 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		 * No not translate "minimal, default, complete", those are parameters */
 		_("Upgrade all packages or perform a distribution upgrade.\n\n"
 		  "Types: minimal, default, complete"));
-	g_option_context_add_main_entries (option_context, option_autoremove, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
