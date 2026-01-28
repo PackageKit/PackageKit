@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"POT-Creation-Date: 2026-01-28 11:14+0100\n"
 "Language-Team: Malay (http://www.transifex.com/projects/p/freedesktop/language/ms/)\n"
 "Language: ms\n"
 "MIME-Version: 1.0\n"
@@ -529,8 +529,7 @@ msgstr ""
 msgid "Allow packages to be reinstalled during transaction"
 msgstr ""
 
-#. TRANSLATORS: command line argument
-#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+#: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
 msgstr ""
 
@@ -747,8 +746,13 @@ msgid "Allow installation of untrusted packages"
 msgstr ""
 
 #. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:68
+msgid "Do not automatically remove unused dependencies"
+msgstr ""
+
+#. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
+msgid "Maximum metadata cache age in seconds (default: 3 days)"
 msgstr ""
 
 #: client/pkgc-manage.c:75
@@ -756,78 +760,78 @@ msgid "SECONDS"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
+#: client/pkgc-manage.c:198
 msgid "Refresh the package metadata cache."
 msgstr ""
 
-#: client/pkgc-manage.c:222
+#: client/pkgc-manage.c:224
 msgid "Package metadata refreshed"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
+#: client/pkgc-manage.c:248
 msgid "Install one or more packages or local package files."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#: client/pkgc-manage.c:309 client/pkgc-manage.c:322
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr ""
 
-#: client/pkgc-manage.c:325
+#: client/pkgc-manage.c:327
 msgid "The selected package is already installed."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
+#: client/pkgc-manage.c:367
 msgid "Remove one or more packages from the system."
 msgstr ""
 
-#: client/pkgc-manage.c:382
+#: client/pkgc-manage.c:384
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
+#: client/pkgc-manage.c:424
 msgid "Download packages to the specified directory without installing."
 msgstr ""
 
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
 msgstr ""
 
-#: client/pkgc-manage.c:444
+#: client/pkgc-manage.c:446
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
+#: client/pkgc-manage.c:489
 msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#: client/pkgc-manage.c:510
+#: client/pkgc-manage.c:511
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr ""
 
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr ""
 
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 msgid "No packages require updating"
 msgstr ""
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
+#: client/pkgc-manage.c:591
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"

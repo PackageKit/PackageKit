@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"POT-Creation-Date: 2026-01-28 11:14+0100\n"
 "Language-Team: Hindi (http://app.transifex.com/freedesktop/packagekit/language/hi/)\n"
 "Language: hi\n"
 "MIME-Version: 1.0\n"
@@ -527,8 +527,7 @@ msgstr "लेनदेन के दौरान पैकेजों को �
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "लेनदेन के दौरान पैकेजों को पुनः स्थापित करने की अनुमति दें"
 
-#. TRANSLATORS: command line argument
-#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+#: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
 msgstr "अप्रयुक्त निर्भरताओं को स्वचालित रूप से हटा दें"
 
@@ -747,90 +746,99 @@ msgid "Allow installation of untrusted packages"
 msgstr "स्थापित पैकेज का पुराना संस्करण स्थापित करें"
 
 #. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:68
+#, fuzzy
+#| msgid "Automatically remove unused dependencies"
+msgid "Do not automatically remove unused dependencies"
+msgstr "अप्रयुक्त निर्भरताओं को स्वचालित रूप से हटा दें"
+
+#. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
-msgstr ""
+#, fuzzy
+#| msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+msgid "Maximum metadata cache age in seconds (default: 3 days)"
+msgstr "अधिकतम मेटाडेटा कैशे आयु (सेकेंड में)। केवल कैशे का उपयोग करने के लिए -1 का उपयोग करें, कैशे को पुनः लोड करने के लिए 1 का उपयोग करें।"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
+#: client/pkgc-manage.c:198
 #, fuzzy
 msgid "Refresh the package metadata cache."
 msgstr "कैशे ताजा करें"
 
-#: client/pkgc-manage.c:222
+#: client/pkgc-manage.c:224
 msgid "Package metadata refreshed"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
+#: client/pkgc-manage.c:248
 msgid "Install one or more packages or local package files."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#: client/pkgc-manage.c:309 client/pkgc-manage.c:322
 #, fuzzy, c-format
 msgid "Could not find any available package: %s"
 msgstr "इस टूल को कोई भी उपलब्ध पैकेज नहीं मिल सका: %s"
 
-#: client/pkgc-manage.c:325
+#: client/pkgc-manage.c:327
 #, fuzzy
 msgid "The selected package is already installed."
 msgstr "चयनित पैकेज पहले से ही स्थापित हो सकते हैं।"
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
+#: client/pkgc-manage.c:367
 msgid "Remove one or more packages from the system."
 msgstr ""
 
-#: client/pkgc-manage.c:382
+#: client/pkgc-manage.c:384
 #, fuzzy, c-format
 msgid "Could not find installed packages: %s"
 msgstr "यह टूल पैकेज नहीं खोज सका: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
+#: client/pkgc-manage.c:424
 msgid "Download packages to the specified directory without installing."
 msgstr ""
 
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, fuzzy, c-format
 msgid "Could not find packages: %s"
 msgstr "यह टूल पैकेज नहीं खोज सका: %s"
 
-#: client/pkgc-manage.c:444
+#: client/pkgc-manage.c:446
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
+#: client/pkgc-manage.c:489
 msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#: client/pkgc-manage.c:510
+#: client/pkgc-manage.c:511
 #, fuzzy, c-format
 msgid "Could not find packages to update: %s"
 msgstr "यह टूल पैकेज नहीं खोज सका: %s"
 
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, fuzzy, c-format
 msgid "Failed to get updates: %s"
 msgstr "डेमॉन स्थिति प्राप्त करने में विफल"
 
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 #, fuzzy
 msgid "No packages require updating"
 msgstr "किसी भी पैकेज को नए संस्करण में अद्यतन करने की आवश्यकता नहीं है।"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
+#: client/pkgc-manage.c:591
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"

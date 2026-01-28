@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-01-27 11:36+0100\n"
+"POT-Creation-Date: 2026-01-28 11:14+0100\n"
 "PO-Revision-Date: 2026-01-26 22:01+0000\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/packagekit/translations/sl/>\n"
@@ -530,8 +530,7 @@ msgstr "Dovoli nadomestitev paketov s starejšimi med transakcijo"
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "Dovoli ponovno namestitev paketov med transakcijo"
 
-#. TRANSLATORS: command line argument
-#: client/pkcon/pk-console.c:1722 client/pkgc-manage.c:68
+#: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
 msgstr "Samodejno odstrani neuporabljene odvisnosti"
 
@@ -747,8 +746,17 @@ msgid "Allow installation of untrusted packages"
 msgstr "Dovoli namestitev zaupanja nevrednih paketov"
 
 #. TRANSLATORS: command line argument
+#: client/pkgc-manage.c:68
+#, fuzzy
+#| msgid "Automatically remove unused dependencies"
+msgid "Do not automatically remove unused dependencies"
+msgstr "Samodejno odstrani neuporabljene odvisnosti"
+
+#. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-msgid "Maximum metadata cache age in seconds"
+#, fuzzy
+#| msgid "Maximum metadata cache age in seconds"
+msgid "Maximum metadata cache age in seconds (default: 3 days)"
 msgstr "Največja starost predpomnilnika metapodatkov v nekaj sekundah"
 
 #: client/pkgc-manage.c:75
@@ -756,78 +764,78 @@ msgid "SECONDS"
 msgstr "SEKUNDE"
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:196
+#: client/pkgc-manage.c:198
 msgid "Refresh the package metadata cache."
 msgstr "Osveži predpomnilnik metapodatkov paketa."
 
-#: client/pkgc-manage.c:222
+#: client/pkgc-manage.c:224
 msgid "Package metadata refreshed"
 msgstr "Metapodatki paketa osveženi"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:246
+#: client/pkgc-manage.c:248
 msgid "Install one or more packages or local package files."
 msgstr "Namestite enega ali več paketov ali krajevnih paketnih datotek."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:307 client/pkgc-manage.c:320
+#: client/pkgc-manage.c:309 client/pkgc-manage.c:322
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "Ni možno najti nobenega razpoložljivega paketa: %s"
 
-#: client/pkgc-manage.c:325
+#: client/pkgc-manage.c:327
 msgid "The selected package is already installed."
 msgstr "Izbrani paket je že nameščen."
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:365
+#: client/pkgc-manage.c:367
 msgid "Remove one or more packages from the system."
 msgstr "Odstranite enega ali več paketov iz sistema."
 
-#: client/pkgc-manage.c:382
+#: client/pkgc-manage.c:384
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "Ni možno najti nameščenih paketov: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:422
+#: client/pkgc-manage.c:424
 msgid "Download packages to the specified directory without installing."
 msgstr "Prenesite pakete v določeno mapo brez nameščanja."
 
-#: client/pkgc-manage.c:436 client/pkgc-query.c:436 client/pkgc-query.c:768
+#: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Ni možno najti paketov: %s"
 
-#: client/pkgc-manage.c:444
+#: client/pkgc-manage.c:446
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "Mapa ne obstaja: %s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:487
+#: client/pkgc-manage.c:489
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Posodobite vse pakete ali posamezne pakete na najnovejše različice."
 
-#: client/pkgc-manage.c:510
+#: client/pkgc-manage.c:511
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "Ni možno najti paketov za posodobitev: %s"
 
-#: client/pkgc-manage.c:539 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Ni možno pridobiti posodobitev: %s"
 
-#: client/pkgc-manage.c:551 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
 msgid "No packages require updating"
 msgstr "Noben paket ne zahteva posodobitve"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:590
+#: client/pkgc-manage.c:591
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
