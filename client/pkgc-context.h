@@ -39,6 +39,9 @@ G_BEGIN_DECLS
 /* error domain */
 #define PKGC_ERROR	(pkgc_error_quark ())
 
+/* default cache age (3 days) */
+#define PKGC_DEFAULT_CACHE_AGE_SEC (3 * 24 * 60 * 60)
+
 /**
  * OutputMode:
  * @PKGCLI_MODE_NORMAL:		Normal output mode
@@ -79,7 +82,7 @@ typedef struct {
 	gboolean       allow_downgrade;
 	gboolean       allow_reinstall;
 	gboolean       allow_untrusted;
-	gint	       cache_age;
+	guint	       cache_age;
 
 	PkBitfield     filters;
 	gboolean	   user_filters_set;

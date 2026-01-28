@@ -72,7 +72,7 @@ static const GOptionEntry option_autoremove[] = {
 static const GOptionEntry option_cache_age[] = {
 	{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &opt_cache_age,
 		/* TRANSLATORS: command line argument */
-	  N_("Maximum metadata cache age in seconds"), N_("SECONDS") },
+	  N_("Maximum metadata cache age in seconds (default: 3 days)"), N_("SECONDS") },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -89,7 +89,7 @@ pkgc_manage_reset_options (void)
 	opt_allow_reinstall = FALSE;
 	opt_allow_untrusted = FALSE;
 	opt_autoremove = FALSE;
-	opt_cache_age = -1;
+	opt_cache_age = PKGC_DEFAULT_CACHE_AGE_SEC;
 }
 
 /**
@@ -105,8 +105,10 @@ pkgc_manage_apply_options (PkgcliContext *ctx)
 	ctx->allow_downgrade = opt_allow_downgrade;
 	ctx->allow_reinstall = opt_allow_reinstall;
 	ctx->allow_untrusted = opt_allow_untrusted;
-	if (opt_cache_age >= 0)
-		ctx->cache_age = opt_cache_age;
+	if (opt_cache_age == 0)
+		ctx->cache_age = 1; /* shortest possible cache-age, 0 is not allowed */
+	else
+		ctx->cache_age = (opt_cache_age < 0)? G_MAXUINT : (guint)opt_cache_age;
 
 	pkgc_context_apply_settings (ctx);
 }
