@@ -37,28 +37,28 @@ static gint opt_cache_age = -1;
 static const GOptionEntry option_download_only[] = {
 	{ "download-only", 'd', 0, G_OPTION_ARG_NONE, &opt_download_only,
 		/* TRANSLATORS: command line argument, do we just download or apply changes */
-	  N_("Prepare the transaction by downloading packages only"), NULL },
+		N_("Prepare the transaction by downloading packages only"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_downgrade[] = {
 	{ "allow-downgrade", 0, 0, G_OPTION_ARG_NONE, &opt_allow_downgrade,
 		/* TRANSLATORS: command line argument, do we allow package downgrades */
-	  N_("Allow package downgrades"), NULL },
+		N_("Allow package downgrades"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_reinstall[] = {
 	{ "allow-reinstall", 0, 0, G_OPTION_ARG_NONE, &opt_allow_reinstall,
 		/* TRANSLATORS: command line argument, do we allow package re-installations */
-	  N_("Allow package re-installations"), NULL },
+		N_("Allow package re-installations"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
 static const GOptionEntry option_allow_untrusted[] = {
 	{ "allow-untrusted", 0, 0, G_OPTION_ARG_NONE, &opt_allow_untrusted,
 		/* TRANSLATORS: command line argument */
-	  N_("Allow installation of untrusted packages"), NULL },
+		N_("Allow installation of untrusted packages"), NULL },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 
@@ -72,7 +72,7 @@ static const GOptionEntry option_no_autoremove[] = {
 static const GOptionEntry option_cache_age[] = {
 	{ "cache-age", 'c', 0, G_OPTION_ARG_INT, &opt_cache_age,
 		/* TRANSLATORS: command line argument */
-	  N_("Maximum metadata cache age in seconds (default: 3 days)"), N_("SECONDS") },
+		N_("Maximum metadata cache age in seconds (default: 3 days)"), N_("SECONDS") },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
 

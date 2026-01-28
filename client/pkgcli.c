@@ -86,7 +86,7 @@ const GOptionEntry pkgc_global_options[] = {
 		N_("Disable colored output"), NULL },
 	{ "yes", 'y', 0, G_OPTION_ARG_NONE, &opt_yes,
 		/* TRANSLATORS: command line argument, do we ask questions */
-	  N_("Answer 'yes' to all questions"), NULL },
+		N_("Answer 'yes' to all questions"), NULL },
 	{ "filter", 'f', 0, G_OPTION_ARG_STRING, &opt_filter_str,
 		/* TRANSLATORS: command line argument, use a filter to narrow down results */
 	N_("Filter packages (installed, available, etc.)"), N_("FILTER") },

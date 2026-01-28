@@ -242,9 +242,9 @@ pkgc_context_apply_settings (PkgcliContext *ctx)
  */
 void
 pkgc_context_register_command (PkgcliContext *ctx,
-							   const gchar *name,
-							   gint (*handler) (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv),
-							   const gchar *summary)
+				const gchar *name,
+				gint (*handler) (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv),
+				const gchar *summary)
 {
 	PkgcliCommand *cmd;
 
