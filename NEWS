@@ -1,3 +1,64 @@
+Version 1.3.4
+~~~~~~~~~~~~~
+Released: 2026-01-28
+
+Notes:
+ * This version introduces the new DNF5 backend for distributions that use DNF.
+ * The "pkgctl" utility has been renamed to "pkgcli" to avoid a name clash
+   with an Arch Linux-specific developer tool that has the same binary name.
+   It is also now built by default.
+
+Features:
+ * Build pkgctl by default (Matthias Klumpp)
+ * pkgctl: Add manual page (Matthias Klumpp)
+ * pkgctl: Add basic bash-completion support (Matthias Klumpp)
+ * Rename the pkgctl utility to pkgcli (Matthias Klumpp)
+ * pkgcli: Autoremove unused dependencies by default (Matthias Klumpp)
+
+Backends:
+ * alpm: Ignore new Sandbox configuration options (Jelle van der Waa)
+ * apt: Pretty-print Launchpad PPA repos and shorten repo-IDs a bit (Matthias Klumpp)
+ * apt: Do not destroy multiline fields when editing deb822 sources (Matthias Klumpp)
+ * apt: Only upgrade packages selected by the user instead of all packages (Matthias Klumpp)
+ * dnf: Implement DependsOn and RequiredBy (Neal Gompa)
+ * backends: Initial implementation of the DNF5 backend (Neal Gompa)
+ * dnf5: Invalidate context when receiving updates-changed signal (Gordon Messmer)
+ * dnf5: Inhibit handling duplicate/redundant change notifications (Gordon Messmer)
+ * dnf5: Add rpm plugin to notify PackageKit when transactions complete (Gordon Messmer)
+ * freebsd: Properly finish the some job when we're offline (Gleb Popov)
+ * freebsd: Don't check if we're online when handling get-updates (Gleb Popov)
+ * freebsd: Feed package names without versions to the update command (Gleb Popov)
+
+Bugfixes:
+ * backends: Hook up job user_data destroy func (Alessandro Astone)
+ * pkgctl: Make updating a specific package work like in pkcon (Matthias Klumpp)
+ * pkgctl: Filter out blocked packages before attempting an update (Matthias Klumpp)
+ * pkgctl: Improve filtering and error handling (Matthias Klumpp)
+ * pkgctl: Improve local package detection (Matthias Klumpp)
+ * pkgcli: Fix progress-bar on CJK locale by resolving char width to terminal columns (Matthias Klumpp)
+ * pkgcli: Pad & align packages/summaries in output for requested changes (Matthias Klumpp)
+ * pkgcli: Display proper error if pkg is already installed & quit progress bars (Matthias Klumpp)
+ * cli: Cap progress-bar drawing area at a reasonable size (Matthias Klumpp)
+ * cron: Use pkgcli to execute operations (Matthias Klumpp)
+ * pkgcli: Set default cache-age of 3 days, instead of "never" (Matthias Klumpp)
+ * policy: Only permit password-less system *updates* not system *upgrades* (Matthias Klumpp)
+ * meson: Ensure enums.py is always available for Python tests (Matthias Klumpp)
+ * meson: Take flags into account when testing for features (Matthias Klumpp)
+ * pk-client: Fix assertion failure when PkClientState is cancelled early (Philip Withnall)
+ * pk-client: Improve error code when PkClientState is cancelled early (Philip Withnall)
+ * pk-client: Remove a load of redundant GCancellable NULL checks (Philip Withnall)
+ * Fix invalid size checks for size and download-size for spawned backends (sid)
+ * Add details() tests for 'size' and 'download-size' properties for spawned backends (sid)
+
+Miscellaneous:
+ * Start requiring 'download-size' for get_details() in spawned backends (Joey Riches)
+ * python: Ensure 'size' & 'download-size' are reported as unknown if None (Joey Riches)
+ * progress-bar: Drop deprecated API (Matthias Klumpp)
+ * pk-client: Add more debug messages to the PkClientState lifecycle (Philip Withnall)
+ * general: Fix spelling of D-Bus in comments and docs (Philip Withnall)
+ * docs: Fix capitalisation of GLib and GObject (Philip Withnall)
+ * doc: Delete MAINTAINERS file in favour of PackageKit.doap (Philip Withnall)
+
 Version 1.3.3
 ~~~~~~~~~~~~~
 Released: 2025-11-24
