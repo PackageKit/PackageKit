@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2026-01-24 21:01+0000\n"
+"PO-Revision-Date: 2026-01-28 23:37+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -752,17 +752,13 @@ msgstr "Tillåt installation av ej betrodda paket"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Ta automatiskt bort oanvända beroenden"
+msgstr "Ta inte automatiskt bort oanvända beroenden"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Maximal cacheålder för metadata i sekunder"
+msgstr "Maximal cacheålder för metadata i sekunder (standard: 3 dagar)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
