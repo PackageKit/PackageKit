@@ -29,12 +29,12 @@ It's much simpler than using PackageKit directly.
 
 <h2>Using the command line</h2>
 <p>
-The <code>pkcon</code> text-mode program allows you to interact with
+The <code>pkgcli</code> text-mode program allows you to interact with
 PackageKit on the command line. For example:
 </p>
 <pre>
-[hughsie@laptop ~]$ pkcon get-updates
-[hughsie@hughsie-work PackageKit]$ pkcon get-updates
+[hughsie@laptop ~]$ pkgcli list-updates
+[hughsie@hughsie-work PackageKit]$ pkgcli list-updates
 security    	bluez-utils-3.35-3.fc9                  	Bluetooth utilities
 bugfix      	xterm-236-1.fc9                         	Terminal emulator for the X Window System
 bugfix      	kernel-devel-2.6.25.14-108.fc9          	Development package for building kernel modules to match the kernel
@@ -43,7 +43,7 @@ enhancement 	subversion-1.5.1-1.fc9                  	Modern Version Control Sys
 </pre>
 <p>or</p>
 <pre>
-[hughsie@hughsie-work PackageKit]$ pkcon --filter=~devel search name power
+[hughsie@hughsie-work PackageKit]$ pkgcli --filter=~devel search name power
 installed   	DeviceKit-power-001-0.8.20080811git.fc9 	Power Management Service
 installed   	gnome-power-manager-2.23.4-1.118.20080801svn.fc9.hughsie	GNOME Power Manager
 installed   	powerman-2.1-1.fc9                      	PowerMan - Power to the Cluster

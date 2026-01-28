@@ -247,7 +247,7 @@ class PackageKitBaseBackend:
         @param download_bytes: The download size of the package, in bytes
         '''
 
-        # Ensure sizes report as 'unknown' in pkcon if not reported
+        # Ensure sizes report as 'unknown' in pkgcli if not reported
         if bytes is None:
             bytes = MAXUINT64
         if download_bytes is None:

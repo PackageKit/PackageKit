@@ -3637,7 +3637,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job,
 
 	if (is_tumbleweed ()) {
 		pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED,
-					   "upgrade-system is not supported in Tumbleweed, use \"pkcon update\" instead.");
+					   "upgrade-system is not supported in Tumbleweed, use \"pkgcli update\" instead.");
 		return;
 	}
 
