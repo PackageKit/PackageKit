@@ -7,7 +7,7 @@ packagekit_py_sources = [
   'misc.py',
 ]
 
-packagekit_test_py = dependency('', required: false)
+packagekit_test_py = []
 if get_option('python_backend')
 
 enums_py = custom_target(
