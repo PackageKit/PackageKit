@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2026-01-24 21:01+0000\n"
+"PO-Revision-Date: 2026-01-28 23:37+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
@@ -747,17 +747,13 @@ msgstr "Permite instalarea pachetelor care nu sunt de încredere"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Elimină automat dependențele nefolosite"
+msgstr "Nu elimină automat dependențele nefolosite"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Vechimea maximă a spațiului de stocare (cache) a metadatelor (în secunde)"
+msgstr "Vechimea maximă a spațiului de stocare (cache) a metadatelor în secunde (implicit: 3 zile)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
