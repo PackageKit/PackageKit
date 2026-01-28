@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2026-01-26 22:01+0000\n"
+"PO-Revision-Date: 2026-01-28 23:37+0000\n"
 "Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
 "Language: fr\n"
@@ -754,17 +754,13 @@ msgstr "Autoriser l'installation de paquets dont la fiabilité est inconnue"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Retirer automatiquement les dépendances inutilisées"
+msgstr "Ne pas retirer automatiquement les dépendances inutilisées"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Âge maximum du cache des métadonnées en secondes"
+msgstr "Âge maximum du cache des métadonnées en secondes (par défaut : 3 jours)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
