@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2026-01-02 17:01+0000\n"
+"PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/packagekit/translations/ka/>\n"
 "Language: ka\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -748,17 +748,13 @@ msgstr "არასანდო პაკეტების დაყენე�
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "გამოუყენებელი დამოკიდებულებების ავტომატური წაშლა"
+msgstr "გამოუყენებელი დამოკიდებულებები ავტომატურად არ წაიშლება"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "მაქსიმალური მეტამონაცემების კეშის ასაკი წამებში"
+msgstr "მაქსიმალური მეტამონაცემების კეშის ასაკი წამებში (ნაგულისხმევი: 3 დღე)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -1498,9 +1494,8 @@ msgstr "პაკეტი აღმოჩენილი არაა: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "pkgctl-ის ვერსიის ჩვენება"
+msgstr "pkgcli-ის ვერსიის ჩვენება"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -1560,9 +1555,8 @@ msgid "Available Commands:"
 msgstr "ხელმისაწვდომი ბრძანებები:"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "ბრძანებისთვის სპეციფიკური დახმარების მისაღებად გამოიყენეთ 'pkgctl COMMAND --help'."
+msgstr "ბრძანებისთვის სპეციფიკური დახმარების მისაღებად გამოიყენეთ 'pkgcli ბრძანება --help'."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
