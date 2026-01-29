@@ -4,13 +4,13 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022-2023,2025
+# Yuri Chornoivan <yurchor@ukr.net>, 2009-2018,2022-2023,2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2025-11-23 22:51+0000\n"
+"PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/packagekit/translations/uk/>\n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -746,17 +746,13 @@ msgstr "Дозволитии встановлення пакунків без д
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Автоматично вилучати невикористані залежності"
+msgstr "Не вилучати невикористані залежності автоматично"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Максимальний вік метаданих у кеші у секундах"
+msgstr "Максимальний вік метаданих у кеші у секундах (типове значення — 3 дні)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -780,14 +776,13 @@ msgstr "Встановити один або декілька пакунків �
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:309 client/pkgc-manage.c:322
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Програмі не вдалося знайти жодного доступного пакунка: %s"
+msgstr "Не вдалося знайти жодного доступного пакунка: %s"
 
 #: client/pkgc-manage.c:327
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Можливо, вибрані пакунки вже встановлено."
+msgstr "Вибраний пакунок вже встановлено."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:367
@@ -795,9 +790,9 @@ msgid "Remove one or more packages from the system."
 msgstr "Вилучити один або декілька пакунків з системи."
 
 #: client/pkgc-manage.c:384
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Не вдалося знайти пакунки: %s"
+msgstr "Не вдалося знайти встановлені пакунки: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:424
@@ -820,9 +815,9 @@ msgid "Update all packages or specific packages to their latest versions."
 msgstr "Оновити усі пакунки або вказані пакунки до найсвіжіших версій."
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Не вдалося знайти пакунки: %s"
+msgstr "Не вдалося знайти пакунки для оновлення: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
@@ -1173,19 +1168,16 @@ msgid "Show package information"
 msgstr "Показати дані щодо пакунків"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
 msgid "List package dependencies"
-msgstr "Показати залежності пакунка"
+msgstr "Вивести списто залежностей пакунка"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "List packages requiring this package"
-msgstr "Показати пакунки, яким потрібен цей пакунок"
+msgstr "Вивести список пакунків, яким потрібен цей пакунок"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Показати пакунки, які забезпечують роботу можливості"
+msgstr "Вивести список пакунків, які забезпечують роботу можливості"
 
 #: client/pkgc-query.c:1021
 msgid "Show files in package"
@@ -1500,9 +1492,8 @@ msgstr "Пакунок не знайдено: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Показати дані щодо версії pkgctl"
+msgstr "Показати дані щодо версії pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -1562,9 +1553,8 @@ msgid "Available Commands:"
 msgstr "Доступні команди:"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Скористайтеся командою «pkgctl КОМАНДА --help» для отримання довідки щодо певної команди."
+msgstr "Скористайтеся командою «pkgcli КОМАНДА --help» для отримання довідки щодо певної команди."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
