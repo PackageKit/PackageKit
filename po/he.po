@@ -5,13 +5,13 @@
 # Translators:
 # 63f334ffc0709ba0fc2361b80bf3c0f0_00ffd1e <ab96c93ca0ac55ba7fa06385427e60dd_878890>, 2021
 # Richard Hughes <richard@hughsie.com>, 2011
-# Yaron Shahrabani <sh.yaron@gmail.com>, 2012,2021,2024, 2025.
+# Yaron Shahrabani <sh.yaron@gmail.com>, 2012,2021,2024, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2025-12-02 06:00+0000\n"
+"PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
 "Language: he\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n == 2) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -747,17 +747,13 @@ msgstr "לאפשר התקנת חבילות לא אמינות"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "להסיר תלויות שאינן בשימוש אוטומטית"
+msgstr "לא להסיר תלויות שאינן בשימוש אוטומטית"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "הגיל המרבי של מטמון נתוני העל בשניות"
+msgstr "הגיל המרבי של מטמון נתוני העל בשניות (ברירת מחדל: 3 ימים)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -1497,9 +1493,8 @@ msgstr "החבילה לא נמצאה: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "הצגת גרסת pkgctl"
+msgstr "הצגת גרסת pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -1559,9 +1554,8 @@ msgid "Available Commands:"
 msgstr "פקודות זמינות:"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "אפשר להשתמש ב־‚pkgctl COMMAND --help’ לקבלת עזרה עם פקודה מסוימת (שם הפקודה במקום COMMAND)."
+msgstr "אפשר להשתמש ב־‚pkgcli COMMAND --help’ לקבלת עזרה עם פקודה מסוימת (שם הפקודה במקום COMMAND)."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
