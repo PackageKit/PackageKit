@@ -15,7 +15,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2026-01-25 23:47+0000\n"
+"PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Aman Alam <aalam@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Punjabi <https://hosted.weblate.org/projects/packagekit/translations/pa/>\n"
 "Language: pa\n"
@@ -27,7 +27,7 @@ msgstr ""
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
-msgstr ""
+msgstr "ਸੰਰਚਨਾ ਫ਼ਾਇਲ ਨਹੀਂ ਲੱਭੀ ਸੀ।"
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
@@ -423,16 +423,14 @@ msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱ�
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1076
-#, fuzzy
 msgid "This tool could not find any available package."
-msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
+msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ ਹੈ।"
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 #: client/pkcon/pk-console.c:1085
-#, fuzzy
 msgid "The selected packages may already be installed."
-msgstr "ਅੱਗੇ ਦਿੱਤੇ ਪੈਕੇਜਾਂ ਨੂੰ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਵੇਗਾ:"
+msgstr "ਚੁਣੇ ਗਏ ਪੈਕੇਜ ਪਹਿਲਾਂ ਹੀ ਇੰਸਟਾਲ ਹੋ ਸਕਦੇ ਹਨ।"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -748,14 +746,11 @@ msgstr "ਪੈਕੇਜ ਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਦੀ 
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "ਇੰਸਟਾਲ ਕੀਤੇ ਪੈਕੇਜ ਦੇ ਪੁਰਾਣੇ ਵਰਜ਼ਨ ਨੂੰ ਇੰਸਟਾਲ ਕਰੋ"
+msgstr "ਨਾ-ਭਰੋਸੇਯੋਗ ਪੈਕੇਜ ਨੂੰ ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਮਨਜ਼ੂਰੀ"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
 msgstr "ਨਾ-ਵਰਤੀਆਂ ਨਿਰਭਰਤਾਵਾਂ ਆਪਣੇ-ਆਪ ਹਟਾਓ"
 
@@ -786,7 +781,7 @@ msgstr ""
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:309 client/pkgc-manage.c:322
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
 msgstr "ਇਹ ਟੂਲ ਉਪਲੱਬਧ ਪੈਕੇਜ ਨਹੀਂ ਲੱਭ ਸਕਿਆ: %s"
 
@@ -853,7 +848,6 @@ msgid "Failed to read offline update action: %s"
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਕਾਰਵਾਈ ਪੜ੍ਹਨ ਲਈ ਫੇਲ੍ਹ: %s"
 
 #: client/pkgc-manage.c:696
-#, fuzzy
 msgid "Offline update is not triggered."
 msgstr "ਆਫਲਾਈਨ ਅੱਪਡੇਟ ਸੁਨੇਹਾ ਸਾਫ਼ ਕਰੋ"
 
