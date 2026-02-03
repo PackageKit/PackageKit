@@ -41,8 +41,5 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
 ### Portage (Gentoo)
  * Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
 
-### Slack (Slackware)
- * Eugene Wissner <belka@caraus.de>
-
 ### Zypp (SUSE Linux)
  * Scott Reeves <sreeves@novell.com> | @sreeves

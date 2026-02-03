@@ -56,10 +56,6 @@ library:
 - changed-files:
   - any-glob-to-any-file: backends/portage/**
 
-'Backend: slack (Slackware Linux)':
-- changed-files:
-  - any-glob-to-any-file: backends/slack/**
-
 'Backend: zypp (SUSE Linux)':
 - changed-files:
   - any-glob-to-any-file: backends/zypp/**
