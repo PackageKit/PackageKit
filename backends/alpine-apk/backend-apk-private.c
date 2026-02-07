@@ -50,6 +50,9 @@ int open_apk(OpenApkOptions options, ApkContext **ctx_writeback,
     ctx->cache_dir = options.cache_dir;
     ctx->cache_dir_set = TRUE;
     ctx->cache_packages = TRUE;
+  } else {
+    ctx->cache_predownload = TRUE;
+    ctx->cache_packages = TRUE;
   }
 
   result = apk_ctx_prepare(ctx);
@@ -107,7 +110,7 @@ void convert_apk_to_job_details(PkBackendJob *job,
     goto have_guess;
   } else if g_str_has_prefix (package->name->name, "postmarketos-") {
     if (g_strcmp0(package->name->name, "postmarketos-nightly") == 0) {
-      group_enum = PK_GROUP_ENUM_REPOS;
+      return;
     } else {
       group_enum = PK_GROUP_ENUM_VENDOR;
     }
@@ -123,9 +126,9 @@ void convert_apk_to_job_details(PkBackendJob *job,
       ++suffix;
     }
     // walkback unless beginning or '-' is hit
-    while (suffix != package->name->name && *suffix != '-') {
+    do {
       --suffix;
-    }
+    } while (suffix != package->name->name && *suffix != '-');
     /* if we're at the beginning, then there's no suffix to match
      * this is allowed as apk's starting letter is more restricted than the
      * rest
@@ -269,5 +272,5 @@ int check_world(PkBackendJob *job, struct apk_database *db) {
     return result;
   };
 
-  return result;
+  return 0;
 }

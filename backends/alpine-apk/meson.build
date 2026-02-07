@@ -2,6 +2,7 @@ libapk = dependency('apk', version: '>=3.0.0')
 
 alpine_apk_backend_files = files(
   'pk-backend-apk.c',
+  'pk-apk-query.c',
   'backend-apk-private.c',
 )
 
