@@ -35,6 +35,7 @@
 #include <gmodule.h>
 #include <string.h>
 
+#include "pk-apk-query.h"
 #include "pk-backend.h"
 
 #include "pk-backend-job.h"
@@ -42,6 +43,7 @@
 #include "pk-debug.h"
 
 #include "backend-apk-private.h"
+#include "pk-apk-query.h"
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend) {
   pk_debug_add_log_domain(G_LOG_DOMAIN);
@@ -71,47 +73,17 @@ void pk_backend_install_signature(PkBackend *backend, PkBackendJob *job,
   pk_backend_job_finished(job);
 }
 
-struct query_context {
-  struct apk_package_array **array;
-  struct apk_string_array **failed;
-
-  uint64_t done_bytes, total_bytes;
-  unsigned long done_packages;
-};
-
-// ported from app_fetch.c
-static int fetch_match_package(void *pctx, struct apk_query_match *qm) {
-  struct query_context *ctx = pctx;
-  struct apk_package *pkg = qm->pkg;
-
-  if (pkg == NULL) {
-    gchar *string = g_malloc0(qm->query.len + 1);
-    strncpy(string, qm->query.ptr, qm->query.len);
-    apk_string_array_add(ctx->failed, string);
-    return 0;
-  }
-
-  ctx->total_bytes += pkg->size;
-  apk_package_array_add(ctx->array, pkg);
-  return 0;
-}
-
 void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job,
                                   gchar **package_ids, const gchar *directory) {
   g_autoptr(ApkContext) ctx = NULL;
   g_autoptr(ApkDatabase) db = NULL;
-  _pk_apk_auto(apk_string_array) *string_array = NULL;
   _pk_apk_auto(apk_package_array) *package_array = NULL;
   _pk_apk_auto(apk_string_array) *failed_package_array = NULL;
 
-  struct query_context query_context = {
-      .array = &package_array,
-      .failed = &failed_package_array,
-  };
-
   gint result;
   OpenApkOptions options = {
-      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_STATE,
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_STATE | APK_OPENF_NO_WORLD |
+                   APK_OPENF_NO_INSTALLED | APK_OPENF_NO_AUTOUPDATE,
       .force_refresh_cache = FALSE,
       // also accepts null, kinda checky
       .cache_dir = directory,
@@ -128,37 +100,15 @@ void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job,
 
   pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
 
-  apk_string_array_init(&string_array);
+  apk_string_array_init(&failed_package_array);
   apk_package_array_init(&package_array);
 
-  ctx->query.match = BIT(APK_Q_FIELD_PACKAGE);
+  pk_apk_find_package_id(backend, job, ctx, db, package_ids, &package_array,
+                         &failed_package_array);
 
-  for (gchar **package_ids_idx = package_ids; *package_ids_idx != NULL;
-       ++package_ids_idx) {
-    g_auto(GStrv) sections = NULL;
-    g_autofree gchar *string = NULL;
-    gsize string_size = 0;
-
-    if (!pk_package_id_check(*package_ids_idx)) {
-      pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "%s",
-                                *package_ids_idx);
-      goto out;
-    }
-    sections = g_strsplit(*package_ids_idx, ";", 3);
-
-    string_size = strlen(sections[PK_PACKAGE_ID_NAME]) + 1 +
-                  strlen(sections[PK_PACKAGE_ID_VERSION]) + 1;
-    string = g_malloc(string_size);
-    g_snprintf(string, string_size, "%s-%s", sections[PK_PACKAGE_ID_NAME],
-               sections[PK_PACKAGE_ID_VERSION]);
-    apk_string_array_add(&string_array, g_steal_pointer(&string));
-  }
-
-  apk_query_matches(ctx, &ctx->query, string_array, fetch_match_package,
-                    &query_context);
   if (apk_array_len(failed_package_array) > 0) {
     pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR,
-                              "apk_query_packages failed");
+                              "pk_apk_find_package_id failed");
     goto out;
   }
 
@@ -186,6 +136,120 @@ out:
 void pk_backend_depends_on(PkBackend *backend, PkBackendJob *job,
                            PkBitfield filters, gchar **package_ids,
                            gboolean recursive) {
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  _pk_apk_auto(apk_package_array) *package_array = NULL;
+  _pk_apk_auto(apk_string_array) *failed_package_array = NULL;
+
+  gint result;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .force_refresh_cache = FALSE,
+  };
+
+  assert(package_ids != NULL);
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+
+  apk_string_array_init(&failed_package_array);
+  apk_package_array_init(&package_array);
+
+  result = pk_apk_find_package_id(backend, job, ctx, db, package_ids,
+                                  &package_array, &failed_package_array);
+  if (result != 0) {
+    goto out;
+  }
+  if (apk_array_len(failed_package_array) > 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR,
+                              "apk_query_packages failed");
+    goto out;
+  }
+
+  {
+    _pk_apk_auto(apk_dependency_array) *depends = NULL;
+    _pk_apk_auto(apk_package_array) *recursive_packages = NULL;
+
+    struct apk_changeset changeset = {0};
+
+    apk_dependency_array_init(&depends);
+    apk_package_array_init(&recursive_packages);
+
+    apk_array_foreach_item(pkg, package_array) {
+      struct apk_dependency dep;
+      apk_dep_from_pkg(&dep, db, pkg);
+      apk_dependency_array_add(&depends, dep);
+    }
+
+    result = apk_solver_solve(db, APK_SOLVERF_REINSTALL, depends, &changeset);
+    if (result != 0) {
+      // TODO: error
+      pk_backend_job_error_code(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+                                "apk_solver_solve failed");
+      goto out;
+    }
+
+    // only print direct depends of package_array in world.
+    // we can't go the easy route in recursive and just print the entire world,
+    // as we want to print a dependency that was already given to use via the
+    // package_ids. hence swapping was deemed more correct.
+
+  recursive_goback:
+    apk_array_foreach_item(change, changeset.changes) {
+      gboolean change_printed = FALSE;
+      if (change.new_pkg == NULL) {
+        continue;
+      }
+
+      apk_array_foreach_item(pkg, package_array) {
+        apk_array_foreach_item(pkg_dep, pkg->depends) {
+          int dep_result = apk_dep_analyze(change.new_pkg, &pkg_dep, pkg);
+          if (dep_result != APK_DEP_SATISFIES) {
+            continue;
+          }
+
+          // change was already printed
+          if (pkg->marked) {
+            change_printed = TRUE;
+            break;
+          }
+
+          if (recursive) {
+            apk_package_array_add(&package_array, change.new_pkg);
+          }
+
+          // marking packages in recursive mode, as we don't want to print
+          // them multiple times
+          pkg->marked = TRUE;
+          convert_apk_to_package(job, change.new_pkg);
+
+          change_printed = TRUE;
+          break;
+        }
+
+        // ladder for change_printed
+        if (change_printed)
+          break;
+      }
+    }
+
+    // swap arrays when needed and restart loop iteration
+    if (recursive && apk_array_len(recursive_packages) > 0) {
+      apk_package_array_free(&package_array);
+      package_array = recursive_packages;
+      recursive_packages = NULL;
+      apk_package_array_init(&recursive_packages);
+      goto recursive_goback;
+    }
+  }
+
+out:
   pk_backend_job_finished(job);
 }
 void pk_backend_get_details(PkBackend *backend, PkBackendJob *job,
@@ -196,18 +260,208 @@ void pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job,
                                   gchar **files) {
   pk_backend_job_finished(job);
 }
+
+// from app_info.c: info_who_owns
 void pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job,
                                 gchar **files) {
+
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  _pk_apk_auto(apk_dependency_array) *world = NULL;
+  struct apk_query_match qm;
+  char buf[PATH_MAX];
+
+  gint result = 0;
+  OpenApkOptions options = {
+      .apk_flags =
+          APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE | APK_OPENF_NO_REPOS,
+      .force_refresh_cache = FALSE,
+      .cache_dir = NULL,
+  };
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+
+  for (; *files != NULL; ++files) {
+    g_autofree gchar *package_id = NULL;
+    g_autoptr(GStrvBuilder) strv_builder = g_strv_builder_new();
+    g_auto(GStrv) strv = NULL;
+
+    apk_query_who_owns(db, *files, &qm, buf, sizeof buf);
+    if (!qm.pkg) {
+      continue;
+    }
+    package_id = convert_apk_to_pkgid(qm.pkg);
+    apk_array_foreach_item(diri, qm.pkg->ipkg->diris) {
+      apk_array_foreach_item(file, diri->files) {
+        // a bit overallocation doesn't hurt
+        gsize size = 1 + diri->dir->namelen + 1 + file->namelen + 1;
+        g_autofree gchar *string = g_malloc0(size);
+        g_snprintf(string, size, "/" DIR_FILE_FMT,
+                   DIR_FILE_PRINTF(diri->dir, file));
+        g_strv_builder_take(strv_builder, g_steal_pointer(&string));
+      }
+    }
+    strv = g_strv_builder_end(strv_builder);
+    pk_backend_job_files(job, package_id, strv);
+  }
+
+out:
   pk_backend_job_finished(job);
 }
 
 void pk_backend_get_files(PkBackend *backend, PkBackendJob *job,
                           gchar **package_ids) {
+
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  _pk_apk_auto(apk_package_array) *package_array = NULL;
+  _pk_apk_auto(apk_string_array) *failed_package_array = NULL;
+
+  gint result;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .force_refresh_cache = FALSE,
+  };
+
+  assert(package_ids != NULL);
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+
+  apk_string_array_init(&failed_package_array);
+  apk_package_array_init(&package_array);
+
+  result = pk_apk_find_package_id(backend, job, ctx, db, package_ids,
+                                  &package_array, &failed_package_array);
+  if (result != 0) {
+    goto out;
+  }
+  if (apk_array_len(failed_package_array) > 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR,
+                              "apk_query_packages failed");
+    goto out;
+  }
+
+  apk_array_foreach_item(package, package_array) {
+    g_autofree gchar *package_id = NULL;
+    g_autoptr(GStrvBuilder) strv_builder = NULL;
+    g_auto(GStrv) strv = NULL;
+    if (package->marked) {
+      continue;
+    }
+    package->marked = TRUE;
+    package_id = convert_apk_to_pkgid(package);
+    strv_builder = g_strv_builder_new();
+
+    apk_array_foreach_item(diri, package->ipkg->diris) {
+      apk_array_foreach_item(file, diri->files) {
+        // a bit overallocation doesn't hurt
+        gsize size = 1 + diri->dir->namelen + 1 + file->namelen + 1;
+        g_autofree gchar *string = g_malloc0(size);
+        g_snprintf(string, size, "/" DIR_FILE_FMT,
+                   DIR_FILE_PRINTF(diri->dir, file));
+        g_strv_builder_take(strv_builder, g_steal_pointer(&string));
+      }
+    }
+
+    strv = g_strv_builder_unref_to_strv(g_steal_pointer(&strv_builder));
+    pk_backend_job_files(job, package_id, strv);
+  }
+
+out:
   pk_backend_job_finished(job);
 }
+
+struct _required_by_context {
+  PkBackendJob *job;
+  gboolean recursive;
+};
+
+static void _required_by_handler(struct apk_package *pkg0,
+                                 struct apk_dependency *dep0,
+                                 struct apk_package *pkg, void *pctx) {
+  struct _required_by_context *context = pctx;
+  if (pkg0->marked)
+    return;
+
+  pkg0->marked = TRUE;
+
+  convert_apk_to_package(context->job, pkg0);
+
+  if (context->recursive) {
+    apk_pkg_foreach_reverse_dependency(
+        pkg,
+        APK_FOREACH_INSTALLED | APK_FOREACH_NO_CONFLICTS | APK_DEP_SATISFIES |
+            apk_foreach_genid(),
+        _required_by_handler, context);
+  }
+}
+
 void pk_backend_required_by(PkBackend *backend, PkBackendJob *job,
                             PkBitfield filters, gchar **package_ids,
                             gboolean recursive) {
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  _pk_apk_auto(apk_package_array) *package_array = NULL;
+  _pk_apk_auto(apk_string_array) *failed_package_array = NULL;
+
+  gint result;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .force_refresh_cache = FALSE,
+  };
+
+  assert(package_ids != NULL);
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+
+  apk_string_array_init(&failed_package_array);
+  apk_package_array_init(&package_array);
+
+  result = pk_apk_find_package_id(backend, job, ctx, db, package_ids,
+                                  &package_array, &failed_package_array);
+  if (result != 0) {
+    goto out;
+  }
+  if (apk_array_len(failed_package_array) > 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR,
+                              "apk_query_packages failed");
+    goto out;
+  }
+
+  {
+    struct _required_by_context context = {
+        .job = job,
+        .recursive = recursive,
+    };
+    apk_array_foreach_item(pkg, package_array) {
+      apk_pkg_foreach_reverse_dependency(
+          pkg,
+          APK_FOREACH_INSTALLED | APK_FOREACH_NO_CONFLICTS | APK_DEP_SATISFIES |
+              apk_foreach_genid(),
+          _required_by_handler, &context);
+    }
+  }
+
+out:
   pk_backend_job_finished(job);
 }
 
@@ -312,23 +566,14 @@ void pk_backend_remove_packages(PkBackend *backend, PkBackendJob *job,
 }
 void pk_backend_resolve(PkBackend *backend, PkBackendJob *job,
                         PkBitfield filters, gchar **packages) {
-  pk_backend_job_finished(job);
-}
-
-void pk_backend_search_details(PkBackend *backend, PkBackendJob *job,
-                               PkBitfield filters, gchar **search) {
   g_autoptr(ApkContext) ctx = NULL;
   g_autoptr(ApkDatabase) db = NULL;
-  _pk_apk_auto(apk_package_array) *package_array = NULL;
-  _pk_apk_auto(apk_string_array) *string_array = NULL;
   OpenApkOptions options = {
       .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
       .cache_dir = NULL,
       .force_refresh_cache = FALSE,
   };
-  gint result;
-
-  g_return_if_fail(search != NULL);
+  gint result = 0;
 
   result = open_apk(options, &ctx, &db);
   if (result != 0) {
@@ -337,35 +582,41 @@ void pk_backend_search_details(PkBackend *backend, PkBackendJob *job,
     goto out;
   }
 
-  pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-
-  // copy search strings into array
-  apk_string_array_init(&string_array);
-  while (*search != NULL) {
-    apk_string_array_add(&string_array, *search);
-    search++;
+  result = pk_apk_query(backend, job, filters, ctx, db, packages,
+                        BIT(APK_Q_FIELD_NAME), FALSE, FALSE);
+  if (result != 0) {
+    goto out;
   }
 
-  // from app_search.c
-  apk_package_array_init(&package_array);
-  ctx->query.match = BIT(APK_Q_FIELD_PACKAGE) | BIT(APK_Q_FIELD_NAME) |
-                     BIT(APK_Q_FIELD_URL) | BIT(APK_Q_FIELD_REPLACES) |
-                     BIT(APK_Q_FIELD_PROVIDES);
-  ctx->query.mode.search = true;
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_FINISHED);
+out:
+  pk_backend_job_finished(job);
+}
 
-  result = apk_query_packages(ctx, &ctx->query, string_array, &package_array);
-  if (result >= 0) {
-    apk_array_foreach_item(pkg, package_array) {
-      if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)) {
-        if (pkg->ipkg == NULL) {
-          continue;
-        }
-      }
-      convert_apk_to_job_details(job, pkg);
-    }
-  } else {
-    pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR,
-                              "query failed: %s", apk_error_str(result));
+void pk_backend_search_details(PkBackend *backend, PkBackendJob *job,
+                               PkBitfield filters, gchar **search) {
+
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .cache_dir = NULL,
+      .force_refresh_cache = FALSE,
+  };
+  gint result = 0;
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+  result = pk_apk_query(backend, job, filters, ctx, db, search,
+                        BIT(APK_Q_FIELD_PACKAGE) | BIT(APK_Q_FIELD_NAME) |
+                            BIT(APK_Q_FIELD_URL) | BIT(APK_Q_FIELD_REPLACES) |
+                            BIT(APK_Q_FIELD_PROVIDES),
+                        TRUE, TRUE);
+  if (result != 0) {
     goto out;
   }
 
@@ -376,6 +627,31 @@ out:
 
 void pk_backend_search_files(PkBackend *backend, PkBackendJob *job,
                              PkBitfield filters, gchar **search) {
+
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .cache_dir = NULL,
+      .force_refresh_cache = FALSE,
+  };
+  gint result = 0;
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+  result = pk_apk_query(backend, job, filters, ctx, db, search,
+
+                        BIT(APK_Q_FIELD_CONTENTS), TRUE, FALSE);
+  if (result != 0) {
+    goto out;
+  }
+
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_FINISHED);
+out:
   pk_backend_job_finished(job);
 }
 void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job,
@@ -384,6 +660,31 @@ void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job,
 }
 void pk_backend_search_names(PkBackend *backend, PkBackendJob *job,
                              PkBitfield filters, gchar **search) {
+  g_autoptr(ApkContext) ctx = NULL;
+  g_autoptr(ApkDatabase) db = NULL;
+  OpenApkOptions options = {
+      .apk_flags = APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE,
+      .cache_dir = NULL,
+      .force_refresh_cache = FALSE,
+  };
+  gint result = 0;
+
+  result = open_apk(options, &ctx, &db);
+  if (result != 0) {
+    pk_backend_job_error_code(job, PK_ERROR_ENUM_FAILED_INITIALIZATION, "%s",
+                              apk_error_str(result));
+    goto out;
+  }
+
+  result = pk_apk_query(backend, job, filters, ctx, db, search,
+                        BIT(APK_Q_FIELD_NAME) | BIT(APK_Q_FIELD_PROVIDES), TRUE,
+                        FALSE);
+  if (result != 0) {
+    goto out;
+  }
+
+  pk_backend_job_set_status(job, PK_STATUS_ENUM_FINISHED);
+out:
   pk_backend_job_finished(job);
 }
 void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
@@ -398,8 +699,8 @@ void pk_backend_update_packages(PkBackend *backend, PkBackendJob *job,
   g_autoptr(ApkContext) ctx = NULL;
   g_autoptr(ApkDatabase) db = NULL;
   OpenApkOptions options = {
-      .apk_flags =
-          simulate ? APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE : APK_OPENF_WRITE,
+      .apk_flags = simulate ? (APK_OPENF_READ | APK_OPENF_NO_AUTOUPDATE)
+                            : APK_OPENF_WRITE,
       .cache_dir = NULL,
       .force_refresh_cache = FALSE,
   };
@@ -484,7 +785,9 @@ void pk_backend_repo_remove(PkBackend *backend, PkBackendJob *job,
 }
 
 void pk_backend_what_provides(PkBackend *backend, PkBackendJob *job,
-                              PkBitfield filters, gchar **search) {}
+                              PkBitfield filters, gchar **search) {
+  pk_backend_job_finished(job);
+}
 
 static int enumerate_available(apk_hash_item item, void *ctx) {
   PkBackendJob *job = ctx;
@@ -565,7 +868,9 @@ PkBitfield pk_backend_get_roles(PkBackend *backend) {
       PK_ROLE_ENUM_GET_PACKAGES, PK_ROLE_ENUM_GET_REPO_LIST,
       PK_ROLE_ENUM_DOWNLOAD_PACKAGES, PK_ROLE_ENUM_GET_UPDATES,
       PK_ROLE_ENUM_GET_UPDATE_DETAIL, PK_ROLE_ENUM_REFRESH_CACHE,
-      PK_ROLE_ENUM_SEARCH_DETAILS, -1);
+      PK_ROLE_ENUM_RESOLVE, PK_ROLE_ENUM_SEARCH_DETAILS,
+      PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_NAME,
+      PK_ROLE_ENUM_GET_FILES_LOCAL, -1);
   return roles;
 }
 gchar **pk_backend_get_mime_types(PkBackend *backend) {
