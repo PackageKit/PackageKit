@@ -14,6 +14,7 @@ RUN dnf -y install \
 	appstream \
 	appstream-devel \
 	dbus-daemon \
+	plymouth-devel \
 	sdbus-cpp-devel \
 	jansson-devel
 
