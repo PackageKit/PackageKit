@@ -911,5 +911,5 @@ const gchar *pk_backend_get_author(PkBackend *backend) {
 }
 
 const gchar *pk_backend_get_description(PkBackend *backend) {
-  return "apk-tools v3 via apk-polkit-rs";
+  return "apk-tools v3";
 }
