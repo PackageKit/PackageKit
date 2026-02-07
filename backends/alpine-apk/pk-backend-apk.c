@@ -35,6 +35,7 @@
 #include <gmodule.h>
 #include <string.h>
 
+#include "glibconfig.h"
 #include "pk-apk-query.h"
 #include "pk-backend.h"
 
@@ -187,7 +188,7 @@ void pk_backend_depends_on(PkBackend *backend, PkBackendJob *job,
       apk_dependency_array_add(&depends, dep);
     }
 
-    result = apk_solver_solve(db, APK_SOLVERF_REINSTALL, depends, &changeset);
+    result = apk_solver_solve(db, APK_SOLVERF_AVAILABLE, depends, &changeset);
     if (result != 0) {
       // TODO: error
       pk_backend_job_error_code(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
@@ -287,27 +288,11 @@ void pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job,
   }
 
   for (; *files != NULL; ++files) {
-    g_autofree gchar *package_id = NULL;
-    g_autoptr(GStrvBuilder) strv_builder = g_strv_builder_new();
-    g_auto(GStrv) strv = NULL;
-
     apk_query_who_owns(db, *files, &qm, buf, sizeof buf);
-    if (!qm.pkg) {
+    if (qm.pkg == NULL) {
       continue;
     }
-    package_id = convert_apk_to_pkgid(qm.pkg);
-    apk_array_foreach_item(diri, qm.pkg->ipkg->diris) {
-      apk_array_foreach_item(file, diri->files) {
-        // a bit overallocation doesn't hurt
-        gsize size = 1 + diri->dir->namelen + 1 + file->namelen + 1;
-        g_autofree gchar *string = g_malloc0(size);
-        g_snprintf(string, size, "/" DIR_FILE_FMT,
-                   DIR_FILE_PRINTF(diri->dir, file));
-        g_strv_builder_take(strv_builder, g_steal_pointer(&string));
-      }
-    }
-    strv = g_strv_builder_end(strv_builder);
-    pk_backend_job_files(job, package_id, strv);
+    convert_apk_to_files(job, qm.pkg, TRUE);
   }
 
 out:
@@ -643,11 +628,51 @@ void pk_backend_search_files(PkBackend *backend, PkBackendJob *job,
                               apk_error_str(result));
     goto out;
   }
-  result = pk_apk_query(backend, job, filters, ctx, db, search,
 
-                        BIT(APK_Q_FIELD_CONTENTS), TRUE, FALSE);
-  if (result != 0) {
-    goto out;
+  for (gchar **item = search; *item != NULL; ++item) {
+    if ((*item)[0] == '/') {
+      // full path
+      struct apk_query_match qm = {0};
+      char buf[PATH_MAX];
+
+      // TODO: handle int apk_query_who_owns()
+      apk_query_who_owns(db, *item, &qm, buf, sizeof(buf));
+      if (qm.pkg == NULL) {
+        continue;
+      }
+      convert_apk_to_files(job, qm.pkg, TRUE);
+    } else {
+      // do individual queries
+      gsize basename_strlen = 2 + strlen(*item) + 1;
+      g_autofree gchar *basename_search = NULL;
+      _pk_apk_auto(apk_package_array) *package_array = NULL;
+      // holds one string, the basename_search. no copy occurs,
+      // so be careful when moving this.
+      _pk_apk_auto(apk_string_array) *string_array = NULL;
+      apk_package_array_init(&package_array);
+      apk_string_array_init(&string_array);
+      if (basename_strlen <= 3) {
+        // empty basename, ignore
+        continue;
+      }
+
+      basename_search = g_malloc0(basename_strlen);
+      g_snprintf(basename_search, basename_strlen, "/*%s", *item);
+      apk_string_array_add(&string_array, basename_search);
+
+      ctx->query.match = BIT(APK_Q_FIELD_CONTENTS) | BIT(APK_Q_FIELD_OWNER);
+      ctx->query.mode.search = TRUE;
+
+      result =
+          apk_query_packages(ctx, &ctx->query, string_array, &package_array);
+      if (result < 0) {
+        // TODO: error
+        goto out;
+      }
+      apk_array_foreach_item(package, package_array) {
+        convert_apk_to_files(job, package, TRUE);
+      }
+    }
   }
 
   pk_backend_job_set_status(job, PK_STATUS_ENUM_FINISHED);
