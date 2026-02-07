@@ -46,5 +46,6 @@ struct apk_package;
 gchar *convert_apk_to_pkgid(struct apk_package *package);
 void convert_apk_to_job_details(PkBackendJob *job, struct apk_package *package);
 void convert_apk_to_package(PkBackendJob *job, struct apk_package *package);
+void convert_apk_to_files(PkBackendJob *job, struct apk_package *package, gboolean use_mark);
 
 int check_world(PkBackendJob *job, struct apk_database *db);

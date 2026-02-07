@@ -22,6 +22,7 @@
 
 #include "backend-apk-private.h"
 
+#include "glib.h"
 #include "pk-backend.h"
 
 #include "pk-backend-job.h"
@@ -191,6 +192,35 @@ void convert_apk_to_package(PkBackendJob *job, struct apk_package *package) {
                          package->ipkg != NULL ? PK_INFO_ENUM_INSTALLED
                                                : PK_INFO_ENUM_UNKNOWN,
                          pkg_id, pkg_desc);
+}
+
+void convert_apk_to_files(PkBackendJob *job, struct apk_package *package,
+                          gboolean use_mark) {
+  g_autoptr(GStrvBuilder) strv_builder = NULL;
+  g_auto(GStrv) strv = NULL;
+  g_autofree gchar *package_id = NULL;
+
+  if (use_mark) {
+    if (package->marked) {
+      return;
+    }
+    package->marked = TRUE;
+  }
+
+  package_id = convert_apk_to_pkgid(package);
+  strv_builder = g_strv_builder_new();
+  apk_array_foreach_item(diri, package->ipkg->diris) {
+    apk_array_foreach_item(file, diri->files) {
+      // a bit overallocation doesn't hurt
+      gsize size = 1 + diri->dir->namelen + 1 + file->namelen + 1;
+      g_autofree gchar *string = g_malloc0(size);
+      g_snprintf(string, size, "/" DIR_FILE_FMT,
+                 DIR_FILE_PRINTF(diri->dir, file));
+      g_strv_builder_take(strv_builder, g_steal_pointer(&string));
+    }
+  }
+  strv = g_strv_builder_end(strv_builder);
+  pk_backend_job_files(job, package_id, strv);
 }
 
 int check_world(PkBackendJob *job, struct apk_database *db) {
