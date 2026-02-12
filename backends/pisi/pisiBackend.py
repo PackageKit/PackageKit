@@ -454,7 +454,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         self._updates = dict()
-        for package in pisi.api.list_upgradable():
+        for package in self._list_upgradable_packages():
             pkg = self.packagedb.get_package(package)
             version = self.__get_package_version(pkg)
             id = self.get_package_id(pkg.name, version, pkg.architecture, "")
@@ -514,6 +514,58 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                 return (update_message, update_date, needsReboot, bugURI)
             pkg = pkg.nextTag("Package")
         return("Log not found", "", False, "")
+
+    def _list_upgradable_packages(self):
+        """Return upgradable package names with a fallback for empty API results."""
+        try:
+            upgradable = list(pisi.api.list_upgradable())
+        except Exception:
+            upgradable = []
+
+        if len(upgradable) > 0:
+            return upgradable
+
+        try:
+            installed = self.installdb.list_installed()
+        except Exception:
+            return []
+
+        upgradable = []
+        for package in installed:
+            if not self.packagedb.has_package(package):
+                continue
+
+            try:
+                repo_pkg = self.packagedb.get_package(package)
+                installed_pkg = self.installdb.get_package(package)
+            except Exception:
+                continue
+
+            newer = False
+            try:
+                newer = pisi.version.Version(repo_pkg.release) > pisi.version.Version(installed_pkg.release)
+            except Exception:
+                pass
+
+            if not newer:
+                try:
+                    newer = pisi.version.Version(repo_pkg.version) > pisi.version.Version(installed_pkg.version)
+                except Exception:
+                    pass
+
+            if not newer:
+                try:
+                    repo_build = getattr(repo_pkg, "build", None)
+                    installed_build = getattr(installed_pkg, "build", None)
+                    if repo_build is not None and installed_build is not None:
+                        newer = int(repo_build) > int(installed_build)
+                except Exception:
+                    pass
+
+            if newer:
+                upgradable.append(package)
+
+        return upgradable
 
     def get_update_detail(self, package_ids):
         for package_id in package_ids:
@@ -844,11 +896,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(None)
 
-        if not len(pisi.api.list_upgradable()) > 0:
+        upgradable = self._list_upgradable_packages()
+        if not len(upgradable) > 0:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "System is already up2date")
 
         try:
-            pisi.api.upgrade(pisi.api.list_upgradable())
+            pisi.api.upgrade(upgradable)
         except pisi.Error, e:
             self.error(ERROR_UNKNOWN, e)
 
