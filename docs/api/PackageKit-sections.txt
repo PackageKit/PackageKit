@@ -549,6 +549,7 @@ pk_package_set_summary
 pk_package_get_name
 pk_package_get_version
 pk_package_get_arch
+pk_package_get_origin
 pk_package_get_data
 <SUBSECTION Standard>
 PK_IS_PACKAGE

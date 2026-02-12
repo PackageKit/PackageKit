@@ -38,7 +38,7 @@ class PackageKitYumBackend(PackageKitBaseBackend):
     def search_name(self, filters, key):
         # check we escape spaces properly
         if key == ['power manager']:
-            self.package("polkit;0.0.1;i386;data", INFO_AVAILABLE, "PolicyKit daemon")
+            self.package("polkit;0.0.1;i386;fedora;", INFO_AVAILABLE, "PolicyKit daemon")
 
 
 def main():

@@ -987,9 +987,9 @@ class PackageKitPortageMixin(object):
         '''
         ret = split_package_id(pkgid)
 
-        if len(ret) < 4:
+        if len(ret) < 5:
             self.error(
-                ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 4 fields" % pkgid
+                ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 5 fields" % pkgid
             )
         if '/' not in ret[0]:
             self.error(
@@ -1051,14 +1051,16 @@ class PackageKitPortageMixin(object):
         if slot != '0':
             version = version + ':' + slot
 
+        data = ""
         if self._is_installed(cpv):
-            repo = "installed"
+            repo = repo_meta
+            data = "installed"
         elif self._is_binpkg(cpv):
             repo = "binpkg"
         else:
             repo = repo_meta
 
-        return get_package_id(package, version, ' '.join(keywords), repo)
+        return get_package_id(package, version, ' '.join(keywords), repo, data)
 
     def _get_required_packages(self, cpv_input, recursive):
         '''

@@ -63,6 +63,8 @@ bool dnf5_package_is_gui(const libdnf5::rpm::Package &pkg);
 bool dnf5_package_filter(const libdnf5::rpm::Package &pkg, PkBitfield filters);
 std::vector<libdnf5::rpm::Package>
 dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, PkRoleEnum role, gboolean recursive);
+std::string dnf5_build_package_id(const libdnf5::rpm::Package &pkg);
+
 void dnf5_emit_pkg(
 	PkBackendJob *job,
 	const libdnf5::rpm::Package &pkg,

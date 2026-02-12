@@ -38,7 +38,7 @@
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID 14
 #define GET_DETAILS_TEST_DATA                                            \
-	"details\tgimp;3.0.4-84;x86_64;Solus\tGNU Image Manipulation "   \
+	"details\tgimp;3.0.4-84;x86_64;Solus;\tGNU Image Manipulation "   \
 	"Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image " \
 	"editor.\thttps://www.gimp.org/\t"
 
@@ -159,11 +159,11 @@ pk_test_backend_func_true (PkBackendJob *job, GVariant *params, gpointer user_da
 
 	pk_backend_job_package (job,
 				PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 	pk_backend_job_package (job,
 				PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 }
 
@@ -441,7 +441,7 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (
 	    backend_spawn,
 	    job,
-	    "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data",
+	    "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;origin;data",
 	    NULL);
 	g_assert_true (ret);
 
@@ -449,7 +449,7 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (
 	    backend_spawn,
 	    job,
-	    "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data",
+	    "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;origin;data",
 	    NULL);
 	g_assert_true (!ret);
 
@@ -516,7 +516,7 @@ pk_test_backend_spawn_func (void)
 	ret = pk_backend_spawn_inject_data (
 	    backend_spawn,
 	    job,
-	    "package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software",
+	    "package\tinstalled\tgnome-power-manager;0.0.1;i386;origin;data\tMore useless software",
 	    NULL);
 	g_assert_true (ret);
 
@@ -1448,7 +1448,7 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	/* run a second (and exclusive!) action in parallel */
-	array = g_strsplit ("libawesome;42;i386;debian", " ", -1);
+	array = g_strsplit ("libawesome;42;i386;debian;", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (
@@ -1467,7 +1467,7 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	/* run a fourth (and exclusive!) action in parallel */
-	array = g_strsplit ("foobar;1.1.0;i386;debian", " ", -1);
+	array = g_strsplit ("foobar;1.1.0;i386;debian;", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (

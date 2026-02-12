@@ -374,6 +374,30 @@ dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, P
 	return results;
 }
 
+std::string
+dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
+{
+	std::string origin;
+	const char *data = nullptr;
+
+	if (pkg.get_install_time() > 0) {
+		// installed packages: origin is the repo they were installed from, if known
+		origin = pkg.get_from_repo_id();
+		data = "installed";
+	} else {
+		origin = pkg.get_repo_id();
+		if (origin.empty() || origin == DNF5_CMDLINE_REPO_ID)
+			origin = "local";
+	}
+
+	g_autofree gchar *package_id = pk_package_id_build(pkg.get_name().c_str(),
+							   pkg.get_evr().c_str(),
+							   pkg.get_arch().c_str(),
+							   origin.c_str(),
+							   data);
+	return std::string(package_id);
+}
+
 void
 dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
 {
@@ -384,18 +408,7 @@ dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum in
 		}
 	}
 
-	std::string evr = pkg.get_evr();
-	std::string repo_id = pkg.get_repo_id();
-	if (pkg.get_install_time() > 0) {
-		std::string from_repo = pkg.get_from_repo_id();
-		if (!from_repo.empty()) {
-			repo_id = "installed:" + from_repo;
-		} else {
-			repo_id = "installed";
-		}
-	}
-
-	std::string package_id = pkg.get_name() + ";" + evr + ";" + pkg.get_arch() + ";" + repo_id;
+	std::string package_id = dnf5_build_package_id(pkg);
 	if (severity != PK_INFO_ENUM_UNKNOWN) {
 		pk_backend_job_package_full(job, info, package_id.c_str(), pkg.get_summary().c_str(), severity);
 	} else {
@@ -524,15 +537,19 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cm
 				split[PK_PACKAGE_ID_NAME],
 				split[PK_PACKAGE_ID_VERSION],
 				split[PK_PACKAGE_ID_ARCH],
-				split[PK_PACKAGE_ID_DATA]);
+				split[PK_PACKAGE_ID_ORIGIN]);
 			query.filter_name(split[PK_PACKAGE_ID_NAME]);
 			query.filter_evr(split[PK_PACKAGE_ID_VERSION]);
 			query.filter_arch(split[PK_PACKAGE_ID_ARCH]);
 
-			if (g_str_has_prefix(split[PK_PACKAGE_ID_DATA], "installed")) {
+			if (g_strcmp0(split[PK_PACKAGE_ID_DATA], "installed") == 0) {
 				query.filter_installed();
+			} else if (g_strcmp0(split[PK_PACKAGE_ID_ORIGIN], "local") == 0) {
+				// packages from local files are emitted with a "local" origin,
+				// but live in the command line pseudo-repository
+				query.filter_repo_id(DNF5_CMDLINE_REPO_ID);
 			} else {
-				query.filter_repo_id(split[PK_PACKAGE_ID_DATA]);
+				query.filter_repo_id(split[PK_PACKAGE_ID_ORIGIN]);
 			}
 
 			if (query.empty()) {

@@ -36,7 +36,7 @@
       <doc:doc>
         <doc:description>
           <doc:para>
-            The last package_id that was processed, e.g. <doc:tt>hal;0.1.2;i386;fedora</doc:tt>.
+            The last package_id that was processed, e.g. <doc:tt>hal;0.1.2;i386;fedora;</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -277,11 +277,11 @@
             and directory, so for example:
           </doc:para>
           <doc:para>
-            <doc:tt>DownloadPackages('hal;0.1.2;i386;fedora','hal-info;2009-09-07;no-arch;updates')</doc:tt>
+            <doc:tt>DownloadPackages('hal;0.1.2;i386;fedora;','hal-info;2009-09-07;no-arch;updates;')</doc:tt>
             should send two signals, e.g.
-            <doc:tt>Files('hal;0.1.2;i386;fedora', '/tmp/hal-0.1.2.i386.rpm')</doc:tt>
+            <doc:tt>Files('hal;0.1.2;i386;fedora;', '/tmp/hal-0.1.2.i386.rpm')</doc:tt>
             and
-            <doc:tt>Files('hal-info;2009-09-07;no-arch;updates', '/tmp/hal-info-2009-09-07.noarch.rpm')</doc:tt>.
+            <doc:tt>Files('hal-info;2009-09-07;no-arch;updates;', '/tmp/hal-info-2009-09-07.noarch.rpm')</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1848,32 +1848,29 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              This identifier is of the form <doc:tt>name;version;arch;data</doc:tt>
+              This identifier is of the form <doc:tt>name;version;arch;origin;data</doc:tt>
               in a single string and is meant to represent a single package
               unique across all local and remote data stores.
             </doc:para>
             <doc:para>
-              For a remote, not-installed package the data field should
-              be set as the repository identifier or repository name.
+              The origin field should be set to the repository identifier or
+              repository name the package is available from. For an installed
+              package, it should be set to the repository the package was
+              originally installed from, if the package manager tracks this
+              information, and left empty otherwise.
             </doc:para>
             <doc:para>
-              The data field for an installed package must be prefixed
-              with <doc:tt>installed</doc:tt> as this is used to identify
-              which packages are installable or installed in the client
-              tools.
-            </doc:para>
-            <doc:para>
-              As a special extension, if the package manager is able to
-              track which repository a package was originally installed
-              from, then the data field can be set to
-              <doc:tt>installed:REPO-NAME</doc:tt> which allows the
-              frontend client to advise the user of the package origin.
-            </doc:para>
-            <doc:para>
-              The data field for a non-installed local package must be
+              The origin field for a non-installed local package must be
               <doc:tt>local</doc:tt> as this signifies a repository name is
               not available and that package resides locally on the
               client system rather than in any specific repository.
+            </doc:para>
+            <doc:para>
+              The data field is free for the backend to use for additional information
+              it needs, for example whether a package was installed automatically or manually.
+              Its contents are backend-specific and it is usually empty. Frontends
+              must not parse it and should rely on the <doc:tt>info</doc:tt>
+              enumerated type for state information instead.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2504,7 +2501,7 @@
         <doc:doc>
           <doc:summary>
             <doc:para>
-              A valid package_id, e.g. <doc:tt>hal;0.1.0;i386;fedora</doc:tt>
+              A valid package_id, e.g. <doc:tt>hal;0.1.0;i386;fedora;</doc:tt>
               or a repo_id.
             </doc:para>
             <doc:para>
@@ -2547,4 +2544,3 @@
 
   </interface>
 </node>
-

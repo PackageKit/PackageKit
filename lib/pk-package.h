@@ -94,6 +94,7 @@ void	     pk_package_set_summary (PkPackage	 *package,
 const gchar *pk_package_get_name (PkPackage *package);
 const gchar *pk_package_get_version (PkPackage *package);
 const gchar *pk_package_get_arch (PkPackage *package);
+const gchar *pk_package_get_origin (PkPackage *package);
 const gchar *pk_package_get_data (PkPackage *package);
 PkInfoEnum   pk_package_get_update_severity (PkPackage *package);
 void	     pk_package_set_update_severity (PkPackage *package,

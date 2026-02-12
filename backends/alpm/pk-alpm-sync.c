@@ -42,7 +42,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 
 	for (; *packages != NULL; ++packages) {
 		g_auto(GStrv) package = pk_package_id_split (*packages);
-		gchar *repo = package[PK_PACKAGE_ID_DATA];
+		gchar *repo = package[PK_PACKAGE_ID_ORIGIN];
 		gchar *name = package[PK_PACKAGE_ID_NAME];
 		alpm_pkg_t *dep_to_remove;
 

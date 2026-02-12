@@ -136,7 +136,7 @@ pk_test_offline_func (void)
 
 	/* set up an offline update */
 	client = pk_client_new ();
-	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora");
+	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora;");
 	pk_client_update_packages_async (
 	    client,
 	    pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, -1),
@@ -155,7 +155,7 @@ pk_test_offline_func (void)
 	g_assert_no_error (error);
 	g_assert_nonnull (prepared_ids);
 	g_assert_cmpuint (g_strv_length (prepared_ids), ==, 1);
-	g_assert_cmpstr (prepared_ids[0], ==, "powertop;1.8-1.fc8;i386;fedora");
+	g_assert_cmpstr (prepared_ids[0], ==, "powertop;1.8-1.fc8;i386;fedora;");
 
 	/* "unset" is not a way to arm (or later disarm) the trigger */
 	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_UNSET,
@@ -567,7 +567,7 @@ pk_test_client_download_cb (GObject *object, GAsyncResult *res, gpointer user_da
 	/* check a result */
 	item = g_ptr_array_index (array, 0);
 	g_object_get (item, "package-id", &package_id, "files", &files, NULL);
-	g_assert_cmpstr (package_id, ==, "powertop-common;1.8-1.fc8;i386;fedora");
+	g_assert_cmpstr (package_id, ==, "powertop-common;1.8-1.fc8;i386;fedora;");
 	g_assert_cmpint (g_strv_length (files), ==, 1);
 	g_assert_cmpstr (files[0], ==, "/tmp/powertop-common-1.8-1.fc8.rpm");
 
@@ -672,7 +672,7 @@ pk_test_client_func (void)
 	g_assert (ret);
 
 	/* resolve package */
-	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora;&powertop");
 	pk_client_resolve_async (client,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 				 package_ids,
@@ -710,7 +710,7 @@ pk_test_client_func (void)
 	//	_package_cb = 0;
 
 	/* get details about package */
-	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora;");
 	pk_client_get_details_async (client,
 				     package_ids,
 				     NULL,
@@ -783,7 +783,7 @@ pk_test_client_func (void)
 	g_cancellable_reset (cancellable);
 
 	/* do the update-packages role to trigger the fake pipe stuff */
-	package_ids = pk_package_ids_from_string ("testsocket;0.1;i386;fedora");
+	package_ids = pk_package_ids_from_string ("testsocket;0.1;i386;fedora;");
 	pk_client_update_packages_async (
 	    client,
 	    0,
@@ -801,7 +801,7 @@ pk_test_client_func (void)
 	g_unlink ("/tmp/powertop-common-1.8-1.fc8.rpm");
 
 	/* do downloads */
-	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora;");
 	pk_client_download_packages_async (client,
 					   package_ids,
 					   "/tmp",
@@ -861,7 +861,7 @@ static void
 pk_test_client_cancellation_func (void)
 {
 	g_auto(GStrv)
-		   package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+		   package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora;&powertop");
 	g_autoptr(PkClient) client = NULL;
 	gboolean idle;
 	const unsigned int n_iterations = g_test_thorough () ? 500 : 250;
@@ -1297,15 +1297,15 @@ pk_test_package_sack_func (void)
 	g_assert (size == 0);
 
 	/* remove package not present */
-	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (!ret);
 
 	/* find package not present */
-	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (package == NULL);
 
 	/* add package */
-	ret = pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora", NULL);
+	ret = pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;", NULL);
 	g_assert (ret);
 
 	/* get size of package sack */
@@ -1323,7 +1323,7 @@ pk_test_package_sack_func (void)
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
-	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (package != NULL);
 
 	/* check new summary */
@@ -1347,7 +1347,7 @@ pk_test_package_sack_func (void)
 	g_debug ("got details in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
-	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (package != NULL);
 
 	/* check new url */
@@ -1368,7 +1368,7 @@ pk_test_package_sack_func (void)
 	g_debug ("got update detail in %f", g_test_timer_elapsed ());
 
 	/* find package which is present */
-	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (package != NULL);
 
 	/* check new vendor url */
@@ -1384,7 +1384,7 @@ pk_test_package_sack_func (void)
 	g_assert_cmpint (bytes, ==, 103424);
 
 	/* remove package */
-	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (ret);
 
 	/* get size of package sack */
@@ -1392,12 +1392,12 @@ pk_test_package_sack_func (void)
 	g_assert_cmpint (size, ==, 0);
 
 	/* remove already removed package */
-	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora");
+	ret = pk_package_sack_remove_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
 	g_assert (!ret);
 
 	/* remove by filter */
-	pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora", NULL);
-	pk_package_sack_add_package_by_id (sack, "powertop-debuginfo;1.8-1.fc8;i386;fedora", NULL);
+	pk_package_sack_add_package_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;", NULL);
+	pk_package_sack_add_package_by_id (sack, "powertop-debuginfo;1.8-1.fc8;i386;fedora;", NULL);
 	ret = pk_package_sack_remove_by_filter (sack, pk_test_package_sack_filter_cb, NULL);
 	g_assert (ret);
 
@@ -1443,7 +1443,7 @@ pk_test_task_func (void)
 	g_assert (task != NULL);
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
+	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora;");
 	pk_task_install_packages_async (task,
 					package_ids,
 					NULL,
@@ -1514,7 +1514,7 @@ pk_test_task_text_func (void)
 	*/
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
+	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva;");
 	pk_task_install_packages_async (PK_TASK (task),
 					package_ids,
 					NULL,
@@ -1579,7 +1579,7 @@ pk_test_task_wrapper_func (void)
 	g_assert (task != NULL);
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
+	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva;");
 	pk_task_install_packages_async (
 	    PK_TASK (task),
 	    package_ids,
@@ -1660,7 +1660,7 @@ pk_test_transaction_list_func (void)
 	g_assert (client != NULL);
 
 	/* resolve package */
-	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora;&powertop");
 	_refcount = 2;
 	pk_client_resolve_async (client,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
