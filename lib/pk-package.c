@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2009 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2009-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -50,7 +51,7 @@ struct _PkPackagePrivate
 	PkInfoEnum info;
 	gchar *package_id;
 	gchar *package_id_data;
-	const gchar *package_id_split[4];
+	const gchar *package_id_split[5];
 	gchar *summary;
 	gchar *license;
 	PkGroupEnum group;
@@ -173,7 +174,7 @@ pk_package_equal_id (PkPackage *package1, PkPackage *package2)
 gboolean
 pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 	guint cnt = 0;
 	guint i;
 
@@ -194,13 +195,13 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = priv->package_id_data;
 	for (i = 0; priv->package_id_data[i] != '\0'; i++) {
 		if (package_id[i] == ';') {
-			if (++cnt > 3)
+			if (++cnt > 4)
 				continue;
 			priv->package_id_split[cnt] = &priv->package_id_data[i + 1];
 			priv->package_id_data[i] = '\0';
 		}
 	}
-	if (cnt != 3) {
+	if (cnt != 4) {
 		g_set_error (error, 1, 0, "invalid number of sections %i", cnt);
 		goto out;
 	}
@@ -220,6 +221,7 @@ out:
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ORIGIN] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 	return FALSE;
 }
@@ -273,7 +275,7 @@ pk_package_parse (PkPackage *package, const gchar *data, GError **error)
 PkInfoEnum
 pk_package_get_info (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), FALSE);
 
@@ -292,7 +294,7 @@ pk_package_get_info (PkPackage *package)
 void
 pk_package_set_info (PkPackage *package, PkInfoEnum info)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
@@ -315,7 +317,7 @@ pk_package_set_info (PkPackage *package, PkInfoEnum info)
 void
 pk_package_set_summary (PkPackage *package, const gchar *summary)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
@@ -340,7 +342,7 @@ pk_package_set_summary (PkPackage *package, const gchar *summary)
 const gchar *
 pk_package_get_id (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -360,7 +362,7 @@ pk_package_get_id (PkPackage *package)
 const gchar *
 pk_package_get_summary (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -380,7 +382,7 @@ pk_package_get_summary (PkPackage *package)
 const gchar *
 pk_package_get_name (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -400,7 +402,7 @@ pk_package_get_name (PkPackage *package)
 const gchar *
 pk_package_get_version (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -420,7 +422,7 @@ pk_package_get_version (PkPackage *package)
 const gchar *
 pk_package_get_arch (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -428,12 +430,39 @@ pk_package_get_arch (PkPackage *package)
 }
 
 /**
+ * pk_package_get_origin:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package origin, which is usually the repository ID that contains the
+ * package. A special origin is "local" for local packages that exist on disk
+ * but not in a repository.
+ *
+ * Returns: (nullable): the origin, or %NULL if unset
+ *
+ * Since: 2.0.0
+ **/
+const gchar *
+pk_package_get_origin (PkPackage *package)
+{
+	PkPackagePrivate *priv = GET_PRIVATE (package);
+
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+
+	return priv->package_id_split[PK_PACKAGE_ID_ORIGIN];
+}
+
+/**
  * pk_package_get_data:
  * @package: a valid #PkPackage instance
  *
- * Gets the package data, which is usually the repository ID that contains the
- * package. Special ID's include "installed" for installed packages, and "local"
- * for local packages that exist on disk but not in a repository.
+ * Gets the package data, a free-form field the backend may use to store
+ * whatever additional information it needs to identify or handle the
+ * package, for example whether it was installed automatically or manually.
+ * Most backends leave it empty.
+ *
+ * The contents of the data field are entirely backend-specific and
+ * must not be parsed by client applications. Use %pk_package_get_info()
+ * for state information instead.
  *
  * Returns: (nullable): the data, or %NULL if unset
  *
@@ -442,7 +471,7 @@ pk_package_get_arch (PkPackage *package)
 const gchar *
 pk_package_get_data (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
 
@@ -460,14 +489,15 @@ pk_package_get_data (PkPackage *package)
 void
 pk_package_print (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
-	g_print ("%s-%s.%s\t%s\t%s\n",
+	g_print ("%s_%s.%s\t%s [%s]\t%s\n",
 		 priv->package_id_split[PK_PACKAGE_ID_NAME],
 		 priv->package_id_split[PK_PACKAGE_ID_VERSION],
 		 priv->package_id_split[PK_PACKAGE_ID_ARCH],
+		 priv->package_id_split[PK_PACKAGE_ID_ORIGIN],
 		 priv->package_id_split[PK_PACKAGE_ID_DATA],
 		 priv->summary);
 }
@@ -479,7 +509,7 @@ static void
 pk_package_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	switch (prop_id) {
 	case PROP_PACKAGE_ID:
@@ -555,7 +585,7 @@ static void
 pk_package_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	switch (prop_id) {
 	case PROP_INFO:
@@ -921,10 +951,11 @@ pk_package_class_init (PkPackageClass *klass)
 static void
 pk_package_init (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ORIGIN] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 	package->priv = priv;
 }
@@ -937,7 +968,7 @@ static void
 pk_package_finalize (GObject *object)
 {
 	PkPackage *package = PK_PACKAGE (object);
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_clear_pointer (&priv->package_id, g_free);
 	g_clear_pointer (&priv->summary, g_free);
@@ -990,7 +1021,7 @@ pk_package_new (void)
 PkInfoEnum
 pk_package_get_update_severity (PkPackage *package)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_INFO_ENUM_UNKNOWN);
 
@@ -1013,7 +1044,7 @@ pk_package_get_update_severity (PkPackage *package)
 void
 pk_package_set_update_severity (PkPackage *package, PkInfoEnum update_severity)
 {
-	PkPackagePrivate *priv = GET_PRIVATE(package);
+	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 	g_return_if_fail (

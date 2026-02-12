@@ -29,7 +29,9 @@
 gchar *
 pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 {
-	const gchar *name, *version, *arch, *repo;
+	const gchar *name, *version, *arch;
+	const gchar *repo = NULL;
+	const gchar *data = NULL;
 
 	g_return_val_if_fail (pkg != NULL, NULL);
 
@@ -41,13 +43,12 @@ pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 		arch = "any";
 
 	/* TODO: check correctness */
-	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_SYNCDB) {
+	if (alpm_pkg_get_origin (pkg) == ALPM_PKG_FROM_SYNCDB)
 		repo = alpm_db_get_name (alpm_pkg_get_db (pkg));
-	} else {
-		repo = "installed";
-	}
+	else
+		data = "installed";
 
-	return pk_package_id_build (name, version, arch, repo);
+	return pk_package_id_build (name, version, arch, repo, data);
 }
 
 void
@@ -76,10 +77,10 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 	g_return_val_if_fail (package_id != NULL, NULL);
 
 	package = pk_package_id_split (package_id);
-	repo_id = package[PK_PACKAGE_ID_DATA];
+	repo_id = package[PK_PACKAGE_ID_ORIGIN];
 
 	/* find the database to search in */
-	if (g_strcmp0 (repo_id, "installed") == 0) {
+	if (g_strcmp0 (package[PK_PACKAGE_ID_DATA], "installed") == 0) {
 		db = priv->localdb;
 	} else {
 		const alpm_list_t *i = alpm_get_syncdbs (priv->alpm_check ? priv->alpm_check : priv->alpm);

@@ -69,16 +69,17 @@ class PackageKitPackage:
         self.installed = info == 'installed'
         self.id = _to_rawstring(package_id)
         self.summary = _to_unicode(summary)
-        n, v, a, r = self.id.split(';')
+        n, v, a, r, d = self.id.split(';')
         self.name = n
         self.ver = v
         self.arch = a
         self.repoid = r
+        self.data = d
         self.summary = _to_unicode(summary)
         self.info = _to_rawstring(info)
 
     def __str__(self):
-        name, ver, arch, repo = tuple(self.id.split(";"))
+        name, ver, arch, repo, data = tuple(self.id.split(";"))
         p = "%s-%s.%s" % (name, ver, arch)
         return p
 

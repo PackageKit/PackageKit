@@ -200,16 +200,19 @@ class PackageKitEntropyMixin(object):
         if repo_name is None:
             self.error(ERROR_PACKAGE_ID_INVALID, "Invalid metadata passed")
 
-        # if installed, repo should be 'installed', packagekit rule
+        # installed packages: the repo of origin is not tracked, so leave the
+        # origin empty and mark the package in the backend-private data field
+        data = ""
         cl_repo_name = etpConst.get(
             'clientdbid',  # forward compatibility
             getattr(InstalledPackagesRepository, "NAME", None),
         )
         if repo_name == cl_repo_name:
-            repo_name = "installed"
+            repo_name = ""
+            data = "installed"
 
-        # openoffice-clipart;2.6.22;ppc64;fedora
-        return get_package_id(pkg_key, pkg_ver, cur_arch, repo_name)
+        # openoffice-clipart;2.6.22;ppc64;fedora;
+        return get_package_id(pkg_key, pkg_ver, cur_arch, repo_name, data)
 
     def _id_to_etp(self, pkit_id):
         """
@@ -222,12 +225,12 @@ class PackageKitEntropyMixin(object):
         @rtype: tuple
         """
         split_data = split_package_id(pkit_id)
-        if len(split_data) < 4:
+        if len(split_data) < 5:
             self.error(
-                ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 4 fields" % pkit_id
+                ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 5 fields" % pkit_id
             )
             return
-        pkg_key, pkg_ver, cur_arch, repo_name = split_data
+        pkg_key, pkg_ver, cur_arch, repo_name, data = split_data
 
         self._log_message(
             __name__,
@@ -241,7 +244,7 @@ class PackageKitEntropyMixin(object):
         )
         pkg_ver, pkg_slot = pkg_ver.rsplit(":", 1)
 
-        if repo_name == "installed":
+        if data == "installed":
             c_repo = self._entropy.installed_repository()
         else:
             c_repo = self._entropy.open_repository(repo_name)

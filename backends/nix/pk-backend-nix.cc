@@ -147,7 +147,7 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
         // we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
         parts = pk_package_id_split(package_ids[i]);
         std::string attrPath = std::string(parts[PK_PACKAGE_ID_NAME]);
-        std::string flake = std::string(parts[PK_PACKAGE_ID_DATA]);
+        std::string flake = std::string(parts[PK_PACKAGE_ID_ORIGIN]);
         g_strfreev(parts);
 
         auto attrOrSuggestions = nix_get_attr_or_suggestions(
@@ -378,7 +378,8 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
                             attrPath2.c_str(),
                             name.version.c_str(),
                             system.c_str(),
-                            priv->defaultFlake.c_str()),
+                            priv->defaultFlake.c_str(),
+                            NULL),
                         description.c_str());
                 }
             }
@@ -453,7 +454,7 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
         // we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
         parts = pk_package_id_split(package_ids[i]);
         std::string attrPath = std::string(parts[PK_PACKAGE_ID_NAME]);
-        std::string flake = std::string(parts[PK_PACKAGE_ID_DATA]);
+        std::string flake = std::string(parts[PK_PACKAGE_ID_ORIGIN]);
         g_strfreev(parts);
 
         auto attrOrSuggestions = nix_get_attr_or_suggestions(
@@ -573,7 +574,7 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
         // we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
         parts = pk_package_id_split(package_ids[i]);
         std::string attrPath = std::string(parts[PK_PACKAGE_ID_NAME]);
-        std::string flake = std::string(parts[PK_PACKAGE_ID_DATA]);
+        std::string flake = std::string(parts[PK_PACKAGE_ID_ORIGIN]);
         g_strfreev(parts);
 
         auto attrOrSuggestions = nix_get_attr_or_suggestions(
@@ -694,7 +695,8 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
                         drv->attrPath.c_str(),
                         name.version.c_str(),
                         drv->querySystem().c_str(),
-                        priv->defaultFlake.c_str()),
+                        priv->defaultFlake.c_str(),
+                        NULL),
                     drv->queryMetaString("description").c_str());
             }
         }

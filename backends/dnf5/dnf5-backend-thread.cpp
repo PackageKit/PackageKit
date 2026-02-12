@@ -259,11 +259,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				g_autoptr(GPtrArray) update_details = g_ptr_array_new_with_free_func(
 					(GDestroyNotify) g_object_unref);
 				for (auto &pkg : pkgs) {
-					std::string repo_id = pkg.get_repo_id();
-					if (pkg.get_install_time() > 0)
-						repo_id = "installed";
-					std::string pid = pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch()
-							  + ";" + repo_id;
+					std::string pid = dnf5_build_package_id(pkg);
 
 					std::string key = pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch();
 					auto it = pkg_to_adv_pkg.find(key);
@@ -340,11 +336,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			}
 
 			for (auto &pkg : pkgs) {
-				std::string repo_id = pkg.get_repo_id();
-				if (pkg.get_install_time() > 0)
-					repo_id = "installed";
-				std::string pid = pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch() + ";"
-						  + repo_id;
+				std::string pid = dnf5_build_package_id(pkg);
 
 				if (role == PK_ROLE_ENUM_GET_DETAILS) {
 					std::string license = pkg.get_license();
@@ -382,8 +374,7 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			auto added = local_base.get_repo_sack()->add_cmdline_packages(paths);
 			for (const auto &pair : added) {
 				const auto &pkg = pair.second;
-				std::string pid = pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch() + ";"
-						  + (pkg.get_repo_id().empty() ? "local" : pkg.get_repo_id());
+				std::string pid = dnf5_build_package_id(pkg);
 				if (role == PK_ROLE_ENUM_GET_DETAILS_LOCAL) {
 					pk_backend_job_details(
 						job,

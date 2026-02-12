@@ -388,7 +388,7 @@ pk_client_search_files (PkClient *client,
 /**
  * pk_client_get_details:
  * @client: a valid #PkClient instance
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -577,7 +577,7 @@ pk_client_get_files_local (PkClient *client,
 /**
  * pk_client_get_update_detail:
  * @client: a valid #PkClient instance
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -640,7 +640,7 @@ pk_client_get_update_detail (PkClient *client,
 /**
  * pk_client_download_packages:
  * @client: a valid #PkClient instance
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @directory: the location where packages are to be downloaded
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -830,7 +830,7 @@ pk_client_get_old_transactions (PkClient *client,
  * pk_client_depends_on:
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @recursive: If we should search recursively for depends
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -960,7 +960,7 @@ pk_client_get_packages (PkClient *client,
  * pk_client_required_by:
  * @client: a valid #PkClient instance
  * @filters: a #PkBitfield such as %PK_FILTER_ENUM_GUI | %PK_FILTER_ENUM_FREE or %PK_FILTER_ENUM_NONE
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @recursive: If we should search recursively for requires
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
@@ -1154,7 +1154,7 @@ pk_client_get_distro_upgrades (PkClient *client,
 /**
  * pk_client_get_files:
  * @client: a valid #PkClient instance
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1276,7 +1276,7 @@ pk_client_get_categories (PkClient *client,
  * pk_client_remove_packages:
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @allow_deps: if other dependent packages are allowed to be removed from the computer
  * @autoremove: if other packages installed at the same time should be tried to remove
  * @cancellable: a #GCancellable or %NULL
@@ -1414,7 +1414,7 @@ pk_client_refresh_cache (PkClient *client,
  * pk_client_install_packages:
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1480,7 +1480,7 @@ pk_client_install_packages (PkClient *client,
  * @client: a valid #PkClient instance
  * @type: the signature type, e.g. %PK_SIGTYPE_ENUM_GPG
  * @key_id: a key ID such as "0df23df"
- * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora"
+ * @package_id: a signature_id structure such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback
@@ -1547,7 +1547,7 @@ pk_client_install_signature (PkClient *client,
  * pk_client_update_packages:
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
- * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora;"
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

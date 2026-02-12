@@ -502,7 +502,7 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
             guint size2 = g_strv_length (dep_namevers);
             size2 -= size % 2;
             for (guint j = 0; j < size2; j+=2) {
-                gchar* dep_id = pk_package_id_build (dep_namevers[j], dep_namevers[j+1], pkgView.arch(), pkgView.repository());
+                gchar* dep_id = pk_package_id_build (dep_namevers[j], dep_namevers[j+1], pkgView.arch(), pkgView.repository(), NULL);
                 pk_backend_job_package (job, pk_type, dep_id, ""); // TODO: we report an empty string instead of comment here
                 g_free (dep_id);
             }

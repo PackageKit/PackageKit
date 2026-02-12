@@ -10,7 +10,7 @@
     <title>Package ID</title>
     <para>
       One important idea is the <literal>package_id</literal>.
-      This is the <literal>name;version;arch;data</literal> in
+      This is the <literal>name;version;arch;origin;data</literal> in
       a single string and is meant to represent a single package.
       This is important when multiple versions of a package are installed and
       only the correct one is removed.
@@ -18,27 +18,28 @@
     <para>
       The <literal>package_id</literal> is parsed and checked carefully in
       the helper code.
-      The package arch and data are optional, but 3 <literal>;</literal>'s must
+      The package arch, origin and data are optional, but 4 <literal>;</literal>'s must
       be present.
-      For instance, <literal>gnome-keyring-manager;2.18.0;;</literal> is
+      For instance, <literal>gnome-keyring-manager;2.18.0;;;</literal> is
       valid but <literal>gnome-keyring-manager;2.18.0</literal> is not.
-      The data field is used for the repository name and/or installation state.
-      It should ideally not be parsed by frontends to extract state data, instead the
-      <code>PkInfoEnum</code> that is often provided alongside a <literal>package_id</literal>
-      will provide more accurate state information.
+      The origin field contains the repository name if the package is available in a repository,
+      and if the backend knows its origin. This also applies to installed packages, if the backend
+      records which repository they were installed from. If the package is a local package file
+      that does not belong to any repository, its value is set to <literal>local</literal>.
+      The origin field must never contain state information such as <literal>installed</literal>.
     </para>
     <para>
-      The data field for an installed package can either be
-      <literal>installed</literal> for installed packages, <literal>auto</literal>
-      for automatically installed packages or <literal>manual</literal> for manually
-      installed packages. If the package has a repository origin, the installation state may be
-      prefixed to the origin, divided by a colon, e.g. <literal>auto:fedora-devel</literal>.
-      If a package is not installed, the data field is equal to the package origin.
+      The data field is free for the backend to use for whatever additional information it
+      needs, e.g. whether a package was installed automatically or manually.
+      Its contents are backend-specific, and it must not be parsed by frontends, especially not
+      for state information.
+      Instead the <code>PkInfoEnum</code> that is provided alongside a <literal>package_id</literal>
+      will provide accurate state information.
     </para>
     <para>
-      The data field for an non-installed local package must be
-      <literal>local</literal> as this signifies a repository name is not available
-      and that package resides locally on the client system.
+      The origin field for a local package file must be <literal>local</literal> as this
+      signifies that no repository origin is available and that the package file resides
+      on the client system.
     </para>
     <para>
       For example:
@@ -46,23 +47,31 @@
     <itemizedlist>
       <listitem>
         <para>
-          <literal>csup;20060318-5;x86_64;local</literal>: for locally available package file.
+          <literal>csup;20060318-5;x86_64;local;</literal>: for locally available package file.
         </para>
       </listitem>
       <listitem>
         <para>
-          <literal>csup;20060318-5;x86_64;fedora-devel</literal>: for package that is not installed
-          and can be downladed from the Fedora development repostory.
+          <literal>csup;20060318-5;x86_64;fedora-devel;</literal>: for package that is not installed
+          and can be downloaded from the Fedora development repostory.
         </para>
       </listitem>
       <listitem>
         <para>
-          <literal>csup;20060318-5;x86_64;installed:fedora-devel</literal>: for locally installed package
+          <literal>csup;20060318-5;x86_64;fedora-devel;</literal>: for locally installed package
+          that was installed from the Fedora development repository (whether a package is installed
+          is conveyed by the accompanying <code>PkInfoEnum</code>, not by the package ID).
         </para>
       </listitem>
       <listitem>
         <para>
-          <literal>csup;20060318-5;x86_64;installed</literal>: for locally installed package without repository information
+          <literal>csup;20060318-5;x86_64;;</literal>: for locally installed package without repository information
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>csup;20060318-5;x86_64;fedora-devel;manual</literal>: for locally installed package
+          where the backend chose to record in the data field that it was installed manually.
         </para>
       </listitem>
     </itemizedlist>
@@ -1240,4 +1249,3 @@
   </sect1>
 
 </chapter>
-

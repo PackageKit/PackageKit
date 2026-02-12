@@ -154,7 +154,7 @@ public:
 
     const gchar* repository() const {
         if (pk_id_parts)
-            return pk_id_parts.get()[PK_PACKAGE_ID_DATA];
+            return pk_id_parts.get()[PK_PACKAGE_ID_ORIGIN];
         else
             return _reponame.get();
     }
@@ -165,7 +165,7 @@ public:
 
         if (!built_pk_id)
             built_pk_id = g_free_deleted_unique_ptr<gchar> (
-                    pk_package_id_build(name(), version(), arch(), repository()));
+                    pk_package_id_build(name(), version(), arch(), repository(), NULL));
         return built_pk_id.get();
     }
 private:

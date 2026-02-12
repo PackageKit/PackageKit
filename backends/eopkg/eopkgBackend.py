@@ -265,40 +265,42 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """PiSi pkg to pk id"""
         # FIXME: when getting repo, we can't use self.packagedb/installdb here
         # as they get invalidated by the pisi.api call.
+        data = ""
         if pisi.db.packagedb.PackageDB().has_package(pkg.name):
             repo = pisi.db.packagedb.PackageDB().which_repo(pkg.name)
-            # if pisi.db.installdb.InstallDB().has_package(pkg.name):
-            #    repo = "installed:{}".format(repo)
+            if pisi.db.installdb.InstallDB().has_package(pkg.name):
+                data = "installed"
         else:
             if pisi.db.installdb.InstallDB().has_package(pkg.name):
-                repo = "installed"
+                repo = ""
+                data = "installed"
             else:
                 repo = "local"
         version = self.__get_package_version(pkg)
-        pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
+        pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, repo, data)
         return pkg_id
 
     def _get_package_obj_from_id(self, package_id):
-        """Centralized helper to get package object and data from id"""
-        name, version, arch, data = self.get_package_from_id(package_id)
+        """Centralized helper to get package object and origin from id"""
+        name, version, arch, origin, data = self.get_package_from_id(package_id)
         pkg = None
 
-        if data == "local" or data.startswith("installed"):
+        if origin == "local" or data == "installed":
             if self.installdb.has_package(name):
                 pkg = self.installdb.get_package(name)
 
         if pkg is None and self.packagedb.has_package(name):
             pkg, repo = self.packagedb.get_package_repo(name, None)
-            data = repo
+            origin = repo
 
         if pkg is None and self.installdb.has_package(name):
             pkg = self.installdb.get_package(name)
-            data = "local"
+            origin = "local"
 
         if pkg is None:
             raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % name)
 
-        return pkg, data
+        return pkg, origin
 
     def _set_status(self, pkg, status):
         package_id = self._pkg_to_id(pkg)
@@ -329,7 +331,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         if installed is None and available is None:
             raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
 
-        # We will collect candidate packages here: (pkg, status, data)
+        # We will collect candidate packages here: (pkg, status, origin, data)
         candidates = []
 
         # Check if we have any status filters
@@ -339,11 +341,10 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         if has_status_filter:
             if FILTER_INSTALLED in filters:
                 if installed:
-                    data = "installed:{}".format(repo) if repo else "installed"
-                    candidates.append((installed, INFO_INSTALLED, data))
+                    candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
             elif FILTER_NOT_INSTALLED in filters:
                 if available:
-                    candidates.append((available, INFO_AVAILABLE, repo))
+                    candidates.append((available, INFO_AVAILABLE, repo, ""))
             elif FILTER_NEWEST in filters:
                 if installed and available:
                     # Compare versions/releases
@@ -356,39 +357,35 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                     # In Solus/eopkg, release is the primary versioning for updates.
                     if v_inst[0] == v_avail[0]:
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, INFO_AVAILABLE, repo))
+                            candidates.append((available, INFO_AVAILABLE, repo, ""))
                         elif int(v_avail[1]) == int(v_inst[1]):
                             # Same version, show both
-                            data = "installed:{}".format(repo) if repo else "installed"
-                            candidates.append((installed, INFO_INSTALLED, data))
-                            candidates.append((available, INFO_AVAILABLE, repo))
+                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append((available, INFO_AVAILABLE, repo, ""))
                         else:
                             # Installed is newer
-                            data = "installed:{}".format(repo) if repo else "installed"
-                            candidates.append((installed, INFO_INSTALLED, data))
+                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
                     else:
                         # Versions differ, we'd need a version comparison tool here.
                         # For now, if versions differ, we'll just show both or available
                         # if it looks newer (e.g. higher release).
                         # Most often, version is the same.
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, INFO_AVAILABLE, repo))
+                            candidates.append((available, INFO_AVAILABLE, repo, ""))
                         else:
-                            data = "installed:{}".format(repo) if repo else "installed"
-                            candidates.append((installed, INFO_INSTALLED, data))
+                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
                 elif available:
-                    candidates.append((available, INFO_AVAILABLE, repo))
+                    candidates.append((available, INFO_AVAILABLE, repo, ""))
                 elif installed:
-                    candidates.append((installed, INFO_INSTALLED, "installed"))
+                    candidates.append((installed, INFO_INSTALLED, "", "installed"))
         else:
             # No status filters, show both if they exist
             if installed:
-                data = "installed:{}".format(repo) if repo else "installed"
-                candidates.append((installed, INFO_INSTALLED, data))
+                candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
             if available:
-                candidates.append((available, INFO_AVAILABLE, repo))
+                candidates.append((available, INFO_AVAILABLE, repo, ""))
 
-        for pkg, status, data in candidates:
+        for pkg, status, origin, data in candidates:
             if filters is not None:
                 if FILTER_GUI in filters and "app:gui" not in pkg.isA:
                     continue
@@ -415,7 +412,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                         continue
 
             version = self.__get_package_version(pkg)
-            pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, data)
+            pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, origin, data)
             self.package(pkg_id, status, pkg.summary)
 
     def depends_on(self, filters, package_ids, recursive):
@@ -426,7 +423,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for package_id in package_ids:
             try:
-                pkg, data = self._get_package_obj_from_id(package_id)
+                pkg, origin = self._get_package_obj_from_id(package_id)
             except PkError as e:
                 self.error(e.code, e.details)
                 continue
@@ -471,7 +468,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for package_id in package_ids:
             try:
-                pkg, data = self._get_package_obj_from_id(package_id)
+                pkg, origin = self._get_package_obj_from_id(package_id)
             except PkError as e:
                 self.error(e.code, e.details)
                 continue
@@ -480,7 +477,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             dl_size = pkg.packageSize
 
             pkg_id = self.get_package_id(
-                pkg.name, self.__get_package_version(pkg), pkg.architecture, data
+                pkg.name, self.__get_package_version(pkg), pkg.architecture, origin
             )
 
             if pkg.partOf in self.groups:
@@ -522,10 +519,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             if metadata:
                 pkg = metadata.package
 
-            data = "local"
-
             pkg_id = self.get_package_id(
-                pkg.name, self.__get_package_version(pkg), pkg.architecture, data
+                pkg.name, self.__get_package_version(pkg), pkg.architecture, "local"
             )
 
             if pkg.partOf in self.groups:
@@ -555,14 +550,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for package_id in package_ids:
             try:
-                pkg, data = self._get_package_obj_from_id(package_id)
+                pkg, origin = self._get_package_obj_from_id(package_id)
             except PkError as e:
                 self.error(e.code, e.details)
                 continue
 
             if self.installdb.has_package(pkg.name):
                 pkg_id = self.get_package_id(
-                    pkg.name, self.__get_package_version(pkg), pkg.architecture, data
+                    pkg.name, self.__get_package_version(pkg), pkg.architecture, origin, "installed"
                 )
 
                 pkg_files = self.installdb.get_files(pkg.name)
@@ -621,7 +616,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for package_id in package_ids:
             try:
-                pkg, data = self._get_package_obj_from_id(package_id)
+                pkg, origin = self._get_package_obj_from_id(package_id)
             except PkError as e:
                 self.error(e.code, e.details)
                 continue
@@ -672,7 +667,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         for package_id in package_ids:
             try:
-                pkg, data = self._get_package_obj_from_id(package_id)
+                pkg, origin = self._get_package_obj_from_id(package_id)
             except PkError:
                 continue
 
@@ -685,7 +680,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 #       we could cross-examine but it's of little benefit
                 version = self.__get_package_version(current_pkg)
                 updates = self.get_package_id(
-                    current_pkg.name, version, current_pkg.architecture, data
+                    current_pkg.name, version, current_pkg.architecture, origin, "installed"
                 )
             else:
                 updates = ""

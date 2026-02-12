@@ -148,7 +148,7 @@ class PackageKitBaseBackend:
     def item_progress(self, package_id, status, percent=None):
         '''
         send 'itemprogress' signal
-        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora;
         @param percent: percentage of the current item (int preferred)
         '''
         sys.stdout.write(_to_utf8("item-progress\t%s\t%s\t%i\n" % (package_id, status, percent)))
@@ -188,7 +188,7 @@ class PackageKitBaseBackend:
         '''
         send 'package' signal
         @param info: the enumerated INFO_* string
-        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora;
         @param summary: The package Summary
         '''
         sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\n" % (status, package_id, summary)))
@@ -254,7 +254,7 @@ class PackageKitBaseBackend:
     ):
         '''
         Send 'details' signal
-        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora;
         @param summary: The package summary
         @param package_license: The license of the package
         @param group: The enumerated group
@@ -324,7 +324,7 @@ class PackageKitBaseBackend:
     ):
         '''
         Send 'updatedetail' signal
-        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
+        @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora;
         @param updates:
         @param obsoletes:
         @param vendor_url:
@@ -917,15 +917,15 @@ def _bool_to_string(value):
     return "false"
 
 
-def get_package_id(name, version, arch, data):
+def get_package_id(name, version, arch, origin, data=""):
     """Returns a package id."""
-    return ";".join((name, version, arch, data))
+    return ";".join((name, version, arch, origin, data))
 
 
 def split_package_id(id):
     """
-    Returns a tuple with the name, version, arch and data component of a
-    package id.
+    Returns a tuple with the name, version, arch, origin and data component
+    of a package id.
     """
     return id.split(";", 4)
 
