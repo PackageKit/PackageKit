@@ -35,12 +35,242 @@
 
 import pisi
 import pisi.ui
-from packagekit.backend import *
-from packagekit.package import PackagekitPackage
-from packagekit import enums
+import traceback
+import os
 import os.path
+import sys
 import piksemel
 import re
+
+
+def _add_packagekit_paths():
+    """Add likely packagekit module paths for Python 2 backends."""
+    helper_dir = os.path.abspath(os.path.dirname(__file__))
+    candidates = [
+        os.path.join(helper_dir, "..", "..", "lib", "python"),
+        os.path.join(helper_dir, "..", "..", "..", "lib", "python"),
+        "/usr/lib/python2.7/site-packages",
+        "/usr/lib/python2.7/dist-packages",
+        "/usr/lib64/python2.7/site-packages",
+        "/usr/lib64/python2.7/dist-packages",
+    ]
+
+    for path in candidates:
+        packagekit_path = os.path.join(path, "packagekit")
+        if os.path.isdir(packagekit_path) and path not in sys.path:
+            sys.path.insert(0, path)
+
+
+try:
+    from packagekit.backend import *
+    from packagekit.package import PackagekitPackage
+except Exception:
+    _add_packagekit_paths()
+    try:
+        from packagekit.backend import *
+        from packagekit.package import PackagekitPackage
+    except Exception as packagekit_exc:
+        # Fallback for Python 2 systems where packagekit module imports fail
+        # (e.g. dbus-python dropped Python 2 support).
+        PACKAGE_IDS_DELIM = '&'
+        FILENAME_DELIM = '|'
+        MAXUINT64 = (1 << 64) - 1
+
+        INFO_INSTALLED = "installed"
+        INFO_AVAILABLE = "available"
+        INFO_SECURITY = "security"
+        INFO_BUGFIX = "bugfix"
+        INFO_NORMAL = "normal"
+        INFO_INSTALLING = "installing"
+        INFO_REMOVING = "removing"
+
+        FILTER_INSTALLED = "installed"
+        FILTER_NOT_INSTALLED = "not-installed"
+        FILTER_GUI = "gui"
+        FILTER_NOT_GUI = "not-gui"
+
+        GROUP_UNKNOWN = "unknown"
+        UPDATE_STATE_STABLE = "stable"
+
+        STATUS_DOWNLOAD = "download"
+        STATUS_INSTALL = "install"
+        STATUS_REFRESH_CACHE = "refresh-cache"
+        STATUS_REMOVE = "remove"
+        STATUS_INFO = "info"
+
+        TRANSACTION_FLAG_SIMULATE = "simulate"
+
+        ERROR_INTERNAL_ERROR = "internal-error"
+        ERROR_PACKAGE_NOT_FOUND = "package-not-found"
+        ERROR_PACKAGE_DOWNLOAD_FAILED = "package-download-failed"
+        ERROR_PACKAGE_ALREADY_INSTALLED = "package-already-installed"
+        ERROR_PACKAGE_NOT_INSTALLED = "package-not-installed"
+        ERROR_UNKNOWN = "unknown"
+        ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE = "cannot-remove-system-package"
+        ERROR_REPO_NOT_FOUND = "repo-not-found"
+        ERROR_NOT_SUPPORTED = "not-supported"
+        ERROR_GROUP_NOT_FOUND = "group-not-found"
+        ERROR_NO_PACKAGES_TO_UPDATE = "no-packages-to-update"
+
+        def _to_utf8(txt):
+            if isinstance(txt, unicode):
+                return txt.encode('utf-8', errors='replace')
+            if isinstance(txt, str):
+                return txt
+            return str(txt)
+
+        def _text_to_bool(text):
+            return text.lower() in ["yes", "true"]
+
+        def _split_filters_arg(args, index=0):
+            if len(args) <= index or args[index] == "":
+                return ["none"]
+            return args[index].split(';')
+
+        def _bool_to_string(value):
+            if value:
+                return "true"
+            return "false"
+
+        class PackagekitPackage(object):
+            def get_package_id(self, name, version, arch, data):
+                return "%s;%s;%s;%s" % (name, version, arch, data)
+
+            def get_package_from_id(self, package_id):
+                return tuple(package_id.split(';', 4))
+
+        class PackageKitBaseBackend(object):
+            def __init__(self, cmds):
+                self.cmds = cmds
+                self._locked = False
+                self.percentage_old = 0
+
+            def isLocked(self):
+                return self._locked
+
+            def unLock(self):
+                self._locked = False
+
+            def percentage(self, percent=None):
+                if percent is None:
+                    sys.stdout.write(_to_utf8("no-percentage-updates\n"))
+                elif percent == 0 or percent > self.percentage_old:
+                    sys.stdout.write(_to_utf8("percentage\t%i\n" % percent))
+                    self.percentage_old = percent
+                sys.stdout.flush()
+
+            def status(self, state):
+                sys.stdout.write(_to_utf8("status\t%s\n" % state))
+                sys.stdout.flush()
+
+            def allow_cancel(self, allow):
+                sys.stdout.write(_to_utf8("allow-cancel\t%s\n" % _bool_to_string(allow)))
+                sys.stdout.flush()
+
+            def package(self, package_id, status, summary):
+                sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\n" % (status, package_id, summary)))
+                sys.stdout.flush()
+
+            def details(self, package_id, summary, package_license, group, desc, url,
+                        bytes=None, download_bytes=None):
+                if bytes is None:
+                    bytes = MAXUINT64
+                if download_bytes is None:
+                    download_bytes = MAXUINT64
+                sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (
+                    package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
+                sys.stdout.flush()
+
+            def files(self, package_id, file_list):
+                sys.stdout.write(_to_utf8("files\t%s\t%s\n" % (package_id, file_list)))
+                sys.stdout.flush()
+
+            def repo_detail(self, repoid, name, state):
+                sys.stdout.write(_to_utf8("repo-detail\t%s\t%s\t%s\n" % (
+                    repoid, name, _bool_to_string(state))))
+                sys.stdout.flush()
+
+            def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url,
+                              cve_url, restart, update_text, changelog, state, issued, updated):
+                sys.stdout.write(_to_utf8("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+                    package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart,
+                    update_text, changelog, state, issued, updated)))
+                sys.stdout.flush()
+
+            def error(self, err, description, exit=True):
+                sys.stdout.write(_to_utf8("error\t%s\t%s\n" % (err, description)))
+                sys.stdout.flush()
+                if exit:
+                    sys.exit(254)
+
+            def finished(self):
+                sys.stdout.write(_to_utf8("finished\n"))
+                sys.stdout.flush()
+
+            def dispatch_command(self, cmd, args):
+                if cmd == 'download-packages':
+                    self.download_packages(args[0], args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'depends-on':
+                    self.depends_on(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM), _text_to_bool(args[2]))
+                elif cmd == 'get-details':
+                    self.get_details(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-files':
+                    self.get_files(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'required-by':
+                    self.required_by(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM), _text_to_bool(args[2]))
+                elif cmd == 'get-update-detail':
+                    self.get_update_detail(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-updates':
+                    self.get_updates(_split_filters_arg(args))
+                elif cmd == 'install-files':
+                    self.install_files(args[0].split(';'), args[1].split(FILENAME_DELIM))
+                elif cmd == 'install-packages':
+                    self.install_packages(args[0].split(';'), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'refresh-cache':
+                    self.refresh_cache(_text_to_bool(args[0]))
+                elif cmd == 'remove-packages':
+                    self.remove_packages(args[0].split(';'),
+                                         args[1].split(PACKAGE_IDS_DELIM),
+                                         _text_to_bool(args[2]),
+                                         _text_to_bool(args[3]))
+                elif cmd == 'search-details':
+                    self.search_details(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-file':
+                    self.search_file(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-group':
+                    self.search_group(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-name':
+                    self.search_name(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'update-packages':
+                    self.update_packages(args[0].split(';'), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'update-system':
+                    self.update_system(args[0].split(';'))
+                elif cmd == 'resolve':
+                    self.resolve(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-repo-list':
+                    self.get_repo_list(_split_filters_arg(args))
+                elif cmd == 'repo-set-data':
+                    self.repo_set_data(args[0], args[1], args[2])
+                else:
+                    self.error(ERROR_INTERNAL_ERROR, "command '%s' is not known" % cmd, exit=False)
+                self.finished()
+
+            def dispatcher(self, args):
+                if len(args) > 0:
+                    self.dispatch_command(args[0], args[1:])
+                while True:
+                    line = sys.stdin.readline().strip('\n')
+                    if not line or line == 'exit':
+                        break
+                    cmdargs = line.split('\t')
+                    self.dispatch_command(cmdargs[0], cmdargs[1:])
+                if self.isLocked():
+                    self.unLock()
+                sys.exit(0)
+
+        sys.stderr.write("pisiBackend: using local packagekit compatibility mode due to import failure: %s\n" %
+                         str(packagekit_exc))
+        traceback.print_exc(file=sys.stderr)
 
 class SimplePisiHandler(pisi.ui.UI):
 
