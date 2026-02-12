@@ -506,11 +506,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                         except Exception:
                             pass
                 # Determine if this is a bug fix
-                for line in update_message.split(";"):
-                    m = self.bug_regex.match(line)
-                    if m is not None:
-                        bugURI = self.bug_uri % m.group(1)
-                        break
+                if self.bug_regex is not None and self.bug_uri is not None:
+                    for line in update_message.split(";"):
+                        m = self.bug_regex.match(line)
+                        if m is not None:
+                            bugURI = self.bug_uri % m.group(1)
+                            break
                 return (update_message, update_date, needsReboot, bugURI)
             pkg = pkg.nextTag("Package")
         return("Log not found", "", False, "")
