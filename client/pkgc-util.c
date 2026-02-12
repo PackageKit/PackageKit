@@ -48,7 +48,6 @@
 #define SYMBOL_UP      "▲"
 #define SYMBOL_DOWN    "▼"
 
-
 /* Emoji symbols - no single-cell width, so we can only use them sparingly */
 #define SYMBOL_PACKAGE_EMOJI "📦"
 
@@ -374,7 +373,8 @@ pkgc_print_success (PkgcliContext *ctx, const gchar *format, ...)
  *
  * Print a formatted line to stdout.
  */
-void pkgc_println (const char* format, ...)
+void
+pkgc_println (const char *format, ...)
 {
 	va_list args;
 	g_autofree gchar *str = NULL;
@@ -391,17 +391,18 @@ void pkgc_println (const char* format, ...)
  *
  * Create a GOptionContext for a specific command.
  */
-GOptionContext*
+GOptionContext *
 pkgc_option_context_for_command (PkgcliContext *ctx,
-								 PkgcliCommand *cmd,
-								 const gchar *parameter_summary,
-								 const gchar *description)
+				 PkgcliCommand *cmd,
+				 const gchar *parameter_summary,
+				 const gchar *description)
 {
 	GOptionContext *option_context = NULL;
 
 	option_context = g_option_context_new (parameter_summary);
 	g_option_context_set_help_enabled (option_context, TRUE);
-	g_option_context_set_description (option_context, (description != NULL)? description : cmd->summary);
+	g_option_context_set_description (option_context,
+					  (description != NULL) ? description : cmd->summary);
 
 	if (parameter_summary == NULL)
 		parameter_summary = "";
@@ -417,12 +418,12 @@ pkgc_option_context_for_command (PkgcliContext *ctx,
  * Parse command options and check for minimum argument count.
  */
 gboolean
-pkgc_parse_command_options (PkgcliContext	*ctx,
-							PkgcliCommand	*cmd,
-							GOptionContext	*option_context,
-							gint				*argc,
-							gchar			***argv,
-							gint				min_arg_count)
+pkgc_parse_command_options (PkgcliContext *ctx,
+			    PkgcliCommand *cmd,
+			    GOptionContext *option_context,
+			    gint *argc,
+			    gchar ***argv,
+			    gint min_arg_count)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -434,7 +435,8 @@ pkgc_parse_command_options (PkgcliContext	*ctx,
 
 	if (*argc < min_arg_count) {
 		/* TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters */
-		pkgc_print_error (ctx, _("Usage: %s %s %s"), "pkgcli", cmd->name, cmd->param_summary);
+		pkgc_print_error (ctx,
+				  _("Usage: %s %s %s"), "pkgcli", cmd->name, cmd->param_summary);
 		return FALSE;
 	}
 
@@ -551,23 +553,14 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		 name,
 		 get_reset_color (ctx));
 
-	g_print (" %s%s%s",
-		 get_color (ctx, COLOR_GRAY),
-		 version,
-		 get_reset_color (ctx));
+	g_print (" %s%s%s", get_color (ctx, COLOR_GRAY), version, get_reset_color (ctx));
 
 	if (arch != NULL && g_strcmp0 (arch, "") != 0) {
-		g_print (".%s%s%s",
-			 get_color (ctx, COLOR_GRAY),
-			 arch,
-			 get_reset_color (ctx));
+		g_print (".%s%s%s", get_color (ctx, COLOR_GRAY), arch, get_reset_color (ctx));
 	}
 
 	if (data != NULL && g_strcmp0 (data, "") != 0) {
-		g_print (" [%s%s%s]",
-			 get_color (ctx, COLOR_GRAY),
-			 data,
-			 get_reset_color (ctx));
+		g_print (" [%s%s%s]", get_color (ctx, COLOR_GRAY), data, get_reset_color (ctx));
 	}
 
 	g_print ("\n");
@@ -613,16 +606,18 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		json_t *root = json_object ();
 		json_object_set_new (root, "name", json_string (split[PK_PACKAGE_ID_NAME]));
 		json_object_set_new (root, "version", json_string (split[PK_PACKAGE_ID_VERSION]));
-		json_object_set_new (root,
-					 "summary",
-					 json_string (summary ? summary : ""));
+		json_object_set_new (root, "summary", json_string (summary ? summary : ""));
 		json_object_set_new (root,
 				     "description",
 				     json_string (description ? description : ""));
 		json_object_set_new (root, "license", json_string (license ? license : ""));
 		json_object_set_new (root, "url", json_string (url ? url : ""));
-		json_object_set_new (root, "install_size", json_integer ((json_int_t) install_size));
-		json_object_set_new (root, "download_size", json_integer ((json_int_t) download_size));
+		json_object_set_new (root,
+				     "install_size",
+				     json_integer ((json_int_t) install_size));
+		json_object_set_new (root,
+				     "download_size",
+				     json_integer ((json_int_t) download_size));
 		pkgc_print_json_decref (root);
 	} else {
 		g_print ("%s%s%s %s\n",
@@ -635,11 +630,10 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 			 _("Version:"), get_reset_color (ctx), split[PK_PACKAGE_ID_VERSION]);
 
 		if (summary && summary[0] != '\0') {
-			g_print (
-				"%s%s%s %s\n",
-				get_color (ctx, COLOR_BOLD),
-				/* TRANSLATORS: Label for the package summary in package details */
-				_("Summary:"), get_reset_color (ctx), summary);
+			g_print ("%s%s%s %s\n",
+				 get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for the package summary in package details */
+				 _("Summary:"), get_reset_color (ctx), summary);
 		}
 
 		if (description && description[0] != '\0') {
@@ -665,10 +659,11 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		}
 
 		if (group != PK_GROUP_ENUM_UNKNOWN) {
-			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for the package group in package details */
-				 _("Group:"), get_reset_color (ctx), pk_group_enum_to_string (group));
+			g_print (
+			    "%s%s%s %s\n",
+			    get_color (ctx, COLOR_BOLD),
+			    /* TRANSLATORS: Label for the package group in package details */
+			    _("Group:"), get_reset_color (ctx), pk_group_enum_to_string (group));
 		}
 
 		if (install_size > 0) {
@@ -681,10 +676,11 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 
 		if (download_size > 0) {
 			g_autofree gchar *size_str = pkgc_util_format_size (download_size);
-			g_print ("%s%s%s %s\n",
-				 get_color (ctx, COLOR_BOLD),
-				 /* TRANSLATORS: Label for the package download size in package details */
-				 _("Download Size:"), get_reset_color (ctx), size_str);
+			g_print (
+			    "%s%s%s %s\n",
+			    get_color (ctx, COLOR_BOLD),
+			    /* TRANSLATORS: Label for the package download size in package details */
+			    _("Download Size:"), get_reset_color (ctx), size_str);
 		}
 	}
 }
@@ -1049,11 +1045,10 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		lines = g_strsplit (data, "\n", -1);
 		lines_len = g_strv_length (lines);
 		if (lines_len > 0) {
-			g_print (
-			    " %s%s%s\n",
-			    get_color (ctx, COLOR_BOLD),
-			    /* TRANSLATORS: Label for affected packages in transaction */
-			    _("Affected packages:"), get_reset_color (ctx));
+			g_print (" %s%s%s\n",
+				 get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for affected packages in transaction */
+				 _("Affected packages:"), get_reset_color (ctx));
 			for (guint i = 0; i < lines_len; i++) {
 				g_autofree gchar *package = NULL;
 				g_auto(GStrv) parts = NULL;
@@ -1068,14 +1063,13 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 				}
 			}
 		} else {
-			g_print (
-			    "  %s%s%s %s\n",
-			    get_color (ctx, COLOR_BOLD),
-			    /* TRANSLATORS: Label for affected packages in transaction */
-			    _("Affected packages:"),
-			      get_reset_color (ctx),
-			      /* TRANSLATORS: No packages were affected by the transaction */
-			      _("None"));
+			g_print ("  %s%s%s %s\n",
+				 get_color (ctx, COLOR_BOLD),
+				 /* TRANSLATORS: Label for affected packages in transaction */
+				 _("Affected packages:"),
+				   get_reset_color (ctx),
+				   /* TRANSLATORS: No packages were affected by the transaction */
+				   _("None"));
 		}
 	}
 }

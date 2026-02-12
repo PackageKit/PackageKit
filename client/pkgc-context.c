@@ -123,9 +123,7 @@ pkgc_context_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointe
 	gboolean connected;
 
 	/* if the daemon crashed, don't hang around */
-	g_object_get (control,
-			  "connected", &connected,
-			  NULL);
+	g_object_get (control, "connected", &connected, NULL);
 	if (!connected) {
 		/* TRANSLATORS: This is when the daemon crashed, and we are up
 		 * shit creek without a paddle */
@@ -158,7 +156,7 @@ pkgc_context_init (PkgcliContext *ctx, GError **error)
 	/* create progress bar for TTY */
 	g_clear_object (&ctx->progressbar);
 	if (ctx->is_tty && ctx->output_mode != PKGCLI_MODE_JSON &&
-		ctx->output_mode != PKGCLI_MODE_QUIET) {
+	    ctx->output_mode != PKGCLI_MODE_QUIET) {
 		/* adjust progress bar size for small terminals */
 		if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
 			gint col_diff = (gint) w.ws_col - 52;
@@ -170,7 +168,7 @@ pkgc_context_init (PkgcliContext *ctx, GError **error)
 
 		/* unless we are verbose, we just use one progress bar and update it many times */
 		pk_progress_bar_set_allow_restart (ctx->progressbar,
-			ctx->output_mode != PKGCLI_MODE_VERBOSE);
+						   ctx->output_mode != PKGCLI_MODE_VERBOSE);
 	}
 
 	/* create control object */
@@ -181,8 +179,10 @@ pkgc_context_init (PkgcliContext *ctx, GError **error)
 	}
 
 	/* watch when the daemon aborts */
-	g_signal_connect (ctx->control, "notify::connected",
-			  G_CALLBACK (pkgc_context_notify_connected_cb), ctx);
+	g_signal_connect (ctx->control,
+			  "notify::connected",
+			  G_CALLBACK (pkgc_context_notify_connected_cb),
+			  ctx);
 
 	/* create task object */
 	ctx->task = pk_task_text_new ();
@@ -286,7 +286,8 @@ pkgc_context_find_command (PkgcliContext *ctx, const char *name)
  *
  * Stop the progress bar in the given #PkgctlContext.
  */
-void pkgc_context_stop_progress_bar (PkgcliContext* ctx)
+void
+pkgc_context_stop_progress_bar (PkgcliContext *ctx)
 {
 	if (ctx->progressbar != NULL)
 		pk_progress_bar_end (ctx->progressbar);
@@ -323,8 +324,7 @@ pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 			return;
 
 		/* don't show the role when simulating */
-		if (pk_bitfield_contain (transaction_flags,
-					 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 			return;
 
 		/* show new status on the bar */
@@ -340,24 +340,22 @@ pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 			      NULL);
 
 		/* don't show finished multiple times in the output */
-		if (role == PK_ROLE_ENUM_RESOLVE &&
-		    status == PK_STATUS_ENUM_FINISHED)
+		if (role == PK_ROLE_ENUM_RESOLVE && status == PK_STATUS_ENUM_FINISHED)
 			return;
 
 		/* defer most status actions for 50ms */
 		if (status != PK_STATUS_ENUM_FINISHED) {
 			if (!pk_bitfield_contain (transaction_flags,
-						 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-				pk_progress_bar_start (ctx->progressbar, pk_status_enum_to_localised_text (status));
+						  PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+				pk_progress_bar_start (ctx->progressbar,
+						       pk_status_enum_to_localised_text (status));
 			}
 		}
 	}
 
 	/* percentage */
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
-		g_object_get (progress,
-				  "percentage", &percentage,
-				  NULL);
+		g_object_get (progress, "percentage", &percentage, NULL);
 		pk_progress_bar_set_percentage (ctx->progressbar, percentage);
 	}
 }

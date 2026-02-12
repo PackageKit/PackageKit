@@ -132,7 +132,8 @@ pkgc_dispatch_command (PkgcliContext *ctx, int argc, char **argv)
 
 		/* connect to PK with the selected parameters */
 		if (!pkgc_context_init (ctx, &error)) {
-			pkgc_print_error (ctx, _("Failed to connect to PackageKit: %s"), error->message);
+			pkgc_print_error (ctx,
+					  _("Failed to connect to PackageKit: %s"), error->message);
 			return PKGC_EXIT_FAILURE;
 		}
 	}
@@ -179,7 +180,8 @@ main (int argc, char **argv)
 
 	/* parse only global options, ignore unknown ones (they're command-specific) */
 	context = g_option_context_new ("COMMAND [OPTIONS...]");
-	g_option_context_set_help_enabled (context, FALSE); /* We handle help ourselves to show commands */
+	g_option_context_set_help_enabled (context,
+					   FALSE); /* We handle help ourselves to show commands */
 	g_option_context_add_main_entries (context, pkgc_global_options, NULL);
 	g_option_context_set_ignore_unknown_options (context, TRUE);
 
@@ -248,11 +250,11 @@ skip_global_parse:
 		ctx->filters = pk_filter_bitfield_from_string (opt_filter_str);
 		ctx->user_filters_set = TRUE;
 		if (ctx->filters == 0) {
-			pkgc_print_error(ctx, "%s: %s",
-						 /* TRANSLATORS: The user specified
+			pkgc_print_error (ctx,
+					  "%s: %s",
+					  /* TRANSLATORS: The user specified
 						  * an incorrect filter */
-						 _("The filter specified was invalid"),
-						 opt_filter_str);
+					  _("The filter specified was invalid"), opt_filter_str);
 			ret = PKGC_EXIT_SYNTAX_ERROR;
 			goto out;
 		}

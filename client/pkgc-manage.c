@@ -108,7 +108,7 @@ pkgc_manage_apply_options (PkgcliContext *ctx)
 	if (opt_cache_age == 0)
 		ctx->cache_age = 1; /* shortest possible cache-age, 0 is not allowed */
 	else
-		ctx->cache_age = (opt_cache_age < 0)? G_MAXUINT : (guint)opt_cache_age;
+		ctx->cache_age = (opt_cache_age < 0) ? G_MAXUINT : (guint) opt_cache_age;
 
 	pkgc_context_apply_settings (ctx);
 }
@@ -192,10 +192,11 @@ pkgc_refresh (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[force]",
-		/* TRANSLATORS: Description for pkgcli refresh */
-		_("Refresh the package metadata cache."));
+	    ctx,
+	    cmd,
+	    "[force]",
+	    /* TRANSLATORS: Description for pkgcli refresh */
+	    _("Refresh the package metadata cache."));
 	g_option_context_add_main_entries (option_context, option_cache_age, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
@@ -242,10 +243,11 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli install */
-		_("Install one or more packages or local package files."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli install */
+	    _("Install one or more packages or local package files."));
 
 	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
@@ -283,12 +285,12 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 		/* assume arch filter unless specified otherwise */
 		if (!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_ARCH) &&
-			!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_ARCH))
+		    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_ARCH))
 			pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_ARCH);
 
 		/* assume non-source packages unless specified */
 		if (!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_SOURCE) &&
-			!pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE))
+		    !pk_bitfield_contain (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE))
 			pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NOT_SOURCE);
 
 		pk_bitfield_add (ctx->filters, PK_FILTER_ENUM_NEWEST);
@@ -302,11 +304,12 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 			 * (and therefore didn't filter out already installed packages) we show the
 			 * emitted error immediately. */
 			if (g_error_matches (error, PKGC_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
-				 opt_allow_reinstall) {
-				pkgc_print_error (ctx,
-							/* TRANSLATORS: There was an error finding a package
+			    opt_allow_reinstall) {
+				pkgc_print_error (
+				    ctx,
+				    /* TRANSLATORS: There was an error finding a package
 							 * for installation. The detailed error follows. */
-							_("Could not find any available package: %s"), error->message);
+				    _("Could not find any available package: %s"), error->message);
 				return PKGC_EXIT_NOT_FOUND;
 			}
 
@@ -317,14 +320,15 @@ pkgc_install (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 			package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, NULL);
 			if (package_ids == NULL) {
 				/* the package does not exist at all */
-				pkgc_print_error (ctx,
-							/* TRANSLATORS: We were unable to find a package for installation. */
-							_("Could not find any available package: %s"), error->message);
+				pkgc_print_error (
+				    ctx,
+				    /* TRANSLATORS: We were unable to find a package for installation. */
+				    _("Could not find any available package: %s"), error->message);
 				return PKGC_EXIT_NOT_FOUND;
 			} else {
 				/* the package exists, but is already installed */
 				pkgc_print_info (ctx,
-							_("The selected package is already installed."));
+						 _("The selected package is already installed."));
 				return PKGC_EXIT_SUCCESS;
 			}
 
@@ -361,10 +365,11 @@ pkgc_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli remove */
-		_("Remove one or more packages from the system."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli remove */
+	    _("Remove one or more packages from the system."));
 	g_option_context_add_main_entries (option_context, option_no_autoremove, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
@@ -381,7 +386,8 @@ pkgc_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	if (package_ids == NULL) {
 		if (error) {
 			pkgc_print_error (ctx,
-					  _("Could not find installed packages: %s"), error->message);
+					  _("Could not find installed packages: %s"),
+					    error->message);
 		}
 		return PKGC_EXIT_FAILURE;
 	}
@@ -389,7 +395,7 @@ pkgc_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	/* remove packages */
 	pk_task_remove_packages_async (PK_TASK (ctx->task),
 				       package_ids,
-				       TRUE, /* allow deps */
+				       TRUE,		   /* allow deps */
 				       !opt_no_autoremove, /* autoremove */
 				       ctx->cancellable,
 				       pkgc_context_on_progress_cb,
@@ -418,10 +424,11 @@ pkgc_download (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"DIRECTORY PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli download */
-		_("Download packages to the specified directory without installing."));
+	    ctx,
+	    cmd,
+	    "DIRECTORY PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli download */
+	    _("Download packages to the specified directory without installing."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 3))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -434,8 +441,7 @@ pkgc_download (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		if (error) {
 			/* TRANSLATORS: There was an error getting the
 			 * details about the package. The detailed error follows */
-			pkgc_print_error (ctx,
-					  _("Could not find packages: %s"), error->message);
+			pkgc_print_error (ctx, _("Could not find packages: %s"), error->message);
 		}
 
 		return PKGC_EXIT_FAILURE;
@@ -483,10 +489,11 @@ pkgc_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[PACKAGE...]",
-		/* TRANSLATORS: Description for pkgcli update */
-		_("Update all packages or specific packages to their latest versions."));
+	    ctx,
+	    cmd,
+	    "[PACKAGE...]",
+	    /* TRANSLATORS: Description for pkgcli update */
+	    _("Update all packages or specific packages to their latest versions."));
 	g_option_context_add_main_entries (option_context, option_download_only, NULL);
 	g_option_context_add_main_entries (option_context, option_allow_downgrade, NULL);
 
@@ -508,7 +515,8 @@ pkgc_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		if (package_ids == NULL) {
 			if (error)
 				pkgc_print_error (ctx,
-						  _("Could not find packages to update: %s"), error->message);
+						  _("Could not find packages to update: %s"),
+						    error->message);
 			return PKGC_EXIT_FAILURE;
 		}
 
@@ -584,11 +592,12 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[DISTRO] [TYPE]",
-		/* TRANSLATORS: Description of pkgcli upgrade.
+	    ctx,
+	    cmd,
+	    "[DISTRO] [TYPE]",
+	    /* TRANSLATORS: Description of pkgcli upgrade.
 		 * No not translate "minimal, default, complete", those are parameters */
-		_("Upgrade all packages or perform a distribution upgrade.\n\n"
+	    _("Upgrade all packages or perform a distribution upgrade.\n\n"
 		  "Types: minimal, default, complete"));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
@@ -600,7 +609,6 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 	/* Parse optional distro name and upgrade type */
 	if (argc >= 2)
 		distro_name = argv[1];
-
 
 	if (argc >= 3) {
 		if (g_strcmp0 (argv[2], "minimal") == 0)
@@ -683,7 +691,8 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 	/* Check if offline update is armed */
 	action = pk_offline_get_action (&error);
 	if (action == PK_OFFLINE_ACTION_UNKNOWN) {
-		pkgc_print_error (ctx, _("Failed to read offline update action: %s"), error->message);
+		pkgc_print_error (ctx,
+				  _("Failed to read offline update action: %s"), error->message);
 		return PKGC_EXIT_FAILURE;
 	}
 
@@ -701,8 +710,9 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 				 pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW),
 				 "⚠ ",
 				 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
-		pkgc_print_info (ctx, _("Offline update is triggered. Action after update: %s"),
-			pk_offline_action_to_string(action));
+		pkgc_print_info (ctx,
+				 _("Offline update is triggered. Action after update: %s"),
+				   pk_offline_action_to_string (action));
 		g_print ("\n");
 	}
 
@@ -728,7 +738,9 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 		if (error->code == PK_OFFLINE_ERROR_NO_DATA) {
 			pkgc_print_info (ctx, _("No offline update is prepared."));
 		} else {
-			pkgc_print_error (ctx, _("Failed to read prepared offline updates: %s"), error->message);
+			pkgc_print_error (ctx,
+					  _("Failed to read prepared offline updates: %s"),
+					    error->message);
 			return PKGC_EXIT_FAILURE;
 		}
 	}
@@ -746,8 +758,8 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 	if (pk_error) {
 		pkgc_print_error (ctx,
 				  _("Last offline update failed: %s: %s"),
-					pk_error_enum_to_string (pk_error_get_code (pk_error)),
-					pk_error_get_details (pk_error));
+				    pk_error_enum_to_string (pk_error_get_code (pk_error)),
+				    pk_error_get_details (pk_error));
 		return PKGC_EXIT_TRANSACTION_FAILED;
 	}
 
@@ -755,8 +767,7 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 	pkgc_print_success (ctx, _("Last offline update completed successfully"));
 	for (guint i = 0; i < packages->len; i++) {
 		PkPackage *pkg = PK_PACKAGE (g_ptr_array_index (packages, i));
-		g_autofree gchar *printable = pk_package_id_to_printable (
-			pk_package_get_id (pkg));
+		g_autofree gchar *printable = pk_package_id_to_printable (pk_package_get_id (pkg));
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
 			json_t *root = json_object ();
 			json_object_set_new (root, "pkid", json_string (pk_package_get_id (pkg)));
@@ -782,7 +793,10 @@ pkgc_trigger_offline_update (PkgcliContext *ctx)
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
 
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
+					     PK_OFFLINE_FLAGS_INTERACTIVE,
+					     NULL,
+					     &error);
 	if (!ret) {
 		pkgc_print_error (ctx, _("Failed to trigger offline update: %s"), error->message);
 		return PKGC_EXIT_FAILURE;
@@ -823,7 +837,7 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
-	request = (argc >= 2)? argv[1] : "prepare";
+	request = (argc >= 2) ? argv[1] : "prepare";
 
 	if (g_strcmp0 (request, "trigger") == 0) {
 		return pkgc_trigger_offline_update (ctx);
@@ -832,7 +846,8 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 	if (g_strcmp0 (request, "cancel") == 0) {
 		ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 		if (!ret) {
-			pkgc_print_error (ctx, _("Failed to cancel offline update: %s"), error->message);
+			pkgc_print_error (ctx,
+					  _("Failed to cancel offline update: %s"), error->message);
 			return PKGC_EXIT_FAILURE;
 		}
 
@@ -858,11 +873,11 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 
 		/* download all updates */
 		results = pk_task_get_updates_sync (PK_TASK (ctx->task),
-							ctx->filters,
-							ctx->cancellable,
-							pkgc_context_on_progress_cb,
-							ctx,
-							&error);
+						    ctx->filters,
+						    ctx->cancellable,
+						    pkgc_context_on_progress_cb,
+						    ctx,
+						    &error);
 		if (results == NULL) {
 			pkgc_print_error (ctx, _("Failed to get updates: %s"), error->message);
 			ctx->exit_code = PKGC_EXIT_FAILURE;
@@ -878,12 +893,12 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 
 		/* download packages */
 		pk_task_update_packages_async (PK_TASK (ctx->task),
-						   package_ids,
-						   ctx->cancellable,
-						   pkgc_context_on_progress_cb,
-						   ctx,
-						   pkgc_manage_on_task_finished_cb,
-						   ctx);
+					       package_ids,
+					       ctx->cancellable,
+					       pkgc_context_on_progress_cb,
+					       ctx,
+					       pkgc_manage_on_task_finished_cb,
+					       ctx);
 		g_main_loop_run (ctx->loop);
 
 		/* don't trigger offline update if download failed */
@@ -910,10 +925,11 @@ pkgc_install_sig (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"TYPE KEY_ID PACKAGE_ID",
-		/* TRANSLATORS: Description for pkgcli install-sig */
-		_("Install a package signature for GPG verification."));
+	    ctx,
+	    cmd,
+	    "TYPE KEY_ID PACKAGE_ID",
+	    /* TRANSLATORS: Description for pkgcli install-sig */
+	    _("Install a package signature for GPG verification."));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 4))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -945,10 +961,11 @@ pkgc_repair (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli repair */
-		_("Attempt to repair the package management system."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli repair */
+	    _("Attempt to repair the package management system."));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -982,10 +999,11 @@ pkgc_suggest_quit (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli quit */
-		_("Safely terminate the PackageKit daemon."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli quit */
+	    _("Safely terminate the PackageKit daemon."));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;

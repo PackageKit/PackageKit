@@ -26,7 +26,6 @@
 
 #include "pkgc-util.h"
 
-
 /**
  * pkgc_repo_on_task_finished_cb:
  */
@@ -76,10 +75,11 @@ pkgc_repo_list (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli repo-list */
-		_("List all configured package repositories."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli repo-list */
+	    _("List all configured package repositories."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -109,10 +109,11 @@ pkgc_repo_enable (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"REPO-ID",
-		/* TRANSLATORS: Description for pkgcli repo-enable */
-		_("Enable the specified repository."));
+	    ctx,
+	    cmd,
+	    "REPO-ID",
+	    /* TRANSLATORS: Description for pkgcli repo-enable */
+	    _("Enable the specified repository."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -149,10 +150,11 @@ pkgc_repo_disable (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"REPO-ID",
-		/* TRANSLATORS: Description for pkgcli repo-disable */
-		_("Disable the specified repository."));
+	    ctx,
+	    cmd,
+	    "REPO-ID",
+	    /* TRANSLATORS: Description for pkgcli repo-disable */
+	    _("Disable the specified repository."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -198,10 +200,11 @@ pkgc_repo_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"REPO-ID",
-		/* TRANSLATORS: Description for pkgcli repo-remove */
-		_("Remove the specified repository."));
+	    ctx,
+	    cmd,
+	    "REPO-ID",
+	    /* TRANSLATORS: Description for pkgcli repo-remove */
+	    _("Remove the specified repository."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))

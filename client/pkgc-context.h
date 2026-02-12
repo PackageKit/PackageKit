@@ -85,7 +85,7 @@ typedef struct {
 	guint	       cache_age;
 
 	PkBitfield     filters;
-	gboolean	   user_filters_set;
+	gboolean       user_filters_set;
 
 	/* State */
 	gint	       exit_code;

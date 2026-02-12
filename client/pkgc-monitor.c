@@ -71,7 +71,8 @@ pkgc_monitor_notify_connected_cb (PkControl *control, GParamSpec *pspec, gpointe
 	const gchar *color;
 
 	g_object_get (control, "connected", &connected, NULL);
-	color = connected ? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN) : pkgc_get_ansi_color (ctx, PKGC_COLOR_RED);
+	color = connected ? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN)
+			  : pkgc_get_ansi_color (ctx, PKGC_COLOR_RED);
 	g_print ("%s%s%s%s %s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 color,
@@ -87,7 +88,8 @@ pkgc_monitor_notify_locked_cb (PkControl *control, GParamSpec *pspec, gpointer d
 	gboolean locked;
 	const gchar *color;
 	g_object_get (control, "locked", &locked, NULL);
-	color = locked ? pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW) : pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY);
+	color = locked ? pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW)
+		       : pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY);
 	g_print ("%s%s%s%s %s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 color,
@@ -103,8 +105,8 @@ pkgc_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gp
 	PkNetworkEnum state;
 	const gchar *color;
 	g_object_get (control, "network-state", &state, NULL);
-	color = (state == PK_NETWORK_ENUM_ONLINE)? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN)
-			: pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
+	color = (state == PK_NETWORK_ENUM_ONLINE) ? pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN)
+						  : pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
 	g_print ("%s%s● Network:%s %s\n",
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 		 color,
@@ -127,7 +129,10 @@ pkgc_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar 
 		      NULL);
 
 	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
-		 transaction_id, pk_media_type_enum_to_string (type), id, text);
+		 transaction_id,
+		 pk_media_type_enum_to_string (type),
+		 id,
+		 text);
 }
 
 static void
@@ -151,14 +156,10 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 
 	/* get progress data about the transaction */
-	g_object_get (results,
-		      "progress", &progress,
-		      NULL);
+	g_object_get (results, "progress", &progress, NULL);
 
 	/* get data */
-	g_object_get (progress,
-		      "transaction-id", &transaction_id,
-		      NULL);
+	g_object_get (progress, "transaction-id", &transaction_id, NULL);
 
 	exit_enum = pk_results_get_exit_code (results);
 
@@ -182,7 +183,9 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 
 	/* media change required */
 	media_array = pk_results_get_media_change_required_array (results);
-	g_ptr_array_foreach (media_array, (GFunc) pkgc_monitor_media_change_required_cb, transaction_id);
+	g_ptr_array_foreach (media_array,
+			     (GFunc) pkgc_monitor_media_change_required_cb,
+			     transaction_id);
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
@@ -200,7 +203,7 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 }
 
-static gchar*
+static gchar *
 pkgc_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 {
 	gboolean ret;
@@ -213,15 +216,13 @@ pkgc_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 	/* get pid from D-Bus */
 	value = g_dbus_proxy_call_sync (bus_proxy,
 					"GetConnectionUnixProcessID",
-					g_variant_new ("(s)",
-						       bus_name),
+					g_variant_new ("(s)", bus_name),
 					G_DBUS_CALL_FLAGS_NONE,
 					2000,
 					NULL,
 					&error);
 	if (value == NULL) {
-		g_warning ("Failed to get pid for %s: %s",
-			   bus_name, error->message);
+		g_warning ("Failed to get pid for %s: %s", bus_name, error->message);
 		return g_strdup_printf ("bus:%s", bus_name);
 	}
 	g_variant_get (value, "(u)", &pid);
@@ -278,11 +279,22 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_print ("%s%s%s  %srole:%s %s%s\n",
-			 bold, tid_color, transaction_id, color_reset, bold,
-			 pk_role_enum_to_string (role), color_reset);
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
+			 bold,
+			 pk_role_enum_to_string (role),
+			 color_reset);
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
 		g_print ("%s%s%s  %spackage-id:%s %s%s\n",
-			 bold, tid_color, transaction_id, color_reset, bold, package_id, color_reset);
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
+			 bold,
+			 package_id,
+			 color_reset);
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE) {
 		const gchar *info_color;
 		g_object_get (package,
@@ -301,15 +313,24 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 			info_color = color_reset;
 
 		g_print ("%s%s%s  %s%s%s %s %s %s\n",
-			 bold, tid_color, transaction_id, color_reset,
-			 info_color, pk_info_enum_to_string (info), color_reset,
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
+			 info_color,
+			 pk_info_enum_to_string (info),
+			 color_reset,
 			 package_id_tmp,
 			 summary ? summary : "");
 	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
 		if (percentage <= 100) {
 			g_print ("%s%s%s  %s[%3d%%]%s\n",
-				 bold, tid_color, transaction_id, color_reset,
-				 percentage, color_reset);
+				 bold,
+				 tid_color,
+				 transaction_id,
+				 color_reset,
+				 percentage,
+				 color_reset);
 		}
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
 		/* Don't print allow_cancel as it's not very interesting */
@@ -319,17 +340,25 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 		if (status == PK_STATUS_ENUM_FINISHED)
 			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GREEN);
 		else if (status == PK_STATUS_ENUM_DOWNLOAD || status == PK_STATUS_ENUM_INSTALL ||
-				 status == PK_STATUS_ENUM_UPDATE || status == PK_STATUS_ENUM_REMOVE)
+			 status == PK_STATUS_ENUM_UPDATE || status == PK_STATUS_ENUM_REMOVE)
 			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_YELLOW);
 		else
 			status_color = pkgc_get_ansi_color (ctx, PKGC_COLOR_GRAY);
 
 		g_print ("%s%s%s  %s%s%s%s\n",
-			 bold, tid_color, transaction_id, color_reset,
-			 status_color, pk_status_enum_to_string (status), color_reset);
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
+			 status_color,
+			 pk_status_enum_to_string (status),
+			 color_reset);
 	} else if (type == PK_PROGRESS_TYPE_ITEM_PROGRESS) {
 		g_print ("%s%s%s  %sitem: %s [%d%%, %s]%s\n",
-			 bold, tid_color, transaction_id, color_reset,
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
 			 pk_item_progress_get_package_id (item_progress),
 			 pk_item_progress_get_percentage (item_progress),
 			 pk_status_enum_to_string (pk_item_progress_get_status (item_progress)),
@@ -337,7 +366,13 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 	} else if (type == PK_PROGRESS_TYPE_SENDER) {
 		g_autofree gchar *cmdline = pkgc_monitor_get_caller_info (bus_proxy, sender);
 		g_print ("%s%s%s  %ssender:%s %s%s\n",
-			 bold, tid_color, transaction_id, color_reset, bold, cmdline, color_reset);
+			 bold,
+			 tid_color,
+			 transaction_id,
+			 color_reset,
+			 bold,
+			 cmdline,
+			 color_reset);
 	}
 }
 
@@ -361,7 +396,7 @@ pkgc_monitor_list_print (PkgcliContext *ctx, PkTransactionList *tlist)
 	for (guint i = 0; list[i] != NULL; i++) {
 		g_print ("  %s%i.%s %s%s%s\n",
 			 pkgc_get_ansi_color (ctx, PKGC_COLOR_CYAN),
-			 i+1,
+			 i + 1,
 			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET),
 			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
 			 list[i],
@@ -387,12 +422,16 @@ pkgc_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointe
 static void
 pkgc_monitor_get_daemon_state (PkControl *control)
 {
-	pk_control_get_daemon_state_async (control, NULL,
-					   (GAsyncReadyCallback) pkgc_monitor_get_daemon_state_cb, NULL);
+	pk_control_get_daemon_state_async (control,
+					   NULL,
+					   (GAsyncReadyCallback) pkgc_monitor_get_daemon_state_cb,
+					   NULL);
 }
 
 static void
-pkgc_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
+pkgc_monitor_transaction_list_changed_cb (PkControl *control,
+					  gchar **transaction_ids,
+					  gpointer user_data)
 {
 	/* only print state when verbose */
 	if (pk_debug_is_verbose ())
@@ -400,7 +439,9 @@ pkgc_monitor_transaction_list_changed_cb (PkControl *control, gchar **transactio
 }
 
 static void
-pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
+pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist,
+					const gchar *transaction_id,
+					gpointer user_data)
 {
 	PkgcliContext *ctx = g_context;
 	g_print ("\n%s%s▶ Transaction started:%s %s%s%s\n",
@@ -418,7 +459,9 @@ pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *t
 }
 
 static void
-pkgc_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
+pkgc_monitor_transaction_list_removed_cb (PkTransactionList *tlist,
+					  const gchar *transaction_id,
+					  gpointer data)
 {
 	PkgcliContext *ctx = g_context;
 	g_print ("%s%s◀ Transaction finished:%s %s%s%s\n\n",
@@ -454,10 +497,11 @@ pkgc_cmd_monitor (PkgcliContext *ctx, PkgcliCommand *cmd, int argc, char **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli monitor */
-		_("Monitor PackageKit D-Bus events"));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli monitor */
+	    _("Monitor PackageKit D-Bus events"));
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
@@ -474,14 +518,14 @@ pkgc_cmd_monitor (PkgcliContext *ctx, PkgcliCommand *cmd, int argc, char **argv)
 		return PKGC_EXIT_FAILURE;
 	}
 	bus_proxy = g_dbus_proxy_new_sync (bus_conn,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-				       NULL,
-				       "org.freedesktop.DBus",
-				       "/org/freedesktop/DBus/Bus",
-				       "org.freedesktop.DBus",
-				       NULL,
-				       &error);
+					   G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					   NULL,
+					   "org.freedesktop.DBus",
+					   "/org/freedesktop/DBus/Bus",
+					   "org.freedesktop.DBus",
+					   NULL,
+					   &error);
 	if (bus_proxy == NULL) {
 		pkgc_print_error (ctx, "Cannot connect to D-Bus: %s", error->message);
 		return PKGC_EXIT_FAILURE;
@@ -500,28 +544,48 @@ pkgc_cmd_monitor (PkgcliContext *ctx, PkgcliCommand *cmd, int argc, char **argv)
 	ctx->control = pk_control_new ();
 
 	/* connect signals */
-	g_signal_connect (ctx->control, "installed-changed",
-			  G_CALLBACK (pkgc_monitor_installed_changed_cb), NULL);
-	g_signal_connect (ctx->control, "repo-list-changed",
-			  G_CALLBACK (pkgc_monitor_repo_list_changed_cb), NULL);
-	g_signal_connect (ctx->control, "updates-changed",
-			  G_CALLBACK (pkgc_monitor_updates_changed_cb), NULL);
-	g_signal_connect (ctx->control, "transaction-list-changed",
-			  G_CALLBACK (pkgc_monitor_transaction_list_changed_cb), NULL);
-	g_signal_connect (ctx->control, "notify::locked",
-			  G_CALLBACK (pkgc_monitor_notify_locked_cb), NULL);
-	g_signal_connect (ctx->control, "notify::connected",
-			  G_CALLBACK (pkgc_monitor_notify_connected_cb), NULL);
-	g_signal_connect (ctx->control, "notify::network-state",
-			  G_CALLBACK (pkgc_monitor_notify_network_status_cb), NULL);
-	pk_control_get_properties_async (ctx->control, NULL,
-					 (GAsyncReadyCallback) pkgc_control_properties_cb, NULL);
+	g_signal_connect (ctx->control,
+			  "installed-changed",
+			  G_CALLBACK (pkgc_monitor_installed_changed_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "repo-list-changed",
+			  G_CALLBACK (pkgc_monitor_repo_list_changed_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "updates-changed",
+			  G_CALLBACK (pkgc_monitor_updates_changed_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "transaction-list-changed",
+			  G_CALLBACK (pkgc_monitor_transaction_list_changed_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "notify::locked",
+			  G_CALLBACK (pkgc_monitor_notify_locked_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "notify::connected",
+			  G_CALLBACK (pkgc_monitor_notify_connected_cb),
+			  NULL);
+	g_signal_connect (ctx->control,
+			  "notify::network-state",
+			  G_CALLBACK (pkgc_monitor_notify_network_status_cb),
+			  NULL);
+	pk_control_get_properties_async (ctx->control,
+					 NULL,
+					 (GAsyncReadyCallback) pkgc_control_properties_cb,
+					 NULL);
 
 	tlist = pk_transaction_list_new ();
-	g_signal_connect (tlist, "added",
-			  G_CALLBACK (pkgc_monitor_transaction_list_added_cb), bus_proxy);
-	g_signal_connect (tlist, "removed",
-			  G_CALLBACK (pkgc_monitor_transaction_list_removed_cb), NULL);
+	g_signal_connect (tlist,
+			  "added",
+			  G_CALLBACK (pkgc_monitor_transaction_list_added_cb),
+			  bus_proxy);
+	g_signal_connect (tlist,
+			  "removed",
+			  G_CALLBACK (pkgc_monitor_transaction_list_removed_cb),
+			  NULL);
 
 	g_clear_object (&ctx->task);
 	ctx->task = pk_task_text_new ();
@@ -555,9 +619,9 @@ void
 pkgc_register_monitor_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
-		ctx,
-		"monitor",
-		pkgc_cmd_monitor,
-		/* TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor */
-		_("Monitor PackageKit bus events"));
+	    ctx,
+	    "monitor",
+	    pkgc_cmd_monitor,
+	    /* TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor */
+	    _("Monitor PackageKit bus events"));
 }

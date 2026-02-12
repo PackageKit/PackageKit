@@ -27,7 +27,6 @@
 #include "pkgc-query.h"
 #include "pkgc-util.h"
 
-
 /**
  * pkgc_query_on_task_finished_cb:
  */
@@ -135,7 +134,7 @@ pkgc_query_on_client_finished_cb (GObject *source_object, GAsyncResult *res, gpo
 		for (guint i = 0; i < array->len; i++) {
 			PkTransactionPast *transaction = g_ptr_array_index (array, i);
 			pkgc_print_transaction (ctx, transaction);
-			g_print("\n"); /* add some visual spacing */
+			g_print ("\n"); /* add some visual spacing */
 		}
 	}
 
@@ -160,10 +159,11 @@ pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli backend */
-		_("Show PackageKit backend information."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli backend */
+	    _("Show PackageKit backend information."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -239,10 +239,11 @@ pkgc_history (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[LIMIT]",
-		/* TRANSLATORS: Description for pkgcli history */
-		_("Show recent package management transactions."));
+	    ctx,
+	    cmd,
+	    "[LIMIT]",
+	    /* TRANSLATORS: Description for pkgcli history */
+	    _("Show recent package management transactions."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -290,9 +291,10 @@ pkgc_query_search (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 						"  group   - search by package group");
 
 	/* parse options */
-	option_context = pkgc_option_context_for_command (ctx, cmd,
-												  "[MODE] PATTERN...",
-												  cmd_description);
+	option_context = pkgc_option_context_for_command (ctx,
+							  cmd,
+							  "[MODE] PATTERN...",
+							  cmd_description);
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -365,10 +367,11 @@ pkgc_query_list (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[PATTERN]",
-		/* TRANSLATORS: Description for pkgcli list */
-		_("List all packages or those matching a pattern."));
+	    ctx,
+	    cmd,
+	    "[PATTERN]",
+	    /* TRANSLATORS: Description for pkgcli list */
+	    _("List all packages or those matching a pattern."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -409,10 +412,11 @@ pkgc_query_show (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli show */
-		_("Show information about one or more packages."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli show */
+	    _("Show information about one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -474,10 +478,11 @@ pkgc_query_depends_on (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar 
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli depends-on */
-		_("Show dependencies for one or more packages."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli depends-on */
+	    _("Show dependencies for one or more packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
@@ -514,10 +519,11 @@ pkgc_query_what_provides (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gch
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"CAPABILITY...",
-		/* TRANSLATORS: Description for pkgcli what-provides */
-		_("Show which packages provide the specified capability."));
+	    ctx,
+	    cmd,
+	    "CAPABILITY...",
+	    /* TRANSLATORS: Description for pkgcli what-provides */
+	    _("Show which packages provide the specified capability."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -545,10 +551,11 @@ pkgc_query_files (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli files */
-		_("List all files contained in one or more packages."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli files */
+	    _("List all files contained in one or more packages."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -640,10 +647,11 @@ pkgc_updates_list_updates (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli list-updates */
-		_("List all currently available package updates."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli list-updates */
+	    _("List all currently available package updates."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -672,10 +680,11 @@ pkgc_updates_show_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gch
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli show-update */
-		_("Show detailed information about the specified package update."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli show-update */
+	    _("Show detailed information about the specified package update."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -710,15 +719,16 @@ pkgc_query_resolve (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **a
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli resolve */
-		_("Resolve package names to package IDs."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli resolve */
+	    _("Resolve package names to package IDs."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* we run this without our default filters, unless the user has explicitly specified some */
-	filters = ctx->user_filters_set? ctx->filters : 0;
+	filters = ctx->user_filters_set ? ctx->filters : 0;
 
 	/* resolve package names to package IDs */
 	pk_task_resolve_async (PK_TASK (ctx->task),
@@ -753,10 +763,11 @@ pkgc_query_required_by (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"PACKAGE...",
-		/* TRANSLATORS: Description for pkgcli required-by */
-		_("Show which packages require the specified packages."));
+	    ctx,
+	    cmd,
+	    "PACKAGE...",
+	    /* TRANSLATORS: Description for pkgcli required-by */
+	    _("Show which packages require the specified packages."));
 	g_option_context_add_main_entries (option_context, options, NULL);
 
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 2))
@@ -796,22 +807,20 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli organization */
-		_("List all available filters, groups and categories for package organization."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli organization */
+	    _("List all available filters, groups and categories for package organization."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
 	/* print available filters */
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
-			 /* TRANSLATORS: Header for list of available package filters */
-			 _("Filters:"),
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
-	g_object_get (ctx->control,
-				  "filters", &ctx->filters,
-				  NULL);
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 /* TRANSLATORS: Header for list of available package filters */
+		 _("Filters:"), pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+	g_object_get (ctx->control, "filters", &ctx->filters, NULL);
 	text = pk_filter_bitfield_to_string (ctx->filters);
 	g_strdelimit (text, ";", '\n');
 	g_print ("%s\n", text);
@@ -820,13 +829,10 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	/* print available groups */
 	g_print ("\n");
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
-			 /* TRANSLATORS: Header for list of available package groups */
-			 _("Groups:"),
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
-	g_object_get (ctx->control,
-				  "groups", &groups,
-				  NULL);
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 /* TRANSLATORS: Header for list of available package groups */
+		 _("Groups:"), pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+	g_object_get (ctx->control, "groups", &groups, NULL);
 	text = pk_group_bitfield_to_string (groups);
 	g_strdelimit (text, ";", '\n');
 	g_print ("%s\n", text);
@@ -835,10 +841,9 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	/* print available categories, if we have any */
 	g_print ("\n");
 	g_print ("%s%s%s\n",
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
-			 /* TRANSLATORS: Header for list of available package categories */
-			 _("Categories:"),
-			 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
+		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
+		 /* TRANSLATORS: Header for list of available package categories */
+		 _("Categories:"), pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 	pk_task_get_categories_async (PK_TASK (ctx->task),
 				      ctx->cancellable,
 				      pkgc_context_on_progress_cb,
@@ -860,10 +865,11 @@ pkgc_query_show_os_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, g
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		NULL,
-		/* TRANSLATORS: Description for pkgcli show-distro-upgrade */
-		_("Show distribution version upgrades, if any are available."));
+	    ctx,
+	    cmd,
+	    NULL,
+	    /* TRANSLATORS: Description for pkgcli show-distro-upgrade */
+	    _("Show distribution version upgrades, if any are available."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -894,7 +900,9 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	if (time_s == 0) {
 		/* TRANSLATORS: we keep a database updated with the time that an
 		 * action was last executed */
-		g_print ("%s: %s\n", _("Failed to get the time since this action was last completed"), error->message);
+		g_print ("%s: %s\n",
+			 _("Failed to get the time since this action was last completed"),
+			   error->message);
 		goto out;
 	}
 
@@ -911,7 +919,7 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	}
 
 out:
-		g_main_loop_quit (ctx->loop);
+	g_main_loop_quit (ctx->loop);
 }
 
 /**
@@ -928,10 +936,11 @@ pkgc_query_last_time (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar *
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[ROLE]",
-		/* TRANSLATORS: Description for pkgcli last-time */
-		_("Get time in seconds since the last specified action."));
+	    ctx,
+	    cmd,
+	    "[ROLE]",
+	    /* TRANSLATORS: Description for pkgcli last-time */
+	    _("Get time in seconds since the last specified action."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -940,21 +949,24 @@ pkgc_query_last_time (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar *
 
 	if (value == NULL) {
 		pkgc_print_error (ctx,
-				/* TRANSLATORS: The user didn't specify what action to use */
-				 "%s", _("An action, e.g. 'update-packages' is required"));
+				  /* TRANSLATORS: The user didn't specify what action to use */
+				  "%s",
+				  _("An action, e.g. 'update-packages' is required"));
 		return PKGC_EXIT_FAILURE;
 	}
 	role = pk_role_enum_from_string (value);
 	if (role == PK_ROLE_ENUM_UNKNOWN) {
 		pkgc_print_error (ctx,
-				/* TRANSLATORS: The user specified an invalid action */
-			 "%s", _("A correct role is required"));
+				  /* TRANSLATORS: The user specified an invalid action */
+				  "%s",
+				  _("A correct role is required"));
 		return PKGC_EXIT_FAILURE;
 	}
 	pk_control_get_time_since_action_async (ctx->control,
 						role,
 						ctx->cancellable,
-						pkgc_query_get_time_since_action_cb, ctx);
+						pkgc_query_get_time_since_action_cb,
+						ctx);
 
 	g_main_loop_run (ctx->loop);
 	return ctx->exit_code;
