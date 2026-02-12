@@ -118,7 +118,7 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 				     split[PK_PACKAGE_ID_NAME],
 				     split[PK_PACKAGE_ID_VERSION],
 				     split[PK_PACKAGE_ID_ARCH],
-				     split[PK_PACKAGE_ID_DATA]);
+				     split[PK_PACKAGE_ID_ORIGIN]);
 
 	/* don't pretty print */
 	if (!ctx->is_console) {
@@ -937,7 +937,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 		package_id_tmp = pk_package_get_id (package);
 		split = pk_package_id_split (package_id_tmp);
 		printable = pk_package_id_to_printable (package_id_tmp);
-		g_print ("%i. %s [%s]\n", i+1, printable, split[PK_PACKAGE_ID_DATA]);
+		g_print ("%i. %s [%s]\n", i+1, printable, split[PK_PACKAGE_ID_ORIGIN]);
 	}
 
 	/* TRANSLATORS: This finds out which package in the list to use */
@@ -2480,4 +2480,3 @@ out_last:
 	g_option_context_free (context);
 	return retval_copy;
 }
-

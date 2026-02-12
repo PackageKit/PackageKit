@@ -142,14 +142,14 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
-	if (g_strcmp0 (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora") == 0) {
+	if (g_strcmp0 (package_ids[0], "scribus;1.3.4-1.fc8;i386;fedora;") == 0) {
 		pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-					"scribus-clipart;1.3.4-1.fc8;i386;fedora", "Clipart for scribus");
+					"scribus-clipart;1.3.4-1.fc8;i386;fedora;", "Clipart for scribus");
 	} else {
 		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-					"glib2;2.14.0;i386;fedora", "The GLib library");
+					"glib2;2.14.0;i386;fedora;", "The GLib library");
 		pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-					"gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+					"gtk2;gtk2-2.11.6-6.fc8;i386;fedora;", "GTK+ Libraries for GIMP");
 	}
 	pk_backend_job_finished (job);
 }
@@ -159,7 +159,7 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
+	pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora;", "Power consumption monitor", "GPL2", PK_GROUP_ENUM_PROGRAMMING,
 				"PowerTOP is a tool that finds the software component(s) that make your "
 				"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024, 0);
 	pk_backend_job_set_percentage (job, 100);
@@ -175,7 +175,7 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_file
 				 NULL };
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
-	pk_backend_job_files (job, "test;0.01;i386;local", (gchar **) files);
+	pk_backend_job_files (job, "test;0.01;i386;local;", (gchar **) files);
 	pk_backend_job_set_percentage (job, 100);
 	pk_backend_job_finished (job);
 }
@@ -194,31 +194,31 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 	len = g_strv_length (package_ids);
 	for (i = 0; i < len; i++) {
 		package_id = package_ids[i];
-		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
-			pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor",
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora;") == 0) {
+			pk_backend_job_details (job, "powertop;1.8-1.fc8;i386;fedora;", "Power consumption monitor",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"PowerTOP is a tool that finds the software component(s) that make your "
 						"computer use more power than necessary while it is idle.", "http://live.gnome.org/powertop", 101*1024, G_MAXUINT64);
-		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
-			pk_backend_job_details (job, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;") == 0) {
+			pk_backend_job_details (job, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"The kernel package contains the Linux kernel (vmlinuz), the core of any "
 						"Linux operating system.  The kernel handles the basic functions of the "
 						"operating system: memory allocation, process allocation, device input "
 						"and output, etc.", "http://www.kernel.org", 33*1024*1024, G_MAXUINT64);
-		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0) {
 			pk_backend_job_details (job, "gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"GtkHTML2 (sometimes called libgtkhtml) is a widget for displaying html "
 						"pages.", "http://live.gnome.org/gtkhtml", 133*1024, G_MAXUINT64);
-		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
-			pk_backend_job_details (job, "vino;2.24.2.fc9;i386;fedora", "Remote desktop server for the desktop",
+		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora;") == 0) {
+			pk_backend_job_details (job, "vino;2.24.2.fc9;i386;fedora;", "Remote desktop server for the desktop",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"Vino is a VNC server for GNOME. It allows remote users to "
 						"connect to a running GNOME session using VNC.", "http://live.gnome.org/powertop", 3*1024*1024, G_MAXUINT64);
-		} else if (g_strcmp0 (package_id, "gnome-power-manager;2.6.19;i386;fedora") == 0) {
-			pk_backend_job_details (job, "gnome-power-manager;2.6.19;i386;fedora", "GNOME power management service",
+		} else if (g_strcmp0 (package_id, "gnome-power-manager;2.6.19;i386;fedora;") == 0) {
+			pk_backend_job_details (job, "gnome-power-manager;2.6.19;i386;fedora;", "GNOME power management service",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"GNOME Power Manager uses the information and facilities provided by HAL "
 						"displaying icons and handling user callbacks in an interactive GNOME session.\n"
@@ -226,7 +226,7 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 						"change preferences.", "http://projects.gnome.org/gnome-power-manager/", 13*1024*1024, G_MAXUINT64);
 		//TODO: add other packages
 		} else {
-			pk_backend_job_details (job, "scribus;1.3.4-1.fc8;i386;fedora", 
+			pk_backend_job_details (job, "scribus;1.3.4-1.fc8;i386;fedora;",
 						"Scribus is an desktop open source page layout program",
 						"GPL2", PK_GROUP_ENUM_PROGRAMMING,
 						"Scribus is an desktop *open source* page layöut program with "
@@ -270,16 +270,16 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 	len = g_strv_length (package_ids);
 	for (i = 0; i < len; i++) {
 		package_id = package_ids[i];
-		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora;") == 0) {
 			to_strv[0] = "/usr/share/man/man1/boo";
 			to_strv[1] = "/usr/bin/xchat-gnome";
 			to_strv[2] = NULL;
-		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;") == 0) {
 			to_strv[0] = "/usr/share/man/man1";
 			to_strv[1] = "/usr/share/man/man1/gnome-power-manager.1.gz";
 			to_strv[2] = "/usr/lib/firefox-3.5.7/firefox";
 			to_strv[3] = NULL;
-		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0) {
 			to_strv[0] = "/usr/share/man/man1";
 			to_strv[1] = "/usr/bin/ck-xinit-session";
 			to_strv[2] = "/lib/libselinux.so.1";
@@ -299,9 +299,9 @@ pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-				"glib2;2.14.0;i386;fedora", "The GLib library");
+				"glib2;2.14.0;i386;fedora;", "The GLib library");
 	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-				"gtk2;gtk2-2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+				"gtk2;gtk2-2.11.6-6.fc8;i386;fedora;", "GTK+ Libraries for GIMP");
 	pk_backend_job_finished (job);
 }
 
@@ -343,7 +343,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 		const gchar *to_array3[] = { NULL, NULL, NULL };
 		const gchar *to_array4[] = { NULL, NULL, NULL };
 		package_id = priv->package_ids[i];
-		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora") == 0) {
+		if (g_strcmp0 (package_id, "powertop;1.8-1.fc8;i386;fedora;") == 0) {
 			to_array1[0] = "powertop;1.7-1.fc8;i386;installed";
 			to_array2[0] = "http://www.distro-update.org/page?moo";
 			to_array3[0] = "http://bgzilla.fd.org/result.php?#12344";
@@ -357,7 +357,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 						      "Update to newest upstream source",
 						      changelog, PK_UPDATE_STATE_ENUM_STABLE,
 						      "2009-11-17T09:19:00", "2009-11-19T09:19:00");
-		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0) {
+		} else if (g_strcmp0 (package_id, "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;") == 0) {
 			to_array1[0] = "kernel;2.6.22-0.104.rc3.git6.fc8;i386;installed";
 			to_array1[1] = "kernel;2.6.22-0.105.rc3.git7.fc8;i386;installed";
 			to_array2[0] = "http://www.distro-update.org/page?moo";
@@ -378,7 +378,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 						      PK_UPDATE_STATE_ENUM_UNSTABLE,
 						      "2008-06-28T09:19:00",
 						      NULL);
-		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0) {
+		} else if (g_strcmp0 (package_id, "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0) {
 			to_array1[0] = "gtkhtml2;2.18.1-22.fc8;i386;installed";
 			to_array2[0] = "http://www.distro-update.org/page?moo";
 			to_array3[0] = "http://bgzilla.gnome.org/result.php?#9876";
@@ -398,7 +398,7 @@ pk_backend_get_update_detail_timeout (gpointer data)
 						      "2008-07-25T09:19:00",
 						      NULL);
 
-		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora") == 0) {
+		} else if (g_strcmp0 (package_id, "vino;2.24.2.fc9;i386;fedora;") == 0) {
 			to_array1[0] = "vino;2.24.1.fc9;i386;fedora";
 			pk_backend_job_update_detail (job, package_id,
 						      (gchar**) to_array1,
@@ -444,23 +444,23 @@ pk_backend_get_updates_timeout (gpointer data)
 	if (priv->use_blocked) {
 		if (!priv->updated_powertop && !priv->updated_kernel && !priv->updated_gtkhtml) {
 			pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
-						"vino;2.24.2.fc9;i386;fedora",
+						"vino;2.24.2.fc9;i386;fedora;",
 						"Remote desktop server for the desktop");
 		}
 	}
 	if (!priv->updated_powertop) {
 		pk_backend_job_package (job, PK_INFO_ENUM_NORMAL,
-					"powertop;1.8-1.fc8;i386;fedora",
+					"powertop;1.8-1.fc8;i386;fedora;",
 					"Power consumption monitor");
 	}
 	if (!priv->updated_kernel) {
 		pk_backend_job_package (job, PK_INFO_ENUM_BUGFIX,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 					"The Linux kernel (the core of the Linux operating system)");
 	}
 	if (!priv->updated_gtkhtml) {
 		pk_backend_job_package (job, PK_INFO_ENUM_SECURITY,
-					"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 					"An HTML widget for GTK+ 2.0");
 	}
 	pk_backend_job_finished (job);
@@ -510,18 +510,18 @@ pk_backend_install_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 		if (job_data->progress_percentage == 30) {
 			pk_backend_job_set_allow_cancel (job, FALSE);
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+						"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 						"An HTML widget for GTK+ 2.0");
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 		}
 
 		if (job_data->progress_percentage == 50) {
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora",
+						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora;",
 						"Devel files for gtkhtml");
 			/* this duplicate package should be ignored */
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora", NULL);
+						"gtkhtml2-devel;2.19.1-0.fc8;i386;fedora;", NULL);
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 		}
 
@@ -550,28 +550,28 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
 		pk_backend_job_package (job, PK_INFO_ENUM_REMOVING,
-					"powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+					"powertop;1.8-1.fc8;i386;fedora;", "Power consumption monitor");
 
 		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-					"gtk2;2.11.6-6.fc8;i386;fedora", "GTK+ Libraries for GIMP");
+					"gtk2;2.11.6-6.fc8;i386;fedora;", "GTK+ Libraries for GIMP");
 
 		pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
-					"lib7;7.0.1-6.fc13;i386;fedora", "C Libraries");
+					"lib7;7.0.1-6.fc13;i386;fedora;", "C Libraries");
 
 		pk_backend_job_package (job, PK_INFO_ENUM_REINSTALLING,
-					"libssl;3.5.7-2.fc13;i386;fedora", "SSL Libraries");
+					"libssl;3.5.7-2.fc13;i386;fedora;", "SSL Libraries");
 
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNGRADING,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed", "The Linux kernel (the core of the Linux operating system)");
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;", "The Linux kernel (the core of the Linux operating system)");
 
 		pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
-					"gtkhtml2;2.19.1-4.fc8;i386;fedora", "An HTML widget for GTK+ 2.0");
+					"gtkhtml2;2.19.1-4.fc8;i386;fedora;", "An HTML widget for GTK+ 2.0");
 
 		pk_backend_job_finished (job);
 		return;
 	}
 
-	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
+	if (g_strcmp0 (package_ids[0], "vips-doc;7.12.4-2.fc8;noarch;linva;") == 0) {
 		if (priv->use_gpg && !priv->has_signature) {
 			pk_backend_job_repo_signature_required (job, package_ids[0], "updates",
 								"http://example.com/gpgkey",
@@ -622,7 +622,7 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 		}
 	}
 
-	if ((g_strcmp0 (package_ids[0], "foobar;1.1.0;i386;debian") != 0) && (g_strcmp0 (package_ids[0], "libawesome;42;i386;debian") != 0)) {
+	if ((g_strcmp0 (package_ids[0], "foobar;1.1.0;i386;debian;manual") != 0) && (g_strcmp0 (package_ids[0], "libawesome;42;i386;debian;manual") != 0)) {
 		if (priv->use_trusted && pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
 						"Can't install as untrusted");
@@ -646,7 +646,7 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	job_data->progress_percentage = 0;
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-				"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+				"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 				"An HTML widget for GTK+ 2.0");
 
 	pk_backend_job_thread_create (job, pk_backend_install_thread, NULL, NULL);
@@ -770,40 +770,40 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	/* each one has a different detail for testing */
 	len = g_strv_length (search);
 	for (i = 0; i < len; i++) {
-		if (g_strcmp0 (search[i], "vips-doc") == 0 || g_strcmp0 (search[i], "vips-doc;7.12.4-2.fc8;noarch;linva") == 0) {
+		if (g_strcmp0 (search[i], "vips-doc") == 0 || g_strcmp0 (search[i], "vips-doc;7.12.4-2.fc8;noarch;linva;") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-							"vips-doc;7.12.4-2.fc8;noarch;linva",
+							"vips-doc;7.12.4-2.fc8;noarch;linva;",
 							"The vips documentation package.");
 			}
-		} else if (g_strcmp0 (search[i], "glib2") == 0 || g_strcmp0 (search[i], "glib2;2.14.0;i386;fedora") == 0) {
+		} else if (g_strcmp0 (search[i], "glib2") == 0 || g_strcmp0 (search[i], "glib2;2.14.0;i386;fedora;") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-							"glib2;2.14.0;i386;fedora",
+							"glib2;2.14.0;i386;fedora;",
 							"The GLib library");
 			}
-		} else if (g_strcmp0 (search[i], "powertop") == 0 || g_strcmp0 (search[i], "powertop;1.8-1.fc8;i386;fedora") == 0)
+		} else if (g_strcmp0 (search[i], "powertop") == 0 || g_strcmp0 (search[i], "powertop;1.8-1.fc8;i386;fedora;") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-						"powertop;1.8-1.fc8;i386;fedora",
+						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
-		else if (g_strcmp0 (search[i], "kernel") == 0 || g_strcmp0 (search[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed") == 0)
+		else if (g_strcmp0 (search[i], "kernel") == 0 || g_strcmp0 (search[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
-		else if (g_strcmp0 (search[i], "gtkhtml2") == 0 || g_strcmp0 (search[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora") == 0)
+		else if (g_strcmp0 (search[i], "gtkhtml2") == 0 || g_strcmp0 (search[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0)
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-						"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+						"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 						"An HTML widget for GTK+ 2.0");
-		else if (g_strcmp0 (search[i], "foobar") == 0 || g_strcmp0 (search[i], "foobar;1.1.0;i386;debian") == 0) {
+		else if (g_strcmp0 (search[i], "foobar") == 0 || g_strcmp0 (search[i], "foobar;1.1.0;i386;debian;") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-							"foobar;1.1.0;i386;debian",
+							"foobar;1.1.0;i386;debian;",
 							"The awesome FooBar application");
 			}
-		} else if (g_strcmp0 (search[i], "libawesome") == 0 || g_strcmp0 (search[i], "libawesome;42;i386;debian") == 0) {
+		} else if (g_strcmp0 (search[i], "libawesome") == 0 || g_strcmp0 (search[i], "libawesome;42;i386;debian;") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
 				pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-							"libawesome;42;i386;debian",
+							"libawesome;42;i386;debian;",
 							"Simple library for warping reality");
 			}
 		}
@@ -851,7 +851,7 @@ pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips \"documentation\" package.");
 }
 
@@ -868,11 +868,11 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED))
 		pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-					"vips-doc;7.12.4-2.fc8;noarch;linva",
+					"vips-doc;7.12.4-2.fc8;noarch;linva;",
 					"The vips documentation package");
 	else
 		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-					"vips-doc;7.12.4-2.fc8;noarch;linva",
+					"vips-doc;7.12.4-2.fc8;noarch;linva;",
 					"The vips documentation package");
 	pk_backend_job_finished (job);
 }
@@ -883,10 +883,10 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_allow_cancel (job, TRUE);
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"bǣwulf-utf8;0.1;noarch;hughsie",
+				"bǣwulf-utf8;0.1;noarch;hughsie;data",
 				"The bǣwulf server test name.");
 	pk_backend_job_finished (job);
 }
@@ -925,21 +925,21 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	locale = pk_backend_job_get_locale (job);
 	if (g_strcmp0 (locale, "en_GB.utf8") != 0) {
 		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-					"evince;0.9.3-5.fc8;i386;installed",
+					"evince;0.9.3-5.fc8;i386;installed;",
 					"PDF Dokument Ƥrŏgrȃɱ");
 	} else {
 		pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-					"evince;0.9.3-5.fc8;i386;installed",
+					"evince;0.9.3-5.fc8;i386;installed;",
 					"PDF Document viewer");
 	}
 	pk_backend_job_package (job, PK_INFO_ENUM_INSTALLED,
-				"tetex;3.0-41.fc8;i386;fedora",
+				"tetex;3.0-41.fc8;i386;fedora;",
 				"TeTeX is an implementation of TeX for Linux or UNIX systems.");
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"scribus;1.3.4-1.fc8;i386;fedora",
+				"scribus;1.3.4-1.fc8;i386;fedora;",
 				"Scribus is an desktop open source page layout program");
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 }
 
@@ -977,7 +977,7 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 		if (job_data->progress_percentage == 100) {
 			if (priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
-							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 							"An HTML widget for GTK+ 2.0");
 				priv->updated_gtkhtml = FALSE;
 			}
@@ -985,7 +985,7 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 		}
 		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-						"powertop;1.8-1.fc8;i386;fedora",
+						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
 			pk_backend_job_set_item_progress (job,
 							"powertop;1.8-1.fc8;i386;fedora",
@@ -994,22 +994,22 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 		}
 		if (job_data->progress_percentage == 20 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 			pk_backend_job_set_item_progress (job,
-							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
 			if (!priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 							"An HTML widget for GTK+ 2.0");
 				priv->updated_gtkhtml = TRUE;
 			}
 			pk_backend_job_set_item_progress (job,
-							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 		}
@@ -1017,34 +1017,34 @@ pk_backend_update_packages_download_thread (PkBackendJob *job, GVariant *params,
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
 			pk_backend_job_set_allow_cancel (job, FALSE);
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"powertop;1.8-1.fc8;i386;fedora",
+						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
 			pk_backend_job_set_item_progress (job,
-							"powertop;1.8-1.fc8;i386;fedora",
+							"powertop;1.8-1.fc8;i386;fedora;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 			priv->updated_powertop = TRUE;
 		}
 		if (job_data->progress_percentage == 60 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 			pk_backend_job_set_item_progress (job,
-							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 			priv->updated_kernel = TRUE;
 			pk_backend_job_set_item_progress (job,
-							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 		}
 		if (job_data->progress_percentage == 80 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_CLEANUP,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 			pk_backend_job_set_item_progress (job,
-							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+							"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 							PK_STATUS_ENUM_DOWNLOAD,
 							0);
 		}
@@ -1080,23 +1080,23 @@ pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 		}
 		if (job_data->progress_percentage == 0 && !priv->updated_powertop) {
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-						"powertop;1.8-1.fc8;i386;fedora",
+						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
 		}
 		if (job_data->progress_percentage == 20 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 		}
 		if (job_data->progress_percentage == 30 && !priv->updated_gtkhtml) {
 			if (priv->use_blocked) {
 				pk_backend_job_package (job, PK_INFO_ENUM_BLOCKED,
-							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 							"An HTML widget for GTK+ 2.0");
 				priv->updated_gtkhtml = FALSE;
 			} else {
 				pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-							"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+							"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 							"An HTML widget for GTK+ 2.0");
 				priv->updated_gtkhtml = TRUE;
 			}
@@ -1105,19 +1105,19 @@ pk_backend_update_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
 			pk_backend_job_set_allow_cancel (job, FALSE);
 			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING,
-						"powertop;1.8-1.fc8;i386;fedora",
+						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
 			priv->updated_powertop = TRUE;
 		}
 		if (job_data->progress_percentage == 60 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_UPDATING,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 			priv->updated_kernel = TRUE;
 		}
 		if (job_data->progress_percentage == 80 && !priv->updated_kernel) {
 			pk_backend_job_package (job, PK_INFO_ENUM_CLEANUP,
-						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+						"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 						"The Linux kernel (the core of the Linux operating system)");
 		}
 		job_data->progress_percentage += 1;
@@ -1462,18 +1462,18 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 	filename = g_build_filename (directory, "powertop-1.8-1.fc8.rpm", NULL);
 	g_file_set_contents (filename, "powertop data", -1, NULL);
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-				"powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+				"powertop;1.8-1.fc8;i386;fedora;", "Power consumption monitor");
 	to_strv[0] = filename;
-	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora", to_strv);
+	pk_backend_job_files (job, "powertop;1.8-1.fc8;i386;fedora;", to_strv);
 	g_free (filename);
 
 	/* second package */
 	filename = g_build_filename (directory, "powertop-common-1.8-1.fc8.rpm", NULL);
 	g_file_set_contents (filename, "powertop-common data", -1, NULL);
 	pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-				"powertop-common;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+				"powertop-common;1.8-1.fc8;i386;fedora;", "Power consumption monitor");
 	to_strv[0] = filename;
-	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora", to_strv);
+	pk_backend_job_files (job, "powertop-common;1.8-1.fc8;i386;fedora;", to_strv);
 	g_free (filename);
 
 	pk_backend_job_finished (job);
@@ -1507,29 +1507,29 @@ pk_backend_upgrade_system_timeout (gpointer data)
 	}
 	if (job_data->progress_percentage == 20) {
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 					"The Linux kernel (the core of the Linux operating system)");
 	}
 	if (job_data->progress_percentage == 30) {
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"gtkhtml2;2.19.1-4.fc8;i386;fedora",
+					"gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 					"An HTML widget for GTK+ 2.0");
 	}
 	if (job_data->progress_percentage == 40) {
 		pk_backend_job_set_allow_cancel (job, FALSE);
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"powertop;1.8-1.fc8;i386;fedora",
+					"powertop;1.8-1.fc8;i386;fedora;",
 					"Power consumption monitor");
 	}
 	if (job_data->progress_percentage == 60) {
 		pk_backend_job_set_allow_cancel (job, TRUE);
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed",
+					"kernel;2.6.23-0.115.rc3.git1.fc8;i386;installed;",
 					"The Linux kernel (the core of the Linux operating system)");
 	}
 	if (job_data->progress_percentage == 80) {
 		pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING,
-					"powertop;1.8-1.fc8;i386;fedora",
+					"powertop;1.8-1.fc8;i386;fedora;",
 					"Power consumption monitor");
 	}
 	job_data->progress_percentage += 1;

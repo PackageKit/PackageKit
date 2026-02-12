@@ -86,14 +86,14 @@ dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, c
 				optional_metadata_types.add_item(libdnf5::Option::Priority::RUNTIME, libdnf5::METADATA_TYPE_APPSTREAM);
 			}
 		}
-		
+
 		// Always assume yes to avoid interactive prompts failing the transaction
 		// TODO: Drop this once InstallSignature is implemented
 		config.get_assumeyes_option().set(libdnf5::Option::Priority::COMMANDLINE, true);
 	}
 
 	priv->base->setup();
-	
+
 	// Ensure releasever is set AFTER setup() because setup() might run auto-detection and overwrite it.
 	if (priv->conf != NULL) {
 		g_autofree gchar *distro_version = NULL;
@@ -107,7 +107,7 @@ dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, c
 			priv->base->get_vars()->set("releasever", distro_version);
 		}
 	}
-	
+
 	auto repo_sack = priv->base->get_repo_sack();
 	repo_sack->create_repos_from_system_configuration();
 	repo_sack->get_system_repo();
@@ -274,25 +274,25 @@ dnf5_process_dependency (libdnf5::Base &base, const libdnf5::rpm::Package &pkg, 
 	std::queue<libdnf5::rpm::Package> queue;
 	queue.push(pkg);
 	visited.insert(pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch());
-	
+
 	while (!queue.empty()) {
 		auto curr = queue.front();
 		queue.pop();
 		libdnf5::rpm::ReldepList reldeps(base);
 		if (role == PK_ROLE_ENUM_DEPENDS_ON) reldeps = curr.get_requires();
 		else reldeps = curr.get_provides();
-		
+
 		for (const auto &reldep : reldeps) {
 			std::string req = reldep.to_string();
 			libdnf5::rpm::PackageQuery query(base);
 			if (role == PK_ROLE_ENUM_DEPENDS_ON) query.filter_provides(req);
 			else query.filter_requires(req);
-			
+
 			// Filter for latest version and supported architectures to avoid duplicates
 			// for available packages
 			query.filter_latest_evr();
 			query.filter_arch(libdnf5::rpm::get_supported_arches());
-			
+
 			for (const auto &res : query) {
 				std::string res_nevra = res.get_name() + ";" + res.get_evr() + ";" + res.get_arch();
 				if (visited.find(res_nevra) == visited.end()) {
@@ -315,13 +315,13 @@ dnf5_emit_pkg (PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum i
 			info = PK_INFO_ENUM_INSTALLED;
 		}
 	}
-	
+
 	std::string evr = pkg.get_evr();
 	std::string repo_id = pkg.get_repo_id();
 	if (pkg.get_install_time() > 0) {
 		repo_id = "installed";
 	}
-	
+
 	std::string package_id = pkg.get_name() + ";" + evr + ";" + pkg.get_arch() + ";" + repo_id;
 	if (severity != PK_INFO_ENUM_UNKNOWN) {
 		pk_backend_job_package_full (job, info, package_id.c_str(), pkg.get_summary().c_str(), severity);
@@ -336,7 +336,7 @@ dnf5_sort_and_emit (PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs)
 	std::sort(pkgs.begin(), pkgs.end(), [](const libdnf5::rpm::Package &a, const libdnf5::rpm::Package &b) {
 		bool a_installed = (a.get_install_time() > 0);
 		bool b_installed = (b.get_install_time() > 0);
-		if (a_installed != b_installed) return a_installed; 
+		if (a_installed != b_installed) return a_installed;
 		if (a.get_name() != b.get_name()) return a.get_name() < b.get_name();
 		if (a.get_arch() != b.get_arch()) return a.get_arch() < b.get_arch();
 		return a.get_evr() < b.get_evr();
@@ -386,7 +386,7 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 {
 	std::vector<libdnf5::rpm::Package> pkgs;
 	if (!package_ids) return pkgs;
-	
+
 	for (int i = 0; package_ids[i] != NULL; i++) {
 		// Check if this is a simple package name (no semicolons) or a full package ID
 		if (strchr(package_ids[i], ';') == NULL) {
@@ -399,11 +399,11 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 				query.filter_latest_evr();
 				query.filter_arch(libdnf5::rpm::get_supported_arches());
 
-				
+
 				if (!query.empty()) {
 					for (auto pkg : query) {
 						g_debug("Found package: name=%s, evr=%s, arch=%s, repo=%s",
-							pkg.get_name().c_str(), pkg.get_evr().c_str(), 
+							pkg.get_name().c_str(), pkg.get_evr().c_str(),
 							pkg.get_arch().c_str(), pkg.get_repo_id().c_str());
 						pkgs.push_back(pkg);
 						break; // Take the first match
@@ -416,26 +416,26 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 			}
 			continue;
 		}
-		
+
 		// Full package ID - use existing logic
 		g_auto(GStrv) split = pk_package_id_split(package_ids[i]);
 		if (!split) continue;
-		
+
 		try {
 			libdnf5::rpm::PackageQuery query(base);
 			g_debug("Resolving package ID: name=%s, version=%s, arch=%s, repo=%s",
 				split[PK_PACKAGE_ID_NAME], split[PK_PACKAGE_ID_VERSION],
-				split[PK_PACKAGE_ID_ARCH], split[PK_PACKAGE_ID_DATA]);
+				split[PK_PACKAGE_ID_ARCH], split[PK_PACKAGE_ID_ORIGIN]);
 			query.filter_name(split[PK_PACKAGE_ID_NAME]);
 			query.filter_evr(split[PK_PACKAGE_ID_VERSION]);
 			query.filter_arch(split[PK_PACKAGE_ID_ARCH]);
-			
-			if (g_strcmp0(split[PK_PACKAGE_ID_DATA], "installed") == 0) {
+
+			if (g_strcmp0(split[PK_PACKAGE_ID_ORIGIN], "installed") == 0) {
 				query.filter_installed();
 			} else {
-				 query.filter_repo_id(split[PK_PACKAGE_ID_DATA]);
+				 query.filter_repo_id(split[PK_PACKAGE_ID_ORIGIN]);
 			}
-			
+
 			if (query.empty()) {
 				g_debug("No exact match for ID: %s. Listing similar packages...", package_ids[i]);
 				libdnf5::rpm::PackageQuery fallback(base);
@@ -516,7 +516,7 @@ Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, do
 {
 	std::lock_guard<std::mutex> lock(mutex);
 	item_progress[user_cb_data] = downloaded;
-	
+
 	if (total_size > 0) {
 		double current_total = finished_size;
 		for (auto const& [id, prog] : item_progress) {
