@@ -15,13 +15,13 @@
 # Javier Alejandro Castro <javier.alejandro.castro@gmail.com>, 2008
 # Jorge González <aloriel@gmail.com>, 2011
 # Richard Hughes <richard@hughsie.com>, 2011
-# Francisco Serrador <fserrador@gmail.com>, 2025.
+# Francisco Serrador <fserrador@gmail.com>, 2025, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2025-12-01 05:00+0000\n"
+"PO-Revision-Date: 2026-02-14 05:09+0000\n"
 "Last-Translator: Francisco Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/packagekit/translations/es/>\n"
 "Language: es\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == 0) ? 1 : 2);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -757,17 +757,13 @@ msgstr "Concede instalación de paquetes no confiados"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Desinstalar automáticamente dependencias no utilizadas"
+msgstr "No desinstalar automáticamente dependencias no utilizadas"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Edad en segundos de caché de metadatos máximos"
+msgstr "Edad en segundos de caché de metadatos máximos (predeterminado: 3 días)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -791,14 +787,13 @@ msgstr "Instalar uno o más paquetes o archivos de paquetes locales."
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:309 client/pkgc-manage.c:322
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Esta herramienta no pudo encontrar ningún paquete disponible: %s"
+msgstr "No se pudo encontrar ningún paquete disponible: %s"
 
 #: client/pkgc-manage.c:327
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Los paquetes seleccionados quizá ya está instalado."
+msgstr "El paquete seleccionado ya está instalado."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:367
@@ -806,9 +801,9 @@ msgid "Remove one or more packages from the system."
 msgstr "Desinstala uno o más paquetes desde el sistema."
 
 #: client/pkgc-manage.c:384
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "No se pudieron encontrar paquetes: %s"
+msgstr "No se pudieron encontrar los paquetes instalados: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:424
@@ -831,9 +826,9 @@ msgid "Update all packages or specific packages to their latest versions."
 msgstr "Actualiza todos los paquetes o paquetes específicos a sus últimas versiones."
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "No se pudieron encontrar paquetes: %s"
+msgstr "No se pudieron encontrar paquetes a actualizar: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
 #, c-format
@@ -1184,19 +1179,16 @@ msgid "Show package information"
 msgstr "Muestra información del paquete"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
 msgid "List package dependencies"
-msgstr "Muestra dependencias de paquete"
+msgstr "Listado de dependencias de paquete"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "List packages requiring this package"
-msgstr "Muestra paquetes requiriendo este paquete"
+msgstr "Listado de paquetes requiriendo este paquete"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Muestra paquetes que proporcionen una capacidad"
+msgstr "Listado de paquetes que proporcionen una capacidad"
 
 #: client/pkgc-query.c:1021
 msgid "Show files in package"
@@ -1511,9 +1503,8 @@ msgstr "Paquete no encontrado: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Mostrar versión pkgctl"
+msgstr "Mostrar versión de pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -1573,7 +1564,6 @@ msgid "Available Commands:"
 msgstr "Instrucciones disponibles:"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Utilice 'pkgctl INSTRUCCIÓN --help' para ayuda específica de instrucción."
 
