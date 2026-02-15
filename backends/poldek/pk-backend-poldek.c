@@ -1392,7 +1392,8 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 	package_id = pk_package_id_build (pkg->name,
 					  evr,
 					  pkg_arch (pkg),
-					  poldek_dir);
+					  poldek_dir,
+					  NULL);
 
 	g_free (evr);
 	g_free (poldek_dir);
@@ -1447,7 +1448,7 @@ poldek_get_pkg_from_package_id (const gchar *package_id)
 
 		vr = poldek_get_vr_from_package_id_evr (parts[PK_PACKAGE_ID_VERSION]);
 
-		if ((packages = execute_packages_command ("cd /%s; ls -q %s-%s.%s", parts[PK_PACKAGE_ID_DATA],
+		if ((packages = execute_packages_command ("cd /%s; ls -q %s-%s.%s", parts[PK_PACKAGE_ID_ORIGIN],
 										    parts[PK_PACKAGE_ID_NAME],
 										    vr,
 										    parts[PK_PACKAGE_ID_ARCH]))) {

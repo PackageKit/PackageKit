@@ -156,7 +156,7 @@ pk_backend_get_details_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		// we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
 		parts = pk_package_id_split (package_ids[i]);
 		std::string attrPath = std::string (parts[PK_PACKAGE_ID_NAME]);
-		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
+		std::string flake = std::string (parts[PK_PACKAGE_ID_ORIGIN]);
 		g_strfreev (parts);
 
 		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
@@ -386,7 +386,8 @@ nix_search_thread (PkBackendJob* job, GVariant* params, gpointer p)
 								pk_package_id_build (attrPath2.c_str (),
 										     name.version.c_str (),
 										     system.c_str (),
-										     priv->defaultFlake.c_str ()),
+										     priv->defaultFlake.c_str (),
+										     NULL),
 								description.c_str());
 				}
 			}
@@ -467,7 +468,7 @@ nix_install_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		// we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
 		parts = pk_package_id_split (package_ids[i]);
 		std::string attrPath = std::string (parts[PK_PACKAGE_ID_NAME]);
-		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
+		std::string flake = std::string (parts[PK_PACKAGE_ID_ORIGIN]);
 		g_strfreev (parts);
 
 		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
@@ -598,7 +599,7 @@ nix_remove_thread (PkBackendJob* job, GVariant* params, gpointer p)
 		// we put the attr path in "PK_PACKAGE_ID_NAME" because that’s how we identify it
 		parts = pk_package_id_split (package_ids[i]);
 		std::string attrPath = std::string (parts[PK_PACKAGE_ID_NAME]);
-		std::string flake = std::string (parts[PK_PACKAGE_ID_DATA]);
+		std::string flake = std::string (parts[PK_PACKAGE_ID_ORIGIN]);
 		g_strfreev (parts);
 
 		auto attrOrSuggestions = nix_get_attr_or_suggestions (*priv->state, flake, "legacyPackages." + nix::settings.thisSystem.get () + "." + attrPath);
@@ -711,7 +712,8 @@ nix_get_updates_thread (PkBackendJob* job, GVariant* params, gpointer p)
 							pk_package_id_build (drv->attrPath.c_str (),
 									     name.version.c_str (),
 									     drv->querySystem ().c_str (),
-									     priv->defaultFlake.c_str ()),
+									     priv->defaultFlake.c_str (),
+									     NULL),
 							drv->queryMetaString ("description").c_str ());
 			}
 		}

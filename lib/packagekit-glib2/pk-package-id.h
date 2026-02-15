@@ -52,15 +52,23 @@ G_BEGIN_DECLS
 #define PK_PACKAGE_ID_ARCH	2
 
 /**
+ * PK_PACKAGE_ID_ORIGIN:
+ *
+ * Alias to get the origin field from the result of pk_package_id_split
+ */
+#define PK_PACKAGE_ID_ORIGIN	3
+
+/**
  * PK_PACKAGE_ID_DATA:
  *
- * Alias to get a data field from the result of pk_package_id_split
+ * Alias to get the data field from the result of pk_package_id_split
  */
-#define PK_PACKAGE_ID_DATA	3
+#define PK_PACKAGE_ID_DATA	4
 
 gchar		*pk_package_id_build			(const gchar		*name,
 							 const gchar		*version,
 							 const gchar		*arch,
+							 const gchar		*origin,
 							 const gchar		*data);
 gboolean	 pk_package_id_check			(const gchar		*package_id);
 gchar		**pk_package_id_split			(const gchar		*package_id);
@@ -70,4 +78,3 @@ gboolean	 pk_package_id_equal_fuzzy_arch		(const gchar		*package_id1,
 G_END_DECLS
 
 #endif /* __PK_PACKAGE_ID_H */
-

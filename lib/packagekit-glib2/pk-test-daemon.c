@@ -136,7 +136,7 @@ pk_test_offline_func (void)
 
 	/* set up an offline update */
 	client = pk_client_new ();
-	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora");
+	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora;");
 	pk_client_update_packages_async (client,
 					 pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, -1),
 					 package_ids,
@@ -151,7 +151,7 @@ pk_test_offline_func (void)
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &data, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
+	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora;");
 
 	/* trigger */
 	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
@@ -601,7 +601,7 @@ pk_test_client_func (void)
 	g_assert (ret);
 
 	/* resolve package */
-	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora;&powertop");
 	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
 		 (PkProgressCallback) pk_test_client_progress_cb, NULL,
 		 (GAsyncReadyCallback) pk_test_client_resolve_cb, NULL);
@@ -1169,7 +1169,7 @@ pk_test_task_func (void)
 	g_assert (task != NULL);
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
+	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora;");
 	pk_task_install_packages_async (task, package_ids, NULL,
 		        (PkProgressCallback) pk_test_task_progress_cb, NULL,
 		        (GAsyncReadyCallback) pk_test_task_install_packages_cb, NULL);
@@ -1238,7 +1238,7 @@ pk_test_task_text_func (void)
 	*/
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
+	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva;");
 	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
 		        (PkProgressCallback) pk_test_task_text_progress_cb, NULL,
 		        (GAsyncReadyCallback) pk_test_task_text_install_packages_cb, NULL);
@@ -1301,7 +1301,7 @@ pk_test_task_wrapper_func (void)
 	g_assert (task != NULL);
 
 	/* install package */
-	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
+	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva;");
 	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
 		        (PkProgressCallback) pk_test_task_wrapper_progress_cb, NULL,
 		        (GAsyncReadyCallback) pk_test_task_wrapper_install_packages_cb, NULL);
@@ -1379,7 +1379,7 @@ pk_test_transaction_list_func (void)
 	g_assert (client != NULL);
 
 	/* resolve package */
-	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora;&powertop");
 	_refcount = 2;
 	pk_client_resolve_async (client,
 				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
@@ -1445,4 +1445,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
