@@ -11,6 +11,7 @@ option('maintainer',
 option('packaging_backend',
     type : 'array',
     choices : ['alpm',
+               'apk',
                'apt',
                'dnf',
                'dnf5',
@@ -31,6 +32,12 @@ option('dnf_vendor',
     choices : ['fedora', 'mageia', 'openmandriva', 'rosa', 'opensuse'],
     value : 'fedora',
     description : 'Vendor configuration when using the dnf backend'
+)
+option('apk_vendor',
+    type : 'combo',
+    choices : ['postmarketOS', 'alpine'],
+    value : 'postmarketOS',
+    description : 'Vendor configuration when using the apk backend'
 )
 
 option('packagekit_user',
