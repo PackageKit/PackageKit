@@ -3,41 +3,43 @@
 # This file is distributed under the same license as the PackageKit package.
 #
 # Translators:
-# Baurzhan Muftakhidinov <baurthefirst@gmail.com>, 2014
+# Baurzhan Muftakhidinov <baurthefirst@gmail.com>, 2014, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"Language-Team: Kazakh (http://app.transifex.com/freedesktop/packagekit/language/kk/)\n"
+"PO-Revision-Date: 2026-03-01 04:09+0000\n"
+"Last-Translator: Baurzhan Muftakhidinov <baurthefirst@gmail.com>\n"
+"Language-Team: Kazakh <https://hosted.weblate.org/projects/packagekit/translations/kk/>\n"
 "Language: kk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
-msgstr ""
+msgstr "Конфигурациялық файл табылмады."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Конфигурациялық файлды жүктеу сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:177
-#, fuzzy
 msgid "Installing System Upgrade"
-msgstr "Жаңартуларды орнату"
+msgstr "Жүйе жаңғыртуын орнату"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -47,24 +49,23 @@ msgstr "Жаңартуларды орнату"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:214
-#, fuzzy
 msgid "Rebooting after installing updates…"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Жаңартуларды орнатқаннан кейін қайта жүктелуде…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:256
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Жаңартуларды орнатқаннан кейін сөндірілуде…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:401
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Жаңартулар орнатылуда; бұл біраз уақыт алуы мүмкін..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Жүйе жаңғыртуы орнатылуда; бұл біраз уақыт алуы мүмкін..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -80,7 +81,7 @@ msgstr "Жүйелік уақыт"
 
 #: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
 msgid "False"
-msgstr "False"
+msgstr "Жалған"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
@@ -89,12 +90,12 @@ msgstr "Сәтті аяқталды"
 
 #: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
 msgid "True"
-msgstr "True"
+msgstr "Ақиқат"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:171
 msgid "Role"
-msgstr "Ролі"
+msgstr "Роль"
 
 #: client/pkcon/pk-console.c:176
 msgid "(seconds)"
@@ -123,19 +124,19 @@ msgstr "Пайдаланушы аты"
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
-msgstr "Шын аты"
+msgstr "Нақты аты"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
 #: client/pkgc-util.c:1075
 msgid "Affected packages:"
-msgstr "Әсер етілетін дестелер:"
+msgstr "Әсер еткен дестелер:"
 
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:204
 msgid "Affected packages: None"
-msgstr "Әсер етілетін дестелер: Жоқ"
+msgstr "Әсер еткен дестелер: Ешқандай"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: client/pkcon/pk-console.c:230
@@ -151,7 +152,7 @@ msgstr "Түрі"
 #. TRANSLATORS: this is the summary of the group
 #: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
 msgid "Summary"
-msgstr "Жинақы ақпарат"
+msgstr "Жиынтық"
 
 #. TRANSLATORS: this is the group category name
 #: client/pkcon/pk-console.c:256
@@ -182,7 +183,7 @@ msgstr "Таңбаша"
 #. TRANSLATORS: this is a header for the package that can be updated
 #: client/pkcon/pk-console.c:308
 msgid "Details about the update:"
-msgstr "Жаңарту туралы ақпарат:"
+msgstr "Жаңарту туралы мәліметтер:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -191,9 +192,8 @@ msgstr "Жаңарту туралы ақпарат:"
 #: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
-#, fuzzy
 msgid "Package"
-msgstr "PackageKit"
+msgstr "Десте"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -205,13 +205,13 @@ msgstr "Жаңартулар"
 #. * this update obsoletes
 #: client/pkcon/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Ескіртеді"
+msgstr "Ескіргендер"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
 #: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
 msgid "Vendor"
-msgstr "Өндіруші"
+msgstr "Жеткізуші"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: client/pkcon/pk-console.c:338
@@ -227,7 +227,7 @@ msgstr "CVE"
 #. * requires a restart
 #: client/pkcon/pk-console.c:350
 msgid "Restart"
-msgstr "Қайта жүктеу"
+msgstr "Қайта іске қосу"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
@@ -245,20 +245,20 @@ msgstr "Өзгерістер"
 #. * of the update
 #: client/pkcon/pk-console.c:365
 msgid "State"
-msgstr "Қалып-күйі"
+msgstr "Күйі"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
 #: client/pkcon/pk-console.c:370
 msgid "Issued"
-msgstr "шығарылған"
+msgstr "Шығарылған"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
 #: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
 msgid "Updated"
-msgstr "Жаңартылған"
+msgstr "Жаңартылды"
 
 #. TRANSLATORS: if the repo is enabled
 #: client/pkcon/pk-console.c:397
@@ -273,39 +273,39 @@ msgstr "Сөндірілген"
 #. TRANSLATORS: a package requires the system to be restarted
 #: client/pkcon/pk-console.c:429
 msgid "System restart required by:"
-msgstr "Жүйенің қайта жүктелуін талап ететін:"
+msgstr "Жүйені қайта іске қосуды талап етеді:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: client/pkcon/pk-console.c:432
 msgid "Session restart required:"
-msgstr "Сессияны қайта іске қосу керек:"
+msgstr "Сеансты қайта іске қосу қажет:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
 #: client/pkcon/pk-console.c:436
 msgid "System restart (security) required by:"
-msgstr "Жүйені қайта іске қосуды (қауіпсіздік) талап ететін:"
+msgstr "Жүйені қайта іске қосу (қауіпсіздік) талап етіледі:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 #: client/pkcon/pk-console.c:440
 msgid "Session restart (security) required:"
-msgstr "Жүйені қайта іске қосу (қауіпсіздік) керек:"
+msgstr "Сеансты қайта іске қосу (қауіпсіздік) қажет:"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: client/pkcon/pk-console.c:443
 msgid "Application restart required by:"
-msgstr "Қолданбаны қайта іске қосуды талап ететін:"
+msgstr "Қолданбаны қайта іске қосуды талап етеді:"
 
 #. TRANSLATORS: This a list of details about the package
 #: client/pkcon/pk-console.c:488
 msgid "Package description"
-msgstr "Десте анықтамасы"
+msgstr "Десте сипаттамасы"
 
 #. TRANSLATORS: This where the package has no files
 #: client/pkcon/pk-console.c:509
 msgid "No files"
-msgstr "Файлдары жоқ"
+msgstr "Файлдар жоқ"
 
 #. TRANSLATORS: This a list files contained in the package
 #: client/pkcon/pk-console.c:514
@@ -315,12 +315,12 @@ msgstr "Десте файлдары"
 #. TRANSLATORS: the percentage complete of the transaction
 #: client/pkcon/pk-console.c:610
 msgid "Percentage"
-msgstr "Пайыздық шамасы"
+msgstr "Пайыз"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 #: client/pkcon/pk-console.c:633
 msgid "Status"
-msgstr "Қалып-күй"
+msgstr "Күйі"
 
 #. TRANSLATORS: the results from the transaction
 #: client/pkcon/pk-console.c:671
@@ -331,13 +331,13 @@ msgstr "Нәтижелер:"
 #. * fatal in my book
 #: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
 msgid "Fatal error"
-msgstr "Қатаң қате"
+msgstr "Өлімшіл қате"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 #: client/pkcon/pk-console.c:702
 msgid "There are no packages to update."
-msgstr "Жаңарту үшін дестелер жоқ."
+msgstr "Жаңартылатын дестелер жоқ."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -349,33 +349,32 @@ msgstr "Транзакция сәтсіз аяқталды"
 
 #. TRANSLATORS: print a message when there are no updates
 #: client/pkcon/pk-console.c:735
-#, fuzzy
 msgid "There are no updates available at this time."
-msgstr "Жаңарту үшін дестелер жоқ."
+msgstr "Қазіргі уақытта қолжетімді жаңартулар жоқ."
 
 #: client/pkcon/pk-console.c:758
 msgid "There are no upgrades available at this time."
-msgstr ""
+msgstr "Қазіргі уақытта қолжетімді жаңғыртулар жоқ."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
 msgid "Please restart the computer to complete the update."
-msgstr ""
+msgstr "Жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
 
 #. TRANSLATORS: a package needs to restart the session
 #: client/pkcon/pk-console.c:823
 msgid "Please logout and login to complete the update."
-msgstr ""
+msgstr "Жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:826
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr ""
+msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:829
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr ""
+msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -388,7 +387,7 @@ msgstr "Бірден көп десте сәйкес келеді:"
 #: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
 #, c-format
 msgid "Please choose the correct package: "
-msgstr "Керек дестені таңдаңыз:"
+msgstr "Дұрыс дестені таңдаңыз: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
@@ -399,7 +398,7 @@ msgstr "Десте табылмады"
 #. TRANSLATORS: we couldn't find anything
 #: client/pkcon/pk-console.c:999
 msgid "No packages were found"
-msgstr "Бірде-бір десте табылмады"
+msgstr "Дестелер табылмады"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -407,45 +406,44 @@ msgstr "Бірде-бір десте табылмады"
 #: client/pkcon/pk-console.c:1024
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr ""
+msgstr "Десте аты күтілді, бірақ файл алынды. Оның орнына 'pkcon install-local %s' пайдаланып көріңіз."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #: client/pkcon/pk-console.c:1059
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr ""
+msgstr "Бұл сайман қолжетімді десте таба алмады: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1076
 msgid "This tool could not find any available package."
-msgstr ""
+msgstr "Бұл сайман ешқандай қолжетімді десте таба алмады."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 #: client/pkcon/pk-console.c:1085
-#, fuzzy
 msgid "The selected packages may already be installed."
-msgstr "Келесі дестелер орнатылуы керек:"
+msgstr "Таңдалған дестелер орнатылып қойған болуы мүмкін."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pkcon/pk-console.c:1113
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr ""
+msgstr "Бұл сайман орнатылған дестені таба алмады: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr ""
+msgstr "Бұл сайман дестені таба алмады: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pkcon/pk-console.c:1220
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Жаңа нұсқаларға жаңартуды талап ететін дестелер жоқ."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -460,125 +458,121 @@ msgstr ""
 #: client/pkcon/pk-console.c:1413
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr ""
+msgstr "Бұл сайман барлық дестелерді таба алмады: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
 #: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
 msgid "The daemon crashed mid-transaction!"
-msgstr ""
+msgstr "Транзакция ортасында қызмет (daemon) істен шықты!"
 
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
-msgstr "PackageKit консольік интерфейсі"
+msgstr "PackageKit консольдік интерфейсі"
 
 #. these are commands we can use with pkcon
 #: client/pkcon/pk-console.c:1474
-#, fuzzy
 msgid "Subcommands:"
-msgstr "Ұқсас команда:"
+msgstr "Ішкі командалар:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
 msgid "Failed to get the time since this action was last completed"
-msgstr ""
+msgstr "Бұл әрекеттің соңғы рет аяқталғанынан бері өткен уақытты алу сәтсіз аяқталды"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
 msgid "Time since"
-msgstr ""
+msgstr "Содан бергі уақыт"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: client/pkcon/pk-console.c:1596
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Дайындалған жаңартулар:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: client/pkcon/pk-console.c:1665
 msgid "The proxy could not be set"
-msgstr "Проксиді орнату мүмкін ем ес"
+msgstr "Проксиді орнату мүмкін болмады"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
 msgid "Show the program version and exit"
-msgstr "Бағдарлама нұсқасын шығару және шығу"
+msgstr "Бағдарлама нұсқасын көрсету және шығу"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkcon/pk-console.c:1709
 msgid "Set the filter, e.g. installed"
-msgstr ""
+msgstr "Сүзгіні орнату, мысалы, орнатылған"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1712
 msgid "Install the packages without asking for confirmation"
-msgstr ""
+msgstr "Дестелерді растауды сұрамай-ақ орнату"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
 #: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Транзакцияны тек дестелерді жүктеп алу арқылы дайындау"
 
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
-#, fuzzy
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Келесі дестелердің нұсқалары төмендетілуі керек:"
+msgstr "Транзакция кезінде дестелер нұсқасын төмендетуге рұқсат беру"
 
 #: client/pkcon/pk-console.c:1720
-#, fuzzy
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Келесі дестелер қайта орнатылуы керек:"
+msgstr "Транзакция кезінде дестелерді қайта орнатуға рұқсат беру"
 
 #: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Пайдаланылмаған тәуелділіктерді автоматты түрде өшіру"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr ""
+msgstr "Команданы желінің бос өткізу қабілетін және азырақ қуатты пайдаланып орындау"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr ""
+msgstr "Анимациялық виджеттерді пайдаланудың орнына, экранға машина оқи алатын шығысты басып шығару"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "Метадеректер кэшінің максималды жасы (секундпен). Тек кэшті пайдалану үшін -1, кэшті қайта жүктеу үшін 1 мәнін пайдаланыңыз."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
-#, fuzzy
 msgid "Allow untrusted packages to be installed."
-msgstr "Келесі дестелер орнатылуы керек:"
+msgstr "Сенімсіз дестелерді орнатуға рұқсат беру."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1769
 msgid "Failed to parse command line"
-msgstr "Командалық жолды талдау сәтсіз"
+msgstr "Командалық жолды талдау сәтсіз аяқталды"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
-msgstr "PackageKit-пен байланысу сәтсіз"
+msgstr "PackageKit-пен байланысу сәтсіз аяқталды"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 #: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
 msgid "The filter specified was invalid"
-msgstr "Көрсетілген сүзгі қате"
+msgstr "Көрсетілген сүзгі жарамсыз болды"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 #: client/pkcon/pk-console.c:1868
 msgid "A search type is required, e.g. name"
-msgstr "Іздеу түрі керек, мысалы, десте аты"
+msgstr "Іздеу түрі қажет, мысалы, name"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -587,40 +581,38 @@ msgstr "Іздеу түрі керек, мысалы, десте аты"
 #: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
 #: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
 msgid "A search term is required"
-msgstr "Іздеу үшін сөз керек"
+msgstr "Іздеу сөзі қажет"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1955
 msgid "A package name to install is required"
-msgstr "Орнату үшін дестенің аты керек"
+msgstr "Орнатылатын десте аты қажет"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1969
 msgid "A filename to install is required"
-msgstr "Орнату үшін файл аты керек"
+msgstr "Орнатылатын файл аты қажет"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 #: client/pkcon/pk-console.c:1985
-#, fuzzy
 msgid "A type, key_id and package_id are required"
-msgstr "Десте аты керек"
+msgstr "Түрі, key_id және package_id қажет"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
 #: client/pkcon/pk-console.c:2003
-#, fuzzy
 msgid "A package name to remove is required"
-msgstr "Десте аты керек"
+msgstr "Өшірілетін десте аты қажет"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr ""
+msgstr "Мақсатты бума мен жүктеп алынатын десте аттары қажет"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -631,46 +623,42 @@ msgstr "Бума табылмады"
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 #: client/pkcon/pk-console.c:2041
-#, fuzzy
 msgid "A licence identifier (eula-id) is required"
-msgstr "Орнату үшін файл аты керек"
+msgstr "Лицензия идентификаторы (eula-id) қажет"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 #: client/pkcon/pk-console.c:2067
-#, fuzzy
 msgid "A package name to resolve is required"
-msgstr "Орнату үшін дестенің аты керек"
+msgstr "Шешілетін десте аты қажет"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 #: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
 msgid "A repository name is required"
-msgstr "Репозиторий атауы керек"
+msgstr "Репозиторий аты қажет"
 
 #: client/pkcon/pk-console.c:2117
 msgid "A repo name, parameter and value are required"
-msgstr ""
+msgstr "Репозиторий аты, параметрі және мәні қажет"
 
 #: client/pkcon/pk-console.c:2134
-#, fuzzy
 msgid "A repo id and autoremove required"
-msgstr "Репозиторий атауы керек"
+msgstr "Репозиторий ID-і және автоматты өшіру қажет"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 #: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Әрекет қажет, мысалы, 'update-packages'"
 
 #. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
 #: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
-#, fuzzy
 msgid "A correct role is required"
-msgstr "Іздеу үшін сөз керек"
+msgstr "Дұрыс роль қажет"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -678,20 +666,19 @@ msgstr "Іздеу үшін сөз керек"
 #: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
 #: client/pkcon/pk-console.c:2283
 msgid "A package name is required"
-msgstr "Десте аты керек"
+msgstr "Десте аты қажет"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
 #: client/pkcon/pk-console.c:2234
-#, fuzzy
 msgid "A package provide string is required"
-msgstr "Десте аты керек"
+msgstr "Десте ұсынатын мүмкіндік жолы қажет"
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
 msgid "A filename is required"
-msgstr "Файл аты керек"
+msgstr "Файл аты қажет"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
@@ -706,7 +693,7 @@ msgstr "Авторы"
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pkcon/pk-console.c:2418
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Жасалатын тізім файлын көрсетуіңіз керек"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -714,14 +701,14 @@ msgstr ""
 #: client/pkcon/pk-console.c:2431
 #, c-format
 msgid "File already exists: %s"
-msgstr "Файл бар болып тұр: %s"
+msgstr "Файл бар болып шықты: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
 #: client/pkcon/pk-console.c:2449
 #, c-format
 msgid "Option '%s' is not supported"
-msgstr "'%s' опциясына қолдау жоқ"
+msgstr "'%s' опциясына қолдау көрсетілмейді"
 
 #. TRANSLATORS: Generic failure of what they asked to do
 #: client/pkcon/pk-console.c:2459
@@ -730,121 +717,115 @@ msgstr "Команда сәтсіз аяқталды"
 
 #: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
 msgid "Failed to get daemon state"
-msgstr "Қызмет күйін алу сәтсіз"
+msgstr "Қызмет (daemon) күйін алу сәтсіз аяқталды"
 
 #: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
 msgid "Failed to get properties"
-msgstr "Қасиеттерін алу сәтсіз"
+msgstr "Қасиеттерді алу сәтсіз аяқталды"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
-msgstr "PackageKit бақылаушысы"
+msgstr "PackageKit мониторы"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Келесі дестелердің нұсқалары төмендетілуі керек:"
+msgstr "Десте нұсқасын төмендетуге рұқсат беру"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Келесі дестелер қайта орнатылуы керек:"
+msgstr "Дестелерді қайта орнатуға рұқсат беру"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Дестелерді орнату сәтсіз аяқталды"
+msgstr "Сенімсіз дестелерді орнатуға рұқсат беру"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
 msgid "Do not automatically remove unused dependencies"
-msgstr ""
+msgstr "Пайдаланылмаған тәуелділіктерді автоматты түрде өшірмеу"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr ""
+msgstr "Метадеректер кэшінің максималды жасы секундпен (бастапқы: 3 күн)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "СЕКУНД"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:198
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Кэшті жаңарту"
+msgstr "Десте метадеректерінің кэшін жаңарту."
 
 #: client/pkgc-manage.c:224
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Десте метадеректері жаңартылды"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:248
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Бір немесе бірнеше дестелерді не жергілікті десте файлдарын орнату."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:309 client/pkgc-manage.c:322
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Дестелер орнатылуда"
+msgstr "Қолжетімді десте табылмады: %s"
 
 #: client/pkgc-manage.c:327
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Келесі дестелер орнатылуы керек:"
+msgstr "Таңдалған десте орнатылып қойған."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:367
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Жүйеден бір немесе бірнеше дестені өшіру."
 
 #: client/pkgc-manage.c:384
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Дестелер орнатылуда"
+msgstr "Орнатылған дестелер табылмады: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:424
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Дестелерді орнатпастан көрсетілген бумаға жүктеп алу."
 
 #: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелер табылмады: %s"
 
 #: client/pkgc-manage.c:446
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Бума жоқ: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:489
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Барлық дестелерді не нақты дестелерді соңғы нұсқаларына дейін жаңарту."
 
 #: client/pkgc-manage.c:511
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Дестелер орнатылуда"
+msgstr "Жаңартылатын дестелер табылмады: %s"
 
 #: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Қызмет күйін алу сәтсіз"
+msgstr "Жаңартуларды алу сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Бірде-бір десте табылмады"
+msgstr "Жаңартуды талап ететін дестелер жоқ"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -854,64 +835,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Барлық дестелерді жаңғырту не дистрибутивті жаңғырту.\n"
+"\n"
+"Түрлері: minimal, default, complete"
 
 #: client/pkgc-manage.c:686
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Желіден тыс жаңарту әрекетін оқу сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:696
 msgid "Offline update is not triggered."
-msgstr ""
+msgstr "Желіден тыс жаңарту іске қосылмаған."
 
 #: client/pkgc-manage.c:704
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Желіден тыс жаңарту іске қосылды. Жаңартудан кейінгі әрекет: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:715
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Дестелер орнатылуда"
+msgstr "Дайындалған дестелер:"
 
 #: client/pkgc-manage.c:729
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Желіден тыс жаңарту дайындалмаған."
 
 #: client/pkgc-manage.c:731
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Дайындалған желіден тыс жаңартуларды оқу сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:741
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Соңғы желіден тыс жаңартудың нәтижелері қолжетімді емес."
 
 #: client/pkgc-manage.c:748
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Соңғы желіден тыс жаңарту сәтсіз аяқталды: %s: %s"
 
 #: client/pkgc-manage.c:755
 msgid "Last offline update completed successfully"
-msgstr ""
+msgstr "Соңғы желіден тыс жаңарту сәтті аяқталды"
 
 #: client/pkgc-manage.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Жаңартылған"
+msgstr "Жаңартылды: %s"
 
 #: client/pkgc-manage.c:787
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Желіден тыс жаңартуды іске қосу сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:791
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Желіден тыс жаңарту жоспарланды. Жүйе келесі жүктелуде жаңартылатын болады."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -925,135 +906,133 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Желіден тыс жүйе жаңартуларын іске қосу және басқару.\n"
+"\n"
+"Сіз келесі сұраныстардың бірін таңдай аласыз:\n"
+"  prepare - желіден тыс жаңартуды дайындау және іске қосу (бастапқы)\n"
+"  trigger - (қолмен дайындалған) желіден тыс жаңартуды іске қосу\n"
+"  cancel  - жоспарланған желіден тыс жаңартудан бас тарту\n"
+"  status  - дайындалған немесе аяқталған желіден тыс жаңарту туралы күй ақпаратын көрсету"
 
 #: client/pkgc-manage.c:835
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Желіден тыс жаңартудан бас тарту сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:839
 msgid "Offline update cancelled"
-msgstr ""
+msgstr "Желіден тыс жаңартудан бас тартылды"
 
 #: client/pkgc-manage.c:896
 #, c-format
 msgid "Unknown offline-update request: %s"
-msgstr ""
+msgstr "Белгісіз желіден тыс жаңарту сұранысы: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:916
 msgid "Install a package signature for GPG verification."
-msgstr ""
+msgstr "GPG тексеруі үшін десте қолтаңбасын орнату."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:951
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Дестелерді басқару жүйесін жөндеп көру."
 
 #: client/pkgc-manage.c:967
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Жүйе сәтті жөнделді"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:988
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "PackageKit қызметін қауіпсіз тоқтату."
 
 #: client/pkgc-manage.c:994
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Қызмет күйін алу сәтсіз"
+msgstr "Қызметті (daemon) тоқтату сұранысын жіберу сәтсіз аяқталды: %s"
 
 #: client/pkgc-manage.c:1013
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Десте метадеректерін жаңарту"
 
 #: client/pkgc-manage.c:1019
-#, fuzzy
 msgid "Install packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді орнату"
 
 #: client/pkgc-manage.c:1025
-#, fuzzy
 msgid "Remove packages"
-msgstr "Дестелер өшірілуде"
+msgstr "Дестелерді өшіру"
 
 #: client/pkgc-manage.c:1031
-#, fuzzy
 msgid "Update packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді жаңарту"
 
 #: client/pkgc-manage.c:1037
 msgid "Upgrade the system"
-msgstr ""
+msgstr "Жүйені жаңғырту"
 
 #: client/pkgc-manage.c:1043
-#, fuzzy
 msgid "Download packages"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Дестелерді жүктеп алу"
 
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Жаңарту үшін дестелер жоқ."
+msgstr "Желіден тыс жүйе жаңартуларын басқару"
 
 #: client/pkgc-manage.c:1055
-#, fuzzy
 msgid "Install package signature"
-msgstr "Жаңартуларды орнату"
+msgstr "Десте қолтаңбасын орнату"
 
 #: client/pkgc-manage.c:1061
-#, fuzzy
 msgid "Repair package system"
-msgstr "Дестелер өшірілуде"
+msgstr "Десте жүйесін жөндеу"
 
 #: client/pkgc-manage.c:1067
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "PackageKit қызметін қауіпсіз тоқтату"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:460
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "PackageKit қызметі"
+msgstr "PackageKit D-Bus оқиғаларын бақылау"
 
 #. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:562
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "PackageKit қызметі"
+msgstr "PackageKit шина оқиғаларын бақылау"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "PackageKit бэкэнд ақпаратын көрсету."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Бэкэнд: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Сипаттамасы"
+msgstr "Сипаттамасы: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "Author: %s"
-msgstr "Авторы"
+msgstr "Авторы: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Ролі"
+msgstr "Рольдер: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Соңғы дестелерді басқару транзакцияларын көрсету."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:284
@@ -1066,592 +1045,550 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Берілген үлгілерге сәйкес дестелерді іздеу. Егер MODE көрсетілмесе,\n"
+"'details' іздеуі орындалады.\n"
+"Ықтимал іздеу режимдері (MODE):\n"
+"  name    - десте аты бойынша іздеу\n"
+"  details - десте мәліметтері бойынша іздеу (бастапқы)\n"
+"  file    - файл аты бойынша іздеу\n"
+"  group   - десте тобы бойынша іздеу"
 
 #: client/pkgc-query.c:311
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Іздеу үшін сөз керек"
+msgstr "Іздеу үлгісі көрсетілмеген"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:371
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Барлық дестелерді не үлгіге сәйкес келетіндерін тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:415
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Бір немесе бірнеше десте туралы ақпаратты көрсету."
 
 #: client/pkgc-query.c:471 client/pkgc-query.c:750
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Тәуелділіктерді рекурсивті түрде тексеру"
 
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:480
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Бір немесе бірнеше десте үшін тәуелділіктерді көрсету."
 
 #: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Дестелерді шешу мүмкін емес: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:520
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Көрсетілген мүмкіндікті қай дестелер беретінін көрсету."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:551
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Бір немесе бірнеше дестедегі барлық файлдарды тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:646
 msgid "List all currently available package updates."
-msgstr ""
+msgstr "Қазіргі уақытта қолжетімді барлық десте жаңартуларын тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:678
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Көрсетілген десте жаңартуы туралы егжей-тегжейлі ақпаратты көрсету."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:716
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Десте аттарын десте ID-леріне шешу."
 
 #. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:759
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Көрсетілген дестелерді қай дестелер талап ететінін көрсету."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:802
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Дестелерді ұйымдастыруға арналған барлық қолжетімді сүзгілерді, топтарды және санаттарды тізімдеу."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:810
 msgid "Filters:"
-msgstr ""
+msgstr "Сүзгілер:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:825
 msgid "Groups:"
-msgstr ""
+msgstr "Топтар:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:840
-#, fuzzy
 msgid "Categories:"
-msgstr "Санат"
+msgstr "Санаттар:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:866
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Дистрибутив нұсқасын жаңғыртулар қолжетімді болса, оларды көрсету."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:910
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Жүйелік уақыт"
+msgstr "Өткен уақыт"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Соңғы көрсетілген әрекеттен бері өткен уақытты секундпен алу."
 
 #: client/pkgc-query.c:973
-#, fuzzy
 msgid "Show backend information"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Бэкэнд ақпаратын көрсету"
 
 #: client/pkgc-query.c:979
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Транзакция сәтсіз аяқталды"
+msgstr "Транзакциялар тарихын көрсету"
 
 #: client/pkgc-query.c:985
-#, fuzzy
 msgid "Search for packages"
-msgstr "Аттары бойынша іздеу"
+msgstr "Дестелерді іздеу"
 
 #: client/pkgc-query.c:991
-#, fuzzy
 msgid "List packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді тізімдеу"
 
 #: client/pkgc-query.c:997
-#, fuzzy
 msgid "Show package information"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Десте ақпаратын көрсету"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
 msgid "List package dependencies"
-msgstr "Дестелер өшірілуде"
+msgstr "Десте тәуелділіктерін тізімдеу"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "List packages requiring this package"
-msgstr "Бірде-бір десте табылмады"
+msgstr "Бұл дестені талап ететін дестелерді тізімдеу"
 
 #: client/pkgc-query.c:1015
 msgid "List packages providing a capability"
-msgstr ""
+msgstr "Мүмкіндікті беретін дестелерді тізімдеу"
 
 #: client/pkgc-query.c:1021
-#, fuzzy
 msgid "Show files in package"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестедегі файлдарды көрсету"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
 msgid "Get available updates"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Қолжетімді жаңартуларды алу"
 
 #: client/pkgc-query.c:1033
-#, fuzzy
 msgid "Get update details"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Жаңарту мәліметтерін алу"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Дестелер өшірілуде"
+msgstr "Десте аттарын шешу"
 
 #: client/pkgc-query.c:1045
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Қолжетімді сүзгілер мен санаттарды тізімдеу"
 
 #: client/pkgc-query.c:1051
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Қолжетімді дистрибутив жаңғыртуларын көрсету"
 
 #: client/pkgc-query.c:1057
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Транзакция"
+msgstr "Соңғы әрекеттен бергі уақытты алу"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Барлық бапталған десте репозиторийлерін тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:115
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Көрсетілген репозиторийді іске қосу."
 
 #: client/pkgc-repo.c:134
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "'%s' репозиторийі іске қосылды"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:155
 msgid "Disable the specified repository."
-msgstr ""
+msgstr "Көрсетілген репозиторийді сөндіру."
 
 #: client/pkgc-repo.c:174
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "'%s' репозиторийі сөндірілді"
 
 #: client/pkgc-repo.c:194
 msgid "Automatically remove orphaned packages"
-msgstr ""
+msgstr "Иесіз дестелерді автоматты түрде өшіру"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:204
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Дестелер өшірілуде"
+msgstr "Көрсетілген репозиторийді өшіру."
 
 #: client/pkgc-repo.c:224
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Репозиторий атауы керек"
+msgstr "'%s' репозиторийі өшірілді"
 
 #: client/pkgc-repo.c:241
-#, fuzzy
 msgid "List repositories"
-msgstr "Репозиторий опцияларын орнату"
+msgstr "Репозиторийлерді тізімдеу"
 
 #: client/pkgc-repo.c:247
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Дестелер өшірілуде"
+msgstr "Репозиторийді іске қосу"
 
 #: client/pkgc-repo.c:253
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Дестелер өшірілуде"
+msgstr "Репозиторийді сөндіру"
 
 #: client/pkgc-repo.c:259
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Дестелер өшірілуде"
+msgstr "Репозиторийді өшіру"
 
 #: client/pkgc-util.c:94
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "PackageKit қызметіне қосылмаған"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:131
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(секунд)"
+msgstr "%u секунд"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:137
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u мин %u сек"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u мин"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:147
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u сағ %u мин"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u сағ"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:157
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u күн %u сағ"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u күн"
 
 #: client/pkgc-util.c:276
 msgid "Error"
-msgstr ""
+msgstr "Қате"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:309
 msgid "Warning:"
-msgstr ""
+msgstr "Ескерту:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:431 client/pkgcli.c:188
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Опцияларды талдау сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:437
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Қолданылуы: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:631 client/pkgc-util.c:785
-#, fuzzy
 msgid "Package:"
-msgstr "PackageKit"
+msgstr "Десте:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:635
 msgid "Version:"
-msgstr ""
+msgstr "Нұсқасы:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:642
-#, fuzzy
 msgid "Summary:"
-msgstr "Жинақы ақпарат"
+msgstr "Жиынтық:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:650
-#, fuzzy
 msgid "Description:"
-msgstr "Сипаттамасы"
+msgstr "Сипаттамасы:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:657
 msgid "License:"
-msgstr ""
+msgstr "Лицензия:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:664
 msgid "URL:"
-msgstr ""
+msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:671
 msgid "Group:"
-msgstr ""
+msgstr "Топ:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:679
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Орнатылған"
+msgstr "Орнатылған өлшемі:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Download Size:"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Жүктеп алу өлшемі:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:781
-#, fuzzy
 msgid "Update Details:"
-msgstr "Жаңарту мәтіні"
+msgstr "Жаңарту мәліметтері:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:792
-#, fuzzy
 msgid "Updates:"
-msgstr "Жаңартулар"
+msgstr "Жаңартулар:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:801
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Ескіртеді"
+msgstr "Ескіргендер:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:810
-#, fuzzy
 msgid "Vendor:"
-msgstr "Өндіруші"
+msgstr "Жеткізуші:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:819
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Мәселелер трекері:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:828
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:836
-#, fuzzy
 msgid "Restart:"
-msgstr "Қайта жүктеу"
+msgstr "Қайта іске қосу:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Update text:"
-msgstr "Жаңарту мәтіні"
+msgstr "Жаңарту мәтіні:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:852
-#, fuzzy
 msgid "Changes:"
-msgstr "Өзгерістер"
+msgstr "Өзгерістер:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:859
-#, fuzzy
 msgid "State:"
-msgstr "Қалып-күйі"
+msgstr "Күйі:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:868
-#, fuzzy
 msgid "Issued:"
-msgstr "шығарылған"
+msgstr "Шығарылған:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Updated:"
-msgstr "Жаңартылған"
+msgstr "Жаңартылды:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:992
-#, fuzzy
 msgid "Transaction:"
-msgstr "Транзакция"
+msgstr "Транзакция:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:996
-#, fuzzy
 msgid "System time:"
-msgstr "Жүйелік уақыт"
+msgstr "Жүйелік уақыт:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1000
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Сәтті аяқталды"
+msgstr "Сәтті аяқталды:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
-#, fuzzy
 msgid "Role:"
-msgstr "Ролі"
+msgstr "Роль:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1016
-#, fuzzy
 msgid "Duration:"
-msgstr "Ұзақтығы"
+msgstr "Ұзақтығы:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1023
-#, fuzzy
 msgid "Command line:"
-msgstr "Командалық жол"
+msgstr "Командалық жол:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1029
-#, fuzzy
 msgid "User ID:"
-msgstr "Пайдаланушы ID-і"
+msgstr "Пайдаланушы ID-і:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1038
-#, fuzzy
 msgid "Username:"
-msgstr "Пайдаланушы аты"
+msgstr "Пайдаланушы аты:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1044
-#, fuzzy
 msgid "Real name:"
-msgstr "Шын аты"
+msgstr "Нақты аты:"
 
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1078
 msgid "None"
-msgstr ""
+msgstr "Ешқандай"
 
 #: client/pkgc-util.c:1223
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "Десте табылмады"
+msgstr "Десте табылмады: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Нұсқа ақпаратын шығарып, жұмысты аяқтау"
+msgstr "pkgcli нұсқасын көрсету"
 
 #: client/pkgcli.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Көмекті көрсету"
 
 #: client/pkgcli.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Тек минималды шығысты ұсыну"
 
 #: client/pkgcli.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Толығырақ шығысты көрсету"
 
 #: client/pkgcli.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "JSON пішімінде шығару"
 
 #: client/pkgcli.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Түрлі-түсті шығысты сөндіру"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Барлық сұрақтарға 'иә' деп жауап беру"
 
 #: client/pkgcli.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "СҮЗГІ"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Дестелерді сүзгілеу (орнатылған, қолжетімді және т.б.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Команда көрсетілмеген. Қолдану туралы ақпарат алу үшін --help параметрін пайдаланыңыз."
 
 #: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Белгісіз команда: %s"
 
 #: client/pkgcli.c:135
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "PackageKit-пен байланысу сәтсіз"
+msgstr "PackageKit-ке қосылу сәтсіз аяқталды: %s"
 
 #: client/pkgcli.c:196
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Нұсқасы: %s"
 
 #: client/pkgcli.c:211
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Қолжетерлік"
+msgstr "Қолжетімді командалар:"
 
 #: client/pkgcli.c:217
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Командаға тән көмек алу үшін 'pkgcli КОМАНДА --help' пайдаланыңыз."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Бағдарламалық қамта репозиторийлері туралы мәліметтерді жүктеп алу."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr ""
+msgstr "Файлдар тізімін жүктеп алу (бұл біраз уақыт алуы мүмкін)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
 msgid "Waiting for package manager lock."
-msgstr ""
+msgstr "Дестелер менеджерінің құлыптауын күту."
 
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
-#, fuzzy
 msgid "Loading list of packages."
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Дестелер тізімін жүктеу."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
-#, fuzzy
 msgid "Failed to search for file"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Файлды іздеу сәтсіз аяқталды"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: contrib/command-not-found/pk-command-not-found.c:511
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "Файлдар тізімін алу сәтсіз аяқталды"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: contrib/command-not-found/pk-command-not-found.c:643
-#, fuzzy
 msgid "Failed to launch:"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Жөнелту сәтсіз аяқталды:"
 
 #. TRANSLATORS: we failed to install the package
 #: contrib/command-not-found/pk-command-not-found.c:662
@@ -1685,144 +1622,139 @@ msgstr "Ұқсас командалар:"
 #. TRANSLATORS: ask the user to choose a file to run
 #: contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
-msgstr ""
+msgstr "Орындалатын команданы таңдаңыз"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: contrib/command-not-found/pk-command-not-found.c:863
 msgid "The package providing this file is:"
-msgstr ""
+msgstr "Бұл файлды ұсынатын десте:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr ""
+msgstr "'%s' дестесін '%s' командасын ұсыну үшін орнату керек пе?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
 msgid "Packages providing this file are:"
-msgstr ""
+msgstr "Бұл файлды ұсынатын дестелер:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: contrib/command-not-found/pk-command-not-found.c:903
-#, fuzzy
 msgid "Suitable packages are:"
-msgstr "Әсер етілетін дестелер:"
+msgstr "Сәйкес келетін дестелер:"
 
 #. TRANSLATORS: ask the user to choose a file to install
 #: contrib/command-not-found/pk-command-not-found.c:911
-#, fuzzy
 msgid "Please choose a package to install"
-msgstr "Керек дестені таңдаңыз:"
+msgstr "Орнатылатын дестені таңдаңыз"
 
 #: contrib/command-not-found/pk-command-not-found.c:913
 msgid "User aborted selection"
-msgstr ""
+msgstr "Пайдаланушы таңдаудан бас тартты"
 
 #: lib/packagekit-glib2/pk-console-private.c:228
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr ""
+msgstr "1-ден %i-ге дейінгі санды енгізіңіз: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/packagekit-glib2/pk-console-private.c:357
 msgid "Unknown state"
-msgstr ""
+msgstr "Белгісіз күй"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Starting"
-msgstr ""
+msgstr "Іске қосылуда"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Waiting in queue"
-msgstr ""
+msgstr "Кезекте күтуде"
 
 #. TRANSLATORS: transaction state, just started
 #: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Running"
-msgstr ""
+msgstr "Орындалуда"
 
 #. TRANSLATORS: transaction state, is querying data
 #: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Querying"
-msgstr ""
+msgstr "Сұрау салынуда"
 
 #. TRANSLATORS: transaction state, getting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
-msgstr ""
+msgstr "Ақпарат алу"
 
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Removing packages"
-msgstr "Дестелер өшірілуде"
+msgstr "Дестелерді өшіру"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-console-private.c:385
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Дестелерді жүктеп алу"
 
 #. TRANSLATORS: transaction state, installing packages
 #: lib/packagekit-glib2/pk-console-private.c:389
 msgid "Installing packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді орнату"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Refreshing software list"
-msgstr "БҚ тізімі жаңартылуда"
+msgstr "Бағдарламалық қамта тізімін жаңарту"
 
 #. TRANSLATORS: transaction state, installing updates
 #: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Installing updates"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Жаңартуларды орнату"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Cleaning up packages"
-msgstr "Дестелер тазартылуда"
+msgstr "Дестелерді тазалау"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/packagekit-glib2/pk-console-private.c:405
-#, fuzzy
 msgid "Obsoleting packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді ескірген деп белгілеу"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: lib/packagekit-glib2/pk-console-private.c:409
-#, fuzzy
 msgid "Resolving dependencies"
-msgstr "Дестелер өшірілуде"
+msgstr "Тәуелділіктерді шешу"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Checking signatures"
-msgstr ""
+msgstr "Қолтаңбаларды тексеру"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 #: lib/packagekit-glib2/pk-console-private.c:417
-#, fuzzy
 msgid "Testing changes"
-msgstr "Дестелер орнатылуда"
+msgstr "Өзгерістерді сынау"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
-msgstr ""
+msgstr "Өзгерістерді бекіту"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Requesting data"
-msgstr ""
+msgstr "Мәліметтерді сұрау"
 
 #. TRANSLATORS: transaction state, all done!
 #: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Finished"
-msgstr "Аяқталған"
+msgstr "Аяқталды"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: lib/packagekit-glib2/pk-console-private.c:433
@@ -1831,116 +1763,106 @@ msgstr "Бас тартылуда"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:437
-#, fuzzy
 msgid "Downloading repository information"
-msgstr "Репозиторий опцияларын орнату"
+msgstr "Репозиторий ақпаратын жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:441
-#, fuzzy
 msgid "Downloading list of packages"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Дестелер тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:445
-#, fuzzy
 msgid "Downloading file lists"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Файлдар тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:449
-#, fuzzy
 msgid "Downloading lists of changes"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Өзгерістер тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:453
-#, fuzzy
 msgid "Downloading groups"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Топтарды жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:457
-#, fuzzy
 msgid "Downloading update information"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Жаңарту ақпаратын жүктеп алу"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 #: lib/packagekit-glib2/pk-console-private.c:461
-#, fuzzy
 msgid "Repackaging files"
-msgstr "Десте файлдары"
+msgstr "Файлдарды қайта дестелеу"
 
 #. TRANSLATORS: transaction state, loading databases
 #: lib/packagekit-glib2/pk-console-private.c:465
-#, fuzzy
 msgid "Loading cache"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Кэшті жүктеу"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 #: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Scanning applications"
-msgstr ""
+msgstr "Қолданбаларды сканерлеу"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: lib/packagekit-glib2/pk-console-private.c:473
-#, fuzzy
 msgid "Generating package lists"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелер тізімін жасау"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Waiting for package manager lock"
-msgstr ""
+msgstr "Дестелер менеджерінің құлыптауын күту"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 #: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for authentication"
-msgstr ""
+msgstr "Аутентификацияны күту"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 #: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Updating running applications"
-msgstr ""
+msgstr "Орындалып тұрған қолданбаларды жаңарту"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
 #: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Checking applications in use"
-msgstr ""
+msgstr "Қолданыстағы қолданбаларды тексеру"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
 #: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking libraries in use"
-msgstr ""
+msgstr "Қолданыстағы кітапханаларды тексеру"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:497
-#, fuzzy
 msgid "Copying files"
-msgstr "Файлдары жоқ"
+msgstr "Файлдарды көшіру"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:501
 msgid "Running hooks"
-msgstr ""
+msgstr "Ілмектерді (hooks) орындау"
 
 #. TRANSLATORS: turn on all debugging
 #: lib/packagekit-glib2/pk-debug.c:142
 msgid "Show debugging information for all files"
-msgstr ""
+msgstr "Барлық файлдар үшін жөндеу ақпаратын көрсету"
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Debugging Options"
-msgstr ""
+msgstr "Жөндеу опциялары"
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Show debugging options"
-msgstr ""
+msgstr "Жөндеу опцияларын көрсету"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:975
 msgid "Trivial"
-msgstr ""
+msgstr "Болымсыз"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:979
@@ -1960,7 +1882,7 @@ msgstr "Қауіпсіздік"
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:991
 msgid "Bug fix"
-msgstr ""
+msgstr "Қателерді түзету"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:995
@@ -1981,329 +1903,299 @@ msgstr "Орнатылған"
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1009
 msgid "Available"
-msgstr "Қолжетерлік"
+msgstr "Қолжетімді"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
-#, fuzzy
 msgid "Unavailable"
-msgstr "Қолжетерлік"
+msgstr "Қолжетімді емес"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
 msgid "Install"
-msgstr "Орнатылған"
+msgstr "Орнату"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
 msgid "Remove"
-msgstr ""
+msgstr "Өшіру"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
 msgid "Obsolete"
-msgstr "Ескіртеді"
+msgstr "Ескірген"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
 msgid "Downgrade"
-msgstr ""
+msgstr "Нұсқасын төмендету"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
-#, fuzzy
 msgid "Downloading"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Жүктеп алу"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1058
-#, fuzzy
 msgid "Updating"
-msgstr "Жаңартылған"
+msgstr "Жаңарту"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
-#, fuzzy
 msgid "Installing"
-msgstr "Орнатылған"
+msgstr "Орнату"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
-#, fuzzy
 msgid "Removing"
-msgstr "Дестелер өшірілуде"
+msgstr "Өшіру"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1070
-#, fuzzy
 msgid "Cleaning up"
-msgstr "Дестелер тазартылуда"
+msgstr "Тазалау"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
-#, fuzzy
 msgid "Obsoleting"
-msgstr "Ескіртеді"
+msgstr "Ескірген деп белгілеу"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
-#, fuzzy
 msgid "Reinstalling"
-msgstr "Жаңартуларды орнату"
+msgstr "Қайта орнату"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1103
-#, fuzzy
 msgid "Downloaded"
-msgstr "Дестелер жүктеліп алынуда"
+msgstr "Жүктеп алынды"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1115
 msgid "Removed"
-msgstr ""
+msgstr "Өшірілді"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1119
 msgid "Cleaned up"
-msgstr ""
+msgstr "Тазаланды"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
-#, fuzzy
 msgid "Obsoleted"
-msgstr "Ескіртеді"
+msgstr "Ескірді"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1127
-#, fuzzy
 msgid "Reinstalled"
-msgstr "Орнатылған"
+msgstr "Қайта орнатылды"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1152
 msgid "Unknown role type"
-msgstr ""
+msgstr "Белгісіз роль түрі"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1156
 msgid "Getting dependencies"
-msgstr ""
+msgstr "Тәуелділіктерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1160
-#, fuzzy
 msgid "Getting update details"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Жаңарту мәліметтерін алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1165
 msgid "Getting details"
-msgstr ""
+msgstr "Мәліметтерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1169
 msgid "Getting requires"
-msgstr ""
+msgstr "Талаптарды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1173
-#, fuzzy
 msgid "Getting updates"
-msgstr "Жаңартулар орнатылуда"
+msgstr "Жаңартуларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1177
-#, fuzzy
 msgid "Searching by details"
-msgstr "Сипаттамасы бойынша іздеу"
+msgstr "Мәліметтері бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1181
-#, fuzzy
 msgid "Searching by file"
-msgstr "Файлдар бойынша іздеу"
+msgstr "Файлы бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1185
 msgid "Searching groups"
-msgstr ""
+msgstr "Топтарды іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1189
-#, fuzzy
 msgid "Searching by name"
-msgstr "Аттары бойынша іздеу"
+msgstr "Аты бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1201
-#, fuzzy
 msgid "Installing files"
-msgstr "Жаңартуларды орнату"
+msgstr "Файлдарды орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1205
-#, fuzzy
 msgid "Refreshing cache"
 msgstr "Кэшті жаңарту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1209
-#, fuzzy
 msgid "Updating packages"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестелерді жаңарту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
-#, fuzzy
 msgid "Canceling"
 msgstr "Бас тартылуда"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
-#, fuzzy
 msgid "Getting repositories"
-msgstr "Репозиторий опцияларын орнату"
+msgstr "Репозиторийлерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1221
 msgid "Modifying repository"
-msgstr ""
+msgstr "Репозиторийді өзгерту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1225
 msgid "Setting data"
-msgstr ""
+msgstr "Мәліметтерді орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
-#, fuzzy
 msgid "Removing repository"
-msgstr "Дестелер өшірілуде"
+msgstr "Репозиторийді өшіру"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1233
 msgid "Resolving"
-msgstr ""
+msgstr "Шешілуде"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1238
 msgid "Getting file list"
-msgstr ""
+msgstr "Файлдар тізімін алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1242
 msgid "Getting provides"
-msgstr ""
+msgstr "Ұсынылатын мүмкіндіктерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1246
-#, fuzzy
 msgid "Installing signature"
-msgstr "Жаңартуларды орнату"
+msgstr "Қолтаңбаны орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1250
-#, fuzzy
 msgid "Getting packages"
-msgstr "Дестелер өшірілуде"
+msgstr "Дестелерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1254
 msgid "Accepting EULA"
-msgstr ""
+msgstr "EULA қабылдау"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1262
 msgid "Getting upgrades"
-msgstr ""
+msgstr "Жаңғыртуларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1266
 msgid "Getting categories"
-msgstr ""
+msgstr "Санаттарды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1270
-#, fuzzy
 msgid "Getting transactions"
-msgstr "Транзакция"
+msgstr "Транзакцияларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1274
 msgid "Getting system upgrades"
-msgstr ""
+msgstr "Жүйе жаңғыртуларын алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
 msgid "Repairing system"
-msgstr ""
+msgstr "Жүйені жөндеу"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
 msgid "Do you want to allow installing of unsigned software?"
-msgstr ""
+msgstr "Қолтаңбасы жоқ бағдарламалық қамтаны орнатуға рұқсат бересіз бе?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:59
 msgid "The unsigned software will not be installed."
-msgstr ""
+msgstr "Қолтаңбасы жоқ бағдарламалық қамта орнатылмайды."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
 #: lib/packagekit-glib2/pk-task-text.c:104
-#, fuzzy
 msgid "Software source signature required"
-msgstr "Сессияны қайта іске қосу керек:"
+msgstr "Бағдарламалық қамта көзінің қолтаңбасы қажет"
 
 #. TRANSLATORS: the package repository name
 #: lib/packagekit-glib2/pk-task-text.c:110
 msgid "Software source name"
-msgstr ""
+msgstr "Бағдарламалық қамта көзінің аты"
 
 #. TRANSLATORS: the key URL
 #: lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
-msgstr ""
+msgstr "Кілт URL-і"
 
 #. TRANSLATORS: the username of the key
 #: lib/packagekit-glib2/pk-task-text.c:116
 msgid "Key user"
-msgstr ""
+msgstr "Кілт пайдаланушысы"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: lib/packagekit-glib2/pk-task-text.c:119
 msgid "Key ID"
-msgstr ""
+msgstr "Кілт ID-і"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 #: lib/packagekit-glib2/pk-task-text.c:122
 msgid "Key fingerprint"
-msgstr ""
+msgstr "Кілт саусақ ізі"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: lib/packagekit-glib2/pk-task-text.c:125
 msgid "Key Timestamp"
-msgstr ""
+msgstr "Кілт уақыт таңбасы"
 
 #. TRANSLATORS: ask the user if they want to import
 #: lib/packagekit-glib2/pk-task-text.c:138
-#, fuzzy
 msgid "Do you accept this signature?"
-msgstr "Бұл келісім шартты қабылдайсыз ба?"
+msgstr "Бұл қолтаңбаны қабылдайсыз ба?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:143
-#, fuzzy
 msgid "The signature was not accepted."
-msgstr "Келісім шарт қабылданбады."
+msgstr "Қолтаңба қабылданбады."
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/packagekit-glib2/pk-task-text.c:175
 msgid "End user licence agreement required"
-msgstr ""
+msgstr "Соңғы пайдаланушының лицензиялық келісімі қажет"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/packagekit-glib2/pk-task-text.c:184
@@ -2313,45 +2205,42 @@ msgstr "Келісім"
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: lib/packagekit-glib2/pk-task-text.c:188
 msgid "Do you accept this agreement?"
-msgstr "Бұл келісім шартты қабылдайсыз ба?"
+msgstr "Бұл келісімді қабылдайсыз ба?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:193
 msgid "The agreement was not accepted."
-msgstr "Келісім шарт қабылданбады."
+msgstr "Келісім қабылданбады."
 
 #. TRANSLATORS: the user needs to change media inserted into the computer
 #: lib/packagekit-glib2/pk-task-text.c:228
-#, fuzzy
 msgid "Media change required"
-msgstr "Іздеу үшін сөз керек"
+msgstr "Тасушыны ауыстыру қажет"
 
 #. TRANSLATORS: the type, e.g. DVD, CD, etc
 #: lib/packagekit-glib2/pk-task-text.c:231
 msgid "Media type"
-msgstr ""
+msgstr "Тасушы түрі"
 
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 #: lib/packagekit-glib2/pk-task-text.c:234
 msgid "Media label"
-msgstr ""
+msgstr "Тасушы белгісі"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: lib/packagekit-glib2/pk-task-text.c:237
 msgid "Text"
-msgstr ""
+msgstr "Мәтін"
 
 #. TRANSLATORS: ask the user to insert the media
 #: lib/packagekit-glib2/pk-task-text.c:243
-#, fuzzy
 msgid "Please insert the correct media"
-msgstr "Керек дестені таңдаңыз:"
+msgstr "Дұрыс тасушыны салыңыз"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: lib/packagekit-glib2/pk-task-text.c:248
-#, fuzzy
 msgid "The correct media was not inserted."
-msgstr "Келісім шарт қабылданбады."
+msgstr "Дұрыс тасушы салынбады."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:263
@@ -2376,13 +2265,12 @@ msgstr "Келесі дестелер қайта орнатылуы керек:"
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:283
 msgid "The following packages have to be downgraded:"
-msgstr "Келесі дестелердің нұсқалары төмендетілуі керек:"
+msgstr "Келесі дестелердің нұсқасы төмендетілуі керек:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
-#, fuzzy
 msgid "The following packages have to be obsoleted:"
-msgstr "Келесі дестелер орнатылуы керек:"
+msgstr "Келесі дестелер ескірген деп белгіленуі керек:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
@@ -2392,13 +2280,12 @@ msgstr "Келесі дестелер сенімсіз:"
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/packagekit-glib2/pk-task-text.c:423
 msgid "Proceed with changes?"
-msgstr ""
+msgstr "Өзгерістерді жалғастыру керек пе?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: lib/packagekit-glib2/pk-task-text.c:428
-#, fuzzy
 msgid "The transaction did not proceed."
-msgstr "Транзакция сәтсіз аяқталды"
+msgstr "Транзакция жалғастырылмады."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -2406,11 +2293,11 @@ msgstr "Транзакция сәтсіз аяқталды"
 #. to cancel another users task.
 #: policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
-msgstr ""
+msgstr "Бөтен тапсырмадан бас тарту"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr ""
+msgstr "Өзіңіз бастамаған тапсырмадан бас тарту үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2418,13 +2305,12 @@ msgstr ""
 #. only as secure as the least-secure package available in the
 #. repositories.
 #: policy/org.freedesktop.packagekit.policy.in:39
-#, fuzzy
 msgid "Install signed package"
-msgstr "Дестелер орнатылуда"
+msgstr "Қолтаңбасы бар дестені орнату"
 
 #: policy/org.freedesktop.packagekit.policy.in:40
 msgid "Authentication is required to install software"
-msgstr ""
+msgstr "Бағдарламалық қамтаны орнату үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -2433,11 +2319,11 @@ msgstr ""
 #. - This is not retained as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:56
 msgid "Install untrusted local file"
-msgstr ""
+msgstr "Сенімсіз жергілікті файлды орнату"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr ""
+msgstr "Сенімсіз бағдарламалық қамтаны орнату үшін аутентификация қажет"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2446,13 +2332,12 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
-#, fuzzy
 msgid "Install already installed package again"
-msgstr "Дестелерді орнату сәтсіз аяқталды"
+msgstr "Орнатылып қойған дестені қайта орнату"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
 msgid "Authentication is required to reinstall software"
-msgstr ""
+msgstr "Бағдарламалық қамтаны қайта орнату үшін аутентификация қажет"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -2461,13 +2346,12 @@ msgstr ""
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
-#, fuzzy
 msgid "Install older version of installed package"
-msgstr "Дестелерді орнату сәтсіз аяқталды"
+msgstr "Орнатылған дестенің ескі нұсқасын орнату"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
 msgid "Authentication is required to downgrade software"
-msgstr ""
+msgstr "Бағдарламалық қамта нұсқасын төмендету үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -2476,11 +2360,11 @@ msgstr ""
 #. - This is not kept as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Бағдарламалық қамтаға қол қою үшін пайдаланылатын кілтке сену"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr ""
+msgstr "Бағдарламалық қамтаға қол қою үшін пайдаланылатын кілтті сенімді деп санау үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2489,11 +2373,11 @@ msgstr ""
 #. be given the option to make legal decisions.
 #: policy/org.freedesktop.packagekit.policy.in:128
 msgid "Accept EULA"
-msgstr ""
+msgstr "EULA қабылдау"
 
 #: policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr ""
+msgstr "EULA қабылдау үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -2505,13 +2389,12 @@ msgstr ""
 #. 'auth_admin'.
 #. TRANSLATORS: command description
 #: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
-#, fuzzy
 msgid "Remove package"
-msgstr "Дестелер өшірілуде"
+msgstr "Дестені өшіру"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
 msgid "Authentication is required to remove software"
-msgstr ""
+msgstr "Бағдарламалық қамтаны өшіру үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -2520,13 +2403,12 @@ msgstr ""
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
-#, fuzzy
 msgid "Update software"
-msgstr "Жаңарту мәтіні"
+msgstr "Бағдарламалық қамтаны жаңарту"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
 msgid "Authentication is required to update software"
-msgstr ""
+msgstr "Бағдарламалық қамтаны жаңарту үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -2534,33 +2416,33 @@ msgstr ""
 #. install different versions of software.
 #: policy/org.freedesktop.packagekit.policy.in:183
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Бағдарламалық қамта репозиторийінің параметрлерін өзгерту"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr ""
+msgstr "Бағдарламалық қамта репозиторийінің параметрлерін өзгерту үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: policy/org.freedesktop.packagekit.policy.in:198
 msgid "Refresh system repositories"
-msgstr ""
+msgstr "Жүйелік репозиторийлерді жаңарту"
 
 #: policy/org.freedesktop.packagekit.policy.in:199
 msgid "Authentication is required to refresh the system repositories"
-msgstr ""
+msgstr "Жүйелік репозиторийлерді жаңарту үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
 #: policy/org.freedesktop.packagekit.policy.in:213
 msgid "Set network proxy"
-msgstr ""
+msgstr "Желілік проксиді орнату"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr ""
+msgstr "Бағдарламалық қамтаны жүктеп алу үшін пайдаланылатын желілік проксиді орнату үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2568,11 +2450,11 @@ msgstr ""
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr ""
+msgstr "Жүйені жаңғырту"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
-msgstr ""
+msgstr "Операциялық жүйені жаңғырту үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -2580,11 +2462,11 @@ msgstr ""
 #. applications from working.
 #: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr ""
+msgstr "Жүйені жөндеу"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr ""
+msgstr "Орнатылған бағдарламалық қамтаны жөндеу үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2596,38 +2478,38 @@ msgstr ""
 #: policy/org.freedesktop.packagekit.policy.in:260
 #: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Желіден тыс жаңартуларды іске қосу"
 
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr ""
+msgstr "Желіден тыс жаңартуларды іске қосу үшін аутентификация қажет"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Желіден тыс жаңарту туралы хабарламаны тазалау"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr ""
+msgstr "Желіден тыс жаңартулар туралы хабарламаны тазалау үшін аутентификация қажет"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "%s үшін бүркеншік ат"
 
 #: src/pk-direct.c:168
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Команда табылмады, жарамды командалар:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 #: src/pk-direct.c:408 src/pk-main.c:117
 msgid "Packaging backend to use, e.g. dummy"
-msgstr ""
+msgstr "Пайдаланылатын дестелеу бэкэнді, мысалы, dummy"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:424
@@ -2647,7 +2529,7 @@ msgstr "Аттары бойынша іздеу"
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
 msgid "Search by details"
-msgstr "Сипаттамасы бойынша іздеу"
+msgstr "Мәліметтері бойынша іздеу"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
@@ -2656,9 +2538,8 @@ msgstr "Файлдар бойынша іздеу"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
-#, fuzzy
 msgid "Install package"
-msgstr "Дестелер орнатылуда"
+msgstr "Дестені орнату"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
@@ -2673,49 +2554,47 @@ msgstr "PackageKit"
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
 msgid "Failed to parse arguments"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "Аргументтерді талдау сәтсіз аяқталды"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
 msgid "Failed to load the config file"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Конфигурациялық файлды жүктеу сәтсіз аяқталды"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
-#, fuzzy
 msgid "Failed to load the backend"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Бэкендті жүктеу сәтсіз аяқталды"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
-#, fuzzy
 msgid "Failed to unload the backend"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Бэкендті шығару сәтсіз аяқталды"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:120
 msgid "Disable the idle timer"
-msgstr ""
+msgstr "Бос тұру таймерін сөндіру"
 
 #. TRANSLATORS: show version
 #: src/pk-main.c:123
 msgid "Show version and exit"
-msgstr "Нұсқа ақпаратын шығарып, жұмысты аяқтау"
+msgstr "Нұсқаны көрсету және шығу"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: src/pk-main.c:126
 msgid "Exit after a small delay"
-msgstr ""
+msgstr "Кішкене кідірістен кейін шығу"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:129
 msgid "Exit after the engine has loaded"
-msgstr ""
+msgstr "Қозғалтқыш жүктелгеннен кейін шығу"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Іске қосылғанда ортаны тазаламау"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:146
@@ -2725,36 +2604,36 @@ msgstr "PackageKit қызметі"
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:221
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Аргументтерді талдау қатесі"
+msgstr "auto шешілуі сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:245
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Баптаулар файлын жүктеу қатесі"
+msgstr "Бэкэндті жүктеу сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
 msgid "The software is not from a trusted source."
-msgstr ""
+msgstr "Бағдарламалық қамта сенімді көзден емес."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестені жаңартпаңыз."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестелерді жаңартпаңыз."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестені орнатпаңыз."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr ""
+msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестелерді орнатпаңыз."
 
 #, fuzzy
 #~| msgid "Installing updates"
