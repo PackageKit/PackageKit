@@ -52,7 +52,7 @@ pk_package_id_split (const gchar *package_id)
 
 	/* split by delimeter ';' */
 	sections = g_strsplit (package_id, ";", -1);
-	if (g_strv_length (sections) != 4)
+	if (g_strv_length (sections) != 5)
 		goto out;
 
 	/* name has to be valid */
@@ -96,11 +96,12 @@ pk_package_id_check (const gchar *package_id)
 }
 
 /**
- * pk_package_id_build:
+ * pk_package_id_build_full:
  * @name: the package name
  * @version: the package version
  * @arch: the package architecture
- * @data: the package extra data
+ * @origin: the package origin
+ * @data: additional data
  *
  * Generate a PackageID.
  *
@@ -110,13 +111,15 @@ pk_package_id_check (const gchar *package_id)
  **/
 gchar *
 pk_package_id_build (const gchar *name, const gchar *version,
-		     const gchar *arch, const gchar *data)
+		     const gchar *arch, const gchar *origin,
+		     const gchar *data)
 {
 	g_return_val_if_fail (name != NULL, NULL);
 	return g_strjoin (";",
 			  name,
 			  version != NULL ? version : "",
 			  arch != NULL ? arch : "",
+			  origin != NULL ? origin : "",
 			  data != NULL ? data : "",
 			  NULL);
 }
@@ -181,7 +184,7 @@ pk_package_id_equal_fuzzy_arch (const gchar *package_id1, const gchar *package_i
  *
  * Formats the PackageID to be printable to the user.
  *
- * Return value: the name-version.arch formatted string, use g_free() to free.
+ * Return value: the name_version.arch formatted string, use g_free() to free.
  *
  * Since: 0.5.2
  **/

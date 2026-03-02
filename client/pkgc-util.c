@@ -475,7 +475,7 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 	const gchar *package_id;
 	PkInfoEnum info;
 	g_auto(GStrv) split = NULL;
-	const gchar *name, *version, *arch, *data;
+	const gchar *name, *version, *arch, *origin, *data;
 	const gchar *info_color = COLOR_RESET;
 	const gchar *info_symbol = SYMBOL_PACKAGE;
 
@@ -492,6 +492,7 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 	name = split[PK_PACKAGE_ID_NAME];
 	version = split[PK_PACKAGE_ID_VERSION];
 	arch = split[PK_PACKAGE_ID_ARCH];
+	origin = split[PK_PACKAGE_ID_ORIGIN];
 	data = split[PK_PACKAGE_ID_DATA];
 
 	/* set color & symbol based on package state */
@@ -537,7 +538,8 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		json_object_set_new (root, "name", json_string (name));
 		json_object_set_new (root, "version", json_string (version));
 		json_object_set_new (root, "arch", json_string (arch));
-		json_object_set_new (root, "repo", json_string (data));
+		json_object_set_new (root, "repo", json_string (origin));
+		json_object_set_new (root, "data", json_string (data));
 		json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
 		pkgc_print_json_decref (root);
 
@@ -555,13 +557,11 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 
 	g_print (" %s%s%s", get_color (ctx, COLOR_GRAY), version, get_reset_color (ctx));
 
-	if (arch != NULL && g_strcmp0 (arch, "") != 0) {
+	if (g_strcmp0 (arch, "") != 0)
 		g_print (".%s%s%s", get_color (ctx, COLOR_GRAY), arch, get_reset_color (ctx));
-	}
 
-	if (data != NULL && g_strcmp0 (data, "") != 0) {
-		g_print (" [%s%s%s]", get_color (ctx, COLOR_GRAY), data, get_reset_color (ctx));
-	}
+	if (g_strcmp0 (origin, "") != 0)
+		g_print (" [%s%s%s]", get_color (ctx, COLOR_GRAY), origin, get_reset_color (ctx));
 
 	g_print ("\n");
 }
@@ -1166,7 +1166,7 @@ pkgc_resolve_package (PkgcliContext *ctx,
 		package_id_tmp = pk_package_get_id (package);
 		split = pk_package_id_split (package_id_tmp);
 		printable = pk_package_id_to_printable (package_id_tmp);
-		g_print ("%u. %s [%s]\n", i + 1, printable, split[PK_PACKAGE_ID_DATA]);
+		g_print ("%u. %s [%s]\n", i + 1, printable, split[PK_PACKAGE_ID_ORIGIN]);
 	}
 
 	/* prompt user for selection */
