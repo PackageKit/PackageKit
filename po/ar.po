@@ -4,12 +4,13 @@
 #
 # Translators:
 # zayed <zayed.alsaidi@gmail.com>, 2022,2024
+# jonnysemon <jonnysemon@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-01-28 11:14+0100\n"
-"PO-Revision-Date: 2025-10-22 12:02+0000\n"
+"PO-Revision-Date: 2026-03-02 10:09+0000\n"
 "Last-Translator: jonnysemon <jonnysemon@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/packagekit/translations/ar/>\n"
 "Language: ar\n"
@@ -17,11 +18,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
-msgstr ""
+msgstr "لم يعثر على ملف تضبيط."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
