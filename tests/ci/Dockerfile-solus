@@ -8,6 +8,7 @@ RUN eopkg -y install \
     gstreamer-1.0-plugins-base-devel \
     libgtk-3-devel \
     jansson-devel \
+    plymouth-devel \
     docbook-xml
 
 RUN mkdir /build
