@@ -97,6 +97,7 @@ except Exception:
         STATUS_REFRESH_CACHE = "refresh-cache"
         STATUS_REMOVE = "remove"
         STATUS_INFO = "info"
+        STATUS_QUERY = "query"
 
         TRANSACTION_FLAG_SIMULATE = "simulate"
 
@@ -222,6 +223,8 @@ except Exception:
                     self.get_update_detail(args[0].split(PACKAGE_IDS_DELIM))
                 elif cmd == 'get-updates':
                     self.get_updates(_split_filters_arg(args))
+                elif cmd == 'get-packages':
+                    self.get_packages(_split_filters_arg(args))
                 elif cmd == 'install-files':
                     self.install_files(args[0].split(';'), args[1].split(FILENAME_DELIM))
                 elif cmd == 'install-packages':
@@ -385,25 +388,47 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         package = self.get_package_from_id(package_ids[0])[0]
 
+        pkg = None
+        repo_name = ""
+
         if self.packagedb.has_package(package):
             pkg = self.packagedb.get_package(package)
-            repo = self.packagedb.get_package_repo(pkg.name, None)
-            pkg_id = self.get_package_id(pkg.name,
-                                         self.__get_package_version(pkg),
-                                         pkg.architecture, repo[1])
+            try:
+                repo = self.packagedb.get_package_repo(pkg.name, None)
+                repo_name = repo[1]
+            except Exception:
+                repo_name = ""
+        elif self.installdb.has_package(package):
+            pkg = self.installdb.get_package(package)
 
-            if pkg.partOf in self.groups:
-                group = self.groups[pkg.partOf]
-            else:
-                group = GROUP_UNKNOWN
-
-            homepage = pkg.source.homepage if pkg.source.homepage is not None\
-                else ''
-
-            self.details(pkg_id, '', ",".join(pkg.license), group, pkg.description,
-                         homepage, pkg.packageSize, None)
-        else:
+        if pkg is None:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
+            return
+
+        pkg_id = self.get_package_id(pkg.name,
+                                     self.__get_package_version(pkg),
+                                     pkg.architecture, repo_name)
+
+        if pkg.partOf in self.groups:
+            group = self.groups[pkg.partOf]
+        else:
+            group = GROUP_UNKNOWN
+
+        homepage = ""
+        if hasattr(pkg, "source") and pkg.source is not None:
+            homepage = pkg.source.homepage if pkg.source.homepage is not None else ""
+
+        licenses = getattr(pkg, "license", [])
+        if isinstance(licenses, basestring):
+            licenses_text = licenses
+        else:
+            licenses_text = ",".join(licenses)
+
+        description = getattr(pkg, "description", "")
+        package_size = getattr(pkg, "packageSize", 0)
+
+        self.details(pkg_id, '', licenses_text, group, description,
+                     homepage, package_size, None)
 
     def get_files(self, package_ids):
         """ Prints a file list for a given package """
@@ -426,10 +451,38 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             file_list = ";".join(files)
             self.files(pkg_id, file_list)
 
+    def get_packages(self, filters):
+        """ Prints a package list according to filter """
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        try:
+            installed = list(self.installdb.list_installed())
+        except Exception:
+            installed = []
+
+        try:
+            available = list(self.packagedb.list_packages(None))
+        except Exception:
+            available = []
+
+        if FILTER_INSTALLED in filters:
+            packages = installed
+        elif FILTER_NOT_INSTALLED in filters:
+            installed_set = set(installed)
+            packages = [pkg for pkg in available if pkg not in installed_set]
+        else:
+            packages = available
+
+        for package in packages:
+            self.__get_package(package, filters)
+
     def get_repo_list(self, filters):
         """ Prints available repositories """
         self.allow_cancel(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         for repo in pisi.api.list_repos():
             # Internal FIXME: What an ugly way to get repo uri
