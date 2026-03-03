@@ -25,6 +25,12 @@
 
 static PkBackendSpawn *spawn;
 
+gboolean
+pk_backend_supports_parallelization (PkBackend *backend)
+{
+	return FALSE;
+}
+
 void
 pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
@@ -319,14 +325,12 @@ pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield tr
 }
 
 void
-pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    gchar *transaction_flags_temp;
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
-
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "update-system", transaction_flags_temp, NULL);
-
-    g_free (transaction_flags_temp);
+	gchar *filters_text;
+	filters_text = pk_filter_bitfield_to_string (filters);
+	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-packages", filters_text, NULL);
+	g_free (filters_text);
 }
 
 void
