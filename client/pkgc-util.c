@@ -58,25 +58,29 @@ gboolean
 pkgc_util_setup_proxy (PkgcliContext *ctx, GError **error)
 {
 	const gchar *http_proxy = NULL;
+	const gchar *https_proxy = NULL;
 	const gchar *ftp_proxy = NULL;
+	const gchar *pac = NULL;
 
-	/* Check if any proxy is set */
+	/* check if any proxy is set */
 	http_proxy = g_getenv ("http_proxy");
+	https_proxy = g_getenv ("https_proxy");
 	ftp_proxy = g_getenv ("ftp_proxy");
+	pac = g_getenv ("pac");
 
-	if (!http_proxy && !ftp_proxy)
+	if (!http_proxy && !https_proxy && !ftp_proxy && !pac)
 		return TRUE;
 
-	/* Set proxy configuration */
+	/* set proxy configuration */
 	return pk_control_set_proxy2 (ctx->control,
-				      http_proxy,
-				      g_getenv ("https_proxy"),
-				      ftp_proxy,
-				      g_getenv ("all_proxy"),
-				      g_getenv ("no_proxy"),
-				      g_getenv ("pac"),
-				      ctx->cancellable,
-				      error);
+					http_proxy,
+					https_proxy,
+					ftp_proxy,
+					g_getenv ("all_proxy"),
+					g_getenv ("no_proxy"),
+					pac,
+					ctx->cancellable,
+					error);
 }
 
 /**
