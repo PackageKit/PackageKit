@@ -13,8 +13,6 @@ jobs:
           - distro: debian
             backend: apt
           - distro: fedora
-            backend: dnf
-          - distro: fedora
             backend: dnf5
           - distro: fedora
             backend: alpm
