@@ -261,7 +261,7 @@ dnf_get_filter_for_ids (gchar **package_ids)
 
 	for (i = 0; package_ids[i] != NULL && (!installed || !available); i++) {
 		g_auto(GStrv) split = pk_package_id_split (package_ids[i]);
-		if (g_strcmp0 (split[PK_PACKAGE_ID_DATA], "installed") == 0)
+		if (g_strcmp0 (split[PK_PACKAGE_ID_ORIGIN], "installed") == 0)
 			installed = TRUE;
 		else
 			available = TRUE;
