@@ -622,6 +622,6 @@ pkgc_register_monitor_commands (PkgcliContext *ctx)
 	    ctx,
 	    "monitor",
 	    pkgc_cmd_monitor,
-	    /* TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor */
+	    /* TRANSLATORS: Description for monitor command in pkgcli help */
 	    _("Monitor PackageKit bus events"));
 }

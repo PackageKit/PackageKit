@@ -1028,59 +1028,69 @@ pkgc_register_manage_commands (PkgcliContext *ctx)
 		ctx,
        "refresh",
        pkgc_refresh,
+       /* TRANSLATORS: Description for refresh command in pkgcli help */
        _("Refresh package metadata"));
 
 	pkgc_context_register_command (
 		ctx,
 		"install",
 		pkgc_install,
+		/* TRANSLATORS: Description for install command in pkgcli help */
 		_("Install packages"));
 
 	pkgc_context_register_command (
 		ctx,
 		"remove",
 		pkgc_remove,
+		/* TRANSLATORS: Description for remove command in pkgcli help */
 		_("Remove packages"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "update",
 	    pkgc_update,
+	    /* TRANSLATORS: Description for update command in pkgcli help */
 	    _("Update packages"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "upgrade",
 	    pkgc_upgrade,
+	    /* TRANSLATORS: Description for upgrade command in pkgcli help */
 	    _("Upgrade the system"));
 
 	pkgc_context_register_command (
 	    ctx,
 	    "download",
 	    pkgc_download,
+	    /* TRANSLATORS: Description for download command in pkgcli help */
 	    _("Download packages"));
 
 	pkgc_context_register_command (
 		ctx,
 		"offline-update",
 		pkgc_offline_update,
+		/* TRANSLATORS: Description for offline-update command in pkgcli help */
 		_("Manage offline system updates"));
 
 	pkgc_context_register_command (
 		ctx,
 		"install-sig",
 		pkgc_install_sig,
+		/* TRANSLATORS: Description for install-sig command in pkgcli help */
 		_("Install package signature"));
 
 	pkgc_context_register_command (
 		ctx,
 		"repair",
 		pkgc_repair,
+		/* TRANSLATORS: Description for repair command in pkgcli help */
 		_("Repair package system"));
 
 	pkgc_context_register_command (
 		ctx,
 		"quit",
 		pkgc_suggest_quit,
+		/* TRANSLATORS: Description for quit command in pkgcli help */
 		_("Safely stop the PackageKit daemon"));
 }

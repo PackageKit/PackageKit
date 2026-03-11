@@ -982,89 +982,104 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 		ctx,
 		"backend",
 		pkgc_backend_info,
+		/* TRANSLATORS: Description for backend command in pkgcli help */
 		_("Show backend information"));
 
 	pkgc_context_register_command (
 		ctx,
 		"history",
 		pkgc_history,
+		/* TRANSLATORS: Description for history command in pkgcli help */
 		_("Show transaction history"));
 
 	pkgc_context_register_command (
 		ctx,
 		"search",
 		pkgc_query_search,
+		/* TRANSLATORS: Description for search command in pkgcli help */
 		_("Search for packages"));
 
 	pkgc_context_register_command (
 		ctx,
 		"list",
 		pkgc_query_list,
+		/* TRANSLATORS: Description for list command in pkgcli help */
 		_("List packages"));
 
 	pkgc_context_register_command (
 		ctx,
 		"show",
 		pkgc_query_show,
+		/* TRANSLATORS: Description for show command in pkgcli help */
 		_("Show package information"));
 
 	pkgc_context_register_command (
 		ctx,
 		"list-depends",
 		pkgc_query_depends_on,
+		/* TRANSLATORS: Description for list-depends command in pkgcli help */
 		_("List package dependencies"));
 
 	pkgc_context_register_command (
 		ctx,
 		"list-required-by",
 		pkgc_query_required_by,
+		/* TRANSLATORS: Description for list-required-by command in pkgcli help */
 		_("List packages requiring this package"));
 
 	pkgc_context_register_command (
 		ctx,
 		"what-provides",
 		pkgc_query_what_provides,
+		/* TRANSLATORS: Description for what-provides command in pkgcli help */
 		_("List packages providing a capability"));
 
 	pkgc_context_register_command (
 		ctx,
 		"files",
 		pkgc_query_files,
+		/* TRANSLATORS: Description for files command in pkgcli help */
 		_("Show files in package"));
 
 	pkgc_context_register_command (
 		ctx,
 		"list-updates",
 		pkgc_updates_list_updates,
+		/* TRANSLATORS: Description for list-updates command in pkgcli help */
 		_("Get available updates"));
 
 	pkgc_context_register_command (
 		ctx,
 		"show-update",
 		pkgc_updates_show_update,
+		/* TRANSLATORS: Description for show-update command in pkgcli help */
 		_("Get update details"));
 
 	pkgc_context_register_command (
 		ctx,
 		"resolve",
 		pkgc_query_resolve,
+		/* TRANSLATORS: Description for resolve command in pkgcli help */
 		_("Resolve package names"));
 
 	pkgc_context_register_command (
 		ctx,
 		"organization",
 		pkgc_query_organization,
+		/* TRANSLATORS: Description for organization command in pkgcli help */
 		_("List available filters and categories"));
 
 	pkgc_context_register_command (
 		ctx,
 		"show-os-upgrade",
 		pkgc_query_show_os_upgrade,
+		/* TRANSLATORS: Description for show-os-upgrade command in pkgcli help */
 		_("Show available distribution upgrades"));
 
 	pkgc_context_register_command (
 		ctx,
 		"last-time",
 		pkgc_query_last_time,
+		/* TRANSLATORS: Description for last-time command in pkgcli help */
 		_("Get time since last action"));
 }
