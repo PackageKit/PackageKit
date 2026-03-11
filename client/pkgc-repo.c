@@ -241,23 +241,27 @@ pkgc_register_repo_commands (PkgcliContext *ctx)
 		ctx,
 		"repo-list",
 		pkgc_repo_list,
+		/* TRANSLATORS: Description for repo-list command in pkgcli help */
 		_("List repositories"));
 
 	pkgc_context_register_command (
 		ctx,
 		"repo-enable",
 		pkgc_repo_enable,
+		/* TRANSLATORS: Description for repo-enable command in pkgcli help */
 		_("Enable a repository"));
 
 	pkgc_context_register_command (
 		ctx,
 		"repo-disable",
 		pkgc_repo_disable,
+		/* TRANSLATORS: Description for repo-disable command in pkgcli help */
 		_("Disable a repository"));
 
 	pkgc_context_register_command (
 		ctx,
 		"repo-remove",
 		pkgc_repo_remove,
+		/* TRANSLATORS: Description for repo-remove command in pkgcli help */
 		_("Remove a repository"));
 }
