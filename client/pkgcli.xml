@@ -208,7 +208,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><command>list-required-by</command></term>
+        <term><command>list-requiring</command></term>
         <listitem>
           <para>
             List packages that depend on or require the specified package.
