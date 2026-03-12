@@ -1018,14 +1018,14 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 		"list-depends",
 		pkgc_query_list_depends,
 		/* TRANSLATORS: Description for list-depends command in pkgcli help */
-		_("List package dependencies"));
+		_("List dependencies of the specified package(s)"));
 
 	pkgc_context_register_command (
 		ctx,
 		"list-requiring",
 		pkgc_query_list_requiring,
 		/* TRANSLATORS: Description for list-requiring command in pkgcli help */
-		_("List packages requiring this package"));
+		_("List other packages requiring the specified package(s)"));
 
 	pkgc_context_register_command (
 		ctx,
