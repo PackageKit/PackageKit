@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-01-28 11:14+0100\n"
+"POT-Creation-Date: 2026-03-08 19:18+0100\n"
 "PO-Revision-Date: 2026-02-24 23:09+0000\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/packagekit/translations/ko/>\n"
@@ -131,8 +131,8 @@ msgstr "실제 이름"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
-#: client/pkgc-util.c:1075
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1055
+#: client/pkgc-util.c:1073
 msgid "Affected packages:"
 msgstr "변경할 패키지:"
 
@@ -381,13 +381,13 @@ msgstr "중요한 보안 업데이트를 완료하려면 로그아웃 후 다시
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1165
 msgid "More than one package matches:"
 msgstr "하나 이상의 일치하는 패키지:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1177
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "올바른 패키지를 선택하여 주십시오:"
@@ -465,7 +465,7 @@ msgstr "모든 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
 msgstr "트랜잭션 도중 데몬이 충돌했습니다!"
 
@@ -481,7 +481,7 @@ msgstr "하위 명령:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:904
 msgid "Failed to get the time since this action was last completed"
 msgstr "마지막으로 이 동작을 실행한 시간을 알 수 없음"
 
@@ -567,7 +567,7 @@ msgstr "PackageKit과 연결할 수 없음"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:257
 msgid "The filter specified was invalid"
 msgstr "정의된 필터가 올바르지 않습니다"
 
@@ -649,17 +649,15 @@ msgstr "저장소 이름, 인자, 값이 필요함"
 msgid "A repo id and autoremove required"
 msgstr "저장소 ID와 자동 제거가 필요함"
 
-#. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:954
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "'update-packages'와 같은 동작이 필요함"
 
-#. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:962
 msgid "A correct role is required"
 msgstr "올바른 규칙이 필요함"
 
@@ -718,11 +716,11 @@ msgstr "옵션 '%s'이(가) 지원되지 않음"
 msgid "Command failed"
 msgstr "명령 실패"
 
-#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
 msgid "Failed to get daemon state"
 msgstr "데몬 상태를 가져올 수 없음"
 
-#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:482
 msgid "Failed to get properties"
 msgstr "속성을 가져올 수 없음"
 
@@ -761,143 +759,145 @@ msgid "SECONDS"
 msgstr "<초>"
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:198
+#: client/pkgc-manage.c:199
 msgid "Refresh the package metadata cache."
 msgstr "패키지 메타데이터 캐시를 새로 고칩니다."
 
-#: client/pkgc-manage.c:224
+#: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:248
+#: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
 msgstr ""
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:309 client/pkgc-manage.c:322
+#: client/pkgc-manage.c:312 client/pkgc-manage.c:326
 #, fuzzy, c-format
 msgid "Could not find any available package: %s"
 msgstr "사용 가능한 패키지를 찾을 수 없음: %s"
 
-#: client/pkgc-manage.c:327
+#: client/pkgc-manage.c:331
 #, fuzzy
 msgid "The selected package is already installed."
 msgstr "선택한 패키지는 이미 설치한 패키지인 것 같습니다."
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:367
+#: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
 msgstr ""
 
-#: client/pkgc-manage.c:384
+#: client/pkgc-manage.c:389
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "설치한 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:424
+#: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
 msgstr ""
 
-#: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "패키지를 찾을 수 없음: %s"
 
-#: client/pkgc-manage.c:446
+#: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:489
+#: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
 msgstr ""
 
-#: client/pkgc-manage.c:511
+#: client/pkgc-manage.c:518
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "업데이트할 패키지를 찾을 수 없음: %s"
 
-#: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "업데이트를 가져올 수 없음: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
 msgid "No packages require updating"
 msgstr "업데이트할 패키지가 없습니다"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:591
+#: client/pkgc-manage.c:600
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
 
-#: client/pkgc-manage.c:686
+#: client/pkgc-manage.c:695
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "오프라인 업데이트 동작 읽어들이기 실패: %s"
 
-#: client/pkgc-manage.c:696
+#: client/pkgc-manage.c:705
 msgid "Offline update is not triggered."
 msgstr "오프라인 업데이트를 실행하지 않았습니다."
 
-#: client/pkgc-manage.c:704
+#: client/pkgc-manage.c:714
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "오프라인 업데이트를 실행했습니다. 업데이트 후 수행할 동작: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
+#: client/pkgc-manage.c:725
 msgid "Prepared packages:"
 msgstr "준비한 패키지:"
 
-#: client/pkgc-manage.c:729
+#: client/pkgc-manage.c:739
 msgid "No offline update is prepared."
 msgstr "오프라인 업데이트를 준비하지 않았습니다."
 
-#: client/pkgc-manage.c:731
+#: client/pkgc-manage.c:742
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "준비한 오프라인 업데이트 읽어들이기 실패: %s"
 
-#: client/pkgc-manage.c:741
+#: client/pkgc-manage.c:753
 msgid "No results from last offline update available."
 msgstr "최신 오프라인 업데이트 사용 가능 여부 결과가 없습니다."
 
-#: client/pkgc-manage.c:748
+#: client/pkgc-manage.c:760
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "최신 오프라인 업데이트 실패: %s: %s"
 
-#: client/pkgc-manage.c:755
+#: client/pkgc-manage.c:767
 msgid "Last offline update completed successfully"
 msgstr "최신 오프라인 업데이트를 무사히 완료했습니다"
 
-#: client/pkgc-manage.c:766
+#: client/pkgc-manage.c:777
 #, c-format
 msgid "Updated: %s"
 msgstr "업데이트함: %s"
 
-#: client/pkgc-manage.c:787
+#: client/pkgc-manage.c:801
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "오프라인 업데이트 실행 실패: %s"
 
-#: client/pkgc-manage.c:791
+#: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "오프라인 업데이트를 예약했습니다. 다시 시작한 후 시스템을 업데이트합니다."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
+#: client/pkgc-manage.c:825
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -915,100 +915,100 @@ msgstr ""
 "  cancel  - 계획한 오프라인 업데이트를 취소합니다\n"
 "  status  - 준비한/마친 오프라인 업데이트의 상태 정보를 보여줍니다"
 
-#: client/pkgc-manage.c:835
+#: client/pkgc-manage.c:850
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "오프라인 업데이트 취소 실패: %s"
 
-#: client/pkgc-manage.c:839
+#: client/pkgc-manage.c:854
 msgid "Offline update cancelled"
 msgstr "오프라인 업데이트를 취소했습니다"
 
-#: client/pkgc-manage.c:896
+#: client/pkgc-manage.c:911
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "알 수 없는 오프라인 업데이트 요청: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
+#: client/pkgc-manage.c:932
 msgid "Install a package signature for GPG verification."
 msgstr "GPG 검증을 위한 패키지 서명을 설치합니다."
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
+#: client/pkgc-manage.c:968
 msgid "Attempt to repair the package management system."
 msgstr ""
 
-#: client/pkgc-manage.c:967
+#: client/pkgc-manage.c:984
 msgid "System repaired successfully"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
+#: client/pkgc-manage.c:1006
 msgid "Safely terminate the PackageKit daemon."
 msgstr ""
 
-#: client/pkgc-manage.c:994
+#: client/pkgc-manage.c:1012
 #, fuzzy, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "데몬 상태를 가져올 수 없음"
 
-#: client/pkgc-manage.c:1013
+#: client/pkgc-manage.c:1031
 msgid "Refresh package metadata"
 msgstr ""
 
-#: client/pkgc-manage.c:1019
+#: client/pkgc-manage.c:1037
 #, fuzzy
 msgid "Install packages"
 msgstr "패키지 설치"
 
-#: client/pkgc-manage.c:1025
+#: client/pkgc-manage.c:1043
 #, fuzzy
 msgid "Remove packages"
 msgstr "꾸러미 제거"
 
-#: client/pkgc-manage.c:1031
+#: client/pkgc-manage.c:1049
 #, fuzzy
 msgid "Update packages"
 msgstr "꾸러미 업데이트 중"
 
-#: client/pkgc-manage.c:1037
+#: client/pkgc-manage.c:1055
 #, fuzzy
 msgid "Upgrade the system"
 msgstr "시스템 업그레이드"
 
-#: client/pkgc-manage.c:1043
+#: client/pkgc-manage.c:1061
 #, fuzzy
 msgid "Download packages"
 msgstr "패키지 다운로드 중"
 
-#: client/pkgc-manage.c:1049
+#: client/pkgc-manage.c:1067
 #, fuzzy
 msgid "Manage offline system updates"
 msgstr "업데이트할 패키지가 없습니다."
 
-#: client/pkgc-manage.c:1055
+#: client/pkgc-manage.c:1073
 #, fuzzy
 msgid "Install package signature"
 msgstr "서명 설치 중"
 
-#: client/pkgc-manage.c:1061
+#: client/pkgc-manage.c:1079
 #, fuzzy
 msgid "Repair package system"
 msgstr "시스템 복구"
 
-#: client/pkgc-manage.c:1067
+#: client/pkgc-manage.c:1085
 msgid "Safely stop the PackageKit daemon"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
+#: client/pkgc-monitor.c:504
 #, fuzzy
 msgid "Monitor PackageKit D-Bus events"
 msgstr "PackageKit 서비스"
 
 #. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
+#: client/pkgc-monitor.c:626
 #, fuzzy
 msgid "Monitor PackageKit bus events"
 msgstr "PackageKit 서비스"
@@ -1041,12 +1041,12 @@ msgid "Roles: %s"
 msgstr "역할"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
+#: client/pkgc-query.c:246
 msgid "Show recent package management transactions."
 msgstr ""
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
+#: client/pkgc-query.c:285
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -1057,172 +1057,172 @@ msgid ""
 "  group   - search by package group"
 msgstr ""
 
-#: client/pkgc-query.c:311
+#: client/pkgc-query.c:313
 #, fuzzy
 msgid "No search pattern specified"
 msgstr "검색 단어가 필요함"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
+#: client/pkgc-query.c:374
 msgid "List all packages or those matching a pattern."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
+#: client/pkgc-query.c:419
 msgid "Show information about one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
+#: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
+#: client/pkgc-query.c:485
 msgid "Show dependencies for one or more packages."
 msgstr ""
 
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
 #, fuzzy, c-format
 msgid "Could not resolve packages: %s"
 msgstr "auto 설정 값 해석 실패: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
+#: client/pkgc-query.c:526
 msgid "Show which packages provide the specified capability."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
+#: client/pkgc-query.c:558
 msgid "List all files contained in one or more packages."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
+#: client/pkgc-query.c:654
 #, fuzzy
 msgid "List all currently available package updates."
 msgstr "사용 가능한 패키지를 찾을 수 없음: %s"
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
+#: client/pkgc-query.c:687
 msgid "Show detailed information about the specified package update."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
+#: client/pkgc-query.c:726
 msgid "Resolve package names to package IDs."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
+#: client/pkgc-query.c:770
 msgid "Show which packages require the specified packages."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
+#: client/pkgc-query.c:814
 msgid "List all available filters, groups and categories for package organization."
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
+#: client/pkgc-query.c:822
 msgid "Filters:"
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
+#: client/pkgc-query.c:834
 msgid "Groups:"
 msgstr ""
 
 #. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
+#: client/pkgc-query.c:846
 #, fuzzy
 msgid "Categories:"
 msgstr "분류"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
+#: client/pkgc-query.c:872
 msgid "Show distribution version upgrades, if any are available."
 msgstr ""
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
+#: client/pkgc-query.c:918
 #, fuzzy
 msgid "Elapsed time"
 msgstr "시스템 시간"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
+#: client/pkgc-query.c:943
 msgid "Get time in seconds since the last specified action."
 msgstr ""
 
-#: client/pkgc-query.c:973
+#: client/pkgc-query.c:985
 #, fuzzy
 msgid "Show backend information"
 msgstr "정보 가져오는 중"
 
-#: client/pkgc-query.c:979
+#: client/pkgc-query.c:991
 #, fuzzy
 msgid "Show transaction history"
 msgstr "트랜잭션에 실패했습니다."
 
-#: client/pkgc-query.c:985
+#: client/pkgc-query.c:997
 #, fuzzy
 msgid "Search for packages"
 msgstr "이름으로 검색"
 
-#: client/pkgc-query.c:991
+#: client/pkgc-query.c:1003
 #, fuzzy
 msgid "List packages"
 msgstr "패키지 설치"
 
-#: client/pkgc-query.c:997
+#: client/pkgc-query.c:1009
 #, fuzzy
 msgid "Show package information"
 msgstr "업데이트 정보 다운로드 중"
 
-#: client/pkgc-query.c:1003
+#: client/pkgc-query.c:1015
 #, fuzzy
 msgid "List package dependencies"
 msgstr "의존성 확인 중"
 
-#: client/pkgc-query.c:1009
+#: client/pkgc-query.c:1021
 #, fuzzy
 msgid "List packages requiring this package"
 msgstr "이 파일이 포함된 패키지:"
 
-#: client/pkgc-query.c:1015
+#: client/pkgc-query.c:1027
 #, fuzzy
 msgid "List packages providing a capability"
 msgstr "이 파일이 포함된 패키지:"
 
-#: client/pkgc-query.c:1021
+#: client/pkgc-query.c:1033
 #, fuzzy
 msgid "Show files in package"
 msgstr "패키지 무효화 중"
 
-#: client/pkgc-query.c:1027
+#: client/pkgc-query.c:1039
 #, fuzzy
 msgid "Get available updates"
 msgstr "업데이트 가져오는 중"
 
-#: client/pkgc-query.c:1033
+#: client/pkgc-query.c:1045
 #, fuzzy
 msgid "Get update details"
 msgstr "업데이트 세부 사항 가져오는 중"
 
-#: client/pkgc-query.c:1039
+#: client/pkgc-query.c:1051
 #, fuzzy
 msgid "Resolve package names"
 msgstr "꾸러미 제거"
 
-#: client/pkgc-query.c:1045
+#: client/pkgc-query.c:1057
 msgid "List available filters and categories"
 msgstr ""
 
-#: client/pkgc-query.c:1051
+#: client/pkgc-query.c:1063
 msgid "Show available distribution upgrades"
 msgstr ""
 
-#: client/pkgc-query.c:1057
+#: client/pkgc-query.c:1069
 #, fuzzy
 msgid "Get time since last action"
 msgstr "트랜잭션 가져오는 중"
@@ -1233,170 +1233,169 @@ msgid "List all configured package repositories."
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
+#: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
 msgstr ""
 
-#: client/pkgc-repo.c:134
+#: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
 msgstr ""
 
 #. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
+#: client/pkgc-repo.c:157
 #, fuzzy
 msgid "Disable the specified repository."
 msgstr "대기 타이머 비활성화"
 
-#: client/pkgc-repo.c:174
+#: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
 msgstr ""
 
-#: client/pkgc-repo.c:194
+#: client/pkgc-repo.c:196
 #, fuzzy
 msgid "Automatically remove orphaned packages"
 msgstr "사용되지 않는 의존성 자동으로 삭제"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
+#: client/pkgc-repo.c:207
 #, fuzzy
 msgid "Remove the specified repository."
 msgstr "저장소 제거 중"
 
-#: client/pkgc-repo.c:224
+#: client/pkgc-repo.c:227
 #, fuzzy, c-format
 msgid "Repository '%s' removed"
 msgstr "저장소 이름이 필요함"
 
-#: client/pkgc-repo.c:241
+#: client/pkgc-repo.c:244
 #, fuzzy
 msgid "List repositories"
 msgstr "저장소 가져오는 중"
 
-#: client/pkgc-repo.c:247
+#: client/pkgc-repo.c:250
 #, fuzzy
 msgid "Enable a repository"
 msgstr "저장소 제거 중"
 
-#: client/pkgc-repo.c:253
+#: client/pkgc-repo.c:256
 #, fuzzy
 msgid "Disable a repository"
 msgstr "저장소 제거 중"
 
-#: client/pkgc-repo.c:259
+#: client/pkgc-repo.c:262
 #, fuzzy
 msgid "Remove a repository"
 msgstr "저장소 제거 중"
 
-#: client/pkgc-util.c:94
+#: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
 msgstr ""
 
 #. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
+#: client/pkgc-util.c:134
 #, fuzzy, c-format
 msgid "%u seconds"
 msgstr "(초)"
 
 #. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
+#: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
 msgstr ""
 
 #. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
+#: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
 msgstr ""
 
 #. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
+#: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
 msgstr ""
 
 #. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
+#: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
 msgstr ""
 
 #. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
+#: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
 msgstr ""
 
 #. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
+#: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
 msgstr ""
 
-#: client/pkgc-util.c:276
+#: client/pkgc-util.c:279
 msgid "Error"
 msgstr ""
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
+#: client/pkgc-util.c:312
 msgid "Warning:"
 msgstr ""
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
+#: client/pkgc-util.c:436 client/pkgcli.c:190
 #, fuzzy, c-format
 msgid "Failed to parse options: %s"
 msgstr "auto 설정 값 해석 실패: %s"
 
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
+#: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr ""
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#: client/pkgc-util.c:630 client/pkgc-util.c:785
 #, fuzzy
 msgid "Package:"
 msgstr "패키지"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
+#: client/pkgc-util.c:634
 msgid "Version:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
+#: client/pkgc-util.c:640
 #, fuzzy
 msgid "Summary:"
 msgstr "요약"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
+#: client/pkgc-util.c:648
 #, fuzzy
 msgid "Description:"
 msgstr "설명"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
+#: client/pkgc-util.c:655
 msgid "License:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
+#: client/pkgc-util.c:662
 msgid "URL:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
+#: client/pkgc-util.c:670
 msgid "Group:"
 msgstr ""
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
+#: client/pkgc-util.c:678
 #, fuzzy
 msgid "Installed Size:"
 msgstr "설치됨"
@@ -1532,11 +1531,11 @@ msgid "Real name:"
 msgstr "실제 이름"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
+#: client/pkgc-util.c:1076
 msgid "None"
 msgstr ""
 
-#: client/pkgc-util.c:1223
+#: client/pkgc-util.c:1221
 #, fuzzy, c-format
 msgid "Package not found: %s"
 msgstr "패키지가 없습니다"
@@ -1590,22 +1589,22 @@ msgstr ""
 msgid "Unknown command: %s"
 msgstr ""
 
-#: client/pkgcli.c:135
+#: client/pkgcli.c:136
 #, fuzzy, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "PackageKit과 연결할 수 없음"
 
-#: client/pkgcli.c:196
+#: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
 msgstr ""
 
-#: client/pkgcli.c:211
+#: client/pkgcli.c:213
 #, fuzzy
 msgid "Available Commands:"
 msgstr "사용 가능"
 
-#: client/pkgcli.c:217
+#: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr ""
 

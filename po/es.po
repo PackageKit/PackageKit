@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-01-28 11:14+0100\n"
+"POT-Creation-Date: 2026-03-08 19:18+0100\n"
 "PO-Revision-Date: 2026-02-14 05:09+0000\n"
 "Last-Translator: Francisco Serrador <fserrador@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/packagekit/translations/es/>\n"
@@ -140,8 +140,8 @@ msgstr "Nombre real"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1056
-#: client/pkgc-util.c:1075
+#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1055
+#: client/pkgc-util.c:1073
 msgid "Affected packages:"
 msgstr "Paquetes involucrados:"
 
@@ -390,13 +390,13 @@ msgstr "Debido a que se han instalado actualizaciones de seguridad importantes, 
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1167
+#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1165
 msgid "More than one package matches:"
 msgstr "Coincide más de un paquete:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1179
+#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1177
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "Elija el paquete correcto: "
@@ -474,7 +474,7 @@ msgstr "Esta herramienta no pudo encontrar todos los paquetes: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:132
+#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
 msgstr "El demonio se cerró inesperadamente en plena operación."
 
@@ -490,7 +490,7 @@ msgstr "Subórdenes:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:897
+#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:904
 msgid "Failed to get the time since this action was last completed"
 msgstr "Falló al obtener la hora de la última vez que se completó esta acción"
 
@@ -576,7 +576,7 @@ msgstr "Falló al contactar con PackageKit"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkcon/pk-console.c:1842 client/pkgcli.c:254
+#: client/pkcon/pk-console.c:1842 client/pkgcli.c:257
 msgid "The filter specified was invalid"
 msgstr "El filtro especificado no fue válido"
 
@@ -658,17 +658,15 @@ msgstr "Debe especificar un nombre de repositorio, parámetro y valor"
 msgid "A repo id and autoremove required"
 msgstr "Se necesita un id. de repositorio y «autoremove»"
 
-#. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:944
+#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:954
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "Se necesita una acción, p.ej., «update-packages»"
 
-#. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:951
+#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:962
 msgid "A correct role is required"
 msgstr "Se necesita un rol correcto"
 
@@ -727,11 +725,11 @@ msgstr "No se admite la opción «%s»"
 msgid "Command failed"
 msgstr "Instrucción errónea"
 
-#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:381
+#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
 msgid "Failed to get daemon state"
 msgstr "Fallo al obtener el estado del demonio"
 
-#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:439
+#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:482
 msgid "Failed to get properties"
 msgstr "Fallo al obtener propiedades"
 
@@ -770,78 +768,80 @@ msgid "SECONDS"
 msgstr "SEGUNDOS"
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:198
+#: client/pkgc-manage.c:199
 msgid "Refresh the package metadata cache."
 msgstr "Recargar la caché de metadatos del paquete."
 
-#: client/pkgc-manage.c:224
+#: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
 msgstr "Metadatos del paquete refrescados"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:248
+#: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
 msgstr "Instalar uno o más paquetes o archivos de paquetes locales."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:309 client/pkgc-manage.c:322
+#: client/pkgc-manage.c:312 client/pkgc-manage.c:326
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "No se pudo encontrar ningún paquete disponible: %s"
 
-#: client/pkgc-manage.c:327
+#: client/pkgc-manage.c:331
 msgid "The selected package is already installed."
 msgstr "El paquete seleccionado ya está instalado."
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:367
+#: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
 msgstr "Desinstala uno o más paquetes desde el sistema."
 
-#: client/pkgc-manage.c:384
+#: client/pkgc-manage.c:389
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "No se pudieron encontrar los paquetes instalados: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:424
+#: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
 msgstr "Descarga paquetes para el directorio especificado sin instalarlos."
 
-#: client/pkgc-manage.c:438 client/pkgc-query.c:436 client/pkgc-query.c:768
+#. TRANSLATORS: There was an error getting the
+#. * details about the package. The detailed error follows
+#: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "No se pudieron encontrar paquetes: %s"
 
-#: client/pkgc-manage.c:446
+#: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "El directorio no existe: %s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:489
+#: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "Actualiza todos los paquetes o paquetes específicos a sus últimas versiones."
 
-#: client/pkgc-manage.c:511
+#: client/pkgc-manage.c:518
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "No se pudieron encontrar paquetes a actualizar: %s"
 
-#: client/pkgc-manage.c:540 client/pkgc-manage.c:641 client/pkgc-manage.c:867
+#: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "Error al obtener actualizaciones: %s"
 
-#: client/pkgc-manage.c:552 client/pkgc-manage.c:650 client/pkgc-manage.c:875
+#: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
 msgid "No packages require updating"
 msgstr "No hay paquetes que requieran actualizarse"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:591
+#: client/pkgc-manage.c:600
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -851,64 +851,64 @@ msgstr ""
 "\n"
 "Tipos: minimal, default, complete"
 
-#: client/pkgc-manage.c:686
+#: client/pkgc-manage.c:695
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "Error al leer acción de actualización desconectado: %s"
 
-#: client/pkgc-manage.c:696
+#: client/pkgc-manage.c:705
 msgid "Offline update is not triggered."
 msgstr "La actualización sin conexión no es disparada."
 
-#: client/pkgc-manage.c:704
+#: client/pkgc-manage.c:714
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "Actualización sin conexión iniciada. Acción tras actualizar: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:715
+#: client/pkgc-manage.c:725
 msgid "Prepared packages:"
 msgstr "Paquetes preparados:"
 
-#: client/pkgc-manage.c:729
+#: client/pkgc-manage.c:739
 msgid "No offline update is prepared."
 msgstr "No está preparada ninguna actualización sin conexión."
 
-#: client/pkgc-manage.c:731
+#: client/pkgc-manage.c:742
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "Ha fallado la lectura de actualizaciones preparada sin conexión: %s"
 
-#: client/pkgc-manage.c:741
+#: client/pkgc-manage.c:753
 msgid "No results from last offline update available."
 msgstr "Ningún resultado desde la última actualización disponible sin conexión."
 
-#: client/pkgc-manage.c:748
+#: client/pkgc-manage.c:760
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "Última actualización sin conexión incorrecta: %s: %s"
 
-#: client/pkgc-manage.c:755
+#: client/pkgc-manage.c:767
 msgid "Last offline update completed successfully"
 msgstr "Última actualización completada sin conexión correctamente"
 
-#: client/pkgc-manage.c:766
+#: client/pkgc-manage.c:777
 #, c-format
 msgid "Updated: %s"
 msgstr "Actualizado: %s"
 
-#: client/pkgc-manage.c:787
+#: client/pkgc-manage.c:801
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "Incorrecto al disparar actualizaciones sin conexión: %s"
 
-#: client/pkgc-manage.c:791
+#: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "Actualización planificada sin conexión. El sistema actualizará en el siguiente reinicio."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:811
+#: client/pkgc-manage.c:825
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -926,91 +926,91 @@ msgstr ""
 "  cancelar: cancelar una actualización sin conexión planificada\n"
 "  estado: mostrar información sobre el estado de una actualización sin conexión preparada o finalizada"
 
-#: client/pkgc-manage.c:835
+#: client/pkgc-manage.c:850
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "Incorrecto al cancelar actualización sin conexión: %s"
 
-#: client/pkgc-manage.c:839
+#: client/pkgc-manage.c:854
 msgid "Offline update cancelled"
 msgstr "Actualización sin conexión cancelada"
 
-#: client/pkgc-manage.c:896
+#: client/pkgc-manage.c:911
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "Solicitud offline-update desconocida: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:916
+#: client/pkgc-manage.c:932
 msgid "Install a package signature for GPG verification."
 msgstr "Instala una firma de paquete para verificación de GPG."
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:951
+#: client/pkgc-manage.c:968
 msgid "Attempt to repair the package management system."
 msgstr "Intenta reparar el sistema de gestión de paquetes."
 
-#: client/pkgc-manage.c:967
+#: client/pkgc-manage.c:984
 msgid "System repaired successfully"
 msgstr "Sistema reparado correctamente"
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:988
+#: client/pkgc-manage.c:1006
 msgid "Safely terminate the PackageKit daemon."
 msgstr "Demonio de PackageKit terminado correctamente."
 
-#: client/pkgc-manage.c:994
+#: client/pkgc-manage.c:1012
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "Envío incorrecto de solicitud salir del demonio: %s"
 
-#: client/pkgc-manage.c:1013
+#: client/pkgc-manage.c:1031
 msgid "Refresh package metadata"
 msgstr "Refrescar metadatos del paquete"
 
-#: client/pkgc-manage.c:1019
+#: client/pkgc-manage.c:1037
 msgid "Install packages"
 msgstr "Instalar paquetes"
 
-#: client/pkgc-manage.c:1025
+#: client/pkgc-manage.c:1043
 msgid "Remove packages"
 msgstr "Desinstalar paquetes"
 
-#: client/pkgc-manage.c:1031
+#: client/pkgc-manage.c:1049
 msgid "Update packages"
 msgstr "Actualizar paquetes"
 
-#: client/pkgc-manage.c:1037
+#: client/pkgc-manage.c:1055
 msgid "Upgrade the system"
 msgstr "Modernizar del sistema"
 
-#: client/pkgc-manage.c:1043
+#: client/pkgc-manage.c:1061
 msgid "Download packages"
 msgstr "Descargar paquetes"
 
-#: client/pkgc-manage.c:1049
+#: client/pkgc-manage.c:1067
 msgid "Manage offline system updates"
 msgstr "Gestiona actualizaciones del sistema sin conexión"
 
-#: client/pkgc-manage.c:1055
+#: client/pkgc-manage.c:1073
 msgid "Install package signature"
 msgstr "Instalar firma del paquete"
 
-#: client/pkgc-manage.c:1061
+#: client/pkgc-manage.c:1079
 msgid "Repair package system"
 msgstr "Reparar sistema de paquetes"
 
-#: client/pkgc-manage.c:1067
+#: client/pkgc-manage.c:1085
 msgid "Safely stop the PackageKit daemon"
 msgstr "Detener de forma segura el demonio PackageKit"
 
 #. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:460
+#: client/pkgc-monitor.c:504
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Eventos D-Bus del monitor de PackageKit"
 
 #. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
-#: client/pkgc-monitor.c:562
+#: client/pkgc-monitor.c:626
 msgid "Monitor PackageKit bus events"
 msgstr "Eventos de bus del Monitor PackageKit"
 
@@ -1042,12 +1042,12 @@ msgid "Roles: %s"
 msgstr "Roles: %s"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:245
+#: client/pkgc-query.c:246
 msgid "Show recent package management transactions."
 msgstr "Muestra las transacciones de gestión de paquetes recientes."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:284
+#: client/pkgc-query.c:285
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -1065,156 +1065,156 @@ msgstr ""
 "  archivo  - busca por nombre del archivo\n"
 "  grupo     - busca por grupo del paquete"
 
-#: client/pkgc-query.c:311
+#: client/pkgc-query.c:313
 msgid "No search pattern specified"
 msgstr "No buscar patrón especificado"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:371
+#: client/pkgc-query.c:374
 msgid "List all packages or those matching a pattern."
 msgstr "Enumera todos los paquetes o aquellos coincidiendo con un patrón."
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:415
+#: client/pkgc-query.c:419
 msgid "Show information about one or more packages."
 msgstr "Muestra información sobre uno o más paquetes."
 
-#: client/pkgc-query.c:471 client/pkgc-query.c:750
+#: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
 msgstr "Comprobar dependencias recursivamente"
 
 #. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:480
+#: client/pkgc-query.c:485
 msgid "Show dependencies for one or more packages."
 msgstr "Mostrar dependencias para uno o más paquetes."
 
-#: client/pkgc-query.c:488 client/pkgc-query.c:570 client/pkgc-query.c:685
+#: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "No se pudo resolver paquetes: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:520
+#: client/pkgc-query.c:526
 msgid "Show which packages provide the specified capability."
 msgstr "Muestra cuales paquetes proporcionan la capacidad especificada."
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:551
+#: client/pkgc-query.c:558
 msgid "List all files contained in one or more packages."
 msgstr "Enumera todos los archivos contenidos en uno o más paquetes."
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:646
+#: client/pkgc-query.c:654
 msgid "List all currently available package updates."
 msgstr "Enumera todas las actualizaciones de paquete disponible actualmente."
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:678
+#: client/pkgc-query.c:687
 msgid "Show detailed information about the specified package update."
 msgstr "Muestra información detallada sobre la actualización del paquete especificado."
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:716
+#: client/pkgc-query.c:726
 msgid "Resolve package names to package IDs."
 msgstr "Resuelve nombres de paquete para los ID del paquete."
 
 #. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:759
+#: client/pkgc-query.c:770
 msgid "Show which packages require the specified packages."
 msgstr "Muestra cuales paquetes requieren los paquetes especificados."
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:802
+#: client/pkgc-query.c:814
 msgid "List all available filters, groups and categories for package organization."
 msgstr "Enumera todos los filtros, grupos y categorías disponibles para organización de paquetes."
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:810
+#: client/pkgc-query.c:822
 msgid "Filters:"
 msgstr "Filtros:"
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:825
+#: client/pkgc-query.c:834
 msgid "Groups:"
 msgstr "Grupos:"
 
 #. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:840
+#: client/pkgc-query.c:846
 msgid "Categories:"
 msgstr "Categorías:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:866
+#: client/pkgc-query.c:872
 msgid "Show distribution version upgrades, if any are available."
 msgstr "Muestra versión de modernización de distribución, si cualquier está disponible."
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:910
+#: client/pkgc-query.c:918
 msgid "Elapsed time"
 msgstr "Tiempo transcurrido"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:934
+#: client/pkgc-query.c:943
 msgid "Get time in seconds since the last specified action."
 msgstr "Obtiene la hora en segundos desde la última acción especificada."
 
-#: client/pkgc-query.c:973
+#: client/pkgc-query.c:985
 msgid "Show backend information"
 msgstr "Muestra información en segundo plano"
 
-#: client/pkgc-query.c:979
+#: client/pkgc-query.c:991
 msgid "Show transaction history"
 msgstr "Muestra el historial de transacción"
 
-#: client/pkgc-query.c:985
+#: client/pkgc-query.c:997
 msgid "Search for packages"
 msgstr "Buscar por paquetes"
 
-#: client/pkgc-query.c:991
+#: client/pkgc-query.c:1003
 msgid "List packages"
 msgstr "Listado de paquetes"
 
-#: client/pkgc-query.c:997
+#: client/pkgc-query.c:1009
 msgid "Show package information"
 msgstr "Muestra información del paquete"
 
-#: client/pkgc-query.c:1003
+#: client/pkgc-query.c:1015
 msgid "List package dependencies"
 msgstr "Listado de dependencias de paquete"
 
-#: client/pkgc-query.c:1009
+#: client/pkgc-query.c:1021
 msgid "List packages requiring this package"
 msgstr "Listado de paquetes requiriendo este paquete"
 
-#: client/pkgc-query.c:1015
+#: client/pkgc-query.c:1027
 msgid "List packages providing a capability"
 msgstr "Listado de paquetes que proporcionen una capacidad"
 
-#: client/pkgc-query.c:1021
+#: client/pkgc-query.c:1033
 msgid "Show files in package"
 msgstr "Muestra archivos dentro del paquete"
 
-#: client/pkgc-query.c:1027
+#: client/pkgc-query.c:1039
 msgid "Get available updates"
 msgstr "Obtiene actualizaciones disponibles"
 
-#: client/pkgc-query.c:1033
+#: client/pkgc-query.c:1045
 msgid "Get update details"
 msgstr "Obtener detalles de actualización"
 
-#: client/pkgc-query.c:1039
+#: client/pkgc-query.c:1051
 msgid "Resolve package names"
 msgstr "Resolver nombres del paquete"
 
-#: client/pkgc-query.c:1045
+#: client/pkgc-query.c:1057
 msgid "List available filters and categories"
 msgstr "Enumera filtros y categorías disponibles"
 
-#: client/pkgc-query.c:1051
+#: client/pkgc-query.c:1063
 msgid "Show available distribution upgrades"
 msgstr "Muestra modernizaciones de distribución disponibles"
 
-#: client/pkgc-query.c:1057
+#: client/pkgc-query.c:1069
 msgid "Get time since last action"
 msgstr "Obtiene tiempo desde la última acción"
 
@@ -1224,160 +1224,159 @@ msgid "List all configured package repositories."
 msgstr "Enumera todos los repositorios del paquete configurado."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
-#: client/pkgc-repo.c:115
+#: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
 msgstr "Habilita el repositorio especificado."
 
-#: client/pkgc-repo.c:134
+#: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
 msgstr "Repositorio «%s» habilitado"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
-#: client/pkgc-repo.c:155
+#: client/pkgc-repo.c:157
 msgid "Disable the specified repository."
 msgstr "Inhabilita el repositorio especificado."
 
-#: client/pkgc-repo.c:174
+#: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
 msgstr "Repositorio '%s' inhabilitado"
 
-#: client/pkgc-repo.c:194
+#: client/pkgc-repo.c:196
 msgid "Automatically remove orphaned packages"
 msgstr "Desinstalar automáticamente paquetes huérfanos"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:204
+#: client/pkgc-repo.c:207
 msgid "Remove the specified repository."
 msgstr "Retira el repositorio especificado."
 
-#: client/pkgc-repo.c:224
+#: client/pkgc-repo.c:227
 #, c-format
 msgid "Repository '%s' removed"
 msgstr "Repositorio '%s' retirado"
 
-#: client/pkgc-repo.c:241
+#: client/pkgc-repo.c:244
 msgid "List repositories"
 msgstr "Listado de repositorios"
 
-#: client/pkgc-repo.c:247
+#: client/pkgc-repo.c:250
 msgid "Enable a repository"
 msgstr "Habilita un repositorio"
 
-#: client/pkgc-repo.c:253
+#: client/pkgc-repo.c:256
 msgid "Disable a repository"
 msgstr "Inhabilita un repositorio"
 
-#: client/pkgc-repo.c:259
+#: client/pkgc-repo.c:262
 msgid "Remove a repository"
 msgstr "Retira un repositorio"
 
-#: client/pkgc-util.c:94
+#: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
 msgstr "No conectado al demonio PackageKit"
 
 #. TRANSLATORS: A duration in seconds
-#: client/pkgc-util.c:131
+#: client/pkgc-util.c:134
 #, c-format
 msgid "%u seconds"
 msgstr "%u segundos"
 
 #. TRANSLATORS: A duration in minutes & seconds
-#: client/pkgc-util.c:137
+#: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
 msgstr "%u min %u seg"
 
 #. TRANSLATORS: A duration in minutes
-#: client/pkgc-util.c:140
+#: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
 msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
-#: client/pkgc-util.c:147
+#: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
 msgstr "%u h %u min"
 
 #. TRANSLATORS: A duration in hours
-#: client/pkgc-util.c:150
+#: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
 msgstr "%u h"
 
 #. TRANSLATORS: A duration in days & remaining hours
-#: client/pkgc-util.c:157
+#: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
 msgstr "%u días %u h"
 
 #. TRANSLATORS: A duration in days
-#: client/pkgc-util.c:160
+#: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
 msgstr "%u días"
 
-#: client/pkgc-util.c:276
+#: client/pkgc-util.c:279
 msgid "Error"
 msgstr "Error"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:309
+#: client/pkgc-util.c:312
 msgid "Warning:"
 msgstr "Aviso:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:431 client/pkgcli.c:188
+#: client/pkgc-util.c:436 client/pkgcli.c:190
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Incorrecto al interpretar opciones: %s"
 
-#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:437
+#: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Modo de empleo: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:631 client/pkgc-util.c:785
+#: client/pkgc-util.c:630 client/pkgc-util.c:785
 msgid "Package:"
 msgstr "Paquete:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:635
+#: client/pkgc-util.c:634
 msgid "Version:"
 msgstr "Versión:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:642
+#: client/pkgc-util.c:640
 msgid "Summary:"
 msgstr "Resumen:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:650
+#: client/pkgc-util.c:648
 msgid "Description:"
 msgstr "Descripción:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:657
+#: client/pkgc-util.c:655
 msgid "License:"
 msgstr "Licencia:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:664
+#: client/pkgc-util.c:662
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:671
+#: client/pkgc-util.c:670
 msgid "Group:"
 msgstr "Grupo:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:679
+#: client/pkgc-util.c:678
 msgid "Installed Size:"
 msgstr "Tam. Instalado:"
 
@@ -1492,11 +1491,11 @@ msgid "Real name:"
 msgstr "Nombre real:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1078
+#: client/pkgc-util.c:1076
 msgid "None"
 msgstr "Ninguno"
 
-#: client/pkgc-util.c:1223
+#: client/pkgc-util.c:1221
 #, c-format
 msgid "Package not found: %s"
 msgstr "Paquete no encontrado: %s"
@@ -1549,21 +1548,21 @@ msgstr "Ninguna instrucción especificada. Utilice --help para información de u
 msgid "Unknown command: %s"
 msgstr "Instrucción desconocida: %s"
 
-#: client/pkgcli.c:135
+#: client/pkgcli.c:136
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "Incorrecto al conectar con PackageKit: %s"
 
-#: client/pkgcli.c:196
+#: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
 msgstr "Versión: %s"
 
-#: client/pkgcli.c:211
+#: client/pkgcli.c:213
 msgid "Available Commands:"
 msgstr "Instrucciones disponibles:"
 
-#: client/pkgcli.c:217
+#: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Utilice 'pkgctl INSTRUCCIÓN --help' para ayuda específica de instrucción."
 
