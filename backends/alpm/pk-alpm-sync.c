@@ -86,11 +86,22 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 			}
 		}
 
-		if (pkg == NULL || alpm_add_pkg (priv->alpm, pkg) < 0) {
+		if (pkg == NULL) {
 			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s/%s: %s",
 				     repo, name, alpm_strerror (alpm_err));
 			return FALSE;
+		}
+
+		if (alpm_add_pkg (priv->alpm, pkg) < 0) {
+			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
+			/* Package may already be queued by sysupgrade */
+			if (alpm_err != ALPM_ERR_TRANS_DUP_TARGET) {
+				g_set_error (error, PK_ALPM_ERROR, alpm_err,
+					     "%s/%s: %s", repo, name,
+					     alpm_strerror (alpm_err));
+				return FALSE;
+			}
 		}
 
 cont:
@@ -209,8 +220,18 @@ pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
 		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
 
-	if (pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error) &&
-	    pk_alpm_transaction_sync_targets (job, package_ids, p ? TRUE : FALSE, &error) &&
+	if (!pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error))
+		goto out;
+
+	/* queue all available upgrades to prevent partial upgrades */
+	if (alpm_sync_sysupgrade (priv->alpm, 0) < 0) {
+		g_set_error (&error, PK_ALPM_ERROR, alpm_errno (priv->alpm),
+			     "sysupgrade: %s",
+			     alpm_strerror (alpm_errno (priv->alpm)));
+		goto out;
+	}
+
+	if (pk_alpm_transaction_sync_targets (job, package_ids, p ? TRUE : FALSE, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
 
 		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
