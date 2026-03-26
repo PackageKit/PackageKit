@@ -11,17 +11,21 @@
 # kelemeng <kelemeng@ubuntu.com>, 2012
 # kelemeng <kelemeng@ubuntu.com>, 2015-2016
 # Richard Hughes <richard@hughsie.com>, 2011
+# Romhányi-Kakucska Viktor <viktor@romhanyi.dev>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"Language-Team: Hungarian (http://app.transifex.com/freedesktop/packagekit/language/hu/)\n"
+"PO-Revision-Date: 2026-03-26 19:09+0000\n"
+"Last-Translator: Romhányi-Kakucska Viktor <viktor@romhanyi.dev>\n"
+"Language-Team: Hungarian <https://hosted.weblate.org/projects/packagekit/translations/hu/>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -37,7 +41,7 @@ msgstr "A beállítófájl betöltése sikertelen: %s"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -549,7 +553,7 @@ msgstr "Gép által olvasható kimenetre írás, mint hogy az animált widgetek 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "A metaadatok gyorsítótárának maximális érvényességi ideje (másodpercben). A -1 értékkel csak a gyorsítótárat használja, az 1 értékkel pedig a gyorsítótárat újratöltése."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
@@ -758,11 +762,11 @@ msgstr "Nem használt függőségek automatikus eltávolítása"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr ""
+msgstr "A metaadatok gyorsítótárának maximális érvényességi ideje másodpercben (alapértelmezett: 3 nap)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "MÁSODPERC"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:199
@@ -772,12 +776,12 @@ msgstr "A gyorsítótár frissítése"
 
 #: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Csomag metaadatai frissültek"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Telepítsen egy vagy több csomagot, illetve helyi csomagfájlt."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -795,7 +799,7 @@ msgstr "A kiválasztott csomagok már telepítve lehetnek."
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Távolítson el egy vagy több csomagot a rendszerből."
 
 #: client/pkgc-manage.c:389
 #, fuzzy, c-format
@@ -805,7 +809,7 @@ msgstr "Az eszköz nem találja a csomagot: %s"
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Töltse le a csomagokat a megadott könyvtárba telepítés nélkül."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
@@ -817,12 +821,12 @@ msgstr "Az eszköz nem találja a csomagot: %s"
 #: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Könyvtár nem létezik: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Frissítse az összes csomagot vagy a kívánt csomagokat a legújabb verzióra."
 
 #: client/pkgc-manage.c:518
 #, fuzzy, c-format
@@ -847,6 +851,9 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Frissítse az összes csomagot, vagy hajtsa végre a disztribúció frissítését.\n"
+"\n"
+"Típusok: minimal, default, complete"
 
 #: client/pkgc-manage.c:695
 #, fuzzy, c-format
@@ -906,7 +913,7 @@ msgstr "Kapcsolat nélküli frissítés kezdeményezése"
 
 #: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Offline frissítés ütemezve. A rendszer a következő újraindításkor frissül."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
