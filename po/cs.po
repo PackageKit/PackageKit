@@ -10,7 +10,7 @@
 # fri, 2011
 # Jozef Mlích <jmlich83@gmail.com>, 2015
 # Marek Černocký <marek@manet.cz>, 2013-2016,2018
-# Pavel Borecki <pavel.borecki@gmail.com>, 2024, 2025.
+# Pavel Borecki <pavel.borecki@gmail.com>, 2024, 2025, 2026.
 # Petr Kovar <pmkovar@gmail.com>, 2015
 # Richard Hughes <richard@hughsie.com>, 2011
 # Vojtech Smejkal <smejkalv@gmail.com>, 2008
@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"PO-Revision-Date: 2025-11-05 08:51+0000\n"
+"PO-Revision-Date: 2026-03-26 19:09+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/packagekit/translations/cs/>\n"
 "Language: cs\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -738,21 +738,18 @@ msgstr "Sledování PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
+msgstr "Umožnit přechod na nižší verzi balíčků"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
+msgstr "Umožnit přeinstalace balíčků"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Nainstalovat starší verzi již nainstalovaného balíčku"
+msgstr "Umožnit instalaci nedůvěryhodných balíčků"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
@@ -770,17 +767,16 @@ msgstr "Nejdelší umožněné stáří mezipaměti metadat (v sekundách). Poku
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUND"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:199
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Aktualizovat mezipaměť"
+msgstr "Aktualizovat mezipaměť metadat balíčků."
 
 #: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Metadata balíčku načtena znovu"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
@@ -818,14 +814,14 @@ msgstr ""
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
+msgstr "Nebylo možné najít balíčky: %s"
 
 #: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Složka neexistuje: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
@@ -838,14 +834,13 @@ msgid "Could not find packages to update: %s"
 msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
 
 #: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Nezdařilo se zjistit stav démona"
+msgstr "Nezdařilo se získat aktualizace: %s"
 
 #: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Žádné balíčky nevyžadují aktualizaci na novější verzi."
+msgstr "Žádné balíčky nevyžadují aktualizaci"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -873,9 +868,8 @@ msgstr "Spustit aktualizace při odpojení"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:725
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Připravené aktualizace:"
+msgstr "Připravené balíčky:"
 
 #: client/pkgc-manage.c:739
 #, fuzzy
@@ -898,14 +892,13 @@ msgid "Last offline update failed: %s: %s"
 msgstr "Vymazat zprávu o aktualizaci při odpojení"
 
 #: client/pkgc-manage.c:767
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Poslední offline aktualizace dokončena úspěšně"
 
 #: client/pkgc-manage.c:777
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Aktualizován"
+msgstr "Aktualizováno: %s"
 
 #: client/pkgc-manage.c:801
 #, fuzzy, c-format
@@ -935,14 +928,13 @@ msgid "Failed to cancel offline update: %s"
 msgstr "Selhalo vyřešení auto: %s"
 
 #: client/pkgc-manage.c:854
-#, fuzzy
 msgid "Offline update cancelled"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Offline aktualizace zrušena"
 
 #: client/pkgc-manage.c:911
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Neznámý požadavek na aktualizaci při odpojení: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:932
@@ -957,7 +949,7 @@ msgstr ""
 
 #: client/pkgc-manage.c:984
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Systém úspěšně opraven"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1006
@@ -971,47 +963,39 @@ msgstr "Nezdařilo se zjistit stav démona"
 
 #: client/pkgc-manage.c:1031
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Znovu načíst metadata balíčku"
 
 #: client/pkgc-manage.c:1037
-#, fuzzy
 msgid "Install packages"
-msgstr "Nainstalovat balíček"
+msgstr "Nainstalovat balíčky"
 
 #: client/pkgc-manage.c:1043
-#, fuzzy
 msgid "Remove packages"
-msgstr "Odebrat balíček"
+msgstr "Odebrat balíčky"
 
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Update packages"
-msgstr "Aktualizují se balíčky"
+msgstr "Aktualizovat balíčky"
 
 #: client/pkgc-manage.c:1055
-#, fuzzy
 msgid "Upgrade the system"
-msgstr "Povýšení systému"
+msgstr "Přejít na novější verzi systému"
 
 #: client/pkgc-manage.c:1061
-#, fuzzy
 msgid "Download packages"
-msgstr "Stahují se balíčky"
+msgstr "Stáhnout balíčky"
 
 #: client/pkgc-manage.c:1067
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Nejsou žádné balíčky k aktualizaci."
+msgstr "Spravovat offline aktualizace systému"
 
 #: client/pkgc-manage.c:1073
-#, fuzzy
 msgid "Install package signature"
-msgstr "Instaluje se podpis"
+msgstr "Nainstalovat podpis balíčků"
 
 #: client/pkgc-manage.c:1079
-#, fuzzy
 msgid "Repair package system"
-msgstr "Opravit systém"
+msgstr "Opravit systém správy balíčků"
 
 #: client/pkgc-manage.c:1085
 msgid "Safely stop the PackageKit daemon"
@@ -1019,42 +1003,40 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:504
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Služba PackageKit"
+msgstr "Monitorovat události na D-Bus týkající se PackageKit"
 
 #. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:626
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "Služba PackageKit"
+msgstr "Monitorovat události na sběrnici, týkající se PackageKit"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Zobrazit informace o podpůrné vrstvě PackageKit."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Podpůrná vrstva: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Popis"
+msgstr "Popis: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "Author: %s"
-msgstr "Autor"
+msgstr "Autor: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Úloha"
+msgstr "Úlohy: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:246
@@ -1074,9 +1056,8 @@ msgid ""
 msgstr ""
 
 #: client/pkgc-query.c:313
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Je požadován hledaný výraz"
+msgstr "Nezadán vzor k hledání"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:374
@@ -1090,7 +1071,7 @@ msgstr ""
 
 #: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Zkontrolovat závislosti rekurzivně"
 
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:485
@@ -1141,18 +1122,17 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:822
 msgid "Filters:"
-msgstr ""
+msgstr "Filtry:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:834
 msgid "Groups:"
-msgstr ""
+msgstr "Skupiny:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:846
-#, fuzzy
 msgid "Categories:"
-msgstr "Kategorie"
+msgstr "Kategorie:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:872
@@ -1161,9 +1141,8 @@ msgstr ""
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:918
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Systémový čas"
+msgstr "Uplynulý čas"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:943
@@ -1171,34 +1150,28 @@ msgid "Get time in seconds since the last specified action."
 msgstr ""
 
 #: client/pkgc-query.c:985
-#, fuzzy
 msgid "Show backend information"
-msgstr "Získavají se informace"
+msgstr "Zobrazit informace o podpůrné vrstvě"
 
 #: client/pkgc-query.c:991
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Transakce se nezdařila"
+msgstr "Zobrazit historii transakcí"
 
 #: client/pkgc-query.c:997
-#, fuzzy
 msgid "Search for packages"
-msgstr "Hledat podle názvů"
+msgstr "Hledat balíčky"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
 msgid "List packages"
-msgstr "Nainstalovat balíček"
+msgstr "Vypsat balíčky"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "Show package information"
-msgstr "Stahují se informace o aktualizacích"
+msgstr "Zobrazit informace o balíčku"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
 msgid "List package dependencies"
-msgstr "Řeší se závislosti"
+msgstr "Vypsat závislosti balíčku"
 
 #: client/pkgc-query.c:1021
 #, fuzzy
@@ -1211,24 +1184,20 @@ msgid "List packages providing a capability"
 msgstr "Balíček poskytující tento soubor je:"
 
 #: client/pkgc-query.c:1033
-#, fuzzy
 msgid "Show files in package"
-msgstr "Uklízí se zastaralé balíčky"
+msgstr "Zobrazit soubory v balíčku"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
 msgid "Get available updates"
-msgstr "Získávají se aktualizace"
+msgstr "Zjistit dostupnost případných aktualizací"
 
 #: client/pkgc-query.c:1045
-#, fuzzy
 msgid "Get update details"
-msgstr "Získávají se podrobnosti k aktualizacím"
+msgstr "Získat podrobnosti o aktualizacích"
 
 #: client/pkgc-query.c:1051
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Odebrat balíček"
+msgstr "Přeložit na názvy balíčků"
 
 #: client/pkgc-query.c:1057
 msgid "List available filters and categories"
@@ -1236,7 +1205,7 @@ msgstr ""
 
 #: client/pkgc-query.c:1063
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Zobrazit přechody na novější verze distribuce, které jsou k dispozici"
 
 #: client/pkgc-query.c:1069
 #, fuzzy
@@ -1251,59 +1220,52 @@ msgstr ""
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Povolit určený repozitář."
 
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Repozitář „%s“ povolen"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Vypnout nevyužitý časovač"
+msgstr "Zakázat určený repozitář."
 
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Repozitář „%s“ zakázán"
 
 #: client/pkgc-repo.c:196
-#, fuzzy
 msgid "Automatically remove orphaned packages"
-msgstr "Automaticky odstranit nepoužívané závislosti"
+msgstr "Automaticky odstranit osiřelé balíčky"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:207
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Odebírá se repozitář"
+msgstr "Odebrat zadaný repozitář."
 
 #: client/pkgc-repo.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Je třeba určit název repozitáře"
+msgstr "Repozitář „%s“ odebrán"
 
 #: client/pkgc-repo.c:244
-#, fuzzy
 msgid "List repositories"
-msgstr "Získávají se repozitáře"
+msgstr "Vypsat repozitáře"
 
 #: client/pkgc-repo.c:250
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Odebírá se repozitář"
+msgstr "Povolit repozitář"
 
 #: client/pkgc-repo.c:256
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Odebírá se repozitář"
+msgstr "Zakázat repozitář"
 
 #: client/pkgc-repo.c:262
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Odebírá se repozitář"
+msgstr "Odebrat repozitář"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
@@ -1311,54 +1273,54 @@ msgstr ""
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(sekund)"
+msgstr "%u sekund"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u min %u sek"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u h %u min"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u h"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u dny %u h"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u dnů"
 
 #: client/pkgc-util.c:279
 msgid "Error"
-msgstr ""
+msgstr "Chyba"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:312
 msgid "Warning:"
-msgstr ""
+msgstr "Varování:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:436 client/pkgcli.c:190
@@ -1369,218 +1331,193 @@ msgstr "Selhalo vyřešení auto: %s"
 #: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Použití: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:630 client/pkgc-util.c:785
-#, fuzzy
 msgid "Package:"
-msgstr "Balíček"
+msgstr "Balíček:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:634
 msgid "Version:"
-msgstr ""
+msgstr "Verze:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:640
-#, fuzzy
 msgid "Summary:"
-msgstr "Přehled"
+msgstr "Přehled:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:648
-#, fuzzy
 msgid "Description:"
-msgstr "Popis"
+msgstr "Popis:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:655
 msgid "License:"
-msgstr ""
+msgstr "Licence:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:662
 msgid "URL:"
-msgstr ""
+msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:670
 msgid "Group:"
-msgstr ""
+msgstr "Skupina:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:678
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Nainstalováno"
+msgstr "Velikost po instalaci:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Download Size:"
-msgstr "Staženo"
+msgstr "Objem stahování:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:781
-#, fuzzy
 msgid "Update Details:"
-msgstr "Text aktualizace"
+msgstr "Podrobnosti o aktualizaci:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:792
-#, fuzzy
 msgid "Updates:"
-msgstr "Nejnovější balíčky"
+msgstr "Aktualizace:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:801
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Zastaralé balíčky"
+msgstr "Činí zastaralými:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:810
-#, fuzzy
 msgid "Vendor:"
-msgstr "Výrobce"
+msgstr "Výrobce:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:819
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Systém pro správu hlášení chyb:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:828
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:836
-#, fuzzy
 msgid "Restart:"
-msgstr "Restart"
+msgstr "Restart:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Update text:"
-msgstr "Text aktualizace"
+msgstr "Text aktualizace:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:852
-#, fuzzy
 msgid "Changes:"
-msgstr "Změny"
+msgstr "Změny:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:859
-#, fuzzy
 msgid "State:"
-msgstr "Stav"
+msgstr "Stav:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:868
-#, fuzzy
 msgid "Issued:"
-msgstr "Vydán"
+msgstr "Vydáno:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Updated:"
-msgstr "Aktualizován"
+msgstr "Aktualizováno:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:992
-#, fuzzy
 msgid "Transaction:"
-msgstr "Transakce"
+msgstr "Transakce:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:996
-#, fuzzy
 msgid "System time:"
-msgstr "Systémový čas"
+msgstr "Systémový čas:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1000
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Úspěšné"
+msgstr "Úspěšné:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
-#, fuzzy
 msgid "Role:"
-msgstr "Úloha"
+msgstr "Úloha:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1016
-#, fuzzy
 msgid "Duration:"
-msgstr "Doba trvání"
+msgstr "Doba trvání:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1023
-#, fuzzy
 msgid "Command line:"
-msgstr "Příkazový řádek"
+msgstr "Příkazový řádek:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1029
-#, fuzzy
 msgid "User ID:"
-msgstr "Identif. uživatele"
+msgstr "Identif. uživatele:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1038
-#, fuzzy
 msgid "Username:"
-msgstr "Uživatelské jméno"
+msgstr "Uživatelské jméno:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1044
-#, fuzzy
 msgid "Real name:"
-msgstr "Skutečné jméno"
+msgstr "Skutečný název:"
 
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1076
 msgid "None"
-msgstr ""
+msgstr "Žádné"
 
 #: client/pkgc-util.c:1221
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "Balíček nebyl nalezen"
+msgstr "Balíček nenalezen: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Zobrazit verzi a skončit"
+msgstr "Zobrazit verzi pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Zobrazit nápovědu"
 
 #: client/pkgcli.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Poskytovat pouze minimální výstup"
 
 #: client/pkgcli.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Zobrazit podrobnější výstup"
 
 #: client/pkgcli.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Výstup ve formátu JSON"
 
 #: client/pkgcli.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Vypnout obarvování výstupu"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:89
@@ -1589,7 +1526,7 @@ msgstr ""
 
 #: client/pkgcli.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "FILTR"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
@@ -1603,7 +1540,7 @@ msgstr ""
 #: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Neznámý příkaz: %s"
 
 #: client/pkgcli.c:136
 #, fuzzy, c-format
@@ -1613,12 +1550,11 @@ msgstr "Nepodařilo se kontaktovat PackageKit"
 #: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Verze: %s"
 
 #: client/pkgcli.c:213
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Dostupné"
+msgstr "Příkazy k dispozici:"
 
 #: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
@@ -2203,9 +2139,8 @@ msgstr "Získávají se povýšení systému"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
-#, fuzzy
 msgid "Repairing system"
-msgstr "Opravit systém"
+msgstr "Oprava systému"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
