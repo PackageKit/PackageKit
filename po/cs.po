@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"PO-Revision-Date: 2026-03-26 19:09+0000\n"
+"PO-Revision-Date: 2026-03-27 08:09+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/packagekit/translations/cs/>\n"
 "Language: cs\n"
@@ -37,7 +37,7 @@ msgstr "Soubor s nastaveními nebyl nalezen."
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
 #, c-format
 msgid "Failed to load config file: %s"
-msgstr "Nezdařilo se načtení souboru s nastaveními: %s"
+msgstr "Nepodařilo se načíst soubor s nastaveními: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:171
@@ -49,7 +49,7 @@ msgstr "%i%%"
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:177
 msgid "Installing System Upgrade"
-msgstr "Instaluje se povýšení systému"
+msgstr "Instaluje se novější verze systému"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -75,7 +75,7 @@ msgstr "Instalují se aktualizace, což může chvíli trvat…"
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr "Instaluje se povýšení systému, což může trvat delší chvíli…"
+msgstr "Instaluje se novější verze systému, což může trvat delší chvíli…"
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
@@ -162,7 +162,7 @@ msgstr "Typ"
 #. TRANSLATORS: this is the summary of the group
 #: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
 msgid "Summary"
-msgstr "Přehled"
+msgstr "Souhrn"
 
 #. TRANSLATORS: this is the group category name
 #: client/pkcon/pk-console.c:256
@@ -209,13 +209,13 @@ msgstr "Balíček"
 #. * this update updates
 #: client/pkcon/pk-console.c:319
 msgid "Updates"
-msgstr "Nejnovější balíčky"
+msgstr "Aktualizuje"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
 #: client/pkcon/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Zastaralé balíčky"
+msgstr "Zastará"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -364,7 +364,7 @@ msgstr "V tuto chvíli není dostupná žádná aktualizace."
 
 #: client/pkcon/pk-console.c:758
 msgid "There are no upgrades available at this time."
-msgstr "V tuto chvíli není dostupné žádné povýšení."
+msgstr "V tuto chvíli nejsou dostupné žádné přechody na novější verzi."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
@@ -403,7 +403,7 @@ msgstr "Vyberte, prosím, správný balíček: "
 #. * that could not be found in any repo
 #: client/pkcon/pk-console.c:981
 msgid "Package not found"
-msgstr "Balíček nebyl nalezen"
+msgstr "Balíček nenalezen"
 
 #. TRANSLATORS: we couldn't find anything
 #: client/pkcon/pk-console.c:999
@@ -434,7 +434,7 @@ msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček."
 #. * for installation, it may already be installed.
 #: client/pkcon/pk-console.c:1085
 msgid "The selected packages may already be installed."
-msgstr "Vybrané balíčky mohou být již nainstalovány."
+msgstr "Je možné, že vybrané balíčky už jsou nainstalované."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -474,7 +474,7 @@ msgstr "Tomuto nástroji se nepodařilo najít všechny balíčky: %s"
 #. * shit creek without a paddle
 #: client/pkcon/pk-console.c:1440 client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
-msgstr "Démon se zhroutil uprostřed činnosti!"
+msgstr "Proces služby zhavaroval uprostřed transakce!"
 
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
@@ -516,7 +516,7 @@ msgstr "Zobrazit verzi programu a skončit"
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkcon/pk-console.c:1709
 msgid "Set the filter, e.g. installed"
-msgstr "Nastavit filtr, například „nainstalované“"
+msgstr "Nastavit filtr, například installed (nainstalované)"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1712
@@ -565,7 +565,7 @@ msgstr "Povolit instalaci nedůvěryhodných balíčků."
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1769
 msgid "Failed to parse command line"
-msgstr "Selhalo zpracování příkazového řádku"
+msgstr "Nezdařilo se zpracování příkazového řádku"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1779
@@ -628,7 +628,7 @@ msgstr "Jsou požadovány cílová složka a názvy balíčků, které se mají 
 #. * not exist, so we can't continue
 #: client/pkcon/pk-console.c:2026
 msgid "Directory not found"
-msgstr "Složka nebyla nalezena"
+msgstr "Složka nenalezena"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -666,7 +666,7 @@ msgstr "Je požadována nějaká akce, např. „update-package“"
 #. * an invalid action
 #: client/pkcon/pk-console.c:2171 client/pkgc-query.c:962
 msgid "A correct role is required"
-msgstr "Je požadována správná role"
+msgstr "Je požadována správná úloha"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -686,7 +686,7 @@ msgstr "Je požadován řetězec, který poskytne balíček"
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
 msgid "A filename is required"
-msgstr "Je požadováno jméno souboru"
+msgstr "Je požadován název souboru"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
@@ -701,7 +701,7 @@ msgstr "Autor"
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pkcon/pk-console.c:2418
 msgid "You need to specify a list file to create"
-msgstr "Musíte určit soubor se seznamem, který se má vytvořit"
+msgstr "Je třeba zadat soubor se seznamem, který má být vytvořen"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -709,7 +709,7 @@ msgstr "Musíte určit soubor se seznamem, který se má vytvořit"
 #: client/pkcon/pk-console.c:2431
 #, c-format
 msgid "File already exists: %s"
-msgstr "Soubor již existuje: %s"
+msgstr "Soubor už existuje: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -721,15 +721,15 @@ msgstr "Volba „%s“ není podporovaná"
 #. TRANSLATORS: Generic failure of what they asked to do
 #: client/pkcon/pk-console.c:2459
 msgid "Command failed"
-msgstr "Příkaz selhal"
+msgstr "Příkaz se nezdařil"
 
 #: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
 msgid "Failed to get daemon state"
-msgstr "Nezdařilo se zjistit stav démona"
+msgstr "Nepodařilo se zjistit stav procesu služby"
 
 #: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:482
 msgid "Failed to get properties"
-msgstr "Netdařilo se zjistit vlastnosti"
+msgstr "Nepodařilo se získat vlastnosti"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
@@ -753,17 +753,13 @@ msgstr "Umožnit instalaci nedůvěryhodných balíčků"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Automaticky odstranit nepoužívané závislosti"
+msgstr "Neodebírat automaticky nepoužívané závislosti"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Nejdelší umožněné stáří mezipaměti metadat (v sekundách). Pokud má být používána pouze mezipaměť, použijte -1 (pokud má být mezipaměť přenačtena znovu, pak 1)."
+msgstr "Nejdelší umožněné stáří mezipaměti metadat (v sekundách) – výchozí: 3 dny"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -781,35 +777,34 @@ msgstr "Metadata balíčku načtena znovu"
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Nainstalovat jeden a více balíčků nebo souborů lokálních balíčků."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:312 client/pkgc-manage.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček: %s"
+msgstr "Nebylo možné najít žádný dostupný balíček: %s"
 
 #: client/pkgc-manage.c:331
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Vybrané balíčky mohou být již nainstalovány."
+msgstr "Vybraný balíček už je nainstalovaný."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Odebrat jeden a více balíčků ze systému."
 
 #: client/pkgc-manage.c:389
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
+msgstr "Nebylo možné najít nainstalované balíčky: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Stáhnout balíčky do zadané složky a neprovádět instalaci."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
@@ -826,17 +821,17 @@ msgstr "Složka neexistuje: %s"
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Zaktualizovat všechny nebo konkrétní balíčky na jejich nejnovější verze."
 
 #: client/pkgc-manage.c:518
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Tomuto nástroji se nepodařilo najít balíček: %s"
+msgstr "Nebylo možné najít balíčky k aktualizaci: %s"
 
 #: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
 #, c-format
 msgid "Failed to get updates: %s"
-msgstr "Nezdařilo se získat aktualizace: %s"
+msgstr "Nepodařilo se získat aktualizace: %s"
 
 #: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
 msgid "No packages require updating"
@@ -850,21 +845,23 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Zaktualizovat všechny balíčky nebo provést přechod na novější verzi distribuce.\n"
+"\n"
+"Typy: minimal, default, complete"
 
 #: client/pkgc-manage.c:695
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Spustit aktualizace při odpojení"
+msgstr "Nepodařilo se číst akci offline aktualizace: %s"
 
 #: client/pkgc-manage.c:705
-#, fuzzy
 msgid "Offline update is not triggered."
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Offline aktualizace není spuštěná."
 
 #: client/pkgc-manage.c:714
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Spustit aktualizace při odpojení"
+msgstr "Je spuštěna offline aktualizace. Akce po aktualizaci: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:725
@@ -872,24 +869,22 @@ msgid "Prepared packages:"
 msgstr "Připravené balíčky:"
 
 #: client/pkgc-manage.c:739
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Není připravená žádná offline aktualizace."
 
 #: client/pkgc-manage.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Spustit aktualizace při odpojení"
+msgstr "Nepodařilo se číst připravené offline aktualizace: %s"
 
 #: client/pkgc-manage.c:753
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Stahují se informace o aktualizacích"
+msgstr "Nejsou k dispozici výsledky poslední offline aktualizace."
 
 #: client/pkgc-manage.c:760
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Poslední offline aktualizace se nezdařila: %s: %s"
 
 #: client/pkgc-manage.c:767
 msgid "Last offline update completed successfully"
@@ -901,13 +896,13 @@ msgid "Updated: %s"
 msgstr "Aktualizováno: %s"
 
 #: client/pkgc-manage.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Spustit aktualizace při odpojení"
+msgstr "Nepodařilo se spustit offline aktualizaci: %s"
 
 #: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Offline aktualizace naplánována. Systém bude zaktualizován při příštím restartu."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -921,11 +916,18 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Spustit a spravovat offline aktualizace systému.\n"
+"\n"
+"Je možné vybrat jeden z těchto požadavků:\n"
+"  prepare - připravit offline aktualizaci a spustit ji (výchozí)\n"
+"  trigger - spustit (ručně připravenou) offline aktualizaci\n"
+"  cancel  - zrušit naplánovanou offline aktualizaci\n"
+"  status  - zobrazit stavovou informaci o připravené nebo dokončené offline aktualizaci"
 
 #: client/pkgc-manage.c:850
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Selhalo vyřešení auto: %s"
+msgstr "Nepodařilo se zrušit offline aktualizaci: %s"
 
 #: client/pkgc-manage.c:854
 msgid "Offline update cancelled"
@@ -938,14 +940,13 @@ msgstr "Neznámý požadavek na aktualizaci při odpojení: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:932
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Nainstalovat balíčky bez žádosti o potvrzení"
+msgstr "Nainstalovat podpis balíčku pro GPG ověřování."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:968
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Pokusit se o opravu systému správy balíčků."
 
 #: client/pkgc-manage.c:984
 msgid "System repaired successfully"
@@ -954,12 +955,12 @@ msgstr "Systém úspěšně opraven"
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1006
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Bezpečně ukončit proces služby PackageKit."
 
 #: client/pkgc-manage.c:1012
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Nezdařilo se zjistit stav démona"
+msgstr "Nepodařilo se odeslat požadavek na ukončení procesu služby: %s"
 
 #: client/pkgc-manage.c:1031
 msgid "Refresh package metadata"
@@ -999,7 +1000,7 @@ msgstr "Opravit systém správy balíčků"
 
 #: client/pkgc-manage.c:1085
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Bezpečně zastavit proces služby PackageKit"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:504
@@ -1041,7 +1042,7 @@ msgstr "Úlohy: %s"
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:246
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Zobrazit nedávné transakce správy balíčků."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:285
@@ -1054,6 +1055,13 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Hledat balíčky odpovídající daným vzorům. Pokud REŽIM není zadán, \n"
+"je provedeno hledání „details“ (podrobnosti).\n"
+"Možné REŽIMY jsou:\n"
+"  name    - hledat podle názvu balíčku\n"
+"  details - hledat podle podrobností o balíčku (výchozí)\n"
+"  file    - hledat podle názvu souboru\n"
+"  group   - hledat podle skupiny balíčků"
 
 #: client/pkgc-query.c:313
 msgid "No search pattern specified"
@@ -1062,12 +1070,12 @@ msgstr "Nezadán vzor k hledání"
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:374
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Vypsat všechny balíčky nebo ty které odpovídají vzoru."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:419
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Zobrazit informace o jednom a více balíčcích."
 
 #: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
@@ -1076,48 +1084,47 @@ msgstr "Zkontrolovat závislosti rekurzivně"
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:485
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Zobrazit závislosti pro jeden a více balíčků."
 
 #: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Selhalo vyřešení auto: %s"
+msgstr "Nebylo možné přeložit na názvy balíčků: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:526
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Zobrazit které balíčky poskytují danou schopnost."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:558
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Vypsat všechny soubory obsažené v jednom nebo více balíčcích."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:654
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Tomuto nástroji se nepodařilo najít žádný dostupný balíček: %s"
+msgstr "Vypsat všechny v tuto chvíli dostupné aktualizace balíčků."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:687
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Zobrazit podrobné informace o zadané aktualizaci balíčku."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:726
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Přeložit názvy balíčků na jejich identifikátory."
 
 #. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:770
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Zobrazit které balíčky vyžadují dané balíčky."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:814
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Vypsat všechny dostupné filtry, skupiny a kategorie pro uspořádávání balíčků."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:822
@@ -1137,7 +1144,7 @@ msgstr "Kategorie:"
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:872
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Zobrazit přechody na novější verze distribuce (pokud jsou k dispozici)."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:918
@@ -1147,7 +1154,7 @@ msgstr "Uplynulý čas"
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:943
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Získat čas (v sekundách) od poslední zadané akce."
 
 #: client/pkgc-query.c:985
 msgid "Show backend information"
@@ -1174,14 +1181,12 @@ msgid "List package dependencies"
 msgstr "Vypsat závislosti balíčku"
 
 #: client/pkgc-query.c:1021
-#, fuzzy
 msgid "List packages requiring this package"
-msgstr "Balíček poskytující tento soubor je:"
+msgstr "Vypsat balíčky které vyžadují tento balíček"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Balíček poskytující tento soubor je:"
+msgstr "Vypsat balíčky poskytující schopnost"
 
 #: client/pkgc-query.c:1033
 msgid "Show files in package"
@@ -1197,25 +1202,24 @@ msgstr "Získat podrobnosti o aktualizacích"
 
 #: client/pkgc-query.c:1051
 msgid "Resolve package names"
-msgstr "Přeložit na názvy balíčků"
+msgstr "Přeložit názvy balíčků"
 
 #: client/pkgc-query.c:1057
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Vypsat filtry a kategorie k dispozici"
 
 #: client/pkgc-query.c:1063
 msgid "Show available distribution upgrades"
 msgstr "Zobrazit přechody na novější verze distribuce, které jsou k dispozici"
 
 #: client/pkgc-query.c:1069
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Získávají se transakce"
+msgstr "Získat dobu od poslední akce"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Vypsat všechny nastavené repozitáře balíčků."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
@@ -1269,7 +1273,7 @@ msgstr "Odebrat repozitář"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Nepřipojeno k procesu služby PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
@@ -1324,9 +1328,9 @@ msgstr "Varování:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:436 client/pkgcli.c:190
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Selhalo vyřešení auto: %s"
+msgstr "Nepodařilo se zpracovat předvolby: %s"
 
 #: client/pkgc-util.c:443
 #, c-format
@@ -1522,7 +1526,7 @@ msgstr "Vypnout obarvování výstupu"
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Odpovědět na všechny otázky „ano“"
 
 #: client/pkgcli.c:92
 msgid "FILTER"
@@ -1531,11 +1535,11 @@ msgstr "FILTR"
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Filtrovat balíčky (nainstalované, k dispozici, atd.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Nezadán žádný příkaz. Ohledně informací k použití použijte --help."
 
 #: client/pkgcli.c:126
 #, c-format
@@ -1543,9 +1547,9 @@ msgid "Unknown command: %s"
 msgstr "Neznámý příkaz: %s"
 
 #: client/pkgcli.c:136
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Nepodařilo se kontaktovat PackageKit"
+msgstr "Nepodařilo spojit s PackageKit: %s"
 
 #: client/pkgcli.c:198
 #, c-format
@@ -1558,7 +1562,7 @@ msgstr "Příkazy k dispozici:"
 
 #: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Pro nápovědu ke konkrétnímu příkazu použijte „pkgcli PŘÍKAZ --help“."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -1583,29 +1587,29 @@ msgstr "Načítá se seznam balíčků."
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
 msgid "Failed to search for file"
-msgstr "Selhalo vyhledání souboru"
+msgstr "Nepodařilo se vyhledat soubor"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: contrib/command-not-found/pk-command-not-found.c:511
 msgid "Getting the list of files failed"
-msgstr "Selhalo získání seznamu souborů"
+msgstr "Nepodařilo se získat seznam souborů"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: contrib/command-not-found/pk-command-not-found.c:643
 msgid "Failed to launch:"
-msgstr "Selhalo spuštění:"
+msgstr "Nepodařilo se spustit:"
 
 #. TRANSLATORS: we failed to install the package
 #: contrib/command-not-found/pk-command-not-found.c:662
 msgid "Failed to install packages"
-msgstr "Selhala instalace balíčků"
+msgstr "Nepodařilo se nainstalovat balíčky"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
 msgid "command not found"
-msgstr "Příkaz nebyl nalezen"
+msgstr "příkaz nenalezen"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: contrib/command-not-found/pk-command-not-found.c:802
@@ -1627,7 +1631,7 @@ msgstr "Podobné příkazy jsou:"
 #. TRANSLATORS: ask the user to choose a file to run
 #: contrib/command-not-found/pk-command-not-found.c:843
 msgid "Please choose a command to run"
-msgstr "Vyberte prosím příkaz, který se má spustit"
+msgstr "Vyberte prosím příkaz, který má být spuštěn"
 
 #. TRANSLATORS: tell the user what package provides the command
 #: contrib/command-not-found/pk-command-not-found.c:863
@@ -1653,7 +1657,7 @@ msgstr "Vhodné balíčky jsou:"
 #. TRANSLATORS: ask the user to choose a file to install
 #: contrib/command-not-found/pk-command-not-found.c:911
 msgid "Please choose a package to install"
-msgstr "Vyberte prosím balíček, který se má instalovat"
+msgstr "Vyberte prosím balíček, který má být nainstalován"
 
 #: contrib/command-not-found/pk-command-not-found.c:913
 msgid "User aborted selection"
@@ -1692,7 +1696,7 @@ msgstr "Dotazuje se"
 #. TRANSLATORS: transaction state, getting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
-msgstr "Získavají se informace"
+msgstr "Získávají se informace"
 
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-private.c:381
@@ -1749,7 +1753,7 @@ msgstr "Testují se změny"
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
-msgstr "Zařazjí se změny"
+msgstr "Zařazují se změny"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:425
@@ -1970,7 +1974,7 @@ msgstr "Uklízí se zastaralé"
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
 msgid "Reinstalling"
-msgstr "Opětovně se instaluje"
+msgstr "Přeinstalovává se"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1103
@@ -1990,17 +1994,17 @@ msgstr "Uklizeno"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
 msgid "Obsoleted"
-msgstr "Zastaralé uklizeno"
+msgstr "Učiněno zastaralým"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1127
 msgid "Reinstalled"
-msgstr "Opětovně nainstalováno"
+msgstr "Přeinstalováno"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1152
 msgid "Unknown role type"
-msgstr "Neznámý typ role"
+msgstr "Neznámý typ úlohy"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1156
@@ -2120,7 +2124,7 @@ msgstr "Přijímá se EULA"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1262
 msgid "Getting upgrades"
-msgstr "Získávají se povýšení"
+msgstr "Získávají se přechody na novější verzi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1266
@@ -2135,7 +2139,7 @@ msgstr "Získávají se transakce"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1274
 msgid "Getting system upgrades"
-msgstr "Získávají se povýšení systému"
+msgstr "Získávají se přechody na novější verzi systému"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
@@ -2190,7 +2194,7 @@ msgstr "Časové razítko klíče"
 #. TRANSLATORS: ask the user if they want to import
 #: lib/packagekit-glib2/pk-task-text.c:138
 msgid "Do you accept this signature?"
-msgstr "Příjímáte tento podpis?"
+msgstr "Piíjímáte tento podpis?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:143
@@ -2210,7 +2214,7 @@ msgstr "Ujednání"
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
 #: lib/packagekit-glib2/pk-task-text.c:188
 msgid "Do you accept this agreement?"
-msgstr "Příjímáte toto ujednání?"
+msgstr "Přijímáte toto ujednání?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/packagekit-glib2/pk-task-text.c:193
@@ -2265,7 +2269,7 @@ msgstr "Následující balíčky musí být aktualizovány:"
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:278
 msgid "The following packages have to be reinstalled:"
-msgstr "Následující balíčky musí být opětovně nainstalovány:"
+msgstr "Následující balíčky musí být přeinstalovány:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:283
@@ -2302,7 +2306,7 @@ msgstr "Zrušit cizí úlohu"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Pro zrušení úlohy, kterou jste sám nespustil, je vyžádováno ověření"
+msgstr "Pro zrušení úlohy, kterou jste sami nespustili, je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2338,11 +2342,11 @@ msgstr "Pro instalaci nedůvěryhodného softwaru je vyžadováno ověření"
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
-msgstr "Opětovně nainstalovat již nainstalovaný balíček"
+msgstr "Nainstalovat už nainstalovaný balíček znovu"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
 msgid "Authentication is required to reinstall software"
-msgstr "Reinstalace vyžaduje ověření"
+msgstr "Přeinstalace vyžaduje ověření"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -2352,7 +2356,7 @@ msgstr "Reinstalace vyžaduje ověření"
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
-msgstr "Nainstalovat starší verzi již nainstalovaného balíčku"
+msgstr "Nainstalovat starší verzi už nainstalovaného balíčku"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
 msgid "Authentication is required to downgrade software"
@@ -2409,7 +2413,7 @@ msgstr "Pro odebrání softwaru je vyžadováno ověření"
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
 msgid "Update software"
-msgstr "Aktualizovat softwar"
+msgstr "Aktualizovat software"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
 msgid "Authentication is required to update software"
@@ -2425,7 +2429,7 @@ msgstr "Změnit parametry repozitáře softwaru"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr "Pro změnu parametrů repozitáře softwaru je vyžádováno ověření"
+msgstr "Pro změnu parametrů repozitáře softwaru je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -2455,11 +2459,11 @@ msgstr "Pro nastavení síťové proxy, které se použije ke stažení softwaru
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr "Povýšení systému"
+msgstr "Přechod na novější verzi systému"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Pro povýšení operačního systému je vyžadováno ověření"
+msgstr "Pro přechod na novější verzi operačního systému je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -2483,38 +2487,38 @@ msgstr "Pro opravu nainstalovaného softwaru je vyžadováno ověření"
 #: policy/org.freedesktop.packagekit.policy.in:260
 #: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr "Spustit aktualizace při odpojení"
+msgstr "Spustit offline aktualizace"
 
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr "Pro spuštění aktualizací bez připojení k síti je vyžadováno ověření"
+msgstr "Pro spuštění offline aktualizací je vyžadováno ověření"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr "Vymazat zprávu o aktualizaci při odpojení"
+msgstr "Vymazat zprávu o offline aktualizaci"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Pro vymazání zprávy o aktualizaci provedené bez připojení k síti je vyžadováno ověření"
+msgstr "Pro vymazání zprávy o offline aktualizaci je vyžadováno ověření"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
 #, c-format
 msgid "Alias to %s"
-msgstr "Alias pro %s"
+msgstr "Alternativní název pro %s"
 
 #: src/pk-direct.c:168
 msgid "Command not found, valid commands are:"
-msgstr "Příkaz nebyl nalezen, platné příkazy jsou:"
+msgstr "Příkaz nenalezen, platné příkazy jsou:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 #: src/pk-direct.c:408 src/pk-main.c:117
 msgid "Packaging backend to use, e.g. dummy"
-msgstr "Výkonná část, která se má použít, např. dummy"
+msgstr "Podpůrná vrstva, která má být použita, např. dummy"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:424
@@ -2559,22 +2563,22 @@ msgstr "PackageKit"
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
 msgid "Failed to parse arguments"
-msgstr "Selhalo zpracování argumentů"
+msgstr "Nepodařilo se zpracovat argumenty"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
 msgid "Failed to load the config file"
-msgstr "Selhalo načtení souboru s nastavením"
+msgstr "Nepodařilo se načíst soubor s nastaveními"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
 msgid "Failed to load the backend"
-msgstr "Selhalo načtení výkonné části"
+msgstr "Nepodařilo se načíst podpůrnou vrstvu"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
 msgid "Failed to unload the backend"
-msgstr "Selhalo ukončení výkonné části"
+msgstr "Nepodařilo se ukončit načtení podpůrné vrstvy"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:120
@@ -2611,34 +2615,34 @@ msgstr "Služba PackageKit"
 #: src/pk-main.c:221
 #, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Selhalo vyřešení auto: %s"
+msgstr "Nepodařilo se vyřešit auto: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:245
 #, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Selhalo načtení výkonné části: %s"
+msgstr "Nepodařilo se načíst podpůrnou vrstvu: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
 msgid "The software is not from a trusted source."
-msgstr "Software není z důvěryhodného zdroje."
+msgstr "Software nepochází z důvěryhodného zdroje."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Tento balíček aktualizujte, jen když jste přesvědčeni, že je bezpečný."
+msgstr "Tento balíček aktualizujte, jen když jste přesvědčení, že je bezpečný."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Tyto balíčky aktualizujte, jen když jste přesvědčeni, že jsou bezpečné."
+msgstr "Tyto balíčky aktualizujte, jen když jste přesvědčení, že jsou bezpečné."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Tento balíček instalujte, jen když jste přesvědčeni, že je bezpečný."
+msgstr "Tento balíček instalujte, jen když jste přesvědčení, že je bezpečný."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Tyto balíčky instalujte jen, když jste přesvědčeni, že jsou bezpečné."
+msgstr "Tyto balíčky instalujte jen, když jste přesvědčení, že jsou bezpečné."
 
 #, fuzzy
 #~| msgid "Trigger offline updates"
