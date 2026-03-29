@@ -5,7 +5,7 @@ RUN eopkg -y install \
     packagekit-devel \
     sqlite3-devel \
     vala \
-    gstreamer-1.0-plugins-base-devel \
+    gstreamer-plugins-base-devel \
     libgtk-3-devel \
     jansson-devel \
     docbook-xml
