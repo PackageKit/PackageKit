@@ -19,7 +19,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"PO-Revision-Date: 2026-03-27 08:09+0000\n"
+"PO-Revision-Date: 2026-03-31 07:09+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/packagekit/translations/cs/>\n"
 "Language: cs\n"
@@ -215,7 +215,7 @@ msgstr "Aktualizuje"
 #. * this update obsoletes
 #: client/pkcon/pk-console.c:326
 msgid "Obsoletes"
-msgstr "Zastará"
+msgstr "Učiní zastaralým"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
@@ -536,7 +536,7 @@ msgstr "Umožnit balíčkům během transakce přechod na nižší verzi"
 
 #: client/pkcon/pk-console.c:1720
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Umožnit balíčkům během transakce opětovnou instalaci"
+msgstr "Umožnit balíčkům během transakce přeinstalaci"
 
 #: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
