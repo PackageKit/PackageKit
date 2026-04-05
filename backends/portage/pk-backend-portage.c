@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2009 Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>
  * Copyright (C) 2010-2013 Fabio Erculiani (lxnay) <lxnay@gentoo.org>
+ * Copyright (C) 2025-2026 Mihai Morovan <hithack9@gmail.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -33,6 +34,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_LOCK_REQUIRED,
 					   "spawned backend requires lock");
+		pk_backend_job_finished (job);
 		return;
 	}
 }
@@ -93,7 +95,7 @@ pk_backend_get_groups (PkBackend *backend)
 			//PK_GROUP_ENUM_COLLECTIONS,
 			//PK_GROUP_ENUM_VENDOR,
 			//PK_GROUP_ENUM_NEWEST,
-			//PK_GROUP_ENUM_UNKNOWN,
+			PK_GROUP_ENUM_UNKNOWN,
 			-1);
 }
 
@@ -104,6 +106,7 @@ pk_backend_get_filters (PkBackend *backend)
 			PK_FILTER_ENUM_INSTALLED,
 			PK_FILTER_ENUM_FREE,
 			PK_FILTER_ENUM_NEWEST,
+			PK_FILTER_ENUM_APPLICATION,
 			-1);
 	/*
 	 * These filters are candidate for further add:
@@ -210,8 +213,9 @@ void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
-
 	filters_text = pk_filter_bitfield_to_string (filters);
+	g_debug("portage backend: pk_backend_get_updates called, filters=%s", filters_text);
+
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-updates", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -232,7 +236,9 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "install-packages", transaction_flags_temp, package_ids_temp, NULL);
+
 	g_free(transaction_flags_temp);
 	g_free (package_ids_temp);
 }
@@ -240,14 +246,14 @@ pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield t
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 { 
-	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		g_debug("portage backend: pk_backend_is_online() == FALSE, allowing refresh to proceed (let backend handle network errors)");
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
 		pk_backend_job_finished (job);
 		return;
-	}
+    }
 
-	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_string (force), NULL);
+    pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "refresh-cache", pk_backend_bool_to_string (force), NULL);
 }
 
 void
@@ -348,8 +354,9 @@ void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	gchar *filters_text;
-
 	filters_text = pk_filter_bitfield_to_string (filters);
+	g_debug("portage backend: pk_backend_get_packages called, filters=%s", filters_text);
+
 	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-packages", filters_text, NULL);
 	g_free (filters_text);
 }
@@ -386,11 +393,11 @@ pk_backend_get_description (PkBackend *backend)
 const gchar *
 pk_backend_get_author (PkBackend *backend)
 {
-    return "Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, Fabio Erculiani <lxnay@sabayon.org>";
+    return "Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, Fabio Erculiani <lxnay@sabayon.org>, Mihai Morovan <hithack9@gmail.com>";
 }
 
 gboolean
 pk_backend_supports_parallelization (PkBackend *backend)
 {
-	return TRUE;
+	return FALSE;
 }
