@@ -81,8 +81,6 @@ class PackagekitProgress(Iterable):
             yield self.percent
             self.step()
 
-        raise StopIteration
-
     def _update_percent(self):
         '''
         Increment percentage based on current step
