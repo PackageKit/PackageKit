@@ -4,75 +4,76 @@
 #
 # Translators:
 # Richard Hughes <richard@hughsie.com>, 2011
+# "Марко М. Костић" <marko.m.kostic@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"Language-Team: Serbian (Latin) (http://app.transifex.com/freedesktop/packagekit/language/sr@latin/)\n"
+"PO-Revision-Date: 2026-04-11 20:09+0000\n"
+"Last-Translator: \"Марко М. Костић\" <marko.m.kostic@gmail.com>\n"
+"Language-Team: Serbian (Latin script) <https://hosted.weblate.org/projects/packagekit/translations/sr_Latn/>\n"
 "Language: sr@latin\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
-msgstr ""
+msgstr "Datoteka podešavanja nije pronađena."
 
 #. TRANSLATORS: The placeholder is an error message
 #: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load config file: %s"
-msgstr "Datoteka nije pronađena"
+msgstr "Nisam uspeo da učitam datoteku podešavanja: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:177
-#, fuzzy
 msgid "Installing System Upgrade"
-msgstr "Instaliranje potpisa"
+msgstr "Instaliram nadogradnju sistema"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
 #: client/pk-offline-update.c:181
-#, fuzzy
 msgid "Installing Updates"
-msgstr "Instaliranje ažuriranja"
+msgstr "Instaliram ažuriranja"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:214
-#, fuzzy
 msgid "Rebooting after installing updates…"
-msgstr "Instaliranje ažuriranja"
+msgstr "Ponovo podižem sistem nakon instaliranja ažuriranja…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:256
 msgid "Shutting down after installing updates…"
-msgstr ""
+msgstr "Isključujem sistem nakon instaliranja ažuriranja…"
 
 #. TRANSLATORS: we've started doing offline updates
 #: client/pk-offline-update.c:401
 msgid "Installing updates; this could take a while..."
-msgstr ""
+msgstr "Instaliram ažuriranja; ovo može malo da potraje..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
 #: client/pk-offline-update.c:438
 msgid "Installing system upgrade; this could take a while..."
-msgstr ""
+msgstr "Instaliram nadogradnju sistema; ovo može malo da potraje..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
 #: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
 msgid "Transaction"
-msgstr "Transakcija"
+msgstr "Izvršenje"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
 #: client/pkcon/pk-console.c:167
@@ -86,7 +87,7 @@ msgstr "Netačno"
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:169
 msgid "Succeeded"
-msgstr "Uspela"
+msgstr "Uspešno"
 
 #: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
 msgid "True"
@@ -99,7 +100,7 @@ msgstr "Radnja"
 
 #: client/pkcon/pk-console.c:176
 msgid "(seconds)"
-msgstr "(sekundi)"
+msgstr "(sekunde)"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:176
@@ -109,22 +110,22 @@ msgstr "Trajanje"
 #. TRANSLATORS: this is The command line used to do the action
 #: client/pkcon/pk-console.c:180
 msgid "Command line"
-msgstr "Komandna linija"
+msgstr "Linija naredbi"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
 #: client/pkcon/pk-console.c:182
 msgid "User ID"
-msgstr "Korisnički IB"
+msgstr "ID korisnika"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
 #: client/pkcon/pk-console.c:189
 msgid "Username"
-msgstr "Korisničko ime"
+msgstr "Korisnik"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
 #: client/pkcon/pk-console.c:193
 msgid "Real name"
-msgstr "Stvarno ime"
+msgstr "Ime i prezime"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
@@ -162,7 +163,7 @@ msgstr "Kategorija"
 #. TRANSLATORS: this is group identifier
 #: client/pkcon/pk-console.c:258
 msgid "ID"
-msgstr "Identifikator"
+msgstr "Odrednik"
 
 #. TRANSLATORS: this is the parent group
 #: client/pkcon/pk-console.c:261
@@ -178,12 +179,12 @@ msgstr "Naziv"
 #. TRANSLATORS: this is preferred icon for the group
 #: client/pkcon/pk-console.c:270
 msgid "Icon"
-msgstr "Ikona"
+msgstr "Ikonica"
 
 #. TRANSLATORS: this is a header for the package that can be updated
 #: client/pkcon/pk-console.c:308
 msgid "Details about the update:"
-msgstr "Više o nadgradnji:"
+msgstr "Pojedinosti osveženja:"
 
 #. TRANSLATORS: details about the update, package name and version
 #. TRANSLATORS: the package that is being processed
@@ -192,9 +193,8 @@ msgstr "Više o nadgradnji:"
 #: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
 #: lib/packagekit-glib2/pk-task-text.c:107
 #: lib/packagekit-glib2/pk-task-text.c:178
-#, fuzzy
 msgid "Package"
-msgstr "Spisak datoteka"
+msgstr "Paket"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
@@ -217,7 +217,7 @@ msgstr "Izdavač"
 #. TRANSLATORS: details about the update, the bugzilla URLs
 #: client/pkcon/pk-console.c:338
 msgid "Bugzilla"
-msgstr "Bugzilla"
+msgstr "Bubaždaja"
 
 #. TRANSLATORS: details about the update, the CVE URLs
 #: client/pkcon/pk-console.c:344
@@ -274,7 +274,7 @@ msgstr "Isključena"
 #. TRANSLATORS: a package requires the system to be restarted
 #: client/pkcon/pk-console.c:429
 msgid "System restart required by:"
-msgstr "Ponovno pokretanje sistema zahteva paket:"
+msgstr "Ponovno pokretanje sistema zahteva:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #: client/pkcon/pk-console.c:432
@@ -296,7 +296,7 @@ msgstr "Neophodno je ponovno pokretanje sesije (bezbednosno):"
 #. TRANSLATORS: a package requires the application to be restarted
 #: client/pkcon/pk-console.c:443
 msgid "Application restart required by:"
-msgstr "Ponovno pokretanje programa zahteva paket:"
+msgstr "Ponovno pokretanje programa zahteva:"
 
 #. TRANSLATORS: This a list of details about the package
 #: client/pkcon/pk-console.c:488
@@ -321,7 +321,7 @@ msgstr "Procenat"
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
 #: client/pkcon/pk-console.c:633
 msgid "Status"
-msgstr "Status"
+msgstr "Stanje"
 
 #. TRANSLATORS: the results from the transaction
 #: client/pkcon/pk-console.c:671
@@ -337,9 +337,8 @@ msgstr "Kobna greška"
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
 #: client/pkcon/pk-console.c:702
-#, fuzzy
 msgid "There are no packages to update."
-msgstr "Sledeći paketi moraju biti ažurirani:"
+msgstr "Nema paketa za osvežavanje."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
@@ -347,7 +346,7 @@ msgstr "Sledeći paketi moraju biti ažurirani:"
 #: client/pkcon/pk-console.c:706
 #: contrib/command-not-found/pk-command-not-found.c:670
 msgid "The transaction failed"
-msgstr "Transakcija nije uspela"
+msgstr "Izvršenje nije uspelo"
 
 #. TRANSLATORS: print a message when there are no updates
 #: client/pkcon/pk-console.c:735
@@ -356,7 +355,7 @@ msgstr "Trenutno nema dostupnih ažuriranja."
 
 #: client/pkcon/pk-console.c:758
 msgid "There are no upgrades available at this time."
-msgstr "Trenutno nema dostupnih nadgradnji."
+msgstr "Trenutno nema dostupnih nadogradnji."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:820
@@ -382,7 +381,7 @@ msgstr "Neophodno je odjavljivanje i ponovna prijava radi završetka ažuriranja
 #. * to follow is a list of possible packages
 #: client/pkcon/pk-console.c:932 client/pkgc-util.c:1165
 msgid "More than one package matches:"
-msgstr "Postoji više paketa koji odgovaraju upitu:"
+msgstr "Više paketa odgovara upitu:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
@@ -394,14 +393,13 @@ msgstr "Izaberite željeni paket: "
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
 #: client/pkcon/pk-console.c:981
-#, fuzzy
 msgid "Package not found"
-msgstr "PaketKit redar"
+msgstr "Nisam pronašao paket"
 
 #. TRANSLATORS: we couldn't find anything
 #: client/pkcon/pk-console.c:999
 msgid "No packages were found"
-msgstr ""
+msgstr "Nisam pronašao nijedan paket"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
@@ -409,46 +407,44 @@ msgstr ""
 #: client/pkcon/pk-console.c:1024
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Očekivano je ime paketa, ustvari je dobijena datoteka. Pokušajte da upotrebite „pkcon install-local %s“ namesto."
+msgstr "Očekivah naziv paketa, ustvari dobih datoteku. Pokušajte da upotrebite „pkcon install-local %s“."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #: client/pkcon/pk-console.c:1059
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "Ova alatka nije mogla pronaći nikakve dostupne pakete: %s"
+msgstr "Ovaj alat ne može pronaći nikakve dostupne pakete: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1076
-#, fuzzy
 msgid "This tool could not find any available package."
-msgstr "Ova alatka nije mogla pronaći nikakve dostupne pakete: %s"
+msgstr "Ovaj alat nije mogao da pronađe nijedan dostupan paket."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
 #: client/pkcon/pk-console.c:1085
-#, fuzzy
 msgid "The selected packages may already be installed."
-msgstr "Sledeći paketi moraju biti instalirani:"
+msgstr "Izabrani paketi su možda već instalirani."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pkcon/pk-console.c:1113
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "Ova alatka nije mogla pronaći instalirani paket: %s"
+msgstr "Ovaj alat ne može pronaći instalirani paket: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "Ova alatka nije mogla pronaći paket: %s"
+msgstr "Ovaj alat ne može pronaći paket: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pkcon/pk-console.c:1220
 msgid "No packages require updating to newer versions."
-msgstr ""
+msgstr "Nijedan paket ne zahteva dogradnju na novije izdanje."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
@@ -463,7 +459,7 @@ msgstr ""
 #: client/pkcon/pk-console.c:1413
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "Ova alatka nije pronašla sve pakete: %s"
+msgstr "Ovaj alat nije pronašao sve pakete: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -474,7 +470,7 @@ msgstr "Uslužni program se iznenada prekinuo!"
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1472
 msgid "PackageKit Console Interface"
-msgstr "Tekstualno sučelje programa PaketKit"
+msgstr "Konzolno pročelje Paketskog pribora"
 
 #. these are commands we can use with pkcon
 #: client/pkcon/pk-console.c:1474
@@ -485,103 +481,99 @@ msgstr "Naredbe:"
 #. * action was last executed
 #: client/pkcon/pk-console.c:1572 client/pkgc-query.c:904
 msgid "Failed to get the time since this action was last completed"
-msgstr "Datum poslednjeg izvršavanja ove radnje nije pronađen"
+msgstr "Nisam uspeo da pronađem datum poslednjeg izvršavanja ove radnje"
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkcon/pk-console.c:1576
 msgid "Time since"
-msgstr ""
+msgstr "Poslednje izvršavanje"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
 #: client/pkcon/pk-console.c:1596
 msgid "Prepared updates:"
-msgstr ""
+msgstr "Pripremljene dogradnje:"
 
 #. TRANSLATORS: The network settings could not be sent
 #: client/pkcon/pk-console.c:1665
 msgid "The proxy could not be set"
-msgstr "Proksi nije mogao da bude postavljen"
+msgstr "Posrednik ne može biti podešen"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
 msgid "Show the program version and exit"
-msgstr "Prikaži verziju programa i završi rad"
+msgstr "Prikazuje izdanje programa i izlazi"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkcon/pk-console.c:1709
 msgid "Set the filter, e.g. installed"
-msgstr "Namesti filter, npr. instalirani"
+msgstr "Podešava propusnika, npr. instalirani"
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1712
 msgid "Install the packages without asking for confirmation"
-msgstr "Instaliraj pakete bez pitanja za potvrdu"
+msgstr "Instalira pakete bez pitanja za potvrdu"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
 #: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
 msgid "Prepare the transaction by downloading packages only"
-msgstr ""
+msgstr "Priprema izvršenje samo preuzimajući pakete"
 
 #. command line argument, do we allow package downgrades
 #: client/pkcon/pk-console.c:1718
-#, fuzzy
 msgid "Allow packages to be downgraded during transaction"
-msgstr "Sledeći paketi moraju biti unazađeni:"
+msgstr "Dopušta razgrađivanje paketa za vreme izvršenja"
 
 #: client/pkcon/pk-console.c:1720
-#, fuzzy
 msgid "Allow packages to be reinstalled during transaction"
-msgstr "Sledeći paketi moraju biti ponovo instalirani:"
+msgstr "Dopušta ponovno instaliranje paketa za vreme izvršenja"
 
 #: client/pkcon/pk-console.c:1722
 msgid "Automatically remove unused dependencies"
-msgstr ""
+msgstr "Automatski uklanja neiskorišćene zavisnosti"
 
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Izvrši naredbu koristeći neiskorišćeni mrežni opseg i takođe trošeći manje energije"
+msgstr "Izvršava naredbu koristeći neiskorišćeni mrežni opseg i takođe trošeći manje energije"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1728
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Štampaj izlaz čitljiv mašini na ekranu, umesto upotrebe animiranih vidžeta"
+msgstr "Ispisuje mašinski čitljiv izlaz na ekranu, umesto upotrebe animiranih elemenata"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1731
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr ""
+msgstr "Najveća starost keša metapodataka (u sekundama). Koristite -1 za korišćenje samo keša, 1 za ponovno učitavanje keša."
 
 #. command line argument, do we ask questions
 #: client/pkcon/pk-console.c:1734
-#, fuzzy
 msgid "Allow untrusted packages to be installed."
-msgstr "Sledeći paketi moraju biti instalirani:"
+msgstr "Dopušta instalaciju nepoverljivih paketa."
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1769
-#, fuzzy
 msgid "Failed to parse command line"
-msgstr "Datoteka nije pronađena"
+msgstr "Nisam uspeo da obradim liniju naredbi"
 
 #. TRANSLATORS: we failed to contact the daemon
 #: client/pkcon/pk-console.c:1779
 msgid "Failed to contact PackageKit"
-msgstr "Neuspešno kontaktiranje PaketKita."
+msgstr "Nisam uspeo da stupim u vezu sa Paketskim priborom"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
 #: client/pkcon/pk-console.c:1842 client/pkgcli.c:257
 msgid "The filter specified was invalid"
-msgstr "Navedeni filter nije ispravan"
+msgstr "Navedeni propusnik nije ispravan"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
 #: client/pkcon/pk-console.c:1868
 msgid "A search type is required, e.g. name"
-msgstr "Morate navesti vrstu pretrage, npr. po imenu"
+msgstr "Morate navesti vrstu pretrage, npr. po nazivu"
 
 #. TRANSLATORS: the user
 #. * needs to provide a search term
@@ -590,25 +582,25 @@ msgstr "Morate navesti vrstu pretrage, npr. po imenu"
 #: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
 #: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
 msgid "A search term is required"
-msgstr "Morate navesti termin za pretragu"
+msgstr "Morate navesti pojam za pretragu"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1955
 msgid "A package name to install is required"
-msgstr "Neophodno je ime paketa za instalaciju"
+msgstr "Potreban je naziv paketa za instalaciju"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
 #: client/pkcon/pk-console.c:1969
 msgid "A filename to install is required"
-msgstr "Neophodno je ime datoteke za instalaciju"
+msgstr "Potreban je naziv datoteke za instalaciju"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 #: client/pkcon/pk-console.c:1985
 msgid "A type, key_id and package_id are required"
-msgstr "Morate navesti vrstu, IB ključa i IB paketa (key_id i package_id)"
+msgstr "Morate navesti vrstu, ib_ključa i ib_paketa"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -621,52 +613,51 @@ msgstr "Morate navesti naziv paketa za uklanjanje"
 #. * download or where
 #: client/pkcon/pk-console.c:2016
 msgid "A destination directory and the package names to download are required"
-msgstr "Neophodni su odredišni direktorijum i imena paketa za preuzimanje"
+msgstr "Neophodni su odredišni direktorijum i nazivi paketa za preuzimanje"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
 #: client/pkcon/pk-console.c:2026
 msgid "Directory not found"
-msgstr "Direktorijum nije nađen"
+msgstr "Nisam pronašao direktorijum"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
 #: client/pkcon/pk-console.c:2041
 msgid "A licence identifier (eula-id) is required"
-msgstr "Morete navesti identifikator licence (eula-id)"
+msgstr "Morete navesti odrednik dozvole (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
 #: client/pkcon/pk-console.c:2067
 msgid "A package name to resolve is required"
-msgstr "Morate navesti ime paketa za razrešavanje"
+msgstr "Morate navesti naziv paketa za razrešavanje"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
 #: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
 msgid "A repository name is required"
-msgstr "Morate navesti ime riznice"
+msgstr "Morate navesti naziv riznice"
 
 #: client/pkcon/pk-console.c:2117
 msgid "A repo name, parameter and value are required"
-msgstr "Morate navesti ime, parametar i vrednost riznice"
+msgstr "Morate navesti naziv, parametar i vrednost riznice"
 
 #: client/pkcon/pk-console.c:2134
-#, fuzzy
 msgid "A repo id and autoremove required"
-msgstr "Morate navesti ime riznice"
+msgstr "Morate navesti ib riznice i samostalno uklanjanje"
 
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
 #: client/pkcon/pk-console.c:2161 client/pkgc-query.c:954
 msgid "An action, e.g. 'update-packages' is required"
-msgstr ""
+msgstr "Morate navesti radnju, npr. „update-packages“"
 
 #. TRANSLATORS: The user specified
 #. * an invalid action
 #: client/pkcon/pk-console.c:2171 client/pkgc-query.c:962
 msgid "A correct role is required"
-msgstr "Morate navesti važeću radnju"
+msgstr "Morate navesti ispravnu radnju"
 
 #. TRANSLATORS: The user did not
 #. * provide a package name
@@ -674,7 +665,7 @@ msgstr "Morate navesti važeću radnju"
 #: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
 #: client/pkcon/pk-console.c:2283
 msgid "A package name is required"
-msgstr "Morate navesti ime paketa"
+msgstr "Morate navesti naziv paketa"
 
 #. TRANSLATORS: each package
 #. * "provides" certain things, e.g.
@@ -682,28 +673,26 @@ msgstr "Morate navesti ime paketa"
 #. * the user didn't specify it
 #: client/pkcon/pk-console.c:2234
 msgid "A package provide string is required"
-msgstr "Morate navesti „provide“ niz (šta paket pruža)"
+msgstr "Morate navesti nisku „obezbeđuje“"
 
 #: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
-#, fuzzy
 msgid "A filename is required"
-msgstr "Neophodno je ime datoteke za instalaciju"
+msgstr "Morate navesti naziv datoteke"
 
 #. TRANSLATORS: this is the description of the backend
 #: client/pkcon/pk-console.c:2344
-#, fuzzy
 msgid "Description"
-msgstr "Distribucija"
+msgstr "Opis"
 
 #. TRANSLATORS: this is the author of the backend
 #: client/pkcon/pk-console.c:2348
 msgid "Author"
-msgstr ""
+msgstr "Autor"
 
 #. TRANSLATORS: The user did not provide a distro name
 #: client/pkcon/pk-console.c:2418
 msgid "You need to specify a list file to create"
-msgstr ""
+msgstr "Morate navesti datoteku spiska za stvaranje"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
@@ -711,7 +700,7 @@ msgstr ""
 #: client/pkcon/pk-console.c:2431
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Datoteka već postoji: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -727,124 +716,117 @@ msgstr "Naredba nije uspela"
 
 #: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
 msgid "Failed to get daemon state"
-msgstr "Neuspeo pokušaj dobavljanja stanja demona"
+msgstr "Nisam uspeo da dobavim stanja uslužnika"
 
 #: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:482
-#, fuzzy
 msgid "Failed to get properties"
-msgstr "Neuspeo pokušaj dobavljanja stanja demona"
+msgstr "Nisam uspeo da dobavim svojstva"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
 #: client/pkcon/pk-monitor.c:341
 msgid "PackageKit Monitor"
-msgstr "PaketKit redar"
+msgstr "Nadglednik Paketskog pribora"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Sledeći paketi moraju biti unazađeni:"
+msgstr "Dozvoli vraćanje paketa na prethodna izdanja"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Sledeći paketi moraju biti ponovo instalirani:"
+msgstr "Dozvoli ponovno instaliranje paketa"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Instaliraj potpisani paket"
+msgstr "Dozvoli instaliranje nepoverljivih paketa"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
 msgid "Do not automatically remove unused dependencies"
-msgstr ""
+msgstr "Nemoj automatski uklanjati nekorišćene zavisnosti"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr ""
+msgstr "Najveća starost keša metapodataka u sekundama (podrazumevano: 3 dana)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDE"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:199
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Osvežavam keš"
+msgstr "Osveži keš metapodataka paketa."
 
 #: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Metapodaci paketa su osveženi"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Instaliraj jedan ili više paketa ili lokalnih datoteka paketa."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:312 client/pkgc-manage.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Ova alatka nije mogla pronaći nikakve dostupne pakete: %s"
+msgstr "Nisam uspeo da pronađem nijedan dostupan paket: %s"
 
 #: client/pkgc-manage.c:331
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Sledeći paketi moraju biti instalirani:"
+msgstr "Izabrani paket je već instaliran."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Ukloni jedan ili više paketa sa sistema."
 
 #: client/pkgc-manage.c:389
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Ova alatka nije mogla pronaći paket: %s"
+msgstr "Nisam uspeo da pronađem instalirane pakete: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Preuzmi pakete u navedeni direktorijum bez instaliranja."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Ova alatka nije mogla pronaći paket: %s"
+msgstr "Nisam uspeo da pronađem pakete: %s"
 
 #: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Direktorijum ne postoji: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Ažuriraj sve pakete ili određene pakete na njihova najnovija izdanja."
 
 #: client/pkgc-manage.c:518
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Ova alatka nije mogla pronaći paket: %s"
+msgstr "Nisam uspeo da pronađem pakete za ažuriranje: %s"
 
 #: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Neuspeo pokušaj dobavljanja stanja demona"
+msgstr "Nisam uspeo da dobavim ažuriranja: %s"
 
 #: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Morate navesti ime paketa"
+msgstr "Nijedan paket ne zahteva ažuriranje"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -854,64 +836,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Nadogradite sve pakete ili izvršite nadogradnju distribucije.\n"
+"\n"
+"Vrste: minimal, default, complete"
 
 #: client/pkgc-manage.c:695
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da pročitam radnju ažuriranja van mreže: %s"
 
 #: client/pkgc-manage.c:705
 msgid "Offline update is not triggered."
-msgstr ""
+msgstr "Ažuriranje van mreže nije pokrenuto."
 
 #: client/pkgc-manage.c:714
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Ažuriranje van mreže je pokrenuto. Radnja nakon ažuriranja: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:725
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Ažuriranje paketa"
+msgstr "Pripremljeni paketi:"
 
 #: client/pkgc-manage.c:739
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Preuzimanje podataka o ažuriranju"
+msgstr "Nijedno ažuriranje van mreže nije pripremljeno."
 
 #: client/pkgc-manage.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da pročitam pripremljena ažuriranja van mreže: %s"
 
 #: client/pkgc-manage.c:753
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Preuzimanje podataka o ažuriranju"
+msgstr "Nisu dostupni rezultati poslednjeg ažuriranja van mreže."
 
 #: client/pkgc-manage.c:760
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Poslednje ažuriranje van mreže nije uspelo: %s: %s"
 
 #: client/pkgc-manage.c:767
 msgid "Last offline update completed successfully"
-msgstr ""
+msgstr "Poslednje ažuriranje van mreže je uspešno završeno"
 
 #: client/pkgc-manage.c:777
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Datum ažuriranja"
+msgstr "Ažurirano: %s"
 
 #: client/pkgc-manage.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da pokrenem ažuriranje van mreže: %s"
 
 #: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Ažuriranje van mreže je zakazano. Sistem će se ažurirati prilikom sledećeg ponovnog pokretanja."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -925,136 +907,133 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Pokrenite i upravljajte ažuriranjima sistema van mreže.\n"
+"\n"
+"Možete izabrati jedan od ovih zahteva:\n"
+"  prepare — priprema ažuriranje van mreže i pokreće ga (podrazumevano)\n"
+"  trigger — pokreće (ručno pripremljeno) ažuriranje van mreže\n"
+"  cancel  — otkazuje planirano ažuriranje van mreže\n"
+"  status  — prikazuje podatke o stanju pripremljenog ili završenog ažuriranja van mreže"
 
 #: client/pkgc-manage.c:850
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da otkažem ažuriranje van mreže: %s"
 
 #: client/pkgc-manage.c:854
 msgid "Offline update cancelled"
-msgstr ""
+msgstr "Ažuriranje van mreže je otkazano"
 
 #: client/pkgc-manage.c:911
 #, c-format
 msgid "Unknown offline-update request: %s"
-msgstr ""
+msgstr "Nepoznat zahtev za ažuriranje van mreže: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:932
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Instaliraj pakete bez pitanja za potvrdu"
+msgstr "Instalirajte potpis paketa za GPG proveru."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:968
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Pokušaj popravke sistema za upravljanje paketima."
 
 #: client/pkgc-manage.c:984
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Sistem je uspešno popravljen"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1006
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Bezbedno okončajte uslužnika Paketskog pribora."
 
 #: client/pkgc-manage.c:1012
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Neuspeo pokušaj dobavljanja stanja demona"
+msgstr "Nisam uspeo da pošaljem zahtev za izlazak uslužnika: %s"
 
 #: client/pkgc-manage.c:1031
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Osveži metapodatke paketa"
 
 #: client/pkgc-manage.c:1037
-#, fuzzy
 msgid "Install packages"
-msgstr "Instaliram pakete"
+msgstr "Instaliraj pakete"
 
 #: client/pkgc-manage.c:1043
-#, fuzzy
 msgid "Remove packages"
-msgstr "Ukloni paket"
+msgstr "Ukloni pakete"
 
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Update packages"
-msgstr "Ažuriranje paketa"
+msgstr "Ažuriraj pakete"
 
 #: client/pkgc-manage.c:1055
 msgid "Upgrade the system"
-msgstr ""
+msgstr "Nadogradi sistem"
 
 #: client/pkgc-manage.c:1061
-#, fuzzy
 msgid "Download packages"
-msgstr "Preuzimanje paketa"
+msgstr "Preuzmi pakete"
 
 #: client/pkgc-manage.c:1067
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Sledeći paketi moraju biti ažurirani:"
+msgstr "Upravljaj ažuriranjima sistema van mreže"
 
 #: client/pkgc-manage.c:1073
-#, fuzzy
 msgid "Install package signature"
-msgstr "Instaliranje potpisa"
+msgstr "Instaliraj potpis paketa"
 
 #: client/pkgc-manage.c:1079
-#, fuzzy
 msgid "Repair package system"
-msgstr "Uklanjanje paketa"
+msgstr "Popravi sistem paketa"
 
 #: client/pkgc-manage.c:1085
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Bezbedno zaustavi uslužnika Paketskog pribora"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:504
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Servis PaketKita"
+msgstr "Nadgledaj D-sabirnicu događaja Paketskog pribora"
 
 #. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
 #: client/pkgc-monitor.c:626
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "Servis PaketKita"
+msgstr "Nadgledaj magistralu događaja Paketskog pribora"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Prikaži podatke o pozadincu Paketskog pribora."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Pozadinac: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Distribucija"
+msgstr "Opis: %s"
 
 #: client/pkgc-query.c:217
 #, c-format
 msgid "Author: %s"
-msgstr ""
+msgstr "Autor: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Radnja"
+msgstr "Uloge: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:246
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Prikaži nedavne transakcije upravljanja paketima."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:285
@@ -1067,571 +1046,529 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Traži pakete koji se podudaraju sa datim obrascima. Ako REŽIM nije naveden, \n"
+"izvršava se pretraga „details“ (detalji).\n"
+"Mogući REŽIMI pretrage su:\n"
+"  name    — pretraga po nazivu paketa\n"
+"  details — pretraga po detaljima paketa (podrazumevano)\n"
+"  file    — pretraga po nazivu datoteke\n"
+"  group   — pretraga po grupi paketa"
 
 #: client/pkgc-query.c:313
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Morate navesti termin za pretragu"
+msgstr "Nije naveden obrazac pretrage"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:374
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Ispiši sve pakete ili one koji se podudaraju sa obrascem."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:419
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Prikaži podatke o jednom ili više paketa."
 
 #: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Proveri zavisnosti rekurzivno"
 
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:485
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Prikaži zavisnosti za jedan ili više paketa."
 
 #: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Ne mogu da razrešim pakete: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:526
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Prikaži koji paketi obezbeđuju navedenu mogućnost."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:558
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Ispiši sve datoteke sadržane u jednom ili više paketa."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:654
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Ova alatka nije mogla pronaći nikakve dostupne pakete: %s"
+msgstr "Ispiši sva trenutno dostupna ažuriranja paketa."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:687
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Prikaži detaljne podatke o navedenom ažuriranju paketa."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:726
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Razreši nazive paketa u ID-ove paketa."
 
 #. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:770
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Prikaži koji paketi zahtevaju navedene pakete."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:814
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Ispiši sve dostupne filtere, grupe i kategorije za organizaciju paketa."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:822
 msgid "Filters:"
-msgstr ""
+msgstr "Filteri:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:834
 msgid "Groups:"
-msgstr ""
+msgstr "Grupe:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:846
-#, fuzzy
 msgid "Categories:"
-msgstr "Kategorija"
+msgstr "Kategorije:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:872
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Prikaži nadogradnje izdanja distribucije, ako su dostupne."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:918
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Sistemsko vreme"
+msgstr "Proteklo vreme"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:943
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Dobavi vreme u sekundama od poslednje navedene radnje."
 
 #: client/pkgc-query.c:985
-#, fuzzy
 msgid "Show backend information"
-msgstr "Dobavljanje podataka"
+msgstr "Prikaži podatke o pozadincu"
 
 #: client/pkgc-query.c:991
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Transakcija nije uspela"
+msgstr "Prikaži istorijat prenosa"
 
 #: client/pkgc-query.c:997
-#, fuzzy
 msgid "Search for packages"
-msgstr "Pretražujem po imenu"
+msgstr "Potraži pakete"
 
 #: client/pkgc-query.c:1003
-#, fuzzy
 msgid "List packages"
-msgstr "Instaliram pakete"
+msgstr "Ispiši pakete"
 
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "Show package information"
-msgstr "Preuzimanje podataka o ažuriranju"
+msgstr "Prikaži podatke o paketu"
 
 #: client/pkgc-query.c:1015
-#, fuzzy
 msgid "List package dependencies"
-msgstr "Razrešavanje zavisnosti"
+msgstr "Spisak zavisnosti paketa"
 
 #: client/pkgc-query.c:1021
-#, fuzzy
 msgid "List packages requiring this package"
-msgstr "Paket koji pruža ovu datoteku je:"
+msgstr "Spisak paketa koji zahtevaju ovaj paket"
 
 #: client/pkgc-query.c:1027
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Paket koji pruža ovu datoteku je:"
+msgstr "Ispiši pakete koji obezbeđuju sposobnost"
 
 #: client/pkgc-query.c:1033
-#, fuzzy
 msgid "Show files in package"
-msgstr "Prevazilazim pakete"
+msgstr "Prikaži datoteke u paketu"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
 msgid "Get available updates"
-msgstr "Dobavljam ažuriranja"
+msgstr "Dobavi dostupna ažuriranja"
 
 #: client/pkgc-query.c:1045
-#, fuzzy
 msgid "Get update details"
-msgstr "Dobavljanje detalja o ažuriranju"
+msgstr "Dobavi detalje ažuriranja"
 
 #: client/pkgc-query.c:1051
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Ukloni paket"
+msgstr "Razreši nazive paketa"
 
 #: client/pkgc-query.c:1057
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Ispiši dostupne filtere i kategorije"
 
 #: client/pkgc-query.c:1063
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Prikaži dostupne nadogradnje distribucije"
 
 #: client/pkgc-query.c:1069
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Dobavljanje transakcija"
+msgstr "Dobavi vreme od poslednje radnje"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Ispiši sve podešene riznice paketa."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Omogući navedenu riznicu."
 
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Riznica „%s“ je omogućena"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Onemogući merač čekanja"
+msgstr "Onemogući navedenu riznicu."
 
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Riznica „%s“ je onemogućena"
 
 #: client/pkgc-repo.c:196
 msgid "Automatically remove orphaned packages"
-msgstr ""
+msgstr "Automatski ukloni napuštene pakete"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:207
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Dobavljanje riznica"
+msgstr "Uklonite navedenu riznicu."
 
 #: client/pkgc-repo.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Morate navesti ime riznice"
+msgstr "Riznica „%s“ je uklonjena"
 
 #: client/pkgc-repo.c:244
-#, fuzzy
 msgid "List repositories"
-msgstr "Dobavljanje riznica"
+msgstr "Spisak riznica"
 
 #: client/pkgc-repo.c:250
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Dobavljanje riznica"
+msgstr "Omogući riznicu"
 
 #: client/pkgc-repo.c:256
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Dobavljanje riznica"
+msgstr "Onemogući riznicu"
 
 #: client/pkgc-repo.c:262
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Dobavljanje riznica"
+msgstr "Ukloni riznicu"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Nije povezano sa uslužnikom Paketskog pribora"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(sekundi)"
+msgstr "%u sekunde"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u min %u sek"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u minut"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u č. %u min."
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u č."
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u dana %u č."
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u dana"
 
 #: client/pkgc-util.c:279
 msgid "Error"
-msgstr ""
+msgstr "Greška"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:312
 msgid "Warning:"
-msgstr ""
+msgstr "Upozorenje:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:436 client/pkgcli.c:190
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da obradim opcije: %s"
 
 #: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Upotreba: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:630 client/pkgc-util.c:785
-#, fuzzy
 msgid "Package:"
-msgstr "Spisak datoteka"
+msgstr "Paket:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:634
 msgid "Version:"
-msgstr ""
+msgstr "Version:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:640
-#, fuzzy
 msgid "Summary:"
-msgstr "Sažetak"
+msgstr "Rezime:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:648
-#, fuzzy
 msgid "Description:"
-msgstr "Distribucija"
+msgstr "Opis:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:655
 msgid "License:"
-msgstr ""
+msgstr "Licenca:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:662
 msgid "URL:"
-msgstr ""
+msgstr "Adresa:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:670
 msgid "Group:"
-msgstr ""
+msgstr "Grupa:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:678
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Instaliran"
+msgstr "Veličina instaliranog:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Download Size:"
-msgstr "Preuzet"
+msgstr "Veličina preuzimanja:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:781
-#, fuzzy
 msgid "Update Details:"
-msgstr "Opis ažuriranja"
+msgstr "Pojedinosti ažuriranja:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:792
-#, fuzzy
 msgid "Updates:"
-msgstr "Ažurira"
+msgstr "Ažuriranja:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:801
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Prevazilazi"
+msgstr "Prevazilazi:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:810
-#, fuzzy
 msgid "Vendor:"
-msgstr "Izdavač"
+msgstr "Prodavac:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:819
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Praćenje problema:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:828
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:836
-#, fuzzy
 msgid "Restart:"
-msgstr "Ponovno pokretanje"
+msgstr "Ponovo pokreni:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Update text:"
-msgstr "Opis ažuriranja"
+msgstr "Tekst ažuriranja:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:852
-#, fuzzy
 msgid "Changes:"
-msgstr "Promene"
+msgstr "Izmene:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:859
-#, fuzzy
 msgid "State:"
-msgstr "Stanje"
+msgstr "Stanje:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:868
-#, fuzzy
 msgid "Issued:"
-msgstr "Izdato"
+msgstr "Izdato:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Updated:"
-msgstr "Datum ažuriranja"
+msgstr "Ažurirano:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:992
-#, fuzzy
 msgid "Transaction:"
-msgstr "Transakcija"
+msgstr "Transakcija:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:996
-#, fuzzy
 msgid "System time:"
-msgstr "Sistemsko vreme"
+msgstr "Sistemsko vreme:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1000
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Uspela"
+msgstr "Uspešno:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
-#, fuzzy
 msgid "Role:"
-msgstr "Radnja"
+msgstr "Uloga:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1016
-#, fuzzy
 msgid "Duration:"
-msgstr "Trajanje"
+msgstr "Trajanje:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1023
-#, fuzzy
 msgid "Command line:"
-msgstr "Komandna linija"
+msgstr "Naredbena linija:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1029
-#, fuzzy
 msgid "User ID:"
-msgstr "Korisnički IB"
+msgstr "ID korisnika:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1038
-#, fuzzy
 msgid "Username:"
-msgstr "Korisničko ime"
+msgstr "Korisničko ime:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1044
-#, fuzzy
 msgid "Real name:"
-msgstr "Stvarno ime"
+msgstr "Pravo ime:"
 
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1076
 msgid "None"
-msgstr ""
+msgstr "Ništa"
 
 #: client/pkgc-util.c:1221
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "PaketKit redar"
+msgstr "Paket nije pronađen: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Prikaži verziju i završi rad"
+msgstr "Prikaži izdanje „pkgcli“-ja"
 
 #: client/pkgcli.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Prikažite pomoć"
 
 #: client/pkgcli.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Daj samo minimalni izlaz"
 
 #: client/pkgcli.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Prikaži detaljniji izlaz"
 
 #: client/pkgcli.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Izlaz u JSON formatu"
 
 #: client/pkgcli.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Onemogući obojeni izlaz"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Odgovori sa „da“ na sva pitanja"
 
 #: client/pkgcli.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "FILTER"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Filtriraj pakete (instalirane, dostupne, itd.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Nije navedena naredba. Koristite „--help“ za podatke o upotrebi."
 
 #: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Nepoznata naredba: %s"
 
 #: client/pkgcli.c:136
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Neuspešno kontaktiranje PaketKita."
+msgstr "Nisam uspeo da se povežem sa Paketskim priborom: %s"
 
 #: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Izdanje: %s"
 
 #: client/pkgcli.c:213
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Dostupan"
+msgstr "Dostupne naredbe:"
 
 #: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Koristite „pkgcli COMMAND --help“ za pomoć specifičnu za naredbu."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
 msgid "Downloading details about the software repositories."
-msgstr ""
+msgstr "Preuzimam pojedinosti o riznicama softvera."
 
 #. TRANSLATORS: downloading file lists so we can search
 #: contrib/command-not-found/pk-command-not-found.c:431
 msgid "Downloading filelists (this may take some time to complete)."
-msgstr "Preuzimam spiskove datoteka (ovo može da potraje dok se ne završi)."
+msgstr "Preuzimam spiskove datoteka (ovo može malo da potraje)."
 
 #. TRANSLATORS: waiting for native lock
 #: contrib/command-not-found/pk-command-not-found.c:435
 msgid "Waiting for package manager lock."
-msgstr "Čekanje na zaključavanje upravnika paketa."
+msgstr "Čekam da se zaključava upravnik paketa."
 
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
@@ -1641,30 +1578,29 @@ msgstr "Učitavam spisak paketa."
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
 msgid "Failed to search for file"
-msgstr "Datoteka nije pronađena"
+msgstr "Nisam uspeo da potražim datoteku"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: contrib/command-not-found/pk-command-not-found.c:511
 msgid "Getting the list of files failed"
-msgstr ""
+msgstr "Nisam uspeo da dobavim spisak datoteka"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
 #: contrib/command-not-found/pk-command-not-found.c:643
 msgid "Failed to launch:"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da pokrenem:"
 
 #. TRANSLATORS: we failed to install the package
 #: contrib/command-not-found/pk-command-not-found.c:662
 msgid "Failed to install packages"
-msgstr "Neuspešna instalacija paketa"
+msgstr "Nisam uspeo da instaliram pakete"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
 #: contrib/command-not-found/pk-command-not-found.c:781
-#, fuzzy
 msgid "command not found"
-msgstr "Direktorijum nije nađen"
+msgstr "nema takve naredbe"
 
 #. TRANSLATORS: tell the user what we think the command is
 #: contrib/command-not-found/pk-command-not-found.c:802
@@ -1674,7 +1610,7 @@ msgstr "Slična naredba je:"
 #. TRANSLATORS: Ask the user if we should run the similar command
 #: contrib/command-not-found/pk-command-not-found.c:815
 msgid "Run similar command:"
-msgstr "Pokreni sličnu naredbu:"
+msgstr "Da pokrenem sličnu naredbu:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
@@ -1691,18 +1627,18 @@ msgstr "Izaberite naredbu za pokretanje"
 #. TRANSLATORS: tell the user what package provides the command
 #: contrib/command-not-found/pk-command-not-found.c:863
 msgid "The package providing this file is:"
-msgstr "Paket koji pruža ovu datoteku je:"
+msgstr "Paket koji obezbeđuje ovu datoteku je:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
 #: contrib/command-not-found/pk-command-not-found.c:870
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
-msgstr "Da instaliram paket „%s“ koji pruža naredbu „%s“?"
+msgstr "Da instaliram paket „%s“ koji obezbeđuje naredbu „%s“?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
 #: contrib/command-not-found/pk-command-not-found.c:893
 msgid "Packages providing this file are:"
-msgstr "Paketi koji pružaju ovu datoteku su:"
+msgstr "Paketi koji obezbeđuju ovu datoteku su:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
 #: contrib/command-not-found/pk-command-not-found.c:903
@@ -1716,12 +1652,12 @@ msgstr "Izaberite paket za instalaciju"
 
 #: contrib/command-not-found/pk-command-not-found.c:913
 msgid "User aborted selection"
-msgstr ""
+msgstr "Korisnik je prekinuo izbor"
 
 #: lib/packagekit-glib2/pk-console-private.c:228
 #, c-format
 msgid "Please enter a number from 1 to %i: "
-msgstr "Unesite broj između 1 i %i: "
+msgstr "Unesite broj od 1 do %i: "
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/packagekit-glib2/pk-console-private.c:357
@@ -1731,39 +1667,39 @@ msgstr "Nepoznato stanje"
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
 #: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Starting"
-msgstr "Pokretanje"
+msgstr "Počinjem"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
 #: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Waiting in queue"
-msgstr "Čekanje u redu"
+msgstr "Čekam u redu"
 
 #. TRANSLATORS: transaction state, just started
 #: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Running"
-msgstr "Izvršavanje"
+msgstr "Izvršavam"
 
 #. TRANSLATORS: transaction state, is querying data
 #: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Querying"
-msgstr "Ispitivanje"
+msgstr "Propitujem"
 
 #. TRANSLATORS: transaction state, getting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
-msgstr "Dobavljanje podataka"
+msgstr "Dobavljam podatke"
 
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Removing packages"
-msgstr "Uklanjanje paketa"
+msgstr "Uklanjam pakete"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-console-private.c:385
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
-msgstr "Preuzimanje paketa"
+msgstr "Preuzimam pakete"
 
 #. TRANSLATORS: transaction state, installing packages
 #: lib/packagekit-glib2/pk-console-private.c:389
@@ -1773,17 +1709,17 @@ msgstr "Instaliram pakete"
 #. TRANSLATORS: transaction state, refreshing internal lists
 #: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Refreshing software list"
-msgstr "Osvežavanje spiska softvera"
+msgstr "Osvežavam spisak softvera"
 
 #. TRANSLATORS: transaction state, installing updates
 #: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Installing updates"
-msgstr "Instaliranje ažuriranja"
+msgstr "Instaliram ažuriranja"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
 #: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Cleaning up packages"
-msgstr "Čišćenje paketa"
+msgstr "Čistim pakete"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
 #: lib/packagekit-glib2/pk-console-private.c:405
@@ -1793,22 +1729,22 @@ msgstr "Prevazilazim pakete"
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Resolving dependencies"
-msgstr "Razrešavanje zavisnosti"
+msgstr "Razrešavam zavisnosti"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Checking signatures"
-msgstr "Provera potpisa"
+msgstr "Proveravam potpise"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
 #: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Testing changes"
-msgstr "Isprobavanje promena"
+msgstr "Isprobavam izmene"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
 #: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Committing changes"
-msgstr "Šaljem promene"
+msgstr "Šaljem izmene"
 
 #. TRANSLATORS: transaction state, requesting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:425
@@ -1818,12 +1754,12 @@ msgstr "Zahtevam podatke"
 #. TRANSLATORS: transaction state, all done!
 #: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Finished"
-msgstr "Završeno"
+msgstr "Završio sam"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
 #: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Cancelling"
-msgstr "Otkazivanje"
+msgstr "Otkazujem"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:437
@@ -1833,57 +1769,57 @@ msgstr "Preuzimam podatke o riznici"
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading list of packages"
-msgstr "Preuzimanje spiska paketa"
+msgstr "Preuzimam spisak paketa"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading file lists"
-msgstr "Preuzimanje spiskova datoteka"
+msgstr "Preuzimam spiskove datoteka"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading lists of changes"
-msgstr "Preuzimanje spiskova promena"
+msgstr "Preuzimam spiskove izmena"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading groups"
-msgstr "Preuzimanje grupa"
+msgstr "Preuzimam grupe"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading update information"
-msgstr "Preuzimanje podataka o ažuriranju"
+msgstr "Preuzimam podatke o ažuriranju"
 
 #. TRANSLATORS: transaction state, repackaging delta files
 #: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Repackaging files"
-msgstr "Prepakivanje datoteka"
+msgstr "Prepakujem datoteke"
 
 #. TRANSLATORS: transaction state, loading databases
 #: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Loading cache"
-msgstr "Učitavanje keša"
+msgstr "Učitavam ostavu"
 
 #. TRANSLATORS: transaction state, scanning for running processes
 #: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Scanning applications"
-msgstr "Pretražujem programe"
+msgstr "Pregledam programe"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Generating package lists"
-msgstr "Pravljenje spiskova paketa"
+msgstr "Stvaram spiskove paketa"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Waiting for package manager lock"
-msgstr "Čekanje na zaključavanje upravnika paketa"
+msgstr "Čekam da se zaključa upravnik paketa"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
 #: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for authentication"
-msgstr "Čekanje na autentifikaciju"
+msgstr "Čekam na potvrđivanje identiteta"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
 #: lib/packagekit-glib2/pk-console-private.c:485
@@ -1903,31 +1839,30 @@ msgstr "Proveravam biblioteke u upotrebi"
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Copying files"
-msgstr "Umnožavanje datoteka"
+msgstr "Umnožavam datoteke"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
 #: lib/packagekit-glib2/pk-console-private.c:501
-#, fuzzy
 msgid "Running hooks"
-msgstr "Izvršavanje"
+msgstr "Pokrećem kukice"
 
 #. TRANSLATORS: turn on all debugging
 #: lib/packagekit-glib2/pk-debug.c:142
 msgid "Show debugging information for all files"
-msgstr "Prikaži informacije o otklonu grešaka za sve datoteke"
+msgstr "Prikaži podatke pročišćavanja za sve datoteke"
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Debugging Options"
-msgstr "Opcije za otklon grešaka"
+msgstr "Mogućnosti pročišćavanja"
 
 #: lib/packagekit-glib2/pk-debug.c:216
 msgid "Show debugging options"
-msgstr "Prikaži opcije za otklon grešaka"
+msgstr "Prikaži opcije pročišćavanja"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:975
 msgid "Trivial"
-msgstr "Trivijalno"
+msgstr "Beznačajno"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:979
@@ -1947,7 +1882,7 @@ msgstr "Bezbednosno"
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:991
 msgid "Bug fix"
-msgstr ""
+msgstr "Ispravka greške"
 
 #. TRANSLATORS: The type of update
 #: lib/packagekit-glib2/pk-enum.c:995
@@ -1972,70 +1907,65 @@ msgstr "Dostupan"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/packagekit-glib2/pk-enum.c:1013
-#, fuzzy
 msgid "Unavailable"
-msgstr "Dostupan"
+msgstr "Nedostupan"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
 msgid "Install"
-msgstr "Instaliran"
+msgstr "Instaliraj"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
 msgid "Remove"
-msgstr "Uklonjen"
+msgstr "Ukloni"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
 msgid "Obsolete"
-msgstr "Prevaziđen"
+msgstr "Zastarelo"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
 msgid "Downgrade"
-msgstr "Preuzet"
+msgstr "Razgradi"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
 msgid "Downloading"
-msgstr "Preuzimanje"
+msgstr "Preuzimam"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1058
 msgid "Updating"
-msgstr "Ažuriranje"
+msgstr "Ažuriram"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
 msgid "Installing"
-msgstr "Instalacija"
+msgstr "Instaliram"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
 msgid "Removing"
-msgstr "Uklanjanje"
+msgstr "Uklanjam"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1070
 msgid "Cleaning up"
-msgstr "Čišćenje"
+msgstr "Čistim"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
 msgid "Obsoleting"
-msgstr "Prevazilaženje"
+msgstr "Prevazilazim"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1078
 msgid "Reinstalling"
-msgstr "Ponovna instalacija"
+msgstr "Ponovo instaliram"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1103
@@ -2070,17 +2000,17 @@ msgstr "Nepoznata vrsta radnje"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1156
 msgid "Getting dependencies"
-msgstr "Dobavljanje zavisnosti"
+msgstr "Dobavljam zavisnosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1160
 msgid "Getting update details"
-msgstr "Dobavljanje detalja o ažuriranju"
+msgstr "Dobavljam pojedinosti o ažuriranju"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1165
 msgid "Getting details"
-msgstr "Dobavljanje detalja"
+msgstr "Dobavljam pojedinosti"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1169
@@ -2095,22 +2025,22 @@ msgstr "Dobavljam ažuriranja"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1177
 msgid "Searching by details"
-msgstr "Pretražujem po detaljima"
+msgstr "Tražim po pojedinostima"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1181
 msgid "Searching by file"
-msgstr "Pretražujem po datotekama"
+msgstr "Tražim po datotekama"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1185
 msgid "Searching groups"
-msgstr "Pretražujem po grupama"
+msgstr "Tražim po grupama"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1189
 msgid "Searching by name"
-msgstr "Pretražujem po imenu"
+msgstr "Tražim po nazivu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1201
@@ -2120,95 +2050,92 @@ msgstr "Instaliram datoteke"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1205
 msgid "Refreshing cache"
-msgstr "Osvežavam keš"
+msgstr "Osvežavam ostavu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1209
 msgid "Updating packages"
-msgstr "Ažuriranje paketa"
+msgstr "Ažuriram pakete"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
 msgid "Canceling"
-msgstr "Otkazivanje"
+msgstr "Otkazujem"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
 msgid "Getting repositories"
-msgstr "Dobavljanje riznica"
+msgstr "Dobavljam riznice"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1221
-#, fuzzy
 msgid "Modifying repository"
-msgstr "Dobavljanje riznica"
+msgstr "Menjam riznicu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1225
 msgid "Setting data"
-msgstr "Postavljanje podataka"
+msgstr "Podešavam podatke"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
-#, fuzzy
 msgid "Removing repository"
-msgstr "Dobavljanje riznica"
+msgstr "Uklanjam riznice"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1233
 msgid "Resolving"
-msgstr "Razrešavanje"
+msgstr "Rešavam"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1238
 msgid "Getting file list"
-msgstr "Dobavljanje spiska datoteka"
+msgstr "Dobavljam spisak datoteka"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1242
 msgid "Getting provides"
-msgstr "Dobavljanje pružanja"
+msgstr "Dobavljam obezbeđivanja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1246
 msgid "Installing signature"
-msgstr "Instaliranje potpisa"
+msgstr "Instaliram potpis"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1250
 msgid "Getting packages"
-msgstr "Dobavljanje paketa"
+msgstr "Dobavljam pakete"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1254
 msgid "Accepting EULA"
-msgstr "Prihvatanje licence"
+msgstr "Prihvatam dozvolu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1262
 msgid "Getting upgrades"
-msgstr "Dobavljanje nadgradnji"
+msgstr "Dobavljam ažuriranja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1266
 msgid "Getting categories"
-msgstr "Dobavljanje kategorija"
+msgstr "Dobavljam kategorije"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1270
 msgid "Getting transactions"
-msgstr "Dobavljanje transakcija"
+msgstr "Dobavljam izvršenja"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1274
-#, fuzzy
 msgid "Getting system upgrades"
-msgstr "Dobavljanje nadgradnji"
+msgstr "Dobavljam nadogradnje sistema"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
 msgid "Repairing system"
-msgstr ""
+msgstr "Popravljam sistem"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
@@ -2228,12 +2155,12 @@ msgstr "Neophodan je potpis izvora softvera"
 #. TRANSLATORS: the package repository name
 #: lib/packagekit-glib2/pk-task-text.c:110
 msgid "Software source name"
-msgstr "Ime izvora softvera"
+msgstr "Naziv izvora softvera"
 
 #. TRANSLATORS: the key URL
 #: lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
-msgstr "URL ključa"
+msgstr "Adresa ključa"
 
 #. TRANSLATORS: the username of the key
 #: lib/packagekit-glib2/pk-task-text.c:116
@@ -2243,7 +2170,7 @@ msgstr "Korisnik ključa"
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: lib/packagekit-glib2/pk-task-text.c:119
 msgid "Key ID"
-msgstr "IB ključa"
+msgstr "ID ključa"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 #: lib/packagekit-glib2/pk-task-text.c:122
@@ -2268,7 +2195,7 @@ msgstr "Ovaj potpis nije prihvaćen."
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/packagekit-glib2/pk-task-text.c:175
 msgid "End user licence agreement required"
-msgstr "Neophodan je Licenci sporazum sa krajnjim korisnikom"
+msgstr "Potrebno je da krajnji korisnik prihvati dozvolu"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/packagekit-glib2/pk-task-text.c:184
@@ -2298,7 +2225,7 @@ msgstr "Vrsta medijuma"
 #. TRANSLATORS: the media label, usually like 'disk-1of3'
 #: lib/packagekit-glib2/pk-task-text.c:234
 msgid "Media label"
-msgstr "Oznaka medijuma"
+msgstr "Natpis medijuma"
 
 #. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
 #: lib/packagekit-glib2/pk-task-text.c:237
@@ -2308,59 +2235,57 @@ msgstr "Tekst"
 #. TRANSLATORS: ask the user to insert the media
 #: lib/packagekit-glib2/pk-task-text.c:243
 msgid "Please insert the correct media"
-msgstr "Umetnite tačan medijum"
+msgstr "Umetnite odgovarajući medijum"
 
 #. TRANSLATORS: tell the user we've not done anything as they are lazy
 #: lib/packagekit-glib2/pk-task-text.c:248
 msgid "The correct media was not inserted."
-msgstr "Nije umetnut tačan medijum."
+msgstr "Niste umetnuli odgovarajući medijum."
 
 #. TRANSLATORS: When processing, we might have to remove other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:263
 msgid "The following packages have to be removed:"
-msgstr "Sledeći paketi će biti uklonjeni:"
+msgstr "Sledeći paketi biće uklonjeni:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:268
 msgid "The following packages have to be installed:"
-msgstr "Sledeći paketi moraju biti instalirani:"
+msgstr "Sledeći paketi biće instalirani:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:273
 msgid "The following packages have to be updated:"
-msgstr "Sledeći paketi moraju biti ažurirani:"
+msgstr "Sledeći paketi biće ažurirani:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:278
 msgid "The following packages have to be reinstalled:"
-msgstr "Sledeći paketi moraju biti ponovo instalirani:"
+msgstr "Sledeći paketi biće ponovo instalirani:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:283
 msgid "The following packages have to be downgraded:"
-msgstr "Sledeći paketi moraju biti unazađeni:"
+msgstr "Sledeći paketi biće razgrađeni:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
 #: lib/packagekit-glib2/pk-task-text.c:288
-#, fuzzy
 msgid "The following packages have to be obsoleted:"
-msgstr "Sledeći paketi moraju biti instalirani:"
+msgstr "Sledeći paketi biće zastareli:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/packagekit-glib2/pk-task-text.c:293
-#, fuzzy
 msgid "The following packages are untrusted:"
-msgstr "Sledeći paketi moraju biti ažurirani:"
+msgstr "Sledeći paketi su nepoverljivi:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/packagekit-glib2/pk-task-text.c:423
 msgid "Proceed with changes?"
-msgstr "Nastaviti sa promenama?"
+msgstr "Da nastavim sa izmenama?"
 
 #. TRANSLATORS: tell the user we didn't do anything
 #: lib/packagekit-glib2/pk-task-text.c:428
 msgid "The transaction did not proceed."
-msgstr "Transakcija nije nastavljena."
+msgstr "Izvršavanje nije nastavljeno."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
@@ -2372,7 +2297,7 @@ msgstr "Otkaži strani posao"
 
 #: policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenuli"
+msgstr "Potrebno je potvrđivanje identiteta za otkazivanje posla koji niste vi pokrenuli"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -2384,9 +2309,8 @@ msgid "Install signed package"
 msgstr "Instaliraj potpisani paket"
 
 #: policy/org.freedesktop.packagekit.policy.in:40
-#, fuzzy
 msgid "Authentication is required to install software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za instaliranje softvera"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -2395,12 +2319,11 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. - This is not retained as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:56
 msgid "Install untrusted local file"
-msgstr "Instaliraj nepoverljivu lokalnu datoteku"
+msgstr "Instaliraj nepoverljivu mesnu datoteku"
 
 #: policy/org.freedesktop.packagekit.policy.in:57
-#, fuzzy
 msgid "Authentication is required to install untrusted software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za nepoverljivog softvera"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -2409,14 +2332,12 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:75
-#, fuzzy
 msgid "Install already installed package again"
-msgstr "Instaliraj potpisani paket"
+msgstr "Ponovo instaliraj već instalirani paket"
 
 #: policy/org.freedesktop.packagekit.policy.in:76
-#, fuzzy
 msgid "Authentication is required to reinstall software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za ponovno instaliranje softvera"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -2425,14 +2346,12 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
 #: policy/org.freedesktop.packagekit.policy.in:93
-#, fuzzy
 msgid "Install older version of installed package"
-msgstr "Instaliraj potpisani paket"
+msgstr "Instaliraj starije izdanje instaliranog paketa"
 
 #: policy/org.freedesktop.packagekit.policy.in:94
-#, fuzzy
 msgid "Authentication is required to downgrade software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za razgrađivanje softvera"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -2441,12 +2360,11 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. - This is not kept as each package should be authenticated.
 #: policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
-msgstr ""
+msgstr "Veruj ključu korišćenom za potpisivanje softvera"
 
 #: policy/org.freedesktop.packagekit.policy.in:112
-#, fuzzy
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenuli"
+msgstr "Potrebno je potvrđivanje identiteta za smatranje ključa korišćenog za potpisivanje softvera kao poverljivim"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -2455,11 +2373,11 @@ msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenu
 #. be given the option to make legal decisions.
 #: policy/org.freedesktop.packagekit.policy.in:128
 msgid "Accept EULA"
-msgstr "Prihvati licencu"
+msgstr "Prihvati dogovor o korišćenju"
 
 #: policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za prihvatanje dogovora o korišćenju"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -2475,9 +2393,8 @@ msgid "Remove package"
 msgstr "Ukloni paket"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
-#, fuzzy
 msgid "Authentication is required to remove software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za uklanjanje softvera"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -2486,14 +2403,12 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
 #: policy/org.freedesktop.packagekit.policy.in:167
-#, fuzzy
 msgid "Update software"
-msgstr "Opis ažuriranja"
+msgstr "Ažuriraj softver"
 
 #: policy/org.freedesktop.packagekit.policy.in:168
-#, fuzzy
 msgid "Authentication is required to update software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za ažuriranje softvera"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -2501,25 +2416,22 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. install different versions of software.
 #: policy/org.freedesktop.packagekit.policy.in:183
 msgid "Change software repository parameters"
-msgstr ""
+msgstr "Izmeni parametre riznice softvera"
 
 #: policy/org.freedesktop.packagekit.policy.in:184
-#, fuzzy
 msgid "Authentication is required to change software repository parameters"
-msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenuli"
+msgstr "Potrebno je potvrđivanje identiteta za izmenu parametara riznica softvera"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
 #: policy/org.freedesktop.packagekit.policy.in:198
-#, fuzzy
 msgid "Refresh system repositories"
-msgstr "Dobavljanje riznica"
+msgstr "Osveži sistemske riznice"
 
 #: policy/org.freedesktop.packagekit.policy.in:199
-#, fuzzy
 msgid "Authentication is required to refresh the system repositories"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za osvežavanje sistemskih riznica"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -2529,9 +2441,8 @@ msgid "Set network proxy"
 msgstr "Postavi mrežnog posrednika"
 
 #: policy/org.freedesktop.packagekit.policy.in:214
-#, fuzzy
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenuli"
+msgstr "Potrebno je potvrđivanje identiteta za podešavanje mrežnog posrednika korišćenog za preuzimanje softvera"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -2539,12 +2450,11 @@ msgstr "Neophodna je autentifikacija za otkazivanje posla kojeg niste vi pokrenu
 #. working.
 #: policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
-msgstr ""
+msgstr "Nadogradi sistem"
 
 #: policy/org.freedesktop.packagekit.policy.in:230
-#, fuzzy
 msgid "Authentication is required to upgrade the operating system"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za nadogradnju sistema"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -2552,12 +2462,11 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #. applications from working.
 #: policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr ""
+msgstr "Popravi sistem"
 
 #: policy/org.freedesktop.packagekit.policy.in:246
-#, fuzzy
 msgid "Authentication is required to repair the installed software"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za popravku instaliranog softvera"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -2569,35 +2478,33 @@ msgstr "Neophodna je autentifikacija za prihvatanje licence"
 #: policy/org.freedesktop.packagekit.policy.in:260
 #: policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
-msgstr ""
+msgstr "Okini vanmrežna ažuriranja"
 
 #: policy/org.freedesktop.packagekit.policy.in:261
 #: policy/org.freedesktop.packagekit.policy.in:277
-#, fuzzy
 msgid "Authentication is required to trigger offline updates"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za okidanje vanmrežnih ažuriranja"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
 #: policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr ""
+msgstr "Očisti poruku vanmrežnog ažuriranja"
 
 #: policy/org.freedesktop.packagekit.policy.in:292
-#, fuzzy
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Neophodna je autentifikacija za prihvatanje licence"
+msgstr "Potrebno je potvrđivanje identiteta za čišćenje poruke vanmrežnih ažuriranja"
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
 #, c-format
 msgid "Alias to %s"
-msgstr ""
+msgstr "Drugi naziv za „%s“"
 
 #: src/pk-direct.c:168
 msgid "Command not found, valid commands are:"
-msgstr ""
+msgstr "Nema takve naredbe, ispravne naredbe su:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
 #: src/pk-direct.c:408 src/pk-main.c:117
@@ -2606,139 +2513,127 @@ msgstr "Pozadinski sistem u upotrebi, npr. „dummy“ (probni)"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:424
-#, fuzzy
 msgid "Refresh the cache"
-msgstr "Osvežavam keš"
+msgstr "Osvežava ostavu"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:428
-#, fuzzy
 msgid "Refresh the cache (forced)"
-msgstr "Osvežavam keš"
+msgstr "Osvežava ostavu (prisilno)"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:432
-#, fuzzy
 msgid "Search by names"
-msgstr "Pretražujem po imenu"
+msgstr "Traži po nazivu"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:436
-#, fuzzy
 msgid "Search by details"
-msgstr "Pretražujem po detaljima"
+msgstr "Traži po pojedinostima"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:440
-#, fuzzy
 msgid "Search by files"
-msgstr "Pretražujem po datotekama"
+msgstr "Traži po datotekama"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:444
-#, fuzzy
 msgid "Install package"
-msgstr "Instaliram pakete"
+msgstr "Instalira paket"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:452
-#, fuzzy
 msgid "Set repository options"
-msgstr "Dobavljanje riznica"
+msgstr "Podešava mogućnosti riznice"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:465
-#, fuzzy
 msgid "PackageKit"
-msgstr "PaketKit redar"
+msgstr "Paketski pribor"
 
 #. TRANSLATORS: the user didn't read the man page
 #: src/pk-direct.c:471
-#, fuzzy
 msgid "Failed to parse arguments"
-msgstr "Neuspeo pokušaj dobavljanja stanja demona"
+msgstr "Nisam uspeo da obradim argumente"
 
 #. TRANSLATORS: probably not yet installed
 #: src/pk-direct.c:482
-#, fuzzy
 msgid "Failed to load the config file"
-msgstr "Datoteka nije pronađena"
+msgstr "Nisam uspeo da učitam datoteku podešavanja"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-direct.c:515
-#, fuzzy
 msgid "Failed to load the backend"
-msgstr "Neuspešno kontaktiranje PaketKita."
+msgstr "Nisam uspeo da učitam pozadinca"
 
 #. TRANSLATORS: cannot unload the backend the user specified
 #: src/pk-direct.c:555
-#, fuzzy
 msgid "Failed to unload the backend"
-msgstr "Neuspešno kontaktiranje PaketKita."
+msgstr "Nisam uspeo da raspustim pozadinca"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:120
 msgid "Disable the idle timer"
-msgstr "Onemogući merač čekanja"
+msgstr "Isključuje merač mirovanja"
 
 #. TRANSLATORS: show version
 #: src/pk-main.c:123
 msgid "Show version and exit"
-msgstr "Prikaži verziju i završi rad"
+msgstr "Prikazuje izdanje i izlazi"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: src/pk-main.c:126
 msgid "Exit after a small delay"
-msgstr "Izađi posle kratke zadrške"
+msgstr "Izlazi nakon kratkog zastoja"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:129
 msgid "Exit after the engine has loaded"
-msgstr "Završi rad nakon što se učita pozadinski sistem"
+msgstr "Izlazi nakon učitavanja pogona"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:132
 msgid "Don't clear environment on startup"
-msgstr ""
+msgstr "Ne čisti okruženje pri pokretanju"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:146
 msgid "PackageKit service"
-msgstr "Servis PaketKita"
+msgstr "Usluga Paketskog pribora"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
 #: src/pk-main.c:221
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to resolve auto: %s"
-msgstr "Neuspešno pokretanje:"
+msgstr "Nisam uspeo da razrešim auto: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
 #: src/pk-main.c:245
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to load the backend: %s"
-msgstr "Neuspešno kontaktiranje PaketKita."
+msgstr "Nisam uspeo da učitam pozadinca: %s"
 
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2724
 msgid "The software is not from a trusted source."
-msgstr "Ovaj softver nije od poverljivog izvora."
+msgstr "Ovaj softver nije sa poverljivog izvora."
 
 #: src/pk-transaction.c:2732
 msgid "Do not update this package unless you are sure it is safe to do so."
-msgstr "Nemojte ažurirati ovaj paket osim ako niste sigurni da je to bezbedno."
+msgstr "Nemojte ažurirati ovaj paket osim ako niste sigurni da je bezbedno."
 
 #: src/pk-transaction.c:2733
 msgid "Do not update these packages unless you are sure it is safe to do so."
-msgstr "Nemojte ažurirati ove pakete osim ako niste sigurni da je to bezbedno."
+msgstr "Nemojte ažurirati ove pakete osim ako niste sigurni da je bezbedno."
 
 #: src/pk-transaction.c:2743
 msgid "Do not install this package unless you are sure it is safe to do so."
-msgstr "Nemojte instalirati ovaj paket osim ako niste sigurni da je to bezbedno."
+msgstr "Nemojte instalirati ovaj paket osim ako niste sigurni da je bezbedno."
 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
-msgstr "Nemojte instalirati ove pakete osim ako niste sigurni da je to bezbedno."
+msgstr "Nemojte instalirati ove pakete osim ako niste sigurni da je bezbedno."
 
 #, fuzzy
 #~| msgid "Installing updates"
