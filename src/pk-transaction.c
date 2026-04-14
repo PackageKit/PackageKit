@@ -5250,12 +5250,30 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		pk_transaction_set_hints (transaction, parameters, invocation);
 		return;
 	}
-	if (g_strcmp0 (method_name, "AcceptEula") == 0) {
-		pk_transaction_accept_eula (transaction, parameters, invocation);
-		return;
-	}
 	if (g_strcmp0 (method_name, "Cancel") == 0) {
 		pk_transaction_cancel (transaction, parameters, invocation);
+		return;
+	}
+
+	/* All action methods below must only be invoked once on a new transaction.
+	 * Reject any attempt to re-invoke them after the transaction has been initialized,
+	 * preventing situations where a second D-Bus call could overwrite transaction flags
+	 * (or other cached state) after authorization has already been granted for the previous
+	 * request based on the old parameters. */
+	if (transaction->state != PK_TRANSACTION_STATE_NEW) {
+		g_dbus_method_invocation_return_error (invocation,
+						       PK_TRANSACTION_ERROR,
+						       PK_TRANSACTION_ERROR_INVALID_STATE,
+						       "cannot call %s on transaction %s: "
+						       "already in state %s",
+						       method_name,
+						       transaction->tid,
+						       pk_transaction_state_to_string (transaction->state));
+		return;
+	}
+
+	if (g_strcmp0 (method_name, "AcceptEula") == 0) {
+		pk_transaction_accept_eula (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "DownloadPackages") == 0) {
