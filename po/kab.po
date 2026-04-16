@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-03-08 19:18+0100\n"
-"PO-Revision-Date: 2026-01-24 21:01+0000\n"
+"PO-Revision-Date: 2026-04-16 09:49+0000\n"
 "Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Kabyle <https://hosted.weblate.org/projects/packagekit/translations/kab/>\n"
 "Language: kab\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -37,7 +37,7 @@ msgstr "%i%%"
 #. * advise of the new percentage completion when installing system upgrades
 #: client/pk-offline-update.c:177
 msgid "Installing System Upgrade"
-msgstr ""
+msgstr "Asbeddi n ileqman n unagraw"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
@@ -225,7 +225,7 @@ msgstr "CVE"
 #. * requires a restart
 #: client/pkcon/pk-console.c:350
 msgid "Restart"
-msgstr "Tulsa n usekker"
+msgstr "Allus n usekker"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
@@ -261,12 +261,12 @@ msgstr ""
 #. TRANSLATORS: if the repo is enabled
 #: client/pkcon/pk-console.c:397
 msgid "Enabled"
-msgstr ""
+msgstr "D urmid"
 
 #. TRANSLATORS: if the repo is disabled
 #: client/pkcon/pk-console.c:400
 msgid "Disabled"
-msgstr ""
+msgstr "D arurmid"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #: client/pkcon/pk-console.c:429
@@ -616,7 +616,7 @@ msgstr ""
 #. * not exist, so we can't continue
 #: client/pkcon/pk-console.c:2026
 msgid "Directory not found"
-msgstr ""
+msgstr "Ur yettwaf ara ukaram"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
@@ -697,7 +697,7 @@ msgstr ""
 #: client/pkcon/pk-console.c:2431
 #, c-format
 msgid "File already exists: %s"
-msgstr ""
+msgstr "Afaylu-a yella yakan: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
@@ -850,9 +850,8 @@ msgstr ""
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:725
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Ileqman"
+msgstr "Ikemmusen yettwaheyyan:"
 
 #: client/pkgc-manage.c:739
 msgid "No offline update is prepared."
@@ -877,9 +876,9 @@ msgid "Last offline update completed successfully"
 msgstr ""
 
 #: client/pkgc-manage.c:777
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Ileqman"
+msgstr "Yettuleqqem: %s"
 
 #: client/pkgc-manage.c:801
 #, c-format
@@ -946,19 +945,16 @@ msgid "Refresh package metadata"
 msgstr ""
 
 #: client/pkgc-manage.c:1037
-#, fuzzy
 msgid "Install packages"
-msgstr "Sebded akemmus"
+msgstr "Asbeddi n ikemmusen"
 
 #: client/pkgc-manage.c:1043
-#, fuzzy
 msgid "Remove packages"
 msgstr "Tukksa n ikemmusen"
 
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Update packages"
-msgstr "Ileqman"
+msgstr "Amucceḍ n ikemmusen"
 
 #: client/pkgc-manage.c:1055
 #, fuzzy
@@ -966,7 +962,6 @@ msgid "Upgrade the system"
 msgstr "Leqqem anagraw"
 
 #: client/pkgc-manage.c:1061
-#, fuzzy
 msgid "Download packages"
 msgstr "Azdam n ikemmusen"
 
@@ -1021,9 +1016,9 @@ msgstr "Ameskar: %s"
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Tamlilt"
+msgstr "Tumlin: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:246
@@ -1113,7 +1108,7 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:834
 msgid "Groups:"
-msgstr ""
+msgstr "Igrawen:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:846
@@ -1176,7 +1171,6 @@ msgid "Show files in package"
 msgstr "Beqqeḍ ifuyla yellan deg ukemmus"
 
 #: client/pkgc-query.c:1039
-#, fuzzy
 msgid "Get available updates"
 msgstr "Awway n ileqman"
 
@@ -1255,7 +1249,7 @@ msgstr ""
 
 #: client/pkgc-repo.c:262
 msgid "Remove a repository"
-msgstr ""
+msgstr "Tukksa n ukufi"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
@@ -1263,45 +1257,45 @@ msgstr ""
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(tasinin)"
+msgstr "%u n tasinin"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u tsd %u tsn"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u tsd"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u sr %u tsd"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u sr"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u n wussan %u sr"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u n wussan"
 
 #: client/pkgc-util.c:279
 msgid "Error"
@@ -1321,7 +1315,7 @@ msgstr ""
 #: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Aseqdec: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
@@ -1357,25 +1351,22 @@ msgstr "URL:"
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:670
 msgid "Group:"
-msgstr ""
+msgstr "Agraw:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:678
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Yebded"
+msgstr "Tiddi yettusbedden:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Download Size:"
-msgstr "Azdam"
+msgstr "Tiddi n wezdam:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:781
-#, fuzzy
 msgid "Update Details:"
-msgstr "Ileqman"
+msgstr "Talqayt n uleqqem:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:792
@@ -1409,9 +1400,8 @@ msgstr "Allus n usekker:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Update text:"
-msgstr "Leqqem aseɣẓan"
+msgstr "Aḍris n uleqqem:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:852
@@ -1430,9 +1420,8 @@ msgstr ""
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Updated:"
-msgstr "Ileqman"
+msgstr "Yettuleqqem:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:992
@@ -1442,15 +1431,13 @@ msgstr "Tanzagt"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:996
-#, fuzzy
 msgid "System time:"
-msgstr "Akkud n unagraw"
+msgstr "Akud n unagraw:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1000
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Yedda"
+msgstr "Yedda:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
@@ -1464,9 +1451,8 @@ msgstr "Tanzagt:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1023
-#, fuzzy
 msgid "Command line:"
-msgstr "Izirig n inezḍayen"
+msgstr "Izirig n inezḍayen:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1029
@@ -1486,7 +1472,7 @@ msgstr ""
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1076
 msgid "None"
-msgstr ""
+msgstr "Ula yiwen"
 
 #: client/pkgc-util.c:1221
 #, c-format
@@ -1549,12 +1535,11 @@ msgstr ""
 #: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Lqem : %s"
 
 #: client/pkgcli.c:213
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Yella"
+msgstr "Inezḍayen i yellan:"
 
 #: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
@@ -1578,7 +1563,7 @@ msgstr ""
 #. TRANSLATORS: loading package cache so we can search
 #: contrib/command-not-found/pk-command-not-found.c:439
 msgid "Loading list of packages."
-msgstr ""
+msgstr "Aɛebbi n tebdart n ikemmusen."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:499
@@ -1653,7 +1638,7 @@ msgstr ""
 #. TRANSLATORS: ask the user to choose a file to install
 #: contrib/command-not-found/pk-command-not-found.c:911
 msgid "Please choose a package to install"
-msgstr ""
+msgstr "Ttxil fren akemmus ara tesbeddeḍ"
 
 #: contrib/command-not-found/pk-command-not-found.c:913
 msgid "User aborted selection"
@@ -1692,7 +1677,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, getting data from a server
 #: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Getting information"
-msgstr ""
+msgstr "Awway n telɣut"
 
 #. TRANSLATORS: transaction state, removing packages
 #: lib/packagekit-glib2/pk-console-private.c:381
@@ -1774,12 +1759,12 @@ msgstr ""
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading list of packages"
-msgstr ""
+msgstr "Azdam n tebdart n ikemmusen"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading file lists"
-msgstr ""
+msgstr "Azdam n tebdarin n yifuyla"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/packagekit-glib2/pk-console-private.c:449
@@ -1814,7 +1799,7 @@ msgstr ""
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
 #: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Generating package lists"
-msgstr ""
+msgstr "Asarew tebdarin n ikemmusen"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
 #: lib/packagekit-glib2/pk-console-private.c:477
@@ -1960,7 +1945,7 @@ msgstr "Tukksa"
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1070
 msgid "Cleaning up"
-msgstr ""
+msgstr "Asfaḍ"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1074
@@ -1985,7 +1970,7 @@ msgstr "Yettwakkes"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1119
 msgid "Cleaned up"
-msgstr ""
+msgstr "Yettwasfeḍ"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/packagekit-glib2/pk-enum.c:1123
@@ -2015,7 +2000,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1165
 msgid "Getting details"
-msgstr ""
+msgstr "Awway n telqayt"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1169
@@ -2035,17 +2020,17 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1181
 msgid "Searching by file"
-msgstr ""
+msgstr "Anadi s ufaylu"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1185
 msgid "Searching groups"
-msgstr "Anadi n wegrawen"
+msgstr "Anadi ɣef yegrawen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1189
 msgid "Searching by name"
-msgstr ""
+msgstr "Anadi s yisem"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1201
@@ -2060,7 +2045,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1209
 msgid "Updating packages"
-msgstr ""
+msgstr "Aleqqem n ikemmusen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1213
@@ -2070,12 +2055,12 @@ msgstr "Asemmet"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1217
 msgid "Getting repositories"
-msgstr ""
+msgstr "Aggay n ikufan"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1221
 msgid "Modifying repository"
-msgstr ""
+msgstr "Abeddel n ukufi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1225
@@ -2085,7 +2070,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1229
 msgid "Removing repository"
-msgstr ""
+msgstr "Tukksa n ukufi"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1233
@@ -2105,12 +2090,12 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1246
 msgid "Installing signature"
-msgstr ""
+msgstr "Asbeddi n wezmul"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1250
 msgid "Getting packages"
-msgstr ""
+msgstr "Aggay n ikemmusen"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1254
@@ -2125,7 +2110,7 @@ msgstr ""
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1266
 msgid "Getting categories"
-msgstr ""
+msgstr "Aggay n taggayin"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1270
@@ -2166,22 +2151,22 @@ msgstr ""
 #. TRANSLATORS: the key URL
 #: lib/packagekit-glib2/pk-task-text.c:113
 msgid "Key URL"
-msgstr ""
+msgstr "URL n tsarut"
 
 #. TRANSLATORS: the username of the key
 #: lib/packagekit-glib2/pk-task-text.c:116
 msgid "Key user"
-msgstr ""
+msgstr "Aseqdac n tsarut"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
 #: lib/packagekit-glib2/pk-task-text.c:119
 msgid "Key ID"
-msgstr ""
+msgstr "Asulay ID n tsarut"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
 #: lib/packagekit-glib2/pk-task-text.c:122
 msgid "Key fingerprint"
-msgstr ""
+msgstr "Adsil umḍin n tsarut"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: lib/packagekit-glib2/pk-task-text.c:125
@@ -2396,7 +2381,7 @@ msgstr ""
 #. TRANSLATORS: command description
 #: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
 msgid "Remove package"
-msgstr ""
+msgstr "Tukksa n ukemmus"
 
 #: policy/org.freedesktop.packagekit.policy.in:149
 msgid "Authentication is required to remove software"
