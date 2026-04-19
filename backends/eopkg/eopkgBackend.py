@@ -375,7 +375,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         return self.package(id, status, pkg.summary)
 
     def depends_on(self, filters, package_ids, recursive):
-        """ Prints a list of depends for a given package """
+        """ Prints a list of dependencies for given package(s) """
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
@@ -383,15 +383,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
 
-            # FIXME: PiSi API has really inconsistent for return types and arguments!
             if self.packagedb.has_package(package):
-                for pkg in self.packagedb.get_package(package).runtimeDependencies():
-                    self.__get_package(pkg.package)
+                for pkg in self.packagedb.get_rev_deps(package):
+                    self.__get_package(pkg[0])
             elif self.installdb.has_package(package):
-                for pkg in self.installdb.get_package(package).runtimeDependencies():
-                    self.__get_package(pkg.package)
+                for pkg in self.installdb.get_rev_deps(package):
+                    self.__get_package(pkg[0])
             else:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package)
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package.name)
 
     def get_categories(self):
         self.status(STATUS_QUERY)
@@ -562,7 +561,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.repo_detail(repo, uri, enabled)
 
     def required_by(self, filters, package_ids, recursive):
-        """ Prints a list of requires for a given package """
+        """ Prints a list of reverse dependencies for given package(s) """
         self.status(STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
@@ -570,14 +569,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
 
+            # FIXME: PiSi API has really inconsistent for return types and arguments!
             if self.packagedb.has_package(package):
-                for pkg in self.packagedb.get_rev_deps(package):
-                    self.__get_package(pkg[0])
+                for pkg in self.packagedb.get_package(package).runtimeDependencies():
+                    self.__get_package(pkg.package)
             elif self.installdb.has_package(package):
-                for pkg in self.installdb.get_rev_deps(package):
-                    self.__get_package(pkg[0])
+                for pkg in self.installdb.get_package(package).runtimeDependencies():
+                    self.__get_package(pkg.package)
             else:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package.name)
+                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package)
 
     def get_updates(self, filters):
         """ Prints available updates and types """
