@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-03-08 19:18+0100\n"
+"POT-Creation-Date: 2026-04-20 00:08+0200\n"
 "PO-Revision-Date: 2026-04-11 20:09+0000\n"
 "Last-Translator: \"Марко М. Костић\" <marko.m.kostic@gmail.com>\n"
 "Language-Team: Serbian (Latin script) <https://hosted.weblate.org/projects/packagekit/translations/sr_Latn/>\n"
@@ -953,43 +953,53 @@ msgstr "Bezbedno okončajte uslužnika Paketskog pribora."
 msgid "Failed to send daemon quit request: %s"
 msgstr "Nisam uspeo da pošaljem zahtev za izlazak uslužnika: %s"
 
-#: client/pkgc-manage.c:1031
+#. TRANSLATORS: Description for refresh command in pkgcli help
+#: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
 msgstr "Osveži metapodatke paketa"
 
-#: client/pkgc-manage.c:1037
+#. TRANSLATORS: Description for install command in pkgcli help
+#: client/pkgc-manage.c:1039
 msgid "Install packages"
 msgstr "Instaliraj pakete"
 
-#: client/pkgc-manage.c:1043
+#. TRANSLATORS: Description for remove command in pkgcli help
+#: client/pkgc-manage.c:1046
 msgid "Remove packages"
 msgstr "Ukloni pakete"
 
-#: client/pkgc-manage.c:1049
+#. TRANSLATORS: Description for update command in pkgcli help
+#: client/pkgc-manage.c:1053
 msgid "Update packages"
 msgstr "Ažuriraj pakete"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: Description for upgrade command in pkgcli help
+#: client/pkgc-manage.c:1060
 msgid "Upgrade the system"
 msgstr "Nadogradi sistem"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: Description for download command in pkgcli help
+#: client/pkgc-manage.c:1067
 msgid "Download packages"
 msgstr "Preuzmi pakete"
 
-#: client/pkgc-manage.c:1067
+#. TRANSLATORS: Description for offline-update command in pkgcli help
+#: client/pkgc-manage.c:1074
 msgid "Manage offline system updates"
 msgstr "Upravljaj ažuriranjima sistema van mreže"
 
-#: client/pkgc-manage.c:1073
+#. TRANSLATORS: Description for install-sig command in pkgcli help
+#: client/pkgc-manage.c:1081
 msgid "Install package signature"
 msgstr "Instaliraj potpis paketa"
 
-#: client/pkgc-manage.c:1079
+#. TRANSLATORS: Description for repair command in pkgcli help
+#: client/pkgc-manage.c:1088
 msgid "Repair package system"
 msgstr "Popravi sistem paketa"
 
-#: client/pkgc-manage.c:1085
+#. TRANSLATORS: Description for quit command in pkgcli help
+#: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
 msgstr "Bezbedno zaustavi uslužnika Paketskog pribora"
 
@@ -998,7 +1008,7 @@ msgstr "Bezbedno zaustavi uslužnika Paketskog pribora"
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Nadgledaj D-sabirnicu događaja Paketskog pribora"
 
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
 msgid "Monitor PackageKit bus events"
 msgstr "Nadgledaj magistralu događaja Paketskog pribora"
@@ -1147,63 +1157,82 @@ msgstr "Proteklo vreme"
 msgid "Get time in seconds since the last specified action."
 msgstr "Dobavi vreme u sekundama od poslednje navedene radnje."
 
-#: client/pkgc-query.c:985
+#. TRANSLATORS: Description for backend command in pkgcli help
+#: client/pkgc-query.c:986
 msgid "Show backend information"
 msgstr "Prikaži podatke o pozadincu"
 
-#: client/pkgc-query.c:991
+#. TRANSLATORS: Description for history command in pkgcli help
+#: client/pkgc-query.c:993
 msgid "Show transaction history"
 msgstr "Prikaži istorijat prenosa"
 
-#: client/pkgc-query.c:997
+#. TRANSLATORS: Description for search command in pkgcli help
+#: client/pkgc-query.c:1000
 msgid "Search for packages"
 msgstr "Potraži pakete"
 
-#: client/pkgc-query.c:1003
+#. TRANSLATORS: Description for list command in pkgcli help
+#: client/pkgc-query.c:1007
 msgid "List packages"
 msgstr "Ispiši pakete"
 
-#: client/pkgc-query.c:1009
+#. TRANSLATORS: Description for show command in pkgcli help
+#: client/pkgc-query.c:1014
 msgid "Show package information"
 msgstr "Prikaži podatke o paketu"
 
-#: client/pkgc-query.c:1015
-msgid "List package dependencies"
-msgstr "Spisak zavisnosti paketa"
-
+#. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-msgid "List packages requiring this package"
-msgstr "Spisak paketa koji zahtevaju ovaj paket"
+#, fuzzy
+#| msgid "Show dependencies for one or more packages."
+msgid "List dependencies of the specified package(s)"
+msgstr "Prikaži zavisnosti za jedan ili više paketa."
 
-#: client/pkgc-query.c:1027
+#. TRANSLATORS: Description for list-requiring command in pkgcli help
+#: client/pkgc-query.c:1028
+#, fuzzy
+#| msgid "Show which packages require the specified packages."
+msgid "List other packages requiring the specified package(s)"
+msgstr "Prikaži koji paketi zahtevaju navedene pakete."
+
+#. TRANSLATORS: Description for what-provides command in pkgcli help
+#: client/pkgc-query.c:1035
 msgid "List packages providing a capability"
 msgstr "Ispiši pakete koji obezbeđuju sposobnost"
 
-#: client/pkgc-query.c:1033
+#. TRANSLATORS: Description for files command in pkgcli help
+#: client/pkgc-query.c:1042
 msgid "Show files in package"
 msgstr "Prikaži datoteke u paketu"
 
-#: client/pkgc-query.c:1039
+#. TRANSLATORS: Description for list-updates command in pkgcli help
+#: client/pkgc-query.c:1049
 msgid "Get available updates"
 msgstr "Dobavi dostupna ažuriranja"
 
-#: client/pkgc-query.c:1045
+#. TRANSLATORS: Description for show-update command in pkgcli help
+#: client/pkgc-query.c:1056
 msgid "Get update details"
 msgstr "Dobavi detalje ažuriranja"
 
-#: client/pkgc-query.c:1051
+#. TRANSLATORS: Description for resolve command in pkgcli help
+#: client/pkgc-query.c:1063
 msgid "Resolve package names"
 msgstr "Razreši nazive paketa"
 
-#: client/pkgc-query.c:1057
+#. TRANSLATORS: Description for organization command in pkgcli help
+#: client/pkgc-query.c:1070
 msgid "List available filters and categories"
 msgstr "Ispiši dostupne filtere i kategorije"
 
-#: client/pkgc-query.c:1063
+#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
+#: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
 msgstr "Prikaži dostupne nadogradnje distribucije"
 
-#: client/pkgc-query.c:1069
+#. TRANSLATORS: Description for last-time command in pkgcli help
+#: client/pkgc-query.c:1084
 msgid "Get time since last action"
 msgstr "Dobavi vreme od poslednje radnje"
 
@@ -1246,19 +1275,23 @@ msgstr "Uklonite navedenu riznicu."
 msgid "Repository '%s' removed"
 msgstr "Riznica „%s“ je uklonjena"
 
-#: client/pkgc-repo.c:244
+#. TRANSLATORS: Description for repo-list command in pkgcli help
+#: client/pkgc-repo.c:245
 msgid "List repositories"
 msgstr "Spisak riznica"
 
-#: client/pkgc-repo.c:250
+#. TRANSLATORS: Description for repo-enable command in pkgcli help
+#: client/pkgc-repo.c:252
 msgid "Enable a repository"
 msgstr "Omogući riznicu"
 
-#: client/pkgc-repo.c:256
+#. TRANSLATORS: Description for repo-disable command in pkgcli help
+#: client/pkgc-repo.c:259
 msgid "Disable a repository"
 msgstr "Onemogući riznicu"
 
-#: client/pkgc-repo.c:262
+#. TRANSLATORS: Description for repo-remove command in pkgcli help
+#: client/pkgc-repo.c:266
 msgid "Remove a repository"
 msgstr "Ukloni riznicu"
 
@@ -2634,6 +2667,12 @@ msgstr "Nemojte instalirati ovaj paket osim ako niste sigurni da je bezbedno."
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Nemojte instalirati ove pakete osim ako niste sigurni da je bezbedno."
+
+#~ msgid "List package dependencies"
+#~ msgstr "Spisak zavisnosti paketa"
+
+#~ msgid "List packages requiring this package"
+#~ msgstr "Spisak paketa koji zahtevaju ovaj paket"
 
 #, fuzzy
 #~| msgid "Installing updates"

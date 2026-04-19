@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-03-08 19:18+0100\n"
+"POT-Creation-Date: 2026-04-20 00:08+0200\n"
 "PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/packagekit/translations/he/>\n"
@@ -954,43 +954,53 @@ msgstr "חיסול סוכן PackageKit בבטחה."
 msgid "Failed to send daemon quit request: %s"
 msgstr "שליחת בקשת יציאה לסוכן נכשלה: %s"
 
-#: client/pkgc-manage.c:1031
+#. TRANSLATORS: Description for refresh command in pkgcli help
+#: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
 msgstr "ריענון נתוני על של חבילה"
 
-#: client/pkgc-manage.c:1037
+#. TRANSLATORS: Description for install command in pkgcli help
+#: client/pkgc-manage.c:1039
 msgid "Install packages"
 msgstr "התקנת חבילות"
 
-#: client/pkgc-manage.c:1043
+#. TRANSLATORS: Description for remove command in pkgcli help
+#: client/pkgc-manage.c:1046
 msgid "Remove packages"
 msgstr "הסרת חבילות"
 
-#: client/pkgc-manage.c:1049
+#. TRANSLATORS: Description for update command in pkgcli help
+#: client/pkgc-manage.c:1053
 msgid "Update packages"
 msgstr "עדכון חבילות"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: Description for upgrade command in pkgcli help
+#: client/pkgc-manage.c:1060
 msgid "Upgrade the system"
 msgstr "לשדרג את המערכת"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: Description for download command in pkgcli help
+#: client/pkgc-manage.c:1067
 msgid "Download packages"
 msgstr "הורדת חבילות"
 
-#: client/pkgc-manage.c:1067
+#. TRANSLATORS: Description for offline-update command in pkgcli help
+#: client/pkgc-manage.c:1074
 msgid "Manage offline system updates"
 msgstr "ניהול עדכוני מערכת בלתי מקוונים"
 
-#: client/pkgc-manage.c:1073
+#. TRANSLATORS: Description for install-sig command in pkgcli help
+#: client/pkgc-manage.c:1081
 msgid "Install package signature"
 msgstr "התקנת חתימת חבילה"
 
-#: client/pkgc-manage.c:1079
+#. TRANSLATORS: Description for repair command in pkgcli help
+#: client/pkgc-manage.c:1088
 msgid "Repair package system"
 msgstr "תיקון מערכת חבילות"
 
-#: client/pkgc-manage.c:1085
+#. TRANSLATORS: Description for quit command in pkgcli help
+#: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
 msgstr "עצירת סוכן PackageKit בבטחה"
 
@@ -999,7 +1009,7 @@ msgstr "עצירת סוכן PackageKit בבטחה"
 msgid "Monitor PackageKit D-Bus events"
 msgstr "מעקב אחר אירועי D-Bus של PackageKit"
 
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
 msgid "Monitor PackageKit bus events"
 msgstr "מעקב אחר אירועי אפיק PackageKit"
@@ -1148,63 +1158,82 @@ msgstr "זמן שעבר"
 msgid "Get time in seconds since the last specified action."
 msgstr "קבלת הזמן בשניות מאז הפעולה האחרונה שצוינה."
 
-#: client/pkgc-query.c:985
+#. TRANSLATORS: Description for backend command in pkgcli help
+#: client/pkgc-query.c:986
 msgid "Show backend information"
 msgstr "הצגת פרטי מנגנון"
 
-#: client/pkgc-query.c:991
+#. TRANSLATORS: Description for history command in pkgcli help
+#: client/pkgc-query.c:993
 msgid "Show transaction history"
 msgstr "הצגת היסטוריית פעילות"
 
-#: client/pkgc-query.c:997
+#. TRANSLATORS: Description for search command in pkgcli help
+#: client/pkgc-query.c:1000
 msgid "Search for packages"
 msgstr "חיפוש חבילות"
 
-#: client/pkgc-query.c:1003
+#. TRANSLATORS: Description for list command in pkgcli help
+#: client/pkgc-query.c:1007
 msgid "List packages"
 msgstr "הצגת חבילות"
 
-#: client/pkgc-query.c:1009
+#. TRANSLATORS: Description for show command in pkgcli help
+#: client/pkgc-query.c:1014
 msgid "Show package information"
 msgstr "הצגת פרטי החבילה"
 
-#: client/pkgc-query.c:1015
-msgid "List package dependencies"
-msgstr "הצגת תלויות החבילה"
-
+#. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-msgid "List packages requiring this package"
-msgstr "הצגת חבילות שצריכות את החבילה הזאת"
+#, fuzzy
+#| msgid "Show dependencies for one or more packages."
+msgid "List dependencies of the specified package(s)"
+msgstr "הצגת תלויות לחבילה או יותר."
 
-#: client/pkgc-query.c:1027
+#. TRANSLATORS: Description for list-requiring command in pkgcli help
+#: client/pkgc-query.c:1028
+#, fuzzy
+#| msgid "Show which packages require the specified packages."
+msgid "List other packages requiring the specified package(s)"
+msgstr "הצגת אילו חבילות דורשות חבילות מסוימות."
+
+#. TRANSLATORS: Description for what-provides command in pkgcli help
+#: client/pkgc-query.c:1035
 msgid "List packages providing a capability"
 msgstr "הצגת חבילות שמספקות יכולת"
 
-#: client/pkgc-query.c:1033
+#. TRANSLATORS: Description for files command in pkgcli help
+#: client/pkgc-query.c:1042
 msgid "Show files in package"
 msgstr "הצגת קבצים בחבילה"
 
-#: client/pkgc-query.c:1039
+#. TRANSLATORS: Description for list-updates command in pkgcli help
+#: client/pkgc-query.c:1049
 msgid "Get available updates"
 msgstr "קבלת העדכונים הזמינים"
 
-#: client/pkgc-query.c:1045
+#. TRANSLATORS: Description for show-update command in pkgcli help
+#: client/pkgc-query.c:1056
 msgid "Get update details"
 msgstr "קבלת פרטי העדכון"
 
-#: client/pkgc-query.c:1051
+#. TRANSLATORS: Description for resolve command in pkgcli help
+#: client/pkgc-query.c:1063
 msgid "Resolve package names"
 msgstr "פתרון שמות חבילות"
 
-#: client/pkgc-query.c:1057
+#. TRANSLATORS: Description for organization command in pkgcli help
+#: client/pkgc-query.c:1070
 msgid "List available filters and categories"
 msgstr "הצגת מסננים וקטגוריות זמינים"
 
-#: client/pkgc-query.c:1063
+#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
+#: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
 msgstr "הצגת שדרוגי הפצות זמינים"
 
-#: client/pkgc-query.c:1069
+#. TRANSLATORS: Description for last-time command in pkgcli help
+#: client/pkgc-query.c:1084
 msgid "Get time since last action"
 msgstr "קבלת הזמן מאז הפעולה האחרונה"
 
@@ -1247,19 +1276,23 @@ msgstr "הסרת המאגר שצוין."
 msgid "Repository '%s' removed"
 msgstr "המאגר ‚%s’ הוסר"
 
-#: client/pkgc-repo.c:244
+#. TRANSLATORS: Description for repo-list command in pkgcli help
+#: client/pkgc-repo.c:245
 msgid "List repositories"
 msgstr "הצגת מאגרים"
 
-#: client/pkgc-repo.c:250
+#. TRANSLATORS: Description for repo-enable command in pkgcli help
+#: client/pkgc-repo.c:252
 msgid "Enable a repository"
 msgstr "הפעלת מאגר"
 
-#: client/pkgc-repo.c:256
+#. TRANSLATORS: Description for repo-disable command in pkgcli help
+#: client/pkgc-repo.c:259
 msgid "Disable a repository"
 msgstr "השבתת מאגר"
 
-#: client/pkgc-repo.c:262
+#. TRANSLATORS: Description for repo-remove command in pkgcli help
+#: client/pkgc-repo.c:266
 msgid "Remove a repository"
 msgstr "הסרת מאגר"
 
@@ -2635,6 +2668,12 @@ msgstr "אין להתקין את החבילה הזאת אלמלא השתכנעת
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "אין להתקין את החבילות האלו אלמלא השתכנעת שבטוח לעשות זאת."
+
+#~ msgid "List package dependencies"
+#~ msgstr "הצגת תלויות החבילה"
+
+#~ msgid "List packages requiring this package"
+#~ msgstr "הצגת חבילות שצריכות את החבילה הזאת"
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

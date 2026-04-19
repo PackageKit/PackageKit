@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-03-08 19:18+0100\n"
+"POT-Creation-Date: 2026-04-20 00:08+0200\n"
 "PO-Revision-Date: 2026-01-28 23:37+0000\n"
 "Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
@@ -961,43 +961,53 @@ msgstr "Arrêter le démon PackageKit en toute sécurité."
 msgid "Failed to send daemon quit request: %s"
 msgstr "Échec de l'envoi au démon de la requête de sortie : %s"
 
-#: client/pkgc-manage.c:1031
+#. TRANSLATORS: Description for refresh command in pkgcli help
+#: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
 msgstr "Actualiser les métadonnées de paquets"
 
-#: client/pkgc-manage.c:1037
+#. TRANSLATORS: Description for install command in pkgcli help
+#: client/pkgc-manage.c:1039
 msgid "Install packages"
 msgstr "Installer des paquets"
 
-#: client/pkgc-manage.c:1043
+#. TRANSLATORS: Description for remove command in pkgcli help
+#: client/pkgc-manage.c:1046
 msgid "Remove packages"
 msgstr "Retirer des paquets"
 
-#: client/pkgc-manage.c:1049
+#. TRANSLATORS: Description for update command in pkgcli help
+#: client/pkgc-manage.c:1053
 msgid "Update packages"
 msgstr "Mettre à jour des paquets"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: Description for upgrade command in pkgcli help
+#: client/pkgc-manage.c:1060
 msgid "Upgrade the system"
 msgstr "Mettre à jour le système"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: Description for download command in pkgcli help
+#: client/pkgc-manage.c:1067
 msgid "Download packages"
 msgstr "Télécharger des paquets"
 
-#: client/pkgc-manage.c:1067
+#. TRANSLATORS: Description for offline-update command in pkgcli help
+#: client/pkgc-manage.c:1074
 msgid "Manage offline system updates"
 msgstr "Gérer les mises à jour hors ligne"
 
-#: client/pkgc-manage.c:1073
+#. TRANSLATORS: Description for install-sig command in pkgcli help
+#: client/pkgc-manage.c:1081
 msgid "Install package signature"
 msgstr "Installer une signature de paquet"
 
-#: client/pkgc-manage.c:1079
+#. TRANSLATORS: Description for repair command in pkgcli help
+#: client/pkgc-manage.c:1088
 msgid "Repair package system"
 msgstr "Réparer le système des paquets"
 
-#: client/pkgc-manage.c:1085
+#. TRANSLATORS: Description for quit command in pkgcli help
+#: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
 msgstr "Arrêter proprement le démon PackageKit"
 
@@ -1006,7 +1016,7 @@ msgstr "Arrêter proprement le démon PackageKit"
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Observer les événements D-Bus PackageKit"
 
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
 msgid "Monitor PackageKit bus events"
 msgstr "Observer les événements de bus PackageKit"
@@ -1155,63 +1165,82 @@ msgstr "Temps écoulé"
 msgid "Get time in seconds since the last specified action."
 msgstr "Obtenir la durée en seconde depuis la dernière action spécifiée."
 
-#: client/pkgc-query.c:985
+#. TRANSLATORS: Description for backend command in pkgcli help
+#: client/pkgc-query.c:986
 msgid "Show backend information"
 msgstr "Afficher des informations sur le backend"
 
-#: client/pkgc-query.c:991
+#. TRANSLATORS: Description for history command in pkgcli help
+#: client/pkgc-query.c:993
 msgid "Show transaction history"
 msgstr "Afficher l'historique des transactions"
 
-#: client/pkgc-query.c:997
+#. TRANSLATORS: Description for search command in pkgcli help
+#: client/pkgc-query.c:1000
 msgid "Search for packages"
 msgstr "Rechercher des paquets"
 
-#: client/pkgc-query.c:1003
+#. TRANSLATORS: Description for list command in pkgcli help
+#: client/pkgc-query.c:1007
 msgid "List packages"
 msgstr "Lister les paquets"
 
-#: client/pkgc-query.c:1009
+#. TRANSLATORS: Description for show command in pkgcli help
+#: client/pkgc-query.c:1014
 msgid "Show package information"
 msgstr "Afficher des informations sur les paquets"
 
-#: client/pkgc-query.c:1015
-msgid "List package dependencies"
-msgstr "Lister les dépendances des paquets"
-
+#. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-msgid "List packages requiring this package"
-msgstr "Lister les paquets ayant besoin de ce paquet"
+#, fuzzy
+#| msgid "Show dependencies for one or more packages."
+msgid "List dependencies of the specified package(s)"
+msgstr "Afficher les dépendances d'un ou plusieurs paquets."
 
-#: client/pkgc-query.c:1027
+#. TRANSLATORS: Description for list-requiring command in pkgcli help
+#: client/pkgc-query.c:1028
+#, fuzzy
+#| msgid "Show which packages require the specified packages."
+msgid "List other packages requiring the specified package(s)"
+msgstr "Afficher la liste des paquets demandant les paquets spécifiés."
+
+#. TRANSLATORS: Description for what-provides command in pkgcli help
+#: client/pkgc-query.c:1035
 msgid "List packages providing a capability"
 msgstr "Lister les paquets fournissant une capacité"
 
-#: client/pkgc-query.c:1033
+#. TRANSLATORS: Description for files command in pkgcli help
+#: client/pkgc-query.c:1042
 msgid "Show files in package"
 msgstr "Afficher les fichiers dans le paquet"
 
-#: client/pkgc-query.c:1039
+#. TRANSLATORS: Description for list-updates command in pkgcli help
+#: client/pkgc-query.c:1049
 msgid "Get available updates"
 msgstr "Obtenir les mises à jour disponibles"
 
-#: client/pkgc-query.c:1045
+#. TRANSLATORS: Description for show-update command in pkgcli help
+#: client/pkgc-query.c:1056
 msgid "Get update details"
 msgstr "Obtenir des détails sur la mise à jour"
 
-#: client/pkgc-query.c:1051
+#. TRANSLATORS: Description for resolve command in pkgcli help
+#: client/pkgc-query.c:1063
 msgid "Resolve package names"
 msgstr "Résoudre des noms de paquets"
 
-#: client/pkgc-query.c:1057
+#. TRANSLATORS: Description for organization command in pkgcli help
+#: client/pkgc-query.c:1070
 msgid "List available filters and categories"
 msgstr "Lister les filtres et catégories disponibles"
 
-#: client/pkgc-query.c:1063
+#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
+#: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
 msgstr "Afficher les mises à jour disponibles pour la distribution"
 
-#: client/pkgc-query.c:1069
+#. TRANSLATORS: Description for last-time command in pkgcli help
+#: client/pkgc-query.c:1084
 msgid "Get time since last action"
 msgstr "Obtenir la durée depuis la dernière action"
 
@@ -1254,19 +1283,23 @@ msgstr "Retirer le dépôt spécifié."
 msgid "Repository '%s' removed"
 msgstr "Dépôt \"%s\" retiré"
 
-#: client/pkgc-repo.c:244
+#. TRANSLATORS: Description for repo-list command in pkgcli help
+#: client/pkgc-repo.c:245
 msgid "List repositories"
 msgstr "Lister les dépôts"
 
-#: client/pkgc-repo.c:250
+#. TRANSLATORS: Description for repo-enable command in pkgcli help
+#: client/pkgc-repo.c:252
 msgid "Enable a repository"
 msgstr "Activer un dépôt"
 
-#: client/pkgc-repo.c:256
+#. TRANSLATORS: Description for repo-disable command in pkgcli help
+#: client/pkgc-repo.c:259
 msgid "Disable a repository"
 msgstr "Désactiver un dépôt"
 
-#: client/pkgc-repo.c:262
+#. TRANSLATORS: Description for repo-remove command in pkgcli help
+#: client/pkgc-repo.c:266
 msgid "Remove a repository"
 msgstr "Retirer un dépôt"
 
@@ -2642,6 +2675,12 @@ msgstr "N'installez pas ce paquet à moins que vous ne soyez sûr que cela est s
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "N'installez pas ces paquets à moins que vous ne soyez sûr que cela est sans danger."
+
+#~ msgid "List package dependencies"
+#~ msgstr "Lister les dépendances des paquets"
+
+#~ msgid "List packages requiring this package"
+#~ msgstr "Lister les paquets ayant besoin de ce paquet"
 
 #, fuzzy
 #~| msgid "Trigger offline updates"

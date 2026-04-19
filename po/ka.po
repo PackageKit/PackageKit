@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-03-08 19:18+0100\n"
+"POT-Creation-Date: 2026-04-20 00:08+0200\n"
 "PO-Revision-Date: 2026-01-29 19:01+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/packagekit/translations/ka/>\n"
@@ -955,43 +955,53 @@ msgstr "PackageKit-ის დემონის უსაფრთხო გა�
 msgid "Failed to send daemon quit request: %s"
 msgstr "დემონისთვის გასვლის მოთხოვნის გაგზავნა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:1031
+#. TRANSLATORS: Description for refresh command in pkgcli help
+#: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
 msgstr "პაკეტის მეტამონაცემების განახლება"
 
-#: client/pkgc-manage.c:1037
+#. TRANSLATORS: Description for install command in pkgcli help
+#: client/pkgc-manage.c:1039
 msgid "Install packages"
 msgstr "პაკეტების დაყენება"
 
-#: client/pkgc-manage.c:1043
+#. TRANSLATORS: Description for remove command in pkgcli help
+#: client/pkgc-manage.c:1046
 msgid "Remove packages"
 msgstr "პაკეტების წაშლა"
 
-#: client/pkgc-manage.c:1049
+#. TRANSLATORS: Description for update command in pkgcli help
+#: client/pkgc-manage.c:1053
 msgid "Update packages"
 msgstr "პაკეტების განახლება"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: Description for upgrade command in pkgcli help
+#: client/pkgc-manage.c:1060
 msgid "Upgrade the system"
 msgstr "სისტემის ვერსიის აწევა"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: Description for download command in pkgcli help
+#: client/pkgc-manage.c:1067
 msgid "Download packages"
 msgstr "პაკეტების გადმოწერა"
 
-#: client/pkgc-manage.c:1067
+#. TRANSLATORS: Description for offline-update command in pkgcli help
+#: client/pkgc-manage.c:1074
 msgid "Manage offline system updates"
 msgstr "სისტემის ინტერნეტგარეშე განახლებების მართვა"
 
-#: client/pkgc-manage.c:1073
+#. TRANSLATORS: Description for install-sig command in pkgcli help
+#: client/pkgc-manage.c:1081
 msgid "Install package signature"
 msgstr "პაკეტის ხელმოწერის დაყენება"
 
-#: client/pkgc-manage.c:1079
+#. TRANSLATORS: Description for repair command in pkgcli help
+#: client/pkgc-manage.c:1088
 msgid "Repair package system"
 msgstr "პაკეტის სისტემის შეკეთება"
 
-#: client/pkgc-manage.c:1085
+#. TRANSLATORS: Description for quit command in pkgcli help
+#: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
 msgstr "PackageKit-ის დემონის უსაფრთხო გაჩერება"
 
@@ -1000,7 +1010,7 @@ msgstr "PackageKit-ის დემონის უსაფრთხო გა�
 msgid "Monitor PackageKit D-Bus events"
 msgstr "PackageKit-ის D-Bus-ის მოვლენების მონიტორინგი"
 
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
 msgid "Monitor PackageKit bus events"
 msgstr "PackageKit-ის სალტეს მოვლენების მონიტორინგი"
@@ -1149,63 +1159,82 @@ msgstr "გასული დრო"
 msgid "Get time in seconds since the last specified action."
 msgstr "ბოლოს მითითებული ქმედების შემდეგ გასული დრო წამებში."
 
-#: client/pkgc-query.c:985
+#. TRANSLATORS: Description for backend command in pkgcli help
+#: client/pkgc-query.c:986
 msgid "Show backend information"
 msgstr "უკანაბოლოს ინფორმაციის ჩვენება"
 
-#: client/pkgc-query.c:991
+#. TRANSLATORS: Description for history command in pkgcli help
+#: client/pkgc-query.c:993
 msgid "Show transaction history"
 msgstr "ტრანზაქციის ისტორიის ჩვენება"
 
-#: client/pkgc-query.c:997
+#. TRANSLATORS: Description for search command in pkgcli help
+#: client/pkgc-query.c:1000
 msgid "Search for packages"
 msgstr "პაკეტების ძებნა"
 
-#: client/pkgc-query.c:1003
+#. TRANSLATORS: Description for list command in pkgcli help
+#: client/pkgc-query.c:1007
 msgid "List packages"
 msgstr "პაკეტის სია"
 
-#: client/pkgc-query.c:1009
+#. TRANSLATORS: Description for show command in pkgcli help
+#: client/pkgc-query.c:1014
 msgid "Show package information"
 msgstr "პაკეტის ინფორმაციის ჩვენება"
 
-#: client/pkgc-query.c:1015
-msgid "List package dependencies"
-msgstr "პაკეტის დამოკიდებულებების სია"
-
+#. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-msgid "List packages requiring this package"
-msgstr "პაკეტების სია, რომლებიც ამ პაკეტს ითხოვენ"
+#, fuzzy
+#| msgid "Show dependencies for one or more packages."
+msgid "List dependencies of the specified package(s)"
+msgstr "დამოკიდებულებების ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
 
-#: client/pkgc-query.c:1027
+#. TRANSLATORS: Description for list-requiring command in pkgcli help
+#: client/pkgc-query.c:1028
+#, fuzzy
+#| msgid "Show which packages require the specified packages."
+msgid "List other packages requiring the specified package(s)"
+msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტებს."
+
+#. TRANSLATORS: Description for what-provides command in pkgcli help
+#: client/pkgc-query.c:1035
 msgid "List packages providing a capability"
 msgstr "შესაძლებლობის მომწოდებელი პაკეტების სია"
 
-#: client/pkgc-query.c:1033
+#. TRANSLATORS: Description for files command in pkgcli help
+#: client/pkgc-query.c:1042
 msgid "Show files in package"
 msgstr "პაკეტში არსებული ფაილების ჩვენება"
 
-#: client/pkgc-query.c:1039
+#. TRANSLATORS: Description for list-updates command in pkgcli help
+#: client/pkgc-query.c:1049
 msgid "Get available updates"
 msgstr "ხელმისაწვდომი განახლებების მღება"
 
-#: client/pkgc-query.c:1045
+#. TRANSLATORS: Description for show-update command in pkgcli help
+#: client/pkgc-query.c:1056
 msgid "Get update details"
 msgstr "განახლების დეტალების მიღება"
 
-#: client/pkgc-query.c:1051
+#. TRANSLATORS: Description for resolve command in pkgcli help
+#: client/pkgc-query.c:1063
 msgid "Resolve package names"
 msgstr "პაკეტის სახელების ამოხსნა"
 
-#: client/pkgc-query.c:1057
+#. TRANSLATORS: Description for organization command in pkgcli help
+#: client/pkgc-query.c:1070
 msgid "List available filters and categories"
 msgstr "ხელმისაწვდომი ფილტრებისა და კატეგორიების სია"
 
-#: client/pkgc-query.c:1063
+#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
+#: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
 msgstr "ხელმისაწვდომი დისტრიბუტივის ვერსიის აწევების ჩვენება"
 
-#: client/pkgc-query.c:1069
+#. TRANSLATORS: Description for last-time command in pkgcli help
+#: client/pkgc-query.c:1084
 msgid "Get time since last action"
 msgstr "ბოლო ქმედების შემდეგ გასული დროის მიღება"
 
@@ -1248,19 +1277,23 @@ msgstr "მითითებული რეპოზიტორიის წ�
 msgid "Repository '%s' removed"
 msgstr "რეპოზიტორია '%s' წაიშალა"
 
-#: client/pkgc-repo.c:244
+#. TRANSLATORS: Description for repo-list command in pkgcli help
+#: client/pkgc-repo.c:245
 msgid "List repositories"
 msgstr "რეპოზიტორიების სია"
 
-#: client/pkgc-repo.c:250
+#. TRANSLATORS: Description for repo-enable command in pkgcli help
+#: client/pkgc-repo.c:252
 msgid "Enable a repository"
 msgstr "რეპოზიტორიის ჩართვა"
 
-#: client/pkgc-repo.c:256
+#. TRANSLATORS: Description for repo-disable command in pkgcli help
+#: client/pkgc-repo.c:259
 msgid "Disable a repository"
 msgstr "რეპოზიტორიის გამორთვა"
 
-#: client/pkgc-repo.c:262
+#. TRANSLATORS: Description for repo-remove command in pkgcli help
+#: client/pkgc-repo.c:266
 msgid "Remove a repository"
 msgstr "რეპოზიტორიის წაშლა"
 
@@ -2636,6 +2669,12 @@ msgstr "არ დააყენოთ ეს პაკეტი, თუ და
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "არ დააყენოთ ეს პაკეტები, თუ დარწმუნებული არ ბრძანდებით, რომ ამისი გაკეთება უსაფრთხოა."
+
+#~ msgid "List package dependencies"
+#~ msgstr "პაკეტის დამოკიდებულებების სია"
+
+#~ msgid "List packages requiring this package"
+#~ msgstr "პაკეტების სია, რომლებიც ამ პაკეტს ითხოვენ"
 
 #, fuzzy
 #~| msgid "Prepared updates:"

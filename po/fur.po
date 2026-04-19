@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-03-08 19:18+0100\n"
+"POT-Creation-Date: 2026-04-20 00:08+0200\n"
 "Language-Team: Friulian (http://app.transifex.com/freedesktop/packagekit/language/fur/)\n"
 "Language: fur\n"
 "MIME-Version: 1.0\n"
@@ -956,51 +956,61 @@ msgstr ""
 msgid "Failed to send daemon quit request: %s"
 msgstr "No si è rivâts a otignî il stât dal demoni"
 
-#: client/pkgc-manage.c:1031
+#. TRANSLATORS: Description for refresh command in pkgcli help
+#: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
 msgstr ""
 
-#: client/pkgc-manage.c:1037
+#. TRANSLATORS: Description for install command in pkgcli help
+#: client/pkgc-manage.c:1039
 #, fuzzy
 msgid "Install packages"
 msgstr "Instale pachet"
 
-#: client/pkgc-manage.c:1043
+#. TRANSLATORS: Description for remove command in pkgcli help
+#: client/pkgc-manage.c:1046
 #, fuzzy
 msgid "Remove packages"
 msgstr "Gjave pachet"
 
-#: client/pkgc-manage.c:1049
+#. TRANSLATORS: Description for update command in pkgcli help
+#: client/pkgc-manage.c:1053
 #, fuzzy
 msgid "Update packages"
 msgstr "Inzornament dai pachets"
 
-#: client/pkgc-manage.c:1055
+#. TRANSLATORS: Description for upgrade command in pkgcli help
+#: client/pkgc-manage.c:1060
 #, fuzzy
 msgid "Upgrade the system"
 msgstr "Avanze di version il sisteme"
 
-#: client/pkgc-manage.c:1061
+#. TRANSLATORS: Description for download command in pkgcli help
+#: client/pkgc-manage.c:1067
 #, fuzzy
 msgid "Download packages"
 msgstr "Daûr a discjariâ i pachets"
 
-#: client/pkgc-manage.c:1067
+#. TRANSLATORS: Description for offline-update command in pkgcli help
+#: client/pkgc-manage.c:1074
 #, fuzzy
 msgid "Manage offline system updates"
 msgstr "No son pachets di inzornâ"
 
-#: client/pkgc-manage.c:1073
+#. TRANSLATORS: Description for install-sig command in pkgcli help
+#: client/pkgc-manage.c:1081
 #, fuzzy
 msgid "Install package signature"
 msgstr "Instalazion firme"
 
-#: client/pkgc-manage.c:1079
+#. TRANSLATORS: Description for repair command in pkgcli help
+#: client/pkgc-manage.c:1088
 #, fuzzy
 msgid "Repair package system"
 msgstr "Comede il sisteme"
 
-#: client/pkgc-manage.c:1085
+#. TRANSLATORS: Description for quit command in pkgcli help
+#: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
 msgstr ""
 
@@ -1010,7 +1020,7 @@ msgstr ""
 msgid "Monitor PackageKit D-Bus events"
 msgstr "Servizi PackageKit"
 
-#. TRANSLATORS: Summary for pkgcli monitor, the PK D-Bus monitor
+#. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
 #, fuzzy
 msgid "Monitor PackageKit bus events"
@@ -1157,75 +1167,89 @@ msgstr "Ore di sisteme"
 msgid "Get time in seconds since the last specified action."
 msgstr ""
 
-#: client/pkgc-query.c:985
+#. TRANSLATORS: Description for backend command in pkgcli help
+#: client/pkgc-query.c:986
 #, fuzzy
 msgid "Show backend information"
 msgstr "Daûr a otignî informazions"
 
-#: client/pkgc-query.c:991
+#. TRANSLATORS: Description for history command in pkgcli help
+#: client/pkgc-query.c:993
 #, fuzzy
 msgid "Show transaction history"
 msgstr "La transazion e je falide"
 
-#: client/pkgc-query.c:997
+#. TRANSLATORS: Description for search command in pkgcli help
+#: client/pkgc-query.c:1000
 #, fuzzy
 msgid "Search for packages"
 msgstr "Cîr par nons"
 
-#: client/pkgc-query.c:1003
+#. TRANSLATORS: Description for list command in pkgcli help
+#: client/pkgc-query.c:1007
 #, fuzzy
 msgid "List packages"
 msgstr "Instale pachet"
 
-#: client/pkgc-query.c:1009
+#. TRANSLATORS: Description for show command in pkgcli help
+#: client/pkgc-query.c:1014
 #, fuzzy
 msgid "Show package information"
 msgstr "Daûr a discjariâ lis informazions sul inzornament"
 
-#: client/pkgc-query.c:1015
-#, fuzzy
-msgid "List package dependencies"
-msgstr "Risoluzion des dipendencis"
-
+#. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
+msgid "List dependencies of the specified package(s)"
+msgstr ""
+
+#. TRANSLATORS: Description for list-requiring command in pkgcli help
+#: client/pkgc-query.c:1028
 #, fuzzy
-msgid "List packages requiring this package"
+msgid "List other packages requiring the specified package(s)"
 msgstr "Il pachet che al furnìs chest file al è:"
 
-#: client/pkgc-query.c:1027
+#. TRANSLATORS: Description for what-provides command in pkgcli help
+#: client/pkgc-query.c:1035
 #, fuzzy
 msgid "List packages providing a capability"
 msgstr "Il pachet che al furnìs chest file al è:"
 
-#: client/pkgc-query.c:1033
+#. TRANSLATORS: Description for files command in pkgcli help
+#: client/pkgc-query.c:1042
 #, fuzzy
 msgid "Show files in package"
 msgstr "Daûr a rindi sorpassâts i pachets"
 
-#: client/pkgc-query.c:1039
+#. TRANSLATORS: Description for list-updates command in pkgcli help
+#: client/pkgc-query.c:1049
 #, fuzzy
 msgid "Get available updates"
 msgstr "Recupar dai inzornaments"
 
-#: client/pkgc-query.c:1045
+#. TRANSLATORS: Description for show-update command in pkgcli help
+#: client/pkgc-query.c:1056
 #, fuzzy
 msgid "Get update details"
 msgstr "Recupar dai detais di inzornament"
 
-#: client/pkgc-query.c:1051
+#. TRANSLATORS: Description for resolve command in pkgcli help
+#: client/pkgc-query.c:1063
 #, fuzzy
 msgid "Resolve package names"
 msgstr "Gjave pachet"
 
-#: client/pkgc-query.c:1057
+#. TRANSLATORS: Description for organization command in pkgcli help
+#: client/pkgc-query.c:1070
 msgid "List available filters and categories"
 msgstr ""
 
-#: client/pkgc-query.c:1063
+#. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
+#: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
 msgstr ""
 
-#: client/pkgc-query.c:1069
+#. TRANSLATORS: Description for last-time command in pkgcli help
+#: client/pkgc-query.c:1084
 #, fuzzy
 msgid "Get time since last action"
 msgstr "Recupar des transazions"
@@ -1272,22 +1296,26 @@ msgstr "Rimozion dal dipuesit"
 msgid "Repository '%s' removed"
 msgstr "Al covente un non di dipuesit"
 
-#: client/pkgc-repo.c:244
+#. TRANSLATORS: Description for repo-list command in pkgcli help
+#: client/pkgc-repo.c:245
 #, fuzzy
 msgid "List repositories"
 msgstr "Recupar dai dipuesits"
 
-#: client/pkgc-repo.c:250
+#. TRANSLATORS: Description for repo-enable command in pkgcli help
+#: client/pkgc-repo.c:252
 #, fuzzy
 msgid "Enable a repository"
 msgstr "Rimozion dal dipuesit"
 
-#: client/pkgc-repo.c:256
+#. TRANSLATORS: Description for repo-disable command in pkgcli help
+#: client/pkgc-repo.c:259
 #, fuzzy
 msgid "Disable a repository"
 msgstr "Rimozion dal dipuesit"
 
-#: client/pkgc-repo.c:262
+#. TRANSLATORS: Description for repo-remove command in pkgcli help
+#: client/pkgc-repo.c:266
 #, fuzzy
 msgid "Remove a repository"
 msgstr "Rimozion dal dipuesit"
@@ -2695,6 +2723,10 @@ msgstr "No sta instalâ chest pachet, gjavât che tu sedis sigûr/sigure che al 
 #: src/pk-transaction.c:2744
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "No sta instalâ chescj pachets, gjavât che tu sedis sigûr/sigure che a sedin afidabii."
+
+#, fuzzy
+#~ msgid "List package dependencies"
+#~ msgstr "Risoluzion des dipendencis"
 
 #, fuzzy
 #~| msgid "Trigger offline updates"
