@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-20 00:08+0200\n"
-"PO-Revision-Date: 2026-01-29 19:01+0000\n"
+"PO-Revision-Date: 2026-04-20 11:09+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/packagekit/translations/uk/>\n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -1184,17 +1184,13 @@ msgstr "Показати дані щодо пакунків"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "Показати залежності для одного або декількох пакунків."
+msgstr "Вивести список залежностей для вказаних пакунків"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "Показати, які пакунки потребують вказаних пакунків."
+msgstr "Вивести список інших пакунків, для роботи яких потрібні вказані пакунки"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
