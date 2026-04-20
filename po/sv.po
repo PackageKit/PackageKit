@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-20 00:08+0200\n"
-"PO-Revision-Date: 2026-01-28 23:37+0000\n"
+"PO-Revision-Date: 2026-04-20 11:09+0000\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/packagekit/translations/sv/>\n"
 "Language: sv\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -1190,17 +1190,13 @@ msgstr "Visa paketinformation"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "Visa beroenden för ett eller flera paket."
+msgstr "Visa beroenden för angivna paket"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "Visa vilka paket som kräver de angivna paketen."
+msgstr "Lista andra paket som kräver de angivna paketen"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
