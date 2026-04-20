@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-20 00:08+0200\n"
-"PO-Revision-Date: 2026-01-28 23:37+0000\n"
+"PO-Revision-Date: 2026-04-20 11:09+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -1166,7 +1166,7 @@ msgstr "Afișează informații despre motorul intern"
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:993
 msgid "Show transaction history"
-msgstr "Tranzacția a eșuatAfișează istoricul tranzacțiilor"
+msgstr "Afișează istoricul tranzacțiilor"
 
 #. TRANSLATORS: Description for search command in pkgcli help
 #: client/pkgc-query.c:1000
@@ -1185,17 +1185,13 @@ msgstr "Afișează informații despre pachet"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "Afișează dependențele pentru unul sau mai multe pachete."
+msgstr "Listează dependențele pachetului (pachetelor) specificat(e)"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "Afișează pachetele care necesită pachetele specificate."
+msgstr "Listează alte pachete care necesită pachetul (pachetele) specificat(e)"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
