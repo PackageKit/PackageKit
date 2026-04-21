@@ -44,7 +44,7 @@
 #define SYMBOL_CHECK   "✔"
 #define SYMBOL_CROSS   "✘"
 #define SYMBOL_DOT     "●"
-#define SYMBOL_PACKAGE "⧉"
+#define SYMBOL_PACKAGE "▣"
 #define SYMBOL_UP      "▲"
 #define SYMBOL_DOWN    "▼"
 
