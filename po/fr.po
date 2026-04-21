@@ -18,7 +18,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-20 00:08+0200\n"
-"PO-Revision-Date: 2026-01-28 23:37+0000\n"
+"PO-Revision-Date: 2026-04-21 01:09+0000\n"
 "Last-Translator: Léane GRASSER <leane.grasser@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/packagekit/translations/fr/>\n"
 "Language: fr\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -1192,17 +1192,13 @@ msgstr "Afficher des informations sur les paquets"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "Afficher les dépendances d'un ou plusieurs paquets."
+msgstr "Lister les dépendances des paquets spécifiés"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "Afficher la liste des paquets demandant les paquets spécifiés."
+msgstr "Lister les autres paquets qui requièrent les paquets spécifiés"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
