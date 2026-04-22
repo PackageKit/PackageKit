@@ -1,3 +1,30 @@
+Version 1.3.5
+~~~~~~~~~~~~~
+Released: 2026-04-22
+
+Notes:
+ * This release fixes a critical security vulnerability that allows
+   unprivileged local users to obtain root privileges on any distribution
+   that uses PackageKit. Details will be disclosed very soon, please update
+   to a fixed version of PackageKit immediately (ensure the patch from commit
+   76cfb675fb31acc3ad5595d4380bfff56d2a8697 is applied).
+
+Backends:
+ * Drop slack backend (Eugen Wissner)
+ * alpm: perform sysupgrade on install and update (Yakov Till)
+ * freebsd: Fix crashing when libpkg asks about ABI mismatch (Gleb Popov)
+ * portage: Revamp backend (TableFlipper9)
+
+Bugfixes:
+ * meson: test.depends does not accept a dummy dependency, give it an empty array instead (Matthias Klumpp)
+ * pkgcli: Set up proxy also if only PAC is available (Matthias Klumpp)
+ * Do not allow re-invoking methods on non-new transactions (Matthias Klumpp)
+ * packagekit/progress: updated old usage of raise StopIteration (TableFlipper9)
+
+Miscellaneous:
+ * pkgcli: Add TRANSLATORS comments for commands (Rafael Fontenelle)
+ * pkgcli: Rename list-required-by to list-requiring (Matthias Klumpp)
+
 Version 1.3.4
 ~~~~~~~~~~~~~
 Released: 2026-01-28
