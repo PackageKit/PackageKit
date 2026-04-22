@@ -24,10 +24,6 @@ library:
 - changed-files:
   - any-glob-to-any-file: backends/apt/**
 
-'Backend: dnf (Fedora Linux)':
-- changed-files:
-  - any-glob-to-any-file: backends/dnf/**
-
 'Backend: dnf5 (Fedora Linux)':
 - changed-files:
   - any-glob-to-any-file: backends/dnf5/**
