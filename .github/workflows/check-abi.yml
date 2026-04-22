@@ -2,6 +2,9 @@ name: Check ABI
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 env:
   LAST_ABI_BREAK: 931102d676f8f358880984156ac7ba3039f75523
 
