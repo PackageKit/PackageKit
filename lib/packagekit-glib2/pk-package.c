@@ -50,7 +50,7 @@ struct _PkPackagePrivate
 	PkInfoEnum		 info;
 	gchar			*package_id;
 	gchar			*package_id_data;
-	const gchar		*package_id_split[4];
+	const gchar		*package_id_split[5];
 	gchar			*summary;
 	gchar			*license;
 	PkGroupEnum		 group;
@@ -198,7 +198,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 			priv->package_id_data[i] = '\0';
 		}
 	}
-	if (cnt != 3) {
+	if (cnt != 4) {
 		g_set_error (error, 1, 0, "invalid number of sections %i", cnt);
 		goto out;
 	}
@@ -218,6 +218,7 @@ out:
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ORIGIN] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 	return FALSE;
 }
@@ -426,16 +427,45 @@ pk_package_get_arch (PkPackage *package)
 }
 
 /**
+ * pk_package_get_origin:
+ * @package: a valid #PkPackage instance
+ *
+ * Gets the package origin, which is usually the repository ID that contains the
+ * package. A special origin is "local" for local packages that exist on disk
+ * but not in a repository.
+ *
+ * Returns: (nullable): the origin, or %NULL if unset
+ *
+ * Since: 1.3.5
+ **/
+const gchar *
+pk_package_get_origin (PkPackage* package)
+{
+	PkPackagePrivate *priv = GET_PRIVATE(package);
+
+	g_return_val_if_fail (PK_IS_PACKAGE (package), NULL);
+
+	return priv->package_id_split[PK_PACKAGE_ID_ORIGIN];
+}
+
+/**
  * pk_package_get_data:
  * @package: a valid #PkPackage instance
  *
- * Gets the package data, which is usually the repository ID that contains the
- * package. Special ID's include "installed" for installed packages, and "local"
- * for local packages that exist on disk but not in a repository.
+ * Gets the package data, which is usually some additional state
+ * information that is useful for the backend.
+ * Known values are "auto" for packages that were automatically installed
+ * as dependencies, "manual" for packages that were explicitly installed
+ * by the user, or "installed"/"available" to indicate the package's current
+ * state. If the data is prefixed with a "+", it indicates a state change
+ * (e.g. for updates).
+ *
+ * The contents of the data field are entirely backend-specific and
+ * should not be parsed by client applications.
  *
  * Returns: (nullable): the data, or %NULL if unset
  *
- * Since: 0.6.4
+ * Since: 1.3.5
  **/
 const gchar *
 pk_package_get_data (PkPackage *package)
@@ -462,10 +492,11 @@ pk_package_print (PkPackage *package)
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
 
-	g_print ("%s-%s.%s\t%s\t%s\n",
+	g_print ("%s_%s.%s\t%s [%s]\t%s\n",
 		 priv->package_id_split[PK_PACKAGE_ID_NAME],
 		 priv->package_id_split[PK_PACKAGE_ID_VERSION],
 		 priv->package_id_split[PK_PACKAGE_ID_ARCH],
+		 priv->package_id_split[PK_PACKAGE_ID_ORIGIN],
 		 priv->package_id_split[PK_PACKAGE_ID_DATA],
 		 priv->summary);
 }
@@ -895,6 +926,7 @@ pk_package_init (PkPackage *package)
 	priv->package_id_split[PK_PACKAGE_ID_NAME] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_VERSION] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_ARCH] = NULL;
+	priv->package_id_split[PK_PACKAGE_ID_ORIGIN] = NULL;
 	priv->package_id_split[PK_PACKAGE_ID_DATA] = NULL;
 	package->priv = priv;
 }

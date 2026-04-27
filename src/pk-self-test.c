@@ -120,10 +120,10 @@ pk_test_backend_func_true (PkBackendJob *job,
 	/* trigger duplicate test */
 
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva",
+				"vips-doc;7.12.4-2.fc8;noarch;linva;",
 				"The vips documentation package.");
 }
 
@@ -396,11 +396,11 @@ pk_test_backend_spawn_func (void)
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;origin;data", NULL);
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;origin;data", NULL);
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
@@ -448,7 +448,7 @@ pk_test_backend_spawn_func (void)
 
 	/* test pk_backend_spawn_parse_common_out Package */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job,
-		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;origin;data\tMore useless software", NULL);
 	g_assert_true (ret);
 
 	/* manually unlock as we have no engine */
@@ -1315,7 +1315,7 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	/* run a second (and exclusive!) action in parallel */
-	array = g_strsplit ("libawesome;42;i386;debian", " ", -1);
+	array = g_strsplit ("libawesome;42;i386;debian;manual", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (transaction1,
@@ -1336,7 +1336,7 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	/* run a fourth (and exclusive!) action in parallel */
-	array = g_strsplit ("foobar;1.1.0;i386;debian", " ", -1);
+	array = g_strsplit ("foobar;1.1.0;i386;debian;manual", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
 	pk_transaction_install_packages (transaction1,
@@ -1468,4 +1468,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
