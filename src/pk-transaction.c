@@ -370,6 +370,8 @@ flush_progress_changed (PkTransaction *transaction)
 	if (!transaction->progress_changed)
 		return;
 
+	transaction->progress_changed = FALSE;
+
 	/* Emit a D-Bus signal to notify of the progress changes. */
 	pk_transaction_emit_properties_changed (transaction,
 						"Percentage", g_variant_new_uint32 (transaction->percentage),
@@ -378,8 +380,6 @@ flush_progress_changed (PkTransaction *transaction)
 						"Speed", g_variant_new_uint32 (transaction->speed),
 						"DownloadSizeRemaining", g_variant_new_uint64 (transaction->download_size_remaining),
 						NULL);
-
-	transaction->progress_changed = FALSE;
 }
 
 static gboolean
@@ -387,9 +387,12 @@ progress_timeout_cb (gpointer user_data)
 {
 	PkTransaction *transaction = PK_TRANSACTION (user_data);
 
+	/* The timeout is one-shot: clear our source ref before flushing so any
+	 * progress change queued during signal emission can schedule a new one. */
+	g_clear_pointer (&transaction->progress_timeout_source, g_source_unref);
 	flush_progress_changed (transaction);
 
-	return G_SOURCE_CONTINUE;
+	return G_SOURCE_REMOVE;
 }
 
 /* Aggregate progress-related property notifications so that the transaction
