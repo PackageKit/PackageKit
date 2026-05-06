@@ -181,80 +181,41 @@ static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
+static const GDBusErrorEntry pk_transaction_error_entries[] = {
+	{ PK_TRANSACTION_ERROR_DENIED,                       PK_DBUS_INTERFACE_TRANSACTION ".Denied" },
+	{ PK_TRANSACTION_ERROR_NOT_RUNNING,                  PK_DBUS_INTERFACE_TRANSACTION ".NotRunning" },
+	{ PK_TRANSACTION_ERROR_NO_ROLE,                      PK_DBUS_INTERFACE_TRANSACTION ".NoRole" },
+	{ PK_TRANSACTION_ERROR_CANNOT_CANCEL,                PK_DBUS_INTERFACE_TRANSACTION ".CannotCancel" },
+	{ PK_TRANSACTION_ERROR_NOT_SUPPORTED,                PK_DBUS_INTERFACE_TRANSACTION ".NotSupported" },
+	{ PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION,          PK_DBUS_INTERFACE_TRANSACTION ".NoSuchTransaction" },
+	{ PK_TRANSACTION_ERROR_NO_SUCH_FILE,                 PK_DBUS_INTERFACE_TRANSACTION ".NoSuchFile" },
+	{ PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,            PK_DBUS_INTERFACE_TRANSACTION ".NoSuchDirectory" },
+	{ PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE, PK_DBUS_INTERFACE_TRANSACTION ".TransactionExistsWithRole" },
+	{ PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,            PK_DBUS_INTERFACE_TRANSACTION ".RefusedByPolicy" },
+	{ PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,           PK_DBUS_INTERFACE_TRANSACTION ".PackageIdInvalid" },
+	{ PK_TRANSACTION_ERROR_SEARCH_INVALID,               PK_DBUS_INTERFACE_TRANSACTION ".SearchInvalid" },
+	{ PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,          PK_DBUS_INTERFACE_TRANSACTION ".PathInvalid" },
+	{ PK_TRANSACTION_ERROR_FILTER_INVALID,               PK_DBUS_INTERFACE_TRANSACTION ".FilterInvalid" },
+	{ PK_TRANSACTION_ERROR_INPUT_INVALID,                PK_DBUS_INTERFACE_TRANSACTION ".InputInvalid" },
+	{ PK_TRANSACTION_ERROR_INVALID_STATE,                PK_DBUS_INTERFACE_TRANSACTION ".InvalidState" },
+	{ PK_TRANSACTION_ERROR_INITIALIZE_FAILED,            PK_DBUS_INTERFACE_TRANSACTION ".InitializeFailed" },
+	{ PK_TRANSACTION_ERROR_COMMIT_FAILED,                PK_DBUS_INTERFACE_TRANSACTION ".CommitFailed" },
+	{ PK_TRANSACTION_ERROR_INVALID_PROVIDE,              PK_DBUS_INTERFACE_TRANSACTION ".InvalidProvide" },
+	{ PK_TRANSACTION_ERROR_PACK_INVALID,                 PK_DBUS_INTERFACE_TRANSACTION ".PackInvalid" },
+	{ PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,      PK_DBUS_INTERFACE_TRANSACTION ".MimeTypeNotSupported" },
+	{ PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,   PK_DBUS_INTERFACE_TRANSACTION ".NumberOfPackagesInvalid" },
+};
+
 GQuark
 pk_transaction_error_quark (void)
 {
-	static GQuark quark = 0;
-	if (!quark) {
-		quark = g_quark_from_static_string ("pk-transaction-error-quark");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_DENIED,
-					     PK_DBUS_INTERFACE_TRANSACTION ".Denied");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NOT_RUNNING,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NotRunning");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NO_ROLE,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NoRole");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_CANNOT_CANCEL,
-					     PK_DBUS_INTERFACE_TRANSACTION ".CannotCancel");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NotSupported");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NO_SUCH_TRANSACTION,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NoSuchTransaction");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NoSuchFile");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NO_SUCH_DIRECTORY,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NoSuchDirectory");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_TRANSACTION_EXISTS_WITH_ROLE,
-					     PK_DBUS_INTERFACE_TRANSACTION ".TransactionExistsWithRole");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_REFUSED_BY_POLICY,
-					     PK_DBUS_INTERFACE_TRANSACTION ".RefusedByPolicy");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".PackageIdInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_SEARCH_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".SearchInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_SEARCH_PATH_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".PathInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_FILTER_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".FilterInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_INPUT_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".InputInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_INVALID_STATE,
-					     PK_DBUS_INTERFACE_TRANSACTION ".InvalidState");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_INITIALIZE_FAILED,
-					     PK_DBUS_INTERFACE_TRANSACTION ".InitializeFailed");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_COMMIT_FAILED,
-					     PK_DBUS_INTERFACE_TRANSACTION ".CommitFailed");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_INVALID_PROVIDE,
-					     PK_DBUS_INTERFACE_TRANSACTION ".InvalidProvide");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_PACK_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".PackInvalid");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,
-					     PK_DBUS_INTERFACE_TRANSACTION ".MimeTypeNotSupported");
-		g_dbus_error_register_error (quark,
-					     PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,
-					     PK_DBUS_INTERFACE_TRANSACTION ".NumberOfPackagesInvalid");
-	}
-	return quark;
+	G_STATIC_ASSERT (G_N_ELEMENTS (pk_transaction_error_entries) == PK_TRANSACTION_ERROR_LAST);
+	static gsize quark = 0;
+	g_dbus_error_register_error_domain ("pk-transaction-error-quark",
+	                                    &quark,
+	                                    pk_transaction_error_entries,
+	                                    G_N_ELEMENTS (pk_transaction_error_entries));
+	return (GQuark) quark;
 }
 
 static guint
