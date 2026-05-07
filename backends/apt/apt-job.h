@@ -110,6 +110,7 @@ public:
      * @param fixBroken whether to automatically fix broken packages
      * @param flags operation flags as per public API
      * @param autoremove whether to autoremove dangling packages
+     * @param allowRemoveDeps whether to allow removal of dependent packages
      */
     bool runTransaction(
         const PkgList &install,
@@ -117,7 +118,8 @@ public:
         const PkgList &update,
         bool fixBroken,
         PkBitfield flags,
-        bool autoremove);
+        bool autoremove,
+        bool allowRemoveDeps);
 
     /**
      *  Get package depends
