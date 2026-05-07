@@ -1577,7 +1577,7 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
     }
 
     g_autofree gchar *package_id = pk_package_id_build(
-        deb.packageName().c_str(), deb.version().c_str(), deb.architecture().c_str(), file);
+        deb.packageName().c_str(), deb.version().c_str(), deb.architecture().c_str(), file, nullptr);
 
     g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
     for (auto cFile : deb.files()) {

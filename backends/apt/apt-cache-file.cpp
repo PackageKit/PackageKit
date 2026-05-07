@@ -365,9 +365,9 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 
     // check if any intended action was encoded in this package-ID
     auto piAction = PkgAction::NONE;
-    if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+auto:"))
+    if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+auto") == 0)
         piAction = PkgAction::INSTALL_AUTO;
-    else if (g_str_has_prefix(parts[PK_PACKAGE_ID_DATA], "+manual:"))
+    else if (g_strcmp0(parts[PK_PACKAGE_ID_DATA], "+manual") == 0)
         piAction = PkgAction::INSTALL_MANUAL;
 
     const pkgCache::VerIterator &ver = findVer(pkg);
@@ -394,20 +394,24 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     const bool isInstalled = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
     const bool isAuto = (State.CandidateVer != 0) && (State.Flags & pkgCache::Flag::Auto);
 
-    // when a package is installed manually, the data part of a package-id is "manual:<repo-id>",
-    // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
-    // a pending installation is marked, in which case we prefix the desired new mode of the installed
-    // package (auto/manual) with a plus sign (+).
-    string data = "";
+    // when a package is installed manually, the data part of a package-id is "manual",
+    // otherwise it is "auto". Available (not installed) packages have no data, unless
+    // a pending installation is marked, in which case we prefix the desired new mode of
+    // the installed package (auto/manual) with a plus sign (+).
+    std::string data = "";
     if (isInstalled) {
-        data = isAuto ? "auto:" : "manual:";
+        data = isAuto ? "auto" : "manual";
     } else {
         if (State.NewInstall())
-            data = isAuto ? "+auto:" : "+manual:";
+            data = isAuto ? "+auto" : "+manual";
     }
-    data += utilBuildPackageOriginId(vf);
+    const auto origin = utilBuildPackageOriginId(vf);
 
-    return pk_package_id_build(ver.ParentPkg().Name(), ver.VerStr(), ver.Arch(), data.c_str());
+    return pk_package_id_build(ver.ParentPkg().Name(),
+                        ver.VerStr(),
+                               ver.Arch(),
+                               origin.c_str(),
+                               data.c_str());
 }
 
 pkgCache::VerIterator AptCacheFile::findVer(const pkgCache::PkgIterator &pkg)

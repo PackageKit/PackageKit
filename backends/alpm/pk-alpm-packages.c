@@ -47,7 +47,7 @@ pk_alpm_pkg_build_id (alpm_pkg_t *pkg)
 		repo = "installed";
 	}
 
-	return pk_package_id_build (name, version, arch, repo);
+	return pk_package_id_build (name, version, arch, repo, NULL);
 }
 
 void
@@ -76,7 +76,7 @@ pk_alpm_find_pkg (PkBackendJob *job, const gchar *package_id, GError **error)
 	g_return_val_if_fail (package_id != NULL, NULL);
 
 	package = pk_package_id_split (package_id);
-	repo_id = package[PK_PACKAGE_ID_DATA];
+	repo_id = package[PK_PACKAGE_ID_ORIGIN];
 
 	/* find the database to search in */
 	if (g_strcmp0 (repo_id, "installed") == 0) {

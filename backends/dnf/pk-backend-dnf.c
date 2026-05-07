@@ -1791,7 +1791,7 @@ dnf_utils_find_package_ids (DnfSack *sack, gchar **package_ids, GError **error)
 		g_auto(GStrv) split = NULL;
 		hy_query_clear (query);
 		split = pk_package_id_split (package_ids[i]);
-		reponame = split[PK_PACKAGE_ID_DATA];
+		reponame = split[PK_PACKAGE_ID_ORIGIN];
 		if (g_strcmp0 (reponame, "installed") == 0 ||
 		    g_str_has_prefix (reponame, "installed:"))
 			reponame = HY_SYSTEM_REPO_NAME;

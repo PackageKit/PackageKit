@@ -173,6 +173,7 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 	gchar *package_id;
 	const char *arch;
 	g_autofree gchar *repo = NULL;
+    g_autofree gchar *data = NULL;
 
 	if (isKind<SrcPackage>(resolvable))
 		arch = "source";
@@ -189,13 +190,14 @@ zypp_build_package_id_from_resolvable (const sat::Solvable &resolvable)
 		else
 			pi = selectable->updateCandidateObj ();
 
-		repo = g_strconcat ("installed:", pi.repository ().alias ().c_str (), NULL);
+	    data = g_strdup ("installed");
+		repo = g_strdup (pi.repository ().alias ().c_str ());
 	} else
 		repo = g_strdup (resolvable.repository ().alias ().c_str ());
 
 	package_id = pk_package_id_build (resolvable.name ().c_str (),
 					  resolvable.edition ().asString ().c_str (),
-					  arch, repo);
+					  arch, repo, data);
 
 	return package_id;
 }
@@ -966,7 +968,7 @@ zypp_package_is_local (const gchar *package_id)
 		return false;
 
 	gchar **id_parts = pk_package_id_split (package_id);
-	if (!strncmp (id_parts[PK_PACKAGE_ID_DATA], "local", 5))
+	if (!strncmp (id_parts[PK_PACKAGE_ID_ORIGIN], "local", 5))
 		ret = true;
 
 	g_strfreev (id_parts);
@@ -1020,15 +1022,15 @@ zypp_get_package_by_id (const gchar *package_id)
 		}
 
 		if (!pkg.isSystem()) {
-			if (!strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
+			if (!strncmp(id_parts[PK_PACKAGE_ID_ORIGIN], "installed", 9)) {
 				//MIL << "pkg is not installed\n";
 				continue;
 			}
-			if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_DATA])) {
+			if (g_strcmp0(pkg.repository().alias().c_str(), id_parts[PK_PACKAGE_ID_ORIGIN])) {
 				//MIL << "repo does not match\n";
 				continue;
 			}
-		} else if (strncmp(id_parts[PK_PACKAGE_ID_DATA], "installed", 9)) {
+		} else if (strncmp(id_parts[PK_PACKAGE_ID_ORIGIN], "installed", 9)) {
 			//MIL << "pkg installed\n";
 			continue;
 		}

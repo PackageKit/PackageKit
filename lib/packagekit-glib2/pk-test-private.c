@@ -344,58 +344,60 @@ pk_test_package_id_func (void)
 	g_assert_true (!ret);
 
 	/* check not valid - no name */
-	ret = pk_package_id_check (";0.0.1;i386;fedora");
+	ret = pk_package_id_check (";0.0.1;i386;fedora;");
 	g_assert_true (!ret);
 
 	/* check not valid - invalid */
-	ret = pk_package_id_check ("moo;0.0.1;i386");
+	ret = pk_package_id_check ("moo;0.0.1;i386;");
 	g_assert_true (!ret);
 
 	/* check valid */
-	ret = pk_package_id_check ("moo;0.0.1;i386;fedora");
+	ret = pk_package_id_check ("moo;0.0.1;i386;fedora;");
 	g_assert_true (ret);
 
 	/* id build */
-	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora");
-	g_assert_cmpstr (text, ==, "moo;0.0.1;i386;fedora");
+	text = pk_package_id_build ("moo", "0.0.1", "i386", "fedora", NULL);
+	g_assert_cmpstr (text, ==, "moo;0.0.1;i386;fedora;");
 	g_free (text);
 
 	/* id build partial */
-	text = pk_package_id_build ("moo", NULL, NULL, NULL);
-	g_assert_cmpstr (text, ==, "moo;;;");
+	text = pk_package_id_build ("moo", NULL, NULL, NULL, NULL);
+	g_assert_cmpstr (text, ==, "moo;;;;");
 	g_free (text);
 
 	/* test printable */
-	text = pk_package_id_to_printable ("moo;0.0.1;i386;fedora");
+	text = pk_package_id_to_printable ("moo;0.0.1;i386;fedora;");
 	g_assert_cmpstr (text, ==, "moo_0.0.1.i386");
 	g_free (text);
 
 	/* test printable no arch */
-	text = pk_package_id_to_printable ("moo;0.0.1;;");
+	text = pk_package_id_to_printable ("moo;0.0.1;;;");
 	g_assert_cmpstr (text, ==, "moo_0.0.1");
 	g_free (text);
 
 	/* test printable just name */
-	text = pk_package_id_to_printable ("moo;;;");
+	text = pk_package_id_to_printable ("moo;;;;");
 	g_assert_cmpstr (text, ==, "moo");
 	g_free (text);
 
 	/* test on real packageid */
-	sections = pk_package_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;");
+	sections = pk_package_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;ubuntu-main;auto");
 	g_assert_true (sections != NULL);
 	g_assert_cmpstr (sections[0], ==, "kde-i18n-csb");
 	g_assert_cmpstr (sections[1], ==, "4:3.5.8~pre20071001-0ubuntu1");
 	g_assert_cmpstr (sections[2], ==, "all");
-	g_assert_cmpstr (sections[3], ==, "");
+	g_assert_cmpstr (sections[3], ==, "ubuntu-main");
+	g_assert_cmpstr (sections[4], ==, "auto");
 	g_strfreev (sections);
 
 	/* test on short packageid */
-	sections = pk_package_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;");
+	sections = pk_package_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;;;");
 	g_assert_true (sections != NULL);
 	g_assert_cmpstr (sections[0], ==, "kde-i18n-csb");
 	g_assert_cmpstr (sections[1], ==, "4:3.5.8~pre20071001-0ubuntu1");
 	g_assert_cmpstr (sections[2], ==, "");
 	g_assert_cmpstr (sections[3], ==, "");
+	g_assert_cmpstr (sections[4], ==, "");
 	g_strfreev (sections);
 
 	/* test fail under */
@@ -403,7 +405,7 @@ pk_test_package_id_func (void)
 	g_assert_true (sections == NULL);
 
 	/* test fail over */
-	sections = pk_package_id_split ("foo;moo;dave;clive;dan");
+	sections = pk_package_id_split ("foo;moo;dave;clive;dan;rick");
 	g_assert_true (sections == NULL);
 
 	/* test fail missing first */
@@ -419,7 +421,7 @@ pk_test_package_ids_func (void)
 	gchar **package_ids;
 
 	/* parse va_list */
-	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora&bar;0.1.1;noarch;livna");
+	package_ids = pk_package_ids_from_string ("foo;0.0.1;i386;fedora;&bar;0.1.1;noarch;livna;");
 	g_assert_true (package_ids != NULL);
 
 	/* verify size */
@@ -477,7 +479,7 @@ pk_test_results_func (void)
 		      "summary", "Power manager for GNOME",
 		      NULL);
 	ret = pk_package_set_id (item,
-				 "gnome-power-manager;0.1.2;i386;fedora",
+				 "gnome-power-manager;0.1.2;i386;fedora;",
 				 &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -497,7 +499,7 @@ pk_test_results_func (void)
 		      "summary", &summary,
 		      NULL);
 	g_assert_cmpint (info, ==, PK_INFO_ENUM_AVAILABLE);
-	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora", ==, package_id);
+	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora;", ==, package_id);
 	g_assert_cmpstr ("Power manager for GNOME", ==, summary);
 	g_object_ref (item);
 	g_ptr_array_unref (packages);
@@ -511,7 +513,7 @@ pk_test_results_func (void)
 		      "summary", &summary,
 		      NULL);
 	g_assert_cmpint (info, ==, PK_INFO_ENUM_AVAILABLE);
-	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora", ==, package_id);
+	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora;", ==, package_id);
 	g_assert_cmpstr ("Power manager for GNOME", ==, summary);
 	g_object_unref (item);
 	g_free (package_id);
@@ -555,29 +557,29 @@ pk_test_package_func (void)
 	g_clear_error (&error);
 
 	/* set invalid id (sections) */
-	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora;dave", &error);
+	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora;auto;dave", &error);
 	g_assert_error (error, 1, 0);
 	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* set invalid name */
-	ret = pk_package_set_id (package, ";0.1.2;i386;fedora", &error);
+	ret = pk_package_set_id (package, ";0.1.2;i386;fedora;manual", &error);
 	g_assert_error (error, 1, 0);
 	g_assert_true (!ret);
 	g_clear_error (&error);
 
 	/* set valid name */
-	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora", &error);
+	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora;", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
 	/* get id of set package */
 	id = pk_package_get_id (package);
-	g_assert_cmpstr (id, ==, "gnome-power-manager;0.1.2;i386;fedora");
+	g_assert_cmpstr (id, ==, "gnome-power-manager;0.1.2;i386;fedora;");
 
 	/* get name of set package */
 	g_object_get (package, "package-id", &text, NULL);
-	g_assert_cmpstr (text, ==, "gnome-power-manager;0.1.2;i386;fedora");
+	g_assert_cmpstr (text, ==, "gnome-power-manager;0.1.2;i386;fedora;");
 	g_free (text);
 
 	g_object_unref (package);
@@ -586,7 +588,7 @@ pk_test_package_func (void)
 static void
 pk_test_offline_func (void)
 {
-	const gchar *package_ids[] = { "powertop;0.1.3;i386;fedora", NULL };
+	const gchar *package_ids[] = { "powertop;0.1.3;i386;fedora;", NULL };
 	gboolean ret;
 	gchar **package_ids_tmp = NULL;
 	gchar *tmp;
@@ -607,8 +609,8 @@ pk_test_offline_func (void)
 	const gchar *results_success =
 			"[PackageKit Offline Update Results]\n"
 			"Success=true\n"
-			"Packages=upower;0.9.16-1.fc17;x86_64;updates,"
-				 "zif;0.3.0-1.fc17;x86_64;updates\n";
+			"Packages=upower;0.9.16-1.fc17;x86_64;updates;,"
+				 "zif;0.3.0-1.fc17;x86_64;updates;\n";
 
 	/* cleanup */
 	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
@@ -660,13 +662,13 @@ pk_test_offline_func (void)
 	package_ids_tmp = pk_offline_get_prepared_ids (&error);
 	g_assert_no_error (error);
 	g_assert_cmpint (g_strv_length (package_ids_tmp), ==, 1);
-	g_assert_cmpstr (package_ids_tmp[0], ==, "powertop;0.1.3;i386;fedora");
+	g_assert_cmpstr (package_ids_tmp[0], ==, "powertop;0.1.3;i386;fedora;");
 	g_strfreev (package_ids_tmp);
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp, ==, "[update]\n"
-	                          "prepared_ids=powertop;0.1.3;i386;fedora,\n");
+	                          "prepared_ids=powertop;0.1.3;i386;fedora;,\n");
 	g_free (tmp);
 	sack = pk_offline_get_prepared_sack (&error);
 	g_assert_no_error (error);
@@ -748,9 +750,9 @@ pk_test_offline_func (void)
 	g_assert_true (packages != NULL);
 	g_assert_cmpint (packages->len, ==, 2);
 	pkg = g_ptr_array_index (packages, 0);
-	g_assert_cmpstr (pk_package_get_id (pkg), ==, "upower;0.9.16-1.fc17;x86_64;updates");
+	g_assert_cmpstr (pk_package_get_id (pkg), ==, "upower;0.9.16-1.fc17;x86_64;updates;");
 	pkg = g_ptr_array_index (packages, 1);
-	g_assert_cmpstr (pk_package_get_id (pkg), ==, "zif;0.3.0-1.fc17;x86_64;updates");
+	g_assert_cmpstr (pk_package_get_id (pkg), ==, "zif;0.3.0-1.fc17;x86_64;updates;");
 	g_object_unref (results);
 
 	/* save some dummy failed results */
