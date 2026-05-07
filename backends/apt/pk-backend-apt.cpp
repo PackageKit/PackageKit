@@ -687,7 +687,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
 {
     // Transaction flags
     PkBitfield transaction_flags = 0;
-    gboolean allow_deps = false;
+    gboolean allowRemoveDeps = true;
     gboolean autoremove = false;
     gchar **full_paths = NULL;
     gchar **package_ids = NULL;
@@ -697,7 +697,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     if (role == PK_ROLE_ENUM_INSTALL_FILES) {
         g_variant_get(params, "(t^a&s)", &transaction_flags, &full_paths);
     } else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-        g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allow_deps, &autoremove);
+        g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allowRemoveDeps, &autoremove);
     } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
         g_variant_get(params, "(t^a&s)", &transaction_flags, &package_ids);
     } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
@@ -751,7 +751,14 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 
     // Install/Update/Remove packages, or just simulate
-    bool ret = apt->runTransaction(installPkgs, removePkgs, updatePkgs, fixBroken, transaction_flags, autoremove);
+    bool ret = apt->runTransaction(
+        installPkgs,
+        removePkgs,
+        updatePkgs,
+        fixBroken,
+        transaction_flags,
+        autoremove,
+        allowRemoveDeps);
     if (!ret) {
         // Print transaction errors
         g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
@@ -880,7 +887,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                     if (removePkgs.size() > 0) {
                         // Install/Update/Remove packages, or just simulate
                         bool ret;
-                        ret = apt->runTransaction(PkgList(), removePkgs, PkgList(), false, transaction_flags, false);
+                        ret = apt->runTransaction(PkgList(), removePkgs, PkgList(), false, transaction_flags, false, true);
                         if (!ret) {
                             // Print transaction errors
                             g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());

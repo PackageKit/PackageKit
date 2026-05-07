@@ -2369,7 +2369,8 @@ bool AptJob::runTransaction(
     const PkgList &update,
     bool fixBroken,
     PkBitfield flags,
-    bool autoremove)
+    bool autoremove,
+    bool allowRemoveDeps)
 {
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_RUNNING);
 
@@ -2392,6 +2393,14 @@ bool AptJob::runTransaction(
 
     // Calculate existing garbage before the transaction
     PkgList initial_garbage;
+    std::vector<unsigned int> explicitRemovalPkgIds;
+    explicitRemovalPkgIds.reserve(remove.size());
+
+    for (const PkgInfo &pkInfo : remove) {
+        if (!pkInfo.ver.end())
+            explicitRemovalPkgIds.push_back(pkInfo.ver.ParentPkg()->ID);
+    }
+
     if (autoremove) {
         for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
             const pkgCache::VerIterator &ver = pkg.CurrentVer();
@@ -2447,6 +2456,42 @@ bool AptJob::runTransaction(
             // did not finish well
             m_cache->ShowBroken(false, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED);
             return false;
+        }
+
+        if (!allowRemoveDeps) {
+            std::vector<std::string> implicitRemovals;
+            for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
+                if (pkg->CurrentVer == 0 || !(*m_cache)[pkg].Delete())
+                    continue;
+
+                if (std::find(explicitRemovalPkgIds.begin(), explicitRemovalPkgIds.end(), pkg->ID)
+                    != explicitRemovalPkgIds.end()) {
+                    continue;
+                }
+
+                implicitRemovals.push_back(pkg.Name());
+            }
+
+            if (!implicitRemovals.empty()) {
+                std::string removalList;
+                for (size_t i = 0; i < implicitRemovals.size(); i++) {
+                    const auto &name = implicitRemovals[i];
+                    if (!removalList.empty())
+                        removalList += ", ";
+                    if (i >= 10) {
+                        removalList += "and more...";
+                        break;
+                    }
+                    removalList += name;
+                }
+
+                pk_backend_job_error_code(
+                    m_job,
+                    PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+                    "The requested operation would remove dependent package(s): %s",
+                    removalList.c_str());
+                return false;
+            }
         }
     }
 
