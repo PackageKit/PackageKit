@@ -1007,12 +1007,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.status(STATUS_QUERY)
 
         for package in values:
-            pkg = self.get_package_from_id(package)[0]
+            name = self.get_package_from_id(package)[0]
             try:
-                # FIXME: Hack for newest filter to work correctly (i think)
-                if filters is not None and FILTER_NEWEST in filters:
-                    self.__get_package(pkg, FILTER_NOT_INSTALLED)
-                self.__get_package(pkg, filters)
+                if filters is not None:
+                    self.__get_package(name, filters)
+                else:
+                    # If no filters, show both installed and available if they exist
+                    # we should really fix __get_package to allow emitting multiple results
+                    self.__get_package(name, [FILTER_INSTALLED])
+                    self.__get_package(name, [FILTER_NOT_INSTALLED])
             except PkError as e:
                 if e.code == ERROR_PACKAGE_NOT_FOUND:
                     continue
