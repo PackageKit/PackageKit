@@ -484,32 +484,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
-        for package in package_ids:
-            package = self.get_package_from_id(package)[0]
+        for package_id in package_ids:
+            try:
+                pkg, data = self._get_package_obj_from_id(package_id)
+            except PkError as e:
+                self.error(e.code, e.details)
+                continue
 
-            pkg = ""
-            size = 0
-            dl_size = 0
-            data = "installed"
-
-            # FIXME: There is duplication here from __get_package
-            if self.packagedb.has_package(package):
-                pkg, repo = self.packagedb.get_package_repo(package, None)
-                size = int(pkg.installedSize)
-                dl_size = int(pkg.packageSize)
-                if self.installdb.has_package(package):
-                    data = "installed:{}".format(repo)
-                else:
-                    data = repo
-            elif self.installdb.has_package(package):
-                pkg = self.installdb.get_package(package)
-                data = "local"
-                size = int(pkg.installedSize)
-                dl_size = int(pkg.packageSize)
-            else:
-                self.error(
-                    ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package
-                )
+            size = pkg.installedSize
+            dl_size = pkg.packageSize
 
             pkg_id = self.get_package_id(
                 pkg.name, self.__get_package_version(pkg), pkg.architecture, data
