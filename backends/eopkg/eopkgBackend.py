@@ -569,26 +569,27 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            try:
+                pkg, data = self._get_package_obj_from_id(package_id)
+            except PkError as e:
+                self.error(e.code, e.details)
+                continue
 
-            if self.installdb.has_package(package):
-                pkg = self.packagedb.get_package(package)
-                repo = self.packagedb.get_package_repo(pkg.name, None)
+            if self.installdb.has_package(pkg.name):
                 pkg_id = self.get_package_id(
-                    pkg.name, self.__get_package_version(pkg), pkg.architecture, repo[1]
+                    pkg.name, self.__get_package_version(pkg), pkg.architecture, data
                 )
 
-                pkg = self.installdb.get_files(package)
+                pkg_files = self.installdb.get_files(pkg.name)
 
-                files = ["/%s" % y.path for y in pkg.list]
+                files = ["/%s" % y.path for y in pkg_files.list]
 
                 file_list = ";".join(files)
                 self.files(pkg_id, file_list)
             else:
                 self.error(
                     ERROR_PACKAGE_NOT_FOUND,
-                    "Package %s must be installed to get file list"
-                    % package_id.split(";"),
+                    "Package %s must be installed to get file list" % pkg.name,
                 )
 
     def get_packages(self, filters):
