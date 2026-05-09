@@ -335,10 +335,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
     def __get_package(self, package, filters=None):
         """Returns package object suitable for other methods"""
 
-        status = INFO_AVAILABLE
-        data = "installed"
-        pkg = ""
-
         installed = (
             self.installdb.get_package(package)
             if self.installdb.has_package(package)
@@ -354,50 +350,47 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         if installed is None and available is None:
             raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
 
-        # Unholy matrimony of irish priests who got a deal with the catholic church
-        fltred = None
-        fltr_status = None
-        fltr_data = None
+        pkg = None
+        status = None
+        data = None
+
         if filters is not None:
-            if FILTER_NOT_INSTALLED in filters:
-                fltred = available if available is not None else None
-                if fltred is None:
-                    return
-                fltr_status = INFO_AVAILABLE if fltred is not None else None
-                fltr_data = repo if fltred is not None else None
             if FILTER_INSTALLED in filters:
-                fltred = installed if installed is not None else None
-                if fltred is None:
+                if installed:
+                    pkg = installed
+                    status = INFO_INSTALLED
+                    data = "installed:{}".format(repo) if repo else "installed"
+                else:
                     return
-                fltr_status = INFO_INSTALLED if fltred is not None else None
-                fltr_data = "installed:{}".format(repo) if repo is not None else data
-            # FIXME: Newest should be able to show the newest local version as well as remote version
-            if FILTER_NEWEST in filters:
-                fltred = available if available is not None else installed
-                fltr_status = INFO_AVAILABLE if fltred is not None else None
-                fltr_data = repo if fltred is not None else None
-            if FILTER_NEWEST in filters and FILTER_INSTALLED in filters:
-                fltred = installed if installed is not None else None
-                fltr_status = INFO_INSTALLED if fltred is not None else None
-                fltr_data = "installed:{}".format(repo) if repo is not None else data
+            elif FILTER_NOT_INSTALLED in filters:
+                if available:
+                    pkg = available
+                    status = INFO_AVAILABLE
+                    data = repo
+                else:
+                    return
+            elif FILTER_NEWEST in filters:
+                if available:
+                    pkg = available
+                    status = INFO_AVAILABLE
+                    data = repo
+                elif installed:
+                    pkg = installed
+                    status = INFO_INSTALLED
+                    data = "installed"
+                else:
+                    return
 
-        # Installed and has repo origin
-        if available is not None and installed is not None:
-            pkg = fltred if fltred is not None else installed
-            status = fltr_status if fltr_status is not None else INFO_INSTALLED
-            data = fltr_data if fltr_data is not None else "installed:{}".format(repo)
-
-        # Available but not installed
-        if available is not None and installed is None:
-            pkg = fltred if fltred is not None else available
-            status = fltr_status if fltr_status is not None else INFO_AVAILABLE
-            data = fltr_data if fltr_data is not None else repo
-
-        # Installed but has no repo origin
-        if installed is not None and available is None:
-            pkg = fltred if fltred is not None else installed
-            status = fltr_status if fltr_status is not None else INFO_INSTALLED
-            data = fltr_data if fltr_data is not None else "installed"
+        # Fallback if no filter matched or no filters provided
+        if pkg is None:
+            if installed:
+                pkg = installed
+                status = INFO_INSTALLED
+                data = "installed:{}".format(repo) if repo else "installed"
+            else:
+                pkg = available
+                status = INFO_AVAILABLE
+                data = repo
 
         if filters is not None:
             if FILTER_GUI in filters and "app:gui" not in pkg.isA:
