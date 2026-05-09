@@ -688,11 +688,19 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(True)
         self.percentage(None)
 
+        upgradables = pisi.api.list_upgradable()
+
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
-            pkg, repo = self.packagedb.get_package_repo(package, None)
+            try:
+                pkg, data = self._get_package_obj_from_id(package_id)
+            except PkError:
+                continue
+
+            if pkg.name not in upgradables:
+                continue
+
             version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
+            id = self.get_package_id(pkg.name, version, pkg.architecture, data)
 
             updates = [package_id]
             obsoletes = ""
