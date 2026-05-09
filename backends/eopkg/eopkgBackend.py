@@ -428,19 +428,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            try:
+                pkg, data = self._get_package_obj_from_id(package_id)
+            except PkError as e:
+                self.error(e.code, e.details)
+                continue
 
             # FIXME: PiSi API has really inconsistent for return types and arguments!
-            if self.packagedb.has_package(package):
-                for pkg in self.packagedb.get_package(package).runtimeDependencies():
-                    self.__get_package(pkg.package)
-            elif self.installdb.has_package(package):
-                for pkg in self.installdb.get_package(package).runtimeDependencies():
-                    self.__get_package(pkg.package)
-            else:
-                self.error(
-                    ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package
-                )
+            for dep in pkg.runtimeDependencies():
+                self.__get_package(dep.package)
 
     def get_categories(self):
         self.status(STATUS_QUERY)
@@ -629,18 +625,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            try:
+                pkg, data = self._get_package_obj_from_id(package_id)
+            except PkError as e:
+                self.error(e.code, e.details)
+                continue
 
-            if self.packagedb.has_package(package):
-                for pkg in self.packagedb.get_rev_deps(package):
-                    self.__get_package(pkg[0])
-            elif self.installdb.has_package(package):
-                for pkg in self.installdb.get_rev_deps(package):
-                    self.__get_package(pkg[0])
-            else:
-                self.error(
-                    ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % package.name
-                )
+            # FIXME: PiSi API has really inconsistent for return types and arguments!
+            for dep in self.packagedb.get_rev_deps(pkg.name):
+                self.__get_package(dep[0])
 
     def get_updates(self, filters):
         """Prints available updates and types"""
