@@ -586,7 +586,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         packages = list()
-        all_pkgs = False
         installed = self.installdb.list_installed()
         available = self.packagedb.list_packages(None)
 
