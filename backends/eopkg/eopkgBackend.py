@@ -297,6 +297,28 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         pkg_id = self.get_package_id(pkg.name, pkg.version, pkg.architecture, repo)
         return pkg_id
 
+    def _get_package_obj_from_id(self, package_id):
+        """Centralized helper to get package object and data from id"""
+        name, version, arch, data = self.get_package_from_id(package_id)
+        pkg = None
+
+        if data == "local" or data.startswith("installed"):
+            if self.installdb.has_package(name):
+                pkg = self.installdb.get_package(name)
+
+        if pkg is None and self.packagedb.has_package(name):
+            pkg, repo = self.packagedb.get_package_repo(name, None)
+            data = repo
+
+        if pkg is None and self.installdb.has_package(name):
+            pkg = self.installdb.get_package(name)
+            data = "local"
+
+        if pkg is None:
+            raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % name)
+
+        return pkg, data
+
     def _set_status(self, pkg, status):
         package_id = self._pkg_to_id(pkg)
         self.package(package_id, status, pkg.summary)
