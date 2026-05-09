@@ -434,7 +434,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(e.code, e.details)
                 continue
 
-            # FIXME: PiSi API has really inconsistent for return types and arguments!
             for dep in pkg.runtimeDependencies():
                 self.__get_package(dep.package)
 
@@ -631,7 +630,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 self.error(e.code, e.details)
                 continue
 
-            # FIXME: PiSi API has really inconsistent for return types and arguments!
             for dep in self.packagedb.get_rev_deps(pkg.name):
                 self.__get_package(dep[0])
 
