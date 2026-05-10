@@ -183,12 +183,12 @@ class OpPackageKitProgress : public OpProgress
 {
 public:
     OpPackageKitProgress(PkBackendJob *job);
-    virtual ~OpPackageKitProgress();
+    ~OpPackageKitProgress() override;
 
-    virtual void Done();
+    void Done() override;
 
 protected:
-    virtual void Update();
+    void Update() override;
 
 private:
     PkBackendJob *m_job;

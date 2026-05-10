@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include <glib.h>
 #include <glib/gstdio.h>
 
@@ -288,7 +290,7 @@ private:
     PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
-    AptCacheFile *m_cache;
+    std::unique_ptr<AptCacheFile> m_cache;
     PkBackendJob *m_job;
     bool m_cancel;
     struct stat m_restartStat;

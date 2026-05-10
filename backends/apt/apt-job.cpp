@@ -62,8 +62,7 @@ using namespace APT;
 #define RAMFS_MAGIC 0x858458f6
 
 AptJob::AptJob(PkBackendJob *job)
-    : m_cache(nullptr),
-      m_job(job),
+    : m_job(job),
       m_cancel(false),
       m_isMultiArch(false),
       m_lastTermAction(0),
@@ -97,10 +96,7 @@ AptJob::AptJob(PkBackendJob *job)
     _config->CndSet("APT::Get::AutomaticRemove::Kernels", _config->FindB("APT::Get::AutomaticRemove", true));
 }
 
-AptJob::~AptJob()
-{
-    delete m_cache;
-}
+AptJob::~AptJob() = default;
 
 bool AptJob::init(gchar **localDebs)
 {
@@ -135,7 +131,7 @@ bool AptJob::init(gchar **localDebs)
     }
 
     // Create the AptCacheFile class to search for packages
-    m_cache = new AptCacheFile(m_job);
+    m_cache = std::make_unique<AptCacheFile>(m_job);
     if (localDebs) {
         PkBitfield flags = pk_backend_job_get_transaction_flags(m_job);
         if (pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
@@ -794,7 +790,7 @@ bool AptJob::getArchive(
 
 AptCacheFile *AptJob::aptCacheFile() const
 {
-    return m_cache;
+    return m_cache.get();
 }
 
 // used to emit packages it collects all the needed info
