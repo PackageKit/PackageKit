@@ -122,8 +122,8 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
         rec.Deb822StanzaIdx = stanzaIdx;
 
         if (!rec.SetURIs(list_uris))
-            return _error->Error(
-                "Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI parse");
+            return _error
+                ->Error("Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "URI parse");
 
         if (S.empty() == false && S[S.size() - 1] == '/') {
             if (list_comp.empty() == false)
@@ -150,7 +150,11 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
         } else {
             if (list_comp.empty())
                 return _error->Error(
-                    "Malformed entry %u in %s file %s (%s)", stanzaIdx, "sources", Fd.Name().c_str(), "Component");
+                    "Malformed entry %u in %s file %s (%s)",
+                    stanzaIdx,
+                    "sources",
+                    Fd.Name().c_str(),
+                    "Component");
 
             rec.SourceFile = Fd.Name();
             if (!rec.SetType(Type)) {
@@ -447,7 +451,8 @@ bool SourcesList::UpdateSourceLegacy(const std::string &filename)
 {
     if (std::filesystem::path(filename).extension().string() != ".list") {
         g_warning(
-            "Tried to update APT source file '%s' as legacy file, but filename has wrong extension.", filename.c_str());
+            "Tried to update APT source file '%s' as legacy file, but filename has wrong extension.",
+            filename.c_str());
         return false;
     }
 
@@ -863,7 +868,10 @@ bool SourcesList::ReadVendors()
     return !_error->PendingError();
 }
 
-SourcesList::VendorRecord *SourcesList::AddVendor(std::string VendorID, std::string FingerPrint, std::string Description)
+SourcesList::VendorRecord *SourcesList::AddVendor(
+    std::string VendorID,
+    std::string FingerPrint,
+    std::string Description)
 {
     VendorRecord rec;
     rec.VendorID = VendorID;

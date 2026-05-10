@@ -731,7 +731,12 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
             PkgList downgradeIgnored; // FIXME: We likely shouldn't ignore downgrades here...
             if (!apt->resolvePackageUpdateIds(
-                    package_ids, updatePkgs, downgradeIgnored, installPkgs, removePkgs, removePkgs)) {
+                    package_ids,
+                    updatePkgs,
+                    downgradeIgnored,
+                    installPkgs,
+                    removePkgs,
+                    removePkgs)) {
                 // the resolve method already emitted the error message,
                 // we don't need to do anything else here
                 return;
@@ -740,7 +745,9 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             installPkgs = apt->resolveLocalFiles(full_paths);
         } else {
             pk_backend_job_error_code(
-                job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Could not figure out what to do to apply the change.");
+                job,
+                PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
+                "Could not figure out what to do to apply the change.");
             return;
         }
 
@@ -858,7 +865,10 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
             }
 
             pk_backend_job_repo_detail(
-                job, repoId.c_str(), sourceRecord->niceName().c_str(), !(sourceRecord->Type & SourcesList::Disabled));
+                job,
+                repoId.c_str(),
+                sourceRecord->niceName().c_str(),
+                !(sourceRecord->Type & SourcesList::Disabled));
         } else if (repoId.compare(repo_id) == 0) {
             // Found the repo to enable/disable
             found = true;
@@ -887,7 +897,14 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                     if (removePkgs.size() > 0) {
                         // Install/Update/Remove packages, or just simulate
                         bool ret;
-                        ret = apt->runTransaction(PkgList(), removePkgs, PkgList(), false, transaction_flags, false, true);
+                        ret = apt->runTransaction(
+                            PkgList(),
+                            removePkgs,
+                            PkgList(),
+                            false,
+                            transaction_flags,
+                            false,
+                            true);
                         if (!ret) {
                             // Print transaction errors
                             g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());

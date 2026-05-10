@@ -138,14 +138,15 @@ bool AptJob::init(gchar **localDebs)
             // We are NOT simulating and have untrusted packages
             // fail the transaction.
             pk_backend_job_error_code(
-                m_job, PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED, "Local packages cannot be authenticated");
+                m_job,
+                PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+                "Local packages cannot be authenticated");
             return false;
         }
 
         for (guint i = 0; i < g_strv_length(localDebs); ++i)
             markFileForInstall(localDebs[i]);
     }
-
 
     if (!m_cache->Open(withLock)) {
         if (!withLock) {
@@ -156,8 +157,8 @@ bool AptJob::init(gchar **localDebs)
         // wait a bit for the lock to become available
         int timeout = 60;
         while (!m_cache->Open(withLock)) {
-            pk_backend_job_set_percentage (m_job, PK_BACKEND_PERCENTAGE_INVALID);
-        pk_backend_job_set_status(m_job, PK_STATUS_ENUM_WAITING_FOR_LOCK);
+            pk_backend_job_set_percentage(m_job, PK_BACKEND_PERCENTAGE_INVALID);
+            pk_backend_job_set_status(m_job, PK_STATUS_ENUM_WAITING_FOR_LOCK);
 
             if (timeout <= 0) {
                 show_errors(m_job, PK_ERROR_ENUM_CANNOT_GET_LOCK);
@@ -1398,7 +1399,10 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
     /* try to load the metadata pool */
     if (!as_pool_load(pool, NULL, &error)) {
         pk_backend_job_error_code(
-            m_job, PK_ERROR_ENUM_INTERNAL_ERROR, "Failed to load AppStream metadata: %s", error->message);
+            m_job,
+            PK_ERROR_ENUM_INTERNAL_ERROR,
+            "Failed to load AppStream metadata: %s",
+            error->message);
         return;
     }
 
@@ -1427,7 +1431,8 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
             pkgname = as_component_get_pkgname(cpt);
             if (pkgname == NULL) {
                 g_warning(
-                    "Component %s has no package name (it was ignored in the search).", as_component_get_data_id(cpt));
+                    "Component %s has no package name (it was ignored in the search).",
+                    as_component_get_data_id(cpt));
                 continue;
             }
 
@@ -1453,8 +1458,7 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
 bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 {
-    g_autofree gchar *fileName =
-        g_strdup_printf("/var/lib/dpkg/info/%s:%s.list", ver.ParentPkg().Name(), ver.Arch());
+    g_autofree gchar *fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list", ver.ParentPkg().Name(), ver.Arch());
     if (!FileExists(fileName)) {
         // if the file was not found try without the arch field
         g_free(fileName);
@@ -1520,8 +1524,8 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
         return;
     }
 
-    g_autofree gchar *package_id = pk_package_id_build(
-        deb.packageName().c_str(), deb.version().c_str(), deb.architecture().c_str(), file);
+    g_autofree gchar *package_id =
+        pk_package_id_build(deb.packageName().c_str(), deb.version().c_str(), deb.architecture().c_str(), file);
 
     g_autoptr(GPtrArray) files = g_ptr_array_new_with_free_func(g_free);
     for (auto cFile : deb.files()) {
@@ -1757,7 +1761,10 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
     if (strstr(status, "pmerror") != NULL) {
         // error from dpkg
         pk_backend_job_error_code(
-            m_job, PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL, "Error while installing package: %s", str.c_str());
+            m_job,
+            PK_ERROR_ENUM_PACKAGE_FAILED_TO_INSTALL,
+            "Error while installing package: %s",
+            str.c_str());
         if (errorEmitted != nullptr)
             *errorEmitted = true;
     } else if (strstr(status, "pmconffile") != NULL) {
@@ -1770,14 +1777,14 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             /* nothing */
             ;
         if (i >= str.size()) {
-            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            g_warning("malformed pmconffile status line: %s", str.c_str());
             return;
         }
         i++;
         for (; i < str.size() && str[i] != '\''; i++)
             orig_file.append(1, str[i]);
         if (i >= str.size()) {
-            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            g_warning("malformed pmconffile status line: %s", str.c_str());
             return;
         }
         i++;
@@ -1787,7 +1794,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             /* nothing */
             ;
         if (i >= str.size()) {
-            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            g_warning("malformed pmconffile status line: %s", str.c_str());
             return;
         }
         i++;
@@ -2238,7 +2245,10 @@ bool AptJob::resolvePackageUpdateIds(
         const gchar *pkgid = package_ids[i];
         if (!pk_package_id_check(pkgid)) {
             pk_backend_job_error_code(
-                m_job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "Can not update package with invalid package id: %s", pkgid);
+                m_job,
+                PK_ERROR_ENUM_PACKAGE_ID_INVALID,
+                "Can not update package with invalid package id: %s",
+                pkgid);
             return false;
         }
 
@@ -2479,7 +2489,6 @@ bool AptJob::installPackages(PkBitfield flags)
     bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
     PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
 
-
     // check for essential packages!!!
     if (m_cache->isRemovingEssentialPackages()) {
         return false;
@@ -2555,7 +2564,10 @@ bool AptJob::installPackages(PkBitfield flags)
         struct statfs st;
         if (statfs(OutputDir.c_str(), &st) != 0 || unsigned(st.f_type) != RAMFS_MAGIC) {
             pk_backend_job_error_code(
-                m_job, PK_ERROR_ENUM_NO_SPACE_ON_DEVICE, "You don't have enough free space in %s", OutputDir.c_str());
+                m_job,
+                PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
+                "You don't have enough free space in %s",
+                OutputDir.c_str());
             return false;
         }
     }

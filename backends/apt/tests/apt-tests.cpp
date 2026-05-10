@@ -98,16 +98,14 @@ Gstreamer-Version: 1.24
 Description-md5: c036226562f55540aad2e51fbde63d54
 )";
 
-static GStrv
-codec_strv(const char *codec)
+static GStrv codec_strv(const char *codec)
 {
     g_autoptr(GStrvBuilder) builder = g_strv_builder_new();
     g_strv_builder_add(builder, codec);
     return g_strv_builder_end(builder);
 }
 
-static void
-apt_test_gst_matcher_bad_codec (void)
+static void apt_test_gst_matcher_bad_codec(void)
 {
     {
         GstMatcher matcher(codec_strv("foobar()"));
@@ -120,8 +118,7 @@ apt_test_gst_matcher_bad_codec (void)
     }
 }
 
-static void
-apt_test_gst_matcher_with_caps (void)
+static void apt_test_gst_matcher_with_caps(void)
 {
     {
         /* Matches native architecture only */
@@ -152,8 +149,7 @@ apt_test_gst_matcher_with_caps (void)
     }
 }
 
-static void
-apt_test_gst_matcher_without_caps (void)
+static void apt_test_gst_matcher_without_caps(void)
 {
     {
         /* Matches native architecture only */
@@ -184,8 +180,7 @@ apt_test_gst_matcher_without_caps (void)
     }
 }
 
-static void
-apt_test_gst_matcher_bad_caps (void)
+static void apt_test_gst_matcher_bad_caps(void)
 {
     {
         GstMatcher matcher(codec_strv("gstreamer1(decoder-audio/mpeg)(mpegversion=5)()(64bit)"));
@@ -202,8 +197,7 @@ apt_test_gst_matcher_bad_caps (void)
     }
 }
 
-static void
-apt_test_deb822 (void)
+static void apt_test_deb822(void)
 {
     const std::string input = R"(# Comment
 Package: testpkg
@@ -318,8 +312,7 @@ AnotherNewField: Yay: Hurray!
     g_assert_cmpstr(output.c_str(), ==, expectedOutputFieldDelete.c_str());
 }
 
-static bool
-_test_string_sets_equal(const std::set<std::string> &expected, const std::set<std::string> &testSet)
+static bool _test_string_sets_equal(const std::set<std::string> &expected, const std::set<std::string> &testSet)
 {
     if (expected == testSet)
         return true;
@@ -339,11 +332,10 @@ _test_string_sets_equal(const std::set<std::string> &expected, const std::set<st
     return false;
 }
 
-static bool
-_test_sample_sources(const std::string &testSourcesDir)
+static bool _test_sample_sources(const std::string &testSourcesDir)
 {
     SourcesList sourcesList;
-    g_assert_true (sourcesList.ReadSourceDir(testSourcesDir));
+    g_assert_true(sourcesList.ReadSourceDir(testSourcesDir));
 
     const std::set<std::string> expectedSources = {
         testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:experimental:main,contrib,non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
@@ -359,8 +351,9 @@ _test_sample_sources(const std::string &testSourcesDir)
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
-        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
-                        ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
+        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | "
+                                   + sourceRecord->niceName() + " | "
+                                   + ((sourceRecord->Type & SourcesList::Disabled) ? "disabled" : "enabled");
         foundSources.insert(srcRecordStr);
     }
 
@@ -368,15 +361,13 @@ _test_sample_sources(const std::string &testSourcesDir)
     return _test_string_sets_equal(expectedSources, foundSources);
 }
 
-static void
-apt_test_sources_read (void)
+static void apt_test_sources_read(void)
 {
     std::string testSourcesDir = testdata_dir + "/sources";
-    g_assert_true (_test_sample_sources(testSourcesDir));
+    g_assert_true(_test_sample_sources(testSourcesDir));
 }
 
-static void
-apt_test_sources_write (void)
+static void apt_test_sources_write(void)
 {
     std::string origSampleSourcesDir = testdata_dir + "/sources";
     std::string wtestSourcesDir = testdata_dir + "/sources.tmp";
@@ -397,9 +388,9 @@ apt_test_sources_write (void)
 
     // read data and write it back, ensure we do not change anything
     auto sourcesList = std::make_unique<SourcesList>();
-    g_assert_true (sourcesList->ReadSourceDir(wtestSourcesDir));
-    g_assert_true (sourcesList->UpdateSources());
-    g_assert_true (_test_sample_sources(wtestSourcesDir));
+    g_assert_true(sourcesList->ReadSourceDir(wtestSourcesDir));
+    g_assert_true(sourcesList->UpdateSources());
+    g_assert_true(_test_sample_sources(wtestSourcesDir));
 
     // enable/disable some stuff
     for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
@@ -415,24 +406,25 @@ apt_test_sources_write (void)
         else if (sourceRecord->niceName() == "Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main)")
             sourceRecord->Type |= SourcesList::Disabled;
     }
-    g_assert_true (sourcesList->UpdateSources());
+    g_assert_true(sourcesList->UpdateSources());
 
     // full reload
     sourcesList = std::make_unique<SourcesList>();
-    g_assert_true (sourcesList->ReadSourceDir(wtestSourcesDir));
+    g_assert_true(sourcesList->ReadSourceDir(wtestSourcesDir));
 
     std::set<std::string> foundSources;
     for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
-        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
-                        ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
+        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | "
+                                   + sourceRecord->niceName() + " | "
+                                   + ((sourceRecord->Type & SourcesList::Disabled) ? "disabled" : "enabled");
         foundSources.insert(srcRecordStr);
     }
 
     // compare results
-    g_assert_true (_test_string_sets_equal(expectedSourcesDisabled, foundSources));
+    g_assert_true(_test_string_sets_equal(expectedSourcesDisabled, foundSources));
 
     // restore previous state
     for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
@@ -448,17 +440,16 @@ apt_test_sources_write (void)
         else if (sourceRecord->niceName() == "Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main)")
             sourceRecord->Type = sourceRecord->Type & ~SourcesList::Disabled;
     }
-    g_assert_true (sourcesList->UpdateSources());
+    g_assert_true(sourcesList->UpdateSources());
 
     // check if state was restored
-    g_assert_true (_test_sample_sources(wtestSourcesDir));
+    g_assert_true(_test_sample_sources(wtestSourcesDir));
 
     // cleanup
     fs::remove_all(wtestSourcesDir);
 }
 
-static void
-apt_test_source_record_assign (void)
+static void apt_test_source_record_assign(void)
 {
     // Build a SourceRecord with multiple Sections, then exercise
     // self-assignment and copy-assignment to ensure the operator=
@@ -477,41 +468,40 @@ apt_test_source_record_assign (void)
     // the indirection through a reference avoids -Wself-assign-overloaded.
     SourcesList::SourceRecord &recRef = rec;
     rec = recRef;
-    g_assert_cmpuint (rec.NumSections, ==, 3);
-    g_assert_nonnull (rec.Sections);
-    g_assert_cmpstr (rec.Sections[0].c_str(), ==, "main");
-    g_assert_cmpstr (rec.Sections[1].c_str(), ==, "contrib");
-    g_assert_cmpstr (rec.Sections[2].c_str(), ==, "non-free");
+    g_assert_cmpuint(rec.NumSections, ==, 3);
+    g_assert_nonnull(rec.Sections);
+    g_assert_cmpstr(rec.Sections[0].c_str(), ==, "main");
+    g_assert_cmpstr(rec.Sections[1].c_str(), ==, "contrib");
+    g_assert_cmpstr(rec.Sections[2].c_str(), ==, "non-free");
 
     // copy into a target that already owns Sections, to catch the leak path
     SourcesList::SourceRecord target;
     target.NumSections = 1;
     target.Sections = new std::string[1]{"old"};
     target = rec;
-    g_assert_cmpuint (target.NumSections, ==, 3);
-    g_assert_cmpstr (target.Sections[0].c_str(), ==, "main");
-    g_assert_cmpstr (target.Sections[2].c_str(), ==, "non-free");
-    g_assert_cmpstr (target.PrimaryURI.c_str(), ==, "https://example.invalid/debian");
+    g_assert_cmpuint(target.NumSections, ==, 3);
+    g_assert_cmpstr(target.Sections[0].c_str(), ==, "main");
+    g_assert_cmpstr(target.Sections[2].c_str(), ==, "non-free");
+    g_assert_cmpstr(target.PrimaryURI.c_str(), ==, "https://example.invalid/debian");
 
     // empty source assignment leaves Sections null and NumSections 0
     SourcesList::SourceRecord empty;
     target = empty;
-    g_assert_cmpuint (target.NumSections, ==, 0);
-    g_assert_null (target.Sections);
+    g_assert_cmpuint(target.NumSections, ==, 0);
+    g_assert_null(target.Sections);
 }
 
-static void
-apt_test_changelog_date (void)
+static void apt_test_changelog_date(void)
 {
     // Test dates in the format of debian changelog
     // and the expected result in format ISO8601
     const std::set<std::pair<std::string, std::string>> testDatesSet = {
         {"Thu, 12 Sep 2024 22:51:37 +0200", "2024-09-12T22:51:37+02"},
         {"Sat, 29 Mar 2025 09:34:52 -0700", "2025-03-29T09:34:52-07"},
-        {"Sun, 13 Jan 2023 11:33:31 +0000", "2023-01-13T11:33:31Z"},
+        {"Sun, 13 Jan 2023 11:33:31 +0000", "2023-01-13T11:33:31Z"  },
         // Intentionally wrong date or format
-        {"Sat, 30 Feb 2022 15:12:45 -0500", ""},
-        {"2025-05-20T20:47:45+01", ""},
+        {"Sat, 30 Feb 2022 15:12:45 -0500", ""                      },
+        {"2025-05-20T20:47:45+01",          ""                      },
     };
 
     for (const auto &testDate : testDatesSet) {
@@ -520,31 +510,30 @@ apt_test_changelog_date (void)
     }
 }
 
-int
-main (int argc, char **argv)
+int main(int argc, char **argv)
 {
     if (argc == 0)
-        g_error ("No test directory specified!");
+        g_error("No test directory specified!");
 
-    g_assert_nonnull (argv[1]);
-    testdata_dir = std::string (argv[1]);
+    g_assert_nonnull(argv[1]);
+    testdata_dir = std::string(argv[1]);
     if (!testdata_dir.empty() && testdata_dir.back() == '/')
         testdata_dir.pop_back();
-    g_assert_true (g_file_test (testdata_dir.c_str(), G_FILE_TEST_EXISTS));
+    g_assert_true(g_file_test(testdata_dir.c_str(), G_FILE_TEST_EXISTS));
 
-    g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
-    g_test_init (&argc, &argv, NULL);
+    g_setenv("G_MESSAGES_DEBUG", "all", TRUE);
+    g_test_init(&argc, &argv, NULL);
 
     /* tests go here */
-    g_test_add_func ("/apt/gst-matcher/bad-codec", apt_test_gst_matcher_bad_codec);
-    g_test_add_func ("/apt/gst-matcher/with-caps", apt_test_gst_matcher_with_caps);
-    g_test_add_func ("/apt/gst-matcher/without-caps", apt_test_gst_matcher_without_caps);
-    g_test_add_func ("/apt/gst-matcher/bad-caps", apt_test_gst_matcher_bad_caps);
-    g_test_add_func ("/apt/deb822/readwrite", apt_test_deb822);
-    g_test_add_func ("/apt/sources/read", apt_test_sources_read);
-    g_test_add_func ("/apt/sources/write", apt_test_sources_write);
-    g_test_add_func ("/apt/sources/source-record-assign", apt_test_source_record_assign);
-    g_test_add_func ("/apt/utils/changelog-date", apt_test_changelog_date);
+    g_test_add_func("/apt/gst-matcher/bad-codec", apt_test_gst_matcher_bad_codec);
+    g_test_add_func("/apt/gst-matcher/with-caps", apt_test_gst_matcher_with_caps);
+    g_test_add_func("/apt/gst-matcher/without-caps", apt_test_gst_matcher_without_caps);
+    g_test_add_func("/apt/gst-matcher/bad-caps", apt_test_gst_matcher_bad_caps);
+    g_test_add_func("/apt/deb822/readwrite", apt_test_deb822);
+    g_test_add_func("/apt/sources/read", apt_test_sources_read);
+    g_test_add_func("/apt/sources/write", apt_test_sources_write);
+    g_test_add_func("/apt/sources/source-record-assign", apt_test_source_record_assign);
+    g_test_add_func("/apt/utils/changelog-date", apt_test_changelog_date);
 
     return g_test_run();
 }

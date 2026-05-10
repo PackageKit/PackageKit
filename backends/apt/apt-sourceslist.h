@@ -112,8 +112,8 @@ public:
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);
     void SwapSources(SourceRecord *&, SourceRecord *&);
-    bool ReadSourceDeb822(const std::string& listpath);
-    bool ReadSourceLegacy(const std::string& listpath);
+    bool ReadSourceDeb822(const std::string &listpath);
+    bool ReadSourceLegacy(const std::string &listpath);
     bool ReadSourcePart(std::string listpath);
     bool ReadSourceDir(std::string Dir);
     bool ReadSources();

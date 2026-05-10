@@ -201,8 +201,8 @@ std::string fetchChangelogData(
         G_REGEX_MATCH_ANCHORED,
         0);
     g_autoptr(GRegex) regexDate = NULL;
-    regexDate = g_regex_new(
-        "^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$", G_REGEX_CASELESS, G_REGEX_MATCH_ANCHORED, 0);
+    regexDate =
+        g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$", G_REGEX_CASELESS, G_REGEX_MATCH_ANCHORED, 0);
 
     changelog = "";
     while (getline(in, line)) {
@@ -283,8 +283,7 @@ GPtrArray *getCVEUrls(const std::string &changelog)
     GPtrArray *cve_urls = g_ptr_array_new();
 
     // Regular expression to find cve references
-    g_autoptr(GRegex) regex =
-        g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+    g_autoptr(GRegex) regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
     g_autoptr(GMatchInfo) match_info = NULL;
     g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
@@ -305,8 +304,8 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
 
     // Matches Ubuntu bugs
     {
-        g_autoptr(GRegex) regex =
-            g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+        g_autoptr(GRegex)
+            regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
         g_autoptr(GMatchInfo) match_info = NULL;
         g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
         while (g_match_info_matches(match_info)) {
@@ -332,7 +331,8 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
         while (g_match_info_matches(match_info)) {
             g_autofree gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
             g_ptr_array_add(
-                bugzilla_urls, g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1));
+                bugzilla_urls,
+                g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1));
 
             g_autofree gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
             if (bug2 != NULL && bug2[0] != '\0') {
@@ -446,8 +446,8 @@ std::string changelogDateToIso8601(const std::string &date)
         tz = g_time_zone_new_utc();
     }
 
-    g_autoptr(GDateTime) dateTime = g_date_time_new(
-        tz, time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
+    g_autoptr(GDateTime) dateTime =
+        g_date_time_new(tz, time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
 
     if (dateTime == NULL) {
         return {};

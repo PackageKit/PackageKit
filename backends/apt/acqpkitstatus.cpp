@@ -159,7 +159,8 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 #if APT_PKG_ABI >= 590
         if (I->CurrentItem->TotalSize > 0) {
             updateStatus(
-                *I->CurrentItem, long(double(I->CurrentItem->CurrentSize * 100.0) / double(I->CurrentItem->TotalSize)));
+                *I->CurrentItem,
+                long(double(I->CurrentItem->CurrentSize * 100.0) / double(I->CurrentItem->TotalSize)));
 #else
         if (I->TotalSize > 0) {
             updateStatus(*I->CurrentItem, long(double(I->CurrentSize * 100.0) / double(I->TotalSize)));
