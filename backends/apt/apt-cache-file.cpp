@@ -23,6 +23,7 @@
 
 #include <sstream>
 #include <cstdio>
+#include <vector>
 #include <apt-pkg/algorithms.h>
 #include <apt-pkg/progress.h>
 #include <apt-pkg/upgrade.h>
@@ -288,10 +289,7 @@ bool AptCacheFile::doAutomaticRemove()
 bool AptCacheFile::isRemovingEssentialPackages()
 {
     string List;
-    bool *Added = new bool[(*this)->Head().PackageCount];
-    for (unsigned int I = 0; I != (*this)->Head().PackageCount; ++I) {
-        Added[I] = false;
-    }
+    std::vector<bool> Added((*this)->Head().PackageCount, false);
 
     for (pkgCache::PkgIterator I = (*this)->PkgBegin(); !I.end(); ++I) {
         if ((I->Flags & pkgCache::Flag::Essential) != pkgCache::Flag::Essential
@@ -299,39 +297,35 @@ bool AptCacheFile::isRemovingEssentialPackages()
             continue;
         }
 
-        if ((*this)[I].Delete() == true) {
-            if (Added[I->ID] == false) {
+        if ((*this)[I].Delete()) {
+            if (!Added[I->ID]) {
                 Added[I->ID] = true;
                 List += string(I.Name()) + " ";
             }
         }
 
-        if (I->CurrentVer == 0) {
+        if (I->CurrentVer == 0)
             continue;
-        }
 
         // Print out any essential package depenendents that are to be removed
-        for (pkgCache::DepIterator D = I.CurrentVer().DependsList(); D.end() == false; ++D) {
+        for (pkgCache::DepIterator D = I.CurrentVer().DependsList(); !D.end(); ++D) {
             // Skip everything but depends
-            if (D->Type != pkgCache::Dep::PreDepends && D->Type != pkgCache::Dep::Depends) {
+            if (D->Type != pkgCache::Dep::PreDepends && D->Type != pkgCache::Dep::Depends)
                 continue;
-            }
 
             pkgCache::PkgIterator P = D.SmartTargetPkg();
-            if ((*this)[P].Delete() == true) {
-                if (Added[P->ID] == true) {
-                    continue;
-                }
-                Added[P->ID] = true;
+            if (!(*this)[P].Delete())
+                continue;
+            if (Added[P->ID])
+                continue;
+            Added[P->ID] = true;
 
-                char S[300];
-                snprintf(S, sizeof(S), "%s (due to %s) ", P.Name(), I.Name());
-                List += S;
-            }
+            char S[300];
+            snprintf(S, sizeof(S), "%s (due to %s) ", P.Name(), I.Name());
+            List += S;
         }
     }
 
-    delete[] Added;
     if (!List.empty()) {
         pk_backend_job_error_code(
             m_job,
