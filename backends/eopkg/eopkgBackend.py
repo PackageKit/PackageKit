@@ -717,7 +717,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             # TODO: Eopkg doesn't provide any time
             split_date = updated_date.split("-")
-            updated = "{}-{}-{}T00:00:00".format(
+            updated = "{}-{}-{}T00:00:00Z".format(
                 split_date[0], split_date[1], split_date[2]
             )
             # TODO: The index only stores the last 10 history entries.
