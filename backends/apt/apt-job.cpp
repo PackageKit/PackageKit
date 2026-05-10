@@ -1250,7 +1250,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
             string file(dirp->d_name);
             string f = "/var/lib/dpkg/info/" + file;
             std::ifstream in(f.c_str());
-            if (!in != 0) {
+            if (!in) {
                 continue;
             }
 
@@ -1497,7 +1497,7 @@ void AptJob::emitPackageFiles(const gchar *pi)
 
     if (FileExists(fName)) {
         std::ifstream in(fName.c_str());
-        if (!in != 0) {
+        if (!in) {
             return;
         }
 

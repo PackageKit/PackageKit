@@ -208,7 +208,7 @@ bool SourcesList::ReadSourceLegacy(const std::string &listpath)
     bool record_ok = true;
 
     // cannot open file
-    if (!ifs != 0) {
+    if (!ifs) {
         return _error->Error("Can't read %s", listpath.c_str());
     }
 
@@ -457,7 +457,7 @@ bool SourcesList::UpdateSourceLegacy(const std::string &filename)
     }
 
     std::ofstream ofs(filename.c_str(), std::ios::out);
-    if (!ofs != 0) {
+    if (!ofs) {
         return false;
     }
 
@@ -883,7 +883,7 @@ SourcesList::VendorRecord *SourcesList::AddVendor(
 bool SourcesList::UpdateVendors()
 {
     std::ofstream ofs(_config->FindFile("Dir::Etc::vendorlist").c_str(), std::ios::out);
-    if (!ofs != 0) {
+    if (!ofs) {
         return false;
     }
 
