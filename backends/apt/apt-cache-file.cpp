@@ -34,8 +34,7 @@
 using namespace APT;
 
 AptCacheFile::AptCacheFile(PkBackendJob *job)
-    : m_packageRecords(0),
-      m_job(job)
+    : m_job(job)
 {
 }
 
@@ -52,9 +51,7 @@ bool AptCacheFile::Open(bool withLock)
 
 void AptCacheFile::Close()
 {
-    delete m_packageRecords;
-
-    m_packageRecords = 0;
+    m_packageRecords.reset();
 
     pkgCacheFile::Close();
 
@@ -249,7 +246,7 @@ void AptCacheFile::buildPkgRecords()
     }
 
     // Create the text record parser
-    m_packageRecords = new pkgRecords(*this);
+    m_packageRecords = std::make_unique<pkgRecords>(*this);
 }
 
 bool AptCacheFile::isGarbage(const pkgCache::PkgIterator &pkg)

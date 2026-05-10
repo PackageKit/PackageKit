@@ -22,6 +22,8 @@
 #ifndef APT_CACHE_FILE_H
 #define APT_CACHE_FILE_H
 
+#include <memory>
+
 #include <apt-pkg/cachefile.h>
 #include <apt-pkg/pkgrecords.h>
 #include <apt-pkg/progress.h>
@@ -74,7 +76,7 @@ public:
     inline pkgRecords *GetPkgRecords()
     {
         buildPkgRecords();
-        return m_packageRecords;
+        return m_packageRecords.get();
     }
 
     /**
@@ -172,7 +174,7 @@ private:
     void buildPkgRecords();
     static std::string debParser(std::string descr);
 
-    pkgRecords *m_packageRecords;
+    std::unique_ptr<pkgRecords> m_packageRecords;
     PkBackendJob *m_job;
 };
 
