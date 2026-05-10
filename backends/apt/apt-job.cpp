@@ -1458,8 +1458,7 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
 bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 {
-    auto fileName =
-        std::format("/var/lib/dpkg/info/{}:{}.list",ver.ParentPkg().Name(), ver.Arch());
+    auto fileName = std::format("/var/lib/dpkg/info/{}:{}.list", ver.ParentPkg().Name(), ver.Arch());
     if (!FileExists(fileName)) {
         // if the file was not found, try without the arch field
         fileName = std::format("/var/lib/dpkg/info/{}.list", ver.ParentPkg().Name());
@@ -1559,8 +1558,7 @@ bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, string com
     bool trusted = checkTrusted(fetcher, flags);
 
     if (origin == "Debian" || origin == "Ubuntu") {
-        if ((component == "main" || component == "restricted"
-             || component == "unstable" || component == "testing")
+        if ((component == "main" || component == "restricted" || component == "unstable" || component == "testing")
             && trusted) {
             return true;
         }
@@ -1828,8 +1826,8 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
         g_autoptr(GError) error = nullptr;
         ret = g_spawn_sync(
             nullptr, // working dir
-            argv, // argv
-            envp, // envp
+            argv,    // argv
+            envp,    // envp
             G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
             nullptr, // child_setup
             nullptr, // user_data

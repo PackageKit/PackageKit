@@ -408,10 +408,12 @@ void SourcesList::RemoveSource(SourceRecord *rec)
 
 void SourcesList::SwapSources(SourceRecord *rec_one, SourceRecord *rec_two)
 {
-    auto rec_p = std::find_if(SourceRecords.begin(), SourceRecords.end(),
-        [&](const std::unique_ptr<SourceRecord> &up) { return up.get() == rec_one; });
-    auto rec_n = std::find_if(SourceRecords.begin(), SourceRecords.end(),
-        [&](const std::unique_ptr<SourceRecord> &up) { return up.get() == rec_two; });
+    auto rec_p = std::find_if(SourceRecords.begin(), SourceRecords.end(), [&](const std::unique_ptr<SourceRecord> &up) {
+        return up.get() == rec_one;
+    });
+    auto rec_n = std::find_if(SourceRecords.begin(), SourceRecords.end(), [&](const std::unique_ptr<SourceRecord> &up) {
+        return up.get() == rec_two;
+    });
 
     if (rec_n == SourceRecords.end())
         return;
