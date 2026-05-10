@@ -517,9 +517,9 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
         std::string archive = safeStr(vf.File().Archive());
         std::string label = safeStr(vf.File().Label());
 
-        if (origin.compare("Backports.org archive") == 0 || ends_with(origin, "-backports")) {
+        if (origin == "Backports.org archive" || ends_with(origin, "-backports")) {
             state = PK_INFO_ENUM_ENHANCEMENT;
-        } else if (ends_with(archive, "-security") || label.compare("Debian-Security") == 0) {
+        } else if (ends_with(archive, "-security") || label == "Debian-Security") {
             state = PK_INFO_ENUM_SECURITY;
         } else if (ends_with(archive, "-backports")) {
             state = PK_INFO_ENUM_ENHANCEMENT;
@@ -842,7 +842,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     }
 
     // Check if the update was updates since it was issued
-    if (issued.compare(updated) == 0) {
+    if (issued == updated) {
         updated = "";
     }
 
@@ -851,11 +851,11 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     g_autofree gchar *package_id = m_cache->buildPackageId(candver);
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
-    if (archive.compare("stable") == 0) {
+    if (archive == "stable") {
         updateState = PK_UPDATE_STATE_ENUM_STABLE;
-    } else if (archive.compare("testing") == 0) {
+    } else if (archive == "testing") {
         updateState = PK_UPDATE_STATE_ENUM_TESTING;
-    } else if (archive.compare("unstable") == 0 || archive.compare("experimental") == 0) {
+    } else if (archive == "unstable" || archive == "experimental") {
         updateState = PK_UPDATE_STATE_ENUM_UNSTABLE;
     }
 
@@ -1558,9 +1558,9 @@ bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, string com
     PkBitfield flags = pk_backend_job_get_transaction_flags(m_job);
     bool trusted = checkTrusted(fetcher, flags);
 
-    if ((origin.compare("Debian") == 0) || (origin.compare("Ubuntu") == 0)) {
-        if ((component.compare("main") == 0 || component.compare("restricted") == 0
-             || component.compare("unstable") == 0 || component.compare("testing") == 0)
+    if (origin == "Debian" || origin == "Ubuntu") {
+        if ((component == "main" || component == "restricted"
+             || component == "unstable" || component == "testing")
             && trusted) {
             return true;
         }
