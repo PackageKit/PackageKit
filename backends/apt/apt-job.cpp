@@ -1501,35 +1501,27 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
 bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 {
-    bool ret = false;
-    gchar *fileName;
-    string line;
-
-    fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list", ver.ParentPkg().Name(), ver.Arch());
+    g_autofree gchar *fileName =
+        g_strdup_printf("/var/lib/dpkg/info/%s:%s.list", ver.ParentPkg().Name(), ver.Arch());
     if (!FileExists(fileName)) {
-        g_free(fileName);
         // if the file was not found try without the arch field
+        g_free(fileName);
         fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list", ver.ParentPkg().Name());
     }
 
-    if (FileExists(fileName)) {
-        ifstream in(fileName);
-        if (!in != 0) {
-            g_free(fileName);
-            return false;
-        }
+    if (!FileExists(fileName))
+        return false;
 
-        while (in.eof() == false) {
-            getline(in, line);
-            if (ends_with(line, ".desktop")) {
-                ret = true;
-                break;
-            }
-        }
+    ifstream in(fileName);
+    if (!in)
+        return false;
+
+    std::string line;
+    while (getline(in, line)) {
+        if (ends_with(line, ".desktop"))
+            return true;
     }
-
-    g_free(fileName);
-    return ret;
+    return false;
 }
 
 // used to emit files it reads the info directly from the files
