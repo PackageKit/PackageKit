@@ -1458,17 +1458,17 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 
 bool AptJob::isApplication(const pkgCache::VerIterator &ver)
 {
-    g_autofree gchar *fileName = g_strdup_printf("/var/lib/dpkg/info/%s:%s.list", ver.ParentPkg().Name(), ver.Arch());
+    auto fileName =
+        std::format("/var/lib/dpkg/info/{}:{}.list",ver.ParentPkg().Name(), ver.Arch());
     if (!FileExists(fileName)) {
-        // if the file was not found try without the arch field
-        g_free(fileName);
-        fileName = g_strdup_printf("/var/lib/dpkg/info/%s.list", ver.ParentPkg().Name());
+        // if the file was not found, try without the arch field
+        fileName = std::format("/var/lib/dpkg/info/{}.list", ver.ParentPkg().Name());
     }
 
     if (!FileExists(fileName))
         return false;
 
-    std::ifstream in(fileName);
+    std::ifstream in(fileName.c_str());
     if (!in)
         return false;
 
