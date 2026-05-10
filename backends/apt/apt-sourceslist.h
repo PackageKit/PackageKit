@@ -33,6 +33,7 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
 class SourcesList
 {
@@ -45,17 +46,16 @@ public:
     };
 
     struct SourceRecord {
-        unsigned int Type;
+        unsigned int Type = 0;
         std::string VendorID;
         std::string PrimaryURI;
         std::vector<std::string> URIs;
         std::string Dist;
-        std::string *Sections;
-        unsigned short NumSections;
+        std::vector<std::string> Sections;
         std::string Comment;
 
         std::string SourceFile;
-        uint Deb822StanzaIdx;
+        uint Deb822StanzaIdx = 0;
 
         std::string joinedSections(const std::string &separator = " ") const;
         std::string niceName();
@@ -66,21 +66,6 @@ public:
         std::string GetType() const;
         bool SetURI(std::string);
         bool SetURIs(const std::vector<std::string> &newURIs);
-
-        SourceRecord()
-            : Type(0),
-              Sections(0),
-              NumSections(0),
-              Deb822StanzaIdx(0)
-        {
-        }
-        ~SourceRecord()
-        {
-            if (Sections) {
-                delete[] Sections;
-            }
-        }
-        SourceRecord &operator=(const SourceRecord &);
     };
 
     struct VendorRecord {
@@ -106,8 +91,7 @@ public:
         std::string VendorID,
         std::string URI,
         std::string Dist,
-        std::string *Sections,
-        unsigned short count,
+        std::vector<std::string> Sections,
         std::string SourceFile);
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);

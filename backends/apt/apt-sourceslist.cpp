@@ -144,8 +144,7 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
                 rec.Type |= SourcesList::Disabled;
 
             rec.Dist = S;
-            rec.NumSections = 0;
-            rec.Sections = nullptr;
+            rec.Sections.clear();
             AddSourceNode(rec);
         } else {
             if (list_comp.empty())
@@ -165,9 +164,7 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
                 rec.Type |= SourcesList::Disabled;
 
             rec.Dist = S;
-            rec.NumSections = list_comp.size();
-            rec.Sections = new std::string[rec.NumSections];
-            std::copy(list_comp.begin(), list_comp.end(), rec.Sections);
+            rec.Sections.assign(list_comp.begin(), list_comp.end());
             AddSourceNode(rec);
         }
     }
@@ -280,28 +277,19 @@ bool SourcesList::ReadSourceLegacy(const std::string &listpath)
             continue;
         }
 
-        const char *tmp = p;
-        rec.NumSections = 0;
-        while (ParseQuoteWord(p, Section) == true)
-            rec.NumSections++;
-        if (rec.NumSections > 0) {
-            p = tmp;
-            rec.Sections = new std::string[rec.NumSections];
-            rec.NumSections = 0;
-            while (ParseQuoteWord(p, Section) == true) {
-                // comments inside the record are preserved
-                if (Section[0] == '#') {
-                    SourceRecord crec;
-                    auto s = Section + std::string(p);
-                    crec.Type = Comment;
-                    crec.Comment = s;
-                    crec.SourceFile = listpath;
-                    AddSourceNode(crec);
-                    break;
-                } else {
-                    rec.Sections[rec.NumSections++] = Section;
-                }
+        rec.Sections.clear();
+        while (ParseQuoteWord(p, Section) == true) {
+            // comments inside the record are preserved
+            if (Section[0] == '#') {
+                SourceRecord crec;
+                auto s = Section + std::string(p);
+                crec.Type = Comment;
+                crec.Comment = s;
+                crec.SourceFile = listpath;
+                AddSourceNode(crec);
+                break;
             }
+            rec.Sections.push_back(Section);
         }
         AddSourceNode(rec);
     }
@@ -397,7 +385,6 @@ SourcesList::SourceRecord *SourcesList::AddEmptySource()
     rec.VendorID = "";
     rec.SourceFile = _config->FindFile("Dir::Etc::sourcelist");
     rec.Dist = "";
-    rec.NumSections = 0;
     return AddSourceNode(rec);
 }
 
@@ -406,8 +393,7 @@ SourcesList::SourceRecord *SourcesList::AddSource(
     std::string VendorID,
     std::string URI,
     std::string Dist,
-    std::string *Sections,
-    unsigned short count,
+    std::vector<std::string> Sections,
     std::string SourceFile)
 {
     SourceRecord rec;
@@ -419,11 +405,7 @@ SourcesList::SourceRecord *SourcesList::AddSource(
         return NULL;
     }
     rec.Dist = Dist;
-    rec.NumSections = count;
-    rec.Sections = new std::string[count];
-    for (unsigned int i = 0; i < count; ++i) {
-        rec.Sections[i] = Sections[i];
-    }
+    rec.Sections = std::move(Sections);
 
     return AddSourceNode(rec);
 }
@@ -483,9 +465,8 @@ bool SourcesList::UpdateSourceLegacy(const std::string &filename)
             S += sr->PrimaryURI + " ";
             S += sr->Dist + " ";
 
-            for (unsigned int J = 0; J < sr->NumSections; ++J) {
-                S += sr->Sections[J] + " ";
-            }
+            for (const std::string &section : sr->Sections)
+                S += section + " ";
         }
 
         // remove extra linebreak from S, if it has any
@@ -527,8 +508,8 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
             continue;
 
         std::string components;
-        for (unsigned int J = 0; J < sr->NumSections; ++J)
-            components += sr->Sections[J] + " ";
+        for (const std::string &section : sr->Sections)
+            components += section + " ";
         if (!components.empty())
             components.pop_back();
 
@@ -685,9 +666,9 @@ bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
 std::string SourcesList::SourceRecord::joinedSections(const std::string &separator) const
 {
     std::string ret;
-    for (unsigned int i = 0; i < NumSections; ++i) {
+    for (std::size_t i = 0; i < Sections.size(); ++i) {
         ret += Sections[i];
-        if (i + 1 < NumSections) {
+        if (i + 1 < Sections.size()) {
             ret += separator;
         }
     }
@@ -715,7 +696,7 @@ std::string SourcesList::SourceRecord::niceName()
     ret += dist;
 
     // Append sections: main contrib non-free
-    if (NumSections) {
+    if (!Sections.empty()) {
         ret += " (" + joinedSections() + ")";
     }
 
@@ -777,37 +758,11 @@ std::string SourcesList::SourceRecord::repoId()
 
 bool SourcesList::SourceRecord::hasSection(const char *component) const
 {
-    for (unsigned int i = 0; i < NumSections; ++i) {
-        if (Sections[i].compare(component) == 0) {
+    for (const std::string &section : Sections) {
+        if (section == component)
             return true;
-        }
     }
     return false;
-}
-
-SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceRecord &rhs)
-{
-    if (this == &rhs)
-        return *this;
-
-    // Needed for a proper deep copy of the record; uses the string operator= to properly copy the strings
-    Type = rhs.Type;
-    VendorID = rhs.VendorID;
-    PrimaryURI = rhs.PrimaryURI;
-    URIs = rhs.URIs;
-    Dist = rhs.Dist;
-
-    delete[] Sections;
-    Sections = rhs.NumSections > 0 ? new std::string[rhs.NumSections] : nullptr;
-    for (unsigned int I = 0; I < rhs.NumSections; ++I)
-        Sections[I] = rhs.Sections[I];
-    NumSections = rhs.NumSections;
-
-    Comment = rhs.Comment;
-    SourceFile = rhs.SourceFile;
-    Deb822StanzaIdx = rhs.Deb822StanzaIdx;
-
-    return *this;
 }
 
 SourcesList::VendorRecord *SourcesList::AddVendorNode(VendorRecord &rec)
