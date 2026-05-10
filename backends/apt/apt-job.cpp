@@ -1806,34 +1806,42 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             *errorEmitted = true;
     } else if (strstr(status, "pmconffile") != NULL) {
         // conffile-request from dpkg, needs to be parsed different
-        int i = 0;
+        size_t i = 0;
         string orig_file, new_file;
 
         // go to first ' and read until the end
-        for (; str[i] != '\'' || str[i] == 0; i++)
-            /*nothing*/
+        for (; i < str.size() && str[i] != '\''; i++)
+            /* nothing */
             ;
+        if (i >= str.size()) {
+            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            return;
+        }
         i++;
-        for (; str[i] != '\'' || str[i] == 0; i++)
+        for (; i < str.size() && str[i] != '\''; i++)
             orig_file.append(1, str[i]);
+        if (i >= str.size()) {
+            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            return;
+        }
         i++;
 
         // same for second ' and read until the end
-        for (; str[i] != '\'' || str[i] == 0; i++)
-            /*nothing*/
+        for (; i < str.size() && str[i] != '\''; i++)
+            /* nothing */
             ;
+        if (i >= str.size()) {
+            g_warning ("malformed pmconffile status line: %s", str.c_str ());
+            return;
+        }
         i++;
-        for (; str[i] != '\'' || str[i] == 0; i++)
+        for (; i < str.size() && str[i] != '\''; i++)
             new_file.append(1, str[i]);
         i++;
 
-        gchar *filename;
-        filename = g_build_filename(DATADIR, "PackageKit", "helpers", "apt", "pkconffile", NULL);
-        gchar **argv;
-        gchar **envp;
-        GError *error = NULL;
-        argv = (gchar **)g_malloc(5 * sizeof(gchar *));
-        argv[0] = filename;
+        g_auto(GStrv) envp = nullptr;
+        g_auto(GStrv) argv = (gchar **)g_malloc(5 * sizeof(gchar *));
+        argv[0] = g_build_filename(DATADIR, "PackageKit", "helpers", "apt", "pkconffile", NULL);
         argv[1] = g_strdup(m_lastPackage.c_str());
         argv[2] = g_strdup(orig_file.c_str());
         argv[3] = g_strdup(new_file.c_str());
@@ -1854,6 +1862,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
 
         gboolean ret;
         gint exitStatus;
+        g_autoptr(GError) error = nullptr;
         ret = g_spawn_sync(
             NULL, // working dir
             argv, // argv
@@ -1867,10 +1876,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             &error);
 
         int exit_code = WEXITSTATUS(exitStatus);
-        g_debug("Conf-file helper %s exited with %d (spawn ret: %d)", filename, exit_code, ret);
-
-        g_strfreev(argv);
-        g_strfreev(envp);
+        g_debug("Conf-file helper %s exited with %d (spawn ret: %d)", argv[0], exit_code, ret);
 
         if (exit_code == 10) {
             // 1 means the user wants the package config
