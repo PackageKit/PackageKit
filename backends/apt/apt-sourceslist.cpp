@@ -845,17 +845,13 @@ bool SourcesList::ReadVendors()
         Vendor.FingerPrint = Block.Find("Fingerprint");
         Vendor.Description = Block.Find("Name");
 
-        char *buffer = new char[Vendor.FingerPrint.length() + 1];
-        char *p = buffer;
-        ;
-        for (std::string::const_iterator I = Vendor.FingerPrint.begin(); I != Vendor.FingerPrint.end(); ++I) {
-            if (*I != ' ' && *I != '\t') {
-                *p++ = *I;
-            }
+        std::string stripped;
+        stripped.reserve(Vendor.FingerPrint.size());
+        for (char c : Vendor.FingerPrint) {
+            if (c != ' ' && c != '\t')
+                stripped.push_back(c);
         }
-        *p = 0;
-        Vendor.FingerPrint = buffer;
-        delete[] buffer;
+        Vendor.FingerPrint = std::move(stripped);
 
         if (Vendor.FingerPrint.empty() == true || Vendor.Description.empty() == true) {
             _error->Error("Vendor block %s is invalid", Vendor.VendorID.c_str());
