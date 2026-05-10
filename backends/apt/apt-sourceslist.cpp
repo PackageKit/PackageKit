@@ -782,17 +782,22 @@ bool SourcesList::SourceRecord::hasSection(const char *component) const
 
 SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceRecord &rhs)
 {
+    if (this == &rhs)
+        return *this;
+
     // Needed for a proper deep copy of the record; uses the string operator= to properly copy the strings
     Type = rhs.Type;
     VendorID = rhs.VendorID;
     PrimaryURI = rhs.PrimaryURI;
     URIs = rhs.URIs;
     Dist = rhs.Dist;
-    Sections = new string[rhs.NumSections];
-    for (unsigned int I = 0; I < rhs.NumSections; ++I) {
+
+    delete[] Sections;
+    Sections = rhs.NumSections > 0 ? new string[rhs.NumSections] : nullptr;
+    for (unsigned int I = 0; I < rhs.NumSections; ++I)
         Sections[I] = rhs.Sections[I];
-    }
     NumSections = rhs.NumSections;
+
     Comment = rhs.Comment;
     SourceFile = rhs.SourceFile;
     Deb822StanzaIdx = rhs.Deb822StanzaIdx;

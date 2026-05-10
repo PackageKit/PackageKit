@@ -458,6 +458,49 @@ apt_test_sources_write (void)
 }
 
 static void
+apt_test_source_record_assign (void)
+{
+    // Build a SourceRecord with multiple Sections, then exercise
+    // self-assignment and copy-assignment to ensure the operator=
+    // does not leak or corrupt state.
+    SourcesList::SourceRecord rec;
+    rec.Type = SourcesList::Deb;
+    rec.VendorID = "vendor";
+    rec.PrimaryURI = "https://example.invalid/debian";
+    rec.Dist = "stable";
+    rec.Comment = "comment";
+    rec.SourceFile = "/etc/apt/sources.list.d/example.sources";
+    rec.NumSections = 3;
+    rec.Sections = new std::string[3]{"main", "contrib", "non-free"};
+
+    // self-assignment must be a no-op (and must not delete Sections);
+    // the indirection through a reference avoids -Wself-assign-overloaded.
+    SourcesList::SourceRecord &recRef = rec;
+    rec = recRef;
+    g_assert_cmpuint (rec.NumSections, ==, 3);
+    g_assert_nonnull (rec.Sections);
+    g_assert_cmpstr (rec.Sections[0].c_str(), ==, "main");
+    g_assert_cmpstr (rec.Sections[1].c_str(), ==, "contrib");
+    g_assert_cmpstr (rec.Sections[2].c_str(), ==, "non-free");
+
+    // copy into a target that already owns Sections, to catch the leak path
+    SourcesList::SourceRecord target;
+    target.NumSections = 1;
+    target.Sections = new std::string[1]{"old"};
+    target = rec;
+    g_assert_cmpuint (target.NumSections, ==, 3);
+    g_assert_cmpstr (target.Sections[0].c_str(), ==, "main");
+    g_assert_cmpstr (target.Sections[2].c_str(), ==, "non-free");
+    g_assert_cmpstr (target.PrimaryURI.c_str(), ==, "https://example.invalid/debian");
+
+    // empty source assignment leaves Sections null and NumSections 0
+    SourcesList::SourceRecord empty;
+    target = empty;
+    g_assert_cmpuint (target.NumSections, ==, 0);
+    g_assert_null (target.Sections);
+}
+
+static void
 apt_test_changelog_date (void)
 {
     // Test dates in the format of debian changelog
@@ -500,6 +543,7 @@ main (int argc, char **argv)
     g_test_add_func ("/apt/deb822/readwrite", apt_test_deb822);
     g_test_add_func ("/apt/sources/read", apt_test_sources_read);
     g_test_add_func ("/apt/sources/write", apt_test_sources_write);
+    g_test_add_func ("/apt/sources/source-record-assign", apt_test_source_record_assign);
     g_test_add_func ("/apt/utils/changelog-date", apt_test_changelog_date);
 
     return g_test_run();
