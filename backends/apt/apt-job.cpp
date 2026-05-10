@@ -1781,7 +1781,7 @@ pkgCache::VerIterator AptJob::findTransactionPackage(const std::string &name)
 void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
 {
     char buf[2];
-    static char line[1024] = "";
+    std::string line;
 
     while (1) {
         // This algorithm should be improved (it's the same as the rpm one ;)
@@ -1800,7 +1800,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
 
             // cout << "got line: " << line << endl;
 
-            g_auto(GStrv) split = g_strsplit(line, ":", 5);
+            g_auto(GStrv) split = g_strsplit(line.c_str(), ":", 5);
             const gchar *status = g_strstrip(split[0]);
             const gchar *pkg = g_strstrip(split[1]);
             const gchar *percent = g_strstrip(split[2]);
@@ -2051,7 +2051,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                         //                         emitPackageProgress(ver, m_lastSubProgress);
                     }
                 } else {
-                    g_debug("apt-backend: >>>Unmaped dpkg status value: %s", line);
+                    g_warning("Unmapped dpkg status value: %s", line.c_str());
                 }
 
                 if (!starts_with(str, "Running")) {
@@ -2067,10 +2067,9 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
             pk_backend_job_set_percentage(m_job, val);
 
             // clean-up
-            line[0] = 0;
+            line.clear();
         } else {
-            buf[1] = 0;
-            strcat(line, buf);
+            line.push_back(buf[0]);
         }
     }
 
