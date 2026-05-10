@@ -613,10 +613,10 @@ void AptJob::providesCodec(PkgList &output, gchar **values)
         // TODO search in updates packages
         // Ignore virtual packages
         pkgCache::VerIterator ver = m_cache->findVer(pkg);
-        if (ver.end() == true) {
+        if (ver.end()) {
             ver = m_cache->findCandidateVer(pkg);
         }
-        if (ver.end() == true) {
+        if (ver.end()) {
             continue;
         }
 
@@ -726,7 +726,7 @@ bool AptJob::getArchive(
         assumption here that all the available sources for this version share
         the same extension.. */
     // Skip not source sources, they do not have file fields.
-    for (; Vf.end() == false; Vf++) {
+    for (; !Vf.end(); Vf++) {
         if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
             continue;
         }
@@ -734,7 +734,7 @@ bool AptJob::getArchive(
     }
 
     // Does not really matter here.. we are going to fail out below
-    if (Vf.end() != true) {
+    if (!Vf.end()) {
         // If this fails to get a file name we will bomb out below.
         pkgRecords::Parser &Parse = m_cache->GetPkgRecords()->Lookup(Vf);
         if (_error->PendingError() == true) {
@@ -746,7 +746,7 @@ bool AptJob::getArchive(
                         + QuoteString(Version.Arch(), "_:.") + "." + std::string{flExtension(Parse.FileName())};
     }
 
-    for (; Vf.end() == false; Vf++) {
+    for (; !Vf.end(); Vf++) {
         // Ignore not source sources
         if ((Vf.File()->Flags & pkgCache::Flag::NotSource) != 0) {
             continue;
@@ -800,7 +800,7 @@ AptCacheFile *AptJob::aptCacheFile() const
 // used to emit packages it collects all the needed info
 void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
 {
-    if (ver.end() == true) {
+    if (ver.end()) {
         return;
     }
 
@@ -1015,7 +1015,7 @@ void AptJob::getRequires(PkgList &output, const pkgCache::VerIterator &ver, bool
 
         // Don't insert virtual packages instead add what it provides
         const pkgCache::VerIterator &parentVer = m_cache->findVer(parentPkg);
-        if (parentVer.end() == false) {
+        if (!parentVer.end()) {
             PkgList deps;
             getDepends(deps, parentVer, false);
             for (const PkgInfo &depInfo : deps) {
@@ -1053,7 +1053,7 @@ PkgList AptJob::getPackages()
 
         // Don't insert virtual packages as they don't have all kinds of info
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == false)
+        if (!ver.end())
             output.append(ver);
     }
     return output;
@@ -1137,7 +1137,7 @@ PkgList AptJob::getPackagesFromGroup(gchar **values)
 
         // Ignore virtual packages
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == false) {
+        if (!ver.end()) {
             string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
 
             size_t found;
@@ -1187,15 +1187,15 @@ PkgList AptJob::searchPackageName(const vector<string> &queries)
         if (matchesQueries(queries, pkg.Name())) {
             // Don't insert virtual packages instead add what it provides
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-            if (ver.end() == false) {
+            if (!ver.end()) {
                 output.append(ver);
             } else {
                 // iterate over the provides list
-                for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
+                for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); !Prv.end(); ++Prv) {
                     const pkgCache::VerIterator &ownerVer = m_cache->findVer(Prv.OwnerPkg());
 
                     // check to see if the provided package isn't virtual too
-                    if (ownerVer.end() == false) {
+                    if (!ownerVer.end()) {
                         // we add the package now because we will need to
                         // remove duplicates later anyway
                         output.append(ownerVer);
@@ -1221,7 +1221,7 @@ PkgList AptJob::searchPackageDetails(const vector<string> &queries)
         }
 
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == false) {
+        if (!ver.end()) {
             if (matchesQueries(queries, pkg.Name()) || matchesQueries(queries, (*m_cache).getLongDescription(ver))) {
                 // The package matched
                 output.append(ver);
@@ -1231,11 +1231,11 @@ PkgList AptJob::searchPackageDetails(const vector<string> &queries)
             // Don't insert virtual packages instead add what it provides
 
             // iterate over the provides list
-            for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); Prv.end() == false; ++Prv) {
+            for (pkgCache::PrvIterator Prv = pkg.ProvidesList(); !Prv.end(); ++Prv) {
                 const pkgCache::VerIterator &ownerVer = m_cache->findVer(Prv.OwnerPkg());
 
                 // check to see if the provided package isn't virtual too
-                if (ownerVer.end() == false) {
+                if (!ownerVer.end()) {
                     // we add the package now because we will need to
                     // remove duplicates later anyway
                     output.append(ownerVer);
@@ -1327,7 +1327,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
             }
         } else {
             pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
-            for (pkg = grp.PackageList(); pkg.end() == false; pkg = grp.NextPkg(pkg)) {
+            for (pkg = grp.PackageList(); !pkg.end(); pkg = grp.NextPkg(pkg)) {
                 if (pkg->CurrentState == pkgCache::State::Installed) {
                     break;
                 }
@@ -1489,10 +1489,10 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
             break;
 
         const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(package);
-        if (pkg.end() == true)
+        if (pkg.end())
             continue;
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
-        if (ver.end() == true)
+        if (ver.end())
             continue;
 
         output.append(ver);
@@ -1762,13 +1762,13 @@ pkgCache::VerIterator AptJob::findTransactionPackage(const std::string &name)
 
     const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
     // Ignore packages that could not be found or that exist only due to dependencies.
-    if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+    if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
         return pkgCache::VerIterator();
     }
 
     const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
     // check to see if the provided package isn't virtual too
-    if (ver.end() == false) {
+    if (!ver.end()) {
         return ver;
     }
 
@@ -2118,7 +2118,7 @@ PkgList AptJob::resolvePackageIds(gchar **package_ids, PkBitfield filters)
             // case FindGrp can come back with a bad group we shouldn't process any further
             // as results are undefined.
             pkgCache::GrpIterator grp = (*m_cache)->FindGrp(name);
-            for (pkg = grp.PackageList(); grp.IsGood() && pkg.end() == false; pkg = grp.NextPkg(pkg)) {
+            for (pkg = grp.PackageList(); grp.IsGood() && !pkg.end(); pkg = grp.NextPkg(pkg)) {
                 if (m_cancel) {
                     break;
                 }
@@ -2141,18 +2141,18 @@ PkgList AptJob::resolvePackageIds(gchar **package_ids, PkBitfield filters)
         } else {
             const pkgCache::PkgIterator &pkg = (*m_cache)->FindPkg(name);
             // Ignore packages that could not be found or that exist only due to dependencies.
-            if (pkg.end() == true || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
+            if (pkg.end() || (pkg.VersionList().end() && pkg.ProvidesList().end())) {
                 continue;
             }
 
             const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
             // check to see if the provided package isn't virtual too
-            if (ver.end() == false)
+            if (!ver.end())
                 ret.append(ver);
 
             const pkgCache::VerIterator &candidateVer = m_cache->findCandidateVer(pkg);
             // check to see if the provided package isn't virtual too
-            if (candidateVer.end() == false)
+            if (!candidateVer.end())
                 ret.append(candidateVer);
         }
     }
@@ -2207,7 +2207,7 @@ PkgList AptJob::resolveLocalFiles(gchar **localDebs)
         }
 
         // Set any version providing the .deb as the candidate.
-        for (auto Prv = P.ProvidesList(); Prv.end() == false; Prv++)
+        for (auto Prv = P.ProvidesList(); !Prv.end(); Prv++)
             ret.append(Prv.OwnerVer());
 
         // TODO do we need this?

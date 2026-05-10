@@ -148,12 +148,12 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
             Ver = (*this)[I].InstVerIter(*this);
         }
 
-        if (Ver.end() == true) {
+        if (Ver.end()) {
             out << std::endl;
             continue;
         }
 
-        for (pkgCache::DepIterator D = Ver.DependsList(); D.end() == false;) {
+        for (pkgCache::DepIterator D = Ver.DependsList(); !D.end();) {
             // Compute a single dependency element (glob or)
             pkgCache::DepIterator Start;
             pkgCache::DepIterator End;
@@ -211,7 +211,7 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
                     if (!tVer.end()) {
                         out << "but " << tVer.VerStr() << (Now ? " is installed" : " is to be installed");
                     } else {
-                        if ((*this)[Targ].CandidateVerIter(*this).end() == true) {
+                        if ((*this)[Targ].CandidateVerIter(*this).end()) {
                             if (Targ->ProvidesList == 0) {
                                 out << "but it is not installable";
                             } else {
@@ -359,7 +359,7 @@ PkgInfo AptCacheFile::resolvePkgID(const gchar *packageId)
 
     const pkgCache::VerIterator &ver = findVer(pkg);
     // check to see if the provided package isn't virtual too
-    if (ver.end() == false && strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
+    if (!ver.end() && strcmp(ver.VerStr(), parts[PK_PACKAGE_ID_VERSION]) == 0)
         return PkgInfo(ver, piAction);
 
     // check to see if the provided package isn't virtual too
