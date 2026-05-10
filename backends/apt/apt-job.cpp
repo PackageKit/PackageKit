@@ -419,7 +419,7 @@ void AptJob::stagePackageForEmit(
 {
     g_autoptr(PkPackage) pk_package = pk_package_new();
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
-    g_autoptr(GError) local_error = NULL;
+    g_autoptr(GError) local_error = nullptr;
 
     if (!pk_package_set_id(pk_package, package_id, &local_error)) {
         g_warning("package_id %s invalid and cannot be processed: %s", package_id, local_error->message);
@@ -866,7 +866,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
 
     g_auto(GStrv) updates = (gchar **)g_malloc(2 * sizeof(gchar *));
     updates[0] = current_package_id;
-    updates[1] = NULL;
+    updates[1] = nullptr;
 
     g_autoptr(GPtrArray) bugzilla_urls = getBugzillaUrls(changelog);
     g_autoptr(GPtrArray) cve_urls = getCVEUrls(changelog);
@@ -879,7 +879,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     }
 
     // NULL terminate
-    g_ptr_array_add(obsoletes, NULL);
+    g_ptr_array_add(obsoletes, nullptr);
 
     // construct the update item with out newly gathered data
     PkUpdateDetail *item = pk_update_detail_new();
@@ -892,7 +892,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
         "obsoletes",
         (gchar **)obsoletes->pdata, // const gchar *obsoletes
         "vendor-urls",
-        NULL, // const gchar *vendor_url
+        nullptr, // const gchar *vendor_url
         "bugzilla-urls",
         (gchar **)bugzilla_urls->pdata, // gchar **bugzilla_urls
         "cve-urls",
@@ -909,7 +909,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
         issued.c_str(), // const gchar *issued_text
         "updated",
         updated.c_str(), // const gchar *updated_text
-        NULL);
+        nullptr);
     g_ptr_array_add(updateArray, item);
 }
 
@@ -1041,17 +1041,17 @@ PkgList AptJob::getPackagesFromRepo(SourcesList::SourceRecord *rec)
 
         // Distro name
         pkgCache::VerFileIterator vf = ver.FileList();
-        if (vf.File().Archive() == NULL || rec->Dist.compare(vf.File().Archive()) != 0) {
+        if (vf.File().Archive() == nullptr || rec->Dist.compare(vf.File().Archive()) != 0) {
             continue;
         }
 
         // Section part
-        if (vf.File().Component() == NULL || !rec->hasSection(vf.File().Component())) {
+        if (vf.File().Component() == nullptr || !rec->hasSection(vf.File().Component())) {
             continue;
         }
 
         // Check if the site the package comes from is included in the Repo uri
-        if (vf.File().Site() == NULL || rec->PrimaryURI.find(vf.File().Site()) == std::string::npos) {
+        if (vf.File().Site() == nullptr || rec->PrimaryURI.find(vf.File().Site()) == std::string::npos) {
             continue;
         }
 
@@ -1069,7 +1069,7 @@ PkgList AptJob::getPackagesFromGroup(gchar **values)
 
     uint len = g_strv_length(values);
     for (uint i = 0; i < len; i++) {
-        if (values[i] == NULL) {
+        if (values[i] == nullptr) {
             pk_backend_job_error_code(m_job, PK_ERROR_ENUM_GROUP_NOT_FOUND, "An empty group was received");
             return output;
         } else {
@@ -1241,7 +1241,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
     }
 
     string line;
-    while ((dirp = readdir(dp)) != NULL) {
+    while ((dirp = readdir(dp)) != nullptr) {
         if (m_cancel) {
             break;
         }
@@ -1256,7 +1256,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
 
             while (!in.eof()) {
                 getline(in, line);
-                if (regexec(&re, line.c_str(), (size_t)0, NULL, 0) == 0) {
+                if (regexec(&re, line.c_str(), (size_t)0, nullptr, 0) == 0) {
                     packages.push_back(file.erase(file.size() - 5, file.size()));
                     break;
                 }
@@ -1386,8 +1386,8 @@ bool AptJob::getUpdates(
 // used to return files it reads, using the info from the files in /var/lib/dpkg/info/
 void AptJob::providesMimeType(PkgList &output, gchar **values)
 {
-    g_autoptr(AsPool) pool = NULL;
-    g_autoptr(GError) error = NULL;
+    g_autoptr(AsPool) pool = nullptr;
+    g_autoptr(GError) error = nullptr;
     std::vector<string> pkg_names;
 
     pool = as_pool_new();
@@ -1397,7 +1397,7 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
     as_pool_remove_flags(pool, AS_POOL_FLAG_LOAD_FLATPAK);
 
     /* try to load the metadata pool */
-    if (!as_pool_load(pool, NULL, &error)) {
+    if (!as_pool_load(pool, nullptr, &error)) {
         pk_backend_job_error_code(
             m_job,
             PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -1407,11 +1407,11 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
     }
 
     /* search for mimetypes for all values */
-    for (guint i = 0; values[i] != NULL; i++) {
+    for (guint i = 0; values[i] != nullptr; i++) {
 #if AS_CHECK_VERSION(1, 0, 0)
-        g_autoptr(AsComponentBox) result = NULL;
+        g_autoptr(AsComponentBox) result = nullptr;
 #else
-        g_autoptr(GPtrArray) result = NULL;
+        g_autoptr(GPtrArray) result = nullptr;
 #endif
         if (m_cancel)
             break;
@@ -1429,7 +1429,7 @@ void AptJob::providesMimeType(PkgList &output, gchar **values)
 #endif
             /* sanity check */
             pkgname = as_component_get_pkgname(cpt);
-            if (pkgname == NULL) {
+            if (pkgname == nullptr) {
                 g_warning(
                     "Component %s has no package name (it was ignored in the search).",
                     as_component_get_data_id(cpt));
@@ -1510,7 +1510,7 @@ void AptJob::emitPackageFiles(const gchar *pi)
         }
 
         if (files->len) {
-            g_ptr_array_add(files, NULL);
+            g_ptr_array_add(files, nullptr);
             pk_backend_job_files(m_job, pi, (gchar **)files->pdata);
         }
         g_ptr_array_unref(files);
@@ -1531,7 +1531,7 @@ void AptJob::emitPackageFilesLocal(const gchar *file)
     for (auto cFile : deb.files()) {
         g_ptr_array_add(files, g_canonicalize_filename(cFile.c_str(), "/"));
     }
-    g_ptr_array_add(files, NULL);
+    g_ptr_array_add(files, nullptr);
     pk_backend_job_files(m_job, package_id, (gchar **)files->pdata);
 }
 
@@ -1758,7 +1758,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
     }
 
     // first check for errors and conf-file prompts
-    if (strstr(status, "pmerror") != NULL) {
+    if (strstr(status, "pmerror") != nullptr) {
         // error from dpkg
         pk_backend_job_error_code(
             m_job,
@@ -1767,7 +1767,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             str.c_str());
         if (errorEmitted != nullptr)
             *errorEmitted = true;
-    } else if (strstr(status, "pmconffile") != NULL) {
+    } else if (strstr(status, "pmconffile") != nullptr) {
         // conffile-request from dpkg, needs to be parsed different
         size_t i = 0;
         string orig_file, new_file;
@@ -1804,37 +1804,37 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
 
         g_auto(GStrv) envp = nullptr;
         g_auto(GStrv) argv = (gchar **)g_malloc(5 * sizeof(gchar *));
-        argv[0] = g_build_filename(DATADIR, "PackageKit", "helpers", "apt", "pkconffile", NULL);
+        argv[0] = g_build_filename(DATADIR, "PackageKit", "helpers", "apt", "pkconffile", nullptr);
         argv[1] = g_strdup(m_lastPackage.c_str());
         argv[2] = g_strdup(orig_file.c_str());
         argv[3] = g_strdup(new_file.c_str());
-        argv[4] = NULL;
+        argv[4] = nullptr;
 
         const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
-        if ((m_interactive) && (socket != NULL)) {
+        if ((m_interactive) && (socket != nullptr)) {
             envp = (gchar **)g_malloc(3 * sizeof(gchar *));
             envp[0] = g_strdup("DEBIAN_FRONTEND=passthrough");
             envp[1] = g_strdup_printf("DEBCONF_PIPE=%s", socket);
-            envp[2] = NULL;
+            envp[2] = nullptr;
         } else {
             // we don't have a socket set or are non-interactive. Use the noninteractive frontend.
             envp = (gchar **)g_malloc(2 * sizeof(gchar *));
             envp[0] = g_strdup("DEBIAN_FRONTEND=noninteractive");
-            envp[1] = NULL;
+            envp[1] = nullptr;
         }
 
         gboolean ret;
         gint exitStatus;
         g_autoptr(GError) error = nullptr;
         ret = g_spawn_sync(
-            NULL, // working dir
+            nullptr, // working dir
             argv, // argv
             envp, // envp
             G_SPAWN_LEAVE_DESCRIPTORS_OPEN,
-            NULL, // child_setup
-            NULL, // user_data
-            NULL, // standard_output
-            NULL, // standard_error
+            nullptr, // child_setup
+            nullptr, // user_data
+            nullptr, // standard_output
+            nullptr, // standard_error
             &exitStatus,
             &error);
 
@@ -1861,7 +1861,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
                 g_debug("Failed to write");
             }
         }
-    } else if (strstr(status, "pmstatus") != NULL) {
+    } else if (strstr(status, "pmstatus") != nullptr) {
         // INSTALL & UPDATE
         // - Running dpkg
         // loops ALL
@@ -2003,7 +2003,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
             break;
 
         // update the time we last saw some action
-        m_lastTermAction = time(NULL);
+        m_lastTermAction = time(nullptr);
 
         if (buf[0] == '\n') {
             if (m_cancel)
@@ -2015,7 +2015,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
         }
     }
 
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
 
     if (!m_startCounting) {
         usleep(100000);
@@ -2029,7 +2029,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
             "no statusfd changes/content updates in terminal for %i"
             " seconds",
             m_terminalTimeout);
-        m_lastTermAction = time(NULL);
+        m_lastTermAction = time(nullptr);
     }
 
     // sleep for a while to not obsess over it
@@ -2043,7 +2043,7 @@ PkgList AptJob::resolvePackageIds(gchar **package_ids, PkBitfield filters)
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_QUERY);
 
     // Don't fail if package list is empty
-    if (package_ids == NULL)
+    if (package_ids == nullptr)
         return ret;
 
     for (uint i = 0; package_ids[i] != nullptr; ++i) {
@@ -2641,7 +2641,7 @@ bool AptJob::installPackages(PkBitfield flags)
     }
 
     int pty_master;
-    m_child_pid = forkpty(&pty_master, NULL, NULL, NULL);
+    m_child_pid = forkpty(&pty_master, nullptr, nullptr, nullptr);
     if (m_child_pid == -1) {
         return false;
     }
@@ -2661,7 +2661,7 @@ bool AptJob::installPackages(PkBitfield flags)
 
         // Debconf handling
         const gchar *socket = pk_backend_job_get_frontend_socket(m_job);
-        if ((m_interactive) && (socket != NULL)) {
+        if ((m_interactive) && (socket != nullptr)) {
             g_setenv("DEBIAN_FRONTEND", "passthrough", TRUE);
             g_setenv("DEBCONF_PIPE", socket, TRUE);
 
@@ -2708,7 +2708,7 @@ bool AptJob::installPackages(PkBitfield flags)
     fcntl(pty_master, F_SETFL, O_NONBLOCK);
 
     // init the timer
-    m_lastTermAction = time(NULL);
+    m_lastTermAction = time(nullptr);
     m_startCounting = false;
 
     // process messages from child

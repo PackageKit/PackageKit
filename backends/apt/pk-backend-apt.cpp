@@ -141,7 +141,7 @@ PkBitfield pk_backend_get_filters(PkBackend *backend)
 
 gchar **pk_backend_get_mime_types(PkBackend *backend)
 {
-    const gchar *mime_types[] = {"application/vnd.debian.binary-package", "application/x-deb", NULL};
+    const gchar *mime_types[] = {"application/vnd.debian.binary-package", "application/x-deb", nullptr};
     return g_strdupv((gchar **)mime_types);
 }
 
@@ -159,7 +159,7 @@ void pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
         delete apt;
 
     /* make debugging easier */
-    pk_backend_job_set_user_data(job, NULL);
+    pk_backend_job_set_user_data(job, nullptr);
 }
 
 void pk_backend_cancel(PkBackend *backend, PkBackendJob *job)
@@ -227,7 +227,7 @@ void pk_backend_depends_on(
     gchar **package_ids,
     gboolean recursive)
 {
-    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
 }
 
 void pk_backend_required_by(
@@ -237,7 +237,7 @@ void pk_backend_required_by(
     gchar **package_ids,
     gboolean recursive)
 {
-    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
 }
 
 static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -253,7 +253,7 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
         return;
     }
 
-    if (package_ids == NULL) {
+    if (package_ids == nullptr) {
         pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_ID_INVALID, "Invalid package id");
         return;
     }
@@ -278,7 +278,7 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
 
 void pk_backend_get_files(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-    pk_backend_job_thread_create(job, backend_get_files_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_files_thread, nullptr, nullptr);
 }
 
 static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -317,17 +317,17 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
 
 void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-    pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
 }
 
 void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-    pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
 }
 
 void pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job, gchar **files)
 {
-    pk_backend_job_thread_create(job, backend_get_details_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
 }
 
 static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -342,7 +342,7 @@ static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, 
 
 void pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job, gchar **files)
 {
-    pk_backend_job_thread_create(job, backend_get_files_local_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_files_local_thread, nullptr, nullptr);
 }
 
 static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -378,7 +378,7 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
 
 void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    pk_backend_job_thread_create(job, backend_get_updates_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_updates_thread, nullptr, nullptr);
 }
 
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -414,7 +414,7 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
  */
 void pk_backend_what_provides(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    pk_backend_job_thread_create(job, backend_what_provides_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_what_provides_thread, nullptr, nullptr);
 }
 
 /**
@@ -499,7 +499,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 
                 gchar **files = (gchar **)g_malloc(2 * sizeof(gchar *));
                 files[0] = g_strdup_printf("%s/%s", directory.c_str(), std::string{flNotDir(storeFileName)}.c_str());
-                files[1] = NULL;
+                files[1] = nullptr;
                 pk_backend_job_files(job, pi, files);
                 g_strfreev(files);
             }
@@ -518,7 +518,7 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
 
 void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
 {
-    pk_backend_job_thread_create(job, pk_backend_download_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, pk_backend_download_packages_thread, nullptr, nullptr);
 }
 
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -545,7 +545,7 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
 
 void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
 {
-    pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, nullptr, nullptr);
 }
 
 static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -570,7 +570,7 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 
 void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
-    pk_backend_job_thread_create(job, pk_backend_resolve_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, pk_backend_resolve_thread, nullptr, nullptr);
 }
 
 static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -601,7 +601,7 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
 
 void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    pk_backend_job_thread_create(job, pk_backend_search_files_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, pk_backend_search_files_thread, nullptr, nullptr);
 }
 
 static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -627,7 +627,7 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
 
 void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    pk_backend_job_thread_create(job, backend_search_groups_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_search_groups_thread, nullptr, nullptr);
 }
 
 static void backend_search_package_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -640,7 +640,7 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     g_variant_get(params, "(t^a&s)", &filters, &values);
 
     if (*values) {
-        for (gint i = 0; values[i] != NULL; i++) {
+        for (gint i = 0; values[i] != nullptr; i++) {
             queries.push_back(values[i]);
         }
     }
@@ -675,12 +675,12 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
 
 void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    pk_backend_job_thread_create(job, backend_search_package_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
 }
 
 void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-    pk_backend_job_thread_create(job, backend_search_package_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
 }
 
 static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -689,8 +689,8 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     PkBitfield transaction_flags = 0;
     gboolean allowRemoveDeps = true;
     gboolean autoremove = false;
-    gchar **full_paths = NULL;
-    gchar **package_ids = NULL;
+    gchar **full_paths = nullptr;
+    gchar **package_ids = nullptr;
 
     // Get the transaction role since this method is called by install/remove/update/repair
     PkRoleEnum role = pk_backend_job_get_role(job);
@@ -779,7 +779,7 @@ void pk_backend_install_packages(
     PkBitfield transaction_flags,
     gchar **package_ids)
 {
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 void pk_backend_update_packages(
@@ -788,12 +788,12 @@ void pk_backend_update_packages(
     PkBitfield transaction_flags,
     gchar **package_ids)
 {
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 void pk_backend_install_files(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
 {
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 void pk_backend_remove_packages(
@@ -804,12 +804,12 @@ void pk_backend_remove_packages(
     gboolean allow_deps,
     gboolean autoremove)
 {
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 void pk_backend_repair_system(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -938,12 +938,12 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
 void pk_backend_get_repo_list(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
 }
 
 void pk_backend_repo_enable(PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
 {
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
 }
 
 void pk_backend_repo_remove(
@@ -953,7 +953,7 @@ void pk_backend_repo_remove(
     const gchar *repo_id,
     gboolean autoremove)
 {
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
 }
 
 static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -977,14 +977,14 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
 
 void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    pk_backend_job_thread_create(job, backend_get_packages_thread, NULL, NULL);
+    pk_backend_job_thread_create(job, backend_get_packages_thread, nullptr, nullptr);
 }
 
 /* TODO
 void
 pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
 {
-    pk_backend_job_thread_create (job, pk_backend_get_categories_thread, NULL, NULL);
+    pk_backend_job_thread_create (job, pk_backend_get_categories_thread, nullptr, nullptr);
 }
 */
 

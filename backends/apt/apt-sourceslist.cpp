@@ -391,7 +391,7 @@ SourcesList::SourceRecord *SourcesList::AddSource(
     rec.SourceFile = SourceFile;
 
     if (rec.SetURI(URI) == false) {
-        return NULL;
+        return nullptr;
     }
     rec.Dist = Dist;
     rec.Sections = std::move(Sections);

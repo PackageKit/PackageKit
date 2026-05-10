@@ -29,7 +29,7 @@ static bool inited = false;
 GstMatcher::GstMatcher(gchar **values)
 {
     if (!inited) {
-        gst_init(NULL, NULL);
+        gst_init(nullptr, nullptr);
         inited = true;
     }
 
@@ -160,7 +160,7 @@ bool GstMatcher::matches(std::string record, bool native)
 
                 GstCaps *caps;
                 caps = gst_caps_from_string(record.substr(found, endOfLine - found).c_str());
-                if (caps == NULL) {
+                if (caps == nullptr) {
                     continue;
                 }
 

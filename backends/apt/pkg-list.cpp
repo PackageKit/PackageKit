@@ -53,8 +53,8 @@ public:
                     pkgCache::VerFileIterator aVF = viA.FileList();
                     pkgCache::VerFileIterator bVF = viB.FileList();
                     ret = strcmp(
-                        aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
-                        bVF.File().Archive() == NULL ? "" : bVF.File().Archive());
+                        aVF.File().Archive() == nullptr ? "" : aVF.File().Archive(),
+                        bVF.File().Archive() == nullptr ? "" : bVF.File().Archive());
                 }
             }
         }
@@ -80,8 +80,8 @@ public:
             pkgCache::VerFileIterator aVF = viA.FileList();
             pkgCache::VerFileIterator bVF = viB.FileList();
             ret = strcmp(
-                      aVF.File().Archive() == NULL ? "" : aVF.File().Archive(),
-                      bVF.File().Archive() == NULL ? "" : bVF.File().Archive())
+                      aVF.File().Archive() == nullptr ? "" : aVF.File().Archive(),
+                      bVF.File().Archive() == nullptr ? "" : bVF.File().Archive())
                   == 0;
         }
         return ret;

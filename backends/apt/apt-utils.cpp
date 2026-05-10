@@ -193,14 +193,14 @@ std::string fetchChangelogData(
 
     std::ifstream in(c->DestFile.c_str());
     std::string line;
-    g_autoptr(GRegex) regexVer = NULL;
+    g_autoptr(GRegex) regexVer = nullptr;
     regexVer = g_regex_new(
         "(?'source'.+) \\((?'version'.*)\\) "
         "(?'dist'.+); urgency=(?'urgency'.+)",
         G_REGEX_CASELESS,
         G_REGEX_MATCH_ANCHORED,
         0);
-    g_autoptr(GRegex) regexDate = NULL;
+    g_autoptr(GRegex) regexDate = nullptr;
     regexDate =
         g_regex_new("^ -- (?'maintainer'.+) (?'mail'<.+>)  (?'date'.+)$", G_REGEX_CASELESS, G_REGEX_MATCH_ANCHORED, 0);
 
@@ -284,16 +284,16 @@ GPtrArray *getCVEUrls(const std::string &changelog)
 
     // Regular expression to find cve references
     g_autoptr(GRegex) regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
-    g_autoptr(GMatchInfo) match_info = NULL;
+    g_autoptr(GMatchInfo) match_info = nullptr;
     g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
         g_autofree gchar *cve = g_match_info_fetch(match_info, 0);
         g_ptr_array_add(cve_urls, g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve));
-        g_match_info_next(match_info, NULL);
+        g_match_info_next(match_info, nullptr);
     }
 
     // NULL terminate
-    g_ptr_array_add(cve_urls, NULL);
+    g_ptr_array_add(cve_urls, nullptr);
 
     return cve_urls;
 }
@@ -306,12 +306,12 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
     {
         g_autoptr(GRegex)
             regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
-        g_autoptr(GMatchInfo) match_info = NULL;
+        g_autoptr(GMatchInfo) match_info = nullptr;
         g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
         while (g_match_info_matches(match_info)) {
             g_autofree gchar *bug = g_match_info_fetch_named(match_info, "bug");
             g_ptr_array_add(bugzilla_urls, g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug));
-            g_match_info_next(match_info, NULL);
+            g_match_info_next(match_info, nullptr);
         }
     }
 
@@ -326,7 +326,7 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
             G_REGEX_CASELESS,
             G_REGEX_MATCH_NEWLINE_ANY,
             0);
-        g_autoptr(GMatchInfo) match_info = NULL;
+        g_autoptr(GMatchInfo) match_info = nullptr;
         g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
         while (g_match_info_matches(match_info)) {
             g_autofree gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
@@ -335,18 +335,18 @@ GPtrArray *getBugzillaUrls(const std::string &changelog)
                 g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1));
 
             g_autofree gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
-            if (bug2 != NULL && bug2[0] != '\0') {
+            if (bug2 != nullptr && bug2[0] != '\0') {
                 g_ptr_array_add(
                     bugzilla_urls,
                     g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2));
             }
 
-            g_match_info_next(match_info, NULL);
+            g_match_info_next(match_info, nullptr);
         }
     }
 
     // NULL terminate
-    g_ptr_array_add(bugzilla_urls, NULL);
+    g_ptr_array_add(bugzilla_urls, nullptr);
 
     return bugzilla_urls;
 }
@@ -411,16 +411,16 @@ std::string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 
 const char *toUtf8(const char *str)
 {
-    static __thread char *_str = NULL;
-    if (str == NULL)
-        return NULL;
+    static __thread char *_str = nullptr;
+    if (str == nullptr)
+        return nullptr;
 
-    if (g_utf8_validate(str, -1, NULL) == true)
+    if (g_utf8_validate(str, -1, nullptr) == true)
         return str;
 
     g_free(_str);
-    _str = NULL;
-    _str = g_locale_to_utf8(str, -1, NULL, NULL, NULL);
+    _str = nullptr;
+    _str = g_locale_to_utf8(str, -1, nullptr, nullptr, nullptr);
     return _str;
 }
 
@@ -449,7 +449,7 @@ std::string changelogDateToIso8601(const std::string &date)
     g_autoptr(GDateTime) dateTime =
         g_date_time_new(tz, time.tm_year + 1900, time.tm_mon + 1, time.tm_mday, time.tm_hour, time.tm_min, time.tm_sec);
 
-    if (dateTime == NULL) {
+    if (dateTime == nullptr) {
         return {};
     }
 
