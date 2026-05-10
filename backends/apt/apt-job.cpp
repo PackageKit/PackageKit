@@ -2469,21 +2469,19 @@ bool AptJob::runTransaction(
                     continue;
                 }
 
-                implicitRemovals.push_back(pkg.Name());
+                implicitRemovals.emplace_back(pkg.FullName(true));
             }
 
             if (!implicitRemovals.empty()) {
                 std::string removalList;
-                for (size_t i = 0; i < implicitRemovals.size(); i++) {
-                    const auto &name = implicitRemovals[i];
-                    if (!removalList.empty())
+                const size_t shown = std::min<size_t>(implicitRemovals.size(), 10);
+                for (size_t i = 0; i < shown; i++) {
+                    if (i != 0)
                         removalList += ", ";
-                    if (i >= 10) {
-                        removalList += "and more...";
-                        break;
-                    }
-                    removalList += name;
+                    removalList += implicitRemovals[i];
                 }
+                if (implicitRemovals.size() > shown)
+                    removalList += ", and more...";
 
                 pk_backend_job_error_code(
                     m_job,
