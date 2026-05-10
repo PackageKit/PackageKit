@@ -1798,7 +1798,6 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
             if (m_cancel)
                 kill(m_child_pid, SIGTERM);
 
-            // cout << "got line: " << line << endl;
 
             g_auto(GStrv) split = g_strsplit(line.c_str(), ":", 5);
             const gchar *status = g_strstrip(split[0]);
@@ -1891,7 +1890,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                     &error);
 
                 int exit_code = WEXITSTATUS(exitStatus);
-                cout << filename << " " << exit_code << " ret: " << ret << endl;
+                g_debug("Conf-file helper %s exited with %d (spawn ret: %d)", filename, exit_code, ret);
 
                 g_strfreev(argv);
                 g_strfreev(envp);
@@ -1955,7 +1954,6 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                 // Let's start parsing the status:
                 if (starts_with(str, "Preparing to configure")) {
                     // Preparing to Install/configure
-                    // cout << "Found Preparing to configure! " << line << endl;
                     // The next item might be Configuring so better it be 100
                     m_lastSubProgress = 100;
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
@@ -1965,7 +1963,6 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                     }
                 } else if (starts_with(str, "Preparing for removal")) {
                     // Preparing to Install/configure
-                    // cout << "Found Preparing for removal! " << line << endl;
                     m_lastSubProgress = 50;
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
@@ -1974,14 +1971,12 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                     }
                 } else if (starts_with(str, "Preparing")) {
                     // Preparing to Install/configure
-                    // cout << "Found Preparing! " << line << endl;
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
                         emitPackage(ver, PK_INFO_ENUM_PREPARING);
                         emitPackageProgress(ver, PK_STATUS_ENUM_SETUP, 25);
                     }
                 } else if (starts_with(str, "Unpacking")) {
-                    // cout << "Found Unpacking! " << line << endl;
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
                         emitPackage(ver, PK_INFO_ENUM_DECOMPRESSING);
@@ -1989,9 +1984,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                     }
                 } else if (starts_with(str, "Configuring")) {
                     // Installing Package
-                    // cout << "Found Configuring! " << line << endl;
                     if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
-                        // cout << "FINISH the last package: " << m_lastPackage << endl;
                         const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                         if (!ver.end()) {
                             emitPackage(ver, PK_INFO_ENUM_FINISHED);
@@ -2006,15 +1999,11 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                     }
                     m_lastSubProgress += 25;
                 } else if (starts_with(str, "Running dpkg")) {
-                    // cout << "Found Running dpkg! " << line << endl;
                 } else if (starts_with(str, "Running")) {
-                    // cout << "Found Running! " << line << endl;
                     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_COMMIT);
                 } else if (starts_with(str, "Installing")) {
-                    // cout << "Found Installing! " << line << endl;
                     // FINISH the last package
                     if (!m_lastPackage.empty()) {
-                        // cout << "FINISH the last package: " << m_lastPackage << endl;
                         const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                         if (!ver.end()) {
                             emitPackage(ver, PK_INFO_ENUM_FINISHED);
@@ -2027,9 +2016,7 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                         emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, m_lastSubProgress);
                     }
                 } else if (starts_with(str, "Removing")) {
-                    // cout << "Found Removing! " << line << endl;
                     if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
-                        // cout << "FINISH the last package: " << m_lastPackage << endl;
                         const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                         if (!ver.end()) {
                             emitPackage(ver, PK_INFO_ENUM_FINISHED);
@@ -2043,7 +2030,6 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
                         emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, m_lastSubProgress);
                     }
                 } else if (starts_with(str, "Installed") || starts_with(str, "Removed")) {
-                    // cout << "Found FINISHED! " << line << endl;
                     m_lastSubProgress = 100;
                     const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
                     if (!ver.end()) {
@@ -2063,7 +2049,6 @@ void AptJob::updateInterface(int fd, int writeFd, bool *errorEmitted)
             }
 
             int val = atoi(percent);
-            // cout << "progress: " << val << endl;
             pk_backend_job_set_percentage(m_job, val);
 
             // clean-up
@@ -2535,7 +2520,6 @@ bool AptJob::installPackages(PkBitfield flags)
     bool simulate = pk_bitfield_contain(flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE);
     PkBackend *backend = PK_BACKEND(pk_backend_job_get_backend(m_job));
 
-    // cout << "installPackages() called" << endl;
 
     // check for essential packages!!!
     if (m_cache->isRemovingEssentialPackages()) {
@@ -2692,7 +2676,6 @@ bool AptJob::installPackages(PkBitfield flags)
     }
 
     if (m_child_pid == 0) {
-        // cout << "FORKED: installPackages(): DoInstall" << endl;
 
         // ensure that this process dies with its parent
         prctl(PR_SET_PDEATHSIG, SIGKILL);
@@ -2746,7 +2729,7 @@ bool AptJob::installPackages(PkBitfield flags)
         _exit(res);
     }
 
-    g_debug("apt-backend parent process running...");
+    g_debug("Parent process running...");
 
     // make it nonblocking, very important otherwise
     // when the child finish we stay stuck.
@@ -2791,7 +2774,7 @@ bool AptJob::installPackages(PkBitfield flags)
     close(pty_master);
     _system->LockInner();
 
-    g_debug("apt-backend parent process finished: %d", ret);
+    g_debug("Parent process finished: %d", ret);
 
     if (ret != 0 && !m_cancel && !errorEmitted) {
         // If the child died with a non-zero exit code, and we didn't deliberately
