@@ -207,15 +207,8 @@ void AptCacheFile::ShowBroken(bool Now, PkErrorEnum error)
                         tVer = Targ.CurrentVer();
                     }
 
-                    if (tVer.end() == false) {
-                        char buffer[1024];
-                        if (Now == true) {
-                            sprintf(buffer, "but %s is installed", tVer.VerStr());
-                        } else {
-                            sprintf(buffer, "but %s is to be installed", tVer.VerStr());
-                        }
-
-                        out << buffer;
+                    if (!tVer.end()) {
+                        out << "but " << tVer.VerStr() << (Now ? " is installed" : " is to be installed");
                     } else {
                         if ((*this)[Targ].CandidateVerIter(*this).end() == true) {
                             if (Targ->ProvidesList == 0) {
