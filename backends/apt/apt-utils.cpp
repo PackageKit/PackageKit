@@ -283,22 +283,15 @@ GPtrArray *getCVEUrls(const string &changelog)
     GPtrArray *cve_urls = g_ptr_array_new();
 
     // Regular expression to find cve references
-    GRegex *regex;
-    GMatchInfo *match_info;
-    regex = g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+    g_autoptr(GRegex) regex =
+        g_regex_new("CVE-\\d{4}-\\d{4,}", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+    g_autoptr(GMatchInfo) match_info = NULL;
     g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
     while (g_match_info_matches(match_info)) {
-        gchar *cve = g_match_info_fetch(match_info, 0);
-        gchar *cveLink;
-
-        cveLink = g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve);
-        g_ptr_array_add(cve_urls, (gpointer)cveLink);
-
-        g_free(cve);
+        g_autofree gchar *cve = g_match_info_fetch(match_info, 0);
+        g_ptr_array_add(cve_urls, g_strdup_printf("https://web.nvd.nist.gov/view/vuln/detail?vulnId=%s", cve));
         g_match_info_next(match_info, NULL);
     }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
 
     // NULL terminate
     g_ptr_array_add(cve_urls, NULL);
@@ -311,57 +304,46 @@ GPtrArray *getBugzillaUrls(const string &changelog)
     GPtrArray *bugzilla_urls = g_ptr_array_new();
 
     // Matches Ubuntu bugs
-    GRegex *regex;
-    GMatchInfo *match_info;
-    regex = g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
-    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
-    while (g_match_info_matches(match_info)) {
-        gchar *bug = g_match_info_fetch_named(match_info, "bug");
-        gchar *bugLink;
-
-        bugLink = g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug);
-        g_ptr_array_add(bugzilla_urls, (gpointer)bugLink);
-
-        g_free(bug);
-        g_match_info_next(match_info, NULL);
+    {
+        g_autoptr(GRegex) regex =
+            g_regex_new("LP:\\s+(?:[,\\s*]?#(?'bug'\\d+))*", G_REGEX_CASELESS, G_REGEX_MATCH_NEWLINE_ANY, 0);
+        g_autoptr(GMatchInfo) match_info = NULL;
+        g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+        while (g_match_info_matches(match_info)) {
+            g_autofree gchar *bug = g_match_info_fetch_named(match_info, "bug");
+            g_ptr_array_add(bugzilla_urls, g_strdup_printf("https://bugs.launchpad.net/bugs/%s", bug));
+            g_match_info_next(match_info, NULL);
+        }
     }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
 
     // Debian bugs
     // Regular expressions to detect bug numbers in changelogs according to the
     // Debian Policy Chapter 4.4. For details see the footnote 15:
     // https://www.debian.org/doc/debian-policy/footnotes.html#f15
     // /closes:\s*(?:bug)?\#?\s?\d+(?:,\s*(?:bug)?\#?\s?\d+)*/i
-    regex = g_regex_new(
-        "closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
-        G_REGEX_CASELESS,
-        G_REGEX_MATCH_NEWLINE_ANY,
-        0);
-    g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
-    while (g_match_info_matches(match_info)) {
-        gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
-        gchar *bugLink1;
+    {
+        g_autoptr(GRegex) regex = g_regex_new(
+            "closes:\\s*(?:bug)?\\#?\\s?(?'bug1'\\d+)(?:,\\s*(?:bug)?\\#?\\s?(?'bug2'\\d+))*",
+            G_REGEX_CASELESS,
+            G_REGEX_MATCH_NEWLINE_ANY,
+            0);
+        g_autoptr(GMatchInfo) match_info = NULL;
+        g_regex_match(regex, changelog.c_str(), G_REGEX_MATCH_NEWLINE_ANY, &match_info);
+        while (g_match_info_matches(match_info)) {
+            g_autofree gchar *bug1 = g_match_info_fetch_named(match_info, "bug1");
+            g_ptr_array_add(
+                bugzilla_urls, g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1));
 
-        bugLink1 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug1);
-        g_ptr_array_add(bugzilla_urls, (gpointer)bugLink1);
+            g_autofree gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
+            if (bug2 != NULL && bug2[0] != '\0') {
+                g_ptr_array_add(
+                    bugzilla_urls,
+                    g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2));
+            }
 
-        g_free(bug1);
-
-        gchar *bug2 = g_match_info_fetch_named(match_info, "bug2");
-        if (bug2 != NULL && bug2[0] != '\0') {
-            gchar *bugLink2;
-
-            bugLink2 = g_strdup_printf("https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%s", bug2);
-            g_ptr_array_add(bugzilla_urls, (gpointer)bugLink2);
-
-            g_free(bug2);
+            g_match_info_next(match_info, NULL);
         }
-
-        g_match_info_next(match_info, NULL);
     }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
 
     // NULL terminate
     g_ptr_array_add(bugzilla_urls, NULL);
