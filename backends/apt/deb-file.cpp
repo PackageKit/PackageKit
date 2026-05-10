@@ -47,7 +47,7 @@ DebFile::DebFile(const string &filename)
     debDebFile deb(in);
 
     // Extract control data
-    m_extractor = new debDebFile::MemControlExtract("control");
+    m_extractor = std::make_unique<debDebFile::MemControlExtract>("control");
     if (!m_extractor->Read(deb)) {
         return;
     }
@@ -64,11 +64,6 @@ DebFile::DebFile(const string &filename)
     m_files = stream.files;
 
     m_isValid = true;
-}
-
-DebFile::~DebFile()
-{
-    delete m_extractor;
 }
 
 std::vector<std::string> DebFile::files() const

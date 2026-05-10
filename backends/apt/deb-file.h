@@ -23,6 +23,8 @@
 #ifndef DEB_FILE_H
 #define DEB_FILE_H
 
+#include <memory>
+
 #include <apt-pkg/debfile.h>
 
 using std::string;
@@ -31,7 +33,7 @@ class DebFile
 {
 public:
     DebFile(const string &filename);
-    virtual ~DebFile();
+    ~DebFile() = default;
     bool isValid() const;
 
     string packageName() const;
@@ -48,7 +50,7 @@ public:
     string errorMsg() const;
 
 private:
-    debDebFile::MemControlExtract *m_extractor;
+    std::unique_ptr<debDebFile::MemControlExtract> m_extractor;
     pkgTagSection m_controlData;
     string m_errorMsg;
     std::vector<std::string> m_files;
