@@ -242,119 +242,75 @@ PkBackendJob *AptJob::pkJob() const
     return m_job;
 }
 
+static bool isDevelopmentName(const std::string &pkgName, const std::string &section)
+{
+    return ends_with(pkgName, "-dev") || ends_with(pkgName, "-dbg") || ends_with(pkgName, "-dbgsym")
+           || section == "devel" || section == "libdevel";
+}
+
+static bool isGuiSection(const std::string &section)
+{
+    return section == "x11" || section == "gnome" || section == "kde" || section == "graphics";
+}
+
+static bool isFreeComponent(const std::string &component)
+{
+    return component == "main" || component == "universe";
+}
+
 bool AptJob::matchPackage(const pkgCache::VerIterator &ver, PkBitfield filters)
 {
-    if (filters != 0) {
-        const pkgCache::PkgIterator &pkg = ver.ParentPkg();
-        bool installed = false;
+    if (filters == 0)
+        return true;
 
-        // Check if the package is installed
-        if (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver)
-            installed = true;
+    const pkgCache::PkgIterator &pkg = ver.ParentPkg();
+    const bool installed = (pkg->CurrentState == pkgCache::State::Installed && pkg.CurrentVer() == ver);
 
-        // if we are on multiarch check also the arch filter
-        if (m_isMultiArch && pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH) /* && !installed*/) {
-            // don't emit the package if it does not match
-            // the native architecture
-            if (strcmp(ver.Arch(), "all") != 0 && strcmp(ver.Arch(), _config->Find("APT::Architecture").c_str()) != 0) {
-                return false;
-            }
-        }
-
-        std::string str = ver.Section() == nullptr ? "" : ver.Section();
-        std::string section, component;
-
-        size_t found = str.find_last_of('/');
-        section = str.substr(found + 1);
-        if (found == std::string::npos) {
-            component = "main";
-        } else {
-            component = str.substr(0, found);
-        }
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed)
+    // if we are on multiarch check also the arch filter
+    if (m_isMultiArch && pk_bitfield_contain(filters, PK_FILTER_ENUM_ARCH)) {
+        // don't emit the package if it does not match the native architecture
+        if (strcmp(ver.Arch(), "all") != 0 && strcmp(ver.Arch(), _config->Find("APT::Architecture").c_str()) != 0)
             return false;
-        else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed)
-            return false;
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT)) {
-            std::string pkgName = pkg.Name();
-            if (!ends_with(pkgName, "-dev") && !ends_with(pkgName, "-dbg") && !ends_with(pkgName, "-dbgsym")
-                && section != "devel" && section != "libdevel") {
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT)) {
-            std::string pkgName = pkg.Name();
-            if (ends_with(pkgName, "-dev") || ends_with(pkgName, "-dbg") || ends_with(pkgName, "-dbgsym")
-                || section == "devel" || section == "libdevel") {
-                return false;
-            }
-        }
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI)) {
-            if (section != "x11" && section != "gnome" && section != "kde" && section != "graphics") {
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI)) {
-            if (section == "x11" || section == "gnome" || section == "kde" || section == "graphics") {
-                return false;
-            }
-        }
-
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE)) {
-            if (component != "main" && component != "universe") {
-                // Must be in main and universe to be free
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE)) {
-            if (component == "main" || component == "universe") {
-                // Must not be in main or universe to be free
-                return false;
-            }
-        }
-
-        // Check for supported packages
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_SUPPORTED)) {
-            if (!packageIsSupported(ver, component)) {
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED)) {
-            if (packageIsSupported(ver, component)) {
-                return false;
-            }
-        }
-
-        // Check for applications, if they have files with .desktop
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION)) {
-            // We do not support checking if it is an Application
-            // if NOT installed
-            if (!installed || !isApplication(ver)) {
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION)) {
-            // We do not support checking if it is an Application
-            // if NOT installed
-            if (!installed || isApplication(ver)) {
-                return false;
-            }
-        }
-
-        // TODO test this one..
-#if 0
-        // I couldn'tfind any packages with the metapackages component, and I
-        // think the check is the wrong way around; PK_FILTER_ENUM_COLLECTIONS
-        // is for virtual group packages -- hughsie
-        if (pk_bitfield_contain(filters, PK_FILTER_ENUM_COLLECTIONS)) {
-            if (!component.compare("metapackages")) {
-                return false;
-            }
-        } else if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_COLLECTIONS)) {
-            if (component.compare("metapackages")) {
-                return false;
-            }
-        }
-#endif
     }
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED) && installed)
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED) && !installed)
+        return false;
+
+    const std::string sectionRaw = ver.Section() == nullptr ? "" : ver.Section();
+    const size_t slash = sectionRaw.find_last_of('/');
+    const std::string section = sectionRaw.substr(slash == std::string::npos ? 0 : slash + 1);
+    const std::string component = slash == std::string::npos ? "main" : sectionRaw.substr(0, slash);
+    const std::string pkgName = pkg.Name();
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_DEVELOPMENT) && !isDevelopmentName(pkgName, section))
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && isDevelopmentName(pkgName, section))
+        return false;
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_GUI) && !isGuiSection(section))
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_GUI) && isGuiSection(section))
+        return false;
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_FREE) && !isFreeComponent(component))
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_FREE) && isFreeComponent(component))
+        return false;
+
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_SUPPORTED) && !packageIsSupported(ver, component))
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_SUPPORTED) && packageIsSupported(ver, component))
+        return false;
+
+    // Check for applications, if they have files with .desktop. We do not support checking
+    // if it is an Application when not installed.
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_APPLICATION) && (!installed || !isApplication(ver)))
+        return false;
+    if (pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_APPLICATION) && (!installed || isApplication(ver)))
+        return false;
+
     return true;
 }
 
