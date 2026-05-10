@@ -466,7 +466,7 @@ void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state,
         }
 
         for (; !ver.end(); ver++) {
-            stagePackageForEmit(pkgArray, info.ver, state);
+            stagePackageForEmit(pkgArray, ver, state);
         }
     }
 
