@@ -2384,49 +2384,13 @@ bool AptJob::runTransaction(
             return false;
         }
 
-        if (!allowRemoveDeps) {
-            std::vector<std::string> implicitRemovals;
-            for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
-                if (pkg->CurrentVer == 0 || !(*m_cache)[pkg].Delete())
-                    continue;
-
-                if (std::find(explicitRemovalPkgIds.begin(), explicitRemovalPkgIds.end(), pkg->ID)
-                    != explicitRemovalPkgIds.end()) {
-                    continue;
-                }
-
-                implicitRemovals.emplace_back(pkg.FullName(true));
-            }
-
-            if (!implicitRemovals.empty()) {
-                std::string removalList;
-                const size_t shown = std::min<size_t>(implicitRemovals.size(), 10);
-                for (size_t i = 0; i < shown; i++) {
-                    if (i != 0)
-                        removalList += ", ";
-                    removalList += implicitRemovals[i];
-                }
-                if (implicitRemovals.size() > shown)
-                    removalList += ", and more...";
-
-                pk_backend_job_error_code(
-                    m_job,
-                    PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
-                    "The requested operation would remove dependent package(s): %s",
-                    removalList.c_str());
-                return false;
-            }
-        }
+        if (!allowRemoveDeps && !checkNoImplicitRemovals(explicitRemovalPkgIds))
+            return false;
     }
 
     // Remove new garbage that is created
-    if (autoremove) {
-        for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
-            const pkgCache::VerIterator &ver = pkg.CurrentVer();
-            if (!ver.end() && !initial_garbage.contains(pkg) && m_cache->isGarbage(pkg))
-                m_cache->tryToRemove(Fix, PkgInfo(ver));
-        }
-    }
+    if (autoremove)
+        markNewGarbageForRemoval(Fix, initial_garbage);
 
     // Prepare for the restart thing
     struct stat restartStatStart;
@@ -2457,6 +2421,51 @@ bool AptJob::runTransaction(
     }
 
     return ret;
+}
+
+bool AptJob::checkNoImplicitRemovals(const std::vector<unsigned int> &explicitRemovalPkgIds)
+{
+    std::vector<std::string> implicitRemovals;
+    for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
+        if (pkg->CurrentVer == 0 || !(*m_cache)[pkg].Delete())
+            continue;
+
+        if (std::find(explicitRemovalPkgIds.begin(), explicitRemovalPkgIds.end(), pkg->ID)
+            != explicitRemovalPkgIds.end()) {
+            continue;
+        }
+
+        implicitRemovals.emplace_back(pkg.FullName(true));
+    }
+
+    if (implicitRemovals.empty())
+        return true;
+
+    std::string removalList;
+    const size_t shown = std::min<size_t>(implicitRemovals.size(), 10);
+    for (size_t i = 0; i < shown; i++) {
+        if (i != 0)
+            removalList += ", ";
+        removalList += implicitRemovals[i];
+    }
+    if (implicitRemovals.size() > shown)
+        removalList += ", and more...";
+
+    pk_backend_job_error_code(
+        m_job,
+        PK_ERROR_ENUM_DEP_RESOLUTION_FAILED,
+        "The requested operation would remove dependent package(s): %s",
+        removalList.c_str());
+    return false;
+}
+
+void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage)
+{
+    for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
+        const pkgCache::VerIterator &ver = pkg.CurrentVer();
+        if (!ver.end() && !initialGarbage.contains(pkg) && m_cache->isGarbage(pkg))
+            m_cache->tryToRemove(Fix, PkgInfo(ver));
+    }
 }
 
 /**

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -292,6 +293,22 @@ private:
      * Handle a single newline-terminated line read from the dpkg status pipe.
      */
     void handleDpkgStatusLine(const std::string &line, int writeFd, bool *errorEmitted);
+
+    /**
+     * Check that no packages are marked for deletion other than those the user
+     * explicitly asked to remove. Used when the caller did not pass allow_deps=true
+     * on RemovePackages.
+     * @returns true if no implicit removals were detected; false (and emits
+     * an error) otherwise.
+     */
+    bool checkNoImplicitRemovals(const std::vector<unsigned int> &explicitRemovalPkgIds);
+
+    /**
+     * Mark any package for removal that became garbage as a result of the
+     * current transaction (i.e. was not garbage initially).
+     */
+    void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage);
+
     PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
