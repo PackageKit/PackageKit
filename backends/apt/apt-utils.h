@@ -83,6 +83,15 @@ std::string utilBuildPackageOriginId(pkgCache::VerFileIterator vf);
 const char *toUtf8(const char *str);
 
 /**
+ * Wrap a possibly-null C string in a std::string, treating null as empty.
+ * Convenient for libapt-pkg accessors that may return nullptr.
+ */
+inline std::string safeStr(const char *s)
+{
+    return s ? std::string{s} : std::string{};
+}
+
+/**
  * Changelog dates are in format RFC2822/RFC5322 compatible:
  * "day-of-week, dd month yyyy hh:mm:ss +zzzz"
  * Parses and converts to ISO8601 respecting the original timezone

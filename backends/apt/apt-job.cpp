@@ -513,9 +513,9 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
 
         // let find what kind of upgrade this is
         pkgCache::VerFileIterator vf = pkgInfo.ver.FileList();
-        std::string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
-        std::string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
-        std::string label = vf.File().Label() == NULL ? "" : vf.File().Label();
+        std::string origin = safeStr(vf.File().Origin());
+        std::string archive = safeStr(vf.File().Archive());
+        std::string label = safeStr(vf.File().Label());
 
         if (origin.compare("Backports.org archive") == 0 || ends_with(origin, "-backports")) {
             state = PK_INFO_ENUM_ENHANCEMENT;
@@ -757,7 +757,7 @@ void AptJob::emitPackageDetail(const pkgCache::VerIterator &ver)
         return;
     }
 
-    std::string section = ver.Section() == NULL ? "" : ver.Section();
+    std::string section = safeStr(ver.Section());
 
     size_t found;
     found = section.find_last_of("/");
@@ -813,7 +813,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     gchar *current_package_id = m_cache->buildPackageId(currver);
 
     pkgCache::VerFileIterator vf = candver.FileList();
-    string origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+    string origin = safeStr(vf.File().Origin());
     pkgRecords::Parser &rec = m_cache->GetPkgRecords()->Lookup(candver.FileList());
 
     string changelog;
@@ -847,7 +847,7 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     }
 
     // Build a package_id from the update version
-    string archive = vf.File().Archive() == NULL ? "" : vf.File().Archive();
+    string archive = safeStr(vf.File().Archive());
     g_autofree gchar *package_id = m_cache->buildPackageId(candver);
 
     PkUpdateStateEnum updateState = PK_UPDATE_STATE_ENUM_UNKNOWN;
@@ -1091,7 +1091,7 @@ PkgList AptJob::getPackagesFromGroup(gchar **values)
         // Ignore virtual packages
         const pkgCache::VerIterator &ver = m_cache->findVer(pkg);
         if (!ver.end()) {
-            string section = pkg.VersionList().Section() == NULL ? "" : pkg.VersionList().Section();
+            string section = safeStr(pkg.VersionList().Section());
 
             size_t found;
             found = section.find_last_of("/");
@@ -1543,7 +1543,7 @@ bool AptJob::packageIsSupported(const pkgCache::VerIterator &verIter, string com
     string origin;
     if (!verIter.end()) {
         pkgCache::VerFileIterator vf = verIter.FileList();
-        origin = vf.File().Origin() == NULL ? "" : vf.File().Origin();
+        origin = safeStr(vf.File().Origin());
     }
 
     if (component.empty()) {
