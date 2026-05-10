@@ -2,7 +2,7 @@
  *
  * Copyright (c) 1999-2002, 2004-2005, 2007-2008 Daniel Burrows
  * Copyright (c) 2009-2016 Daniel Nicoletti <dantti12@gmail.com>
- *               2012 Matthias Klumpp <matthias@tenstral.net>
+ *               2012-2026 Matthias Klumpp <matthias@tenstral.net>
  *               2016 Harald Sitter <sitter@kde.org>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -287,6 +287,11 @@ private:
      *  interprets dpkg status fd
      */
     void updateInterface(int readFd, int writeFd, bool *errorEmitted = nullptr);
+
+    /**
+     * Handle a single newline-terminated line read from the dpkg status pipe.
+     */
+    void handleDpkgStatusLine(const std::string &line, int writeFd, bool *errorEmitted);
     PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);
 
