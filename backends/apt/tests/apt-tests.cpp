@@ -319,19 +319,19 @@ AnotherNewField: Yay: Hurray!
 }
 
 static bool
-_test_string_sets_equal(const set<string> &expected, const set<string> &testSet)
+_test_string_sets_equal(const std::set<std::string> &expected, const std::set<std::string> &testSet)
 {
     if (expected == testSet)
         return true;
 
     g_test_message("Mismatch in sets:");
 
-    for (const string &line : testSet) {
+    for (const std::string &line : testSet) {
         if (expected.find(line) == expected.end())
             g_test_message("  Unexpected: %s", line.c_str());
     }
 
-    for (const string &line : expected) {
+    for (const std::string &line : expected) {
         if (testSet.find(line) == testSet.end())
             g_test_message("  Missing:    %s", line.c_str());
     }
@@ -345,7 +345,7 @@ _test_sample_sources(const std::string &testSourcesDir)
     SourcesList sourcesList;
     g_assert_true (sourcesList.ReadSourceDir(testSourcesDir));
 
-    const set<string> expectedSources = {
+    const std::set<std::string> expectedSources = {
         testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:experimental:main,contrib,non-free | main contrib non-free | Debian Experimental (main contrib non-free) | disabled",
         testSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | enabled",
         testSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
@@ -354,12 +354,12 @@ _test_sample_sources(const std::string &testSourcesDir)
         testSourcesDir + "/ppa-1.sources:deb:https://ppa.launchpadcontent.net/ximion/syntalos/ubuntu/:resolute:main | main | Launchpad PPA: ximion/syntalos/ubuntu - Resolute (main) | enabled"
     };
 
-    set<string> foundSources;
+    std::set<std::string> foundSources;
     for (SourcesList::SourceRecord *sourceRecord : sourcesList.SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
-        string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
+        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
                         ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
         foundSources.insert(srcRecordStr);
     }
@@ -386,7 +386,7 @@ apt_test_sources_write (void)
         fs::remove_all(wtestSourcesDir);
     fs::copy(origSampleSourcesDir, wtestSourcesDir, fs::copy_options::recursive);
 
-    const set<string> expectedSourcesDisabled = {
+    const std::set<std::string> expectedSourcesDisabled = {
         wtestSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:experimental:main,contrib,non-free | main contrib non-free | Debian Experimental (main contrib non-free) | enabled",
         wtestSourcesDir + "/debian.sources:deb:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) | disabled",
         wtestSourcesDir + "/debian.sources:deb-src:http://deb.debian.org/debian/:testing:main,contrib,non-free-firmware,non-free | main contrib non-free-firmware non-free | Debian Testing (main contrib non-free-firmware non-free) Sources | enabled",
@@ -421,12 +421,12 @@ apt_test_sources_write (void)
     sourcesList = std::make_unique<SourcesList>();
     g_assert_true (sourcesList->ReadSourceDir(wtestSourcesDir));
 
-    set<string> foundSources;
+    std::set<std::string> foundSources;
     for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
-        string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
+        std::string srcRecordStr = sourceRecord->repoId() + " | " + sourceRecord->joinedSections() + " | " + sourceRecord->niceName() + " | " +
                         ((sourceRecord->Type & SourcesList::Disabled)? "disabled" : "enabled");
         foundSources.insert(srcRecordStr);
     }
@@ -505,7 +505,7 @@ apt_test_changelog_date (void)
 {
     // Test dates in the format of debian changelog
     // and the expected result in format ISO8601
-    const set<pair<string, string>> testDatesSet = {
+    const std::set<std::pair<std::string, std::string>> testDatesSet = {
         {"Thu, 12 Sep 2024 22:51:37 +0200", "2024-09-12T22:51:37+02"},
         {"Sat, 29 Mar 2025 09:34:52 -0700", "2025-03-29T09:34:52-07"},
         {"Sun, 13 Jan 2023 11:33:31 +0000", "2023-01-13T11:33:31Z"},
@@ -515,7 +515,7 @@ apt_test_changelog_date (void)
     };
 
     for (const auto &testDate : testDatesSet) {
-        const string isoDate = changelogDateToIso8601(testDate.first);
+        const std::string isoDate = changelogDateToIso8601(testDate.first);
         g_assert_cmpstr(isoDate.c_str(), ==, testDate.second.c_str());
     }
 }

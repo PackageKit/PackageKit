@@ -288,7 +288,7 @@ bool AptCacheFile::doAutomaticRemove()
 
 bool AptCacheFile::isRemovingEssentialPackages()
 {
-    string List;
+    std::string List;
     std::vector<bool> Added((*this)->Head().PackageCount, false);
 
     for (pkgCache::PkgIterator I = (*this)->PkgBegin(); !I.end(); ++I) {
@@ -300,7 +300,7 @@ bool AptCacheFile::isRemovingEssentialPackages()
         if ((*this)[I].Delete()) {
             if (!Added[I->ID]) {
                 Added[I->ID] = true;
-                List += string(I.Name()) + " ";
+                List += std::string(I.Name()) + " ";
             }
         }
 
@@ -385,7 +385,7 @@ gchar *AptCacheFile::buildPackageId(const pkgCache::VerIterator &ver)
     // otherwise it is "auto:<repo-id>". Available (not installed) packages have no prefix, unless
     // a pending installation is marked, in which case we prefix the desired new mode of the installed
     // package (auto/manual) with a plus sign (+).
-    string data = "";
+    std::string data = "";
     if (isInstalled) {
         data = isAuto ? "auto:" : "manual:";
     } else {
@@ -423,17 +423,17 @@ pkgCache::VerIterator AptCacheFile::findCandidateVer(const pkgCache::PkgIterator
 std::string AptCacheFile::getShortDescription(const pkgCache::VerIterator &ver)
 {
     if (ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
-        return string();
+        return {};
     }
 
     pkgCache::DescIterator di = ver.TranslatedDescription();
     if (di.end()) {
-        return string();
+        return {};
     }
 
     pkgCache::DescFileIterator df = di.FileList();
     if (df.end()) {
-        return string();
+        return {};
     } else {
         return m_packageRecords->Lookup(df).ShortDesc();
     }
@@ -442,17 +442,17 @@ std::string AptCacheFile::getShortDescription(const pkgCache::VerIterator &ver)
 std::string AptCacheFile::getLongDescription(const pkgCache::VerIterator &ver)
 {
     if (ver.end() || ver.FileList().end() || GetPkgRecords() == 0) {
-        return string();
+        return {};
     }
 
     pkgCache::DescIterator di = ver.TranslatedDescription();
     if (di.end()) {
-        return string();
+        return {};
     }
 
     pkgCache::DescFileIterator df = di.FileList();
     if (df.end()) {
-        return string();
+        return {};
     } else {
         return m_packageRecords->Lookup(df).LongDesc();
     }
@@ -551,11 +551,11 @@ std::string AptCacheFile::debParser(std::string descr)
     // Policy page on package descriptions
     // http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Description
     unsigned int i;
-    string::size_type nlpos = 0;
+    std::string::size_type nlpos = 0;
 
     nlpos = descr.find('\n');
     // delete first line
-    if (nlpos != string::npos) {
+    if (nlpos != std::string::npos) {
         descr.erase(0, nlpos + 2); // del "\n " too
     }
 
@@ -564,7 +564,7 @@ std::string AptCacheFile::debParser(std::string descr)
     while (nlpos < descr.length()) {
         // find the new line position
         nlpos = descr.find('\n', nlpos);
-        if (nlpos == string::npos) {
+        if (nlpos == std::string::npos) {
             // if it could not find the new line
             // get out of the loop
             break;

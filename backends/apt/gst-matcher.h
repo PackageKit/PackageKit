@@ -1,6 +1,7 @@
 /* gst-matcher.h - Match GStreamer package names
  *
  * Copyright (c) 2010 Daniel Nicoletti <dantti12@gmail.com>
+ * Copyright (c) 2026 Matthias Klumpp <mak@debian.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +27,11 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 typedef struct {
-    string version;
-    string type;
-    string data;
-    string opt;
+    std::string version;
+    std::string type;
+    std::string data;
+    std::string opt;
     void *caps;
     bool native;
 } Match;
@@ -43,11 +42,11 @@ public:
     GstMatcher(gchar **values);
     ~GstMatcher();
 
-    bool matches(string record, bool arch);
+    bool matches(std::string record, bool arch);
     bool hasMatches() const;
 
 private:
-    vector<Match> m_matches;
+    std::vector<Match> m_matches;
 };
 
 #endif

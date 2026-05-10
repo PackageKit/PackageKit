@@ -97,7 +97,7 @@ bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd)
 
 bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsigned int const stanzaIdx, FileFd &Fd)
 {
-    string Enabled = Tags.FindS("Enabled");
+    auto Enabled = Tags.FindS("Enabled");
 
     // now create one item per suite/section
     auto const list_uris = FindMultiValue(Tags, "URIs");
@@ -162,7 +162,7 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
 
             rec.Dist = S;
             rec.NumSections = list_comp.size();
-            rec.Sections = new string[rec.NumSections];
+            rec.Sections = new std::string[rec.NumSections];
             std::copy(list_comp.begin(), list_comp.end(), rec.Sections);
             AddSourceNode(rec);
         }
@@ -171,7 +171,7 @@ bool SourcesList::ParseDeb822Stanza(const char *Type, pkgTagSection &Tags, unsig
     return true;
 }
 
-bool SourcesList::ReadSourceDeb822(const string &listpath)
+bool SourcesList::ReadSourceDeb822(const std::string &listpath)
 {
     FileFd Fd;
     if (OpenConfigurationFileFd(listpath, Fd) == false)
@@ -196,11 +196,11 @@ bool SourcesList::ReadSourceDeb822(const string &listpath)
     return true;
 }
 
-bool SourcesList::ReadSourceLegacy(const string &listpath)
+bool SourcesList::ReadSourceLegacy(const std::string &listpath)
 {
     char buf[512];
     const char *p;
-    ifstream ifs(listpath.c_str(), ios::in);
+    std::ifstream ifs(listpath.c_str(), std::ios::in);
     bool record_ok = true;
 
     // cannot open file
@@ -211,9 +211,9 @@ bool SourcesList::ReadSourceLegacy(const string &listpath)
     while (ifs.eof() == false) {
         p = buf;
         SourceRecord rec;
-        string Type;
-        string Section;
-        string VURI;
+        std::string Type;
+        std::string Section;
+        std::string VURI;
 
         ifs.getline(buf, sizeof(buf));
 
@@ -257,7 +257,7 @@ bool SourcesList::ReadSourceLegacy(const string &listpath)
             } else {
                 // syntax error on line
                 rec.Type = Comment;
-                string s = "#" + string(buf);
+                std::string s = "#" + std::string(buf);
                 rec.Comment = s;
                 record_ok = false;
                 // return _error->Error("Syntax error in line %s", buf);
@@ -282,13 +282,13 @@ bool SourcesList::ReadSourceLegacy(const string &listpath)
             rec.NumSections++;
         if (rec.NumSections > 0) {
             p = tmp;
-            rec.Sections = new string[rec.NumSections];
+            rec.Sections = new std::string[rec.NumSections];
             rec.NumSections = 0;
             while (ParseQuoteWord(p, Section) == true) {
                 // comments inside the record are preserved
                 if (Section[0] == '#') {
                     SourceRecord crec;
-                    string s = Section + string(p);
+                    auto s = Section + std::string(p);
                     crec.Type = Comment;
                     crec.Comment = s;
                     crec.SourceFile = listpath;
@@ -306,7 +306,7 @@ bool SourcesList::ReadSourceLegacy(const string &listpath)
     return record_ok;
 }
 
-bool SourcesList::ReadSourcePart(string listpath)
+bool SourcesList::ReadSourcePart(std::string listpath)
 {
     if (g_str_has_suffix(listpath.c_str(), ".sources")) {
         return ReadSourceDeb822(listpath);
@@ -315,7 +315,7 @@ bool SourcesList::ReadSourcePart(string listpath)
     }
 }
 
-bool SourcesList::ReadSourceDir(string Dir)
+bool SourcesList::ReadSourceDir(std::string Dir)
 {
     // cout << "SourcesList::ReadSourceDir() " << Dir  << endl;
 
@@ -324,7 +324,7 @@ bool SourcesList::ReadSourceDir(string Dir)
         return _error->Errno("opendir", "Unable to read %s", Dir.c_str());
     }
 
-    vector<string> List;
+    std::vector<std::string> List;
     for (struct dirent *Ent = readdir(D); Ent != 0; Ent = readdir(D)) {
         if (Ent->d_name[0] == '.') {
             continue;
@@ -347,7 +347,7 @@ bool SourcesList::ReadSourceDir(string Dir)
         }
 
         // Make sure it is a file and not something else
-        string File = flCombine(Dir, Ent->d_name);
+        std::string File = flCombine(Dir, Ent->d_name);
         struct stat St;
         if (stat(File.c_str(), &St) != 0 || S_ISREG(St.st_mode) == 0) {
             continue;
@@ -359,7 +359,7 @@ bool SourcesList::ReadSourceDir(string Dir)
     sort(List.begin(), List.end());
 
     // Read the files
-    for (const string &sourcePart : List) {
+    for (const std::string &sourcePart : List) {
         if (ReadSourcePart(sourcePart) == false) {
             return false;
         }
@@ -373,12 +373,12 @@ bool SourcesList::ReadSources()
 
     bool Res = true;
 
-    string Parts = _config->FindDir("Dir::Etc::sourceparts");
+    std::string Parts = _config->FindDir("Dir::Etc::sourceparts");
     if (FileExists(Parts) == true) {
         Res &= ReadSourceDir(Parts);
     }
 
-    string Main = _config->FindFile("Dir::Etc::sourcelist");
+    std::string Main = _config->FindFile("Dir::Etc::sourcelist");
     if (FileExists(Main) == true) {
         Res &= ReadSourcePart(Main);
     }
@@ -399,12 +399,12 @@ SourcesList::SourceRecord *SourcesList::AddEmptySource()
 
 SourcesList::SourceRecord *SourcesList::AddSource(
     RecType Type,
-    string VendorID,
-    string URI,
-    string Dist,
-    string *Sections,
+    std::string VendorID,
+    std::string URI,
+    std::string Dist,
+    std::string *Sections,
     unsigned short count,
-    string SourceFile)
+    std::string SourceFile)
 {
     SourceRecord rec;
     rec.Type = Type;
@@ -416,7 +416,7 @@ SourcesList::SourceRecord *SourcesList::AddSource(
     }
     rec.Dist = Dist;
     rec.NumSections = count;
-    rec.Sections = new string[count];
+    rec.Sections = new std::string[count];
     for (unsigned int i = 0; i < count; ++i) {
         rec.Sections[i] = Sections[i];
     }
@@ -433,8 +433,8 @@ void SourcesList::RemoveSource(SourceRecord *&rec)
 
 void SourcesList::SwapSources(SourceRecord *&rec_one, SourceRecord *&rec_two)
 {
-    list<SourceRecord *>::iterator rec_p;
-    list<SourceRecord *>::iterator rec_n;
+    std::list<SourceRecord *>::iterator rec_p;
+    std::list<SourceRecord *>::iterator rec_n;
 
     rec_p = find(SourceRecords.begin(), SourceRecords.end(), rec_one);
     rec_n = find(SourceRecords.begin(), SourceRecords.end(), rec_two);
@@ -443,7 +443,7 @@ void SourcesList::SwapSources(SourceRecord *&rec_one, SourceRecord *&rec_two)
     SourceRecords.erase(rec_n);
 }
 
-bool SourcesList::UpdateSourceLegacy(const string &filename)
+bool SourcesList::UpdateSourceLegacy(const std::string &filename)
 {
     if (std::filesystem::path(filename).extension().string() != ".list") {
         g_warning(
@@ -451,7 +451,7 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
         return false;
     }
 
-    ofstream ofs(filename.c_str(), ios::out);
+    std::ofstream ofs(filename.c_str(), std::ios::out);
     if (!ofs != 0) {
         return false;
     }
@@ -461,7 +461,7 @@ bool SourcesList::UpdateSourceLegacy(const string &filename)
             continue;
         }
 
-        string S;
+        std::string S;
         if ((sr->Type & Comment) != 0) {
             S = sr->Comment;
         } else if (sr->PrimaryURI.empty() || sr->Dist.empty()) {
@@ -588,7 +588,7 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
 
 bool SourcesList::UpdateSources()
 {
-    list<string> filenames;
+    std::list<std::string> filenames;
     for (SourceRecord *sr : SourceRecords) {
         if (sr->SourceFile == "") {
             continue;
@@ -598,7 +598,7 @@ bool SourcesList::UpdateSources()
     filenames.sort();
     filenames.unique();
 
-    for (const string &filename : filenames) {
+    for (const std::string &filename : filenames) {
         const auto fileExt = std::filesystem::path(filename).extension().string();
         if (fileExt == ".sources") {
             if (!UpdateSourceDeb822(filename))
@@ -616,7 +616,7 @@ bool SourcesList::UpdateSources()
     return true;
 }
 
-bool SourcesList::SourceRecord::SetType(string S)
+bool SourcesList::SourceRecord::SetType(std::string S)
 {
     if (S == "deb") {
         Type |= Deb;
@@ -629,7 +629,7 @@ bool SourcesList::SourceRecord::SetType(string S)
     return true;
 }
 
-string SourcesList::SourceRecord::GetType() const
+std::string SourcesList::SourceRecord::GetType() const
 {
     if ((Type & Deb) != 0) {
         return "deb";
@@ -640,12 +640,12 @@ string SourcesList::SourceRecord::GetType() const
     return "unknown";
 }
 
-static bool FixupURI(string &URI)
+static bool FixupURI(std::string &URI)
 {
     if (URI.empty() == true)
         return false;
 
-    if (URI.find(':') == string::npos)
+    if (URI.find(':') == std::string::npos)
         return false;
 
     URI = ::URI{SubstVar(URI, "$(ARCH)", _config->Find("APT::Architecture"))};
@@ -657,7 +657,7 @@ static bool FixupURI(string &URI)
     return true;
 }
 
-bool SourcesList::SourceRecord::SetURI(string S)
+bool SourcesList::SourceRecord::SetURI(std::string S)
 {
     PrimaryURI = S;
     return ::FixupURI(PrimaryURI);
@@ -677,9 +677,9 @@ bool SourcesList::SourceRecord::SetURIs(const std::vector<std::string> &newURIs)
     return ret;
 }
 
-string SourcesList::SourceRecord::joinedSections(const std::string &separator) const
+std::string SourcesList::SourceRecord::joinedSections(const std::string &separator) const
 {
-    string ret;
+    std::string ret;
     for (unsigned int i = 0; i < NumSections; ++i) {
         ret += Sections[i];
         if (i + 1 < NumSections) {
@@ -689,16 +689,16 @@ string SourcesList::SourceRecord::joinedSections(const std::string &separator) c
     return ret;
 }
 
-string SourcesList::SourceRecord::niceName()
+std::string SourcesList::SourceRecord::niceName()
 {
-    string ret;
+    std::string ret;
     if (starts_with(PrimaryURI, "cdrom")) {
         ret = "Disc ";
     }
 
     // Make distribution camel case
     std::locale loc;
-    string dist = Dist;
+    std::string dist = Dist;
     dist[0] = std::toupper(dist[0], loc);
 
     // Replace - or / by by a space
@@ -749,16 +749,16 @@ string SourcesList::SourceRecord::niceName()
     return uri_info + " - " + ret;
 }
 
-string SourcesList::SourceRecord::repoId()
+std::string SourcesList::SourceRecord::repoId()
 {
-    string ret;
+    std::string ret;
     // create a slightly more compact repo-id string
     if (SourceFile == "/etc/apt/sources.list") {
         ret = "sources";
     } else {
         ret = SourceFile;
         // Strip out "/etc/apt/sources.list.d/" prefix if present
-        const string sources_list_d = "/etc/apt/sources.list.d/";
+        const std::string sources_list_d = "/etc/apt/sources.list.d/";
         size_t pos = ret.find(sources_list_d);
         if (pos == 0)
             ret = ret.substr(sources_list_d.length());
@@ -793,7 +793,7 @@ SourcesList::SourceRecord &SourcesList::SourceRecord::operator=(const SourceReco
     Dist = rhs.Dist;
 
     delete[] Sections;
-    Sections = rhs.NumSections > 0 ? new string[rhs.NumSections] : nullptr;
+    Sections = rhs.NumSections > 0 ? new std::string[rhs.NumSections] : nullptr;
     for (unsigned int I = 0; I < rhs.NumSections; ++I)
         Sections[I] = rhs.Sections[I];
     NumSections = rhs.NumSections;
@@ -818,7 +818,7 @@ bool SourcesList::ReadVendors()
 {
     Configuration Cnf;
 
-    string CnfFile = _config->FindFile("Dir::Etc::vendorlist");
+    auto CnfFile = _config->FindFile("Dir::Etc::vendorlist");
     if (FileExists(CnfFile) == true) {
         if (ReadConfigFile(Cnf, CnfFile, true) == false) {
             return false;
@@ -843,7 +843,7 @@ bool SourcesList::ReadVendors()
         char *buffer = new char[Vendor.FingerPrint.length() + 1];
         char *p = buffer;
         ;
-        for (string::const_iterator I = Vendor.FingerPrint.begin(); I != Vendor.FingerPrint.end(); ++I) {
+        for (std::string::const_iterator I = Vendor.FingerPrint.begin(); I != Vendor.FingerPrint.end(); ++I) {
             if (*I != ' ' && *I != '\t') {
                 *p++ = *I;
             }
@@ -863,7 +863,7 @@ bool SourcesList::ReadVendors()
     return !_error->PendingError();
 }
 
-SourcesList::VendorRecord *SourcesList::AddVendor(string VendorID, string FingerPrint, string Description)
+SourcesList::VendorRecord *SourcesList::AddVendor(std::string VendorID, std::string FingerPrint, std::string Description)
 {
     VendorRecord rec;
     rec.VendorID = VendorID;
@@ -874,16 +874,16 @@ SourcesList::VendorRecord *SourcesList::AddVendor(string VendorID, string Finger
 
 bool SourcesList::UpdateVendors()
 {
-    ofstream ofs(_config->FindFile("Dir::Etc::vendorlist").c_str(), ios::out);
+    std::ofstream ofs(_config->FindFile("Dir::Etc::vendorlist").c_str(), std::ios::out);
     if (!ofs != 0) {
         return false;
     }
 
     for (VendorRecord *vr : VendorRecords) {
-        ofs << "simple-key \"" << vr->VendorID << "\" {" << endl;
-        ofs << "\tFingerPrint \"" << vr->FingerPrint << "\";" << endl;
-        ofs << "\tName \"" << vr->Description << "\";" << endl;
-        ofs << "}" << endl;
+        ofs << "simple-key \"" << vr->VendorID << "\" {" << std::endl;
+        ofs << "\tFingerPrint \"" << vr->FingerPrint << "\";" << std::endl;
+        ofs << "\tName \"" << vr->Description << "\";" << std::endl;
+        ofs << "}" << std::endl;
     }
 
     ofs.close();
@@ -897,7 +897,7 @@ void SourcesList::RemoveVendor(VendorRecord *&rec)
     rec = 0;
 }
 
-ostream &operator<<(ostream &os, const SourcesList::SourceRecord &rec)
+std::ostream &operator<<(std::ostream &os, const SourcesList::SourceRecord &rec)
 {
     os << "Type: ";
     if ((rec.Type & SourcesList::Comment) != 0) {
@@ -912,25 +912,25 @@ ostream &operator<<(ostream &os, const SourcesList::SourceRecord &rec)
     if ((rec.Type & SourcesList::DebSrc) != 0) {
         os << "DebSrc";
     }
-    os << endl;
-    os << "SourceFile: " << rec.SourceFile << endl;
-    os << "VendorID: " << rec.VendorID << endl;
-    os << "URI: " << rec.PrimaryURI << endl;
-    os << "Dist: " << rec.Dist << endl;
-    os << "Section(s):" << endl;
+    os << std::endl;
+    os << "SourceFile: " << rec.SourceFile << std::endl;
+    os << "VendorID: " << rec.VendorID << std::endl;
+    os << "URI: " << rec.PrimaryURI << std::endl;
+    os << "Dist: " << rec.Dist << std::endl;
+    os << "Section(s):" << std::endl;
 #if 0
     for (unsigned int J = 0; J < rec.NumSections; ++J) {
         cout << "\t" << rec.Sections[J] << endl;
     }
 #endif
-    os << endl;
+    os << std::endl;
     return os;
 }
 
-ostream &operator<<(ostream &os, const SourcesList::VendorRecord &rec)
+std::ostream &operator<<(std::ostream &os, const SourcesList::VendorRecord &rec)
 {
-    os << "VendorID: " << rec.VendorID << endl;
-    os << "FingerPrint: " << rec.FingerPrint << endl;
-    os << "Description: " << rec.Description << endl;
+    os << "VendorID: " << rec.VendorID << std::endl;
+    os << "FingerPrint: " << rec.FingerPrint << std::endl;
+    os << "Description: " << rec.Description << std::endl;
     return os;
 }

@@ -1,7 +1,7 @@
 /* apt-utils.cpp
  *
  * Copyright (c) 2009 Daniel Nicoletti <dantti12@gmail.com>
- * Copyright (c) 2014-2022 Matthias Klumpp <mak@debian.org>
+ * Copyright (c) 2014-2026 Matthias Klumpp <mak@debian.org>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include <iomanip>
 #include <regex>
 
-PkGroupEnum get_enum_group(string group)
+PkGroupEnum get_enum_group(std::string group)
 {
     if (group.compare("admin") == 0) {
         return PK_GROUP_ENUM_ADMIN_TOOLS;
@@ -158,16 +158,16 @@ PkGroupEnum get_enum_group(string group)
     }
 }
 
-string fetchChangelogData(
+std::string fetchChangelogData(
     AptCacheFile &CacheFile,
     pkgAcquire &Fetcher,
     pkgCache::VerIterator Ver,
     pkgCache::VerIterator currver,
-    string *update_text,
-    string *updated,
-    string *issued)
+    std::string *update_text,
+    std::string *updated,
+    std::string *issued)
 {
-    string changelog;
+    std::string changelog;
 
     pkgAcqChangelog *c = new pkgAcqChangelog(&Fetcher, Ver);
 
@@ -179,7 +179,7 @@ string fetchChangelogData(
     pkgRecords Recs(CacheFile);
     pkgCache::PkgIterator Pkg = Ver.ParentPkg();
     pkgRecords::Parser &rec = Recs.Lookup(Ver.FileList());
-    string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
+    std::string srcpkg = rec.SourcePkg().empty() ? Pkg.Name() : rec.SourcePkg();
     changelog = "Changelog for this version is not yet available";
 
     // return empty string if we don't have a file to read
@@ -191,8 +191,8 @@ string fetchChangelogData(
         return changelog;
     }
 
-    ifstream in(c->DestFile.c_str());
-    string line;
+    std::ifstream in(c->DestFile.c_str());
+    std::string line;
     g_autoptr(GRegex) regexVer = NULL;
     regexVer = g_regex_new(
         "(?'source'.+) \\((?'version'.*)\\) "
@@ -252,8 +252,8 @@ string fetchChangelogData(
             // and when it got updated
             GMatchInfo *match_info;
             if (g_regex_match(regexDate, str, G_REGEX_MATCH_ANCHORED, &match_info)) {
-                const string date = g_match_info_fetch_named(match_info, "date");
-                const string date_iso = changelogDateToIso8601(date);
+                const std::string date = g_match_info_fetch_named(match_info, "date");
+                const std::string date_iso = changelogDateToIso8601(date);
                 if (!date_iso.empty()) {
                     *issued = date_iso;
                     if (updated->empty()) {
@@ -278,7 +278,7 @@ string fetchChangelogData(
     return changelog;
 }
 
-GPtrArray *getCVEUrls(const string &changelog)
+GPtrArray *getCVEUrls(const std::string &changelog)
 {
     GPtrArray *cve_urls = g_ptr_array_new();
 
@@ -299,7 +299,7 @@ GPtrArray *getCVEUrls(const string &changelog)
     return cve_urls;
 }
 
-GPtrArray *getBugzillaUrls(const string &changelog)
+GPtrArray *getBugzillaUrls(const std::string &changelog)
 {
     GPtrArray *bugzilla_urls = g_ptr_array_new();
 
@@ -351,19 +351,19 @@ GPtrArray *getBugzillaUrls(const string &changelog)
     return bugzilla_urls;
 }
 
-bool ends_with(const string &str, const char *end)
+bool ends_with(const std::string &str, const char *end)
 {
     size_t endSize = strlen(end);
     return str.size() >= endSize && (memcmp(str.data() + str.size() - endSize, end, endSize) == 0);
 }
 
-bool starts_with(const string &str, const char *start)
+bool starts_with(const std::string &str, const char *start)
 {
     size_t startSize = strlen(start);
     return str.size() >= startSize && (strncmp(str.data(), start, startSize) == 0);
 }
 
-bool utilRestartRequired(const string &packageName)
+bool utilRestartRequired(const std::string &packageName)
 {
     if (starts_with(packageName, "linux-image-") || starts_with(packageName, "nvidia-") || packageName == "libc6"
         || packageName == "dbus" || packageName == "dbus-broker") {
@@ -372,28 +372,28 @@ bool utilRestartRequired(const string &packageName)
     return false;
 }
 
-string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
+std::string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
 {
     if (vf.File().Origin() == nullptr)
-        return string("local");
+        return std::string("local");
     if (vf.File().Archive() == nullptr)
-        return string("local");
+        return std::string("local");
     if (vf.File().Component() == nullptr)
-        return string("invalid");
+        return std::string("invalid");
 
     // https://wiki.debian.org/DebianRepository/Format
     // Optional field indicating the origin of the repository, a single line of free form text.
     // e.g. "Debian" or "Google Inc."
-    auto origin = string(vf.File().Origin());
+    auto origin = std::string(vf.File().Origin());
     // The Suite field may describe the suite. A suite is a single word.
     // e.g. "jessie" or "sid"
-    auto suite = string(vf.File().Archive());
+    auto suite = std::string(vf.File().Archive());
     // An area within the repository. May be prefixed by parts of the path
     // following the directory beneath dists.
     // e.g. "main" or "non-free"
     // NOTE: this may need the slash stripped, currently having a slash doesn't
     //    seem a problem though. we'll allow them until otherwise indicated
-    auto component = string(vf.File().Component());
+    auto component = std::string(vf.File().Component());
 
     // Origin is defined as 'a single line of free form text'.
     // Sanitize it!
@@ -405,7 +405,7 @@ string utilBuildPackageOriginId(pkgCache::VerFileIterator vf)
     std::transform(origin.begin(), origin.end(), origin.begin(), ::tolower);
     origin = std::regex_replace(origin, std::regex("[[:space:][:cntrl:][:punct:]]+"), "_");
 
-    string res = origin + "-" + suite + "-" + component;
+    std::string res = origin + "-" + suite + "-" + component;
     return res;
 }
 
@@ -424,7 +424,7 @@ const char *toUtf8(const char *str)
     return _str;
 }
 
-string changelogDateToIso8601(const string &date)
+std::string changelogDateToIso8601(const std::string &date)
 {
     if (date.empty()) {
         return {};
@@ -433,13 +433,13 @@ string changelogDateToIso8601(const string &date)
     std::istringstream date_ss(date);
     date_ss.imbue(std::locale("C")); // Dates are always in English locale
     tm time = {};
-    date_ss >> get_time(&time, "%a, %d %b %Y %H:%M:%S ");
+    date_ss >> std::get_time(&time, "%a, %d %b %Y %H:%M:%S ");
     if (date_ss.fail()) {
         return {};
     }
 
     // Timezone is not parsed by get_time(), so it remains at the end of the stream
-    string tz_str;
+    std::string tz_str;
     date_ss >> tz_str;
     g_autoptr(GTimeZone) tz = g_time_zone_new_identifier(tz_str.c_str());
     if (!tz) {
@@ -453,5 +453,5 @@ string changelogDateToIso8601(const string &date)
         return {};
     }
 
-    return string(g_date_time_format_iso8601(dateTime));
+    return {g_date_time_format_iso8601(dateTime)};
 }

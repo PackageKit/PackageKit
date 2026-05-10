@@ -2,7 +2,7 @@
  *
  * Copyright (c) 1999 Patrick Cole <z@amused.net>
  *           (c) 2002 Synaptic development team
- *           (c) 2018-2025 Matthias Klumpp <matthias@tenstral.net>
+ *           (c) 2018-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Author: Patrick Cole <z@amused.net>
  *         Michael Vogt <mvo@debian.org>
@@ -34,8 +34,6 @@
 #include <string>
 #include <list>
 
-using namespace std;
-
 class SourcesList
 {
 public:
@@ -48,25 +46,25 @@ public:
 
     struct SourceRecord {
         unsigned int Type;
-        string VendorID;
-        string PrimaryURI;
+        std::string VendorID;
+        std::string PrimaryURI;
         std::vector<std::string> URIs;
-        string Dist;
-        string *Sections;
+        std::string Dist;
+        std::string *Sections;
         unsigned short NumSections;
-        string Comment;
+        std::string Comment;
 
-        string SourceFile;
+        std::string SourceFile;
         uint Deb822StanzaIdx;
 
-        string joinedSections(const std::string &separator = " ") const;
-        string niceName();
-        string repoId();
+        std::string joinedSections(const std::string &separator = " ") const;
+        std::string niceName();
+        std::string repoId();
         bool hasSection(const char *component) const;
 
-        bool SetType(string);
-        string GetType() const;
-        bool SetURI(string);
+        bool SetType(std::string);
+        std::string GetType() const;
+        bool SetURI(std::string);
         bool SetURIs(const std::vector<std::string> &newURIs);
 
         SourceRecord()
@@ -86,13 +84,13 @@ public:
     };
 
     struct VendorRecord {
-        string VendorID;
-        string FingerPrint;
-        string Description;
+        std::string VendorID;
+        std::string FingerPrint;
+        std::string Description;
     };
 
-    list<SourceRecord *> SourceRecords;
-    list<VendorRecord *> VendorRecords;
+    std::list<SourceRecord *> SourceRecords;
+    std::list<VendorRecord *> VendorRecords;
 
 private:
     SourceRecord *AddSourceNode(const SourceRecord &);
@@ -105,23 +103,23 @@ private:
 public:
     SourceRecord *AddSource(
         RecType Type,
-        string VendorID,
-        string URI,
-        string Dist,
-        string *Sections,
+        std::string VendorID,
+        std::string URI,
+        std::string Dist,
+        std::string *Sections,
         unsigned short count,
-        string SourceFile);
+        std::string SourceFile);
     SourceRecord *AddEmptySource();
     void RemoveSource(SourceRecord *&);
     void SwapSources(SourceRecord *&, SourceRecord *&);
-    bool ReadSourceDeb822(const string& listpath);
-    bool ReadSourceLegacy(const string& listpath);
-    bool ReadSourcePart(string listpath);
-    bool ReadSourceDir(string Dir);
+    bool ReadSourceDeb822(const std::string& listpath);
+    bool ReadSourceLegacy(const std::string& listpath);
+    bool ReadSourcePart(std::string listpath);
+    bool ReadSourceDir(std::string Dir);
     bool ReadSources();
     bool UpdateSources();
 
-    VendorRecord *AddVendor(string VendorID, string FingerPrint, string Description);
+    VendorRecord *AddVendor(std::string VendorID, std::string FingerPrint, std::string Description);
     void RemoveVendor(VendorRecord *&);
     bool ReadVendors();
     bool UpdateVendors();
@@ -130,9 +128,9 @@ public:
     ~SourcesList();
 };
 
-typedef list<SourcesList::SourceRecord *>::iterator SourcesListIter;
+typedef std::list<SourcesList::SourceRecord *>::iterator SourcesListIter;
 
-ostream &operator<<(ostream &, const SourcesList::SourceRecord &);
-ostream &operator<<(ostream &os, const SourcesList::VendorRecord &rec);
+std::ostream &operator<<(std::ostream &, const SourcesList::SourceRecord &);
+std::ostream &operator<<(std::ostream &os, const SourcesList::VendorRecord &rec);
 
 #endif

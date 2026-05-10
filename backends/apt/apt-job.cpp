@@ -1248,7 +1248,7 @@ PkgList AptJob::searchPackageFiles(gchar **values)
         if (ends_with(dirp->d_name, ".list")) {
             string file(dirp->d_name);
             string f = "/var/lib/dpkg/info/" + file;
-            ifstream in(f.c_str());
+            std::ifstream in(f.c_str());
             if (!in != 0) {
                 continue;
             }
@@ -1464,7 +1464,7 @@ bool AptJob::isApplication(const pkgCache::VerIterator &ver)
     if (!FileExists(fileName))
         return false;
 
-    ifstream in(fileName);
+    std::ifstream in(fileName);
     if (!in)
         return false;
 
@@ -1492,7 +1492,7 @@ void AptJob::emitPackageFiles(const gchar *pi)
     }
 
     if (FileExists(fName)) {
-        ifstream in(fName.c_str());
+        std::ifstream in(fName.c_str());
         if (!in != 0) {
             return;
         }

@@ -27,21 +27,19 @@
 
 #include "apt-utils.h"
 
-using namespace std;
-
 void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
 {
-    stringstream errors;
+    std::stringstream errors;
     int errorCount = 0;
 
-    string Err;
+    std::string Err;
     while (_error->empty() == false) {
         bool Type = _error->PopMessage(Err);
 
         g_warning("%s", Err.c_str());
 
         // Ugly workaround to demote the "repo not found" error message to a simple message
-        if ((errModify) && (Err.find("404  Not Found") != string::npos)) {
+        if ((errModify) && (Err.find("404  Not Found") != std::string::npos)) {
             // TODO this should emit the regular
             // PK_ERROR_ENUM_CANNOT_FETCH_SOURCES but do not fail the
             // last-time-update
@@ -50,10 +48,10 @@ void show_errors(PkBackendJob *job, PkErrorEnum errorCode, bool errModify)
         }
 
         if (Type == true) {
-            errors << "E: " << Err << endl;
+            errors << "E: " << Err << std::endl;
             errorCount++;
         } else {
-            errors << "W: " << Err << endl;
+            errors << "W: " << Err << std::endl;
         }
     }
 

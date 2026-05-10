@@ -152,12 +152,12 @@ public:
     /**
      * Returns a list of all packages that matched their names with matcher
      */
-    PkgList searchPackageName(const vector<string> &queries);
+    PkgList searchPackageName(const std::vector<std::string> &queries);
 
     /**
      * Returns a list of all packages that matched their description with matcher
      */
-    PkgList searchPackageDetails(const vector<string> &queries);
+    PkgList searchPackageDetails(const std::vector<std::string> &queries);
 
     /**
      * Returns a list of all packages that matched contains the given files
@@ -272,9 +272,9 @@ public:
 private:
     void setEnvLocaleFromJob();
     bool checkTrusted(pkgAcquire &fetcher, PkBitfield flags);
-    bool packageIsSupported(const pkgCache::VerIterator &verIter, string component);
+    bool packageIsSupported(const pkgCache::VerIterator &verIter, std::string component);
     bool isApplication(const pkgCache::VerIterator &verIter);
-    bool matchesQueries(const vector<string> &queries, string s);
+    bool matchesQueries(const std::vector<std::string> &queries, std::string s);
     bool dpkgHasForceConfFileSet();
     PkInfoEnum packageStateFromVer(const pkgCache::VerIterator &ver) const;
     void stagePackageForEmit(
@@ -322,7 +322,7 @@ private:
     PkgList m_restartPackages;
 
     time_t m_lastTermAction;
-    string m_lastPackage;
+    std::string m_lastPackage;
     uint m_lastSubProgress;
     bool m_startCounting;
     bool m_interactive;

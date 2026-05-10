@@ -53,27 +53,27 @@ GstMatcher::GstMatcher(gchar **values)
         regmatch_t matches[6];
         if (regexec(&pkre, value, 6, matches, 0) != REG_NOMATCH) {
             Match mvals;
-            string version, type, data, opt;
+            std::string version, type, data, opt;
             bool native = false;
 
             // Appends the version "0.10"
             version = "\nGstreamer-Version: ";
-            version.append(string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so));
+            version.append(std::string(value, matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so));
 
             // type (encode|decoder...)
-            type = string(value, matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
+            type = std::string(value, matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 
             // data "audio/x-wma"
-            data = string(value, matches[4].rm_so, matches[4].rm_eo - matches[4].rm_so);
+            data = std::string(value, matches[4].rm_so, matches[4].rm_eo - matches[4].rm_so);
 
             // opt "wmaversion=3"
             if (matches[5].rm_so != -1) {
                 // remove the '(' ')' that the regex matched
-                opt = string(value, matches[5].rm_so + 1, matches[5].rm_eo - matches[5].rm_so - 2);
+                opt = std::string(value, matches[5].rm_so + 1, matches[5].rm_eo - matches[5].rm_so - 2);
                 if (!opt.empty()) {
                     size_t start_pos = 0;
                     // This is hardcoded in pk-gstreamer-install, so we also hardcode it here
-                    const string arch_64 = ")(64bit";
+                    const std::string arch_64 = ")(64bit";
                     if (ends_with(opt.c_str(), arch_64.c_str())) {
                         /* The ()(64bit) suffix is an RPM artifact, where it is used to distinguish
                          * between the primary and secondary architecture in a 2-arch system.
@@ -86,7 +86,7 @@ GstMatcher::GstMatcher(gchar **values)
                     }
 
                     // Replace all ")(" with "," - convert from input to serialized caps format
-                    while ((start_pos = opt.find(")(", start_pos)) != string::npos) {
+                    while ((start_pos = opt.find(")(", start_pos)) != std::string::npos) {
                         if (start_pos == opt.length() - 2) {
                             // Avoid trailing comma
                             opt.erase(start_pos, 2);
@@ -110,18 +110,16 @@ GstMatcher::GstMatcher(gchar **values)
                 type = "Gstreamer-Elements: ";
             }
 
-            gchar *capsString;
+            g_autofree gchar *capsString = nullptr;
             if (opt.empty()) {
                 capsString = g_strdup_printf("%s", data.c_str());
             } else {
                 capsString = g_strdup_printf("%s, %s", data.c_str(), opt.c_str());
             }
-            GstCaps *caps = gst_caps_from_string(capsString);
-            g_free(capsString);
 
-            if (caps == NULL) {
+            GstCaps *caps = gst_caps_from_string(capsString);
+            if (caps == nullptr)
                 continue;
-            }
 
             mvals.version = version;
             mvals.type = type;
@@ -145,17 +143,17 @@ GstMatcher::~GstMatcher()
     }
 }
 
-bool GstMatcher::matches(string record, bool native)
+bool GstMatcher::matches(std::string record, bool native)
 {
     for (const Match &match : m_matches) {
         // Tries to find "Gstreamer-version: xxx"
-        if (record.find(match.version) != string::npos) {
+        if (record.find(match.version) != std::string::npos) {
             size_t found;
             if (match.native && !native)
                 continue;
             found = record.find(match.type);
             // Tries to find the type "Gstreamer-Uri-Sinks: "
-            if (found != string::npos) {
+            if (found != std::string::npos) {
                 found += match.type.size(); // skips the "Gstreamer-Uri-Sinks: " string
                 size_t endOfLine;
                 endOfLine = record.find('\n', found);
