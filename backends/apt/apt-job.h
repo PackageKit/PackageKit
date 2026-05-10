@@ -142,7 +142,7 @@ public:
     /**
      * Returns a list of all packages in the cache
      */
-    PkgList getPackagesFromRepo(SourcesList::SourceRecord *&);
+    PkgList getPackagesFromRepo(SourcesList::SourceRecord *rec);
 
     /**
      * Returns a list of all packages in the given groups

@@ -31,8 +31,9 @@
 #include <apt-pkg/tagfile.h>
 #include <apt-pkg/metaindex.h>
 
-#include <string>
 #include <list>
+#include <memory>
+#include <string>
 #include <vector>
 
 class SourcesList
@@ -74,8 +75,8 @@ public:
         std::string Description;
     };
 
-    std::list<SourceRecord *> SourceRecords;
-    std::list<VendorRecord *> VendorRecords;
+    std::list<std::unique_ptr<SourceRecord>> SourceRecords;
+    std::list<std::unique_ptr<VendorRecord>> VendorRecords;
 
 private:
     SourceRecord *AddSourceNode(const SourceRecord &);
@@ -94,8 +95,8 @@ public:
         std::vector<std::string> Sections,
         std::string SourceFile);
     SourceRecord *AddEmptySource();
-    void RemoveSource(SourceRecord *&);
-    void SwapSources(SourceRecord *&, SourceRecord *&);
+    void RemoveSource(SourceRecord *rec);
+    void SwapSources(SourceRecord *rec_one, SourceRecord *rec_two);
     bool ReadSourceDeb822(const std::string &listpath);
     bool ReadSourceLegacy(const std::string &listpath);
     bool ReadSourcePart(std::string listpath);
@@ -104,15 +105,13 @@ public:
     bool UpdateSources();
 
     VendorRecord *AddVendor(std::string VendorID, std::string FingerPrint, std::string Description);
-    void RemoveVendor(VendorRecord *&);
+    void RemoveVendor(VendorRecord *rec);
     bool ReadVendors();
     bool UpdateVendors();
 
-    SourcesList() {}
-    ~SourcesList();
+    SourcesList() = default;
+    ~SourcesList() = default;
 };
-
-typedef std::list<SourcesList::SourceRecord *>::iterator SourcesListIter;
 
 std::ostream &operator<<(std::ostream &, const SourcesList::SourceRecord &);
 std::ostream &operator<<(std::ostream &os, const SourcesList::VendorRecord &rec);

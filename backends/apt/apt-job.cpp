@@ -1012,7 +1012,7 @@ PkgList AptJob::getPackages()
     return output;
 }
 
-PkgList AptJob::getPackagesFromRepo(SourcesList::SourceRecord *&rec)
+PkgList AptJob::getPackagesFromRepo(SourcesList::SourceRecord *rec)
 {
     pk_backend_job_set_status(m_job, PK_STATUS_ENUM_QUERY);
 

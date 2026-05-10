@@ -347,7 +347,7 @@ static bool _test_sample_sources(const std::string &testSourcesDir)
     };
 
     std::set<std::string> foundSources;
-    for (SourcesList::SourceRecord *sourceRecord : sourcesList.SourceRecords) {
+    for (const auto &sourceRecord : sourcesList.SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
@@ -393,7 +393,7 @@ static void apt_test_sources_write(void)
     g_assert_true(_test_sample_sources(wtestSourcesDir));
 
     // enable/disable some stuff
-    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+    for (const auto &sourceRecord : sourcesList->SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
@@ -413,7 +413,7 @@ static void apt_test_sources_write(void)
     g_assert_true(sourcesList->ReadSourceDir(wtestSourcesDir));
 
     std::set<std::string> foundSources;
-    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+    for (const auto &sourceRecord : sourcesList->SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 
@@ -427,7 +427,7 @@ static void apt_test_sources_write(void)
     g_assert_true(_test_string_sets_equal(expectedSourcesDisabled, foundSources));
 
     // restore previous state
-    for (SourcesList::SourceRecord *sourceRecord : sourcesList->SourceRecords) {
+    for (const auto &sourceRecord : sourcesList->SourceRecords) {
         if (sourceRecord->Type & SourcesList::Comment)
             continue;
 

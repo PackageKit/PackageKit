@@ -63,24 +63,13 @@ static std::vector<std::string> FindMultiValue(pkgTagSection &Tags, char const *
     return vect;
 }
 
-SourcesList::~SourcesList()
-{
-    for (SourceRecord *sr : SourceRecords) {
-        delete sr;
-    }
-
-    for (VendorRecord *vr : VendorRecords) {
-        delete vr;
-    }
-}
-
 SourcesList::SourceRecord *SourcesList::AddSourceNode(const SourceRecord &rec)
 {
-    SourceRecord *newrec = new SourceRecord;
-    *newrec = rec;
-    SourceRecords.push_back(newrec);
+    auto newrec = std::make_unique<SourceRecord>(rec);
+    SourceRecord *raw = newrec.get();
+    SourceRecords.push_back(std::move(newrec));
 
-    return newrec;
+    return raw;
 }
 
 bool SourcesList::OpenConfigurationFileFd(std::string const &File, FileFd &Fd)
@@ -410,22 +399,24 @@ SourcesList::SourceRecord *SourcesList::AddSource(
     return AddSourceNode(rec);
 }
 
-void SourcesList::RemoveSource(SourceRecord *&rec)
+void SourcesList::RemoveSource(SourceRecord *rec)
 {
-    SourceRecords.remove(rec);
-    delete rec;
-    rec = 0;
+    SourceRecords.remove_if([&](const std::unique_ptr<SourceRecord> &up) {
+        return up.get() == rec;
+    });
 }
 
-void SourcesList::SwapSources(SourceRecord *&rec_one, SourceRecord *&rec_two)
+void SourcesList::SwapSources(SourceRecord *rec_one, SourceRecord *rec_two)
 {
-    std::list<SourceRecord *>::iterator rec_p;
-    std::list<SourceRecord *>::iterator rec_n;
+    auto rec_p = std::find_if(SourceRecords.begin(), SourceRecords.end(),
+        [&](const std::unique_ptr<SourceRecord> &up) { return up.get() == rec_one; });
+    auto rec_n = std::find_if(SourceRecords.begin(), SourceRecords.end(),
+        [&](const std::unique_ptr<SourceRecord> &up) { return up.get() == rec_two; });
 
-    rec_p = find(SourceRecords.begin(), SourceRecords.end(), rec_one);
-    rec_n = find(SourceRecords.begin(), SourceRecords.end(), rec_two);
+    if (rec_n == SourceRecords.end())
+        return;
 
-    SourceRecords.insert(rec_p, rec_two);
+    SourceRecords.insert(rec_p, std::move(*rec_n));
     SourceRecords.erase(rec_n);
 }
 
@@ -443,7 +434,7 @@ bool SourcesList::UpdateSourceLegacy(const std::string &filename)
         return false;
     }
 
-    for (SourceRecord *sr : SourceRecords) {
+    for (const auto &sr : SourceRecords) {
         if (filename != sr->SourceFile) {
             continue;
         }
@@ -495,7 +486,7 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
     }
 
     std::set<uint> rmPendingStanzas;
-    for (SourceRecord *sr : SourceRecords) {
+    for (const auto &sr : SourceRecords) {
         if (filename != sr->SourceFile)
             continue;
 
@@ -559,14 +550,9 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
     }
 
     // remove all records from this file
-    for (auto it = SourceRecords.begin(); it != SourceRecords.end();) {
-        if ((*it)->SourceFile == filename) {
-            delete *it;
-            it = SourceRecords.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    SourceRecords.remove_if([&](const std::unique_ptr<SourceRecord> &up) {
+        return up->SourceFile == filename;
+    });
 
     // reload the updated data
     return ReadSourceDeb822(filename);
@@ -575,7 +561,7 @@ bool SourcesList::UpdateSourceDeb822(const std::string &filename)
 bool SourcesList::UpdateSources()
 {
     std::list<std::string> filenames;
-    for (SourceRecord *sr : SourceRecords) {
+    for (const auto &sr : SourceRecords) {
         if (sr->SourceFile == "") {
             continue;
         }
@@ -767,11 +753,11 @@ bool SourcesList::SourceRecord::hasSection(const char *component) const
 
 SourcesList::VendorRecord *SourcesList::AddVendorNode(VendorRecord &rec)
 {
-    VendorRecord *newrec = new VendorRecord;
-    *newrec = rec;
-    VendorRecords.push_back(newrec);
+    auto newrec = std::make_unique<VendorRecord>(rec);
+    VendorRecord *raw = newrec.get();
+    VendorRecords.push_back(std::move(newrec));
 
-    return newrec;
+    return raw;
 }
 
 bool SourcesList::ReadVendors()
@@ -785,9 +771,6 @@ bool SourcesList::ReadVendors()
         }
     }
 
-    for (VendorRecord *vr : VendorRecords) {
-        delete vr;
-    }
     VendorRecords.clear();
 
     // Process 'simple-key' type sections
@@ -838,7 +821,7 @@ bool SourcesList::UpdateVendors()
         return false;
     }
 
-    for (VendorRecord *vr : VendorRecords) {
+    for (const auto &vr : VendorRecords) {
         ofs << "simple-key \"" << vr->VendorID << "\" {" << std::endl;
         ofs << "\tFingerPrint \"" << vr->FingerPrint << "\";" << std::endl;
         ofs << "\tName \"" << vr->Description << "\";" << std::endl;
@@ -849,11 +832,11 @@ bool SourcesList::UpdateVendors()
     return true;
 }
 
-void SourcesList::RemoveVendor(VendorRecord *&rec)
+void SourcesList::RemoveVendor(VendorRecord *rec)
 {
-    VendorRecords.remove(rec);
-    delete rec;
-    rec = 0;
+    VendorRecords.remove_if([&](const std::unique_ptr<VendorRecord> &up) {
+        return up.get() == rec;
+    });
 }
 
 std::ostream &operator<<(std::ostream &os, const SourcesList::SourceRecord &rec)

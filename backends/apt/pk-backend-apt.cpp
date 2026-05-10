@@ -848,7 +848,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
         return;
     }
 
-    for (SourcesList::SourceRecord *sourceRecord : sourcesList.SourceRecords) {
+    for (const auto &sourceRecord : sourcesList.SourceRecords) {
 
         if (sourceRecord->Type & SourcesList::Comment) {
             continue;
@@ -893,7 +893,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         return;
                     }
 
-                    PkgList removePkgs = apt->getPackagesFromRepo(sourceRecord);
+                    PkgList removePkgs = apt->getPackagesFromRepo(sourceRecord.get());
                     if (removePkgs.size() > 0) {
                         // Install/Update/Remove packages, or just simulate
                         bool ret;
@@ -915,7 +915,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
 
                 // Now if we are not simulating remove the repository
                 if (!pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-                    sourcesList.RemoveSource(sourceRecord);
+                    sourcesList.RemoveSource(sourceRecord.get());
 
                     // Commit changes
                     if (!sourcesList.UpdateSources()) {
