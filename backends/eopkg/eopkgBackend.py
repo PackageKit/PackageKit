@@ -389,7 +389,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             if FILTER_NOT_FREE in filters:
                 if not any(l in pkg.license for l in nonfree):
                     return
-            if FILTER_DEVELOPMENT in filters and not "-devel" in pkg.name:
+            if FILTER_DEVELOPMENT in filters and "-devel" not in pkg.name:
                 return
             if FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
                 return
@@ -763,7 +763,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 "Could not download package: %s" % e,
                 exit=False,
             )
-        except Exception as e:
+        except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
@@ -814,7 +814,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(
                 ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e, exit=False
             )
-        except Exception as e:
+        except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
@@ -864,7 +864,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(
                 ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e, exit=False
             )
-        except Exception as e:
+        except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
@@ -931,7 +931,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(
                 ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e, exit=False
             )
-        except Exception as e:
+        except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
     @privileged
@@ -1104,7 +1104,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             self.error(
                 ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e, exit=False
             )
-        except Exception as e:
+        except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
 
