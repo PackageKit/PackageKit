@@ -334,76 +334,96 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         if installed is None and available is None:
             raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
 
-        pkg = None
-        status = None
-        data = None
+        # We will collect candidate packages here: (pkg, status, data)
+        candidates = []
 
-        if filters is not None:
+        # Check if we have any status filters
+        status_filters = [FILTER_INSTALLED, FILTER_NOT_INSTALLED, FILTER_NEWEST]
+        has_status_filter = filters and any(f in status_filters for f in filters)
+
+        if has_status_filter:
             if FILTER_INSTALLED in filters:
                 if installed:
-                    pkg = installed
-                    status = INFO_INSTALLED
                     data = "installed:{}".format(repo) if repo else "installed"
-                else:
-                    return
+                    candidates.append((installed, INFO_INSTALLED, data))
             elif FILTER_NOT_INSTALLED in filters:
                 if available:
-                    pkg = available
-                    status = INFO_AVAILABLE
-                    data = repo
-                else:
-                    return
+                    candidates.append((available, INFO_AVAILABLE, repo))
             elif FILTER_NEWEST in filters:
-                if available:
-                    pkg = available
-                    status = INFO_AVAILABLE
-                    data = repo
+                if installed and available:
+                    # Compare versions/releases
+                    v_inst = self.installdb.get_version_and_distro_release(package)
+                    v_avail = self.packagedb.get_version_and_distro_release(
+                        package, repo
+                    )
+
+                    # (version, release, build, distro, distro_release)
+                    # If version is different, we should probably compare versions.
+                    # But if they are the same, release comparison is sufficient.
+                    # In Solus/eopkg, release is the primary versioning for updates.
+                    if v_inst[0] == v_avail[0]:
+                        if int(v_avail[1]) > int(v_inst[1]):
+                            candidates.append((available, INFO_AVAILABLE, repo))
+                        elif int(v_avail[1]) == int(v_inst[1]):
+                            # Same version, show both
+                            data = "installed:{}".format(repo) if repo else "installed"
+                            candidates.append((installed, INFO_INSTALLED, data))
+                            candidates.append((available, INFO_AVAILABLE, repo))
+                        else:
+                            # Installed is newer
+                            data = "installed:{}".format(repo) if repo else "installed"
+                            candidates.append((installed, INFO_INSTALLED, data))
+                    else:
+                        # Versions differ, we'd need a version comparison tool here.
+                        # For now, if versions differ, we'll just show both or available
+                        # if it looks newer (e.g. higher release).
+                        # Most often, version is the same.
+                        if int(v_avail[1]) > int(v_inst[1]):
+                            candidates.append((available, INFO_AVAILABLE, repo))
+                        else:
+                            data = "installed:{}".format(repo) if repo else "installed"
+                            candidates.append((installed, INFO_INSTALLED, data))
+                elif available:
+                    candidates.append((available, INFO_AVAILABLE, repo))
                 elif installed:
-                    pkg = installed
-                    status = INFO_INSTALLED
-                    data = "installed"
-                else:
-                    return
-
-        # Fallback if no filter matched or no filters provided
-        if pkg is None:
+                    candidates.append((installed, INFO_INSTALLED, "installed"))
+        else:
+            # No status filters, show both if they exist
             if installed:
-                pkg = installed
-                status = INFO_INSTALLED
                 data = "installed:{}".format(repo) if repo else "installed"
-            else:
-                pkg = available
-                status = INFO_AVAILABLE
-                data = repo
+                candidates.append((installed, INFO_INSTALLED, data))
+            if available:
+                candidates.append((available, INFO_AVAILABLE, repo))
 
-        if filters is not None:
-            if FILTER_GUI in filters and "app:gui" not in pkg.isA:
-                return
-            if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
-                return
-            # FIXME: To lower
-            nonfree = ["EULA", "Distributable"]
-            if FILTER_FREE in filters:
-                if any(l in pkg.license for l in nonfree):
-                    return
-            if FILTER_NOT_FREE in filters:
-                if not any(l in pkg.license for l in nonfree):
-                    return
-            if FILTER_DEVELOPMENT in filters and "-devel" not in pkg.name:
-                return
-            if FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
-                return
-            pkg_subtypes = ["-devel", "-dbginfo", "-32bit", "-docs"]
-            if FILTER_BASENAME in filters:
-                if any(suffix in pkg.name for suffix in pkg_subtypes):
-                    return
-            if FILTER_NOT_BASENAME in filters:
-                if not any(suffix in pkg.name for suffix in pkg_subtypes):
-                    return
+        for pkg, status, data in candidates:
+            if filters is not None:
+                if FILTER_GUI in filters and "app:gui" not in pkg.isA:
+                    continue
+                if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
+                    continue
+                # FIXME: To lower
+                nonfree = ["EULA", "Distributable"]
+                if FILTER_FREE in filters:
+                    if any(l in pkg.license for l in nonfree):
+                        continue
+                if FILTER_NOT_FREE in filters:
+                    if not any(l in pkg.license for l in nonfree):
+                        continue
+                if FILTER_DEVELOPMENT in filters and "-devel" not in pkg.name:
+                    continue
+                if FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
+                    continue
+                pkg_subtypes = ["-devel", "-dbginfo", "-32bit", "-docs"]
+                if FILTER_BASENAME in filters:
+                    if any(suffix in pkg.name for suffix in pkg_subtypes):
+                        continue
+                if FILTER_NOT_BASENAME in filters:
+                    if not any(suffix in pkg.name for suffix in pkg_subtypes):
+                        continue
 
-        version = self.__get_package_version(pkg)
-        id = self.get_package_id(pkg.name, version, pkg.architecture, data)
-        return self.package(id, status, pkg.summary)
+            version = self.__get_package_version(pkg)
+            pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, data)
+            self.package(pkg_id, status, pkg.summary)
 
     def depends_on(self, filters, package_ids, recursive):
         """Prints a list of depends for a given package"""
@@ -983,13 +1003,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package in values:
             name = self.get_package_from_id(package)[0]
             try:
-                if filters is not None:
-                    self.__get_package(name, filters)
-                else:
-                    # If no filters, show both installed and available if they exist
-                    # we should really fix __get_package to allow emitting multiple results
-                    self.__get_package(name, [FILTER_INSTALLED])
-                    self.__get_package(name, [FILTER_NOT_INSTALLED])
+                self.__get_package(name, filters)
             except PkError as e:
                 if e.code == ERROR_PACKAGE_NOT_FOUND:
                     continue
