@@ -52,22 +52,6 @@ from packagekit.enums import *
 from packagekit.package import PackagekitPackage
 from packagekit.progress import *
 
-TransactionsStateMap = {
-    "download_packages": STATUS_DOWNLOAD,
-    "update_packages": STATUS_UPDATE,
-    "remove_packages": STATUS_REMOVE,
-    "install_packages": STATUS_INSTALL,
-    "install_files": STATUS_INSTALL,
-    "refresh_cache": STATUS_REFRESH_CACHE,
-}
-
-TransactionsInfoMap = {
-    "update_packages": INFO_UPDATING,
-    "remove_packages": INFO_REMOVING,
-    "install_packages": INFO_INSTALLING,
-    "install_files": INFO_INSTALLING,
-}
-
 
 def _format_str(text):
     """
