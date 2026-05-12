@@ -93,116 +93,118 @@ class SimplePisiHandler(pisi.ui.UI):
         # Progress bar helpers
         self.packagestogo = 0
         self.currentpackage = 0
+        self.cur_pkg = None
+        self.cur_status = None
+        self.is_downloading = False
 
-    @staticmethod
-    def get_percentage(count, max_count):
-        """
-        Prepare percentage value used to feed self.percentage()
-        """
-        if count == 0 or max_count == 0:
-            return 0
-        percent = int((float(count) / max_count) * 100)
-        if percent > 100:
-            return 100
-        return percent
+    def _update_global_progress(self, item_percent):
+        if self.packagestogo <= 0:
+            self.base._set_percent(item_percent)
+            return
 
-    def update_percentage(self, downloading=False):
-        # Reset counter when switching state i.e. from downloading to installing
-        # FIXME: If we get forced upgrades i.e. partial upgrades as part of a pkg
-        #        installation, it breaks the progress bar as we switch from INFO_INSTALLING
-        #        to INFO_UPDATING and doesn't match up with packagestogo.
-        if self.currentpackage == self.packagestogo:
-            self.currentpackage = 0
-        self.currentpackage += 1
-        percent = self.get_percentage(self.currentpackage, self.packagestogo)
-        if downloading is False:
-            # Reserve 10% of progress to account for usysconf to run triggers
-            usysconf_offset = 0.1 * self.packagestogo
-            total_percent = percent + usysconf_offset
-            self.base._set_percent(total_percent)
-        else:
-            self.base._set_percent(percent)
+        # Weight global progress: 90% for packages (allowing for usysconf), 100% if just downloading
+        weight = 100.0 if self.is_downloading else 90.0
+        slice_size = weight / self.packagestogo
+
+        # currentpackage is 1-indexed (1..N)
+        base_percent = (self.currentpackage - 1) * slice_size
+        progress = base_percent + (item_percent / 100.0) * slice_size
+        self.base._set_percent(progress)
 
     def display_progress(self, **kw):
-        percent = self.get_percentage(self.currentpackage, self.packagestogo)
-        file_name = kw["filename"]
-        if not file_name.startswith("eopkg-index.xml"):
-            pkg_name = pisi.util.parse_package_name(file_name)[0]
-            self.notify("progress", pkg_name=pkg_name, percent=int(kw["percent"]))
-        if self.packagestogo > 0:
-            # Increase the step offset by 50%
-            # e.g. 5 pkgs to install, currentpackage == 3 so update percentage range within 60% to 80%.
-            sliced = 100 / self.packagestogo
-            slicedpercent = sliced / 100 * int(kw["percent"]) + percent - sliced
-            self.base._set_percent(slicedpercent)
+        operation = kw.get("operation")
+        percent = int(kw.get("percent", 0))
+
+        if operation == "fetching":
+            filename = kw.get("filename")
+            if filename and not filename.startswith("eopkg-index.xml"):
+                pkg_name = pisi.util.parse_package_name(filename)[0]
+                if pisi.db.packagedb.PackageDB().has_package(pkg_name):
+                    pkg = pisi.db.packagedb.PackageDB().get_package(pkg_name)
+                    self.base.item_progress(
+                        self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, percent
+                    )
+            self._update_global_progress(percent)
+
+        elif operation == "extracting":
+            if self.cur_pkg and self.cur_status:
+                self.base.item_progress(
+                    self.base._pkg_to_id(self.cur_pkg), self.cur_status, percent
+                )
+            self._update_global_progress(percent)
+
+        elif operation == "indexing":
+            self.base._set_percent(percent)
+
         else:
-            self.base._set_percent(int(kw["percent"]))
+            # Fallback for other operations
+            if self.packagestogo > 0:
+                self._update_global_progress(percent)
+            else:
+                self.base._set_percent(percent)
 
     def notify(self, event, **keywords):
-
         if event == pisi.ui.packagestogo:
             self.packagestogo = len(keywords["order"])
-        if event == pisi.ui.downloading:
-            self.base._set_status(keywords["package"], INFO_DOWNLOADING)
-            self.update_percentage(downloading=True)
-        if event == "progress":
-            if pisi.db.packagedb.PackageDB().has_package(keywords["pkg_name"]):
-                pkg = pisi.db.packagedb.PackageDB().get_package(keywords["pkg_name"])
-                self.base.item_progress(
-                    self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, keywords["percent"]
-                )
-        # if event == pisi.ui.cached:
-        #   self.base._set_status(keywords["package"], INFO_FINISHED)
-        if event == pisi.ui.installing:
-            # Pisi doesn't tell us whether it's installing or upgrading in the callback until after it's done it, thanks!
-            # This is bad for progress bars, obviously. Set the status based on the called operation.
-            self.base.status(TransactionsStateMap[self.base.operation])
+            self.currentpackage = 0
 
-            self.base._set_status(
-                keywords["package"], TransactionsInfoMap[self.base.operation]
-            )
+        elif event == pisi.ui.downloading:
+            if not self.is_downloading:
+                self.is_downloading = True
+                self.currentpackage = 0
+            self.currentpackage += 1
+            self.cur_pkg = keywords["package"]
             self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]),
-                TransactionsStateMap[self.base.operation],
-                0,
+                self.base._pkg_to_id(self.cur_pkg), STATUS_DOWNLOAD, 0
             )
-        if event == pisi.ui.removing:
-            self.base._set_status(
-                keywords["package"], TransactionsInfoMap[self.base.operation]
+
+        elif event in (pisi.ui.installing, pisi.ui.upgrading):
+            if self.is_downloading:
+                self.is_downloading = False
+                self.currentpackage = 0
+
+            self.currentpackage += 1
+            self.cur_pkg = keywords["package"]
+            self.cur_status = (
+                STATUS_INSTALL if event == pisi.ui.installing else STATUS_UPDATE
             )
+            info = INFO_INSTALLING if event == pisi.ui.installing else INFO_UPDATING
+
+            self.base.status(self.cur_status)
+            self.base._set_status(self.cur_pkg, info)
             self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]),
-                TransactionsStateMap[self.base.operation],
-                0,
+                self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0
             )
-        if event == pisi.ui.extracting:
-            # Increase the step offset by 50% and account for usysconf offset
-            # e.g. 5 pkgs to install, currentpackage == 3 so update percentage 50% within 60% to 80%.
-            subpercentage = (
-                100 / (self.packagestogo + (0.1 * self.packagestogo))
-            ) / 100 * 50 + self.get_percentage(self.currentpackage, self.packagestogo)
-            self.base._set_percent(subpercentage)
+
+        elif event == pisi.ui.removing:
+            self.is_downloading = False
+            if self.currentpackage >= self.packagestogo:
+                self.currentpackage = 0
+            self.currentpackage += 1
+            self.cur_pkg = keywords["package"]
+            self.cur_status = STATUS_REMOVE
+            self.base.status(self.cur_status)
+            self.base._set_status(self.cur_pkg, INFO_REMOVING)
             self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]),
-                TransactionsStateMap[self.base.operation],
-                50,
+                self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0
             )
-        if event == pisi.ui.installed:
-            self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]), STATUS_INSTALL, 100
-            )
-            self.update_percentage()
-        if event == pisi.ui.removed:
-            self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]), STATUS_REMOVE, 100
-            )
-            self.update_percentage()
-        if event == pisi.ui.upgraded:
-            self.base.item_progress(
-                self.base._pkg_to_id(keywords["package"]), STATUS_UPDATE, 100
-            )
-            self.update_percentage()
-        if event == pisi.ui.systemconf:
+
+        elif event == pisi.ui.extracting:
+            self.cur_pkg = keywords.get("package", self.cur_pkg)
+            # Item progress and global percentage are now handled live in display_progress
+
+        elif event in (pisi.ui.installed, pisi.ui.upgraded, pisi.ui.removed):
+            status = STATUS_INSTALL
+            if event == pisi.ui.upgraded:
+                status = STATUS_UPDATE
+            if event == pisi.ui.removed:
+                status = STATUS_REMOVE
+
+            if self.cur_pkg:
+                self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), status, 100)
+            self._update_global_progress(100)
+
+        elif event == pisi.ui.systemconf:
             self.base._set_percent(90)
 
 
@@ -213,7 +215,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         self.bug_regex = None
         self.bug_uri = None
         self._load_settings()
-        self.operation = None
         PackageKitBaseBackend.__init__(self, args)
 
         self.get_db()
@@ -268,7 +269,6 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         def wrapper(self, *__args, **__kw):
             ui = SimplePisiHandler(self)
-            self.operation = func.__name__
             pisi.api.set_userinterface(ui)
             try:
                 func(self, *__args, **__kw)
