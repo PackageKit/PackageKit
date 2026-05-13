@@ -26,6 +26,7 @@
 
 #include "pk-client-helper.h"
 #include "pk-common.h"
+#include "pk-common-private.h"
 #include "pk-control.h"
 #include "pk-debug.h"
 #include "pk-desktop.h"
@@ -175,7 +176,7 @@ pk_test_common_func (void)
 	GDate *date;
 
 	present = pk_get_distro_id ();
-	g_assert_cmpstr (present, ==, "selftest;11.91;i686");
+	g_assert_cmpstr (present, ==, pk_get_test_distro_id ());
 	g_free (present);
 
 	/* get present iso8601 */
@@ -946,8 +947,8 @@ main (int argc, char **argv)
 	pk_debug_set_verbose (TRUE);
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
-	/* some libraries need to know */
-	g_setenv ("PK_SELF_TEST", "1", TRUE);
+	/* Enable test mode */
+	pk_set_test_data_dir (TESTDATADIR);
 
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);

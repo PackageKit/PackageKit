@@ -32,6 +32,9 @@ G_BEGIN_DECLS
 
 gchar		*pk_get_distro_name			(GError		**error);
 gchar		*pk_get_distro_version_id		(GError		**error);
+const gchar	*pk_get_test_distro_id			(void);
+const gchar	*pk_get_test_data_dir			(void);
+void		 pk_set_test_data_dir			(const gchar *test_data_dir);
 
 G_END_DECLS
 

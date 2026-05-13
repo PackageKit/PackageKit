@@ -28,6 +28,7 @@
 
 #include "pk-client.h"
 #include "pk-client-helper.h"
+#include "pk-common-private.h"
 #include "pk-control.h"
 #include "pk-console-private.h"
 #include "pk-offline.h"
@@ -1428,8 +1429,8 @@ main (int argc, char **argv)
 	return 0;
 #endif
 
-	/* some libraries need to know */
-	g_setenv ("PK_SELF_TEST", "1", TRUE);
+	/* Enable test mode */
+	pk_set_test_data_dir (TESTDATADIR);
 
 	/* tests go here */
 	if(0) g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
