@@ -848,7 +848,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
             if self.installdb.has_package(package):
-                self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is already installed")
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed")
             packages.append(package)
 
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
