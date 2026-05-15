@@ -9,17 +9,21 @@
 # Peter J. Mello <admin@petermello.net>, 2023
 # Richard Hughes <richard@hughsie.com>, 2011
 # Rui Gouveia <rui.gouveia@gmail.com>, 2010
+# Hugo Carvalho <hugokarvalho@hotmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-22 12:42+0200\n"
-"Language-Team: Portuguese (http://app.transifex.com/freedesktop/packagekit/language/pt/)\n"
+"PO-Revision-Date: 2026-05-15 08:54+0000\n"
+"Last-Translator: Hugo Carvalho <hugokarvalho@hotmail.com>\n"
+"Language-Team: Portuguese <https://hosted.weblate.org/projects/packagekit/translations/pt/>\n"
 "Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+"X-Generator: Weblate 2026.5.dev0\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -35,7 +39,7 @@ msgstr "Falha ao carregar o ficheiro de configuração: %s"
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -713,7 +717,7 @@ msgstr "A opção \"%s\" não é suportada"
 #. TRANSLATORS: Generic failure of what they asked to do
 #: client/pkcon/pk-console.c:2459
 msgid "Command failed"
-msgstr "Comando falhou"
+msgstr "Falha do comando"
 
 #: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
 msgid "Failed to get daemon state"
@@ -730,114 +734,104 @@ msgstr "Monitor do PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Permitir que os pacotes sejam desatualizados durante a transação"
+msgstr "Permitir a atualização para versões anteriores"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Permitir aue os pacotes sejam reinstalados durante a transação"
+msgstr "Permitir a reinstalação de pacotes"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Instalar versão anterior de pacote instalado"
+msgstr "Permitir a instalação de pacotes não fidedignos"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Remover automaticamente dependências não usadas"
+msgstr "Não remover automaticamente as dependências não utilizadas"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "A duração máxima da cache de metadados (em segundos). Utilize -1 para utilizar apenas a cache, 1 para recarregar a cache."
+msgstr "Tempo máximo de validade do cache de metadados em segundos (predefinição: 3 dias)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "SEGUNDOS"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:199
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Atualizar a cache"
+msgstr "Atualizar a cache de metadados do pacote."
 
 #: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Metadados dos pacotes atualizado"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Instalar um ou mais pacotes ou ficheiros de pacotes locais."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:312 client/pkgc-manage.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Esta ferramenta não conseguiu encontrar nenhum pacote disponível: %s"
+msgstr "Não foi possível encontrar nenhum pacote disponível: %s"
 
 #: client/pkgc-manage.c:331
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Os pacotes seleccionados já podem ser instalados."
+msgstr "O pacote selecionado já está instalado."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Remover um ou mais pacotes do sistema."
 
 #: client/pkgc-manage.c:389
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Esta ferramenta não conseguiu encontrar o pacote: %s"
+msgstr "Não foi possível encontrar os pacotes instalados: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Descarregue os pacotes para o diretório especificado sem os instalar."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Esta ferramenta não conseguiu encontrar o pacote: %s"
+msgstr "Não foi possível encontrar os pacotes: %s"
 
 #: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "O diretório não existe: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Atualizar todos os pacotes ou pacotes específicos para as versões mais recentes."
 
 #: client/pkgc-manage.c:518
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Esta ferramenta não conseguiu encontrar o pacote: %s"
+msgstr "Não foi possível encontrar pacotes para atualizar: %s"
 
 #: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Falha ao obter o estado do daemon"
+msgstr "Não foi possível obter as atualizações: %s"
 
 #: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Sem pacotes a precisar de atualização para novas versões."
+msgstr "Sem pacotes a precisar de atualização"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -847,11 +841,14 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Atualizar todos os pacotes ou executar uma atualização da distribuição.\n"
+"\n"
+"Tipos: mínima, padrão, completa"
 
 #: client/pkgc-manage.c:695
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Acionar atualizações offline"
+msgstr "Falha ao ler a ação de atualização offline: %s"
 
 #: client/pkgc-manage.c:705
 #, fuzzy
