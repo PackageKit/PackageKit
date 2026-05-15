@@ -811,7 +811,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                                 % (f, dep.package),
                             )
                         dep_pkg = self.packagedb.get_package(dep.package)
-                        repo = self.packagedb.get_package_repo(dep_pkg.name, None)
+                        pkg, repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                         dep_id = self.get_package_id(
                             dep_pkg.name, dep_pkg.version, dep_pkg.architecture, repo
                         )
