@@ -394,7 +394,7 @@ class PackageKitPortageMixin(object):
 
     def _get_portage_category_description(self, category):
 
-        from xml.dom import minidom
+        from defusedxml import minidom
         data = {}
         portdir = self.pvar.settings['PORTDIR']
         myfile = os.path.join(portdir, category, "metadata.xml")
@@ -2008,6 +2008,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                            "gentoo repository can't be disabled")
             return
 
+        if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9._-]*$', repoid):
+            raise ValueError("Invalid repository identifier: {}".format(repoid))
         cmd = ["eselect", "repository", "enable" if enable else "disable", repoid]
         try:
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
