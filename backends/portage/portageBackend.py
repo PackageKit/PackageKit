@@ -2009,7 +2009,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             return
 
         if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9._-]*$', repoid):
-            raise ValueError("Invalid repository identifier: {}".format(repoid))
+            self.error(ERROR_REPO_CONFIGURATION_ERROR,
+                       "Invalid repository identifier: {}".format(repoid))
+            return
         cmd = ["eselect", "repository", "enable" if enable else "disable", repoid]
         try:
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
