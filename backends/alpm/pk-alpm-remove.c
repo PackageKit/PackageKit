@@ -101,7 +101,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer
 	if (pk_alpm_transaction_initialize (job, flags, NULL, &error) &&
 	    pk_alpm_transaction_remove_targets (job, package_ids, &error) &&
 	    pk_alpm_transaction_remove_simulate (job, &error)) {
-		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
+		if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
+		    pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) { /* simulate or download-only (no-op for remove) */
 			pk_alpm_transaction_packages (job);
 		}
 		else {

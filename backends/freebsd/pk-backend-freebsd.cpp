@@ -1176,7 +1176,9 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     // TODO: https://github.com/freebsd/pkg/issues/2137
     // libpkg ignores PKG_FLAG_DRY_RUN for the remove job
     // we have to iterate over jobs to report results to PackageKit
-    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+    // ONLY_DOWNLOAD is a no-op for remove (nothing to download), report-only
+    if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
+        pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
         for (auto it = jobs.begin(); it != jobs.end(); ++it) {
             PackageView pkgView = it.newPkgView();
             pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());

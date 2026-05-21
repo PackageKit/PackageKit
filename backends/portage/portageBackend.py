@@ -1940,6 +1940,8 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.percentage(None)
 
         simulate = self._is_simulate(transaction_flags)
+        # ONLY_DOWNLOAD is a no-op for remove (nothing to download), report-only
+        only_download = self._is_only_download(transaction_flags)
 
         # collect system packages for safeguard
         system_packages = [
@@ -1988,7 +1990,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             )
             return
 
-        if simulate:
+        if simulate or only_download:
             myopts["--pretend"] = True
 
         # resolver
@@ -2015,7 +2017,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             pass
 
         self.status(STATUS_REMOVE)
-        if simulate:
+        if simulate or only_download:
             return
 
         portage.elog.add_listener(self._elog_listener)
