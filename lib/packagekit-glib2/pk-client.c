@@ -267,6 +267,14 @@ pk_client_state_finish (PkClientState *state, GError *error)
 	g_clear_object (&state->res);
 }
 
+static gboolean
+pk_client_state_is_finished (PkClientState *self)
+{
+	g_return_val_if_fail (PK_IS_CLIENT_STATE (self), TRUE);
+
+	return (self->res == NULL);
+}
+
 static void
 pk_client_state_dispose (GObject *object)
 {
@@ -1667,6 +1675,16 @@ pk_client_set_hints_cb (GObject *source_object,
 		return;
 	}
 
+	/* Check again for cancellation, as it’s possible the `PkClientState`
+	 * was cancelled and `pk_client_state_finish()` called asynchronously
+	 * while we were waiting for the hints to be set. */
+	if (g_cancellable_set_error_if_cancelled (state->cancellable_client, &error)) {
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
+
+	g_assert (!pk_client_state_is_finished (state));
+
 	/* we'll have results from now on */
 	state->results = pk_results_new ();
 	g_object_set (state->results,
@@ -2233,8 +2251,21 @@ pk_client_get_proxy_cb (GObject *object,
 	PkClientPrivate *priv = pk_client_get_instance_private (state->client);
 
 	state->proxy = g_dbus_proxy_new_for_bus_finish (res, &error);
-	if (state->proxy == NULL)
-		g_error ("Cannot connect to PackageKit on %s", state->tid);
+	if (state->proxy == NULL) {
+		g_debug ("Cannot connect to PackageKit on %s", state->tid);
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
+
+	/* Check again for cancellation, as it’s possible the `PkClientState`
+	 * was cancelled and `pk_client_state_finish()` called asynchronously
+	 * while we were waiting for the proxy to be constructed. */
+	if (g_cancellable_set_error_if_cancelled (state->cancellable_client, &error)) {
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
+
+	g_assert (!pk_client_state_is_finished (state));
 
 	/* connect */
 	pk_client_proxy_connect (state);
@@ -2308,6 +2339,16 @@ pk_client_get_tid_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 		pk_client_state_finish (state, g_steal_pointer (&error));
 		return;
 	}
+
+	/* Check for cancellation, as it’s possible the `PkClientState` was
+	 * cancelled and `pk_client_state_finish()` called asynchronously while
+	 * we were waiting for a TID. */
+	if (g_cancellable_set_error_if_cancelled (state->cancellable_client, &error)) {
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
+
+	g_assert (!pk_client_state_is_finished (state));
 
 	pk_progress_set_transaction_id (state->progress, state->tid);
 
