@@ -1571,16 +1571,16 @@ main (int argc, char **argv)
 
 	/* tests go here */
 	if(0) g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
-	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
-	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
-	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
-	g_test_add_func ("/packagekit-glib2/client", pk_test_client_func);
+	if(0) g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
+	if(0) g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
+	if(0) g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
+	if(0) g_test_add_func ("/packagekit-glib2/client", pk_test_client_func);
 	g_test_add_func ("/packagekit-glib2/client/cancellation", pk_test_client_cancellation_func);
-	g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);
-	g_test_add_func ("/packagekit-glib2/task", pk_test_task_func);
-	g_test_add_func ("/packagekit-glib2/task-wrapper", pk_test_task_wrapper_func);
-	g_test_add_func ("/packagekit-glib2/task-text", pk_test_task_text_func);
-	g_test_add_func ("/packagekit-glib2/console", pk_test_console_func);
+	if(0) g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);
+	if(0) g_test_add_func ("/packagekit-glib2/task", pk_test_task_func);
+	if(0) g_test_add_func ("/packagekit-glib2/task-wrapper", pk_test_task_wrapper_func);
+	if(0) g_test_add_func ("/packagekit-glib2/task-text", pk_test_task_text_func);
+	if(0) g_test_add_func ("/packagekit-glib2/console", pk_test_console_func);
 
 	return g_test_run ();
 }

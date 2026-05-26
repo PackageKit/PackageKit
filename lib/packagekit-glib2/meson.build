@@ -275,6 +275,11 @@ pk_test_private = executable(
   install: false,
 )
 
+test(
+  'pk-test-private',
+  pk_test_private
+)
+
 pk_test_daemon = executable(
   'pk-test-daemon',
   'pk-test-daemon.c',
@@ -296,6 +301,6 @@ pk_test_daemon = executable(
 )
 
 test(
-  'pk-test-private',
-  pk_test_private
+  'pk-test-daemon',
+  pk_test_daemon
 )
