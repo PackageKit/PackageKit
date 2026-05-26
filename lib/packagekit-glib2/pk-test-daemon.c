@@ -294,6 +294,20 @@ pk_test_client_helper_func (void)
 }
 
 static void
+async_result_cb (GObject      *object,
+                 GAsyncResult *result,
+                 void         *user_data)
+{
+	GAsyncResult **result_out = user_data;
+
+	g_assert (result_out != NULL);
+	g_assert (*result_out == NULL);
+	*result_out = g_object_ref (result);
+
+	g_main_context_wakeup (g_main_context_get_thread_default ());
+}
+
+static void
 pk_test_client_resolve_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
 	PkClient *client = PK_CLIENT (object);
@@ -720,6 +734,130 @@ pk_test_client_func (void)
 	g_assert (results != NULL);
 	g_object_unref (results);
 #endif
+}
+
+static gboolean
+idle_cancel_cb (void *user_data)
+{
+	GCancellable *cancellable = G_CANCELLABLE (user_data);
+
+	/* Don’t necessarily just cancel on the first idle callback. Sometimes
+	 * delay a bit. */
+	if (g_random_boolean ()) {
+		g_debug ("%s: Cancelling %p", G_STRFUNC, cancellable);
+		g_cancellable_cancel (cancellable);
+		return G_SOURCE_REMOVE;
+	}
+
+	return G_SOURCE_CONTINUE;
+}
+
+static void
+cancellation_progress_cb (PkProgress     *progress,
+                          PkProgressType  type,
+                          void           *user_data)
+{
+	char ***tid_out = user_data;
+
+	g_assert (tid_out != NULL);
+	g_assert (*tid_out != NULL);
+
+	if (type != PK_PROGRESS_TYPE_TRANSACTION_ID)
+		return;
+
+	g_debug ("%s: Got TID %s", G_STRFUNC, pk_progress_get_transaction_id (progress));
+	g_assert (**tid_out == NULL);
+	**tid_out = g_strdup (pk_progress_get_transaction_id (progress));
+
+	g_main_context_wakeup (g_main_context_get_thread_default ());
+}
+
+static void
+pk_test_client_cancellation_func (void)
+{
+	g_auto(GStrv) package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	g_autoptr(PkClient) client = NULL;
+	gboolean idle;
+	const unsigned int n_iterations = !g_test_thorough () ? 500 : 250;
+
+	/* get client */
+	client = pk_client_new ();
+	g_signal_connect (client, "notify::idle",
+		  G_CALLBACK (pk_test_client_notify_idle_cb), NULL);
+	g_assert_nonnull (client);
+
+	/* check idle */
+	g_object_get (client, "idle", &idle, NULL);
+	g_assert_true (idle);
+
+	/* Try resolving a package in a loop, cancelling just after making the
+	 * call, to exercise the cancellation paths during setup of a
+	 * task/PkClientState. */
+	for (unsigned int i = 0; i < n_iterations; i++) {
+		g_autoptr(GCancellable) cancellable = g_cancellable_new ();
+		g_autoptr(GSource) idle_source = g_idle_source_new ();
+		g_autoptr(GAsyncResult) async_result = NULL;
+		g_autoptr(PkResults) results = NULL;
+		g_autoptr(GError) local_error = NULL;
+		g_autofree char *tid = NULL;
+		g_autofree char ***tid_wrapper = NULL;
+
+		/* Sometimes we want to test cancelling after the TID is set
+		 * (the first D-Bus call by the client library). Waiting in an
+		 * idle callback is never going to trigger that, so delay when
+		 * we attach the idle source. */
+		const gboolean cancel_after_tid_set = ((i % 2) == 0);
+
+		/* We also want to catch progress callbacks after async_result_cb()
+		 * has been called, so force a use-after-free in that case by
+		 * using a heap-allocated pointer for progress user data and
+		 * freeing it at the end of the iteration. */
+		tid_wrapper = g_new0 (char **, 1);
+		*tid_wrapper = &tid;
+
+		g_debug ("%s: Iteration %u", G_STRFUNC, i);
+
+		pk_client_resolve_async (client,
+					 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+					 package_ids,
+					 cancellable,
+					 (PkProgressCallback) cancellation_progress_cb, tid_wrapper,
+					 (GAsyncReadyCallback) async_result_cb, &async_result);
+
+		g_source_set_callback (idle_source, idle_cancel_cb, cancellable, NULL);
+		if (!cancel_after_tid_set)
+			g_source_attach (idle_source, NULL);
+
+		while (async_result == NULL && tid == NULL)
+			g_main_context_iteration (NULL, TRUE);
+
+		if (cancel_after_tid_set)
+			g_source_attach (idle_source, NULL);
+
+		while (async_result == NULL)
+			g_main_context_iteration (NULL, TRUE);
+
+		/* Process the results; this could either be a cancelled error
+		 * or success, depending on timing. */
+		results = pk_client_generic_finish (client, async_result, &local_error);
+
+		if (results == NULL) {
+			g_assert_error (local_error, G_IO_ERROR, G_IO_ERROR_CANCELLED);
+		} else {
+			PkExitEnum exit_enum = pk_results_get_exit_code (results);
+			g_assert_cmpint (exit_enum, ==, PK_EXIT_ENUM_SUCCESS);
+		}
+
+		/* check idle */
+		g_object_get (client, "idle", &idle, NULL);
+		g_assert_true (idle);
+
+		g_source_destroy (idle_source);
+	}
+
+	/* check idle */
+	g_object_get (client, "idle", &idle, NULL);
+	g_assert_true (idle);
 }
 
 static void
@@ -1433,6 +1571,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
 	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
 	g_test_add_func ("/packagekit-glib2/client", pk_test_client_func);
+	g_test_add_func ("/packagekit-glib2/client/cancellation", pk_test_client_cancellation_func);
 	g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);
 	g_test_add_func ("/packagekit-glib2/task", pk_test_task_func);
 	g_test_add_func ("/packagekit-glib2/task-wrapper", pk_test_task_wrapper_func);
