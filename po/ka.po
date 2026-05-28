@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-22 12:42+0200\n"
-"PO-Revision-Date: 2026-01-29 19:01+0000\n"
+"PO-Revision-Date: 2026-05-28 14:11+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/packagekit/translations/ka/>\n"
 "Language: ka\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -1186,17 +1186,13 @@ msgstr "პაკეტის ინფორმაციის ჩვენე�
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "დამოკიდებულებების ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
+msgstr "მითითებული პაკეტ(ებ)-ის დამოკიდებულებების ჩამონათვალი"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტებს."
+msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტ(ებ)-ს"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
