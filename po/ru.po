@@ -18,17 +18,21 @@
 # Yuri Kozlov <yuray@komyakino.ru>, 2011,2013-2014
 # Yuri Myasoedov <omerta13@yandex.ru>, 2017
 # Игорь Горбунов <igor.gorbounov@gmail.com>, 2011
+# Andrei Stepanov <adem4ik@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-04-22 12:42+0200\n"
-"Language-Team: Russian (http://app.transifex.com/freedesktop/packagekit/language/ru/)\n"
+"PO-Revision-Date: 2026-05-29 20:01+0000\n"
+"Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/packagekit/translations/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -44,7 +48,7 @@ msgstr "Не удалось загрузить конфигурационный 
 #: client/pk-offline-update.c:171
 #, c-format
 msgid "%i%%"
-msgstr ""
+msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
@@ -739,114 +743,104 @@ msgstr "Монитор PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:47
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Разрешить понижение версий пакетов во время транзакции"
+msgstr "Разрешить понижение версий пакетов"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:54
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Разрешить переустановку пакетов во время транзакции"
+msgstr "Разрешить переустановку пакетов"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:61
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Установить более старую версию уже установленного пакета"
+msgstr "Разрешить установку недоверенных пакетов"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Автоматически удалять неиспользуемые зависимости"
+msgstr "Не удалять автоматически неиспользуемые зависимости"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Максимальный возраст кэша метаданных (в секундах). Значение -1 для использования только кэшированных данных; значение 1 - перезагрузка кэша."
+msgstr "Максимальный возраст кэша метаданных в секундах (по умолчанию: 3 дня)"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
-msgstr ""
+msgstr "СЕКУНДЫ"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:199
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Обновить кэш"
+msgstr "Обновить кэш метаданных пакетов."
 
 #: client/pkgc-manage.c:225
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Метаданные пакетов обновлены"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:250
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Установить один или несколько пакетов или локальных файлов пакетов."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:312 client/pkgc-manage.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "Этот инструмент не нашёл ни одного доступного пакета: %s"
+msgstr "Не удалось найти доступный пакет: %s"
 
 #: client/pkgc-manage.c:331
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Выбранные пакеты могут быть уже установлены."
+msgstr "Выбранный пакет уже установлен."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:372
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Удалить один или несколько пакетов из системы."
 
 #: client/pkgc-manage.c:389
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "Этот инструмент не нашёл пакет: %s"
+msgstr "Не удалось найти установленные пакеты: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:431
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Загрузить пакеты в указанный каталог без установки."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "Этот инструмент не нашёл пакет: %s"
+msgstr "Не удалось найти пакеты: %s"
 
 #: client/pkgc-manage.c:452
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Каталог не существует: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:496
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Обновить все пакеты или отдельные пакеты до последних версий."
 
 #: client/pkgc-manage.c:518
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "Этот инструмент не нашёл пакет: %s"
+msgstr "Не удалось найти пакеты для обновления: %s"
 
 #: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Не удалось получить состояние службы"
+msgstr "Не удалось получить обновления: %s"
 
 #: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Нет пакетов, требующих обновлений до последних версий."
+msgstr "Ни один пакет не требует обновления"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -856,66 +850,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Обновить все пакеты или выполнить обновление дистрибутива.\n"
+"\n"
+"Типы: minimal, default, complete"
 
 #: client/pkgc-manage.c:695
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Запустить автономные обновления"
+msgstr "Не удалось прочитать действие автономного обновления: %s"
 
 #: client/pkgc-manage.c:705
-#, fuzzy
 msgid "Offline update is not triggered."
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Автономное обновление не запущено."
 
 #: client/pkgc-manage.c:714
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Запустить автономные обновления"
+msgstr "Автономное обновление запущено. Действие после обновления: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:725
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Подготовленные обновления:"
+msgstr "Подготовленные пакеты:"
 
 #: client/pkgc-manage.c:739
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Автономное обновление не подготовлено."
 
 #: client/pkgc-manage.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Запустить автономные обновления"
+msgstr "Не удалось прочитать подготовленные автономные обновления: %s"
 
 #: client/pkgc-manage.c:753
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Загрузка информации об обновлении"
+msgstr "Нет результатов последнего автономного обновления."
 
 #: client/pkgc-manage.c:760
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Последнее автономное обновление не удалось: %s: %s"
 
 #: client/pkgc-manage.c:767
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Последнее автономное обновление успешно завершено"
 
 #: client/pkgc-manage.c:777
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Обновлено"
+msgstr "Обновлено: %s"
 
 #: client/pkgc-manage.c:801
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Запустить автономные обновления"
+msgstr "Не удалось запустить автономное обновление: %s"
 
 #: client/pkgc-manage.c:805
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Автономное обновление запланировано. Система обновится при следующей перезагрузке."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -929,148 +921,143 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Запустить и управлять автономными обновлениями системы.\n"
+"\n"
+"Вы можете выбрать один из следующих запросов:\n"
+"  prepare — подготовить автономное обновление и запустить его (по умолчанию)\n"
+"  trigger — запустить (подготовленное вручную) автономное обновление\n"
+"  cancel  — отменить запланированное автономное обновление\n"
+"  status  — показать информацию о состоянии подготовленного или завершённого автономного обновления"
 
 #: client/pkgc-manage.c:850
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Не удалось разрешить auto: %s"
+msgstr "Не удалось отменить автономное обновление: %s"
 
 #: client/pkgc-manage.c:854
-#, fuzzy
 msgid "Offline update cancelled"
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Автономное обновление отменено"
 
 #: client/pkgc-manage.c:911
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Очистить сообщение автономного обновления"
+msgstr "Неизвестный запрос автономного обновления: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:932
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Установить пакеты без подтверждения"
+msgstr "Установить подпись пакета для проверки GPG."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:968
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Попытаться восстановить систему управления пакетами."
 
 #: client/pkgc-manage.c:984
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Система успешно восстановлена"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1006
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Безопасно завершить демон PackageKit."
 
 #: client/pkgc-manage.c:1012
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Не удалось получить состояние службы"
+msgstr "Не удалось отправить запрос на завершение демона: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
 #: client/pkgc-manage.c:1032
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Обновить метаданные пакетов"
 
 #. TRANSLATORS: Description for install command in pkgcli help
 #: client/pkgc-manage.c:1039
-#, fuzzy
 msgid "Install packages"
-msgstr "Установить пакет"
+msgstr "Установить пакеты"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
 #: client/pkgc-manage.c:1046
-#, fuzzy
 msgid "Remove packages"
-msgstr "Удалить пакет"
+msgstr "Удалить пакеты"
 
 #. TRANSLATORS: Description for update command in pkgcli help
 #: client/pkgc-manage.c:1053
-#, fuzzy
 msgid "Update packages"
-msgstr "Обновление пакетов"
+msgstr "Обновить пакеты"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
 #: client/pkgc-manage.c:1060
-#, fuzzy
 msgid "Upgrade the system"
-msgstr "Обновление системы"
+msgstr "Обновить систему"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1067
-#, fuzzy
 msgid "Download packages"
-msgstr "Загрузка пакетов"
+msgstr "Загрузить пакеты"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1074
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Нет пакетов для обновления."
+msgstr "Управлять автономными обновлениями системы"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1081
-#, fuzzy
 msgid "Install package signature"
-msgstr "Установка подписи"
+msgstr "Установить подпись пакета"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
 #: client/pkgc-manage.c:1088
-#, fuzzy
 msgid "Repair package system"
-msgstr "Восстановить систему"
+msgstr "Восстановить систему пакетов"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
 #: client/pkgc-manage.c:1095
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Безопасно остановить демон PackageKit"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:504
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Служба PackageKit"
+msgstr "Отслеживать события PackageKit D-Bus"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:626
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "Служба PackageKit"
+msgstr "Отслеживать события шины PackageKit"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Показать информацию о бэкенде PackageKit."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Бэкенд: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Описание"
+msgstr "Описание: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "Author: %s"
-msgstr "Автор"
+msgstr "Автор: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:222
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Роль"
+msgstr "Роли: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:246
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Показать недавние транзакции управления пакетами."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:285
@@ -1083,575 +1070,533 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Поиск пакетов, соответствующих заданным шаблонам. Если режим не указан,\n"
+"выполняется поиск по «подробностям».\n"
+"Возможные режимы поиска:\n"
+"  name    — поиск по имени пакета\n"
+"  details — поиск по подробностям пакета (по умолчанию)\n"
+"  file    — поиск по имени файла\n"
+"  group   — поиск по группе пакетов"
 
 #: client/pkgc-query.c:313
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Укажите поисковое слово"
+msgstr "Шаблон поиска не указан"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:374
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Перечислить все пакеты или соответствующие шаблону."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:419
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Показать информацию об одном или нескольких пакетах."
 
 #: client/pkgc-query.c:475 client/pkgc-query.c:760
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Проверить зависимости рекурсивно"
 
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:485
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Показать зависимости одного или нескольких пакетов."
 
 #: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Не удалось разрешить auto: %s"
+msgstr "Не удалось разрешить пакеты: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:526
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Показать, какие пакеты предоставляют указанную возможность."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:558
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Перечислить все файлы, содержащиеся в одном или нескольких пакетах."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:654
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Этот инструмент не нашёл ни одного доступного пакета: %s"
+msgstr "Перечислить все доступные в настоящее время обновления пакетов."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:687
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Показать подробную информацию об указанном обновлении пакета."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:726
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Разрешить имена пакетов в идентификаторы пакетов."
 
 #. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:770
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Показать, какие пакеты требуют указанные пакеты."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:814
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Перечислить все доступные фильтры, группы и категории для организации пакетов."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:822
 msgid "Filters:"
-msgstr ""
+msgstr "Фильтры:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:834
 msgid "Groups:"
-msgstr ""
+msgstr "Группы:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:846
-#, fuzzy
 msgid "Categories:"
-msgstr "Категория"
+msgstr "Категории:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:872
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Показать обновления версий дистрибутива, если они доступны."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:918
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Системное время"
+msgstr "Прошедшее время"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:943
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Получить время в секундах с момента последнего указанного действия."
 
 #. TRANSLATORS: Description for backend command in pkgcli help
 #: client/pkgc-query.c:986
-#, fuzzy
 msgid "Show backend information"
-msgstr "Получение информации"
+msgstr "Показать информацию о бэкенде"
 
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:993
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Транзакция завершилась с ошибкой"
+msgstr "Показать историю транзакций"
 
 #. TRANSLATORS: Description for search command in pkgcli help
 #: client/pkgc-query.c:1000
-#, fuzzy
 msgid "Search for packages"
-msgstr "Поиск по названиям"
+msgstr "Искать пакеты"
 
 #. TRANSLATORS: Description for list command in pkgcli help
 #: client/pkgc-query.c:1007
-#, fuzzy
 msgid "List packages"
-msgstr "Установить пакет"
+msgstr "Перечислить пакеты"
 
 #. TRANSLATORS: Description for show command in pkgcli help
 #: client/pkgc-query.c:1014
-#, fuzzy
 msgid "Show package information"
-msgstr "Загрузка информации об обновлении"
+msgstr "Показать информацию о пакете"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
 msgid "List dependencies of the specified package(s)"
-msgstr ""
+msgstr "Перечислить зависимости указанного пакета (пакетов)"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
 msgid "List other packages requiring the specified package(s)"
-msgstr "Пакет, предоставляющий этот файл:"
+msgstr "Перечислить другие пакеты, требующие указанный пакет (пакеты)"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Пакет, предоставляющий этот файл:"
+msgstr "Перечислить пакеты, предоставляющие возможность"
 
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1042
-#, fuzzy
 msgid "Show files in package"
-msgstr "Устаревание пакетов"
+msgstr "Показать файлы в пакете"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
 #: client/pkgc-query.c:1049
-#, fuzzy
 msgid "Get available updates"
-msgstr "Получение обновлений"
+msgstr "Получить доступные обновления"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
 #: client/pkgc-query.c:1056
-#, fuzzy
 msgid "Get update details"
-msgstr "Получение подробностей об обновлении"
+msgstr "Получить подробности обновления"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
 #: client/pkgc-query.c:1063
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Удалить пакет"
+msgstr "Разрешить имена пакетов"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1070
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Перечислить доступные фильтры и категории"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1077
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Показать доступные обновления дистрибутива"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1084
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Получение транзакций"
+msgstr "Получить время с момента последнего действия"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Перечислить все настроенные репозитории пакетов."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Включить указанный репозиторий."
 
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Репозиторий «%s» включён"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Отключить таймер бездействия"
+msgstr "Отключить указанный репозиторий."
 
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Репозиторий «%s» отключён"
 
 #: client/pkgc-repo.c:196
-#, fuzzy
 msgid "Automatically remove orphaned packages"
-msgstr "Автоматически удалять неиспользуемые зависимости"
+msgstr "Автоматически удалять осиротевшие пакеты"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:207
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Удаление репозитория"
+msgstr "Удалить указанный репозиторий."
 
 #: client/pkgc-repo.c:227
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Укажите название репозитория"
+msgstr "Репозиторий «%s» удалён"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
 #: client/pkgc-repo.c:245
-#, fuzzy
 msgid "List repositories"
-msgstr "Получение репозиториев"
+msgstr "Перечислить репозитории"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
 #: client/pkgc-repo.c:252
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Удаление репозитория"
+msgstr "Включить репозиторий"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
 #: client/pkgc-repo.c:259
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Удаление репозитория"
+msgstr "Отключить репозиторий"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
 #: client/pkgc-repo.c:266
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Удаление репозитория"
+msgstr "Удалить репозиторий"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Нет подключения к демону PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(секунды)"
+msgstr "%u секунд"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u мин %u с"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u мин"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u ч %u мин"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u ч"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u дн %u ч"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u дн"
 
 #: client/pkgc-util.c:279
 msgid "Error"
-msgstr ""
+msgstr "Ошибка"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:312
 msgid "Warning:"
-msgstr ""
+msgstr "Предупреждение:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:436 client/pkgcli.c:190
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Не удалось разрешить auto: %s"
+msgstr "Не удалось разобрать параметры: %s"
 
 #: client/pkgc-util.c:443
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Использование: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:630 client/pkgc-util.c:785
-#, fuzzy
 msgid "Package:"
-msgstr "Пакет"
+msgstr "Пакет:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:634
 msgid "Version:"
-msgstr ""
+msgstr "Версия:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:640
-#, fuzzy
 msgid "Summary:"
-msgstr "Сводка"
+msgstr "Сводка:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:648
-#, fuzzy
 msgid "Description:"
-msgstr "Описание"
+msgstr "Описание:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:655
 msgid "License:"
-msgstr ""
+msgstr "Лицензия:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:662
 msgid "URL:"
-msgstr ""
+msgstr "URL-адрес:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:670
 msgid "Group:"
-msgstr ""
+msgstr "Группа:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:678
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Установлен"
+msgstr "Размер установленного:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Download Size:"
-msgstr "Загружен"
+msgstr "Размер загрузки:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:781
-#, fuzzy
 msgid "Update Details:"
-msgstr "Текст обновления"
+msgstr "Подробности обновления:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:792
-#, fuzzy
 msgid "Updates:"
-msgstr "Обновляет"
+msgstr "Обновления:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:801
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Объявляет устаревшим"
+msgstr "Устаревающие пакеты:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:810
-#, fuzzy
 msgid "Vendor:"
-msgstr "Поставщик"
+msgstr "Поставщик:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:819
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "Отслеживание проблем:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:828
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:836
-#, fuzzy
 msgid "Restart:"
-msgstr "Перезапуск"
+msgstr "Перезапуск:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Update text:"
-msgstr "Текст обновления"
+msgstr "Текст обновления:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:852
-#, fuzzy
 msgid "Changes:"
-msgstr "Изменения"
+msgstr "Изменения:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:859
-#, fuzzy
 msgid "State:"
-msgstr "Состояние"
+msgstr "Состояние:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:868
-#, fuzzy
 msgid "Issued:"
-msgstr "Выпущено"
+msgstr "Выпущено:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:875
-#, fuzzy
 msgid "Updated:"
-msgstr "Обновлено"
+msgstr "Обновлено:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:992
-#, fuzzy
 msgid "Transaction:"
-msgstr "Транзакция"
+msgstr "Транзакция:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:996
-#, fuzzy
 msgid "System time:"
-msgstr "Системное время"
+msgstr "Системное время:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1000
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Успешно"
+msgstr "Успешно:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1009
-#, fuzzy
 msgid "Role:"
-msgstr "Роль"
+msgstr "Роль:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1016
-#, fuzzy
 msgid "Duration:"
-msgstr "Продолжительность"
+msgstr "Длительность:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1023
-#, fuzzy
 msgid "Command line:"
-msgstr "Командная строка"
+msgstr "Командная строка:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1029
-#, fuzzy
 msgid "User ID:"
-msgstr "Идентификатор пользователя"
+msgstr "ИД пользователя:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1038
-#, fuzzy
 msgid "Username:"
-msgstr "Имя пользователя"
+msgstr "Имя пользователя:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1044
-#, fuzzy
 msgid "Real name:"
-msgstr "Настоящее имя"
+msgstr "Настоящее имя:"
 
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1076
 msgid "None"
-msgstr ""
+msgstr "Нет"
 
 #: client/pkgc-util.c:1221
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "Пакет не найден"
+msgstr "Пакет не найден: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Показать версию и выйти"
+msgstr "Показать версию pkgcli"
 
 #: client/pkgcli.c:78
 msgid "Show help"
-msgstr ""
+msgstr "Показать справку"
 
 #: client/pkgcli.c:80
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Предоставлять только минимальный вывод"
 
 #: client/pkgcli.c:82
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Показывать более подробный вывод"
 
 #: client/pkgcli.c:84
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Вывод в формате JSON"
 
 #: client/pkgcli.c:86
 msgid "Disable colored output"
-msgstr ""
+msgstr "Отключить цветной вывод"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:89
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Ответить «да» на все вопросы"
 
 #: client/pkgcli.c:92
 msgid "FILTER"
-msgstr ""
+msgstr "ФИЛЬТР"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:92
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Фильтровать пакеты (установленные, доступные и т.д.)"
 
 #: client/pkgcli.c:118
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Команда не указана. Используйте --help для получения информации об использовании."
 
 #: client/pkgcli.c:126
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Неизвестная команда: %s"
 
 #: client/pkgcli.c:136
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Не удалось соединиться с PackageKit"
+msgstr "Не удалось подключиться к PackageKit: %s"
 
 #: client/pkgcli.c:198
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Версия: %s"
 
 #: client/pkgcli.c:213
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Доступен"
+msgstr "Доступные команды:"
 
 #: client/pkgcli.c:219
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Используйте «pkgcli КОМАНДА --help» для справки по конкретной команде."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
@@ -2010,27 +1955,23 @@ msgstr "Не доступен"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1017
-#, fuzzy
 msgid "Install"
-msgstr "Установлен"
+msgstr "Установить"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
 #: lib/packagekit-glib2/pk-enum.c:1021
-#, fuzzy
 msgid "Remove"
-msgstr "Удалён"
+msgstr "Удалить"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/packagekit-glib2/pk-enum.c:1025
-#, fuzzy
 msgid "Obsolete"
-msgstr "Устарел"
+msgstr "Устаревший"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
 #: lib/packagekit-glib2/pk-enum.c:1029
-#, fuzzy
 msgid "Downgrade"
-msgstr "Загружен"
+msgstr "Понизить версию"
 
 #. TRANSLATORS: The action of the package, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1054
@@ -2236,9 +2177,8 @@ msgstr "Получение обновлений системы"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/packagekit-glib2/pk-enum.c:1278
-#, fuzzy
 msgid "Repairing system"
-msgstr "Восстановить систему"
+msgstr "Восстановление системы"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/packagekit-glib2/pk-task-text.c:54
