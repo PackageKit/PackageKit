@@ -150,7 +150,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 	}
 
 	try {
-		dnf5_setup_base (priv);
+		dnf5_setup_base (priv, FALSE, FALSE, nullptr, pk_backend_is_online(backend));
 		g_signal_connect (backend, "updates-changed",
 				  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
 	} catch (const std::exception &e) {
