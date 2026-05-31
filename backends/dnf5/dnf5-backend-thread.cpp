@@ -41,9 +41,12 @@ dnf5_query_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend (job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data (backend);
 	PkRoleEnum role = pk_backend_job_get_role (job);
-	
+
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-	
+
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, pk_backend_is_online(backend));
+
 	try {
 		if (role == PK_ROLE_ENUM_SEARCH_NAME || role == PK_ROLE_ENUM_SEARCH_DETAILS || role == PK_ROLE_ENUM_SEARCH_FILE || role == PK_ROLE_ENUM_RESOLVE || role == PK_ROLE_ENUM_WHAT_PROVIDES) {
 			PkBitfield filters;
@@ -356,9 +359,12 @@ dnf5_transaction_thread (PkBackendJob *job, GVariant *params, gpointer user_data
 	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend (job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data (backend);
 	PkRoleEnum role = pk_backend_job_get_role (job);
-	
+
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-	
+
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, pk_backend_is_online(backend));
+
 	try {
 		if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 			gchar *distro_id = NULL;
@@ -570,9 +576,12 @@ dnf5_repo_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend (job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data (backend);
 	PkRoleEnum role = pk_backend_job_get_role (job);
-	
+
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-	
+
+	// Update cache-only mode based on current network state
+	dnf5_update_network_state(priv, pk_backend_is_online(backend));
+
 	try {
 		if (role == PK_ROLE_ENUM_REPO_ENABLE || role == PK_ROLE_ENUM_REPO_SET_DATA) {
 			gchar *repo_id = NULL;

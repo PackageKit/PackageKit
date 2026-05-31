@@ -40,7 +40,7 @@
 #include "dnf5-backend-vendor.hpp"
 
 void
-dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever)
+dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, gboolean online)
 {
 	priv->base = std::make_unique<libdnf5::Base>();
 
@@ -93,7 +93,7 @@ dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, c
 	}
 
 	priv->base->setup();
-	
+
 	// Ensure releasever is set AFTER setup() because setup() might run auto-detection and overwrite it.
 	if (priv->conf != NULL) {
 		g_autofree gchar *distro_version = NULL;
@@ -107,7 +107,14 @@ dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, c
 			priv->base->get_vars()->set("releasever", distro_version);
 		}
 	}
-	
+
+	// online defaults to TRUE. Only change the configuration if the caller passed FALSE
+	if (!online) {
+		// When offline, use cache-only mode to avoid network errors
+		g_debug("Using cache-only mode (not refreshing metadata)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
+	}
+
 	auto repo_sack = priv->base->get_repo_sack();
 	repo_sack->create_repos_from_system_configuration();
 	repo_sack->get_system_repo();
@@ -129,6 +136,19 @@ dnf5_setup_base (PkBackendDnf5Private *priv, gboolean refresh, gboolean force, c
 	query.filter_enabled(true);
 	for (auto repo : query) {
 		g_debug("Enabled repository: %s", repo->get_id().c_str());
+	}
+}
+
+void
+dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online)
+{
+	auto &config = priv->base->get_config();
+	if (online) {
+		g_debug("Clearing cache-only mode (online)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "none");
+	} else {
+		g_debug("Setting cache-only mode (offline)");
+		config.get_cacheonly_option().set(libdnf5::Option::Priority::RUNTIME, "all");
 	}
 }
 

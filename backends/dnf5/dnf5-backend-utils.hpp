@@ -40,7 +40,8 @@ typedef struct {
 	gint64 last_notification_timestamp;
 } PkBackendDnf5Private;
 
-void dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh = FALSE, gboolean force = FALSE, const char *releasever = nullptr);
+void dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh = FALSE, gboolean force = FALSE, const char *releasever = nullptr, gboolean online = TRUE);
+void dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online);
 void dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force);
 PkInfoEnum dnf5_advisory_kind_to_info_enum(const std::string &type);
 PkInfoEnum dnf5_update_severity_to_enum(const std::string &severity);
