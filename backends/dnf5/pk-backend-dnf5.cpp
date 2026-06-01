@@ -114,8 +114,12 @@ pk_backend_context_invalidate_cb (PkBackend *backend, PkBackend *backend_data)
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data (backend);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
-	dnf5_setup_base (priv);
-	priv->last_notification_timestamp = g_get_monotonic_time ();
+	try {
+		dnf5_setup_base (priv);
+		priv->last_notification_timestamp = g_get_monotonic_time ();
+	} catch (const std::exception &e) {
+		g_warning ("Failed to invalidate dnf5 base: %s", e.what());
+	}
 }
 
 void
