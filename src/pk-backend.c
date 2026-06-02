@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/syslog.h>
 
 #include <glib/gi18n.h>
 #include <glib.h>
@@ -857,7 +858,17 @@ pk_backend_is_online (PkBackend *backend)
 {
 	GNetworkMonitor *network_monitor;
 	network_monitor = g_network_monitor_get_default ();
-	return g_network_monitor_get_network_available (network_monitor);
+
+	if (!g_network_monitor_get_network_available (network_monitor)) {
+		g_autoptr(GSocketConnectable) addr = g_network_address_new("1.2.3.4", 80);
+		if (g_network_monitor_can_reach(network_monitor, addr, NULL, NULL)) {
+			syslog (LOG_DAEMON | LOG_NOTICE, "pk_backend_is_online: Gio::NetworkMonitor reports that network is offline, but also claims that the internet is reachable. Is NetworkManager configured correctly?");
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 /**
