@@ -40,6 +40,8 @@
 #include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-enum.h>
 
+static const gchar *test_data_directory = NULL;
+
 /**
  * pk_iso8601_present:
  * 
@@ -307,8 +309,8 @@ pk_get_distro_id (void)
 	g_autofree gchar *version = NULL;
 
 	/* we don't want distro specific results in 'make check' */
-	if (g_getenv ("PK_SELF_TEST") != NULL)
-		return g_strdup ("selftest;11.91;i686");
+	if (pk_get_test_data_dir () != NULL)
+		return g_strdup (pk_get_test_distro_id ());
 
 	ret = pk_parse_os_release (&id, NULL, &version, &error);
 	if (!ret) {
@@ -360,4 +362,45 @@ pk_get_distro_version_id (GError **error)
 		return NULL;
 
 	return version_id;
+}
+
+/*
+ * pk_get_test_distro_id:
+ *
+ * We don't want distro specific results when testing, this is the distro id
+ * that is going to be used.
+ *
+ * Returns: a test distro id
+ **/
+const gchar *
+pk_get_test_distro_id (void)
+{
+	return "selftest;11.91;i686";
+}
+
+/*
+ * pk_get_test_data_dir:
+ *
+ * Get the test data directory (or NULL if not in test mode).
+ *
+ * Returns: (nullable): the test data directory (or NULL if not in test mode)
+ **/
+const gchar
+*pk_get_test_data_dir (void)
+{
+	return test_data_directory;
+}
+
+/*
+ * pk_set_test_data_dir:
+ * @test_data_dir: the test data directory
+ *
+ * Set the test data directory to start test mode.
+ *
+ * Use this before doing any operation.
+ **/
+void
+pk_set_test_data_dir (const gchar *test_data_dir)
+{
+	test_data_directory = test_data_dir;
 }

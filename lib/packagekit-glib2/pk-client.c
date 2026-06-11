@@ -39,6 +39,7 @@
 #include <packagekit-glib2/pk-client.h>
 #include <packagekit-glib2/pk-client-helper.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-debug.h>
 #include <packagekit-glib2/pk-enum.h>
@@ -2048,25 +2049,24 @@ pk_client_bool_to_string (gboolean value)
  * pk_client_create_helper_argv_envp_test:
  **/
 static gboolean
-pk_client_create_helper_argv_envp_test (PkClientState *state,
+pk_client_create_helper_argv_envp_test (const gchar *test_data_dir,
 					gchar ***argv,
 					gchar ***envp)
 {
-	gboolean ret;
+	g_autofree gchar *test_script = NULL;
 
+	test_script = g_build_filename (test_data_dir,
+					"pk-client-helper-test.py",
+					NULL);
 	/* check we have the right file */
-	ret = g_file_test (TESTDATADIR "/pk-client-helper-test.py",
-			   G_FILE_TEST_EXISTS);
-	if (!ret) {
+	if (!g_file_test (test_script, G_FILE_TEST_EXISTS)) {
 		g_warning ("could not find the socket helper!");
 		return FALSE;
 	}
 
 	/* setup simple test socket */
 	*argv = g_new0 (gchar *, 2);
-	*argv[0] = g_build_filename (TESTDATADIR,
-				     "pk-client-helper-test.py",
-				     NULL);
+	*argv[0] = g_steal_pointer (&test_script);
 	return TRUE;
 }
 
@@ -2165,6 +2165,7 @@ pk_client_create_helper_argv_envp (gchar ***argv,
 static gchar *
 pk_client_create_helper_socket (PkClientState *state)
 {
+	const gchar *test_data_dir = pk_get_test_data_dir ();
 	gboolean ret = FALSE;
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *socket_filename = NULL;
@@ -2173,8 +2174,8 @@ pk_client_create_helper_socket (PkClientState *state)
 	g_auto(GStrv) envp = NULL;
 
 	/* use the test socket */
-	if (g_getenv ("PK_SELF_TEST") != NULL) {
-		ret = pk_client_create_helper_argv_envp_test (state,
+	if (test_data_dir != NULL) {
+		ret = pk_client_create_helper_argv_envp_test (test_data_dir,
 							      &argv,
 							      &envp);
 	}

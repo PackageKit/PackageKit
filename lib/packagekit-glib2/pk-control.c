@@ -34,6 +34,7 @@
 
 #include <packagekit-glib2/pk-bitfield.h>
 #include <packagekit-glib2/pk-common.h>
+#include <packagekit-glib2/pk-common-private.h>
 #include <packagekit-glib2/pk-control.h>
 #include <packagekit-glib2/pk-version.h>
 #include <packagekit-glib2/pk-enum-types.h>
@@ -281,8 +282,8 @@ pk_control_set_property_value (PkControl *control,
 	if (g_strcmp0 (key, "DistroId") == 0) {
 		tmp_str = g_variant_get_string (value, NULL);
 		/* we don't want distro specific results in 'make check' */
-		if (g_getenv ("PK_SELF_TEST") != NULL)
-			tmp_str = "selftest;11.91;i686";
+		if (pk_get_test_data_dir () != NULL)
+			tmp_str = pk_get_test_distro_id ();
 		if (g_strcmp0 (priv->distro_id, tmp_str) == 0)
 			return;
 		g_free (priv->distro_id);
