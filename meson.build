@@ -25,7 +25,6 @@ gmodule_dep = dependency('gmodule-2.0', version: glib_req)
 sqlite3_dep = dependency('sqlite3')
 polkit_dep = dependency('polkit-gobject-1', version: '>=0.114')
 jansson_dep = dependency('jansson', version: '>=2.8', required: true)
-ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5', required: false)
 
 libsystemd = []
 if get_option('systemd')
@@ -52,6 +51,10 @@ if get_option('elogind')
   elogind = dependency('elogind', version: '>=229.4')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_LOGIN_H=1', language: 'c')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
+endif
+
+if get_option('offline_update')
+  ply_client_dep = dependency('ply-boot-client', version: '>=0.9.5')
 endif
 
 if get_option('local_checkout')
