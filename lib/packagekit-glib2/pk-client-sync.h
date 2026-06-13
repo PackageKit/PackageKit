@@ -181,6 +181,16 @@ PkResults	*pk_client_remove_packages		(PkClient		*client,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults   *pk_client_purge_packages      (PkClient       *client,
+                             PkBitfield      transaction_flags,
+                             gchar          **package_ids,
+                             gboolean        allow_deps,
+                             gboolean        autoremove,
+                             GCancellable       *cancellable,
+                             PkProgressCallback  progress_callback,
+                             gpointer        progress_user_data,
+                             GError         **error);
+
 PkResults	*pk_client_refresh_cache		(PkClient		*client,
 							 gboolean		 force,
 							 GCancellable		*cancellable,

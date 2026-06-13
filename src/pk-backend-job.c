@@ -1001,7 +1001,8 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 		case PK_STATUS_ENUM_DOWNLOAD:
 		case PK_STATUS_ENUM_UPDATE:
 		case PK_STATUS_ENUM_INSTALL:
-		case PK_STATUS_ENUM_REMOVE:
+        case PK_STATUS_ENUM_REMOVE:
+		case PK_STATUS_ENUM_PURGE:
 		case PK_STATUS_ENUM_CLEANUP:
 		case PK_STATUS_ENUM_OBSOLETE:
 			return;
@@ -1078,6 +1079,8 @@ pk_backend_job_package_full (PkBackendJob *job,
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 	else if (info == PK_INFO_ENUM_REMOVING)
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+    else if (info == PK_INFO_ENUM_PURGING)
+        pk_backend_job_set_status (job, PK_STATUS_ENUM_PURGE);
 	else if (info == PK_INFO_ENUM_CLEANUP)
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
 	else if (info == PK_INFO_ENUM_OBSOLETING)

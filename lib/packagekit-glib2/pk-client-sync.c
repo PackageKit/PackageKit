@@ -1163,6 +1163,79 @@ pk_client_remove_packages (PkClient *client,
 }
 
 /**
+ * pk_client_purge_packages:
+ * @client: a valid #PkClient instance
+ * @transaction_flags: a transaction type bitfield
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @allow_deps: if other dependent packages are allowed to be removed from the computer
+ * @autoremove: if other packages installed at the same time should be tried to remove
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * Remove a package (optionally with dependancies), as well as any configuration files, from the system.
+ * If @allow_deps is set to %FALSE, and other packages would have to be removed,
+ * then the transaction would fail.
+ *
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
+ *
+ * Since: 0.8.1
+ **/
+PkResults *
+pk_client_purge_packages (PkClient *client,
+               PkBitfield transaction_flags,
+               gchar **package_ids,
+               gboolean allow_deps,
+               gboolean autoremove,
+               GCancellable *cancellable,
+               PkProgressCallback progress_callback,
+               gpointer progress_user_data,
+               GError **error)
+{
+    PkClientHelper helper;
+    PkResults *results;
+
+    g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+    g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+    /* create temp object */
+    memset (&helper, 0, sizeof (PkClientHelper));
+    helper.context = g_main_context_new ();
+    helper.loop = g_main_loop_new (helper.context, FALSE);
+    helper.error = error;
+
+    g_main_context_push_thread_default (helper.context);
+
+    /* run async method */
+    pk_client_purge_packages_async (client,
+                     transaction_flags,
+                     package_ids,
+                     allow_deps,
+                     autoremove,
+                     cancellable,
+                     progress_callback,
+                     progress_user_data,
+                     (GAsyncReadyCallback) pk_client_generic_finish_sync,
+                     &helper);
+
+    g_main_loop_run (helper.loop);
+
+    results = helper.results;
+
+    g_main_context_pop_thread_default (helper.context);
+
+    /* free temp object */
+    g_main_loop_unref (helper.loop);
+    g_main_context_unref (helper.context);
+
+    return results;
+}
+
+/**
  * pk_client_refresh_cache:
  * @client: a valid #PkClient instance
  * @force: if we should aggressively drop caches

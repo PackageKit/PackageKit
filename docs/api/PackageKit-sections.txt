@@ -837,6 +837,8 @@ pk_task_update_packages_sync
 pk_task_update_packages_async
 pk_task_remove_packages_sync
 pk_task_remove_packages_async
+pk_task_purge_packages_sync
+pk_task_purge_packages_async
 pk_task_install_files_sync
 pk_task_install_files_async
 pk_task_resolve_sync

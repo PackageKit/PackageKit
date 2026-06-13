@@ -126,6 +126,12 @@ typedef struct {
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
+    void        (*purge_packages)      (PkBackend  *backend,
+                             PkBackendJob   *job,
+                             PkBitfield  transaction_flags,
+                             gchar      **package_ids,
+                             gboolean    allow_deps,
+                             gboolean    autoremove);
 	void		(*repo_enable)			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 const gchar	*repo_id,
@@ -353,6 +359,8 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
 	if (desc->remove_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
+	if (desc->purge_packages != NULL)
+		pk_bitfield_add (roles, PK_ROLE_ENUM_PURGE_PACKAGES);
 	if (desc->download_packages != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	if (desc->resolve != NULL)
@@ -524,7 +532,8 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_install_packages", (gpointer *)&desc->install_packages);
 		g_module_symbol (handle, "pk_backend_install_signature", (gpointer *)&desc->install_signature);
 		g_module_symbol (handle, "pk_backend_refresh_cache", (gpointer *)&desc->refresh_cache);
-		g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
+        g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *)&desc->remove_packages);
+		g_module_symbol (handle, "pk_backend_purge_packages", (gpointer *)&desc->purge_packages);
 		g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *)&desc->repo_enable);
 		g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *)&desc->repo_set_data);
 		g_module_symbol (handle, "pk_backend_repo_remove", (gpointer *)&desc->repo_remove);
@@ -1437,6 +1446,35 @@ pk_backend_remove_packages (PkBackend *backend,
 					package_ids,
 					allow_deps,
 					autoremove);
+}
+
+void
+pk_backend_purge_packages (PkBackend *backend,
+                PkBackendJob *job,
+                PkBitfield transaction_flags,
+                gchar **package_ids,
+                gboolean allow_deps,
+                gboolean autoremove)
+{
+    g_return_if_fail (PK_IS_BACKEND (backend));
+    g_return_if_fail (backend->desc->purge_packages != NULL);
+    g_return_if_fail (pk_is_thread_default ());
+
+    /* final pre-flight checks */
+    g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
+
+    pk_backend_job_set_role (job, PK_ROLE_ENUM_PURGE_PACKAGES);
+    pk_backend_job_set_transaction_flags (job, transaction_flags);
+    pk_backend_job_set_parameters (job, g_variant_new ("(t^asbb)",
+                               transaction_flags,
+                               package_ids,
+                               allow_deps,
+                               autoremove));
+    backend->desc->purge_packages (backend, job,
+                          transaction_flags,
+                          package_ids,
+                          allow_deps,
+                          autoremove);
 }
 
 void

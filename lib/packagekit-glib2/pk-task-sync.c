@@ -113,6 +113,63 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
 }
 
 /**
+ * pk_task_purge_packages_sync:
+ * @task: a valid #PkTask instance
+ * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
+ * @allow_deps: if other dependent packages are allowed to be removed from the computer
+ * @autoremove: if other packages installed at the same time should be tried to remove
+ * @cancellable: a #GCancellable or %NULL
+ * @progress_callback: (scope call): the function to run when the progress changes
+ * @progress_user_data: data to pass to @progress_callback
+ * @error: the #GError to store any failure, or %NULL
+ *
+ * Remove a package (optionally with dependancies), along with any configuration files, from the system.
+ * If @allow_deps is set to %FALSE, and other packages would have to be removed,
+ * then the transaction would fail.
+ *
+ * Warning: this function is synchronous, and may block. Do not use it in GUI
+ * applications.
+ *
+ * Return value: (transfer full): a #PkResults object, or %NULL for error
+ *
+ * Since: 0.5.3
+ **/
+PkResults *
+pk_task_purge_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
+                  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+{
+    PkTaskHelper helper;
+    PkResults *results;
+
+    g_return_val_if_fail (PK_IS_TASK (task), NULL);
+    g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+    /* create temp object */
+    memset (&helper, 0, sizeof (PkTaskHelper));
+    helper.context = g_main_context_new ();
+    helper.loop = g_main_loop_new (helper.context, FALSE);
+    helper.error = error;
+
+    g_main_context_push_thread_default (helper.context);
+
+    /* run async method */
+    pk_task_purge_packages_async (task, package_ids, allow_deps, autoremove, cancellable, progress_callback, progress_user_data,
+                       (GAsyncReadyCallback) pk_task_generic_finish_sync, &helper);
+
+    g_main_loop_run (helper.loop);
+
+    results = helper.results;
+
+    g_main_context_pop_thread_default (helper.context);
+
+    /* free temp object */
+    g_main_loop_unref (helper.loop);
+    g_main_context_unref (helper.context);
+
+    return results;
+}
+
+/**
  * pk_task_install_packages_sync:
  * @task: a valid #PkTask instance
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
