@@ -168,7 +168,9 @@ public:
         bool preserveAuto,
         bool fixBroken = false);
 
-    void tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki);
+    void tryToRemove(pkgProblemResolver &Fix,
+                     const PkgInfo &pki,
+                     bool purge);
 
 private:
     void buildPkgRecords();

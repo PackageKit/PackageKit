@@ -42,6 +42,15 @@ PkResults	*pk_task_remove_packages_sync		(PkTask			*task,
 							 gpointer		 progress_user_data,
 							 GError			**error);
 
+PkResults   *pk_task_purge_packages_sync       (PkTask         *task,
+                             gchar          **package_ids,
+                             gboolean        allow_deps,
+                             gboolean        autoremove,
+                             GCancellable       *cancellable,
+                             PkProgressCallback  progress_callback,
+                             gpointer        progress_user_data,
+                             GError         **error);
+
 PkResults	*pk_task_install_packages_sync		(PkTask			*task,
 							 gchar			**package_ids,
 							 GCancellable		*cancellable,

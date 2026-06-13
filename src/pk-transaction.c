@@ -250,6 +250,7 @@ pk_transaction_finish_invalidate_caches (PkTransaction *transaction)
 	if (transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    transaction->role == PK_ROLE_ENUM_PURGE_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_REPO_ENABLE ||
 	    transaction->role == PK_ROLE_ENUM_REPO_SET_DATA ||
 	    transaction->role == PK_ROLE_ENUM_REPO_REMOVE ||
@@ -867,6 +868,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 	/* only save into the database for useful stuff */
 	if (state == PK_TRANSACTION_STATE_READY &&
 	    (transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	     transaction->role == PK_ROLE_ENUM_PURGE_PACKAGES ||
 	     transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	     transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 
@@ -1096,7 +1098,8 @@ pk_transaction_offline_finished (PkTransaction *transaction)
 		break;
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
 	case PK_ROLE_ENUM_INSTALL_PACKAGES:
-	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+    case PK_ROLE_ENUM_REMOVE_PACKAGES:
+	case PK_ROLE_ENUM_PURGE_PACKAGES:
 		/* delete the file if the action affected any package
 		 * already listed in the prepared updates file */
 		pk_transaction_offline_invalidate_check (transaction);
@@ -1168,7 +1171,8 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	/* add to the database if we are going to log it */
 	if (transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
+	    transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    transaction->role == PK_ROLE_ENUM_PURGE_PACKAGES) {
 		g_autoptr(GPtrArray) array = NULL;
 		g_autofree gchar *packages = NULL;
 
@@ -1184,6 +1188,7 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 			item = g_ptr_array_index (array, i);
 			info = pk_package_get_info (item);
 			if (info == PK_INFO_ENUM_REMOVING ||
+                info == PK_INFO_ENUM_PURGING ||
 			    info == PK_INFO_ENUM_INSTALLING ||
 			    info == PK_INFO_ENUM_UPDATING) {
 				syslog (LOG_DAEMON | LOG_DEBUG,
@@ -2260,6 +2265,14 @@ pk_transaction_run (PkTransaction *transaction)
 					    transaction->cached_allow_deps,
 					    transaction->cached_autoremove);
 		break;
+	case PK_ROLE_ENUM_PURGE_PACKAGES:
+		pk_backend_purge_packages (transaction->backend,
+					    transaction->job,
+					    transaction->cached_transaction_flags,
+					    transaction->cached_package_ids,
+					    transaction->cached_allow_deps,
+					    transaction->cached_autoremove);
+		break;
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		pk_backend_update_packages (transaction->backend,
 					    transaction->job,
@@ -2801,7 +2814,8 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 		case PK_ROLE_ENUM_REFRESH_CACHE:
 			policy = "org.freedesktop.packagekit.system-sources-refresh";
 			break;
-		case PK_ROLE_ENUM_REMOVE_PACKAGES:
+        case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		case PK_ROLE_ENUM_PURGE_PACKAGES:
 			policy = "org.freedesktop.packagekit.package-remove";
 			break;
 		case PK_ROLE_ENUM_INSTALL_PACKAGES:
@@ -2910,7 +2924,8 @@ pk_transaction_set_role (PkTransaction *transaction, PkRoleEnum role)
 	/* always set transaction exclusive for some actions (improves performance) */
 	if (role == PK_ROLE_ENUM_INSTALL_FILES ||
 	    role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+        role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    role == PK_ROLE_ENUM_PURGE_PACKAGES ||
 	    role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
 	    role == PK_ROLE_ENUM_UPGRADE_SYSTEM ||
 	    role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
@@ -4275,6 +4290,80 @@ out:
 }
 
 static void
+pk_transaction_purge_packages (PkTransaction *transaction,
+                GVariant *params,
+                GDBusMethodInvocation *context)
+{
+    gboolean ret;
+    gboolean allow_deps;
+    gboolean autoremove;
+    PkBitfield transaction_flags;
+    g_autoptr(GError) error = NULL;
+    g_autofree gchar **package_ids = NULL;
+    g_autofree gchar *package_ids_temp = NULL;
+    g_autofree gchar *transaction_flags_temp = NULL;
+
+    g_return_if_fail (PK_IS_TRANSACTION (transaction));
+    g_return_if_fail (transaction->tid != NULL);
+
+    g_variant_get (params, "(t^a&sbb)",
+               &transaction_flags,
+               &package_ids,
+               &allow_deps,
+               &autoremove);
+
+    package_ids_temp = pk_package_ids_to_string (package_ids);
+    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+    g_debug ("PurgePackages method called: %s, %i, %i (transaction_flags: %s)",
+         package_ids_temp, allow_deps, autoremove, transaction_flags_temp);
+
+    /* not implemented yet */
+    if (!pk_backend_is_implemented (transaction->backend,
+                    PK_ROLE_ENUM_PURGE_PACKAGES)) {
+        g_set_error (&error,
+                 PK_TRANSACTION_ERROR,
+                 PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+                 "PurgePackages not supported by backend");
+        pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+        goto out;
+    }
+
+    /* check package_ids */
+    ret = pk_package_ids_check (package_ids);
+    if (!ret) {
+        g_set_error (&error,
+                 PK_TRANSACTION_ERROR,
+                 PK_TRANSACTION_ERROR_PACKAGE_ID_INVALID,
+                 "The package id's '%s' are not valid", package_ids_temp);
+        pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+        goto out;
+    }
+
+    /* save so we can run later */
+    transaction->cached_transaction_flags = transaction_flags;
+    transaction->cached_package_ids = g_strdupv (package_ids);
+    transaction->cached_allow_deps = allow_deps;
+    transaction->cached_autoremove = autoremove;
+    pk_transaction_set_role (transaction, PK_ROLE_ENUM_PURGE_PACKAGES);
+
+    /* this changed */
+    pk_transaction_emit_property_changed (transaction,
+                          "TransactionFlags",
+                          g_variant_new_uint64 (transaction_flags));
+
+    /* try to get authorization */
+    ret = pk_transaction_obtain_authorization (transaction,
+                           PK_ROLE_ENUM_PURGE_PACKAGES,
+                           &error);
+    if (!ret) {
+        pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+        goto out;
+    }
+out:
+    pk_transaction_dbus_return (context, error);
+}
+
+static void
 pk_transaction_repo_enable (PkTransaction *transaction,
 			    GVariant *params,
 			    GDBusMethodInvocation *context)
@@ -5316,6 +5405,10 @@ pk_transaction_method_call (GDBusConnection *connection_, const gchar *sender,
 		pk_transaction_remove_packages (transaction, parameters, invocation);
 		return;
 	}
+    if (g_strcmp0 (method_name, "PurgePackages") == 0) {
+        pk_transaction_purge_packages (transaction, parameters, invocation);
+        return;
+    }
 	if (g_strcmp0 (method_name, "RepoEnable") == 0) {
 		pk_transaction_repo_enable (transaction, parameters, invocation);
 		return;

@@ -995,6 +995,78 @@
       </arg>
     </method>
 
+    <method name="PurgePackages">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            This method removes packages and any configuration files from the local system.
+          </doc:para>
+          <doc:para>
+            This method typically emits
+            <doc:tt>Progress</doc:tt>,
+            <doc:tt>Status</doc:tt> and
+            <doc:tt>Error</doc:tt> and
+            <doc:tt>Package</doc:tt>.
+          </doc:para>
+          <doc:para>
+            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt> or
+            <doc:tt>removing</doc:tt>.
+          </doc:para>
+        </doc:description>
+        <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
+      </doc:doc>
+      <arg type="t" name="transaction_flags" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              If the transaction should be simulated or prepared.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="as" name="package_ids" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              An array of package IDs.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="allow_deps" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
+              If <doc:tt>true</doc:tt> allow other packages to be removed with the package,
+              but <doc:tt>false</doc:tt> should cause the script to abort if other packages
+              are dependant on the package.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+      <arg type="b" name="autoremove" direction="in">
+        <doc:doc>
+          <doc:summary>
+            <doc:para>
+              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
+              This option is only really interesting on embedded devices with a limited amount of
+              flash storage.
+              It suggests to the packagekit backend that dependencies installed at the same time as
+              the package should also be removed if they are not required by anything else.
+              For instance, if you install OpenOffice, it might download libneon as a dependency.
+              When <doc:tt>auto_remove</doc:tt> is set to true, and you remove OpenOffice then
+              libneon will also get removed automatically.
+            </doc:para>
+          </doc:summary>
+        </doc:doc>
+      </arg>
+    </method>
+
     <!--*********************************************************************-->
     <method name="RepoEnable">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>

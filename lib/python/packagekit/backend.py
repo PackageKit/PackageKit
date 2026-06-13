@@ -470,6 +470,13 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def purge_packages(self, transaction_flags, package_ids, allowdep, autoremove):
+        '''
+        Implement the {backend}-purge functionality
+        Needed to be implemented in a sub class
+        '''
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def update_packages(self, transaction_flags, package_ids):
         '''
         Implement the {backend}-update functionality

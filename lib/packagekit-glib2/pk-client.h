@@ -288,6 +288,17 @@ void		 pk_client_remove_packages_async	(PkClient		*client,
 							 GAsyncReadyCallback	 callback_ready,
 							 gpointer		 user_data);
 
+void         pk_client_purge_packages_async    (PkClient       *client,
+                             PkBitfield      transaction_flags,
+                             gchar          **package_ids,
+                             gboolean        allow_deps,
+                             gboolean        autoremove,
+                             GCancellable       *cancellable,
+                             PkProgressCallback  progress_callback,
+                             gpointer        progress_user_data,
+                             GAsyncReadyCallback     callback_ready,
+                             gpointer        user_data);
+
 void		 pk_client_refresh_cache_async		(PkClient		*client,
 							 gboolean		 force,
 							 GCancellable		*cancellable,

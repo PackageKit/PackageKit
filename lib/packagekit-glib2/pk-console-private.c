@@ -380,6 +380,10 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		/* TRANSLATORS: transaction state, removing packages */
 		text = _("Removing packages");
 		break;
+    case PK_STATUS_ENUM_PURGE:
+        /* TRANSLATORS: transaction state, removing packages */
+        text = _("Purging packages");
+        break;
 	case PK_STATUS_ENUM_DOWNLOAD:
 		/* TRANSLATORS: transaction state, downloading package files */
 		text = _("Downloading packages");

@@ -258,7 +258,7 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 static const gchar *
 pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 {
-	if (info == PK_INFO_ENUM_REMOVING) {
+	if (info == PK_INFO_ENUM_REMOVING || info == PK_INFO_ENUM_PURGING) {
 		/* TRANSLATORS: When processing, we might have to remove other dependencies */
 		return _("The following packages have to be removed:");
 	}
