@@ -1262,7 +1262,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * Remove a package (optionally with dependancies), along with any configuration files, from the system.
+ * Remove a package (optionally with dependencies), along with any configuration files, from the system.
  * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *

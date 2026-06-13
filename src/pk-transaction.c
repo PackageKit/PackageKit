@@ -859,6 +859,7 @@ pk_transaction_set_state (PkTransaction *transaction, PkTransactionState state)
 
 	/* only get cmdline when it's going to be saved into the database */
 	if (transaction->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    transaction->role == PK_ROLE_ENUM_PURGE_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
 	    transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		if (transaction->client_pid != PK_TRANSACTION_PID_INVALID && transaction->cmdline == NULL)

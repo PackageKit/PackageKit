@@ -95,6 +95,8 @@ pk_client_get_categories
 pk_client_get_categories_async
 pk_client_remove_packages
 pk_client_remove_packages_async
+pk_client_purge_packages
+pk_client_purge_packages_async
 pk_client_refresh_cache
 pk_client_refresh_cache_async
 pk_client_install_packages

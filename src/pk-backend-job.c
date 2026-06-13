@@ -1133,6 +1133,8 @@ pk_backend_job_packages (PkBackendJob *job,
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
 		else if (info == PK_INFO_ENUM_REMOVING)
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+		else if (info == PK_INFO_ENUM_PURGING)
+			pk_backend_job_set_status (job, PK_STATUS_ENUM_PURGE);
 		else if (info == PK_INFO_ENUM_CLEANUP)
 			pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
 		else if (info == PK_INFO_ENUM_OBSOLETING)
