@@ -910,7 +910,7 @@ pk_client_signal_package (PkClientState *state,
 	case PK_INFO_ENUM_DOWNLOADING:
 	case PK_INFO_ENUM_UPDATING:
 	case PK_INFO_ENUM_INSTALLING:
-    case PK_INFO_ENUM_REMOVING:
+	case PK_INFO_ENUM_REMOVING:
 	case PK_INFO_ENUM_PURGING:
 	case PK_INFO_ENUM_CLEANUP:
 	case PK_INFO_ENUM_OBSOLETING:
@@ -1932,21 +1932,21 @@ pk_client_set_hints_cb (GObject *source_object,
 		g_object_set (state->results,
 			      "inputs", g_strv_length (state->package_ids),
 			      NULL);
-    } else if (state->role == PK_ROLE_ENUM_PURGE_PACKAGES) {
-        g_dbus_proxy_call (state->proxy, "PurgePackages",
-                   g_variant_new ("(t^a&sbb)",
-                          state->transaction_flags,
-                          state->package_ids,
-                          state->allow_deps,
-                          state->autoremove),
-                   G_DBUS_CALL_FLAGS_NONE,
-                   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-                   state->cancellable,
-                   pk_client_method_cb,
-                   g_object_ref (state));
-        g_object_set (state->results,
-                  "inputs", g_strv_length (state->package_ids),
-                  NULL);
+	} else if (state->role == PK_ROLE_ENUM_PURGE_PACKAGES) {
+		g_dbus_proxy_call (state->proxy, "PurgePackages",
+				   g_variant_new ("(t^a&sbb)",
+						  state->transaction_flags,
+						  state->package_ids,
+						  state->allow_deps,
+						  state->autoremove),
+				   G_DBUS_CALL_FLAGS_NONE,
+				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
+				   state->cancellable,
+				   pk_client_method_cb,
+				   g_object_ref (state));
+		g_object_set (state->results,
+			      "inputs", g_strv_length (state->package_ids),
+			      NULL);
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		g_dbus_proxy_call (state->proxy, "RefreshCache",
 				   g_variant_new ("(b)",
@@ -2338,7 +2338,7 @@ pk_client_get_proxy_cb (GObject *object,
 	/* create socket for roles that need interaction */
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
 	    state->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-        state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
+	    state->role == PK_ROLE_ENUM_REMOVE_PACKAGES ||
 	    state->role == PK_ROLE_ENUM_PURGE_PACKAGES ||
 	    state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		hint = pk_client_create_helper_socket (state);
@@ -3467,48 +3467,47 @@ pk_client_remove_packages_async (PkClient *client,
  **/
 void
 pk_client_purge_packages_async (PkClient *client,
-                 PkBitfield transaction_flags,
-                 gchar **package_ids,
-                 gboolean allow_deps,
-                 gboolean autoremove,
-                 GCancellable *cancellable,
-                 PkProgressCallback progress_callback,
-                 gpointer progress_user_data,
-                 GAsyncReadyCallback callback_ready,
-                 gpointer user_data)
+				PkBitfield transaction_flags,
+				gchar **package_ids,
+				gboolean allow_deps,
+				gboolean autoremove,
+				GCancellable *cancellable,
+				PkProgressCallback progress_callback,
+				gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready,
+				gpointer user_data)
 {
-    PkClientPrivate *priv = pk_client_get_instance_private (client);
-    g_autoptr(PkClientState) state = NULL;
+	PkClientPrivate *priv = GET_PRIVATE(client);
+	g_autoptr(PkClientState) state = NULL;
 	g_autoptr(GError) error = NULL;
 
-    g_return_if_fail (PK_IS_CLIENT (client));
-    g_return_if_fail (callback_ready != NULL);
-    g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-    g_return_if_fail (package_ids != NULL);
+	g_return_if_fail (PK_IS_CLIENT (client));
+	g_return_if_fail (callback_ready != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+	g_return_if_fail (package_ids != NULL);
 
-    /* save state */
-    state = pk_client_state_new (client, callback_ready, user_data, pk_client_purge_packages_async, PK_ROLE_ENUM_PURGE_PACKAGES, cancellable);
-    state->transaction_flags = transaction_flags;
-    state->allow_deps = allow_deps;
-    state->autoremove = autoremove;
-    state->package_ids = g_strdupv (package_ids);
-    state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
+	/* save state */
+	state = pk_client_state_new (client, callback_ready, user_data, pk_client_purge_packages_async, PK_ROLE_ENUM_PURGE_PACKAGES, cancellable);
+	state->transaction_flags = transaction_flags;
+	state->allow_deps = allow_deps;
+	state->autoremove = autoremove;
+	state->package_ids = g_strdupv (package_ids);
+	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
-    /* check not already cancelled */
-    if (cancellable != NULL &&
-        g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-        pk_client_state_finish (state, g_steal_pointer (&error));
-        return;
-    }
+	/* check not already cancelled */
+	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
+		pk_client_state_finish (state, g_steal_pointer (&error));
+		return;
+	}
 
-    /* identify */
-    pk_client_set_role (state, state->role);
+	/* identify */
+	pk_client_set_role (state, state->role);
 
-    /* get tid */
-    pk_control_get_tid_async (priv->control,
-                  cancellable,
-                  (GAsyncReadyCallback) pk_client_get_tid_cb,
-                  g_steal_pointer (&state));
+	/* get tid */
+	pk_control_get_tid_async (priv->control,
+				 cancellable,
+				 (GAsyncReadyCallback) pk_client_get_tid_cb,
+				 g_steal_pointer (&state));
 }
 
 /**

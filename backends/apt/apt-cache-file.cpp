@@ -522,9 +522,7 @@ bool AptCacheFile::tryToInstall(
     return true;
 }
 
-void AptCacheFile::tryToRemove(pkgProblemResolver &Fix,
-                               const PkgInfo &pki,
-                               bool purge)
+void AptCacheFile::tryToRemove(pkgProblemResolver &Fix, const PkgInfo &pki, bool purge)
 {
     pkgCache::PkgIterator Pkg = pki.ver.ParentPkg();
 
