@@ -722,7 +722,7 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 	if (!ctx->is_console ||
 	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
 	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-         role != PK_ROLE_ENUM_REMOVE_PACKAGES &&
+	     role != PK_ROLE_ENUM_REMOVE_PACKAGES &&
 	     role != PK_ROLE_ENUM_PURGE_PACKAGES &&
 	     filename == NULL)) {
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, ctx);

@@ -1153,7 +1153,7 @@ pk_engine_is_package_history_interesing (PkPackage *package)
 
 	switch (pk_package_get_info (package)) {
 	case PK_INFO_ENUM_INSTALLING:
-    case PK_INFO_ENUM_REMOVING:
+	case PK_INFO_ENUM_REMOVING:
 	case PK_INFO_ENUM_PURGING:
 	case PK_INFO_ENUM_UPDATING:
 		ret = TRUE;

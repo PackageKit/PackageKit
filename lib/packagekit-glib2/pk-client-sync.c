@@ -1187,52 +1187,52 @@ pk_client_remove_packages (PkClient *client,
  **/
 PkResults *
 pk_client_purge_packages (PkClient *client,
-               PkBitfield transaction_flags,
-               gchar **package_ids,
-               gboolean allow_deps,
-               gboolean autoremove,
-               GCancellable *cancellable,
-               PkProgressCallback progress_callback,
-               gpointer progress_user_data,
-               GError **error)
+			  PkBitfield transaction_flags,
+			  gchar **package_ids,
+			  gboolean allow_deps,
+			  gboolean autoremove,
+			  GCancellable *cancellable,
+			  PkProgressCallback progress_callback,
+			  gpointer progress_user_data,
+			  GError **error)
 {
-    PkClientHelper helper;
-    PkResults *results;
+	PkClientHelper helper;
+	PkResults *results;
 
-    g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
-    g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+	g_return_val_if_fail (PK_IS_CLIENT (client), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-    /* create temp object */
-    memset (&helper, 0, sizeof (PkClientHelper));
-    helper.context = g_main_context_new ();
-    helper.loop = g_main_loop_new (helper.context, FALSE);
-    helper.error = error;
+	/* create temp object */
+	memset (&helper, 0, sizeof (PkClientHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
 
-    g_main_context_push_thread_default (helper.context);
+	g_main_context_push_thread_default (helper.context);
 
-    /* run async method */
-    pk_client_purge_packages_async (client,
-                     transaction_flags,
-                     package_ids,
-                     allow_deps,
-                     autoremove,
-                     cancellable,
-                     progress_callback,
-                     progress_user_data,
-                     (GAsyncReadyCallback) pk_client_generic_finish_sync,
-                     &helper);
+	/* run async method */
+	pk_client_purge_packages_async (client,
+					transaction_flags,
+					package_ids,
+					allow_deps,
+					autoremove,
+					cancellable,
+					progress_callback,
+					progress_user_data,
+					(GAsyncReadyCallback) pk_client_generic_finish_sync,
+					&helper);
 
-    g_main_loop_run (helper.loop);
+	g_main_loop_run (helper.loop);
 
-    results = helper.results;
+	results = helper.results;
 
-    g_main_context_pop_thread_default (helper.context);
+	g_main_context_pop_thread_default (helper.context);
 
-    /* free temp object */
-    g_main_loop_unref (helper.loop);
-    g_main_context_unref (helper.context);
+	/* free temp object */
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
-    return results;
+	return results;
 }
 
 /**

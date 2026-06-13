@@ -136,37 +136,37 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
  **/
 PkResults *
 pk_task_purge_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
-                  PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
+			     PkProgressCallback progress_callback, gpointer progress_user_data, GError **error)
 {
-    PkTaskHelper helper;
-    PkResults *results;
+	PkTaskHelper helper;
+	PkResults *results;
 
-    g_return_val_if_fail (PK_IS_TASK (task), NULL);
-    g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
-    /* create temp object */
-    memset (&helper, 0, sizeof (PkTaskHelper));
-    helper.context = g_main_context_new ();
-    helper.loop = g_main_loop_new (helper.context, FALSE);
-    helper.error = error;
+	/* create temp object */
+	memset (&helper, 0, sizeof (PkTaskHelper));
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
+	helper.error = error;
 
-    g_main_context_push_thread_default (helper.context);
+	g_main_context_push_thread_default (helper.context);
 
-    /* run async method */
-    pk_task_purge_packages_async (task, package_ids, allow_deps, autoremove, cancellable, progress_callback, progress_user_data,
-                       (GAsyncReadyCallback) pk_task_generic_finish_sync, &helper);
+	/* run async method */
+	pk_task_purge_packages_async (task, package_ids, allow_deps, autoremove, cancellable, progress_callback, progress_user_data,
+				      (GAsyncReadyCallback) pk_task_generic_finish_sync, &helper);
 
-    g_main_loop_run (helper.loop);
+	g_main_loop_run (helper.loop);
 
-    results = helper.results;
+	results = helper.results;
 
-    g_main_context_pop_thread_default (helper.context);
+	g_main_context_pop_thread_default (helper.context);
 
-    /* free temp object */
-    g_main_loop_unref (helper.loop);
-    g_main_context_unref (helper.context);
+	/* free temp object */
+	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
-    return results;
+	return results;
 }
 
 /**

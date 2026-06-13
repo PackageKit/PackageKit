@@ -166,12 +166,12 @@ void		 pk_backend_remove_packages		(PkBackend	*backend,
 							 gchar		**package_ids,
 							 gboolean	 allow_deps,
 							 gboolean	 autoremove);
-void         pk_backend_purge_packages     (PkBackend  *backend,
-                             PkBackendJob   *job,
-                             PkBitfield  transaction_flags,
-                             gchar      **package_ids,
-                             gboolean    allow_deps,
-                             gboolean    autoremove);
+void		 pk_backend_purge_packages		(PkBackend	*backend,
+							 PkBackendJob	*job,
+							 PkBitfield	 transaction_flags,
+							 gchar		**package_ids,
+							 gboolean	 allow_deps,
+							 gboolean	 autoremove);
 void		 pk_backend_resolve			(PkBackend	*backend,
 							 PkBackendJob	*job,
 							 PkBitfield	 filters,
