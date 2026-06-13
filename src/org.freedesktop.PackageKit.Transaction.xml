@@ -1011,10 +1011,8 @@
           </doc:para>
           <doc:para>
             <doc:tt>Package</doc:tt> enumerated types should be
-            <doc:tt>downloading</doc:tt>,
-            <doc:tt>updating</doc:tt>,
-            <doc:tt>installing</doc:tt> or
-            <doc:tt>removing</doc:tt>.
+            <doc:tt>removing</doc:tt> or
+            <doc:tt>purging</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>

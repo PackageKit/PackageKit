@@ -2042,8 +2042,8 @@ main (int argc, char *argv[])
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: the user did not
-					      * specify what they wanted to remove */
-					     "%s", _("A package name to remove is required"));
+					      * specify what they wanted to purge */
+					     "%s", _("A package name to purge is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
