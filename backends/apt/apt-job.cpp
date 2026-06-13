@@ -2398,6 +2398,13 @@ bool AptJob::runTransaction(
             m_cache->tryToRemove(Fix, pkInfo, false);
         }
 
+        // FIXME: the purge intent is only honoured at commit time (apt marks
+        // these for purge and dpkg removes their config files). The
+        // simulated/preflight package list built by checkChangedPackages()
+        // still reports every deletion as PK_INFO_ENUM_REMOVING, so a simulated
+        // purge previews as a plain remove. Carrying a purge-id set through the
+        // transaction state and emitting PK_INFO_ENUM_PURGING for it (including
+        // the markNewGarbageForRemoval() autoremove path) is left as a follow-up.
         for (const PkgInfo &pkInfo : purge) {
             if (m_cancel)
                 break;

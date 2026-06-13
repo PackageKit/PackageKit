@@ -123,7 +123,7 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
  * @progress_user_data: data to pass to @progress_callback
  * @error: the #GError to store any failure, or %NULL
  *
- * Remove a package (optionally with dependancies), along with any configuration files, from the system.
+ * Remove a package (optionally with dependencies), along with any configuration files, from the system.
  * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *

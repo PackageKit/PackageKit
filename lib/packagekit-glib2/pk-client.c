@@ -3435,7 +3435,7 @@ pk_client_remove_packages_async (PkClient *client,
 }
 
 /**
- * pk_client_purge_packages_async:
+ * pk_client_purge_packages_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
  * @transaction_flags: a transaction type bitfield
  * @package_ids: (array zero-terminated=1): a null terminated array of package_id structures such as "hal;0.0.1;i386;fedora"
@@ -3447,7 +3447,7 @@ pk_client_remove_packages_async (PkClient *client,
  * @callback_ready: the function to run on completion
  * @user_data: the data to pass to @callback_ready
  *
- * Remove a package (optionally with dependancies), as well as any configuration files, from the system.
+ * Remove a package (optionally with dependencies), as well as any configuration files, from the system.
  * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *
