@@ -3463,7 +3463,7 @@ pk_client_remove_packages_async (PkClient *client,
  * If @allow_deps is set to %FALSE, and other packages would have to be removed,
  * then the transaction would fail.
  *
- * Since: 0.8.1
+ * Since: 1.3.6
  **/
 void
 pk_client_purge_packages_async (PkClient *client,
