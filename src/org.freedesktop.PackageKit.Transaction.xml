@@ -1011,6 +1011,9 @@
           </doc:para>
           <doc:para>
             <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>downloading</doc:tt>,
+            <doc:tt>updating</doc:tt>,
+            <doc:tt>installing</doc:tt>,
             <doc:tt>removing</doc:tt> or
             <doc:tt>purging</doc:tt>.
           </doc:para>
