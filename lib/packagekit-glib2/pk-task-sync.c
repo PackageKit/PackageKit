@@ -142,6 +142,7 @@ pk_task_purge_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_d
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */

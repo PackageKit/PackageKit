@@ -1279,6 +1279,7 @@ pk_task_purge_packages_async (PkTask *task, gchar **package_ids, gboolean allow_
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
