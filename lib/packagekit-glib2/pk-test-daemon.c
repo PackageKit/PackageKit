@@ -778,7 +778,7 @@ pk_test_client_cancellation_func (void)
 	g_auto(GStrv) package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
 	g_autoptr(PkClient) client = NULL;
 	gboolean idle;
-	const unsigned int n_iterations = !g_test_thorough () ? 500 : 250;
+	const unsigned int n_iterations = g_test_thorough () ? 500 : 250;
 
 	/* get client */
 	client = pk_client_new ();

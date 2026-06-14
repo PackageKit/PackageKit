@@ -309,6 +309,8 @@ pk_client_state_finalize (GObject *object)
 	g_free (state->transaction_id);
 	g_strfreev (state->files);
 	g_strfreev (state->package_ids);
+	pk_client_state_unset_proxy (state);
+
 	/* results will not exist if the CreateTransaction fails */
 	g_clear_object (&state->results);
 	g_clear_object (&state->progress);
