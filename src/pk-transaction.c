@@ -4340,6 +4340,17 @@ pk_transaction_purge_packages (PkTransaction *transaction,
 		goto out;
 	}
 
+	/* only-download makes no sense for a purge and would skip authorization */
+	if (pk_bitfield_contain (transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		g_set_error_literal (&error,
+				     PK_TRANSACTION_ERROR,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
+				     "PurgePackages does not support only-download");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
 	/* save so we can run later */
 	transaction->cached_transaction_flags = transaction_flags;
 	transaction->cached_package_ids = g_strdupv (package_ids);
