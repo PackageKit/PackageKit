@@ -41,9 +41,13 @@ run it.
 """
 
 import os
+import pty
 import sys
 import time
+import fcntl
+import select
 import shutil
+import termios
 import argparse
 import tempfile
 import subprocess
@@ -187,6 +191,82 @@ def wait_for_bus_name(timeout=30):
         return False
 
 
+def _answer_for_prompt(prompt):
+    """Pick the answer for an interactive yes/no prompt.
+
+    Some subtests script specific keystrokes ("press N" expects a 'no', the
+    rest a default 'yes'); every real confirmation (untrusted software, EULAs,
+    "Proceed with changes?", ...) is accepted.
+    """
+    if 'press N' in prompt:
+        return 'N\n'
+    if 'press Y' in prompt:
+        return 'Y\n'
+    if 'press enter' in prompt:
+        return '\n'
+    return 'y\n'
+
+
+def run_test_with_auto_answers(test_binary, env):
+    """Run the test binary on a pseudo-terminal, answering its prompts.
+
+    pk_console_get_prompt() reads from the controlling terminal (/dev/tty), so the test cannot
+    be driven by a plain pipe. We give it a PTY as its controlling terminal, forward everything
+    it prints to our stdout (so meson still sees the TAP stream) and write a canned answer whenever a
+    "... [Y/n]"/"... [N/y]" prompt appears.
+
+    Returns the test's exit code.
+    """
+    master, slave = pty.openpty()
+
+    def _make_controlling_tty():
+        # Runs in the child after its std fds have been pointed at the slave
+        # PTY; claim it as the controlling terminal so /dev/tty resolves here.
+        fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+
+    proc = subprocess.Popen(
+        [test_binary],
+        stdin=slave,
+        stdout=slave,
+        stderr=slave,
+        env=env,
+        start_new_session=True,
+        preexec_fn=_make_controlling_tty,
+    )
+    os.close(slave)
+
+    line = ''
+    try:
+        while True:
+            try:
+                readable, _, _ = select.select([master], [], [], 1.0)
+            except (OSError, select.error):
+                break
+            if master in readable:
+                try:
+                    data = os.read(master, 4096)
+                except OSError:
+                    break  # slave closed: the child has exited
+                if not data:
+                    break
+                text = data.decode('utf-8', 'replace')
+                sys.stdout.write(text)
+                sys.stdout.flush()
+
+                # Track the current (unterminated) line to spot a prompt.
+                line = (line + text).rsplit('\n', 1)[-1]
+                stripped = line.rstrip()
+                if stripped.endswith('[Y/n]') or stripped.endswith('[N/y]'):
+                    os.write(master, _answer_for_prompt(line).encode('utf-8'))
+                    line = ''
+            elif proc.poll() is not None:
+                break
+    finally:
+        os.close(master)
+
+    return proc.wait()
+
+
 def main():
     parser = argparse.ArgumentParser(description='Run the PackageKit daemon test.')
     parser.add_argument('--daemon', required=True, help='path to the packagekitd binary')
@@ -266,10 +346,13 @@ def main():
 
         info('Daemon is up; running {}...'.format(args.test_binary))
 
-        result = subprocess.run([args.test_binary])
-        if result.returncode != 0:
+        # Force a predictable locale so the (otherwise translated) prompt text stays in English
+        test_env = dict(os.environ, LC_ALL='C.UTF-8', LANG='C.UTF-8')
+
+        returncode = run_test_with_auto_answers(args.test_binary, test_env)
+        if returncode != 0:
             dump_daemon_log()
-        return result.returncode
+        return returncode
     finally:
         # Tear down in reverse order, and only what we started ourselves
         terminate(daemon)
