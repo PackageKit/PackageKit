@@ -846,7 +846,6 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, gpoin
 	g_autoptr(GTask) task = G_TASK (user_data);
 	PkClient *client = PK_CLIENT (source_object);
 	PkDetails *item;
-	guint i;
 	PkPackage *package;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkResults) results = NULL;
@@ -873,7 +872,7 @@ pk_package_sack_get_details_cb (GObject *source_object, GAsyncResult *res, gpoin
 	}
 
 	/* set data on each item */
-	for (i = 0; i < details->len; i++) {
+	for (guint i = 0; i < details->len; i++) {
 		g_autofree gchar *package_id = NULL;
 		item = g_ptr_array_index (details, i);
 		g_object_get (item,
@@ -931,7 +930,7 @@ pk_package_sack_get_details_async (PkPackageSack *sack, GCancellable *cancellabl
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_details_async (priv->client, package_ids,
 				     cancellable, progress_callback, progress_user_data,
-				     pk_package_sack_get_details_cb, task);
+				     pk_package_sack_get_details_cb, g_steal_pointer (&task));
 }
 
 /***************************************************************************************************/
@@ -1061,7 +1060,7 @@ pk_package_sack_get_update_detail_async (PkPackageSack *sack, GCancellable *canc
 	package_ids = pk_package_sack_get_package_ids (sack);
 	pk_client_get_update_detail_async (priv->client, package_ids,
 					   cancellable, progress_callback, progress_user_data,
-					   pk_package_sack_get_update_detail_cb, task);
+					   pk_package_sack_get_update_detail_cb, g_steal_pointer (&task));
 }
 
 /***************************************************************************************************/
