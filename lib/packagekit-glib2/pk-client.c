@@ -242,14 +242,6 @@ pk_client_state_finish (PkClientState *state, GError *error)
 
 	pk_client_state_unset_proxy (state);
 
-	if (state->ret) {
-		g_task_return_pointer (state->res,
-		                       state->querying_progress ? G_OBJECT (g_object_ref (state->progress)) : G_OBJECT (g_object_ref (state->results)),
-		                       g_object_unref);
-	} else {
-		g_task_return_error (state->res, g_steal_pointer (&error_owned));
-	}
-
 	/* remove any socket file */
 	if (state->client_helper != NULL) {
 		g_autoptr(GError) error_local = NULL;
@@ -259,9 +251,20 @@ pk_client_state_finish (PkClientState *state, GError *error)
 		g_object_unref (state->client_helper);
 	}
 
-	/* remove from list */
+	/* Remove the state from the in-flight list *before* returning the result.
+	 * g_task_return_*() may dispatch the completion callback synchronously, and
+	 * a caller inspecting the client from that callback (e.g. the "idle"
+	 * property) must observe this transaction as already finished. */
 	pk_client_state_remove (state->client, state);
 	/* `state_owned` may be the only strong ref to `state` remaining after this point */
+
+	if (state->ret) {
+		g_task_return_pointer (state->res,
+		                       state->querying_progress ? G_OBJECT (g_object_ref (state->progress)) : G_OBJECT (g_object_ref (state->results)),
+		                       g_object_unref);
+	} else {
+		g_task_return_error (state->res, g_steal_pointer (&error_owned));
+	}
 
 	/* mark the state as finished */
 	g_clear_object (&state->res);
