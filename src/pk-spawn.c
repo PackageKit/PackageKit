@@ -491,6 +491,27 @@ pk_strvequal (gchar **id1, gchar **id2)
 }
 
 /**
+ * pk_spawn_child_setup:
+ *
+ * Runs in the child after fork() but before exec(). Resets the signal mask to
+ * empty so the spawned helper starts with all signals unblocked. We rely on
+ * SIGQUIT to cancel a running backend (see pk_spawn_kill()), but a signal that
+ * is blocked in the inherited mask stays pending and never reaches the helper's
+ * handler. Some environments start with SIGQUIT blocked, which would silently
+ * break cancellation.
+ *
+ * IMPORTANT: this runs between fork() and exec(), so it must only call
+ * async-signal-safe functions.
+ **/
+static void
+pk_spawn_child_setup (gpointer user_data)
+{
+	sigset_t set;
+	sigemptyset (&set);
+	sigprocmask (SIG_SETMASK, &set, NULL);
+}
+
+/**
  * pk_spawn_argv:
  * @argv: Can be generated using g_strsplit (command, " ", 0)
  * if there are no spaces in the filename
@@ -574,7 +595,7 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	g_debug ("creating new instance of %s", argv[0]);
 	ret = g_spawn_async_with_pipes (NULL, argv, envp,
 				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
-				 NULL, NULL, &spawn->child_pid,
+				 pk_spawn_child_setup, NULL, &spawn->child_pid,
 				 &spawn->stdin_fd,
 				 &spawn->stdout_fd,
 				 &spawn->stderr_fd,
