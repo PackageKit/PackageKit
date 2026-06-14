@@ -1424,10 +1424,6 @@ main (int argc, char **argv)
 	pk_debug_set_verbose (TRUE);
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 
-#ifndef PK_ENABLE_DAEMON_TESTS
-	return 0;
-#endif
-
 	/* some libraries need to know */
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
 

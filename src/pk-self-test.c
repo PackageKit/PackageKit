@@ -1445,11 +1445,6 @@ main (int argc, char **argv)
 {
 	g_test_init (&argc, &argv, NULL);
 
-#ifndef PK_ENABLE_DAEMON_TESTS
-	/* don't run when using make distcheck */
-	return 0;
-#endif
-
 #ifndef PK_BUILD_LOCAL
 	g_warning ("you need to compile with -Dlocal_checkout=true for ninja test support");
 #endif

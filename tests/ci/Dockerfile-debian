@@ -10,6 +10,7 @@ RUN apt-get install -yq eatmydata build-essential
 RUN eatmydata apt-get install -yq --no-install-recommends \
 	abigail-tools \
 	appstream \
+	dbus-daemon \
 	bash-completion \
 	docbook-xsl-ns \
 	gettext \

@@ -8,7 +8,9 @@ RUN eopkg -y install \
     gstreamer-plugins-base-devel \
     libgtk-3-devel \
     jansson-devel \
-    docbook-xml
+    docbook-xml \
+    dbus \
+    polkit
 
 RUN mkdir /build
 WORKDIR /build

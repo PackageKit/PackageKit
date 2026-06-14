@@ -58,10 +58,6 @@ if get_option('local_checkout')
   add_project_arguments ('-DPK_BUILD_LOCAL=1', language: 'c')
 endif
 
-if get_option('daemon_tests')
-  add_project_arguments ('-DPK_ENABLE_DAEMON_TESTS=1', language: 'c')
-endif
-
 # ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
 feature_args = [
     '-D_DEFAULT_SOURCE',
@@ -204,5 +200,6 @@ subdir('lib')
 subdir('src')
 subdir('client')
 subdir('backends')
+subdir('tests')
 subdir('contrib')
 subdir('docs')

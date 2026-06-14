@@ -297,5 +297,6 @@ pk_test_daemon = executable(
 
 test(
   'pk-test-private',
-  pk_test_private
+  pk_test_private,
+  suite: 'main',
 )
