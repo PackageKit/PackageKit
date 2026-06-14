@@ -126,6 +126,7 @@ pk_self_test_exec = executable(
 test(
   'pk-self-test',
   pk_self_test_exec,
+  suite: 'main',
   depends: packagekit_test_py,
   env: [
   'PYTHONPATH=@0@'.format(join_paths(meson.project_build_root(), 'lib', 'python')),

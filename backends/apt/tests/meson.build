@@ -21,5 +21,6 @@ apt_tests_exe = executable(
 test(
   'apt-backend-tests',
   apt_tests_exe,
+  suite: 'apt',
   args: [apt_test_data_dir],
 )

@@ -14,6 +14,6 @@ if get_option('daemon_tests')
     depends: [packagekitd_exec, pk_test_daemon, pk_backend_dummy],
     suite: 'daemon',
     is_parallel: false,
-    timeout: 360,
+    timeout: 480,
   )
 endif

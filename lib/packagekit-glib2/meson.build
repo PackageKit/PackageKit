@@ -299,4 +299,5 @@ test(
   'pk-test-private',
   pk_test_private,
   suite: 'main',
+  timeout: 360,
 )

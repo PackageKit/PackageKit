@@ -72,6 +72,7 @@ ascli_exe = find_program('appstreamcli', required: false)
 if ascli_exe.found()
   test('validate metainfo file',
         ascli_exe,
+        suite: 'validate',
         args: ['validate',
                '--no-net',
                '--pedantic',
