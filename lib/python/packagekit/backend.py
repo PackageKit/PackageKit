@@ -673,6 +673,13 @@ class PackageKitBaseBackend:
             autoremove = _text_to_bool(args[3])
             self.remove_packages(transaction_flags, package_ids, allowdeps, autoremove)
             self.finished()
+        elif cmd == 'purge-packages':
+            transaction_flags = args[0].split(';')
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            allowdeps = _text_to_bool(args[2])
+            autoremove = _text_to_bool(args[3])
+            self.purge_packages(transaction_flags, package_ids, allowdeps, autoremove)
+            self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]
             state = _text_to_bool(args[1])
