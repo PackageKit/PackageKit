@@ -110,6 +110,7 @@ bool AptJob::init(gchar **localDebs)
     case PK_ROLE_ENUM_INSTALL_PACKAGES:
     case PK_ROLE_ENUM_INSTALL_FILES:
     case PK_ROLE_ENUM_REMOVE_PACKAGES:
+    case PK_ROLE_ENUM_PURGE_PACKAGES:
     case PK_ROLE_ENUM_UPDATE_PACKAGES:
         withLock = true;
         break;
@@ -1965,6 +1966,20 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
                 emitPackage(ver, PK_INFO_ENUM_REMOVING);
                 emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, m_lastSubProgress);
             }
+        } else if (starts_with(str, "Purging")) {
+            if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
+                const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                if (!ver.end()) {
+                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                }
+            }
+            m_lastSubProgress += 25;
+
+            const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+            if (!ver.end()) {
+                emitPackage(ver, PK_INFO_ENUM_PURGING);
+                emitPackageProgress(ver, PK_STATUS_ENUM_PURGE, m_lastSubProgress);
+            }
         } else if (starts_with(str, "Installed") || starts_with(str, "Removed")) {
             m_lastSubProgress = 100;
             const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
@@ -2300,6 +2315,7 @@ bool AptJob::resolvePackageUpdateIds(
 bool AptJob::runTransaction(
     const PkgList &install,
     const PkgList &remove,
+    const PkgList &purge,
     const PkgList &update,
     bool fixBroken,
     PkBitfield flags,
@@ -2328,9 +2344,13 @@ bool AptJob::runTransaction(
     // Calculate existing garbage before the transaction
     PkgList initial_garbage;
     std::vector<unsigned int> explicitRemovalPkgIds;
-    explicitRemovalPkgIds.reserve(remove.size());
+    explicitRemovalPkgIds.reserve(remove.size() + purge.size());
 
     for (const PkgInfo &pkInfo : remove) {
+        if (!pkInfo.ver.end())
+            explicitRemovalPkgIds.push_back(pkInfo.ver.ParentPkg()->ID);
+    }
+    for (const PkgInfo &pkInfo : purge) {
         if (!pkInfo.ver.end())
             explicitRemovalPkgIds.push_back(pkInfo.ver.ParentPkg()->ID);
     }
@@ -2375,7 +2395,21 @@ bool AptJob::runTransaction(
             if (m_cancel)
                 break;
 
-            m_cache->tryToRemove(Fix, pkInfo);
+            m_cache->tryToRemove(Fix, pkInfo, false);
+        }
+
+        // FIXME: the purge intent is only honoured at commit time (apt marks
+        // these for purge and dpkg removes their config files). The
+        // simulated/preflight package list built by checkChangedPackages()
+        // still reports every deletion as PK_INFO_ENUM_REMOVING, so a simulated
+        // purge previews as a plain remove. Carrying a purge-id set through the
+        // transaction state and emitting PK_INFO_ENUM_PURGING for it (including
+        // the markNewGarbageForRemoval() autoremove path) is left as a follow-up.
+        for (const PkgInfo &pkInfo : purge) {
+            if (m_cancel)
+                break;
+
+            m_cache->tryToRemove(Fix, pkInfo, true);
         }
 
         // Call the scored problem resolver
@@ -2398,7 +2432,7 @@ bool AptJob::runTransaction(
 
     // Remove new garbage that is created
     if (autoremove)
-        markNewGarbageForRemoval(Fix, initial_garbage);
+        markNewGarbageForRemoval(Fix, initial_garbage, !purge.empty());
 
     // Prepare for the restart thing
     struct stat restartStatStart;
@@ -2467,12 +2501,12 @@ bool AptJob::checkNoImplicitRemovals(const std::vector<unsigned int> &explicitRe
     return false;
 }
 
-void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage)
+void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage, bool purge)
 {
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
         const pkgCache::VerIterator &ver = pkg.CurrentVer();
         if (!ver.end() && !initialGarbage.contains(pkg) && m_cache->isGarbage(pkg))
-            m_cache->tryToRemove(Fix, PkgInfo(ver));
+            m_cache->tryToRemove(Fix, PkgInfo(ver), purge);
     }
 }
 
