@@ -16,12 +16,22 @@ meson setup build \
 DUMMY_DESTDIR=/tmp/install-root/
 rm -rf $DUMMY_DESTDIR
 
+#
 # Build & Install
+#
 ninja -C build
 DESTDIR=$DUMMY_DESTDIR ninja -C build install
 
-# Run the regular test suite (the daemon integration suite is run separately
-# below, as it needs extra setup and must run as root)
+#
+# Run tests
+#
+
+# Ensure we have a D-Bus daemon running
+mkdir -p /run/dbus/
+dbus-daemon --system --print-address
+
+# Run the regular test suite (the PK daemon tests are run separately
+# below, as they need extra setup and must run as root)
 meson test -C build \
     --no-suite daemon \
     -v \
