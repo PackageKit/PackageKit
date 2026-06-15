@@ -948,6 +948,7 @@ main (int argc, char **argv)
 
 	/* some libraries need to know */
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
+	g_setenv ("PK_TEST_DATA_DIR", TESTDATADIR, TRUE);
 
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);

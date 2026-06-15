@@ -2075,21 +2075,24 @@ pk_client_create_helper_argv_envp_test (PkClientState *state,
 					gchar ***argv,
 					gchar ***envp)
 {
-	gboolean ret;
+	const gchar *datadir;
+	g_autofree gchar *helper = NULL;
+
+	/* the test data directory is provided at runtime by the test harness */
+	datadir = g_getenv ("PK_TEST_DATA_DIR");
+	if (datadir == NULL)
+		return FALSE;
 
 	/* check we have the right file */
-	ret = g_file_test (TESTDATADIR "/pk-client-helper-test.py",
-			   G_FILE_TEST_EXISTS);
-	if (!ret) {
+	helper = g_build_filename (datadir, "pk-client-helper-test.py", NULL);
+	if (!g_file_test (helper, G_FILE_TEST_EXISTS)) {
 		g_warning ("could not find the socket helper!");
 		return FALSE;
 	}
 
 	/* setup simple test socket */
 	*argv = g_new0 (gchar *, 2);
-	*argv[0] = g_build_filename (TESTDATADIR,
-				     "pk-client-helper-test.py",
-				     NULL);
+	(*argv)[0] = g_steal_pointer (&helper);
 	return TRUE;
 }
 
