@@ -26,18 +26,14 @@ DESTDIR=$DUMMY_DESTDIR ninja -C build install
 # Run tests
 #
 
-# Ensure we have a D-Bus daemon running
-mkdir -p /run/dbus/
-dbus-daemon --system --print-address
-
-# Run the regular test suite (the PK daemon tests are run separately
+# Run the regular test suite (the end-to-end tests are run separately
 # below, as they need extra setup and must run as root)
 meson test -C build \
-    --no-suite daemon \
+    --no-suite e2e \
     -v \
     --print-errorlogs
 
-# Run the daemon integration suite. It needs the D-Bus and polkit policy
+# Run the end-to-end integration suite. It needs the D-Bus and polkit policy
 # installed to their system paths so the bus and polkitd honour them; the test
 # wrapper starts a private system bus and polkitd on demand (and tears them
 # down) if none are running. It runs as root so packagekitd can own its name.
@@ -49,6 +45,6 @@ install -Dm644 policy/org.freedesktop.packagekit.rules \
     /usr/share/polkit-1/rules.d/org.freedesktop.packagekit.rules
 
 meson test -C build \
-    --suite daemon \
+    --suite e2e \
     -v \
     --print-errorlogs

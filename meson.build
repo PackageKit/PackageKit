@@ -11,6 +11,7 @@ i18n = import('i18n')
 pkg = import('pkgconfig')
 
 source_root = meson.project_source_root()
+build_root = meson.project_build_root()
 
 glib_req_version = '2.76'
 glib_req = '>= @0@'.format(glib_req_version)

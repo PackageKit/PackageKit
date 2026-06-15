@@ -2,25 +2,12 @@
 #
 # Copyright (C) 2026 Matthias Klumpp <matthias@tenstral.net>
 #
-# Licensed under the GNU Lesser General Public License Version 2.1
+# SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 """Run the PackageKit daemon tests.
 
-The pk-test-daemon binary exercises the client library against a running
+The pk-test-e2e binary exercises the client library against a running
 PackageKit daemon (using the dummy backend) over the system D-Bus.
 This script forwards the test binary's output straight to stdout/stderr
 and keeps the daemon's own output in a buffer that is only printed
@@ -43,7 +30,6 @@ run it.
 import os
 import pty
 import sys
-import time
 import fcntl
 import select
 import shutil
@@ -52,26 +38,19 @@ import argparse
 import tempfile
 import subprocess
 
+from utils import (
+    terminate,
+    system_bus_reachable,
+    start_polkitd_if_needed,
+    start_system_bus_if_needed,
+)
+
 # meson interprets this exit code as "test skipped"
 EXIT_SKIP = 77
 
 PK_BUS_NAME = 'org.freedesktop.PackageKit'
 DBUS_CONF = '/usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf'
 POLKIT_POLICY = '/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy'
-
-
-def info(message):
-    """Print a progress message."""
-    print(message, flush=True)
-
-
-def system_bus_reachable():
-    """Whether a system D-Bus daemon looks reachable."""
-    if os.environ.get('DBUS_SYSTEM_BUS_ADDRESS'):
-        return True
-    return os.path.exists('/run/dbus/system_bus_socket') or os.path.exists(
-        '/var/run/dbus/system_bus_socket'
-    )
 
 
 def check_prerequisites():
@@ -94,90 +73,6 @@ def check_prerequisites():
     if not system_bus_reachable() and shutil.which('dbus-daemon') is None:
         reasons.append('No system bus running and dbus-daemon is not available ' 'to start one.')
     return reasons
-
-
-def name_has_owner(name):
-    """Whether a bus name currently has an owner on the system bus."""
-    res = subprocess.run(
-        [
-            'gdbus',
-            'call',
-            '--system',
-            '--dest',
-            'org.freedesktop.DBus',
-            '--object-path',
-            '/org/freedesktop/DBus',
-            '--method',
-            'org.freedesktop.DBus.NameHasOwner',
-            name,
-        ],
-        capture_output=True,
-        text=True,
-    )
-    return res.returncode == 0 and 'true' in res.stdout
-
-
-def start_system_bus_if_needed(out):
-    """Start a private system bus if none is reachable.
-
-    Returns (proc, tmpdir): proc is the dbus-daemon we launched (or None if an
-    existing bus is reused), tmpdir is the temporary runtime dir to clean up.
-    """
-    if system_bus_reachable():
-        info('Reusing the already-running system bus.')
-        return None, None
-    tmpdir = tempfile.mkdtemp(prefix='pk-test-bus-')
-    socket_path = os.path.join(tmpdir, 'system_bus_socket')
-    address = 'unix:path=' + socket_path
-    info('No system bus found; starting a private one at {}.'.format(address))
-    proc = subprocess.Popen(
-        ['dbus-daemon', '--system', '--nofork', '--nopidfile', '--address=' + address],
-        stdout=out,
-        stderr=subprocess.STDOUT,
-    )
-    os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = address
-    for _ in range(40):
-        if os.path.exists(socket_path):
-            break
-        time.sleep(0.25)
-    return proc, tmpdir
-
-
-def start_polkitd_if_needed(out):
-    """Start polkitd only if no polkit authority is on the bus. Returns the proc
-    we launched, or None if an existing authority is reused or none can be started.
-    """
-    if name_has_owner('org.freedesktop.PolicyKit1'):
-        info('Reusing the already-running polkit authority.')
-        return None
-    polkitd = shutil.which('polkitd')
-    for candidate in ('/usr/lib/polkit-1/polkitd', '/usr/libexec/polkit-1/polkitd'):
-        if polkitd:
-            break
-        if os.path.exists(candidate):
-            polkitd = candidate
-    if not polkitd:
-        info('Warning: polkitd not found; the daemon will fail to reach an authority.')
-        return None
-    info('No polkit authority found; starting {}.'.format(polkitd))
-    proc = subprocess.Popen([polkitd, '--no-debug'], stdout=out, stderr=subprocess.STDOUT)
-    for _ in range(40):
-        if name_has_owner('org.freedesktop.PolicyKit1'):
-            break
-        time.sleep(0.25)
-    return proc
-
-
-def terminate(proc):
-    """Best-effort terminate-then-kill of a child process we started."""
-    if proc is None or proc.poll() is not None:
-        return
-    proc.terminate()
-    try:
-        proc.wait(timeout=10)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        proc.wait()
 
 
 def wait_for_bus_name(timeout=30):
@@ -268,9 +163,12 @@ def run_test_with_auto_answers(test_binary, env):
 
 
 def main():
+    # Line-buffer stdout so our progress messages stay correctly interleaved
+    sys.stdout.reconfigure(line_buffering=True)
+
     parser = argparse.ArgumentParser(description='Run the PackageKit daemon test.')
     parser.add_argument('--daemon', required=True, help='path to the packagekitd binary')
-    parser.add_argument('--test-binary', required=True, help='path to the pk-test-daemon binary')
+    parser.add_argument('--test', required=True, help='path to the pk-test-e2e binary')
     args = parser.parse_args()
 
     reasons = check_prerequisites()
@@ -278,7 +176,6 @@ def main():
         print('Skipping daemon test; prerequisites are not met:\n')
         for reason in reasons:
             print('  * ' + reason)
-        print('\nSee tests/run-daemon-test.py for details.')
         return EXIT_SKIP
 
     if os.geteuid() != 0:
@@ -320,7 +217,7 @@ def main():
         bus_proc, bus_tmpdir = start_system_bus_if_needed(daemon_log)
         polkitd_proc = start_polkitd_if_needed(daemon_log)
 
-        info('Launching {} with the dummy backend...'.format(args.daemon))
+        print('Launching {} with the dummy backend...'.format(args.daemon))
         daemon = subprocess.Popen(
             [args.daemon, '--verbose', '--disable-timer', '--keep-environment', '--backend=dummy'],
             cwd=build_root,
@@ -344,12 +241,12 @@ def main():
             dump_daemon_log()
             return 1
 
-        info('Daemon is up; running {}...'.format(args.test_binary))
+        print('Daemon is up; running {}...'.format(args.test))
 
         # Force a predictable locale so the (otherwise translated) prompt text stays in English
         test_env = dict(os.environ, LC_ALL='C.UTF-8', LANG='C.UTF-8')
 
-        returncode = run_test_with_auto_answers(args.test_binary, test_env)
+        returncode = run_test_with_auto_answers(args.test, test_env)
         if returncode != 0:
             dump_daemon_log()
         return returncode
