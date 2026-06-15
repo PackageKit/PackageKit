@@ -4747,6 +4747,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 
 	/* frontend_socket=/tmp/socket.3456 */
 	if (g_strcmp0 (key, "frontend-socket") == 0) {
+		GStatBuf st;
 
 		/* nothing provided */
 		if (value == NULL || value[0] == '\0') {
@@ -4766,14 +4767,24 @@ pk_transaction_set_hint (PkTransaction *transaction,
 			return FALSE;
 		}
 
-		/* socket does not exist */
-		if (!g_file_test (value, G_FILE_TEST_EXISTS)) {
-			g_set_error_literal (error,
-					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-					     "frontend-socket does not exist");
-			return FALSE;
-		}
+		/* must be an actual socket and must not be a symlink:
+		 * lstat() doesn't follow symlinks (which would let callers
+		 * probe arbitrary paths as root), and allows us to reject
+		 * anything that is not a Unix socket */
+	        if (g_lstat (value, &st) != 0) {
+	            g_set_error_literal (error,
+	                         PK_TRANSACTION_ERROR,
+	                         PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+	                         "frontend-socket does not exist");
+	            return FALSE;
+	        }
+	        if (!S_ISSOCK (st.st_mode)) {
+	            g_set_error_literal (error,
+	                         PK_TRANSACTION_ERROR,
+	                         PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+	                         "frontend-socket is not a socket");
+	            return FALSE;
+	        }
 
 		/* success */
 		pk_backend_job_set_frontend_socket (transaction->job, value);
