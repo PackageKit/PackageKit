@@ -51,6 +51,10 @@ def start_system_bus_if_needed(out):
         print('Reusing the already-running system bus.', flush=True)
         return None, None
     tmpdir = tempfile.mkdtemp(prefix='pk-test-bus-')
+    # polkitd drops privileges to the unprivileged 'polkitd' system user, so the
+    # directory holding the bus socket must be traversable by it to connect (and
+    # claim org.freedesktop.PolicyKit1); mkdtemp() creates it as 0700.
+    os.chmod(tmpdir, 0o755)
     socket_path = os.path.join(tmpdir, 'system_bus_socket')
     address = 'unix:path=' + socket_path
     print('No system bus found; starting a private one at {}.'.format(address), flush=True)
