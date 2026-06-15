@@ -131,6 +131,15 @@ def run_test_with_auto_answers(test_binary, env):
     os.close(slave)
 
     line = ''
+    # The last answer we sent, and how many times we have re-sent it. Answering
+    # a prompt the instant it appears can race with the child's terminal setup
+    # and get the reply dropped; if the child then goes silent we re-send rather
+    # than block forever. Any new output means the child consumed the answer and
+    # moved on, so we stop re-sending to avoid leaking a stray answer into a
+    # later prompt.
+    pending_answer = None
+    resends = 0
+    max_resends = 2
     try:
         while True:
             try:
@@ -148,14 +157,25 @@ def run_test_with_auto_answers(test_binary, env):
                 sys.stdout.write(text)
                 sys.stdout.flush()
 
+                # Output means the child made progress and consumed whatever we
+                # last sent; stop re-sending it.
+                pending_answer = None
+                resends = 0
+
                 # Track the current (unterminated) line to spot a prompt.
                 line = (line + text).rsplit('\n', 1)[-1]
                 stripped = line.rstrip()
                 if stripped.endswith('[Y/n]') or stripped.endswith('[N/y]'):
-                    os.write(master, _answer_for_prompt(line).encode('utf-8'))
+                    pending_answer = _answer_for_prompt(line).encode('utf-8')
+                    os.write(master, pending_answer)
                     line = ''
             elif proc.poll() is not None:
                 break
+            elif pending_answer is not None and resends < max_resends:
+                # Child is alive but silent after we answered: the reply was most
+                # likely dropped, so send it again.
+                os.write(master, pending_answer)
+                resends += 1
     finally:
         os.close(master)
 

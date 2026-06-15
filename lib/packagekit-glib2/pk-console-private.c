@@ -260,11 +260,15 @@ pk_readline_unbuffered (const gchar *prompt)
 	fflush (tty);
 	setbuf (tty, NULL);
 
-	/* taken from polkitagenttextlistener.c */
+	/* based on polkitagenttextlistener.c, but use TCSADRAIN rather than
+	 * TCSAFLUSH: we only toggle ECHONL here, so there is no reason to discard
+	 * input that has already been queued. TCSAFLUSH would race with anything
+	 * that answers the prompt the moment it appears (e.g. the test harness or
+	 * piped input) and silently drop the reply, leaving us blocked in getc(). */
 	tcgetattr (fileno (tty), &ts);
 	ots = ts;
 	ts.c_lflag &= ~(ECHONL);
-	tcsetattr (fileno (tty), TCSAFLUSH, &ts);
+	tcsetattr (fileno (tty), TCSADRAIN, &ts);
 
 	str = g_string_new (NULL);
 	while (TRUE) {
