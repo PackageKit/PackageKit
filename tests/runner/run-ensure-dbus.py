@@ -30,7 +30,7 @@ def main():
         os.execv(args.test_binary, sys.argv[1:])
 
     try:
-        bus_proc, bus_tmpdir = start_system_bus_if_needed(subprocess.STDOUT)
+        bus_proc, bus_tmpdir = start_system_bus_if_needed(None)
 
         proc = subprocess.run([args.test_binary], check=False)
         if proc.returncode != 0:
