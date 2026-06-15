@@ -4753,7 +4753,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		if (value == NULL || value[0] == '\0') {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "Could not set frontend-socket to nothing");
 			return FALSE;
 		}
@@ -4762,7 +4762,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		if (value[0] != '/') {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "frontend-socket has to be an absolute path");
 			return FALSE;
 		}
@@ -4771,20 +4771,20 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		 * lstat() doesn't follow symlinks (which would let callers
 		 * probe arbitrary paths as root), and allows us to reject
 		 * anything that is not a Unix socket */
-	        if (g_lstat (value, &st) != 0) {
-	            g_set_error_literal (error,
-	                         PK_TRANSACTION_ERROR,
-	                         PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-	                         "frontend-socket does not exist");
-	            return FALSE;
-	        }
-	        if (!S_ISSOCK (st.st_mode)) {
-	            g_set_error_literal (error,
-	                         PK_TRANSACTION_ERROR,
-	                         PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-	                         "frontend-socket is not a socket");
-	            return FALSE;
-	        }
+		if (g_lstat (value, &st) != 0) {
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_NO_SUCH_FILE,
+					     "frontend-socket does not exist");
+			return FALSE;
+		}
+		if (!S_ISSOCK (st.st_mode)) {
+			g_set_error_literal (error,
+					     PK_TRANSACTION_ERROR,
+					     PK_TRANSACTION_ERROR_INPUT_INVALID,
+					     "frontend-socket is not a socket");
+			return FALSE;
+		}
 
 		/* success */
 		pk_backend_job_set_frontend_socket (transaction->job, value);
@@ -4800,7 +4800,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				      "background hint expects true or false, not %s", value);
 			return FALSE;
 		}
@@ -4816,7 +4816,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				      "interactive hint expects true or false, not %s", value);
 			return FALSE;
 		}
@@ -4829,14 +4829,14 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		if (!pk_strtouint (value, &cache_age)) {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				     "cannot parse cache age value %s", value);
 			return FALSE;
 		}
 		if (cache_age == 0) {
 			g_set_error_literal (error,
 					     PK_TRANSACTION_ERROR,
-					     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+					     PK_TRANSACTION_ERROR_INPUT_INVALID,
 					     "cannot set a cache age of zero");
 			return FALSE;
 		}
@@ -4853,7 +4853,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		} else {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				      "details-with-deps-size hint expects true or false, not %s", value);
 			return FALSE;
 		}
@@ -4866,7 +4866,7 @@ pk_transaction_set_hint (PkTransaction *transaction,
 		if (g_strcmp0 (value, "true") != 0) {
 			g_set_error (error,
 				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
+				     PK_TRANSACTION_ERROR_INPUT_INVALID,
 				      "supports-plural-signals hint expects true only, not %s", value);
 			return FALSE;
 		}
