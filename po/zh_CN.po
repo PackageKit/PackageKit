@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-04-22 12:42+0200\n"
+"POT-Creation-Date: 2026-06-16 18:20+0200\n"
 "PO-Revision-Date: 2025-12-25 20:00+0000\n"
 "Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hans/>\n"
@@ -1711,189 +1711,189 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "请输入一个 1 到 %i 之间的数字： "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-private.c:357
+#: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Unknown state"
 msgstr "未知状态"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-private.c:361
+#: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Starting"
 msgstr "正在启动"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-private.c:365
+#: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Waiting in queue"
 msgstr "正在队列中等待"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-private.c:369
+#: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Running"
 msgstr "正在运行"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-private.c:373
+#: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Querying"
 msgstr "正在查询"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:377
+#: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Getting information"
 msgstr "正在获取信息"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-private.c:381
+#: lib/packagekit-glib2/pk-console-private.c:385
 msgid "Removing packages"
 msgstr "正在移除软件包"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-private.c:385
+#: lib/packagekit-glib2/pk-console-private.c:389
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
 msgstr "正在下载软件包"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-private.c:389
+#: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Installing packages"
 msgstr "正在安装软件包"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-private.c:393
+#: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Refreshing software list"
 msgstr "正在刷新软件列表"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-private.c:397
+#: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Installing updates"
 msgstr "正在安装更新"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-private.c:401
+#: lib/packagekit-glib2/pk-console-private.c:405
 msgid "Cleaning up packages"
 msgstr "正在清理软件包"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-private.c:405
+#: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Obsoleting packages"
 msgstr "正在废弃软件包"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-private.c:409
+#: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Resolving dependencies"
 msgstr "正在解析依赖"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-private.c:413
+#: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Checking signatures"
 msgstr "正在检查签名"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-private.c:417
+#: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Testing changes"
 msgstr "正在测试更改"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-private.c:421
+#: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Committing changes"
 msgstr "正在提交更改"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:425
+#: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Requesting data"
 msgstr "正在请求数据"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-private.c:429
+#: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Finished"
 msgstr "已完成"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-private.c:433
+#: lib/packagekit-glib2/pk-console-private.c:437
 msgid "Cancelling"
 msgstr "正在取消"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:437
+#: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading repository information"
 msgstr "正在下载仓库信息"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:441
+#: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading list of packages"
 msgstr "正在下载软件包列表"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:445
+#: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading file lists"
 msgstr "正在下载文件列表"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:449
+#: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading lists of changes"
 msgstr "正在下载更改列表"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:453
+#: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading groups"
 msgstr "正在下载分组"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:457
+#: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Downloading update information"
 msgstr "正在下载更新信息"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-private.c:461
+#: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Repackaging files"
 msgstr "正在重新打包文件"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-private.c:465
+#: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Loading cache"
 msgstr "正在载入缓存"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-private.c:469
+#: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Scanning applications"
 msgstr "正在扫描应用程序"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-private.c:473
+#: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Generating package lists"
 msgstr "正在生成软件包列表"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-private.c:477
+#: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for package manager lock"
 msgstr "正在等待软件包管理器锁"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-private.c:481
+#: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Waiting for authentication"
 msgstr "正在等待认证"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-private.c:485
+#: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Updating running applications"
 msgstr "正在更新运行中的应用程序"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-private.c:489
+#: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking applications in use"
 msgstr "正在检查使用中的应用程序"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-private.c:493
+#: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Checking libraries in use"
 msgstr "正在检查使用中的库"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:497
+#: lib/packagekit-glib2/pk-console-private.c:501
 msgid "Copying files"
 msgstr "正在复制文件"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:501
+#: lib/packagekit-glib2/pk-console-private.c:505
 msgid "Running hooks"
 msgstr "正在运行关联操作"
 
@@ -2666,23 +2666,23 @@ msgid "Failed to load the backend: %s"
 msgstr "无法加载后端：%s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2724
+#: src/pk-transaction.c:2688
 msgid "The software is not from a trusted source."
 msgstr "此软件不是来自受信任源。"
 
-#: src/pk-transaction.c:2732
+#: src/pk-transaction.c:2696
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "不要更新这个软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2733
+#: src/pk-transaction.c:2697
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "不要更新这些软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2743
+#: src/pk-transaction.c:2707
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "不要安装这个软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2744
+#: src/pk-transaction.c:2708
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "不要安装这些软件包，除非您确信这么做是安全的。"
 

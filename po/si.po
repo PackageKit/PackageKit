@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-04-22 12:42+0200\n"
+"POT-Creation-Date: 2026-06-16 18:20+0200\n"
 "Language-Team: Sinhala (http://app.transifex.com/freedesktop/packagekit/language/si/)\n"
 "Language: si\n"
 "MIME-Version: 1.0\n"
@@ -1741,189 +1741,189 @@ msgid "Please enter a number from 1 to %i: "
 msgstr "කරුණාකර 1 සිට %iදක්වා අංකයක් ඇතුළු කරන්න: "
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-private.c:357
+#: lib/packagekit-glib2/pk-console-private.c:361
 msgid "Unknown state"
 msgstr "නොදන්නා තත්වය"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-private.c:361
+#: lib/packagekit-glib2/pk-console-private.c:365
 msgid "Starting"
 msgstr "පටන් ගන්නවා"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-private.c:365
+#: lib/packagekit-glib2/pk-console-private.c:369
 msgid "Waiting in queue"
 msgstr "පෝලිමේ බලාගෙන ඉන්නවා"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-private.c:369
+#: lib/packagekit-glib2/pk-console-private.c:373
 msgid "Running"
 msgstr "දුවනවා"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-private.c:373
+#: lib/packagekit-glib2/pk-console-private.c:377
 msgid "Querying"
 msgstr "විමසනවා"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:377
+#: lib/packagekit-glib2/pk-console-private.c:381
 msgid "Getting information"
 msgstr "තොරතුරු ලබා ගැනීම"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-private.c:381
+#: lib/packagekit-glib2/pk-console-private.c:385
 msgid "Removing packages"
 msgstr "පැකේජ ඉවත් කිරීම"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-private.c:385
+#: lib/packagekit-glib2/pk-console-private.c:389
 #: lib/packagekit-glib2/pk-enum.c:1258
 msgid "Downloading packages"
 msgstr "පැකේජ බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-private.c:389
+#: lib/packagekit-glib2/pk-console-private.c:393
 msgid "Installing packages"
 msgstr "පැකේජ ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-private.c:393
+#: lib/packagekit-glib2/pk-console-private.c:397
 msgid "Refreshing software list"
 msgstr "මෘදුකාංග ලැයිස්තුව නැවුම් කිරීම"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-private.c:397
+#: lib/packagekit-glib2/pk-console-private.c:401
 msgid "Installing updates"
 msgstr "යාවත්කාලීන ස්ථාපනය කිරීම"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-private.c:401
+#: lib/packagekit-glib2/pk-console-private.c:405
 msgid "Cleaning up packages"
 msgstr "පැකේජ පිරිසිදු කිරීම"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-private.c:405
+#: lib/packagekit-glib2/pk-console-private.c:409
 msgid "Obsoleting packages"
 msgstr "යල් පැන ගිය පැකේජ"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-private.c:409
+#: lib/packagekit-glib2/pk-console-private.c:413
 msgid "Resolving dependencies"
 msgstr "පරායත්තතා විසඳීම"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-private.c:413
+#: lib/packagekit-glib2/pk-console-private.c:417
 msgid "Checking signatures"
 msgstr "අත්සන් පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-private.c:417
+#: lib/packagekit-glib2/pk-console-private.c:421
 msgid "Testing changes"
 msgstr "පරීක්ෂණ වෙනස්කම්"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-private.c:421
+#: lib/packagekit-glib2/pk-console-private.c:425
 msgid "Committing changes"
 msgstr "වෙනස්කම් සිදු කිරීම"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:425
+#: lib/packagekit-glib2/pk-console-private.c:429
 msgid "Requesting data"
 msgstr "දත්ත ඉල්ලා සිටීම"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-private.c:429
+#: lib/packagekit-glib2/pk-console-private.c:433
 msgid "Finished"
 msgstr "අවසන්"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-private.c:433
+#: lib/packagekit-glib2/pk-console-private.c:437
 msgid "Cancelling"
 msgstr "අවලංගු කරනවා"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:437
+#: lib/packagekit-glib2/pk-console-private.c:441
 msgid "Downloading repository information"
 msgstr "ගබඩා තොරතුරු බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:441
+#: lib/packagekit-glib2/pk-console-private.c:445
 msgid "Downloading list of packages"
 msgstr "පැකේජ ලැයිස්තුව බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:445
+#: lib/packagekit-glib2/pk-console-private.c:449
 msgid "Downloading file lists"
 msgstr "ගොනු ලැයිස්තු බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:449
+#: lib/packagekit-glib2/pk-console-private.c:453
 msgid "Downloading lists of changes"
 msgstr "වෙනස්කම් ලැයිස්තුව බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:453
+#: lib/packagekit-glib2/pk-console-private.c:457
 msgid "Downloading groups"
 msgstr "කණ්ඩායම් බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:457
+#: lib/packagekit-glib2/pk-console-private.c:461
 msgid "Downloading update information"
 msgstr "යාවත්කාලීන තොරතුරු බාගත කිරීම"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-private.c:461
+#: lib/packagekit-glib2/pk-console-private.c:465
 msgid "Repackaging files"
 msgstr "ගොනු නැවත ඇසුරුම් කිරීම"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-private.c:465
+#: lib/packagekit-glib2/pk-console-private.c:469
 msgid "Loading cache"
 msgstr "හැඹිලිය පූරණය වේ"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-private.c:469
+#: lib/packagekit-glib2/pk-console-private.c:473
 msgid "Scanning applications"
 msgstr "යෙදුම් ස්කෑන් කිරීම"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-private.c:473
+#: lib/packagekit-glib2/pk-console-private.c:477
 msgid "Generating package lists"
 msgstr "පැකේජ ලැයිස්තු උත්පාදනය කිරීම"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-private.c:477
+#: lib/packagekit-glib2/pk-console-private.c:481
 msgid "Waiting for package manager lock"
 msgstr "පැකේජ කළමනාකරු අගුල සඳහා රැඳී සිටිමින්"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-private.c:481
+#: lib/packagekit-glib2/pk-console-private.c:485
 msgid "Waiting for authentication"
 msgstr "සත්‍යාපනය සඳහා රැඳී සිටිමින්"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-private.c:485
+#: lib/packagekit-glib2/pk-console-private.c:489
 msgid "Updating running applications"
 msgstr "ධාවනය වන යෙදුම් යාවත්කාලීන කිරීම"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-private.c:489
+#: lib/packagekit-glib2/pk-console-private.c:493
 msgid "Checking applications in use"
 msgstr "භාවිතයේ ඇති යෙදුම් පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-private.c:493
+#: lib/packagekit-glib2/pk-console-private.c:497
 msgid "Checking libraries in use"
 msgstr "භාවිතයේ ඇති පුස්තකාල පරීක්ෂා කිරීම"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:497
+#: lib/packagekit-glib2/pk-console-private.c:501
 msgid "Copying files"
 msgstr "ගොනු පිටපත් කිරීම"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:501
+#: lib/packagekit-glib2/pk-console-private.c:505
 msgid "Running hooks"
 msgstr "ධාවන කොකු"
 
@@ -2701,23 +2701,23 @@ msgid "Failed to load the backend: %s"
 msgstr "පසු අන්තය පූරණය කිරීමට අසමත් විය"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2724
+#: src/pk-transaction.c:2688
 msgid "The software is not from a trusted source."
 msgstr "මෘදුකාංගය විශ්වාසදායක මූලාශ්‍රයකින් නොවේ."
 
-#: src/pk-transaction.c:2732
+#: src/pk-transaction.c:2696
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "මෙම පැකේජය එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජය යාවත්කාලීන නොකරන්න."
 
-#: src/pk-transaction.c:2733
+#: src/pk-transaction.c:2697
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "එය ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස මෙම පැකේජ යාවත්කාලීන නොකරන්න."
 
-#: src/pk-transaction.c:2743
+#: src/pk-transaction.c:2707
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "මෙම පැකේජය ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
 
-#: src/pk-transaction.c:2744
+#: src/pk-transaction.c:2708
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "මෙම පැකේජ ස්ථාපනය කිරීම ආරක්ෂිත බව ඔබට විශ්වාස නම් මිස ස්ථාපනය නොකරන්න."
 
