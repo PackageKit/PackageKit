@@ -98,9 +98,15 @@ task = pk_task_new ();
 
 /* resolve the package name */
 values = g_new0 (gchar*, 1 + 1);
-values[0] = g_strdup ("openoffice-clipart");
+values[0] = g_strdup ("openclipart-libreoffice");
 values[1] = NULL;
+
 results = pk_task_resolve_sync (task, PK_FILTER_ENUM_NOT_INSTALLED, values, NULL, NULL, NULL, &amp;error);
+if (results == NULL) {
+	/* the operation failed: results is NULL and error is set */
+	g_printerr ("%s: %s\n", "Resolving of packages failed", error-&gt;message);
+	goto out;
+}
 
 /* check error code */
 error_code = pk_results_get_error_code (results);
@@ -120,7 +126,13 @@ for (i = 0; i &lt; array->len; i++) {
 }
 
 /* install the packages */
+g_clear_object (&amp;results);
 results = pk_task_install_packages_sync (task, package_ids , NULL, NULL, NULL, &amp;error);
+if (results == NULL) {
+	/* the operation failed: results is NULL and error is set */
+	g_printerr ("%s: %s\n", _("Error installing package(s)!"), error-&gt;message);
+	goto out;
+}
 
 /* check error code */
 error_code = pk_results_get_error_code (results);
@@ -132,6 +144,7 @@ if (error_code != NULL) {
 }
 
 out:
+	g_clear_error (&amp;error);
 	g_strfreev (values);
 	g_object_unref (task);
 	if (error_code != NULL)
