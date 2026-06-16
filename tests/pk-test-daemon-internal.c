@@ -622,17 +622,17 @@ pk_test_spawn_func (void)
 	/* get new object */
 	new_spawn_object (&spawn);
 
-	/* make sure run correct helper, and cancel it using SIGKILL */
+	/* run a helper that ignores SIGTERM, so it has to be SIGKILLed */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
+	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-ignore-term.sh", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_strfreev (argv);
 
 	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (5000);
+	/* wait for finished (SIGKILL fires PK_SPAWN_SIGKILL_DELAY after the cancel) */
+	_g_test_loop_run_with_timeout (10000);
 
 	/* make sure finished in SIGKILL */
 	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGKILL);
@@ -640,7 +640,7 @@ pk_test_spawn_func (void)
 	/* get new object */
 	new_spawn_object (&spawn);
 
-	/* make sure dumb helper ignores SIGQUIT */
+	/* with SIGKILL disabled the helper is only ever sent SIGTERM */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
 	g_object_set (spawn,
@@ -655,15 +655,15 @@ pk_test_spawn_func (void)
 	/* wait for finished */
 	_g_test_loop_run_with_timeout (10000);
 
-	/* make sure finished in SIGQUIT */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGQUIT);
+	/* make sure finished in SIGTERM */
+	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGTERM);
 
 	/* get new object */
 	new_spawn_object (&spawn);
 
-	/* make sure run correct helper, and SIGQUIT it */
+	/* run a helper that handles SIGTERM and exits cleanly */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-sigquit.py", " ", 0);
+	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-sigterm.py", " ", 0);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -673,8 +673,8 @@ pk_test_spawn_func (void)
 	/* wait for finished */
 	_g_test_loop_run_with_timeout (2000);
 
-	/* make sure finished in SIGQUIT */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGQUIT);
+	/* make sure finished in SIGTERM */
+	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGTERM);
 
 	/* run lots of data for profiling */
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-profiling.sh", " ", 0);

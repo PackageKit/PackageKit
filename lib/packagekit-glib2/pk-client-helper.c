@@ -48,6 +48,7 @@
 
 #include <signal.h>
 #include <errno.h>
+#include <sys/wait.h>
 #include <glib-object.h>
 #include <gio/gunixsocketaddress.h>
 
@@ -89,6 +90,48 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE (PkClientHelper, pk_client_helper, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_client_helper_get_instance_private (o))
 
+/* how long to wait for a helper to exit on SIGTERM before escalating to SIGKILL */
+#define PK_CLIENT_HELPER_SIGKILL_TIMEOUT	5 /* seconds */
+#define PK_CLIENT_HELPER_POLL_DELAY		50 /* ms */
+
+/*
+ * pk_client_helper_kill_child:
+ *
+ * Terminates a helper child gracefully: sends SIGTERM and, if the process is
+ * still alive after PK_CLIENT_HELPER_SIGKILL_TIMEOUT, escalates to SIGKILL.
+ * The child is reaped so it does not linger as a zombie.
+ *
+ * The children must be spawned with %G_SPAWN_DO_NOT_REAP_CHILD.
+ **/
+static void
+pk_client_helper_kill_child (GPid pid)
+{
+	guint elapsed_ms = 0;
+
+	if (pid <= 0)
+		return;
+
+	g_debug ("sending SIGTERM %ld", (long)pid);
+	if (kill (pid, SIGTERM) < 0 && errno == ESRCH) {
+		/* already gone, just reap it */
+		waitpid (pid, NULL, WNOHANG);
+		return;
+	}
+
+	/* wait for the child to exit, polling so we can escalate if needed */
+	while (elapsed_ms < PK_CLIENT_HELPER_SIGKILL_TIMEOUT * 1000) {
+		if (waitpid (pid, NULL, WNOHANG) == pid)
+			return;
+		g_usleep (PK_CLIENT_HELPER_POLL_DELAY * 1000);
+		elapsed_ms += PK_CLIENT_HELPER_POLL_DELAY;
+	}
+
+	/* still running, murder it */
+	g_debug ("helper %ld did not exit on SIGTERM, sending SIGKILL", (long)pid);
+	kill (pid, SIGKILL);
+	waitpid (pid, NULL, 0);
+}
+
 static void
 pk_client_helper_child_free (PkClientHelperChild *child)
 {
@@ -101,7 +144,7 @@ pk_client_helper_child_free (PkClientHelperChild *child)
 		g_source_unref (child->socket_channel_source);
 	}
 	if (child->pid > 0)
-		kill (child->pid, SIGTERM);
+		pk_client_helper_kill_child (child->pid);
 	if (child->stdin_channel != NULL)
 		g_io_channel_unref (child->stdin_channel);
 	if (child->stdout_channel != NULL)
@@ -152,18 +195,7 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
 	/* kill any children */
 	for (guint i = 0; i < priv->children->len; i++) {
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
-		int retval;
-
-		g_debug ("sending SIGTERM %ld", (long)child->pid);
-		retval = kill (child->pid, SIGTERM);
-		if (retval == EINVAL) {
-			g_set_error (error, 1, 0, "failed to kill, signum argument is invalid");
-			return FALSE;
-		}
-		if (retval == EPERM) {
-			g_set_error (error, 1, 0, "failed to kill, no permission");
-			return FALSE;
-		}
+		pk_client_helper_kill_child (child->pid);
 	}
 
 	/* remove any socket file */
@@ -191,6 +223,10 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, &error);
 	if (status == G_IO_STATUS_EOF) {
 		g_debug ("helper process exited");
+		/* reap it now if the process is gone; we own reaping since it was spawned with G_SPAWN_DO_NOT_REAP_CHILD.
+		 * If it has not exited yet (stdout closed but still running), leave it for kill_child(). */
+		if (child->pid > 0 && waitpid (child->pid, NULL, WNOHANG) == child->pid)
+			child->pid = -1;
 		if (!g_socket_close (child->socket, &error))
 			g_warning ("failed to close socket");
 		return G_SOURCE_REMOVE;
@@ -332,9 +368,19 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 		 g_socket_get_fd (socket),
 		 g_socket_get_fd (priv->socket));
 
-	/* spawn helper executable */
-	if (!g_spawn_async_with_pipes (NULL, priv->argv, priv->envp, 0, NULL, NULL, &pid,
-				       &standard_input, &standard_output, &standard_error, &error)) {
+	/* spawn helper executable; we reap the child ourselves (see
+	 * pk_client_helper_kill_child()) so GLib must not reap it for us */
+	if (!g_spawn_async_with_pipes (NULL, /* working dir */
+				       priv->argv,
+				       priv->envp,
+				       G_SPAWN_DO_NOT_REAP_CHILD,
+				       NULL, /* child_setup */
+				       NULL, /* child_setup user data */
+				       &pid,
+				       &standard_input,
+				       &standard_output,
+				       &standard_error,
+				       &error)) {
 		g_warning ("failed to spawn: %s", error->message);
 		return G_SOURCE_CONTINUE;
 	}

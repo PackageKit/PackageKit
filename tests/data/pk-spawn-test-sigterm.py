@@ -15,11 +15,11 @@ from signal import *
 from time import sleep
 from sys import stdout
 
-def process_quit(signum, frame):
+def process_term(signum, frame):
     exit()
 
 def main():
-    signal(SIGQUIT, process_quit)
+    signal(SIGTERM, process_term)
 
     for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
         stdout.write("percentage\t%i\n" % (i * 10))

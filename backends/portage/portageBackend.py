@@ -1117,11 +1117,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         'unknown': GROUP_UNKNOWN,
     }
 
-    def __sigquit(self, signum, frame):
+    def __sigterm(self, signum, frame):
         raise SystemExit(1)
 
     def __init__(self, args):
-        signal.signal(signal.SIGQUIT, self.__sigquit)
+        signal.signal(signal.SIGTERM, self.__sigterm)
         PackageKitPortageMixin.__init__(self)
         PackageKitBaseBackend.__init__(self, args)
 

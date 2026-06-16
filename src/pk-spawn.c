@@ -46,7 +46,7 @@
 static void     pk_spawn_finalize	(GObject       *object);
 
 #define PK_SPAWN_POLL_DELAY	50 /* ms */
-#define PK_SPAWN_SIGKILL_DELAY	2500 /* ms */
+#define PK_SPAWN_SIGKILL_DELAY	5000 /* ms */
 
 struct _PkSpawn
 {
@@ -148,8 +148,8 @@ pk_spawn_exit_type_enum_to_string (PkSpawnExitType type)
 		return "dispatcher-changed";
 	if (type == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT)
 		return "dispatcher-exit";
-	if (type == PK_SPAWN_EXIT_TYPE_SIGQUIT)
-		return "sigquit";
+	if (type == PK_SPAWN_EXIT_TYPE_SIGTERM)
+		return "sigterm";
 	if (type == PK_SPAWN_EXIT_TYPE_SIGKILL)
 		return "sigkill";
 	return "unknown";
@@ -218,12 +218,12 @@ pk_spawn_check_child (PkSpawn *spawn)
 	spawn->stderr_fd = -1;
 	spawn->child_pid = -1;
 
-	/* use this to detect SIGKILL and SIGQUIT */
+	/* use this to detect SIGKILL and SIGTERM */
 	if (WIFSIGNALED (status)) {
 		retval = WTERMSIG (status);
-		if (retval == SIGQUIT) {
-			g_debug ("the child process was terminated by SIGQUIT");
-			spawn->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
+		if (retval == SIGTERM) {
+			g_debug ("the child process was terminated by SIGTERM");
+			spawn->exit = PK_SPAWN_EXIT_TYPE_SIGTERM;
 		} else if (retval == SIGKILL) {
 			g_debug ("the child process was terminated by SIGKILL");
 			spawn->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
@@ -321,7 +321,8 @@ pk_spawn_is_running (PkSpawn *spawn)
 /**
  * pk_spawn_kill:
  *
- * We send SIGQUIT and after a few ms SIGKILL (if allowed)
+ * We send SIGTERM and, if the process is still alive after a few seconds,
+ * escalate to SIGKILL (if allowed).
  *
  * IMPORTANT: This is not a syncronous operation, and client programs will need
  * to wait for the ::exit signal.
@@ -347,10 +348,10 @@ pk_spawn_kill (PkSpawn *spawn)
 	}
 
 	/* set this in case the script catches the signal and exits properly */
-	spawn->exit = PK_SPAWN_EXIT_TYPE_SIGQUIT;
+	spawn->exit = PK_SPAWN_EXIT_TYPE_SIGTERM;
 
-	g_debug ("sending SIGQUIT %ld", (long)spawn->child_pid);
-	retval = kill (spawn->child_pid, SIGQUIT);
+	g_debug ("sending SIGTERM %ld", (long)spawn->child_pid);
+	retval = kill (spawn->child_pid, SIGTERM);
 	if (retval == EINVAL) {
 		g_warning ("The signum argument is an invalid or unsupported number");
 		return FALSE;
@@ -359,7 +360,7 @@ pk_spawn_kill (PkSpawn *spawn)
 		return FALSE;
 	}
 
-	/* the program might not be able to handle SIGQUIT, give it a few seconds and then SIGKILL it */
+	/* the program might not be able to handle SIGTERM, give it a few seconds and then SIGKILL it */
 	if (spawn->allow_sigkill) {
 		spawn->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
 		g_source_set_name_by_id (spawn->kill_id, "[PkSpawn] sigkill");
@@ -495,9 +496,9 @@ pk_strvequal (gchar **id1, gchar **id2)
  *
  * Runs in the child after fork() but before exec(). Resets the signal mask to
  * empty so the spawned helper starts with all signals unblocked. We rely on
- * SIGQUIT to cancel a running backend (see pk_spawn_kill()), but a signal that
+ * SIGTERM to cancel a running backend (see pk_spawn_kill()), but a signal that
  * is blocked in the inherited mask stays pending and never reaches the helper's
- * handler. Some environments start with SIGQUIT blocked, which would silently
+ * handler. Some environments start with SIGTERM blocked, which would silently
  * break cancellation.
  *
  * IMPORTANT: this runs between fork() and exec(), so it must only call
@@ -716,7 +717,7 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	/**
 	 * PkSpawn:allow-sigkill:
 	 * Set whether the spawned backends are allowed to be SIGKILLed if they do not
-	 * respond to SIGQUIT. This ensures that Cancel() works as expected, but
+	 * respond to SIGTERM. This ensures that Cancel() works as expected, but
 	 * sometimes can corrupt databases if they are open.
 	 */
 	pspec = g_param_spec_boolean ("allow-sigkill", NULL, NULL,
@@ -778,7 +779,7 @@ pk_spawn_finalize (GObject *object)
 	if (spawn->stdin_fd != -1) {
 		g_debug ("killing as still running in finalize");
 		pk_spawn_kill (spawn);
-		/* just hope the script responded to SIGQUIT */
+		/* just hope the script responded to SIGTERM */
 		if (spawn->kill_id != 0)
 			g_source_remove (spawn->kill_id);
 	}
