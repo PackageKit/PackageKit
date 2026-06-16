@@ -1621,6 +1621,7 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
     PkgList ret;
     PkgList installing;
     PkgList removing;
+    PkgList purging;
     PkgList updating;
     PkgList downgrading;
     PkgList obsoleting;
@@ -1644,24 +1645,31 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
             if (!ver.end()) {
                 ret.append(ver);
 
-                bool is_obsoleted = false;
-
-                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
-                    if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
-                        && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
-                        && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
-                        && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
-                        && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg())
-                            >= (*m_cache)->GetPolicy().GetPriority(pkg))) {
-                        is_obsoleted = true;
-                        break;
-                    }
-                }
-
-                if (!is_obsoleted) {
-                    removing.append(ver);
+                if ((*m_cache)[pkg].Purge()) {
+                    // the package is marked for purge (config files removed too);
+                    // the depcache carries this intent for both explicit and
+                    // autoremoved deletions, so the preview matches the commit
+                    purging.append(ver);
                 } else {
-                    obsoleting.append(ver);
+                    bool is_obsoleted = false;
+
+                    for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
+                        if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
+                            && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
+                            && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
+                            && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
+                            && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg())
+                                >= (*m_cache)->GetPolicy().GetPriority(pkg))) {
+                            is_obsoleted = true;
+                            break;
+                        }
+                    }
+
+                    if (!is_obsoleted) {
+                        removing.append(ver);
+                    } else {
+                        obsoleting.append(ver);
+                    }
                 }
 
                 // append to the restart required list
@@ -1699,6 +1707,7 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
         // emit packages that have changes
         emitPackages(obsoleting, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_OBSOLETING);
         emitPackages(removing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+        emitPackages(purging, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_PURGING);
         emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
         emitPackages(installing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
         emitPackages(updating, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
@@ -2398,13 +2407,9 @@ bool AptJob::runTransaction(
             m_cache->tryToRemove(Fix, pkInfo, false);
         }
 
-        // FIXME: the purge intent is only honoured at commit time (apt marks
-        // these for purge and dpkg removes their config files). The
-        // simulated/preflight package list built by checkChangedPackages()
-        // still reports every deletion as PK_INFO_ENUM_REMOVING, so a simulated
-        // purge previews as a plain remove. Carrying a purge-id set through the
-        // transaction state and emitting PK_INFO_ENUM_PURGING for it (including
-        // the markNewGarbageForRemoval() autoremove path) is left as a follow-up.
+        // mark for purge: apt records the purge intent in the depcache, so both
+        // the simulated preview (checkChangedPackages() reads it back via
+        // StateCache::Purge()) and the dpkg commit remove the config files too
         for (const PkgInfo &pkInfo : purge) {
             if (m_cancel)
                 break;
