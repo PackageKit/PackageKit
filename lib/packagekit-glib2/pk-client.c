@@ -581,7 +581,16 @@ pk_client_fixup_dbus_error (GError *error)
 		error->code = PK_CLIENT_ERROR_NOT_SUPPORTED;
 		return;
 	}
-	g_warning ("couldn't parse execption '%s', please report", name);
+
+	/* standard D-Bus errors (e.g. UnknownMethod from calling a method on a
+	 * transaction object that no longer exists) are expected remote-error
+	 * traffic. Keep the generic failure code set above */
+	if (g_str_has_prefix (name, "org.freedesktop.DBus.Error.")) {
+		g_debug ("mapped standard D-Bus error '%s' to a generic failure", name);
+		return;
+	}
+
+	g_warning ("couldn't parse exception '%s', please report", name);
 }
 
 /*
