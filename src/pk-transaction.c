@@ -2831,6 +2831,28 @@ pk_transaction_role_to_actions (PkRoleEnum role, guint64 transaction_flags)
 }
 
 /**
+ * pk_transaction_role_supports_only_download:
+ *
+ * Return whether the ONLY_DOWNLOAD transaction flag is meaningful for a given
+ * role, i.e. whether the role may fetch packages from a repository as part of its
+ * operation.
+ **/
+static gboolean
+pk_transaction_role_supports_only_download (PkRoleEnum role)
+{
+	switch (role) {
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+	case PK_ROLE_ENUM_INSTALL_FILES:
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+/**
  * pk_transaction_obtain_authorization:
  *
  * Only valid from an async caller, which is fine, as we won't prompt the user
@@ -2851,6 +2873,20 @@ pk_transaction_obtain_authorization (PkTransaction *transaction,
 	g_autoptr(GString) string = NULL;
 
 	g_return_val_if_fail (transaction->sender != NULL, FALSE);
+
+	/* ONLY_DOWNLOAD only makes sense for roles that may download packages.
+	 * Rejecting it elsewhere prevents the no-auth short-circuit below from
+	 * being allowed on unexpected transactions. */
+	if (pk_bitfield_contain (transaction->cached_transaction_flags,
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD) &&
+	    !pk_transaction_role_supports_only_download (role)) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "the only-download transaction flag is not valid for role %s",
+			     pk_role_enum_to_string (role));
+		return FALSE;
+	}
 
 	/* we don't need to authenticate at all to just download
 	 * packages or if we're running unit tests */
