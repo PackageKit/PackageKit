@@ -1,3 +1,53 @@
+Version 1.3.6
+~~~~~~~~~~~~~
+Released: 2026-06-16
+
+Backends:
+ * apt: Implement allow_deps in RemovePackages transaction (Alessandro Astone)
+ * apt: Tidy up isApplication check (Matthias Klumpp)
+ * apt: Avoid stack sprintf in AptCacheFile::ShowBroken (Matthias Klumpp)
+ * apt: Fix SourceRecord::operator= self-assign and Sections leak (Matthias Klumpp)
+ * apt: Improve pmconffile parsing code and prevent possible out-of-bounds read (Matthias Klumpp)
+ * apt: Flatten matchPackage filter chain (Matthias Klumpp)
+ * apt: Always use std namespace explicitly (Matthias Klumpp)
+ * apt: Fix wrong iterator in emitPackages multiversion loop (Matthias Klumpp)
+ * apt: Store SourceRecord::Sections as std::vector<std::string> (Matthias Klumpp)
+ * apt: Own SourcesList records via std::unique_ptr (Matthias Klumpp)
+ * dnf5: Set cacheonly mode when offline (Gordon Messmer)
+ * dnf5: Add a try/catch block around dnf5_setup_base to prevent uncaught exceptions (Gordon Messmer)
+ * eopkg: Use new _get_package_obj_from_id() helper in get_details/get_files/get_update_detail (Joey Riches)
+ * eopkg: Slightly improve the filtering in __get_package() (Joey Riches)
+ * eopkg: Remove newest filter hack in resolve() (Joey Riches)
+ * eopkg: Use _get_package_obj_from_id in {depends,requires}_on() (Joey Riches)
+ * eopkg: Fix "failed to parse updated" warning (Joey Riches)
+ * eopkg: Adjust percentage updates for eopkg v4.5.0 (Joey Riches)
+ * eopkg: Remove unused transaction maps (Joey Riches)
+ * eopkg: Rework __get_package() to employ a candidates system (Joey Riches)
+ * eopkg: Ensure we unpack tuple from get_package_repo() call (Joey Riches)
+
+Bugfixes:
+ * daemon: stop idle progress timer after flushing updates (Darafei Praliaskouski)
+ * tests: Actually run the daemon tests on CI using a helper (Matthias Klumpp)
+ * tests: daemon: Auto-answer interactive prompts from the test (Matthias Klumpp)
+ * tests: Refactor and reorganize tests (Matthias Klumpp)
+ * pk-client: Perform any state changes & teardown before g_task_return_*() (Matthias Klumpp)
+ * package-sack: Fix a double-free issue on PkTask (Matthias Klumpp)
+ * Ensure we can send SIGQUIT to spawned backends (Matthias Klumpp)
+ * Prevent a race between the test harness and pk_readline* for input (Matthias Klumpp)
+ * daemon: Do not accept symlinks as frontend socket (Matthias Klumpp)
+ * daemon: Return proper error codes for bad SetHints() input (Matthias Klumpp)
+ * Don't leak TESTDATADIR into production binaries (Matthias Klumpp)
+ * daemon: Whitelist ONLY_DOWNLOAD for specific transaction roles only (Matthias Klumpp)
+ * lib: Don't warn on generic D-Bus errors (Matthias Klumpp)
+ * Send SIGTERM to ask subprocesses to quit, instead of SIGQUIT (Matthias Klumpp)
+ * daemon: Check errno instead of kill() return values to determine why it failed (Matthias Klumpp)
+ * pk-client: Fix race between cancellation and TID/proxy assignment (Philip Withnall)
+
+Miscellaneous:
+ * PkTransaction: Simplify the error quark creation (Corentin Noël)
+ * ci: Ensure D-Bus is available and running for all tests (Matthias Klumpp)
+ * docs: Add error-checking to PK usage example (Matthias Klumpp)
+
 Version 1.3.5
 ~~~~~~~~~~~~~
 Released: 2026-04-22
