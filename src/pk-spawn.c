@@ -297,7 +297,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 		g_warning ("The signum argument is an invalid or unsupported number");
 		goto out;
 	} else if (retval == EPERM) {
-		g_warning ("You do not have the privilege to send a signal to the process");
+		g_warning ("We did not have the privilege to send a signal to the process");
 		goto out;
 	}
 out:
@@ -352,11 +352,13 @@ pk_spawn_kill (PkSpawn *spawn)
 
 	g_debug ("sending SIGTERM %ld", (long)spawn->child_pid);
 	retval = kill (spawn->child_pid, SIGTERM);
-	if (retval == EINVAL) {
-		g_warning ("The signum argument is an invalid or unsupported number");
-		return FALSE;
-	} else if (retval == EPERM) {
-		g_warning ("You do not have the privilege to send a signal to the process");
+	if (retval < 0) {
+		if (errno == EINVAL)
+			g_warning ("The signum argument is an invalid or unsupported number");
+		else if (errno == EPERM)
+			g_warning ("We did not have the privilege to send a signal to the process");
+		else
+			g_warning ("Failed to send SIGTERM to %ld: %s", (long)spawn->child_pid, g_strerror (errno));
 		return FALSE;
 	}
 
@@ -802,4 +804,3 @@ pk_spawn_new (GKeyFile *conf)
 	spawn->conf = g_key_file_ref (conf);
 	return PK_SPAWN (spawn);
 }
-
