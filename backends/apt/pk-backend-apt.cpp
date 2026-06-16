@@ -84,6 +84,10 @@ void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
     if (!pkgInitSystem(*_config, _system)) {
         g_debug("ERROR initializing backend system");
     }
+
+    // Select the new solver
+    if (APT_PKG_ABI >= 700)
+        _config->Set("APT::Solver", "3.0");
 }
 
 void pk_backend_destroy(PkBackend *backend)
