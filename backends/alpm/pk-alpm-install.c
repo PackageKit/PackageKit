@@ -79,6 +79,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	gboolean only_trusted;
 	gchar** full_paths;
 	PkBitfield flags;
+	alpm_transflag_t alpm_flags = 0;
 	g_autoptr(GError) error = NULL;
 
 	g_variant_get (params, "(t^a&s)",
@@ -89,11 +90,17 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
 
-	if (pk_alpm_transaction_initialize (job, 0, NULL, &error) &&
+	/* ONLY_DOWNLOAD must fetch missing dependencies without installing the
+	 * local package or running its scriptlets; libalpm does exactly this
+	 * with ALPM_TRANS_FLAG_DOWNLOADONLY, the same way install_packages does
+	 * in pk-alpm-sync.c. */
+	if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD))
+		alpm_flags |= ALPM_TRANS_FLAG_DOWNLOADONLY;
+
+	if (pk_alpm_transaction_initialize (job, alpm_flags, NULL, &error) &&
 	    pk_alpm_transaction_add_targets (job, full_paths, &error) &&
 	    pk_alpm_transaction_simulate (job, &error)) {
-		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE) ||
-		    pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) { /* simulate or download-only (no-op for local files) */
+		if (pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) { /* simulation */
 			pk_alpm_transaction_packages (job);
 		}
 		else {
