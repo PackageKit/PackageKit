@@ -121,7 +121,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_REPO_REMOVE,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 1.0.10 */
-	PK_ROLE_ENUM_PURGE_PACKAGES,			/* Since: 1.3.6 */
+	PK_ROLE_ENUM_PURGE_PACKAGES,			/* Since: 1.3.7 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -653,7 +653,7 @@ typedef enum {
  * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
  * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
  * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
- * @PK_INFO_ENUM_PURGING:	Package is being purged. Since 1.3.6
+ * @PK_INFO_ENUM_PURGING:	Package is being purged. Since 1.3.7
  * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific

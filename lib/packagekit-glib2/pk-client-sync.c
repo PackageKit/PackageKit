@@ -1183,7 +1183,7 @@ pk_client_remove_packages (PkClient *client,
  *
  * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
- * Since: 1.3.6
+ * Since: 1.3.7
  **/
 PkResults *
 pk_client_purge_packages (PkClient *client,

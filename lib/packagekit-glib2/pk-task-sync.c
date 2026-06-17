@@ -132,7 +132,7 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
  *
  * Return value: (transfer full): a #PkResults object, or %NULL for error
  *
- * Since: 1.3.6
+ * Since: 1.3.7
  **/
 PkResults *
 pk_task_purge_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
