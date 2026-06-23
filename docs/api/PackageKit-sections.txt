@@ -95,6 +95,8 @@ pk_client_get_categories
 pk_client_get_categories_async
 pk_client_remove_packages
 pk_client_remove_packages_async
+pk_client_purge_packages
+pk_client_purge_packages_async
 pk_client_refresh_cache
 pk_client_refresh_cache_async
 pk_client_install_packages
@@ -837,6 +839,8 @@ pk_task_update_packages_sync
 pk_task_update_packages_async
 pk_task_remove_packages_sync
 pk_task_remove_packages_async
+pk_task_purge_packages_sync
+pk_task_purge_packages_async
 pk_task_install_files_sync
 pk_task_install_files_async
 pk_task_resolve_sync
