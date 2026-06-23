@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/stat.h>
+#include <sys/syslog.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif /* HAVE_UNISTD_H */
@@ -376,8 +377,12 @@ pk_engine_state_changed_cb (gpointer data)
 
 	/* if network is not up, then just reschedule */
 	if (!g_network_monitor_get_network_available (engine->network_monitor)) {
-		/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
-		return TRUE;
+		g_autoptr(GSocketConnectable) addr = g_network_address_new("1.2.3.4", 80);
+		if (!g_network_monitor_can_reach(engine->network_monitor, addr, NULL, NULL)) {
+			/* wait another timeout of PK_ENGINE_STATE_CHANGED_x_TIMEOUT */
+			return TRUE;
+		}
+		syslog (LOG_DAEMON | LOG_NOTICE, "pk_engine_state_changed_cb: Gio::NetworkMonitor reports that network is offline, but also claims that the internet is reachable. Is NetworkManager configured correctly?");
 	}
 
 	pk_backend_updates_changed (engine->backend);
@@ -891,8 +896,17 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 static PkNetworkEnum
 pk_engine_get_network_state (GNetworkMonitor *network_monitor)
 {
-	if (!g_network_monitor_get_network_available (network_monitor))
-		return PK_NETWORK_ENUM_OFFLINE;
+	if (!g_network_monitor_get_network_available (network_monitor)) {
+		g_autoptr(GSocketConnectable) addr = g_network_address_new("1.2.3.4", 80);
+		if (g_network_monitor_can_reach(network_monitor, addr, NULL, NULL)) {
+			syslog (LOG_DAEMON | LOG_NOTICE, "pk_engine_get_network_state: Gio::NetworkMonitor reports that network is offline, but also claims that the internet is reachable. Is NetworkManager configured correctly?");
+			// We are actually online, so fall through to the network metered check.
+		} else {
+			// get_network_available and can_reach are in agreement.
+			return PK_NETWORK_ENUM_OFFLINE;
+		}
+	}
+
 	/* this isn't exactly true, but it's what the UI expects */
 	if (g_network_monitor_get_network_metered (network_monitor))
 		return PK_NETWORK_ENUM_MOBILE;
