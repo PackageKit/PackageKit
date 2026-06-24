@@ -35,12 +35,245 @@
 
 import pisi
 import pisi.ui
-from packagekit.backend import *
-from packagekit.package import PackagekitPackage
-from packagekit import enums
+import traceback
+import os
 import os.path
+import sys
 import piksemel
 import re
+
+
+def _add_packagekit_paths():
+    """Add likely packagekit module paths for Python 2 backends."""
+    helper_dir = os.path.abspath(os.path.dirname(__file__))
+    candidates = [
+        os.path.join(helper_dir, "..", "..", "lib", "python"),
+        os.path.join(helper_dir, "..", "..", "..", "lib", "python"),
+        "/usr/lib/python2.7/site-packages",
+        "/usr/lib/python2.7/dist-packages",
+        "/usr/lib64/python2.7/site-packages",
+        "/usr/lib64/python2.7/dist-packages",
+    ]
+
+    for path in candidates:
+        packagekit_path = os.path.join(path, "packagekit")
+        if os.path.isdir(packagekit_path) and path not in sys.path:
+            sys.path.insert(0, path)
+
+
+try:
+    from packagekit.backend import *
+    from packagekit.package import PackagekitPackage
+except Exception:
+    _add_packagekit_paths()
+    try:
+        from packagekit.backend import *
+        from packagekit.package import PackagekitPackage
+    except Exception as packagekit_exc:
+        # Fallback for Python 2 systems where packagekit module imports fail
+        # (e.g. dbus-python dropped Python 2 support).
+        PACKAGE_IDS_DELIM = '&'
+        FILENAME_DELIM = '|'
+        MAXUINT64 = (1 << 64) - 1
+
+        INFO_INSTALLED = "installed"
+        INFO_AVAILABLE = "available"
+        INFO_SECURITY = "security"
+        INFO_BUGFIX = "bugfix"
+        INFO_NORMAL = "normal"
+        INFO_INSTALLING = "installing"
+        INFO_REMOVING = "removing"
+
+        FILTER_INSTALLED = "installed"
+        FILTER_NOT_INSTALLED = "not-installed"
+        FILTER_GUI = "gui"
+        FILTER_NOT_GUI = "not-gui"
+
+        GROUP_UNKNOWN = "unknown"
+        UPDATE_STATE_STABLE = "stable"
+
+        STATUS_DOWNLOAD = "download"
+        STATUS_INSTALL = "install"
+        STATUS_REFRESH_CACHE = "refresh-cache"
+        STATUS_REMOVE = "remove"
+        STATUS_INFO = "info"
+        STATUS_QUERY = "query"
+
+        TRANSACTION_FLAG_SIMULATE = "simulate"
+
+        ERROR_INTERNAL_ERROR = "internal-error"
+        ERROR_PACKAGE_NOT_FOUND = "package-not-found"
+        ERROR_PACKAGE_DOWNLOAD_FAILED = "package-download-failed"
+        ERROR_PACKAGE_ALREADY_INSTALLED = "package-already-installed"
+        ERROR_PACKAGE_NOT_INSTALLED = "package-not-installed"
+        ERROR_UNKNOWN = "unknown"
+        ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE = "cannot-remove-system-package"
+        ERROR_REPO_NOT_FOUND = "repo-not-found"
+        ERROR_NOT_SUPPORTED = "not-supported"
+        ERROR_GROUP_NOT_FOUND = "group-not-found"
+        ERROR_NO_PACKAGES_TO_UPDATE = "no-packages-to-update"
+
+        def _to_utf8(txt):
+            if isinstance(txt, unicode):
+                return txt.encode('utf-8', errors='replace')
+            if isinstance(txt, str):
+                return txt
+            return str(txt)
+
+        def _text_to_bool(text):
+            return text.lower() in ["yes", "true"]
+
+        def _split_filters_arg(args, index=0):
+            if len(args) <= index or args[index] == "":
+                return ["none"]
+            return args[index].split(';')
+
+        def _bool_to_string(value):
+            if value:
+                return "true"
+            return "false"
+
+        class PackagekitPackage(object):
+            def get_package_id(self, name, version, arch, data):
+                return "%s;%s;%s;%s" % (name, version, arch, data)
+
+            def get_package_from_id(self, package_id):
+                return tuple(package_id.split(';', 4))
+
+        class PackageKitBaseBackend(object):
+            def __init__(self, cmds):
+                self.cmds = cmds
+                self._locked = False
+                self.percentage_old = 0
+
+            def isLocked(self):
+                return self._locked
+
+            def unLock(self):
+                self._locked = False
+
+            def percentage(self, percent=None):
+                if percent is None:
+                    sys.stdout.write(_to_utf8("no-percentage-updates\n"))
+                elif percent == 0 or percent > self.percentage_old:
+                    sys.stdout.write(_to_utf8("percentage\t%i\n" % percent))
+                    self.percentage_old = percent
+                sys.stdout.flush()
+
+            def status(self, state):
+                sys.stdout.write(_to_utf8("status\t%s\n" % state))
+                sys.stdout.flush()
+
+            def allow_cancel(self, allow):
+                sys.stdout.write(_to_utf8("allow-cancel\t%s\n" % _bool_to_string(allow)))
+                sys.stdout.flush()
+
+            def package(self, package_id, status, summary):
+                sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\n" % (status, package_id, summary)))
+                sys.stdout.flush()
+
+            def details(self, package_id, summary, package_license, group, desc, url,
+                        bytes=None, download_bytes=None):
+                if bytes is None:
+                    bytes = MAXUINT64
+                if download_bytes is None:
+                    download_bytes = MAXUINT64
+                sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (
+                    package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
+                sys.stdout.flush()
+
+            def files(self, package_id, file_list):
+                sys.stdout.write(_to_utf8("files\t%s\t%s\n" % (package_id, file_list)))
+                sys.stdout.flush()
+
+            def repo_detail(self, repoid, name, state):
+                sys.stdout.write(_to_utf8("repo-detail\t%s\t%s\t%s\n" % (
+                    repoid, name, _bool_to_string(state))))
+                sys.stdout.flush()
+
+            def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url,
+                              cve_url, restart, update_text, changelog, state, issued, updated):
+                sys.stdout.write(_to_utf8("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+                    package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart,
+                    update_text, changelog, state, issued, updated)))
+                sys.stdout.flush()
+
+            def error(self, err, description, exit=True):
+                sys.stdout.write(_to_utf8("error\t%s\t%s\n" % (err, description)))
+                sys.stdout.flush()
+                if exit:
+                    sys.exit(254)
+
+            def finished(self):
+                sys.stdout.write(_to_utf8("finished\n"))
+                sys.stdout.flush()
+
+            def dispatch_command(self, cmd, args):
+                if cmd == 'download-packages':
+                    self.download_packages(args[0], args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'depends-on':
+                    self.depends_on(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM), _text_to_bool(args[2]))
+                elif cmd == 'get-details':
+                    self.get_details(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-files':
+                    self.get_files(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'required-by':
+                    self.required_by(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM), _text_to_bool(args[2]))
+                elif cmd == 'get-update-detail':
+                    self.get_update_detail(args[0].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-updates':
+                    self.get_updates(_split_filters_arg(args))
+                elif cmd == 'get-packages':
+                    self.get_packages(_split_filters_arg(args))
+                elif cmd == 'install-files':
+                    self.install_files(args[0].split(';'), args[1].split(FILENAME_DELIM))
+                elif cmd == 'install-packages':
+                    self.install_packages(args[0].split(';'), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'refresh-cache':
+                    self.refresh_cache(_text_to_bool(args[0]))
+                elif cmd == 'remove-packages':
+                    self.remove_packages(args[0].split(';'),
+                                         args[1].split(PACKAGE_IDS_DELIM),
+                                         _text_to_bool(args[2]),
+                                         _text_to_bool(args[3]))
+                elif cmd == 'search-details':
+                    self.search_details(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-file':
+                    self.search_file(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-group':
+                    self.search_group(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'search-name':
+                    self.search_name(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'update-packages':
+                    self.update_packages(args[0].split(';'), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'update-system':
+                    self.update_system(args[0].split(';'))
+                elif cmd == 'resolve':
+                    self.resolve(_split_filters_arg(args), args[1].split(PACKAGE_IDS_DELIM))
+                elif cmd == 'get-repo-list':
+                    self.get_repo_list(_split_filters_arg(args))
+                elif cmd == 'repo-set-data':
+                    self.repo_set_data(args[0], args[1], args[2])
+                else:
+                    self.error(ERROR_INTERNAL_ERROR, "command '%s' is not known" % cmd, exit=False)
+                self.finished()
+
+            def dispatcher(self, args):
+                if len(args) > 0:
+                    self.dispatch_command(args[0], args[1:])
+                while True:
+                    line = sys.stdin.readline().strip('\n')
+                    if not line or line == 'exit':
+                        break
+                    cmdargs = line.split('\t')
+                    self.dispatch_command(cmdargs[0], cmdargs[1:])
+                if self.isLocked():
+                    self.unLock()
+                sys.exit(0)
+
+        sys.stderr.write("pisiBackend: using local packagekit compatibility mode due to import failure: %s\n" %
+                         str(packagekit_exc))
+        traceback.print_exc(file=sys.stderr)
 
 class SimplePisiHandler(pisi.ui.UI):
 
@@ -53,7 +286,7 @@ class SimplePisiHandler(pisi.ui.UI):
 
 class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
-    SETTINGS_FILE = "/etc/PackageKit/pisi.conf"
+    SETTINGS_FILE = "/etc/PackageKit/pisi.d/groups.list"
 
     def __init__(self, args):
         self.bug_regex = None
@@ -155,25 +388,47 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
 
         package = self.get_package_from_id(package_ids[0])[0]
 
+        pkg = None
+        repo_name = ""
+
         if self.packagedb.has_package(package):
             pkg = self.packagedb.get_package(package)
-            repo = self.packagedb.get_package_repo(pkg.name, None)
-            pkg_id = self.get_package_id(pkg.name,
-                                         self.__get_package_version(pkg),
-                                         pkg.architecture, repo[1])
+            try:
+                repo = self.packagedb.get_package_repo(pkg.name, None)
+                repo_name = repo[1]
+            except Exception:
+                repo_name = ""
+        elif self.installdb.has_package(package):
+            pkg = self.installdb.get_package(package)
 
-            if pkg.partOf in self.groups:
-                group = self.groups[pkg.partOf]
-            else:
-                group = GROUP_UNKNOWN
-
-            homepage = pkg.source.homepage if pkg.source.homepage is not None\
-                else ''
-
-            self.details(pkg_id, '', ",".join(pkg.license), group, pkg.description,
-                         homepage, pkg.packageSize, None)
-        else:
+        if pkg is None:
             self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
+            return
+
+        pkg_id = self.get_package_id(pkg.name,
+                                     self.__get_package_version(pkg),
+                                     pkg.architecture, repo_name)
+
+        if pkg.partOf in self.groups:
+            group = self.groups[pkg.partOf]
+        else:
+            group = GROUP_UNKNOWN
+
+        homepage = ""
+        if hasattr(pkg, "source") and pkg.source is not None:
+            homepage = pkg.source.homepage if pkg.source.homepage is not None else ""
+
+        licenses = getattr(pkg, "license", [])
+        if isinstance(licenses, basestring):
+            licenses_text = licenses
+        else:
+            licenses_text = ",".join(licenses)
+
+        description = getattr(pkg, "description", "")
+        package_size = getattr(pkg, "packageSize", 0)
+
+        self.details(pkg_id, '', licenses_text, group, description,
+                     homepage, package_size, None)
 
     def get_files(self, package_ids):
         """ Prints a file list for a given package """
@@ -196,10 +451,38 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
             file_list = ";".join(files)
             self.files(pkg_id, file_list)
 
+    def get_packages(self, filters):
+        """ Prints a package list according to filter """
+        self.allow_cancel(True)
+        self.percentage(None)
+        self.status(STATUS_QUERY)
+
+        try:
+            installed = list(self.installdb.list_installed())
+        except Exception:
+            installed = []
+
+        try:
+            available = list(self.packagedb.list_packages(None))
+        except Exception:
+            available = []
+
+        if FILTER_INSTALLED in filters:
+            packages = installed
+        elif FILTER_NOT_INSTALLED in filters:
+            installed_set = set(installed)
+            packages = [pkg for pkg in available if pkg not in installed_set]
+        else:
+            packages = available
+
+        for package in packages:
+            self.__get_package(package, filters)
+
     def get_repo_list(self, filters):
         """ Prints available repositories """
         self.allow_cancel(True)
         self.percentage(None)
+        self.status(STATUS_INFO)
 
         for repo in pisi.api.list_repos():
             # Internal FIXME: What an ugly way to get repo uri
@@ -224,7 +507,7 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.percentage(None)
 
         self._updates = dict()
-        for package in pisi.api.list_upgradable():
+        for package in self._list_upgradable_packages():
             pkg = self.packagedb.get_package(package)
             version = self.__get_package_version(pkg)
             id = self.get_package_id(pkg.name, version, pkg.architecture, "")
@@ -276,14 +559,67 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
                         except Exception:
                             pass
                 # Determine if this is a bug fix
-                for line in update_message.split(";"):
-                    m = self.bug_regex.match(line)
-                    if m is not None:
-                        bugURI = self.bug_uri % m.group(1)
-                        break
+                if self.bug_regex is not None and self.bug_uri is not None:
+                    for line in update_message.split(";"):
+                        m = self.bug_regex.match(line)
+                        if m is not None:
+                            bugURI = self.bug_uri % m.group(1)
+                            break
                 return (update_message, update_date, needsReboot, bugURI)
             pkg = pkg.nextTag("Package")
         return("Log not found", "", False, "")
+
+    def _list_upgradable_packages(self):
+        """Return upgradable package names with a fallback for empty API results."""
+        try:
+            upgradable = list(pisi.api.list_upgradable())
+        except Exception:
+            upgradable = []
+
+        if len(upgradable) > 0:
+            return upgradable
+
+        try:
+            installed = self.installdb.list_installed()
+        except Exception:
+            return []
+
+        upgradable = []
+        for package in installed:
+            if not self.packagedb.has_package(package):
+                continue
+
+            try:
+                repo_pkg = self.packagedb.get_package(package)
+                installed_pkg = self.installdb.get_package(package)
+            except Exception:
+                continue
+
+            newer = False
+            try:
+                newer = pisi.version.Version(repo_pkg.release) > pisi.version.Version(installed_pkg.release)
+            except Exception:
+                pass
+
+            if not newer:
+                try:
+                    newer = pisi.version.Version(repo_pkg.version) > pisi.version.Version(installed_pkg.version)
+                except Exception:
+                    pass
+
+            if not newer:
+                try:
+                    repo_build = getattr(repo_pkg, "build", None)
+                    installed_build = getattr(installed_pkg, "build", None)
+                    if repo_build is not None and installed_build is not None:
+                        newer = int(repo_build) > int(installed_build)
+                except Exception:
+                    pass
+
+            if newer:
+                upgradable.append(package)
+
+        return upgradable
 
     def get_update_detail(self, package_ids):
         for package_id in package_ids:
@@ -614,11 +950,12 @@ class PackageKitPisiBackend(PackageKitBaseBackend, PackagekitPackage):
         self.allow_cancel(False)
         self.percentage(None)
 
-        if not len(pisi.api.list_upgradable()) > 0:
+        upgradable = self._list_upgradable_packages()
+        if not len(upgradable) > 0:
             self.error(ERROR_NO_PACKAGES_TO_UPDATE, "System is already up2date")
 
         try:
-            pisi.api.upgrade(pisi.api.list_upgradable())
+            pisi.api.upgrade(upgradable)
         except pisi.Error, e:
             self.error(ERROR_UNKNOWN, e)
 
