@@ -2535,6 +2535,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 
 	ResPool pool = zypp_build_pool (zypp, TRUE);
+	PoolStatusSaver saver;
 	pk_backend_job_set_percentage (job, 40);
 
 	set<PoolItem> candidates;
