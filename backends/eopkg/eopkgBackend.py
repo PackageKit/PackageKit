@@ -282,7 +282,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo = "installed"
             else:
                 repo = "local"
-        pkg_id = self.get_package_id(pkg.name, pkg.version, pkg.architecture, repo)
+        version = self.__get_package_version(pkg)
+        pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
         return pkg_id
 
     def _get_package_obj_from_id(self, package_id):
