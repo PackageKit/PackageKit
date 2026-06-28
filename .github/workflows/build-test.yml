@@ -6,8 +6,8 @@ permissions:
   contents: read
 
 jobs:
-  build-test:
-    name: Build & Test
+  linux-build-test:
+    name: Linux (Build & Test)
     runs-on: ubuntu-latest
 
     strategy:
@@ -44,3 +44,56 @@ jobs:
       - name: Build & Test
         run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
              ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }}
+
+  freebsd-build-test:
+    name: FreeBSD (Build & Test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: cpa.sh {0}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start VM
+        uses: cross-platform-actions/action@5ea7e8e4677bd726033a10b094ba1c5762b15dee #v1.3.0
+        with:
+          operating_system: freebsd
+          version: '15.1'
+
+      - name: Run
+        run: |
+          # Use latest package set
+          sudo mkdir -p /usr/local/etc/pkg/repos/
+          sudo cp /etc/pkg/FreeBSD.conf /usr/local/etc/pkg/repos/FreeBSD.conf
+          sudo sed -i.bak -e 's|/quarterly|/latest|' /usr/local/etc/pkg/repos/FreeBSD.conf
+
+          echo "::group::Dependencies installation"
+          sudo -E pkg install -y \
+              docbook-xsl-ns vala libxslt fontconfig polkit consolekit2 \
+              desktop-file-utils gettext meson ninja python3 glib gtk3 pkgconf \
+              sqlite3 gobject-introspection jansson dbus bash
+          echo "::endgroup::"
+
+          # Allow the pk-test-e2e test to run
+          sed -i.bak -e 's|/usr/share/|/usr/local/share|g' tests/runner/run-daemon-test.py
+
+          echo "::group::Building"
+          meson --auto-features=enabled -Db_colorout=never --buildtype=debug \
+                -Dlocal_checkout=true \
+                -Dlocalstatedir=/var \
+                -Dsystemd=false \
+                -Doffline_update=false \
+                -Dbash_completion=false \
+                -Dbash_command_not_found=false \
+                -Dgstreamer_plugin=false \
+                -Dpackaging_backend=freebsd \
+                _build
+          cd _build
+          ninja all
+          echo "::endgroup::"
+
+          echo "::group::Testing"
+          sudo service dbus onestart
+          ninja test
+          echo "::endgroup::"
