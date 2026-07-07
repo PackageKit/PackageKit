@@ -231,8 +231,14 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 			g_warning ("failed to close socket");
 		return G_SOURCE_REMOVE;
 	}
-	if (len == 0)
+	if (len == 0) {
+		/* no data pending: if the descriptor hung up or errored, remove the
+		 * watch. Otherwise poll() keeps returning immediately on the dead fd
+		 * and the main loop spins at 100% CPU until the helper times out. */
+		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
+			return G_SOURCE_REMOVE;
 		return G_SOURCE_CONTINUE;
+	}
 
 	/* write to socket */
 	data[len] = '\0';
@@ -267,8 +273,14 @@ pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkC
 	if (status == G_IO_STATUS_EOF) {
 		return G_SOURCE_REMOVE;
 	}
-	if (len == 0)
+	if (len == 0) {
+		/* no data pending: if the descriptor hung up or errored, remove the
+		 * watch. Otherwise poll() keeps returning immediately on the dead fd
+		 * and the main loop spins at 100% CPU until the helper times out. */
+		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
+			return G_SOURCE_REMOVE;
 		return G_SOURCE_CONTINUE;
+	}
 
 	/* write to socket */
 	data[len] = '\0';
@@ -303,8 +315,14 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 		g_warning ("failed to read: %s", error->message);
 		return G_SOURCE_REMOVE;
 	}
-	if (len == 0)
+	if (len == 0) {
+		/* no data pending: if the descriptor hung up or errored, remove the
+		 * watch. Otherwise poll() keeps returning immediately on the dead fd
+		 * and the main loop spins at 100% CPU until the helper times out. */
+		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
+			return G_SOURCE_REMOVE;
 		return G_SOURCE_CONTINUE;
+	}
 
 	/* write to child */
 	data[len] = '\0';
@@ -325,12 +343,15 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 }
 
 static GSource *
-make_input_source (GIOChannel *channel, GSourceFunc func, gpointer user_data)
+make_input_source (GIOChannel *channel, GIOCondition condition, GSourceFunc func, gpointer user_data)
 {
 	GSource *source;
 	GMainContext *context;
 
-	source = g_io_create_watch (channel, G_IO_IN);
+	/* callers pass G_IO_HUP/G_IO_ERR for child pipes and sockets so the watch is
+	 * dispatched (and then removed) on hang-up, instead of the main loop
+	 * busy-looping on poll() when the peer closes the descriptor */
+	source = g_io_create_watch (channel, condition);
 	g_source_set_callback (source, func, user_data, NULL);
 
 	context = g_main_context_get_thread_default ();
@@ -423,7 +444,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	fd = g_socket_get_fd (child->socket);
 	child->socket_channel = g_io_channel_unix_new (fd);
 	child->socket_channel_source =
-		make_input_source (child->socket_channel, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
+		make_input_source (child->socket_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
 	/* binary data */
 	status = g_io_channel_set_encoding (child->socket_channel, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
@@ -434,9 +455,9 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	/* frontend has data */
 	child->stdout_channel_source =
-		make_input_source (child->stdout_channel, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
+		make_input_source (child->stdout_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
 	child->stderr_channel_source =
-		make_input_source (child->stderr_channel, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
+		make_input_source (child->stderr_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
 	return G_SOURCE_CONTINUE;
 }
 
@@ -590,7 +611,7 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 	fd = g_socket_get_fd (priv->socket);
 	priv->socket_channel = g_io_channel_unix_new (fd);
 	priv->socket_channel_source =
-		make_input_source (priv->socket_channel, G_SOURCE_FUNC (pk_client_helper_accept_connection_cb), client_helper);
+		make_input_source (priv->socket_channel, G_IO_IN, G_SOURCE_FUNC (pk_client_helper_accept_connection_cb), client_helper);
 	return TRUE;
 }
 
