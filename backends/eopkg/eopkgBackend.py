@@ -691,10 +691,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             if pkg.name not in upgradables:
                 continue
 
-            version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, pkg.architecture, data)
+            if self.installdb.has_package(pkg.name):
+                current_pkg = self.installdb.get_package(pkg.name)
+                # Note: installed pkgs do not record their repo of origin, assume it's the same for now
+                #       we could cross-examine but it's of little benefit
+                version = self.__get_package_version(current_pkg)
+                updates = self.get_package_id(current_pkg.name, version, current_pkg.architecture, data)
+            else:
+                updates = ""
 
-            updates = [package_id]
             obsoletes = ""
 
             package_url = pkg.source.homepage
