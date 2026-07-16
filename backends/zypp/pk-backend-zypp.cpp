@@ -49,6 +49,7 @@
 
 #include <zypp/Digest.h>
 #include <zypp/KeyRing.h>
+#include <zypp/Locks.h>
 #include <zypp/Package.h>
 #include <zypp/Patch.h>
 #include <zypp/PathInfo.h>
@@ -793,35 +794,46 @@ zypp_build_pool (ZYpp::Ptr zypp, gboolean include_local)
 	}
 
 	// we only load repositories once.
-	if (repos_loaded)
-		return zypp->pool();
+	if (!repos_loaded) {
+		// Add resolvables from enabled repos
+		RepoManager manager;
+		try {
+			for (RepoManager::RepoConstIterator it = manager.repoBegin(); it != manager.repoEnd(); ++it) {
+				RepoInfo repo (*it);
 
-	// Add resolvables from enabled repos
-	RepoManager manager;
-	try {
-		for (RepoManager::RepoConstIterator it = manager.repoBegin(); it != manager.repoEnd(); ++it) {
-			RepoInfo repo (*it);
+				// skip disabled repos
+				if (repo.enabled () == false)
+					continue;
+				// skip not cached repos
+				if (manager.isCached (repo) == false) {
+					g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
+					continue;
+				}
+				//FIXME see above, skip already cached repos
+				if (sat::Pool::instance().reposFind( repo.alias ()) == Repository::noRepository)
+					manager.loadFromCache (repo);
 
-			// skip disabled repos
-			if (repo.enabled () == false)
-				continue;
-			// skip not cached repos
-			if (manager.isCached (repo) == false) {
-				g_warning ("%s is not cached! Do a refresh", repo.alias ().c_str ());
-				continue;
 			}
-			//FIXME see above, skip already cached repos
-			if (sat::Pool::instance().reposFind( repo.alias ()) == Repository::noRepository)
-				manager.loadFromCache (repo);
-
+			repos_loaded = true;
+		} catch (const repo::RepoNoAliasException &ex) {
+			g_error ("Can't figure an alias to look in cache");
+		} catch (const repo::RepoNotCachedException &ex) {
+			g_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
+		} catch (const Exception &ex) {
+			g_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
 		}
-		repos_loaded = true;
-	} catch (const repo::RepoNoAliasException &ex) {
-		g_error ("Can't figure an alias to look in cache");
-	} catch (const repo::RepoNotCachedException &ex) {
-		g_error ("The repo has to be cached at first: %s", ex.asUserString ().c_str ());
-	} catch (const Exception &ex) {
-		g_error ("TODO: Handle exceptions: %s", ex.asUserString ().c_str ());
+	}
+
+	/* Apply the locks from the libzypp locks file (/etc/zypp/locks) so that
+	 * locked packages are excluded from updates and installs, just like
+	 * zypper does. */
+	if (ZConfig::instance ().apply_locks_file ()) {
+		try {
+			zypp::Locks::instance ().readAndApply ();
+		} catch (const Exception &ex) {
+			g_warning ("Failed to apply the zypp locks file: %s",
+				   ex.asUserString ().c_str ());
+		}
 	}
 
 	return zypp->pool ();
