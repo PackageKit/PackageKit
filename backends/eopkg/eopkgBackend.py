@@ -726,9 +726,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             updated = "{}-{}-{}T00:00:00Z".format(
                 split_date[0], split_date[1], split_date[2]
             )
-            # TODO: The index only stores the last 10 history entries.
-            #       What is the difference between issued and updated?
-            issued = ""
+            # Note: updates are always fixed
+            issued = updated
 
             self.update_detail(
                 package_id,
