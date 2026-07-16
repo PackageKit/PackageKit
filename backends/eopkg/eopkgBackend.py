@@ -714,11 +714,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             #    comment = comment.replace("\n", ";")
             #    changelog.append(comment)
 
-            cves = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
-            cve_url = ""
-            if cves is not None:
-                # cve_url = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(cves[0])
-                cve_url = cves
+            cvelist = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
+            cves = ";".join(cvelist)
 
             # TODO: If repo is unstable and package.release not in shannon then UNSTABLE
             state = UPDATE_STATE_STABLE
@@ -739,7 +736,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 obsoletes,
                 vendor_url,
                 bugURI,
-                cve_url,
+                cves,
                 reboot,
                 update_message,
                 changelog,
