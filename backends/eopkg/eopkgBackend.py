@@ -654,9 +654,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             histories = self._get_history_between(oldRelease, pkg)
 
             securities = [x for x in histories if x.type == "security"]
-            # FIXME: INFO_BUGFIX Support? We would have to match against #123 Github issues
             if len(securities) > 0:
-                self.package(id, INFO_SECURITY, pkg.summary)
+                self.package(id, INFO_SECURITY, pkg.summary, INFO_CRITICAL)
             else:
                 self.package(id, INFO_NORMAL, pkg.summary)
 
