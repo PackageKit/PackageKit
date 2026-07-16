@@ -710,19 +710,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             updated_date = pkg.history[0].date
 
-            bugURI = ""
-
-            changelog = ""
-            # FIXME: Works but output is fugly
-            # for i in pkg.history:
-            #    comment = i.comment
-            #    comment = comment.replace("\n", ";")
-            #    changelog.append(comment)
+            bugURI = "" # we would have to match against #123 which would be too fragile
+            changelog = "" # we do not have an enforced standard for changelogs in commit msgs
 
             cvelist = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
             cves = ";".join(cvelist)
 
-            # TODO: If repo is unstable and package.release not in shannon then UNSTABLE
+            # TODO: Other than repo naming convection we have no mechanism to
+            #       determine the stability of an update
             state = UPDATE_STATE_STABLE
             reboot = "none"
 
