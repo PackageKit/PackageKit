@@ -713,7 +713,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             bugURI = "" # we would have to match against #123 which would be too fragile
             changelog = "" # we do not have an enforced standard for changelogs in commit msgs
 
-            cvelist = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
+            cvelist = re.findall(r"(CVE\-[0-9]+\-[0-9]+)", str(update_message))
             cves = ";".join(cvelist)
 
             # TODO: Other than repo naming convection we have no mechanism to
