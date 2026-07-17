@@ -339,7 +339,12 @@ dnf5_emit_pkg (PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum i
 	std::string evr = pkg.get_evr();
 	std::string repo_id = pkg.get_repo_id();
 	if (pkg.get_install_time() > 0) {
-		repo_id = "installed";
+		std::string from_repo = pkg.get_from_repo_id();
+		if (!from_repo.empty()) {
+			repo_id = "installed:" + from_repo;
+		} else {
+			repo_id = "installed";
+		}
 	}
 	
 	std::string package_id = pkg.get_name() + ";" + evr + ";" + pkg.get_arch() + ";" + repo_id;
@@ -450,7 +455,7 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 			query.filter_evr(split[PK_PACKAGE_ID_VERSION]);
 			query.filter_arch(split[PK_PACKAGE_ID_ARCH]);
 			
-			if (g_strcmp0(split[PK_PACKAGE_ID_DATA], "installed") == 0) {
+			if (g_str_has_prefix(split[PK_PACKAGE_ID_DATA], "installed")) {
 				query.filter_installed();
 			} else {
 				 query.filter_repo_id(split[PK_PACKAGE_ID_DATA]);
