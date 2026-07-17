@@ -194,7 +194,7 @@ dnf5_force_distupgrade_on_upgrade (libdnf5::Base &base)
 
 	libdnf5::rpm::PackageQuery query(base);
 	query.filter_installed();
-	query.filter_name(distroverpkg_names);
+	query.filter_provides(distroverpkg_names);
 	query.filter_provides(distupgrade_provides);
 
 	return !query.empty();
