@@ -1,7 +1,6 @@
 %define alphatag                        #ALPHATAG#
 
 %global glib2_version 2.80
-%global libdnf_version 0.43.1
 
 Summary:   Package management service
 Name:      PackageKit
@@ -27,7 +26,6 @@ BuildRequires: pkgconfig(gstreamer-1.0)
 BuildRequires: pkgconfig(gstreamer-plugins-base-1.0)
 BuildRequires: pkgconfig(gtk+-3.0)
 BuildRequires: pkgconfig(jansson)
-BuildRequires: pkgconfig(libdnf) >= %{libdnf_version}
 BuildRequires: pkgconfig(libdnf5)
 BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(pangoft2)
@@ -43,9 +41,9 @@ BuildRequires: appstream
 
 Requires: %{name}-glib%{?_isa} = %{version}-%{release}
 Requires: glib2%{?_isa} >= %{glib2_version}
-Requires: libdnf%{?_isa} >= %{libdnf_version}
 Requires: shared-mime-info
 Requires: systemd
+Requires: libdnf5-plugin-appstream%{?_isa}
 
 # functionality moved to udev itself
 Obsoletes: PackageKit-udev-helper < %{version}-%{release}
@@ -53,6 +51,10 @@ Obsoletes: udev-packagekit < %{version}-%{release}
 
 # No more GTK+-2 plugin
 Obsoletes: PackageKit-gtk-module < %{version}-%{release}
+
+# No more dnf4 or libdnf5 notify plugins
+Obsoletes: dnf4-plugin-notify-PackageKit < %{version}-%{release}
+Obsoletes: libdnf5-plugin-notify-PackageKit < %{version}-%{release}
 
 # No more zif, smart or yum in Fedora
 Obsoletes: PackageKit-smart < %{version}-%{release}
@@ -64,6 +66,7 @@ Obsoletes: PackageKit-zif < 0.8.13-2
 Obsoletes: PackageKit-debug-install < 0.9.1
 Obsoletes: PackageKit-hawkey < 0.9.1
 Obsoletes: PackageKit-backend-devel < 0.9.6
+Obsoletes: PackageKit-backend-dnf5 < %{version}-%{release}
 
 # Udev no longer provides this functionality
 Obsoletes: PackageKit-device-rebind < 0.8.13-2
@@ -72,36 +75,6 @@ Obsoletes: PackageKit-device-rebind < 0.8.13-2
 PackageKit is a D-Bus abstraction layer that allows the session user
 to manage packages in a secure way using a cross-distro,
 cross-architecture API.
-
-%package backend-dnf5
-Summary: DNF5 backend for PackageKit
-Supplements: (libdnf5%{?_isa} and PackageKit%{?_isa})
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: libdnf5-plugin-appstream%{?_isa}
-
-%description backend-dnf5
-PackageKit is a D-Bus abstraction layer that allows the session user
-to manage packages in a secure way using a cross-distro,
-cross-architecture API.
-
-This package provides the DNF5 backend for PackageKit.
-
-%package -n dnf4-plugin-notify-PackageKit
-Summary: DNF4 plugin to notify PackageKit of DNF4 actions
-Supplements: (dnf4 and PackageKit)
-Conflicts: %{name} < 1.3.1-3
-BuildArch: noarch
-
-%description -n dnf4-plugin-notify-PackageKit
-DNF4 plugin to notify PackageKit of DNF4 actions.
-
-%package -n libdnf5-plugin-notify-PackageKit
-Summary: DNF5 plugin to notify PackageKit of DNF5 actions
-Supplements: (libdnf5%{?_isa} and PackageKit%{?_isa})
-Conflicts: %{name} < 1.3.1-2
-
-%description -n libdnf5-plugin-notify-PackageKit
-DNF5 plugin to notify PackageKit of DNF5 actions.
 
 %package glib
 Summary: GLib libraries for accessing PackageKit
@@ -179,7 +152,7 @@ using PackageKit.
 %meson \
         -Dgtk_doc=true \
         -Dlegacy_tools=true \
-        -Dpackaging_backend=dnf,dnf5 \
+        -Dpackaging_backend=dnf5 \
         -Dlocal_checkout=false
 
 %build
@@ -247,20 +220,9 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_unitdir}/packagekit.service
 %{_unitdir}/system-update.target.wants/
 %{_libexecdir}/pk-*offline-update
-%{_libexecdir}/packagekit-dnf-refresh-repo
-%{_libdir}/packagekit-backend/libpk_backend_dnf.so
-
-%files backend-dnf5
 %{_libdir}/packagekit-backend/libpk_backend_dnf5.so
 %{_libdir}/rpm-plugins/notify_packagekit.so
 %{_rpmmacrodir}/macros.transaction_notify_packagekit
-
-%files -n dnf4-plugin-notify-PackageKit
-%pycached %{python3_sitelib}/dnf-plugins/notify_packagekit.py
-
-%files -n libdnf5-plugin-notify-PackageKit
-%{_libdir}/libdnf5/plugins/notify_packagekit.so
-%config(noreplace) %{_sysconfdir}/dnf/libdnf5-plugins/notify_packagekit.conf
 
 %files glib
 %{_libdir}/*packagekit-glib2.so.*
