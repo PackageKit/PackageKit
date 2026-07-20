@@ -53,7 +53,7 @@ jobs:
         shell: cpa.sh {0}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Start VM
         uses: cross-platform-actions/action@5ea7e8e4677bd726033a10b094ba1c5762b15dee #v1.3.0
