@@ -470,6 +470,14 @@ class PackageKitBaseBackend:
         '''
         self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
 
+    def purge_packages(self, transaction_flags, package_ids, allowdep, autoremove):
+        '''
+        Implement the {backend}-purge functionality
+        Needed to be implemented in a sub class
+        '''
+        _ = (transaction_flags, package_ids, allowdep, autoremove)
+        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+
     def update_packages(self, transaction_flags, package_ids):
         '''
         Implement the {backend}-update functionality
@@ -664,6 +672,13 @@ class PackageKitBaseBackend:
             allowdeps = _text_to_bool(args[2])
             autoremove = _text_to_bool(args[3])
             self.remove_packages(transaction_flags, package_ids, allowdeps, autoremove)
+            self.finished()
+        elif cmd == 'purge-packages':
+            transaction_flags = args[0].split(';')
+            package_ids = args[1].split(PACKAGE_IDS_DELIM)
+            allowdeps = _text_to_bool(args[2])
+            autoremove = _text_to_bool(args[3])
+            self.purge_packages(transaction_flags, package_ids, allowdeps, autoremove)
             self.finished()
         elif cmd == 'repo-enable':
             repoid = args[0]

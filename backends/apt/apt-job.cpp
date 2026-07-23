@@ -110,6 +110,7 @@ bool AptJob::init(gchar **localDebs)
     case PK_ROLE_ENUM_INSTALL_PACKAGES:
     case PK_ROLE_ENUM_INSTALL_FILES:
     case PK_ROLE_ENUM_REMOVE_PACKAGES:
+    case PK_ROLE_ENUM_PURGE_PACKAGES:
     case PK_ROLE_ENUM_UPDATE_PACKAGES:
         withLock = true;
         break;
@@ -1620,6 +1621,7 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
     PkgList ret;
     PkgList installing;
     PkgList removing;
+    PkgList purging;
     PkgList updating;
     PkgList downgrading;
     PkgList obsoleting;
@@ -1643,24 +1645,31 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
             if (!ver.end()) {
                 ret.append(ver);
 
-                bool is_obsoleted = false;
-
-                for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
-                    if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
-                        && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
-                        && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
-                        && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
-                        && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg())
-                            >= (*m_cache)->GetPolicy().GetPriority(pkg))) {
-                        is_obsoleted = true;
-                        break;
-                    }
-                }
-
-                if (!is_obsoleted) {
-                    removing.append(ver);
+                if ((*m_cache)[pkg].Purge()) {
+                    // the package is marked for purge (config files removed too);
+                    // the depcache carries this intent for both explicit and
+                    // autoremoved deletions, so the preview matches the commit
+                    purging.append(ver);
                 } else {
-                    obsoleting.append(ver);
+                    bool is_obsoleted = false;
+
+                    for (pkgCache::DepIterator D = pkg.RevDependsList(); not D.end(); ++D) {
+                        if ((D->Type == pkgCache::Dep::Obsoletes) && ((*m_cache)[D.ParentPkg()].CandidateVer != nullptr)
+                            && (*m_cache)[D.ParentPkg()].CandidateVerIter(*m_cache).Downloadable()
+                            && ((pkgCache::Version *)D.ParentVer() == (*m_cache)[D.ParentPkg()].CandidateVer)
+                            && (*m_cache)->VS().CheckDep(pkg.CurrentVer().VerStr(), D->CompareOp, D.TargetVer())
+                            && ((*m_cache)->GetPolicy().GetPriority(D.ParentPkg())
+                                >= (*m_cache)->GetPolicy().GetPriority(pkg))) {
+                            is_obsoleted = true;
+                            break;
+                        }
+                    }
+
+                    if (!is_obsoleted) {
+                        removing.append(ver);
+                    } else {
+                        obsoleting.append(ver);
+                    }
                 }
 
                 // append to the restart required list
@@ -1698,6 +1707,7 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
         // emit packages that have changes
         emitPackages(obsoleting, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_OBSOLETING);
         emitPackages(removing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
+        emitPackages(purging, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_PURGING);
         emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
         emitPackages(installing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
         emitPackages(updating, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
@@ -1964,6 +1974,20 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             if (!ver.end()) {
                 emitPackage(ver, PK_INFO_ENUM_REMOVING);
                 emitPackageProgress(ver, PK_STATUS_ENUM_REMOVE, m_lastSubProgress);
+            }
+        } else if (starts_with(str, "Purging")) {
+            if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
+                const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
+                if (!ver.end()) {
+                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                }
+            }
+            m_lastSubProgress += 25;
+
+            const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
+            if (!ver.end()) {
+                emitPackage(ver, PK_INFO_ENUM_PURGING);
+                emitPackageProgress(ver, PK_STATUS_ENUM_PURGE, m_lastSubProgress);
             }
         } else if (starts_with(str, "Installed") || starts_with(str, "Removed")) {
             m_lastSubProgress = 100;
@@ -2300,6 +2324,7 @@ bool AptJob::resolvePackageUpdateIds(
 bool AptJob::runTransaction(
     const PkgList &install,
     const PkgList &remove,
+    const PkgList &purge,
     const PkgList &update,
     bool fixBroken,
     PkBitfield flags,
@@ -2328,9 +2353,13 @@ bool AptJob::runTransaction(
     // Calculate existing garbage before the transaction
     PkgList initial_garbage;
     std::vector<unsigned int> explicitRemovalPkgIds;
-    explicitRemovalPkgIds.reserve(remove.size());
+    explicitRemovalPkgIds.reserve(remove.size() + purge.size());
 
     for (const PkgInfo &pkInfo : remove) {
+        if (!pkInfo.ver.end())
+            explicitRemovalPkgIds.push_back(pkInfo.ver.ParentPkg()->ID);
+    }
+    for (const PkgInfo &pkInfo : purge) {
         if (!pkInfo.ver.end())
             explicitRemovalPkgIds.push_back(pkInfo.ver.ParentPkg()->ID);
     }
@@ -2375,7 +2404,17 @@ bool AptJob::runTransaction(
             if (m_cancel)
                 break;
 
-            m_cache->tryToRemove(Fix, pkInfo);
+            m_cache->tryToRemove(Fix, pkInfo, false);
+        }
+
+        // mark for purge: apt records the purge intent in the depcache, so both
+        // the simulated preview (checkChangedPackages() reads it back via
+        // StateCache::Purge()) and the dpkg commit remove the config files too
+        for (const PkgInfo &pkInfo : purge) {
+            if (m_cancel)
+                break;
+
+            m_cache->tryToRemove(Fix, pkInfo, true);
         }
 
         // Call the scored problem resolver
@@ -2398,7 +2437,7 @@ bool AptJob::runTransaction(
 
     // Remove new garbage that is created
     if (autoremove)
-        markNewGarbageForRemoval(Fix, initial_garbage);
+        markNewGarbageForRemoval(Fix, initial_garbage, !purge.empty());
 
     // Prepare for the restart thing
     struct stat restartStatStart;
@@ -2467,12 +2506,12 @@ bool AptJob::checkNoImplicitRemovals(const std::vector<unsigned int> &explicitRe
     return false;
 }
 
-void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage)
+void AptJob::markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage, bool purge)
 {
     for (pkgCache::PkgIterator pkg = (*m_cache)->PkgBegin(); !pkg.end(); ++pkg) {
         const pkgCache::VerIterator &ver = pkg.CurrentVer();
         if (!ver.end() && !initialGarbage.contains(pkg) && m_cache->isGarbage(pkg))
-            m_cache->tryToRemove(Fix, PkgInfo(ver));
+            m_cache->tryToRemove(Fix, PkgInfo(ver), purge);
     }
 }
 
