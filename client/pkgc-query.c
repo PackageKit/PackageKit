@@ -100,6 +100,39 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 		}
 	}
 
+	/* Processing categories */
+	g_clear_pointer (&array, g_ptr_array_unref);
+	array = pk_results_get_category_array (results);
+	for (guint i = 0; i < array->len; i++) {
+		PkCategory *category = PK_CATEGORY (g_ptr_array_index (array, i));
+		const gchar *parent_id = pk_category_get_parent_id (category);
+		const gchar *cat_id = pk_category_get_id (category);
+		const gchar *name = pk_category_get_name (category);
+		const gchar *summary = pk_category_get_summary (category);
+
+		if (cat_id == NULL || cat_id[0] == '\0')
+			continue;
+
+		if (ctx->output_mode == PKGCLI_MODE_JSON) {
+			json_t *root;
+
+			root = json_object ();
+			json_object_set_new (root, "id", json_string (cat_id));
+			if (parent_id != NULL && parent_id[0] != '\0')
+				json_object_set_new (root, "parent-id", json_string (parent_id));
+			if (name != NULL && name[0] != '\0')
+				json_object_set_new (root, "name", json_string (name));
+			if (summary != NULL && summary[0] != '\0')
+				json_object_set_new (root, "summary", json_string (summary));
+
+			pkgc_print_json_decref (root);
+		} else if (parent_id != NULL && parent_id[0] != '\0') {
+			g_print ("  %s/%s\n", parent_id, cat_id);
+		} else {
+			g_print ("%s\n", cat_id);
+		}
+	}
+
 out:
 	g_main_loop_quit (ctx->loop);
 }
