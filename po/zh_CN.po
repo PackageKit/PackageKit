@@ -17,20 +17,21 @@
 # Tommy He <lovenemesis@gmail.com>, 2011-2012, 2025.
 # e0c668032ced196bd60f2b6a070d982d_8f72ae0, 2014
 # Mingcong Bai <jeffbai@aosc.xyz>, 2016
+# xiezhihai <xiezhihai7321@outlook.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-06-16 18:20+0200\n"
-"PO-Revision-Date: 2025-12-25 20:00+0000\n"
-"Last-Translator: Tommy He <lovenemesis@gmail.com>\n"
+"PO-Revision-Date: 2026-08-17 08:51+0000\n"
+"Last-Translator: xiezhihai <xiezhihai7321@outlook.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hans/>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 #: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
 msgid "Config file was not found."
@@ -756,17 +757,13 @@ msgstr "允许安装不受信任的软件包"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:68
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "自动卸载未使用的依赖"
+msgstr "不要自动删除未使用的依赖项"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:75
-#, fuzzy
-#| msgid "Maximum metadata cache age in seconds"
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "以秒为单位的最大元数据缓存年龄"
+msgstr "元数据缓存的最大年龄（以秒为单位，默认：3天）"
 
 #: client/pkgc-manage.c:75
 msgid "SECONDS"
@@ -1200,17 +1197,13 @@ msgstr "显示包信息"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1021
-#, fuzzy
-#| msgid "Show dependencies for one or more packages."
 msgid "List dependencies of the specified package(s)"
-msgstr "显示一个或多个软件包的依赖关系。"
+msgstr "列出指定软件包的依赖项"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1028
-#, fuzzy
-#| msgid "Show which packages require the specified packages."
 msgid "List other packages requiring the specified package(s)"
-msgstr "显示哪些软件包需要指定的软件包。"
+msgstr "列出需要指定软件包的其他软件包"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1035
@@ -1540,9 +1533,8 @@ msgstr "未找到软件包：%s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:76
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "显示 pkgctl 版本"
+msgstr "显示 pkgcli 版本"
 
 #: client/pkgcli.c:78
 msgid "Show help"
@@ -1602,9 +1594,8 @@ msgid "Available Commands:"
 msgstr "可用命令："
 
 #: client/pkgcli.c:219
-#, fuzzy
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "使用 'pkgctl COMMAND --help' 获取特定命令的帮助。"
+msgstr "使用 'pkgcli COMMAND --help' 获取特定命令的帮助信息。"
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:427
