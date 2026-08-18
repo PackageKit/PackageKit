@@ -1,0 +1,36 @@
+system.base        = system
+system.boot        = system
+system.utils       = system
+desktop.gnome      = desktop-gnome
+desktop.gnome.base = desktop-gnome
+desktop.gtk        = desktop-gnome
+
+security.crypto    = security
+
+editor             = unknown
+kernel.image       = admin-tools
+kernel.devel       = admin-tools
+
+#desktop.font       = fonts
+desktop.library    = desktop-other
+desktop.xfce       = desktop-xfce
+desktop.core       = desktop-other
+programming        = programming
+programming.python = programming
+system.devel       = programming
+
+network            = internet
+network.clients    = network
+#network.web        = internet
+
+xorg.apps = desktop-other
+xorg.base = desktop-other
+xorg.display = desktop-other
+xorg.driver = desktop-other
+xorg.fonts = fonts
+xorg.proto = programming
+xorg.server = desktop-other
+
+#FIXME:
+Bug-Regex = Bug-PisiLinux: T(\d+)
+Bug-URI = https://www.pisilinux.org/T%s
