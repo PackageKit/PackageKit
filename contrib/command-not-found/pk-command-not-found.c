@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <signal.h>
 #include <glib/gi18n.h>
@@ -338,6 +340,7 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 	const gchar *cmdt;
 	const gchar *cmdt2;
 	guint i, j;
+	guint idx;
 	gchar buffer_bin[PK_MAX_PATH_LEN+1];
 	gchar buffer_sbin[PK_MAX_PATH_LEN+1];
 	gboolean ret;
@@ -374,17 +377,14 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 
 	/* ITS4: ignore, source is constant size */
 	strncpy (buffer_bin, "/usr/bin/", PK_MAX_PATH_LEN);
-
 	/* ITS4: ignore, source is constant size */
 	strncpy (buffer_sbin, "/usr/sbin/", PK_MAX_PATH_LEN);
 
 	/* remove any that exist (fast path) */
 	for (i = 0; i < unique->len; i++) {
 		cmdt = g_ptr_array_index (unique, i);
-
 		/* ITS4: ignore, size is checked */
 		strncpy (&buffer_bin[9], cmdt, PK_MAX_PATH_LEN-9);
-
 		/* ITS4: ignore, size is checked */
 		strncpy (&buffer_sbin[10], cmdt, PK_MAX_PATH_LEN-10);
 
@@ -394,12 +394,157 @@ pk_cnf_find_alternatives (const gchar *cmd, guint len)
 			g_ptr_array_add (array, g_strdup (cmdt));
 			continue;
 		}
-
 		/* does file exist in sbindir */
 		ret = g_file_test (buffer_sbin, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_EXECUTABLE);
 		if (ret)
 			g_ptr_array_add (array, g_strdup (cmdt));
 	}
+
+	/* PATH scan and Levenshtein distance candidates */
+	{
+		const char *path_env;
+		gchar **dirs;
+		gchar **d;
+		GPtrArray *local_candidates;
+		int best_dist;
+		gchar *best_cmd;
+		int len_int;
+
+		path_env = g_getenv ("PATH");
+		if (path_env) {
+			dirs = g_strsplit (path_env, ":", -1);
+			local_candidates = g_ptr_array_new_with_free_func (g_free);
+			best_dist = -1;
+			best_cmd = NULL;
+			len_int = (int) len;
+
+			for (d = dirs; *d; d++) {
+				const char *dir = *d;
+				DIR *dp;
+				struct dirent *entry;
+
+				if (g_strcmp0 (dir, "") == 0)
+					continue;
+
+				dp = opendir (dir);
+				if (!dp)
+					continue;
+
+				while ((entry = readdir (dp)) != NULL) {
+					const char *name = entry->d_name;
+					gchar *fullpath;
+
+					if (g_strcmp0 (name, ".") == 0 ||
+					    g_strcmp0 (name, "..") == 0)
+						continue;
+
+					fullpath = g_build_filename (dir, name, NULL);
+					if (access (fullpath, X_OK) == 0) {
+						gboolean found = FALSE;
+						guint k;
+
+						for (k = 0; k < local_candidates->len; k++) {
+							if (g_strcmp0 (g_ptr_array_index (local_candidates, k), name) == 0) {
+								found = TRUE;
+								break;
+							}
+						}
+						if (!found)
+							g_ptr_array_add (local_candidates, g_strdup (name));
+					}
+					g_free (fullpath);
+				}
+				closedir (dp);
+			}
+			g_strfreev (dirs);
+
+			if (local_candidates->len > 0) {
+				for (idx = 0; idx < local_candidates->len; idx++) {
+					const char *candidate = g_ptr_array_index (local_candidates, idx);
+					int cand_len = strlen (candidate);
+					int **matrix;
+					int r, c;
+					int dist;
+
+					if (cand_len > 255)
+						continue;
+
+					matrix = g_new0 (int *, cand_len + 1);
+					for (r = 0; r <= cand_len; r++) {
+						matrix[r] = g_new0 (int, len_int + 1);
+						matrix[r][0] = r;
+					}
+					for (c = 0; c <= len_int; c++) {
+						matrix[0][c] = c;
+					}
+
+					for (r = 1; r <= cand_len; r++) {
+						for (c = 1; c <= len_int; c++) {
+							int cost = (cmd[c - 1] == candidate[r - 1]) ? 0 : 1;
+							int a = matrix[r - 1][c] + 1;
+							int b = matrix[r][c - 1] + 1;
+							int cval = matrix[r - 1][c - 1] + cost;
+							int min = (a < b) ? (a < cval ? a : cval) : (b < cval ? b : cval);
+							matrix[r][c] = min;
+						}
+					}
+
+					dist = matrix[cand_len][len_int];
+
+					for (r = 0; r <= cand_len; r++)
+						g_free (matrix[r]);
+					g_free (matrix);
+
+					if (best_dist == -1 || dist < best_dist) {
+						best_dist = dist;
+						if (best_cmd)
+							g_free (best_cmd);
+						best_cmd = g_strdup (candidate);
+					}
+				}
+			}
+
+			if (best_cmd && best_dist >= 1 && best_dist <= 2) {
+				gboolean already = FALSE;
+
+				for (idx = 0; idx < array->len; idx++) {
+					if (g_strcmp0 (g_ptr_array_index (array, idx), best_cmd) == 0) {
+						already = TRUE;
+						break;
+					}
+				}
+				if (!already)
+					g_ptr_array_add (array, best_cmd);
+				else
+					g_free (best_cmd);
+			} else {
+				g_free (best_cmd);
+			}
+			g_ptr_array_unref (local_candidates);
+		}
+	}
+
+	/* Sort and deduplicate final array */
+	if (array->len > 1) {
+		GPtrArray *unique_array;
+		gchar *last = NULL;
+
+		unique_array = g_ptr_array_new_with_free_func (g_free);
+		g_ptr_array_sort (array, (GCompareFunc) g_strcmp0);
+
+		for (idx = 0; idx < array->len; idx++) {
+			gchar *cur = g_ptr_array_index (array, idx);
+			if (last == NULL || g_strcmp0 (last, cur) != 0) {
+				g_ptr_array_add (unique_array, g_strdup (cur));
+				last = cur;
+			} else {
+				g_free (cur);
+			}
+		}
+		g_ptr_array_unref (array);
+		array = unique_array;
+	}
+
 	return array;
 }
 
@@ -784,89 +929,66 @@ main (int argc, char *argv[])
 	if (len < 2)
 		goto out;
 
-	/* user is not allowing CNF to do anything useful */
-	if (!config->software_source_search &&
-	    !config->similar_name_search) {
-		goto out;
-	}
-
-	/* generate swizzles */
+	/* Generate similar command candidates */
 	if (config->similar_name_search)
 		array = pk_cnf_find_alternatives (argv[1], len);
 
-	/* one exact possibility */
-	if (array != NULL && array->len == 1) {
-		possible = g_ptr_array_index (array, 0);
-		if (config->single_match == PK_CNF_POLICY_WARN) {
-			/* TRANSLATORS: tell the user what we think the command is */
-			g_printerr ("%s '%s'\n", _("Similar command is:"), possible);
-			goto out;
-		}
-
-		/* run */
-		if (config->single_match == PK_CNF_POLICY_RUN) {
-			retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
-			goto out;
-		}
-
-		/* ask */
-		if (config->single_match == PK_CNF_POLICY_ASK) {
-			/* TRANSLATORS: Ask the user if we should run the similar command */
-			text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
-			ret = pk_console_get_prompt (text, TRUE);
-			if (ret)
-				retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
-			g_free (text);
-		}
-		goto out;
-
-	/* multiple choice */
-	} else if (array != NULL && array->len > 1) {
-		if (config->multiple_match == PK_CNF_POLICY_WARN) {
-			/* TRANSLATORS: show the user a list of commands that they could have meant */
-			g_printerr ("%s:\n", _("Similar commands are:"));
-			for (i = 0; i < array->len; i++) {
-				possible = g_ptr_array_index (array, i);
-				g_printerr ("'%s'\n", possible);
-			}
-
-		/* ask */
-		} else if (config->multiple_match == PK_CNF_POLICY_ASK) {
-			/* TRANSLATORS: show the user a list of commands we could run */
-			g_printerr ("%s:\n", _("Similar commands are:"));
-			for (i = 0; i < array->len; i++) {
-				possible = g_ptr_array_index (array, i);
-				g_printerr ("%i\t'%s'\n", i+1, possible);
-			}
-
-			/* TRANSLATORS: ask the user to choose a file to run */
-			i = pk_console_get_number (_("Please choose a command to run"), array->len);
-			g_assert (i < array->len);
-
-			/* run command */
-			possible = g_ptr_array_index (array, i);
-			retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
-		}
-		goto out;
-
-	/* only search using PackageKit if configured to do so */
-	} else if (config->software_source_search &&
-		   pk_cnf_is_backend_fast_enough_to_do_search ()) {
+	/* Search for packages providing this command */
+	if (config->software_source_search &&
+	    pk_cnf_is_backend_fast_enough_to_do_search ()) {
 		package_ids = pk_cnf_find_available (argv[1], config->max_search_time);
-		if (package_ids == NULL)
-			goto out;
+	}
+
+	/* ---- 1. Show similar command(s) (if any) ---- */
+	if (array != NULL && array->len > 0) {
+		if (array->len == 1) {
+			possible = g_ptr_array_index (array, 0);
+			if (config->single_match == PK_CNF_POLICY_WARN) {
+				g_printerr ("%s '%s'\n", _("Similar command is:"), possible);
+				/* do not exit; continue to package prompt */
+			} else if (config->single_match == PK_CNF_POLICY_RUN) {
+				retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
+				goto out;
+			} else if (config->single_match == PK_CNF_POLICY_ASK) {
+				text = g_strdup_printf ("%s %s", _("Run similar command:"), possible);
+				ret = pk_console_get_prompt (text, TRUE);
+				g_free (text);
+				if (ret) {
+					retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
+					goto out;
+				}
+				/* user declined, continue to package prompt */
+			}
+		} else { /* multiple candidates */
+			if (config->multiple_match == PK_CNF_POLICY_WARN) {
+				g_printerr ("%s\n", _("Similar commands are:"));
+				for (i = 0; i < array->len; i++) {
+					possible = g_ptr_array_index (array, i);
+					g_printerr ("'%s'\n", possible);
+				}
+			} else if (config->multiple_match == PK_CNF_POLICY_ASK) {
+				g_printerr ("%s\n", _("Similar commands are:"));
+				for (i = 0; i < array->len; i++) {
+					possible = g_ptr_array_index (array, i);
+					g_printerr ("%i\t'%s'\n", i+1, possible);
+				}
+				i = pk_console_get_number (_("Please choose a command to run"), array->len);
+				g_assert (i < array->len);
+				possible = g_ptr_array_index (array, i);
+				retval = pk_cnf_spawn_command (possible, &argv[2], argc - 2);
+				goto out;
+			}
+		}
+	}
+
+	/* ---- 2. Handle package installation prompts ---- */
+	if (package_ids != NULL) {
 		len = g_strv_length (package_ids);
 		if (len == 1) {
 			parts = pk_package_id_split (package_ids[0]);
 			if (config->single_install == PK_CNF_POLICY_WARN) {
-				/* TRANSLATORS: tell the user what package provides the command */
 				g_printerr ("%s '%s'\n", _("The package providing this file is:"), parts[PK_PACKAGE_ID_NAME]);
-				goto out;
-			}
-
-			/* ask */
-			if (config->single_install == PK_CNF_POLICY_ASK) {
-				/* TRANSLATORS: as the user if we want to install a package to provide the command */
+			} else if (config->single_install == PK_CNF_POLICY_ASK) {
 				text = g_strdup_printf (_("Install package '%s' to provide command '%s'?"), parts[PK_PACKAGE_ID_NAME], argv[1]);
 				ret = pk_console_get_prompt (text, FALSE);
 				g_free (text);
@@ -875,54 +997,41 @@ main (int argc, char *argv[])
 					if (ret)
 						retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 				}
-				g_print ("\n");
-				goto out;
-			}
-
-			/* install */
-			if (config->single_install == PK_CNF_POLICY_INSTALL) {
+				/* no extra newline */
+			} else if (config->single_install == PK_CNF_POLICY_INSTALL) {
 				ret = pk_cnf_install_package_id (package_ids[0]);
 				if (ret)
 					retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 			}
 			g_strfreev (parts);
-			goto out;
 		} else if (len > 1) {
 			if (config->multiple_install == PK_CNF_POLICY_WARN) {
-				/* TRANSLATORS: Show the user a list of packages that provide this command */
 				g_printerr ("%s\n", _("Packages providing this file are:"));
 				for (i = 0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
 					g_printerr ("'%s'\n", parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
 				}
-
-			/* ask */
 			} else if (config->multiple_install == PK_CNF_POLICY_ASK) {
-				/* TRANSLATORS: Show the user a list of packages that they can install to provide this command */
-				g_printerr ("%s:\n", _("Suitable packages are:"));
+				g_printerr ("%s\n", _("Suitable packages are:"));
 				for (i = 0; package_ids[i] != NULL; i++) {
 					parts = pk_package_id_split (package_ids[i]);
 					g_printerr ("%i\t'%s'\n", i+1, parts[PK_PACKAGE_ID_NAME]);
 					g_strfreev (parts);
 				}
-
-				/* TRANSLATORS: ask the user to choose a file to install */
 				i = pk_console_get_number (_("Please choose a package to install"), len);
 				if (i == 0) {
 					g_printerr ("%s\n", _("User aborted selection"));
-					goto out;
+				} else {
+					g_assert (i < len);
+					ret = pk_cnf_install_package_id (package_ids[i - 1]);
+					if (ret)
+						retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 				}
-				g_assert (i < len);
-
-				/* run command */
-				ret = pk_cnf_install_package_id (package_ids[i - 1]);
-				if (ret)
-					retval = pk_cnf_spawn_command (argv[1], &argv[2], argc - 2);
 			}
-			goto out;
 		}
 	}
+
 out:
 	if (task != NULL)
 		g_object_unref (task);
@@ -934,4 +1043,3 @@ out:
 	}
 	return retval;
 }
-
