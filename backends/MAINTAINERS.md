@@ -13,10 +13,6 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
  * Matthias Klumpp <mak@debian.org> | @ximion
  * Julian Andres Klode <jak@debian.org> | @julian-klode
 
-### DNF (Fedora)
- * Richard Hughes <richard@hughsie.com> | @hughsie
- * Neal Gompa <ngompa13@gmail.com> | @Conan-Kudo
-
 ### DNF5 (Fedora)
  * Neal Gompa <neal@gompa.dev> | @Conan-Kudo
 
