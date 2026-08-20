@@ -164,7 +164,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	size = g_strv_length (sections);
 
 	if (g_strcmp0 (command, "package") == 0) {
-		if (size != 4) {
+		PkInfoEnum severity;
+
+		if (size != 5) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			return FALSE;
 		}
@@ -177,6 +179,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			g_set_error (error, 1, 0, "Info enum not recognised, and hence ignored: '%s'", sections[1]);
 			return FALSE;
 		}
+		severity = pk_info_enum_from_string (sections[4]);
 		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[3], -1, NULL)) {
 			g_set_error (error, 1, 0,
@@ -184,7 +187,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 				     sections[3]);
 			return FALSE;
 		}
-		pk_backend_job_package (job, info, sections[2], sections[3]);
+		pk_backend_job_package_full (job, info, sections[2], sections[3], severity);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 9) {
 			g_set_error (error, 1, 0,

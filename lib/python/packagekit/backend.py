@@ -179,14 +179,17 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("message\t%s\t%s\n" % (typ, msg)))
         sys.stdout.flush()
 
-    def package(self, package_id, status, summary):
+    def package(self, package_id, status, summary, severity: str | None = None):
         '''
         send 'package' signal
         @param info: the enumerated INFO_* string
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
         @param summary: The package Summary
+        @param severity: enumerated INFO_* string for update severity (optional)
         '''
-        sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\n" % (status, package_id, summary)))
+        if severity is None:
+            severity = INFO_UNKNOWN
+        sys.stdout.write(_to_utf8("package\t%s\t%s\t%s\t%s\n" % (status, package_id, summary, severity)))
         sys.stdout.flush()
 
     def media_change_required(self, mtype, id, text):

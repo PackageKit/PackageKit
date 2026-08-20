@@ -39,6 +39,7 @@
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID	14
 #define GET_DETAILS_TEST_DATA "details\tgimp;3.0.4-84;x86_64;Solus\tGNU Image Manipulation Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image editor.\thttps://www.gimp.org/\t"
+#define GET_PACKAGE_TEST_DATA "package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software\t"
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
@@ -446,10 +447,55 @@ pk_test_backend_spawn_func (void)
 	g_assert_cmpstr (uri, ==, "ftp://username:password@server:port/");
 	g_free (uri);
 
-	/* test pk_backend_spawn_parse_common_out Package */
+	/* test pk_backend_spawn_inject_data Package - valid (no severity, defaults to unknown) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "unknown", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (normal severity) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "normal", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (important severity) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "important", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (critical severity) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "critical", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (low severity) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "low", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (security) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "security", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - valid (unrecognised severity string defaults to unknown) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		GET_PACKAGE_TEST_DATA "totally-legit-severity", NULL);
+	g_assert_true (ret);
+
+	/* test pk_backend_spawn_inject_data Package - invalid (old 4-field format, missing severity) */
 	ret = pk_backend_spawn_inject_data (backend_spawn, job,
 		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
-	g_assert_true (ret);
+	g_assert_true (!ret);
+
+	/* test pk_backend_spawn_inject_data Package - invalid (wrong number of fields, too few) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data", NULL);
+	g_assert_true (!ret);
+
+	/* test pk_backend_spawn_inject_data Package - invalid (wrong number of fields, too many) */
+	ret = pk_backend_spawn_inject_data (backend_spawn, job,
+		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tsummary\tunknown\textra", NULL);
+	g_assert_true (!ret);
 
 	/* manually unlock as we have no engine */
 	ret = pk_backend_unload (backend);
