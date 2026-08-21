@@ -1,3 +1,7 @@
+
+subdir('config')
+subdir('policy')
+
 install_data(
   'pk-upgrade-distro.sh',
   install_dir: join_paths(get_option('datadir'), 'PackageKit'),

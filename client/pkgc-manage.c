@@ -652,6 +652,8 @@ pkgc_upgrade (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv)
 		}
 
 		sack = pk_results_get_package_sack (results);
+		pk_package_sack_remove_by_filter (sack, &pkgc_update_system_filter_helper, NULL);
+
 		package_ids = pk_package_sack_get_ids (sack);
 
 		if (package_ids == NULL || g_strv_length (package_ids) == 0) {

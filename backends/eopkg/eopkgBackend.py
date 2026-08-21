@@ -51,6 +51,7 @@ from packagekit.backend import *
 from packagekit.enums import *
 from packagekit.package import PackagekitPackage
 from packagekit.progress import *
+from pisi.package import PackageResource
 
 
 def _format_str(text):
@@ -74,7 +75,7 @@ class SimplePisiHandler(pisi.ui.UI):
         # PackageKitPisiBackend
         self.base = base
 
-        # Progress bar helpers
+        # Progress bar helpers for sequential operations
         self.packagestogo = 0
         self.currentpackage = 0
         self.cur_pkg = None
@@ -99,16 +100,19 @@ class SimplePisiHandler(pisi.ui.UI):
         operation = kw.get("operation")
         percent = int(kw.get("percent", 0))
 
-        if operation == "fetching":
+        if operation == "fetching_overall":
+            self.base._set_percent(percent)
+
+        elif operation == "fetching":
             filename = kw.get("filename")
             if filename and not filename.startswith("eopkg-index.xml"):
                 pkg_name = pisi.util.parse_package_name(filename)[0]
+
                 if pisi.db.packagedb.PackageDB().has_package(pkg_name):
                     pkg = pisi.db.packagedb.PackageDB().get_package(pkg_name)
                     self.base.item_progress(
                         self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, percent
                     )
-            self._update_global_progress(percent)
 
         elif operation == "extracting":
             if self.cur_pkg and self.cur_status:
@@ -135,12 +139,13 @@ class SimplePisiHandler(pisi.ui.UI):
         elif event == pisi.ui.downloading:
             if not self.is_downloading:
                 self.is_downloading = True
-                self.currentpackage = 0
-            self.currentpackage += 1
-            self.cur_pkg = keywords["package"]
-            self.base.item_progress(
-                self.base._pkg_to_id(self.cur_pkg), STATUS_DOWNLOAD, 0
-            )
+
+            pkg_resource: PackageResource = keywords["packageresource"]
+
+            if pisi.db.packagedb.PackageDB().has_package(pkg_resource.name):
+                pkg = pisi.db.packagedb.PackageDB().get_package(pkg_resource.name)
+                self.base.status(STATUS_DOWNLOAD)
+                self.base._set_status(pkg, INFO_DOWNLOADING)
 
         elif event in (pisi.ui.installing, pisi.ui.upgrading):
             if self.is_downloading:
@@ -186,7 +191,6 @@ class SimplePisiHandler(pisi.ui.UI):
 
             if self.cur_pkg:
                 self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), status, 100)
-            self._update_global_progress(100)
 
         elif event == pisi.ui.systemconf:
             self.base._set_percent(90)
@@ -278,7 +282,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 repo = "installed"
             else:
                 repo = "local"
-        pkg_id = self.get_package_id(pkg.name, pkg.version, pkg.architecture, repo)
+        version = self.__get_package_version(pkg)
+        pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
         return pkg_id
 
     def _get_package_obj_from_id(self, package_id):
@@ -686,10 +691,15 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             if pkg.name not in upgradables:
                 continue
 
-            version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, pkg.architecture, data)
+            if self.installdb.has_package(pkg.name):
+                current_pkg = self.installdb.get_package(pkg.name)
+                # Note: installed pkgs do not record their repo of origin, assume it's the same for now
+                #       we could cross-examine but it's of little benefit
+                version = self.__get_package_version(current_pkg)
+                updates = self.get_package_id(current_pkg.name, version, current_pkg.architecture, data)
+            else:
+                updates = ""
 
-            updates = [package_id]
             obsoletes = ""
 
             package_url = pkg.source.homepage
@@ -700,22 +710,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             updated_date = pkg.history[0].date
 
-            bugURI = ""
+            bugURI = "" # we would have to match against #123 which would be too fragile
+            changelog = "" # we do not have an enforced standard for changelogs in commit msgs
 
-            changelog = ""
-            # FIXME: Works but output is fugly
-            # for i in pkg.history:
-            #    comment = i.comment
-            #    comment = comment.replace("\n", ";")
-            #    changelog.append(comment)
+            cvelist = re.findall(r"(CVE\-[0-9]+\-[0-9]+)", str(update_message))
+            cves = ";".join(cvelist)
 
-            cves = re.findall(r" (CVE\-[0-9]+\-[0-9]+)", str(update_message))
-            cve_url = ""
-            if cves is not None:
-                # cve_url = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(cves[0])
-                cve_url = cves
-
-            # TODO: If repo is unstable and package.release not in shannon then UNSTABLE
+            # TODO: Other than repo naming convection we have no mechanism to
+            #       determine the stability of an update
             state = UPDATE_STATE_STABLE
             reboot = "none"
 
@@ -724,9 +726,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             updated = "{}-{}-{}T00:00:00Z".format(
                 split_date[0], split_date[1], split_date[2]
             )
-            # TODO: The index only stores the last 10 history entries.
-            #       What is the difference between issued and updated?
-            issued = ""
+            # Note: updates are always fixed
+            issued = updated
 
             self.update_detail(
                 package_id,
@@ -734,7 +735,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 obsoletes,
                 vendor_url,
                 bugURI,
-                cve_url,
+                cves,
                 reboot,
                 update_message,
                 changelog,
@@ -848,7 +849,9 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
             if self.installdb.has_package(package):
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed")
+                self.error(
+                    ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed"
+                )
             packages.append(package)
 
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:

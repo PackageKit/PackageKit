@@ -194,8 +194,6 @@ add_project_arguments(
 )
 
 subdir('po')
-subdir('policy')
-subdir('etc')
 subdir('data')
 subdir('lib')
 subdir('src')
