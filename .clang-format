@@ -1,0 +1,138 @@
+Language: C
+Standard: c++20
+BasedOnStyle: GNU
+
+IndentWidth: 8
+TabWidth: 8
+UseTab: Always
+
+ColumnLimit: 100
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterEnum: false
+  AfterClass: true
+  AfterExternBlock: false
+  AfterControlStatement: Never
+  AfterCaseLabel: false
+  BeforeElse: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+
+# align continuation lines under the opening bracket:
+#     if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
+#         role == PK_ROLE_ENUM_UPDATE_SYSTEM) {
+AlignAfterOpenBracket: Align
+
+# align consecutive macros
+AlignConsecutiveMacros: true
+
+# horizontally align operands of binary and ternary expressions
+AlignOperands: true
+
+# align trailing comments
+AlignTrailingComments: true
+
+# NOT AlignArrayOfStructures: it is broken in combination with UseTab: Always
+# and emits visibly misaligned columns. The hand-aligned tables that need it
+# (lib/pk-enum.c) are wrapped in clang-format off/on instead.
+AlignArrayOfStructures: None
+
+# don't allow putting all parameters of a function/declaration onto the next line
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# only merge empty blocks.
+AllowShortBlocksOnASingleLine: Empty
+
+# always break after the return type of top-level definitions:
+#     gboolean
+#     pk_engine_search_name (PkEngine *engine, ...)
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+
+# never pack parameters/arguments
+BinPackParameters: false
+BinPackArguments: false
+
+# regroup include blocks
+IncludeBlocks: Regroup
+
+# never sort includes
+SortIncludes: false
+
+# space after casts
+SpaceAfterCStyleCast: true
+
+# Macros clang-format must not touch. Besides the g_auto* cleanup attributes
+# (which take no space before their bracket), this preserves the GObject cast
+# and private-data accessors, which the tree writes without a space.
+WhitespaceSensitiveMacros: [
+    'g_autoptr',
+    'g_auto',
+    'g_autolist',
+    'g_autoslist',
+    '_',
+    'N_',
+    'C_',
+    '__attribute__',
+    'G_DEFINE_QUARK',
+    'G_DEFINE_AUTOPTR_CLEANUP_FUNC',
+    'G_TYPE_CHECK_CLASS_CAST',
+    'GET_PRIVATE',
+    'G_OBJECT',
+    # boilerplate macros whose argument list is a fixed
+    # signature, not a parameter list to be wrapped.
+    'G_DECLARE_FINAL_TYPE',
+    'G_DECLARE_DERIVABLE_TYPE',
+    'G_DECLARE_INTERFACE',
+    'G_GNUC_PRINTF'
+]
+
+# some attribute macros
+# NOTE: G_GNUC_PRINTF is deliberately *not* listed here. AttributeMacros wins
+# over WhitespaceSensitiveMacros, and would let its (fmt, args) pair be split
+# across two lines.
+AttributeMacros: ['G_GNUC_NULL_TERMINATED', 'G_GNUC_CONST', 'G_GNUC_PURE']
+
+# statement macros that are not followed by a semicolon
+StatementMacros: [
+    'G_DEFINE_TYPE',
+    'G_DEFINE_TYPE_WITH_PRIVATE',
+    'G_DEFINE_TYPE_WITH_CODE',
+    'G_DEFINE_INTERFACE',
+    'G_DEFINE_BOXED_TYPE',
+    'G_BEGIN_DECLS',
+    'G_END_DECLS'
+]
+
+# avoid breaking around an assignment operator
+PenaltyBreakAssignment: 250
+
+# left-align newline escapes, e.g. in macros
+AlignEscapedNewlines: Left
+
+# don't indent case labels
+IndentCaseLabels: false
+
+# don't reflow comments, this can cause issues with documentation / GIR annotations
+ReflowComments: false
+
+# all enums should be on their own line
+AllowShortEnumsOnASingleLine: false
+
+# break after operators
+BreakBeforeBinaryOperators: None
+
+# don't move preprocessor directives around
+IndentPPDirectives: None
+
+# keep at most one consecutive empty line
+MaxEmptyLinesToKeep: 1
