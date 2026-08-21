@@ -19,7 +19,7 @@
  */
 
 #if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
-#error "Only <packagekit.h> can be included directly."
+#error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
 #ifndef __PK_PROGRESS_PRIVATE_H
