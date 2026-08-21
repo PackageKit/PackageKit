@@ -38,7 +38,7 @@ packagekit_glib2_headers = files(
   'pk-update-detail.h',
 )
 
-install_headers(packagekit_glib2_headers, subdir : join_paths('PackageKit', 'packagekit-glib2'))
+install_headers(packagekit_glib2_headers, subdir : join_paths('packagekit', 'packagekit-glib2'))
 
 version_parts = meson.project_version().split('.')
 version_configuration = configuration_data()
@@ -50,7 +50,7 @@ pk_version_header = configure_file(
   input: 'pk-version.h.in',
   output: 'pk-version.h',
   configuration: version_configuration,
-  install_dir: join_paths(get_option('includedir'), 'PackageKit', 'packagekit-glib2'),
+  install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit-glib2'),
 )
 
 packagekit_glib2_sources = files(
@@ -102,7 +102,7 @@ pk_enum_type = gnome.mkenums(
   h_template: 'pk-enum-types.h.template',
   sources: packagekit_glib2_headers,
   install_header: true,
-  install_dir: join_paths(get_option('includedir'), 'PackageKit', 'packagekit-glib2')
+  install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit-glib2')
 )
 
 packagekitprivate_sources = files(
@@ -233,7 +233,7 @@ pkg.generate(
     gio_dep,
     gio_unix_dep,
   ],
-  subdirs: 'PackageKit'
+  subdirs: 'packagekit'
 )
 
 executable(
