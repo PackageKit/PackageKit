@@ -85,6 +85,7 @@ pk_task_remove_packages_sync (PkTask *task, gchar **package_ids, gboolean allow_
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -138,6 +139,7 @@ pk_task_install_packages_sync (PkTask *task, gchar **package_ids, GCancellable *
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -191,6 +193,7 @@ pk_task_update_packages_sync (PkTask *task, gchar **package_ids, GCancellable *c
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -556,6 +559,7 @@ pk_task_get_details_sync (PkTask *task, gchar **package_ids, GCancellable *cance
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -607,6 +611,7 @@ pk_task_get_update_detail_sync (PkTask *task, gchar **package_ids, GCancellable 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -659,6 +664,7 @@ pk_task_download_packages_sync (PkTask *task, gchar **package_ids, const gchar *
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -763,6 +769,7 @@ pk_task_depends_on_sync (PkTask *task, PkBitfield filters, gchar **package_ids, 
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -867,6 +874,7 @@ pk_task_required_by_sync (PkTask *task, PkBitfield filters, gchar **package_ids,
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */
@@ -971,6 +979,7 @@ pk_task_get_files_sync (PkTask *task, gchar **package_ids, GCancellable *cancell
 	PkResults *results;
 
 	g_return_val_if_fail (PK_IS_TASK (task), NULL);
+	g_return_val_if_fail (package_ids != NULL, NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* create temp object */

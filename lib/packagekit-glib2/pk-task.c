@@ -1030,6 +1030,7 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1088,6 +1089,7 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1201,6 +1203,7 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
 	PkTaskClass *klass = PK_TASK_GET_CLASS (task);
 
 	g_return_if_fail (PK_IS_CLIENT (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1552,6 +1555,7 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1598,6 +1602,7 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1645,6 +1650,7 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1740,6 +1746,7 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1836,6 +1843,7 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
@@ -1933,6 +1941,7 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
 	g_autoptr(GTask) gtask = NULL;
 
 	g_return_if_fail (PK_IS_TASK (task));
+	g_return_if_fail (package_ids != NULL);
 	g_return_if_fail (callback_ready != NULL);
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
