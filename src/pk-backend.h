@@ -27,14 +27,14 @@
 #include <gmodule.h>
 
 /* these include the includes the backends should be using */
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-common.h>
-#include <packagekit-glib2/pk-bitfield.h>
-#include <packagekit-glib2/pk-package.h>
-#include <packagekit-glib2/pk-package-id.h>
-#include <packagekit-glib2/pk-package-ids.h>
-#include <packagekit-glib2/pk-bitfield.h>
-#include <packagekit-glib2/pk-update-detail.h>
+#include <pk-enum.h>
+#include <pk-common.h>
+#include <pk-bitfield.h>
+#include <pk-package.h>
+#include <pk-package-id.h>
+#include <pk-package-ids.h>
+#include <pk-bitfield.h>
+#include <pk-update-detail.h>
 
 #include "pk-backend.h"
 #include "pk-backend-job.h"

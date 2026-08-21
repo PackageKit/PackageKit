@@ -19,8 +19,8 @@
  */
 
 #include "dnf5-backend-utils.hpp"
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-update-detail.h>
+#include <pk-common-private.h>
+#include <pk-update-detail.h>
 #include <libdnf5/conf/config_parser.hpp>
 #include <libdnf5/conf/const.hpp>
 #include <libdnf5/logger/logger.hpp>

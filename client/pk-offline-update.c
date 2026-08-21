@@ -27,9 +27,9 @@
 #include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <locale.h>
-#include <packagekit-glib2/packagekit.h>
-#include <packagekit-glib2/packagekit-private.h>
-#include <packagekit-glib2/pk-offline-private.h>
+#include <packagekit.h>
+#include <packagekit-private.h>
+#include <pk-offline-private.h>
 #include <stdlib.h>
 #include <unistd.h>
 #ifdef HAVE_SYSTEMD_SD_JOURNAL_H

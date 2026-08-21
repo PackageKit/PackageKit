@@ -28,8 +28,8 @@
 #include <libdnf5/base/transaction.hpp>
 #include <libdnf5/repo/package_downloader.hpp>
 #include <libdnf5/conf/config_parser.hpp>
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-update-detail.h>
+#include <pk-common-private.h>
+#include <pk-update-detail.h>
 #include <rpm/rpmlib.h>
 #include <glib/gstdio.h>
 #include <filesystem>

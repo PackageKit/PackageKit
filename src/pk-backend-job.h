@@ -25,7 +25,7 @@
 #include <glib-object.h>
 
 #include "pk-shared.h"
-#include <packagekit-glib2/pk-bitfield.h>
+#include <pk-bitfield.h>
 
 G_BEGIN_DECLS
 

@@ -1,7 +1,7 @@
 #include "config.h"
 #include <stdio.h>
-#include <packagekit-glib2/pk-client.h>
-#include <packagekit-glib2/pk-client-helper.h>
+#include <pk-client.h>
+#include <pk-client-helper.h>
 #include <systemd/sd-daemon.h>
 
 static GMainLoop *main_loop = NULL;

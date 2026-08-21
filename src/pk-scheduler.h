@@ -23,7 +23,7 @@
 #define __PK_SCHEDULER_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/pk-enum.h>
+#include <pk-enum.h>
 
 #include "pk-transaction.h"
 

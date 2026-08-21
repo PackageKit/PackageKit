@@ -60,7 +60,7 @@
 #endif /* HAVE_UNISTD_H */
 
 #include <glib/gi18n.h>
-#include <packagekit-glib2/pk-common.h>
+#include <pk-common.h>
 
 #include "pk-shared.h"
 #include "pk-transaction.h"

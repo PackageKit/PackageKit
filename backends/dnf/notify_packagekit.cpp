@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cstdlib>
 
-#include <packagekit-glib2/pk-version.h>
+#include <pk-version.h>
 
 using namespace libdnf5;
 using namespace std::literals;

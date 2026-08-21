@@ -38,9 +38,9 @@
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <gio/gunixfdlist.h>
-#include <packagekit-glib2/pk-offline.h>
-#include <packagekit-glib2/pk-offline-private.h>
-#include <packagekit-glib2/pk-version.h>
+#include <pk-offline.h>
+#include <pk-offline-private.h>
+#include <pk-version.h>
 #include <polkit/polkit.h>
 
 #include "pk-backend.h"

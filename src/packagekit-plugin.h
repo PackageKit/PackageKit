@@ -26,7 +26,7 @@
 #error You have to define I_KNOW_THE_PACKAGEKIT_PLUGIN_API_IS_SUBJECT_TO_CHANGE
 #endif
 
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit.h>
 
 #define __PACKAGEKIT_H_INSIDE__
 

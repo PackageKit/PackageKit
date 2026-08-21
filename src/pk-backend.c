@@ -28,10 +28,10 @@
 #include <glib/gi18n.h>
 #include <glib.h>
 #include <gmodule.h>
-#include <packagekit-glib2/pk-offline-private.h>
-#include <packagekit-glib2/pk-package-id.h>
-#include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-common.h>
+#include <pk-offline-private.h>
+#include <pk-package-id.h>
+#include <pk-results.h>
+#include <pk-common.h>
 
 #include "pk-backend.h"
 #include "pk-shared.h"

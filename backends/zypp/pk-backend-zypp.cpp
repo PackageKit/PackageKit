@@ -43,9 +43,9 @@
 #include <gmodule.h>
 #include <pk-backend.h>
 #include <pk-shared.h>
-#include <packagekit-glib2/packagekit.h>
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-enum.h>
+#include <packagekit.h>
+#include <pk-common-private.h>
+#include <pk-enum.h>
 
 #include <zypp/Digest.h>
 #include <zypp/KeyRing.h>

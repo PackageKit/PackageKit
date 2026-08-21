@@ -36,9 +36,9 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <gmodule.h>
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-common.h>
-#include <packagekit-glib2/pk-package-id.h>
+#include <pk-enum.h>
+#include <pk-common.h>
+#include <pk-package-id.h>
 
 #include "pk-backend.h"
 #include "pk-backend-spawn.h"

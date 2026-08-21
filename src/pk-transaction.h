@@ -23,8 +23,8 @@
 #define __PK_TRANSACTION_H
 
 #include <glib-object.h>
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-results.h>
+#include <pk-enum.h>
+#include <pk-results.h>
 
 #include "pk-backend.h"
 

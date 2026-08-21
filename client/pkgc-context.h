@@ -23,8 +23,8 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/packagekit.h>
-#include <packagekit-glib2/packagekit-private.h>
+#include <packagekit.h>
+#include <packagekit-private.h>
 
 G_BEGIN_DECLS
 

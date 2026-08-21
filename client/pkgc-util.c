@@ -23,7 +23,7 @@
 
 #include <glib.h>
 #include <pwd.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit.h>
 #include <jansson.h>
 
 #include "pkgc-util.h"

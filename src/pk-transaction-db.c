@@ -36,9 +36,9 @@
 #include <glib/gi18n.h>
 #include <glib/gstdio.h>
 #include <sqlite3.h>
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-results.h>
-#include <packagekit-glib2/pk-common.h>
+#include <pk-enum.h>
+#include <pk-results.h>
+#include <pk-common.h>
 
 #include "pk-shared.h"
 

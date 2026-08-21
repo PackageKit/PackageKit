@@ -27,7 +27,7 @@
 
 #include <config.h>
 #include <pk-backend.h>
-#include <packagekit-glib2/pk-debug.h>
+#include <pk-debug.h>
 
 #include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/error.h>

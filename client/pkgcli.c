@@ -29,7 +29,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-unix.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit.h>
 
 #include "pkgc-context.h"
 #include "pkgc-util.h"

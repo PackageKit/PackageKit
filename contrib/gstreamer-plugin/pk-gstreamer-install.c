@@ -24,7 +24,7 @@
 #include <gst/pbutils/install-plugins.h>
 #include <string.h>
 #include <sys/utsname.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit.h>
 
 typedef struct {
 	GstStructure	*structure;

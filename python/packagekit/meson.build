@@ -12,7 +12,7 @@ if get_option('python_backend')
 
 enums_py = custom_target(
   'enums.py',
-  input: join_paths(source_root, 'lib', 'packagekit-glib2', 'pk-enum.c'),
+  input: join_paths(source_root, 'lib', 'pk-enum.c'),
   output: 'enums.py',
   command: [
     python_exec,

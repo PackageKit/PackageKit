@@ -24,7 +24,7 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
-#include <packagekit-glib2/pk-results.h>
+#include <pk-results.h>
 
 #include "pk-backend.h"
 #include "pk-backend-job.h"

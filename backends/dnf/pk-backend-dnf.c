@@ -27,8 +27,8 @@
 #include <string.h>
 
 #include <pk-backend.h>
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-debug.h>
+#include <pk-common-private.h>
+#include <pk-debug.h>
 
 #include <libdnf/libdnf.h>
 #include <libdnf/dnf-advisory.h>

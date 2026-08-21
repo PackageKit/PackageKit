@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <glib/gi18n.h>
 #include <glib-unix.h>
-#include <packagekit-glib2/packagekit.h>
-#include <packagekit-glib2/packagekit-private.h>
+#include <packagekit.h>
+#include <packagekit-private.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <locale.h>

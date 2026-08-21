@@ -20,8 +20,8 @@
 
 #include "dnf5-backend-utils.hpp"
 #include "dnf5-backend-thread.hpp"
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-debug.h>
+#include <pk-common-private.h>
+#include <pk-debug.h>
 
 // Backend API Implementation
 

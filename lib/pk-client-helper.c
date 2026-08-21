@@ -1,0 +1,710 @@
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ *
+ * Copyright (C) 2010 Richard Hughes <richard@hughsie.com>
+ *
+ * Loosely based on apt-daemon/debconf.py, which is:
+ *   Copyright (C) 2009 Sebastian Heinlein <devel@glatzor.de>
+ *   Copyright (C) 2009 Michael Vogt <michael.vogt@ubuntu.com>
+ *
+ * Licensed under the GNU Lesser General Public License Version 2.1
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ */
+
+/**
+ * SECTION:pk-client-helper
+ * @short_description: helper object to run a helper session process for the lifetime of a transaction
+ *
+ * This GObject can be used to run a session helper program out of band
+ * with the normal PackageKit transaction. This allows an external program
+ * such as debconf to be used that needs direct console access.
+ *
+ *
+ *   client ----> packagekit-glib ---> dbus ---> packagekitd ---> apt
+ *          .------------^                                         ^
+ *   debconf ___________________               (SetHints)          |
+ *    | \___|  PkClientHelper   \__.____.____.______/_.____.____.__/
+ *    ^-----|___________________/         (socket in tmp)
+ *   (stdin & stdout )
+ *
+ *  \------------.------------------/          \------------.---------/
+ *               |                                          |
+ *          user session                              system context
+ */
+
+#include "config.h"
+
+#include <signal.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <glib-object.h>
+#include <gio/gunixsocketaddress.h>
+
+#include "pk-client-helper.h"
+
+static void     pk_client_helper_finalize	(GObject     *object);
+
+/**
+ * PkClientHelperPrivate:
+ *
+ * Private #PkClientHelper data
+ **/
+struct _PkClientHelperPrivate
+{
+	gchar				**argv;
+	gchar				**envp;
+	GFile				*socket_file;
+	GSocket				*socket;
+	GIOChannel			*socket_channel;
+	GSource				*socket_channel_source;
+	GPtrArray			*children;
+	GPid				 kde_helper_pid;
+};
+
+typedef struct
+{
+	PkClientHelper			*helper;
+	GSocket				*socket;
+	GIOChannel			*socket_channel;
+	GSource				*socket_channel_source;
+	GPid				 pid;
+	GIOChannel			*stdin_channel;
+	GIOChannel			*stdout_channel;
+	GIOChannel			*stderr_channel;
+	GSource				*stdout_channel_source;
+	GSource				*stderr_channel_source;
+} PkClientHelperChild;
+
+G_DEFINE_TYPE_WITH_PRIVATE (PkClientHelper, pk_client_helper, G_TYPE_OBJECT)
+#define GET_PRIVATE(o) (pk_client_helper_get_instance_private (o))
+
+/* how long to wait for a helper to exit on SIGTERM before escalating to SIGKILL */
+#define PK_CLIENT_HELPER_SIGKILL_TIMEOUT	5 /* seconds */
+#define PK_CLIENT_HELPER_POLL_DELAY		50 /* ms */
+
+/*
+ * pk_client_helper_kill_child:
+ *
+ * Terminates a helper child gracefully: sends SIGTERM and, if the process is
+ * still alive after PK_CLIENT_HELPER_SIGKILL_TIMEOUT, escalates to SIGKILL.
+ * The child is reaped so it does not linger as a zombie.
+ *
+ * The children must be spawned with %G_SPAWN_DO_NOT_REAP_CHILD.
+ **/
+static void
+pk_client_helper_kill_child (GPid pid)
+{
+	guint elapsed_ms = 0;
+
+	if (pid <= 0)
+		return;
+
+	g_debug ("sending SIGTERM %ld", (long)pid);
+	if (kill (pid, SIGTERM) < 0 && errno == ESRCH) {
+		/* already gone, just reap it */
+		waitpid (pid, NULL, WNOHANG);
+		return;
+	}
+
+	/* wait for the child to exit, polling so we can escalate if needed */
+	while (elapsed_ms < PK_CLIENT_HELPER_SIGKILL_TIMEOUT * 1000) {
+		if (waitpid (pid, NULL, WNOHANG) == pid)
+			return;
+		g_usleep (PK_CLIENT_HELPER_POLL_DELAY * 1000);
+		elapsed_ms += PK_CLIENT_HELPER_POLL_DELAY;
+	}
+
+	/* still running, murder it */
+	g_debug ("helper %ld did not exit on SIGTERM, sending SIGKILL", (long)pid);
+	kill (pid, SIGKILL);
+	waitpid (pid, NULL, 0);
+}
+
+static void
+pk_client_helper_child_free (PkClientHelperChild *child)
+{
+	if (child->socket != NULL)
+		g_object_unref (child->socket);
+	if (child->socket_channel != NULL)
+		g_io_channel_unref (child->socket_channel);
+	if (child->socket_channel_source != NULL) {
+		g_source_destroy (child->socket_channel_source);
+		g_source_unref (child->socket_channel_source);
+	}
+	if (child->pid > 0)
+		pk_client_helper_kill_child (child->pid);
+	if (child->stdin_channel != NULL)
+		g_io_channel_unref (child->stdin_channel);
+	if (child->stdout_channel != NULL)
+		g_io_channel_unref (child->stdout_channel);
+	if (child->stderr_channel != NULL)
+		g_io_channel_unref (child->stderr_channel);
+	if (child->stdout_channel_source != NULL) {
+		g_source_destroy (child->stdout_channel_source);
+		g_source_unref (child->stdout_channel_source);
+	}
+	if (child->stderr_channel_source != NULL) {
+		g_source_destroy (child->stderr_channel_source);
+		g_source_unref (child->stderr_channel_source);
+	}
+}
+
+/**
+ * pk_client_helper_stop:
+ * @client_helper: a valid #PkClientHelper instance
+ * @error: A #GError or %NULL
+ *
+ * Stops the helper process, by killing the helper process and deleting
+ * the socket.
+ *
+ * Return value: %TRUE for success
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* make sure started */
+	g_return_val_if_fail (priv->socket_file != NULL, FALSE);
+
+	/* close the socket */
+	if (priv->socket_channel_source != NULL)
+		g_source_destroy (priv->socket_channel_source);
+	if (priv->socket != NULL) {
+		if (!g_socket_close (priv->socket, error))
+			return FALSE;
+	}
+
+	/* kill any children */
+	for (guint i = 0; i < priv->children->len; i++) {
+		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
+		pk_client_helper_kill_child (child->pid);
+	}
+
+	/* remove any socket file */
+	if (g_file_query_exists (priv->socket_file, NULL)) {
+		if (!g_file_delete (priv->socket_file, NULL, error))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/*
+ * pk_client_helper_copy_stdout_cb:
+ **/
+static gboolean
+pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+{
+	gchar data[1024];
+	gsize len = 0;
+	gsize written = 0;
+	GIOStatus status;
+	g_autoptr(GError) error = NULL;
+
+	/* read data */
+	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, &error);
+	if (status == G_IO_STATUS_ERROR)
+		g_warning ("failed to read from helper stdout: %s", error->message);
+	if (status == G_IO_STATUS_EOF || status == G_IO_STATUS_ERROR) {
+		g_debug ("helper process exited");
+		g_clear_error (&error);
+
+		/* reap it now if the process is gone; we own reaping since it was spawned with G_SPAWN_DO_NOT_REAP_CHILD.
+		 * If it has not exited yet (stdout closed but still running), leave it for kill_child(). */
+		if (child->pid > 0 && waitpid (child->pid, NULL, WNOHANG) == child->pid)
+			child->pid = -1;
+
+		/* the socket watch is polling the fd we are about to close: leaving it
+		 * attached would spin the main loop on POLLNVAL, and the fd number may
+		 * later be reused by an unrelated descriptor */
+		if (child->socket_channel_source != NULL)
+			g_source_destroy (child->socket_channel_source);
+		if (!g_socket_close (child->socket, &error))
+			g_warning ("failed to close socket");
+		return G_SOURCE_REMOVE;
+	}
+	if (len == 0)
+		return G_SOURCE_CONTINUE;
+
+	/* write to socket */
+	data[len] = '\0';
+	g_debug ("child has input to push to the socket: %s", data);
+	status = g_io_channel_write_chars (child->socket_channel, data, len, &written, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to write to socket: %s", error ?  error->message : "Unknown error");
+		return G_SOURCE_REMOVE;
+	}
+	if (written != len) {
+		g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
+			   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
+		return G_SOURCE_REMOVE;
+	}
+	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to socket", written);
+
+	return G_SOURCE_CONTINUE;
+}
+
+/*
+ * pk_client_helper_echo_stderr_cb:
+ **/
+static gboolean
+pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+{
+	gchar data[1024];
+	gsize len = 0;
+	GIOStatus status;
+
+	/* read data */
+	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, NULL);
+	if (status == G_IO_STATUS_EOF || status == G_IO_STATUS_ERROR)
+		return G_SOURCE_REMOVE;
+	if (len == 0)
+		return G_SOURCE_CONTINUE;
+
+	/* write to socket */
+	data[len] = '\0';
+	g_debug ("child has error: %s", data);
+
+	return G_SOURCE_CONTINUE;
+}
+
+/*
+ * pk_client_helper_copy_conn_cb:
+ **/
+static gboolean
+pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+{
+	PkClientHelperPrivate *helper_priv = pk_client_helper_get_instance_private (child->helper);
+	gchar data[1024];
+	gsize len = 0;
+	GIOStatus status;
+	gsize written = 0;
+	g_autoptr(GError) error = NULL;
+
+	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, &error);
+	if (status == G_IO_STATUS_EOF) {
+		g_debug ("socket hung up");
+
+		/* Shutdown helper */
+		if (g_io_channel_shutdown (child->stdin_channel, TRUE, &error) != G_IO_STATUS_NORMAL)
+			g_warning ("failed to close connection to child: %s", error->message);
+		return G_SOURCE_REMOVE;
+	}
+	if (status == G_IO_STATUS_ERROR) {
+		g_warning ("failed to read: %s", error->message);
+		return G_SOURCE_REMOVE;
+	}
+	if (len == 0)
+		return G_SOURCE_CONTINUE;
+
+	/* write to child */
+	data[len] = '\0';
+	g_debug ("socket has data to push to child: '%s'", data);
+	status = g_io_channel_write_chars (child->stdin_channel, data, len, &written, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to write to stdin: %s", error ? error->message : "Unknown error");
+		return G_SOURCE_REMOVE;
+	}
+	if (written != len) {
+		g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
+			   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
+		return G_SOURCE_REMOVE;
+	}
+	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, helper_priv->argv[0]);
+
+	return G_SOURCE_CONTINUE;
+}
+
+static GSource *
+make_input_source (GIOChannel *channel, GIOCondition condition, GSourceFunc func, gpointer user_data)
+{
+	GSource *source;
+	GMainContext *context;
+
+	/* G_IO_IN alone is not enough for the child pipes and sockets: a drained pipe
+	 * whose writer has exited reports only G_IO_HUP, and GIOChannel's check()
+	 * masks revents against the requested condition - so the callback would never
+	 * be dispatched while poll() kept returning instantly, spinning the main loop
+	 * at 100% CPU. Callers therefore also watch for hang-up and error, so the
+	 * callback runs, reads the EOF and removes the source. */
+	source = g_io_create_watch (channel, condition);
+	g_source_set_callback (source, func, user_data, NULL);
+
+	context = g_main_context_get_thread_default ();
+	if (context == NULL)
+		context = g_main_context_default ();
+	g_source_attach (source, context);
+
+	return source;
+}
+
+/*
+ * pk_client_helper_accept_connection_cb:
+ **/
+static gboolean
+pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+	g_autoptr(GSocket) socket = NULL;
+	GPid pid;
+	gint standard_input = 0;
+	gint standard_output = 0;
+	gint standard_error = 0;
+	gint fd;
+	GIOStatus status;
+	PkClientHelperChild *child;
+	g_autoptr(GError) error = NULL;
+
+	/* accept the connection request */
+	socket = g_socket_accept (priv->socket, NULL, &error);
+	if (socket == NULL) {
+		g_warning ("failed to accept socket: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_debug ("accepting connection %i for socket %i",
+		 g_socket_get_fd (socket),
+		 g_socket_get_fd (priv->socket));
+
+	/* spawn helper executable; we reap the child ourselves (see
+	 * pk_client_helper_kill_child()) so GLib must not reap it for us */
+	if (!g_spawn_async_with_pipes (NULL, /* working dir */
+				       priv->argv,
+				       priv->envp,
+				       G_SPAWN_DO_NOT_REAP_CHILD,
+				       NULL, /* child_setup */
+				       NULL, /* child_setup user data */
+				       &pid,
+				       &standard_input,
+				       &standard_output,
+				       &standard_error,
+				       &error)) {
+		g_warning ("failed to spawn: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_debug ("started process %s with pid %i", priv->argv[0], pid);
+
+	child = g_slice_new0 (PkClientHelperChild);
+	g_ptr_array_add (priv->children, child);
+        child->helper = client_helper;
+	child->socket = g_steal_pointer (&socket);
+	child->pid = pid;
+	child->stdin_channel = g_io_channel_unix_new (standard_input);
+	child->stdout_channel = g_io_channel_unix_new (standard_output);
+	child->stderr_channel = g_io_channel_unix_new (standard_error);
+
+	/* binary data */
+	status = g_io_channel_set_encoding (child->stdin_channel, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to set encoding: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_io_channel_set_buffered (child->stdin_channel, FALSE);
+
+	/* binary data */
+	status = g_io_channel_set_encoding (child->stdout_channel, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to set encoding: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_io_channel_set_buffered (child->stdout_channel, FALSE);
+
+	/* binary data */
+	status = g_io_channel_set_encoding (child->stderr_channel, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to set encoding: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_io_channel_set_buffered (child->stderr_channel, FALSE);
+
+	/* socket has data */
+	fd = g_socket_get_fd (child->socket);
+	child->socket_channel = g_io_channel_unix_new (fd);
+	child->socket_channel_source =
+		make_input_source (child->socket_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
+	/* binary data */
+	status = g_io_channel_set_encoding (child->socket_channel, NULL, &error);
+	if (status != G_IO_STATUS_NORMAL) {
+		g_warning ("failed to set encoding: %s", error->message);
+		return G_SOURCE_CONTINUE;
+	}
+	g_io_channel_set_buffered (child->socket_channel, FALSE);
+
+	/* frontend has data */
+	child->stdout_channel_source =
+		make_input_source (child->stdout_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
+	child->stderr_channel_source =
+		make_input_source (child->stderr_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
+	return G_SOURCE_CONTINUE;
+}
+
+/**
+ * pk_client_helper_start:
+ * @client_helper: a valid #PkClientHelper instance
+ * @socket_filename: a socket filename that does not already exist
+ * @argv: the executable, along with any arguments
+ * @envp: the environment
+ * @error: A #GError or %NULL
+ *
+ * Starts the helper process, by running the helper process and setting
+ * up the socket for use.
+ *
+ * Return value: %TRUE for success
+ *
+ * Since: 0.6.10
+ **/
+gboolean
+pk_client_helper_start (PkClientHelper *client_helper,
+			const gchar *socket_filename,
+			gchar **argv, gchar **envp,
+			GError **error)
+{
+	gboolean use_kde_helper = FALSE;
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
+	const gchar *kde_helper_path = "/usr/libexec/debconf-kde-helper";
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+	g_return_val_if_fail (socket_filename != NULL, FALSE);
+	g_return_val_if_fail (argv != NULL, FALSE);
+	g_return_val_if_fail (socket_filename != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* make sure not been started before */
+	g_return_val_if_fail (priv->argv == NULL, FALSE);
+	g_return_val_if_fail (priv->socket_file == NULL, FALSE);
+
+	/* already exists? */
+	if (g_file_test (socket_filename, G_FILE_TEST_EXISTS)) {
+		g_set_error (error, 1, 0, "socket %s already exists", socket_filename);
+		return FALSE;
+	}
+
+	g_debug ("using socket in %s", socket_filename);
+	priv->socket_file = g_file_new_for_path (socket_filename);
+
+	/* preconfigure KDE frontend, if requested */
+	if (envp != NULL) {
+		for (guint i = 0; envp[i] != NULL; i++) {
+			if (g_strcmp0 (envp[i], "DEBIAN_FRONTEND=kde") == 0) {
+				if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS)) {
+					use_kde_helper = TRUE;
+				} else {
+					/* try alternative path */
+					kde_helper_path = "/usr/bin/debconf-kde-helper";
+					if (g_file_test (kde_helper_path, G_FILE_TEST_EXISTS))
+						use_kde_helper = TRUE;
+				}
+
+				break;
+			}
+		}
+	}
+
+	/* create socket */
+	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, error);
+	if (priv->socket == NULL)
+		return FALSE;
+
+	/* bind to the socket */
+	address = g_unix_socket_address_new (socket_filename);
+	if (!g_socket_bind (priv->socket, address, TRUE, error))
+		return FALSE;
+
+	/* spawn KDE debconf communicator */
+	if (use_kde_helper) {
+		g_debug ("Using KDE debconf communicator: %s", kde_helper_path);
+
+		priv->envp = g_strdupv (envp);
+		priv->argv = g_new0 (gchar *, 2);
+		priv->argv[0] = g_strdup (kde_helper_path);
+		priv->argv[1] = g_strconcat ("--socket-path", "=", socket_filename, NULL);
+
+		if (!g_spawn_async (NULL,
+				    priv->argv,
+				    priv->envp,
+				    G_SPAWN_STDOUT_TO_DEV_NULL,
+				    NULL,
+				    NULL,
+				    &priv->kde_helper_pid,
+				    &error_local)) {
+			g_warning ("failed to spawn: %s", error_local->message);
+			return FALSE;
+		}
+		g_debug ("started process %s with pid %i", priv->argv[0], priv->kde_helper_pid);
+		return TRUE;
+	}
+
+	/* listen to the socket */
+	if (!g_socket_listen (priv->socket, error))
+		return FALSE;
+
+	return pk_client_helper_start_with_socket (client_helper, priv->socket, argv, envp, error);
+}
+
+/**
+ * pk_client_helper_start_with_socket:
+ * @client_helper: a valid #PkClientHelper instance
+ * @socket: the (bound and listening) #GSocket instance to use
+ * @argv: the executable, along with any arguments
+ * @envp: the environment
+ * @error: A #GError or %NULL
+ *
+ * Starts the helper process, by running the helper process and setting
+ * up the socket for use.
+ *
+ * Return value: %TRUE for success
+ *
+ * Since: 1.1.13
+ **/
+gboolean
+pk_client_helper_start_with_socket (PkClientHelper *client_helper,
+				    GSocket *socket,
+				    gchar **argv, gchar **envp,
+				    GError **error)
+{
+	gint fd;
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+	g_return_val_if_fail (socket != NULL, FALSE);
+	g_return_val_if_fail (argv != NULL, FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* make sure not been started before */
+	g_return_val_if_fail (priv->argv == NULL, FALSE);
+
+	/* cache for actual start */
+	priv->argv = g_strdupv (argv);
+	priv->envp = g_strdupv (envp);
+
+	/* Set the socket */
+	g_set_object (&priv->socket, socket);
+
+	/* socket has data */
+	fd = g_socket_get_fd (priv->socket);
+	priv->socket_channel = g_io_channel_unix_new (fd);
+	priv->socket_channel_source =
+		make_input_source (priv->socket_channel, G_IO_IN, G_SOURCE_FUNC (pk_client_helper_accept_connection_cb), client_helper);
+	return TRUE;
+}
+
+/**
+ * pk_client_helper_is_active:
+ * @client_helper: a valid #PkClientHelper instance
+ *
+ * Return value: TRUE if there is an accepted connection, FALSE
+ *               otherwise.
+ *
+ * Since: 1.1.13
+ */
+gboolean
+pk_client_helper_is_active (PkClientHelper *client_helper)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	g_return_val_if_fail (PK_IS_CLIENT_HELPER (client_helper), FALSE);
+
+	for (guint i = 0; i < priv->children->len; i++) {
+		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
+
+		/* the sources are NULL if child setup failed halfway through */
+		if (child->socket_channel_source == NULL ||
+		    child->stdout_channel_source == NULL)
+			continue;
+		if (!g_source_is_destroyed (child->socket_channel_source) &&
+		    !g_source_is_destroyed (child->stdout_channel_source))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/*
+ * pk_client_helper_class_init:
+ **/
+static void
+pk_client_helper_class_init (PkClientHelperClass *klass)
+{
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	object_class->finalize = pk_client_helper_finalize;
+}
+
+/*
+ * pk_client_helper_init:
+ **/
+static void
+pk_client_helper_init (PkClientHelper *client_helper)
+{
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	client_helper->priv = priv;
+	priv->children = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_client_helper_child_free);
+}
+
+/*
+ * pk_client_helper_finalize:
+ **/
+static void
+pk_client_helper_finalize (GObject *object)
+{
+	PkClientHelper *client_helper = PK_CLIENT_HELPER (object);
+	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
+
+	if (priv->socket_channel_source != NULL) {
+		g_source_destroy (priv->socket_channel_source);
+		g_clear_pointer (&priv->socket_channel_source, g_source_unref);
+	}
+
+	g_clear_pointer (&priv->argv, g_strfreev);
+	g_clear_pointer (&priv->envp, g_strfreev);
+	if (priv->socket_file != NULL) {
+		g_file_delete (priv->socket_file, NULL, NULL);
+		g_clear_object (&priv->socket_file);
+	}
+	if (priv->socket != NULL) {
+		g_socket_close (priv->socket, NULL);
+		g_clear_object (&priv->socket);
+	}
+	g_clear_pointer (&priv->socket_channel, g_io_channel_unref);
+	g_clear_pointer (&priv->children, g_ptr_array_unref);
+	if (priv->kde_helper_pid > 0)
+		kill (priv->kde_helper_pid, SIGTERM);
+
+	G_OBJECT_CLASS (pk_client_helper_parent_class)->finalize (object);
+}
+
+/**
+ * pk_client_helper_new:
+ *
+ * Return value: a new #PkClientHelper object.
+ *
+ * Since: 0.6.10
+ **/
+PkClientHelper *
+pk_client_helper_new (void)
+{
+	PkClientHelper *client_helper;
+	client_helper = g_object_new (PK_TYPE_CLIENT_HELPER, NULL);
+	return PK_CLIENT_HELPER (client_helper);
+}

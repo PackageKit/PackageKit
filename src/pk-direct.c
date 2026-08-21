@@ -25,10 +25,10 @@
 #include <glib.h>
 #include <glib-unix.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/pk-debug.h>
-#include <packagekit-glib2/pk-error.h>
-#include <packagekit-glib2/pk-item-progress.h>
-#include <packagekit-glib2/pk-package.h>
+#include <pk-debug.h>
+#include <pk-error.h>
+#include <pk-item-progress.h>
+#include <pk-package.h>
 
 #include "pk-backend.h"
 #include "pk-shared.h"

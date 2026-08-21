@@ -40,13 +40,13 @@
 #include <glib/gstdio.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
-#include <packagekit-glib2/pk-common.h>
-#include <packagekit-glib2/pk-common-private.h>
-#include <packagekit-glib2/pk-enum.h>
-#include <packagekit-glib2/pk-offline-private.h>
-#include <packagekit-glib2/pk-package-id.h>
-#include <packagekit-glib2/pk-package-ids.h>
-#include <packagekit-glib2/pk-results.h>
+#include <pk-common.h>
+#include <pk-common-private.h>
+#include <pk-enum.h>
+#include <pk-offline-private.h>
+#include <pk-package-id.h>
+#include <pk-package-ids.h>
+#include <pk-results.h>
 #include <polkit/polkit.h>
 
 #include "pk-backend.h"

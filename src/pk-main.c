@@ -31,7 +31,7 @@
 #include <glib.h>
 #include <glib-unix.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/pk-debug.h>
+#include <pk-debug.h>
 #ifdef HAVE_SYSTEMD_SD_DAEMON_H
 #include <systemd/sd-daemon.h>
 #endif

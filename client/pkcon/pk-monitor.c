@@ -25,7 +25,7 @@
 #include <locale.h>
 #include <glib.h>
 #include <glib/gi18n.h>
-#include <packagekit-glib2/packagekit.h>
+#include <packagekit.h>
 
 static PkClient *client = NULL;
 
