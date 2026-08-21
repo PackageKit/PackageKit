@@ -92,7 +92,7 @@ if get_option('daemon_tests')
             pk_test_daemon_priv_exe,
         ],
         env: [
-            'PYTHONPATH=@0@'.format(join_paths(build_root, 'lib', 'python')),
+            'PYTHONPATH=@0@'.format(join_paths(build_root, 'python')),
         ],
         suite: 'daemon',
         is_parallel: false,

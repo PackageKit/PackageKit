@@ -18,7 +18,7 @@ import sys
 import time
 import os
 
-sys.path.insert(0,os.path.join(os.getcwd(), 'lib', 'python'))
+sys.path.insert(0,os.path.join(os.getcwd(), 'python'))
 
 from packagekit.backend import *
 
