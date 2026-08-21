@@ -44,37 +44,35 @@
 
 #include "pk-transaction-db.h"
 
-static void     pk_transaction_db_finalize	(GObject        *object);
+static void pk_transaction_db_finalize (GObject *object);
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (sqlite3_stmt, sqlite3_finalize);
 
 struct _PkTransactionDb
 {
-	GObject			 parent;
+	GObject parent;
 
-	gboolean		 loaded;
-	sqlite3			*db;
-	guint			 job_count;
-	guint			 database_save_id;
+	gboolean loaded;
+	sqlite3 *db;
+	guint job_count;
+	guint database_save_id;
 };
 
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
 
-typedef struct {
-	gchar		*proxy_http;
-	gchar		*proxy_https;
-	gchar		*proxy_ftp;
-	gchar		*proxy_socks;
-	gchar		*no_proxy;
-	gchar		*pac;
-	gboolean	set;
+typedef struct
+{
+	gchar *proxy_http;
+	gchar *proxy_https;
+	gchar *proxy_ftp;
+	gchar *proxy_socks;
+	gchar *no_proxy;
+	gchar *pac;
+	gboolean set;
 } PkTransactionDbProxyItem;
 
 static gint
-pk_transaction_db_add_transaction_cb (void *data,
-				      gint argc,
-				      gchar **argv,
-				      gchar **col_name)
+pk_transaction_db_add_transaction_cb (void *data, gint argc, gchar **argv, gchar **col_name)
 {
 	PkTransactionPast *item;
 	GList **list = (GList **) data;
@@ -153,7 +151,7 @@ pk_time_action_sqlite_callback (void *data, gint argc, gchar **argv, gchar **col
 	gint i;
 	gchar *col;
 	gchar *value;
-	gchar **timespec = (gchar**) data;
+	gchar **timespec = (gchar **) data;
 
 	for (i = 0; i < argc; i++) {
 		col = col_name[i];
@@ -212,9 +210,13 @@ pk_transaction_db_action_time_since (PkTransactionDb *tdb, PkRoleEnum role)
 
 	role_text = pk_role_enum_to_string (role);
 
-	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'", role_text);
-	rc = sqlite3_exec (tdb->db, statement,
-			   pk_time_action_sqlite_callback, &timespec, &error_msg);
+	statement = g_strdup_printf ("SELECT timespec FROM last_action WHERE role = '%s'",
+				     role_text);
+	rc = sqlite3_exec (tdb->db,
+			   statement,
+			   pk_time_action_sqlite_callback,
+			   &timespec,
+			   &error_msg);
 	if (rc != SQLITE_OK) {
 		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
@@ -246,9 +248,15 @@ pk_transaction_db_action_time_reset (PkTransactionDb *tdb, PkRoleEnum role)
 	/* get the previous entry */
 	since = pk_transaction_db_action_time_since (tdb, role);
 	if (since == G_MAXUINT) {
-		statement = g_strdup_printf ("INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')", role_text, timespec);
+		statement = g_strdup_printf (
+		    "INSERT INTO last_action (role, timespec) VALUES ('%s', '%s')",
+		    role_text,
+		    timespec);
 	} else {
-		statement = g_strdup_printf ("UPDATE last_action SET timespec = '%s' WHERE role = '%s'", timespec, role_text);
+		statement = g_strdup_printf (
+		    "UPDATE last_action SET timespec = '%s' WHERE role = '%s'",
+		    timespec,
+		    role_text);
 	}
 
 	/* update or insert the entry */
@@ -301,11 +309,7 @@ pk_transaction_db_prepare (PkTransactionDb *tdb, const gchar *sql, sqlite3_stmt 
 	gint rc = 0;
 	*statement = NULL;
 
-	if ((rc = sqlite3_prepare_v2 (tdb->db,
-				      sql,
-				      -1,
-				      statement,
-				      NULL) != SQLITE_OK)) {
+	if ((rc = sqlite3_prepare_v2 (tdb->db, sql, -1, statement, NULL) != SQLITE_OK)) {
 		g_warning ("(%s) prepare error: %d: %s", sql, rc, sqlite3_errmsg (tdb->db));
 		return FALSE;
 	}
@@ -329,7 +333,10 @@ pk_transaction_db_step (sqlite3 *db, sqlite3_stmt *statement)
 }
 
 static gboolean
-pk_transaction_db_set_strings (PkTransactionDb *tdb, const gchar *sql, const gchar *first, const gchar *second)
+pk_transaction_db_set_strings (PkTransactionDb *tdb,
+			       const gchar *sql,
+			       const gchar *first,
+			       const gchar *second)
 {
 	g_autoptr (sqlite3_stmt) statement = NULL;
 	gint rc = 0;
@@ -362,10 +369,11 @@ pk_transaction_db_add (PkTransactionDb *tdb, const gchar *tid)
 	g_autofree gchar *timespec = NULL;
 	timespec = pk_iso8601_present ();
 
-	return pk_transaction_db_set_strings (tdb,
-					      "INSERT INTO transactions (transaction_id, timespec) VALUES (?1, ?2)",
-					      tid,
-					      timespec);
+	return pk_transaction_db_set_strings (
+	    tdb,
+	    "INSERT INTO transactions (transaction_id, timespec) VALUES (?1, ?2)",
+	    tid,
+	    timespec);
 }
 
 gboolean
@@ -374,10 +382,11 @@ pk_transaction_db_set_role (PkTransactionDb *tdb, const gchar *tid, PkRoleEnum r
 	const gchar *role_text;
 	role_text = pk_role_enum_to_string (role);
 
-	return pk_transaction_db_set_strings (tdb,
-					      "UPDATE transactions SET role=?1 WHERE transaction_id=?2",
-					      role_text,
-					      tid);
+	return pk_transaction_db_set_strings (
+	    tdb,
+	    "UPDATE transactions SET role=?1 WHERE transaction_id=?2",
+	    role_text,
+	    tid);
 }
 
 gboolean
@@ -390,7 +399,9 @@ pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
 	g_return_val_if_fail (tdb->db != NULL, FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
 
-	if (!pk_transaction_db_prepare (tdb, "UPDATE transactions SET uid=?1 WHERE transaction_id=?2", &statement))
+	if (!pk_transaction_db_prepare (tdb,
+					"UPDATE transactions SET uid=?1 WHERE transaction_id=?2",
+					&statement))
 		return FALSE;
 
 	if ((rc = sqlite3_bind_int (statement, 1, uid)) != SQLITE_OK) {
@@ -409,23 +420,28 @@ pk_transaction_db_set_uid (PkTransactionDb *tdb, const gchar *tid, guint uid)
 gboolean
 pk_transaction_db_set_cmdline (PkTransactionDb *tdb, const gchar *tid, const gchar *cmdline)
 {
-	return pk_transaction_db_set_strings (tdb,
-					      "UPDATE transactions SET cmdline=?1 WHERE transaction_id=?2",
-					      cmdline,
-					      tid);
+	return pk_transaction_db_set_strings (
+	    tdb,
+	    "UPDATE transactions SET cmdline=?1 WHERE transaction_id=?2",
+	    cmdline,
+	    tid);
 }
 
 gboolean
 pk_transaction_db_set_data (PkTransactionDb *tdb, const gchar *tid, const gchar *data)
 {
-	return pk_transaction_db_set_strings (tdb,
-					      "UPDATE transactions SET data=?1 WHERE transaction_id=?2",
-					      data,
-					      tid);
+	return pk_transaction_db_set_strings (
+	    tdb,
+	    "UPDATE transactions SET data=?1 WHERE transaction_id=?2",
+	    data,
+	    tid);
 }
 
 gboolean
-pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean success, guint runtime)
+pk_transaction_db_set_finished (PkTransactionDb *tdb,
+				const gchar *tid,
+				gboolean success,
+				guint runtime)
 {
 	g_autoptr (sqlite3_stmt) statement = NULL;
 	gint rc = 0;
@@ -434,8 +450,10 @@ pk_transaction_db_set_finished (PkTransactionDb *tdb, const gchar *tid, gboolean
 	g_return_val_if_fail (tdb->db != NULL, FALSE);
 	g_return_val_if_fail (tid != NULL, FALSE);
 
-	if (!pk_transaction_db_prepare (tdb, "UPDATE transactions SET succeeded=?1, duration=?2 WHERE transaction_id=?3",
-					&statement))
+	if (!pk_transaction_db_prepare (
+		tdb,
+		"UPDATE transactions SET succeeded=?1, duration=?2 WHERE transaction_id=?3",
+		&statement))
 		return FALSE;
 
 	if ((rc = sqlite3_bind_int (statement, 1, success)) != SQLITE_OK) {
@@ -561,9 +579,11 @@ pk_transaction_db_generate_id (PkTransactionDb *tdb)
 	/* we don't need to wait for the database write, just do this the
 	 * next time we are idle (but ensure we do this on shutdown) */
 	if (tdb->database_save_id == 0) {
-		tdb->database_save_id =
-			g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc)
-					 pk_transaction_db_defer_write_job_count_cb, tdb, NULL);
+		tdb->database_save_id = g_idle_add_full (
+		    G_PRIORITY_LOW,
+		    (GSourceFunc) pk_transaction_db_defer_write_job_count_cb,
+		    tdb,
+		    NULL);
 		g_source_set_name_by_id (tdb->database_save_id, "[PkTransactionDb] save");
 	}
 
@@ -639,10 +659,7 @@ pk_transaction_db_is_proxy_set (PkTransactionDb *tdb, guint uid, const gchar *se
 	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
 				     uid, session);
 	/* clang-format on */
-	rc = sqlite3_exec (tdb->db, statement,
-			   pk_transaction_sqlite_proxy_cb,
-			   item,
-			   &error_msg);
+	rc = sqlite3_exec (tdb->db, statement, pk_transaction_sqlite_proxy_cb, item, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
@@ -669,7 +686,9 @@ out:
  * Return value: %TRUE on success.
  **/
 gboolean
-pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *session,
+pk_transaction_db_get_proxy (PkTransactionDb *tdb,
+			     guint uid,
+			     const gchar *session,
 			     gchar **proxy_http,
 			     gchar **proxy_https,
 			     gchar **proxy_ftp,
@@ -692,10 +711,7 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
 				     uid, session);
 	/* clang-format on */
-	rc = sqlite3_exec (tdb->db, statement,
-			   pk_transaction_sqlite_proxy_cb,
-			   item,
-			   &error_msg);
+	rc = sqlite3_exec (tdb->db, statement, pk_transaction_sqlite_proxy_cb, item, &error_msg);
 	if (rc != SQLITE_OK) {
 		g_warning ("SQL error: %s", error_msg);
 		sqlite3_free (error_msg);
@@ -741,7 +757,8 @@ out:
  * Return value: %TRUE for success
  **/
 gboolean
-pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
+pk_transaction_db_set_proxy (PkTransactionDb *tdb,
+			     guint uid,
 			     const gchar *session,
 			     const gchar *proxy_http,
 			     const gchar *proxy_https,
@@ -763,7 +780,10 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
 	ret = pk_transaction_db_is_proxy_set (tdb, uid, session);
 	if (ret) {
 		g_debug ("updated proxy %s, %s for uid:%i and session:%s",
-			 proxy_http, proxy_ftp, uid, session);
+			 proxy_http,
+			 proxy_ftp,
+			 uid,
+			 session);
 
 		/* prepare statement */
 		rc = sqlite3_prepare_v2 (tdb->db,
@@ -775,7 +795,9 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
 					 "no_proxy = ?, "
 					 "pac = ? "
 					 "WHERE uid = ? AND session = ?",
-					 -1, &statement, NULL);
+					 -1,
+					 &statement,
+					 NULL);
 		if (rc != SQLITE_OK) {
 			g_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->db));
 			goto out;
@@ -814,7 +836,9 @@ pk_transaction_db_set_proxy (PkTransactionDb *tdb, guint uid,
 				 "no_proxy, "
 				 "pac) "
 				 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-				 -1, &statement, NULL);
+				 -1,
+				 &statement,
+				 NULL);
 	if (rc != SQLITE_OK) {
 		g_warning ("failed to prepare statement: %s", sqlite3_errmsg (tdb->db));
 		goto out;
@@ -862,9 +886,7 @@ pk_transaction_db_ensure_file_directory (const gchar *path)
 }
 
 static gboolean
-pk_transaction_db_execute (PkTransactionDb *tdb,
-			   const gchar *statement,
-			   GError **error)
+pk_transaction_db_execute (PkTransactionDb *tdb, const gchar *statement, GError **error)
 {
 	gboolean ret = TRUE;
 	gint rc;
@@ -874,7 +896,8 @@ pk_transaction_db_execute (PkTransactionDb *tdb,
 	if (rc != SQLITE_OK) {
 		ret = FALSE;
 		g_set_error (error,
-			     1, 0,
+			     1,
+			     0,
 			     "Failed to execute statement '%s': %s",
 			     statement,
 			     sqlite3_errmsg (tdb->db));
@@ -902,7 +925,8 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	rc = sqlite3_open (PK_DB_DIR "/transactions.db", &tdb->db);
 	if (rc != SQLITE_OK) {
 		g_set_error (error,
-			     1, 0,
+			     1,
+			     0,
 			     "Can't open transaction database: %s",
 			     sqlite3_errmsg (tdb->db));
 		sqlite3_close (tdb->db);
@@ -953,17 +977,22 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 			return FALSE;
 
 		/* save job id */
-		text = g_strdup_printf ("INSERT INTO config (key, value) VALUES ('job_count', '%i')", 1);
+		text = g_strdup_printf (
+		    "INSERT INTO config (key, value) VALUES ('job_count', '%i')",
+		    1);
 		if (!pk_transaction_db_execute (tdb, text, error))
 			return FALSE;
 		g_free (text);
 	} else {
 		/* get the job count */
 		statement = "SELECT value FROM config WHERE key = 'job_count'";
-		rc = sqlite3_exec (tdb->db, statement, pk_transaction_sqlite_job_id_cb, tdb, &error_msg);
+		rc = sqlite3_exec (tdb->db,
+				   statement,
+				   pk_transaction_sqlite_job_id_cb,
+				   tdb,
+				   &error_msg);
 		if (rc != SQLITE_OK) {
-			g_set_error (error, 1, 0,
-				     "failed to get job id: %s", error_msg);
+			g_set_error (error, 1, 0, "failed to get job id: %s", error_msg);
 			sqlite3_free (error_msg);
 			return FALSE;
 		}
@@ -991,8 +1020,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 
 static void
 pk_transaction_db_init (PkTransactionDb *tdb)
-{
-}
+{}
 
 static void
 pk_transaction_db_finalize (GObject *object)
@@ -1021,4 +1049,3 @@ pk_transaction_db_new (void)
 	tdb = g_object_new (PK_TYPE_TRANSACTION_DB, NULL);
 	return PK_TRANSACTION_DB (tdb);
 }
-

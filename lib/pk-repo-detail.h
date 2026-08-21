@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -32,16 +32,17 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_REPO_DETAIL		(pk_repo_detail_get_type ())
-#define PK_REPO_DETAIL(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REPO_DETAIL, PkRepoDetail))
-#define PK_REPO_DETAIL_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REPO_DETAIL, PkRepoDetailClass))
-#define PK_IS_REPO_DETAIL(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REPO_DETAIL))
-#define PK_IS_REPO_DETAIL_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REPO_DETAIL))
-#define PK_REPO_DETAIL_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_REPO_DETAIL, PkRepoDetailClass))
+#define PK_TYPE_REPO_DETAIL (pk_repo_detail_get_type ())
+#define PK_REPO_DETAIL(o)   (G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REPO_DETAIL, PkRepoDetail))
+#define PK_REPO_DETAIL_CLASS(k)	   (G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REPO_DETAIL, PkRepoDetailClass))
+#define PK_IS_REPO_DETAIL(o)	   (G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REPO_DETAIL))
+#define PK_IS_REPO_DETAIL_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REPO_DETAIL))
+#define PK_REPO_DETAIL_GET_CLASS(o) \
+	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_REPO_DETAIL, PkRepoDetailClass))
 
-typedef struct _PkRepoDetailPrivate	PkRepoDetailPrivate;
-typedef struct _PkRepoDetail		PkRepoDetail;
-typedef struct _PkRepoDetailClass	PkRepoDetailClass;
+typedef struct _PkRepoDetailPrivate PkRepoDetailPrivate;
+typedef struct _PkRepoDetail	    PkRepoDetail;
+typedef struct _PkRepoDetailClass   PkRepoDetailClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRepoDetail, g_object_unref)
@@ -49,13 +50,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRepoDetail, g_object_unref)
 
 struct _PkRepoDetail
 {
-	 PkSource		 parent;
-	 PkRepoDetailPrivate	*priv;
+	PkSource	     parent;
+	PkRepoDetailPrivate *priv;
 };
 
 struct _PkRepoDetailClass
 {
-	PkSourceClass	parent_class;
+	PkSourceClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -64,14 +65,13 @@ struct _PkRepoDetailClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_repo_detail_get_type		(void);
-PkRepoDetail	*pk_repo_detail_new			(void);
+GType	      pk_repo_detail_get_type (void);
+PkRepoDetail *pk_repo_detail_new (void);
 
-const gchar	*pk_repo_detail_get_id			(PkRepoDetail	*repo_detail);
-const gchar	*pk_repo_detail_get_description		(PkRepoDetail	*repo_detail);
-gboolean	 pk_repo_detail_get_enabled		(PkRepoDetail	*repo_detail);
+const gchar  *pk_repo_detail_get_id (PkRepoDetail *repo_detail);
+const gchar  *pk_repo_detail_get_description (PkRepoDetail *repo_detail);
+gboolean      pk_repo_detail_get_enabled (PkRepoDetail *repo_detail);
 
 G_END_DECLS
 
 #endif /* __PK_REPO_DETAIL_H */
-

@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -32,16 +32,19 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_EULA_REQUIRED		(pk_eula_required_get_type ())
-#define PK_EULA_REQUIRED(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequired))
-#define PK_EULA_REQUIRED_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_EULA_REQUIRED, PkEulaRequiredClass))
-#define PK_IS_EULA_REQUIRED(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_EULA_REQUIRED))
-#define PK_IS_EULA_REQUIRED_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_EULA_REQUIRED))
-#define PK_EULA_REQUIRED_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequiredClass))
+#define PK_TYPE_EULA_REQUIRED (pk_eula_required_get_type ())
+#define PK_EULA_REQUIRED(o) \
+	(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequired))
+#define PK_EULA_REQUIRED_CLASS(k) \
+	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_EULA_REQUIRED, PkEulaRequiredClass))
+#define PK_IS_EULA_REQUIRED(o)	     (G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_EULA_REQUIRED))
+#define PK_IS_EULA_REQUIRED_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_EULA_REQUIRED))
+#define PK_EULA_REQUIRED_GET_CLASS(o) \
+	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_EULA_REQUIRED, PkEulaRequiredClass))
 
-typedef struct _PkEulaRequiredPrivate	PkEulaRequiredPrivate;
-typedef struct _PkEulaRequired		PkEulaRequired;
-typedef struct _PkEulaRequiredClass	PkEulaRequiredClass;
+typedef struct _PkEulaRequiredPrivate PkEulaRequiredPrivate;
+typedef struct _PkEulaRequired	      PkEulaRequired;
+typedef struct _PkEulaRequiredClass   PkEulaRequiredClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkEulaRequired, g_object_unref)
@@ -49,13 +52,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkEulaRequired, g_object_unref)
 
 struct _PkEulaRequired
 {
-	 PkSource		 parent;
-	 PkEulaRequiredPrivate	*priv;
+	PkSource	       parent;
+	PkEulaRequiredPrivate *priv;
 };
 
 struct _PkEulaRequiredClass
 {
-	PkSourceClass	parent_class;
+	PkSourceClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -64,14 +67,13 @@ struct _PkEulaRequiredClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_eula_required_get_type	 	(void);
-PkEulaRequired	*pk_eula_required_new			(void);
-const gchar	*pk_eula_required_get_eula_id		(PkEulaRequired *eula_required);
-const gchar	*pk_eula_required_get_package_id	(PkEulaRequired *eula_required);
-const gchar	*pk_eula_required_get_vendor_name	(PkEulaRequired *eula_required);
-const gchar	*pk_eula_required_get_license_agreement	(PkEulaRequired *eula_required);
+GType		pk_eula_required_get_type (void);
+PkEulaRequired *pk_eula_required_new (void);
+const gchar    *pk_eula_required_get_eula_id (PkEulaRequired *eula_required);
+const gchar    *pk_eula_required_get_package_id (PkEulaRequired *eula_required);
+const gchar    *pk_eula_required_get_vendor_name (PkEulaRequired *eula_required);
+const gchar    *pk_eula_required_get_license_agreement (PkEulaRequired *eula_required);
 
 G_END_DECLS
 
 #endif /* __PK_EULA_REQUIRED_H */
-

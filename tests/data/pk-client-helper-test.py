@@ -19,6 +19,7 @@
 
 import sys
 
+
 def main():
     while True:
         try:
@@ -37,6 +38,7 @@ def main():
         else:
             sys.stdout.write("you said to me: %s\n" % line)
             sys.stdout.flush()
+
 
 if __name__ == "__main__":
     main()

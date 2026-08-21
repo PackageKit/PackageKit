@@ -37,7 +37,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_results_finalize	(GObject     *object);
+static void pk_results_finalize (GObject *object);
 
 /**
  * PkResultsPrivate:
@@ -46,24 +46,24 @@ static void     pk_results_finalize	(GObject     *object);
  **/
 struct _PkResultsPrivate
 {
-	PkRoleEnum		 role;
-	PkBitfield		 transaction_flags;
-	guint			 inputs;
-	PkProgress		*progress;
-	PkExitEnum		 exit_enum;
-	PkError			*error_code;
-	GPtrArray		*details_array;
-	GPtrArray		*update_detail_array;
-	GPtrArray		*category_array;
-	GPtrArray		*distro_upgrade_array;
-	GPtrArray		*require_restart_array;
-	GPtrArray		*transaction_array;
-	GPtrArray		*files_array;
-	GPtrArray		*repo_signature_required_array;
-	GPtrArray		*eula_required_array;
-	GPtrArray		*media_change_required_array;
-	GPtrArray		*repo_detail_array;
-	PkPackageSack		*package_sack;
+	PkRoleEnum role;
+	PkBitfield transaction_flags;
+	guint inputs;
+	PkProgress *progress;
+	PkExitEnum exit_enum;
+	PkError *error_code;
+	GPtrArray *details_array;
+	GPtrArray *update_detail_array;
+	GPtrArray *category_array;
+	GPtrArray *distro_upgrade_array;
+	GPtrArray *require_restart_array;
+	GPtrArray *transaction_array;
+	GPtrArray *files_array;
+	GPtrArray *repo_signature_required_array;
+	GPtrArray *eula_required_array;
+	GPtrArray *media_change_required_array;
+	GPtrArray *repo_detail_array;
+	PkPackageSack *package_sack;
 };
 
 enum {
@@ -777,9 +777,7 @@ pk_results_get_require_restart_worst (PkResults *results)
 	array = priv->require_restart_array;
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "restart", &restart,
-			      NULL);
+		g_object_get (item, "restart", &restart, NULL);
 		if (restart > worst)
 			worst = restart;
 	}
@@ -923,8 +921,11 @@ pk_results_class_init (PkResultsClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	pspec = g_param_spec_enum ("role", NULL, NULL,
-				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("role",
+				   NULL,
+				   NULL,
+				   PK_TYPE_ROLE_ENUM,
+				   PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
@@ -935,8 +936,12 @@ pk_results_class_init (PkResultsClass *klass)
          *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_uint64 ("transaction-flags", NULL, NULL,
-				     0, G_MAXUINT64, 0,
+	pspec = g_param_spec_uint64 ("transaction-flags",
+				     NULL,
+				     NULL,
+				     0,
+				     G_MAXUINT64,
+				     0,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_FLAGS, pspec);
 
@@ -945,8 +950,12 @@ pk_results_class_init (PkResultsClass *klass)
 	 *
 	 * Since: 0.5.3
 	 */
-	pspec = g_param_spec_uint ("inputs", NULL, NULL,
-				   0, G_MAXUINT, 0,
+	pspec = g_param_spec_uint ("inputs",
+				   NULL,
+				   NULL,
+				   0,
+				   G_MAXUINT,
+				   0,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_INPUTS, pspec);
 
@@ -955,7 +964,8 @@ pk_results_class_init (PkResultsClass *klass)
 	 *
 	 * Since: 0.5.3
 	 */
-	pspec = g_param_spec_object ("progress", NULL,
+	pspec = g_param_spec_object ("progress",
+				     NULL,
 				     "The progress instance",
 				     PK_TYPE_PROGRESS,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
@@ -978,15 +988,21 @@ pk_results_init (PkResults *results)
 	priv->error_code = NULL;
 	priv->package_sack = pk_package_sack_new ();
 	priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->update_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->update_detail_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
 	priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->distro_upgrade_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->require_restart_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->distro_upgrade_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
+	priv->require_restart_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
 	priv->transaction_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->files_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->repo_signature_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->eula_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->media_change_required_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->repo_signature_required_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
+	priv->eula_required_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
+	priv->media_change_required_array = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) g_object_unref);
 	priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 

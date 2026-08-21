@@ -34,8 +34,8 @@
 #include "pk-progress.h"
 #include "pk-progress-private.h"
 
-static void     pk_progress_dispose	(GObject     *object);
-static void     pk_progress_finalize	(GObject     *object);
+static void pk_progress_dispose (GObject *object);
+static void pk_progress_finalize (GObject *object);
 
 /**
  * PkProgressPrivate:
@@ -44,24 +44,24 @@ static void     pk_progress_finalize	(GObject     *object);
  **/
 struct _PkProgressPrivate
 {
-	gchar				*package_id;
-	gchar				*transaction_id;
-	gint				 percentage;
-	gboolean			 allow_cancel;
-	PkRoleEnum			 role;
-	PkStatusEnum			 status;
-	gboolean			 caller_active;
-	guint				 elapsed_time;
-	guint				 remaining_time;
-	guint				 speed;
-	guint64				 download_size_remaining;
-	guint64				 transaction_flags;
-	guint				 uid;
-	gchar				*sender;
-	PkItemProgress			*item_progress;
-	PkPackage			*package;
-	PkProgressCallback		 callback;
-	gpointer			 callback_user_data;
+	gchar *package_id;
+	gchar *transaction_id;
+	gint percentage;
+	gboolean allow_cancel;
+	PkRoleEnum role;
+	PkStatusEnum status;
+	gboolean caller_active;
+	guint elapsed_time;
+	guint remaining_time;
+	guint speed;
+	guint64 download_size_remaining;
+	guint64 transaction_flags;
+	guint uid;
+	gchar *sender;
+	PkItemProgress *item_progress;
+	PkPackage *package;
+	PkProgressCallback callback;
+	gpointer callback_user_data;
 };
 
 enum {
@@ -85,7 +85,9 @@ enum {
 	PROP_LAST
 };
 
-static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
+static GParamSpec *obj_properties[PROP_LAST] = {
+	NULL,
+};
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkProgress, pk_progress, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_progress_get_instance_private (o))
@@ -234,8 +236,7 @@ pk_progress_get_package_id (PkProgress *progress)
  * Since: 0.8.1
  **/
 gboolean
-pk_progress_set_item_progress (PkProgress *progress,
-			       PkItemProgress *item_progress)
+pk_progress_set_item_progress (PkProgress *progress, PkItemProgress *item_progress)
 {
 	PkProgressPrivate *priv = GET_PRIVATE(progress);
 
@@ -917,7 +918,7 @@ pk_progress_set_sender (PkProgress *progress, const gchar *bus_name)
  *
  * Since: 1.2.6
  **/
-gchar*
+gchar *
 pk_progress_get_sender (PkProgress *progress)
 {
 	PkProgressPrivate *priv = GET_PRIVATE(progress);
@@ -1080,10 +1081,12 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_PACKAGE_ID] =
-		g_param_spec_string ("package-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_PACKAGE_ID] = g_param_spec_string (
+	    "package-id",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:transaction-id:
@@ -1092,10 +1095,12 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_TRANSACTION_ID] =
-		g_param_spec_string ("transaction-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_TRANSACTION_ID] = g_param_spec_string (
+	    "transaction-id",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:percentage:
@@ -1104,10 +1109,14 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_PERCENTAGE] =
-		g_param_spec_int ("percentage", NULL, NULL,
-				  -1, G_MAXINT, -1,
-				  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_PERCENTAGE] = g_param_spec_int (
+	    "percentage",
+	    NULL,
+	    NULL,
+	    -1,
+	    G_MAXINT,
+	    -1,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:allow-cancel:
@@ -1116,10 +1125,12 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_ALLOW_CANCEL] =
-		g_param_spec_boolean ("allow-cancel", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_ALLOW_CANCEL] = g_param_spec_boolean (
+	    "allow-cancel",
+	    NULL,
+	    NULL,
+	    FALSE,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:status:
@@ -1128,10 +1139,14 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_STATUS] =
-		g_param_spec_uint ("status", NULL, NULL,
-				   0, PK_STATUS_ENUM_LAST, PK_STATUS_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_STATUS] = g_param_spec_uint (
+	    "status",
+	    NULL,
+	    NULL,
+	    0,
+	    PK_STATUS_ENUM_LAST,
+	    PK_STATUS_ENUM_UNKNOWN,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:role:
@@ -1140,10 +1155,14 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_ROLE] =
-		g_param_spec_uint ("role", NULL, NULL,
-				   0, PK_ROLE_ENUM_LAST, PK_ROLE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_ROLE] = g_param_spec_uint ("role",
+						       NULL,
+						       NULL,
+						       0,
+						       PK_ROLE_ENUM_LAST,
+						       PK_ROLE_ENUM_UNKNOWN,
+						       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+							   G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:caller-active:
@@ -1152,10 +1171,12 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_CALLER_ACTIVE] =
-		g_param_spec_boolean ("caller-active", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_CALLER_ACTIVE] = g_param_spec_boolean (
+	    "caller-active",
+	    NULL,
+	    NULL,
+	    FALSE,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:elapsed-time:
@@ -1164,10 +1185,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_ELAPSED_TIME] =
-		g_param_spec_uint ("elapsed-time", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_ELAPSED_TIME] = g_param_spec_uint (
+	    "elapsed-time",
+	    NULL,
+	    NULL,
+	    0,
+	    G_MAXUINT,
+	    0,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:remaining-time:
@@ -1176,10 +1201,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_REMAINING_TIME] =
-		g_param_spec_uint ("remaining-time", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_REMAINING_TIME] = g_param_spec_uint (
+	    "remaining-time",
+	    NULL,
+	    NULL,
+	    0,
+	    G_MAXUINT,
+	    0,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:speed:
@@ -1188,10 +1217,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_SPEED] =
-		g_param_spec_uint ("speed", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_SPEED] = g_param_spec_uint ("speed",
+							NULL,
+							NULL,
+							0,
+							G_MAXUINT,
+							0,
+							G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+							    G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:download-size-remaining:
@@ -1200,10 +1233,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.8.0
 	 */
-	obj_properties[PROP_DOWNLOAD_SIZE_REMAINING] =
-		g_param_spec_uint64 ("download-size-remaining", NULL, NULL,
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_DOWNLOAD_SIZE_REMAINING] = g_param_spec_uint64 (
+	    "download-size-remaining",
+	    NULL,
+	    NULL,
+	    0,
+	    G_MAXUINT64,
+	    0,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:transaction-flags:
@@ -1212,10 +1249,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.8.8
 	 */
-	obj_properties[PROP_TRANSACTION_FLAGS] =
-		g_param_spec_uint64 ("transaction-flags", NULL, NULL,
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_TRANSACTION_FLAGS] = g_param_spec_uint64 (
+	    "transaction-flags",
+	    NULL,
+	    NULL,
+	    0,
+	    G_MAXUINT64,
+	    0,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:uid:
@@ -1224,10 +1265,14 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_UID] =
-		g_param_spec_uint ("uid", NULL, NULL,
-				   0, G_MAXUINT, 0,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_UID] = g_param_spec_uint ("uid",
+						      NULL,
+						      NULL,
+						      0,
+						      G_MAXUINT,
+						      0,
+						      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+							  G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:sender:
@@ -1236,10 +1281,12 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 1.2.6
 	 */
-	obj_properties[PROP_SENDER] =
-		g_param_spec_string ("sender", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_SENDER] = g_param_spec_string (
+	    "sender",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:package:
@@ -1248,10 +1295,12 @@ pk_progress_class_init (PkProgressClass *klass)
          *
 	 * Since: 0.5.3
 	 */
-	obj_properties[PROP_PACKAGE] =
-		g_param_spec_object ("package", NULL, NULL,
-				     PK_TYPE_PACKAGE,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_PACKAGE] = g_param_spec_object (
+	    "package",
+	    NULL,
+	    NULL,
+	    PK_TYPE_PACKAGE,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkProgress:item-progress:
@@ -1260,10 +1309,12 @@ pk_progress_class_init (PkProgressClass *klass)
 	 *
 	 * Since: 0.8.1
 	 */
-	obj_properties[PROP_ITEM_PROGRESS] =
-		g_param_spec_object ("item-progress", NULL, NULL,
-				     PK_TYPE_ITEM_PROGRESS,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_ITEM_PROGRESS] = g_param_spec_object (
+	    "item-progress",
+	    NULL,
+	    NULL,
+	    PK_TYPE_ITEM_PROGRESS,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 }

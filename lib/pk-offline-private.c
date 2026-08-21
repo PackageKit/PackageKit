@@ -52,7 +52,8 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_INVALID_VALUE,
-			     "Failed to set unknown %i", action);
+			     "Failed to set unknown %i",
+			     action);
 		return FALSE;
 	}
 	if (action == PK_OFFLINE_ACTION_UNSET)
@@ -63,11 +64,11 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
-			     "Failed to convert %i", action);
+			     "Failed to convert %i",
+			     action);
 		return FALSE;
 	}
-	if (!g_file_set_contents (PK_OFFLINE_ACTION_FILENAME,
-				  action_str, -1, &error_local)) {
+	if (!g_file_set_contents (PK_OFFLINE_ACTION_FILENAME, action_str, -1, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -112,8 +113,7 @@ pk_offline_auth_cancel (GError **error)
 	}
 
 	file2 = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
-	if (g_file_query_exists (file2, NULL) &&
-	    !g_file_delete (file2, NULL, &error_local)) {
+	if (g_file_query_exists (file2, NULL) && !g_file_delete (file2, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -190,8 +190,7 @@ pk_offline_auth_invalidate (GError **error)
 
 	/* delete the prepared file */
 	file1 = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
-	if (g_file_query_exists (file1, NULL) &&
-	    !g_file_delete (file1, NULL, &error_local)) {
+	if (g_file_query_exists (file1, NULL) && !g_file_delete (file1, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -203,8 +202,7 @@ pk_offline_auth_invalidate (GError **error)
 
 	/* delete the prepared system upgrade file */
 	file2 = g_file_new_for_path (PK_OFFLINE_PREPARED_UPGRADE_FILENAME);
-	if (g_file_query_exists (file2, NULL) &&
-	    !g_file_delete (file2, NULL, &error_local)) {
+	if (g_file_query_exists (file2, NULL) && !g_file_delete (file2, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -218,7 +216,9 @@ pk_offline_auth_invalidate (GError **error)
 }
 
 static gboolean
-pk_offline_auth_trigger_prepared_file (PkOfflineAction action, const gchar *prepared_file, GError **error)
+pk_offline_auth_trigger_prepared_file (PkOfflineAction action,
+				       const gchar *prepared_file,
+				       GError **error)
 {
 	gint rc;
 
@@ -291,7 +291,9 @@ pk_offline_auth_trigger (PkOfflineAction action, GError **error)
 gboolean
 pk_offline_auth_trigger_upgrade (PkOfflineAction action, GError **error)
 {
-	return pk_offline_auth_trigger_prepared_file (action, PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error);
+	return pk_offline_auth_trigger_prepared_file (action,
+						      PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+						      error);
 }
 
 /*
@@ -317,7 +319,7 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 	g_key_file_set_string_list (keyfile,
 				    "update",
 				    "prepared_ids",
-				    (const gchar**)package_ids,
+				    (const gchar **) package_ids,
 				    g_strv_length (package_ids));
 	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_FILENAME, error);
 }
@@ -379,7 +381,9 @@ pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **err
 
 	/* read data file */
 	if (!g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
-				  &data, NULL, &error_local)) {
+				  &data,
+				  NULL,
+				  &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -437,10 +441,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 	g_key_file_set_list_separator (key_file, ',');
 	pk_error = pk_results_get_error_code (results);
 	if (pk_error != NULL) {
-		g_key_file_set_boolean (key_file,
-					PK_OFFLINE_RESULTS_GROUP,
-					"Success",
-					FALSE);
+		g_key_file_set_boolean (key_file, PK_OFFLINE_RESULTS_GROUP, "Success", FALSE);
 		g_key_file_set_string (key_file,
 				       PK_OFFLINE_RESULTS_GROUP,
 				       "ErrorCode",
@@ -450,19 +451,16 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 				       "ErrorDetails",
 				       pk_error_get_details (pk_error));
 	} else {
-		g_key_file_set_boolean (key_file,
-					PK_OFFLINE_RESULTS_GROUP,
-					"Success",
-					TRUE);
+		g_key_file_set_boolean (key_file, PK_OFFLINE_RESULTS_GROUP, "Success", TRUE);
 	}
 
 	/* save role */
 	role = pk_results_get_role (results);
 	if (role != PK_ROLE_ENUM_UNKNOWN) {
 		g_key_file_set_string (key_file,
-		                       PK_OFFLINE_RESULTS_GROUP,
-		                       "Role",
-		                       pk_role_enum_to_string (role));
+				       PK_OFFLINE_RESULTS_GROUP,
+				       "Role",
+				       pk_role_enum_to_string (role));
 	}
 
 	/* save packages if any set */
@@ -489,10 +487,10 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 
 		deduped_pkgids = g_hash_table_steal_all_keys (known_pkgids);
 		g_key_file_set_string_list (key_file,
-				       PK_OFFLINE_RESULTS_GROUP,
-				       "Packages",
-				       (const gchar**)deduped_pkgids->pdata,
-				       deduped_pkgids->len);
+					    PK_OFFLINE_RESULTS_GROUP,
+					    "Packages",
+					    (const gchar **) deduped_pkgids->pdata,
+					    deduped_pkgids->len);
 	}
 
 	/* write file */
@@ -505,8 +503,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 			     error_local->message);
 		return FALSE;
 	}
-	if (!g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME,
-				  data, -1, &error_local)) {
+	if (!g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, data, -1, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,

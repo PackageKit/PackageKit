@@ -411,7 +411,7 @@ pk_enum_find_value (const PkEnumMatch *table, const gchar *string)
 	if (string == NULL) {
 		return table[0].value;
 	}
-	for (i = 0;;i++) {
+	for (i = 0;; i++) {
 		string_tmp = table[i].string;
 		if (string_tmp == NULL)
 			break;
@@ -438,7 +438,7 @@ pk_enum_find_string (const PkEnumMatch *table, guint value)
 	guint tmp;
 	const gchar *string_tmp;
 
-	for (i = 0;;i++) {
+	for (i = 0;; i++) {
 		string_tmp = table[i].string;
 		if (string_tmp == NULL)
 			break;
@@ -980,57 +980,57 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		break;
 	case PK_INFO_ENUM_NORMAL:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Normal");
+		text = dgettext ("PackageKit", "Normal");
 		break;
 	case PK_INFO_ENUM_IMPORTANT:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Important");
+		text = dgettext ("PackageKit", "Important");
 		break;
 	case PK_INFO_ENUM_SECURITY:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Security");
+		text = dgettext ("PackageKit", "Security");
 		break;
 	case PK_INFO_ENUM_BUGFIX:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Bug fix");
+		text = dgettext ("PackageKit", "Bug fix");
 		break;
 	case PK_INFO_ENUM_ENHANCEMENT:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Enhancement");
+		text = dgettext ("PackageKit", "Enhancement");
 		break;
 	case PK_INFO_ENUM_BLOCKED:
 		/* TRANSLATORS: The type of update */
-		text = dgettext("PackageKit", "Blocked");
+		text = dgettext ("PackageKit", "Blocked");
 		break;
 	case PK_INFO_ENUM_INSTALLED:
 	case PK_INFO_ENUM_COLLECTION_INSTALLED:
 		/* TRANSLATORS: The state of a package */
-		text = dgettext("PackageKit", "Installed");
+		text = dgettext ("PackageKit", "Installed");
 		break;
 	case PK_INFO_ENUM_AVAILABLE:
 	case PK_INFO_ENUM_COLLECTION_AVAILABLE:
 		/* TRANSLATORS: The state of a package, i.e. not installed */
-		text = dgettext("PackageKit", "Available");
+		text = dgettext ("PackageKit", "Available");
 		break;
 	case PK_INFO_ENUM_UNAVAILABLE:
 		/* TRANSLATORS: The state of a package, i.e. not installed */
-		text = dgettext("PackageKit", "Unavailable");
+		text = dgettext ("PackageKit", "Unavailable");
 		break;
 	case PK_INFO_ENUM_INSTALL:
 		/* TRANSLATORS: The state of a package: to be installed with the next action */
-		text = dgettext("PackageKit", "Install");
+		text = dgettext ("PackageKit", "Install");
 		break;
 	case PK_INFO_ENUM_REMOVE:
 		/* TRANSLATORS: The state of a package: to be removed with the next action */
-		text = dgettext("PackageKit", "Remove");
+		text = dgettext ("PackageKit", "Remove");
 		break;
 	case PK_INFO_ENUM_OBSOLETE:
 		/* TRANSLATORS: The state of a package: package is obsolete */
-		text = dgettext("PackageKit", "Obsolete");
+		text = dgettext ("PackageKit", "Obsolete");
 		break;
 	case PK_INFO_ENUM_DOWNGRADE:
 		/* TRANSLATORS: The state of a package: package is to be downgraded */
-		text = dgettext("PackageKit", "Downgrade");
+		text = dgettext ("PackageKit", "Downgrade");
 		break;
 	default:
 		g_warning ("info unrecognised: %s", pk_info_enum_to_string (info));
@@ -1055,31 +1055,31 @@ pk_info_enum_to_localised_present (PkInfoEnum info)
 	switch (info) {
 	case PK_INFO_ENUM_DOWNLOADING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Downloading");
+		text = dgettext ("PackageKit", "Downloading");
 		break;
 	case PK_INFO_ENUM_UPDATING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Updating");
+		text = dgettext ("PackageKit", "Updating");
 		break;
 	case PK_INFO_ENUM_INSTALLING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Installing");
+		text = dgettext ("PackageKit", "Installing");
 		break;
 	case PK_INFO_ENUM_REMOVING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Removing");
+		text = dgettext ("PackageKit", "Removing");
 		break;
 	case PK_INFO_ENUM_CLEANUP:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Cleaning up");
+		text = dgettext ("PackageKit", "Cleaning up");
 		break;
 	case PK_INFO_ENUM_OBSOLETING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Obsoleting");
+		text = dgettext ("PackageKit", "Obsoleting");
 		break;
 	case PK_INFO_ENUM_REINSTALLING:
 		/* TRANSLATORS: The action of the package, in present tense */
-		text = dgettext("PackageKit", "Reinstalling");
+		text = dgettext ("PackageKit", "Reinstalling");
 		break;
 	default:
 		text = pk_info_enum_to_localised_text (info);
@@ -1104,31 +1104,31 @@ pk_info_enum_to_localised_past (PkInfoEnum info)
 	switch (info) {
 	case PK_INFO_ENUM_DOWNLOADING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Downloaded");
+		text = dgettext ("PackageKit", "Downloaded");
 		break;
 	case PK_INFO_ENUM_UPDATING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Updated");
+		text = dgettext ("PackageKit", "Updated");
 		break;
 	case PK_INFO_ENUM_INSTALLING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Installed");
+		text = dgettext ("PackageKit", "Installed");
 		break;
 	case PK_INFO_ENUM_REMOVING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Removed");
+		text = dgettext ("PackageKit", "Removed");
 		break;
 	case PK_INFO_ENUM_CLEANUP:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Cleaned up");
+		text = dgettext ("PackageKit", "Cleaned up");
 		break;
 	case PK_INFO_ENUM_OBSOLETING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Obsoleted");
+		text = dgettext ("PackageKit", "Obsoleted");
 		break;
 	case PK_INFO_ENUM_REINSTALLING:
 		/* TRANSLATORS: The action of the package, in past tense */
-		text = dgettext("PackageKit", "Reinstalled");
+		text = dgettext ("PackageKit", "Reinstalled");
 		break;
 	default:
 		text = pk_info_enum_to_localised_text (info);
@@ -1153,133 +1153,133 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	switch (role) {
 	case PK_ROLE_ENUM_UNKNOWN:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Unknown role type");
+		text = dgettext ("PackageKit", "Unknown role type");
 		break;
 	case PK_ROLE_ENUM_DEPENDS_ON:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting dependencies");
+		text = dgettext ("PackageKit", "Getting dependencies");
 		break;
 	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting update details");
+		text = dgettext ("PackageKit", "Getting update details");
 		break;
 	case PK_ROLE_ENUM_GET_DETAILS:
 	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting details");
+		text = dgettext ("PackageKit", "Getting details");
 		break;
 	case PK_ROLE_ENUM_REQUIRED_BY:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting requires");
+		text = dgettext ("PackageKit", "Getting requires");
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting updates");
+		text = dgettext ("PackageKit", "Getting updates");
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Searching by details");
+		text = dgettext ("PackageKit", "Searching by details");
 		break;
 	case PK_ROLE_ENUM_SEARCH_FILE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Searching by file");
+		text = dgettext ("PackageKit", "Searching by file");
 		break;
 	case PK_ROLE_ENUM_SEARCH_GROUP:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Searching groups");
+		text = dgettext ("PackageKit", "Searching groups");
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Searching by name");
+		text = dgettext ("PackageKit", "Searching by name");
 		break;
 	case PK_ROLE_ENUM_REMOVE_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Removing");
+		text = dgettext ("PackageKit", "Removing");
 		break;
 	case PK_ROLE_ENUM_INSTALL_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Installing");
+		text = dgettext ("PackageKit", "Installing");
 		break;
 	case PK_ROLE_ENUM_INSTALL_FILES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Installing files");
+		text = dgettext ("PackageKit", "Installing files");
 		break;
 	case PK_ROLE_ENUM_REFRESH_CACHE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Refreshing cache");
+		text = dgettext ("PackageKit", "Refreshing cache");
 		break;
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Updating packages");
+		text = dgettext ("PackageKit", "Updating packages");
 		break;
 	case PK_ROLE_ENUM_CANCEL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Canceling");
+		text = dgettext ("PackageKit", "Canceling");
 		break;
 	case PK_ROLE_ENUM_GET_REPO_LIST:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting repositories");
+		text = dgettext ("PackageKit", "Getting repositories");
 		break;
 	case PK_ROLE_ENUM_REPO_ENABLE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Modifying repository");
+		text = dgettext ("PackageKit", "Modifying repository");
 		break;
 	case PK_ROLE_ENUM_REPO_SET_DATA:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Setting data");
+		text = dgettext ("PackageKit", "Setting data");
 		break;
 	case PK_ROLE_ENUM_REPO_REMOVE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Removing repository");
+		text = dgettext ("PackageKit", "Removing repository");
 		break;
 	case PK_ROLE_ENUM_RESOLVE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Resolving");
+		text = dgettext ("PackageKit", "Resolving");
 		break;
 	case PK_ROLE_ENUM_GET_FILES:
 	case PK_ROLE_ENUM_GET_FILES_LOCAL:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting file list");
+		text = dgettext ("PackageKit", "Getting file list");
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting provides");
+		text = dgettext ("PackageKit", "Getting provides");
 		break;
 	case PK_ROLE_ENUM_INSTALL_SIGNATURE:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Installing signature");
+		text = dgettext ("PackageKit", "Installing signature");
 		break;
 	case PK_ROLE_ENUM_GET_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting packages");
+		text = dgettext ("PackageKit", "Getting packages");
 		break;
 	case PK_ROLE_ENUM_ACCEPT_EULA:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Accepting EULA");
+		text = dgettext ("PackageKit", "Accepting EULA");
 		break;
 	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Downloading packages");
+		text = dgettext ("PackageKit", "Downloading packages");
 		break;
 	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting upgrades");
+		text = dgettext ("PackageKit", "Getting upgrades");
 		break;
 	case PK_ROLE_ENUM_GET_CATEGORIES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting categories");
+		text = dgettext ("PackageKit", "Getting categories");
 		break;
 	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting transactions");
+		text = dgettext ("PackageKit", "Getting transactions");
 		break;
 	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Getting system upgrades");
+		text = dgettext ("PackageKit", "Getting system upgrades");
 		break;
 	case PK_ROLE_ENUM_REPAIR_SYSTEM:
 		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext("PackageKit", "Repairing system");
+		text = dgettext ("PackageKit", "Repairing system");
 		break;
 	default:
 		g_warning ("role unrecognised: %s", pk_role_enum_to_string (role));

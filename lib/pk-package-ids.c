@@ -161,7 +161,7 @@ pk_package_ids_add_id (gchar **package_ids, const gchar *package_id)
 	g_return_val_if_fail (package_id != NULL, NULL);
 
 	len = g_strv_length (package_ids);
-	result = g_new0 (gchar *, len+2);
+	result = g_new0 (gchar *, len + 2);
 
 	/* iterate */
 	for (i = 0; package_ids[i] != NULL; i++)
@@ -194,7 +194,7 @@ pk_package_ids_add_ids (gchar **package_ids, gchar **package_ids_new)
 
 	/* get length of both arrays */
 	len = g_strv_length (package_ids) + g_strv_length (package_ids_new);
-	result = g_new0 (gchar *, len+1);
+	result = g_new0 (gchar *, len + 1);
 
 	/* iterate */
 	for (i = 0; package_ids[i] != NULL; i++)
@@ -227,7 +227,7 @@ pk_package_ids_remove_id (gchar **package_ids, const gchar *package_id)
 	g_return_val_if_fail (package_id != NULL, NULL);
 
 	len = g_strv_length (package_ids);
-	result = g_new0 (gchar *, len+1);
+	result = g_new0 (gchar *, len + 1);
 
 	/* iterate */
 	for (i = 0; package_ids[i] != NULL; i++) {

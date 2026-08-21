@@ -31,18 +31,21 @@
 #include "pk-package-sack-sync.h"
 
 /* tiny helper to help us do the async operation */
-typedef struct {
-	GError		**error;
-	GMainContext	*context;
-	GMainLoop	*loop;
-	gboolean	 ret;
+typedef struct
+{
+	GError **error;
+	GMainContext *context;
+	GMainLoop *loop;
+	gboolean ret;
 } PkPackageSackHelper;
 
 /*
  * pk_package_sack_generic_cb:
  **/
 static void
-pk_package_sack_generic_cb (PkPackageSack *package_sack, GAsyncResult *res, PkPackageSackHelper *helper)
+pk_package_sack_generic_cb (PkPackageSack *package_sack,
+			    GAsyncResult *res,
+			    PkPackageSackHelper *helper)
 {
 	/* get the result */
 	helper->ret = pk_package_sack_merge_generic_finish (package_sack, res, helper->error);
@@ -81,7 +84,12 @@ pk_package_sack_resolve (PkPackageSack *package_sack, GCancellable *cancellable,
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_resolve_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	pk_package_sack_resolve_async (package_sack,
+				       cancellable,
+				       NULL,
+				       NULL,
+				       (GAsyncReadyCallback) pk_package_sack_generic_cb,
+				       &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;
@@ -127,7 +135,12 @@ pk_package_sack_get_details (PkPackageSack *package_sack, GCancellable *cancella
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_get_details_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	pk_package_sack_get_details_async (package_sack,
+					   cancellable,
+					   NULL,
+					   NULL,
+					   (GAsyncReadyCallback) pk_package_sack_generic_cb,
+					   &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;
@@ -156,7 +169,9 @@ pk_package_sack_get_details (PkPackageSack *package_sack, GCancellable *cancella
  * Since: 0.6.0
  **/
 gboolean
-pk_package_sack_get_update_detail (PkPackageSack *package_sack, GCancellable *cancellable, GError **error)
+pk_package_sack_get_update_detail (PkPackageSack *package_sack,
+				   GCancellable *cancellable,
+				   GError **error)
 {
 	gboolean ret;
 	PkPackageSackHelper helper;
@@ -173,7 +188,12 @@ pk_package_sack_get_update_detail (PkPackageSack *package_sack, GCancellable *ca
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_package_sack_get_update_detail_async (package_sack, cancellable, NULL, NULL, (GAsyncReadyCallback) pk_package_sack_generic_cb, &helper);
+	pk_package_sack_get_update_detail_async (package_sack,
+						 cancellable,
+						 NULL,
+						 NULL,
+						 (GAsyncReadyCallback) pk_package_sack_generic_cb,
+						 &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;
@@ -186,4 +206,3 @@ pk_package_sack_get_update_detail (PkPackageSack *package_sack, GCancellable *ca
 
 	return ret;
 }
-

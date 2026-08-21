@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -30,8 +30,8 @@
 
 G_BEGIN_DECLS
 
-PkProgress *pk_progress_new_with_callback	(PkProgressCallback	 callback,
-						 gpointer		 user_data);
+PkProgress *pk_progress_new_with_callback (PkProgressCallback callback,
+					   gpointer	      user_data);
 
 G_END_DECLS
 

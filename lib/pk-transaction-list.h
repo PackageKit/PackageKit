@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -30,16 +30,19 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_TRANSACTION_LIST		(pk_transaction_list_get_type ())
-#define PK_TRANSACTION_LIST(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionList))
-#define PK_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
-#define PK_IS_TRANSACTION_LIST(o)	 	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION_LIST))
-#define PK_IS_TRANSACTION_LIST_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_LIST))
-#define PK_TRANSACTION_LIST_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
+#define PK_TYPE_TRANSACTION_LIST (pk_transaction_list_get_type ())
+#define PK_TRANSACTION_LIST(o) \
+	(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionList))
+#define PK_TRANSACTION_LIST_CLASS(k) \
+	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
+#define PK_IS_TRANSACTION_LIST(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_TRANSACTION_LIST))
+#define PK_IS_TRANSACTION_LIST_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_TRANSACTION_LIST))
+#define PK_TRANSACTION_LIST_GET_CLASS(o) \
+	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_TRANSACTION_LIST, PkTransactionListClass))
 
-typedef struct _PkTransactionListPrivate	PkTransactionListPrivate;
-typedef struct _PkTransactionList		PkTransactionList;
-typedef struct _PkTransactionListClass		PkTransactionListClass;
+typedef struct _PkTransactionListPrivate PkTransactionListPrivate;
+typedef struct _PkTransactionList	 PkTransactionList;
+typedef struct _PkTransactionListClass	 PkTransactionListClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransactionList, g_object_unref)
@@ -47,25 +50,24 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkTransactionList, g_object_unref)
 
 struct _PkTransactionList
 {
-	GObject				 parent;
-	PkTransactionListPrivate	*priv;
+	GObject			  parent;
+	PkTransactionListPrivate *priv;
 };
 
 struct _PkTransactionListClass
 {
-	GObjectClass	parent_class;
-	void		(* added)			(PkTransactionList	*tlist,
-							 const gchar		*tid);
-	void		(* removed)			(PkTransactionList	*tlist,
-							 const gchar		*tid);
+	GObjectClass parent_class;
+	void (*added) (PkTransactionList *tlist,
+		       const gchar	 *tid);
+	void (*removed) (PkTransactionList *tlist,
+			 const gchar	   *tid);
 };
 
-GType			 pk_transaction_list_get_type		(void);
-PkTransactionList	*pk_transaction_list_new		(void);
+GType		   pk_transaction_list_get_type (void);
+PkTransactionList *pk_transaction_list_new (void);
 
-gchar			**pk_transaction_list_get_ids		(PkTransactionList	*tlist);
+gchar		 **pk_transaction_list_get_ids (PkTransactionList *tlist);
 
 G_END_DECLS
 
 #endif /* __PK_TRANSACTION_LIST_H */
-

@@ -65,4 +65,3 @@
 #undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_H__ */
-

@@ -26,12 +26,13 @@
 #include <sys/utsname.h>
 #include <packagekit.h>
 
-typedef struct {
-	GstStructure	*structure;
-	gchar		*type_name;
-	gchar		*codec_name;
-	gchar		*app_name;
-	gchar		*gstreamer_version;
+typedef struct
+{
+	GstStructure *structure;
+	gchar *type_name;
+	gchar *codec_name;
+	gchar *app_name;
+	gchar *gstreamer_version;
 } PkGstCodecInfo;
 
 enum {
@@ -60,8 +61,7 @@ pk_gst_parse_codec (const gchar *codec)
 		g_message ("PackageKit: not a GStreamer codec request");
 		return NULL;
 	}
-	if (g_strcmp0 (split[1], "0.10") != 0 &&
-	    g_strcmp0 (split[1], "1.0") != 0) {
+	if (g_strcmp0 (split[1], "0.10") != 0 && g_strcmp0 (split[1], "1.0") != 0) {
 		g_message ("PackageKit: not recognised GStreamer version");
 		return NULL;
 	}
@@ -156,10 +156,12 @@ pk_gst_structure_to_provide (GstStructure *s)
 			continue;
 		}
 
-		fields = g_list_insert_sorted (fields, g_strdup (field_name), (GCompareFunc) pk_gst_fields_type_compare);
+		fields = g_list_insert_sorted (fields,
+					       g_strdup (field_name),
+					       (GCompareFunc) pk_gst_fields_type_compare);
 	}
 
-	string = g_string_new("");
+	string = g_string_new ("");
 	for (l = fields; l != NULL; l = l->next) {
 		gchar *field_name;
 		GType type;
@@ -178,7 +180,10 @@ pk_gst_structure_to_provide (GstStructure *s)
 			int value;
 
 			gst_structure_get_boolean (s, field_name, &value);
-			g_string_append_printf (string, "(%s=%s)", field_name, value ? "true" : "false");
+			g_string_append_printf (string,
+						"(%s=%s)",
+						field_name,
+						value ? "true" : "false");
 		} else if (type == G_TYPE_STRING) {
 			const gchar *value;
 
@@ -221,8 +226,7 @@ pk_gst_get_arch_suffix (void)
 	}
 
 	/* 32 bit machines */
-	if (g_strcmp0 (buf.machine, "i386") == 0 ||
-	    g_strcmp0 (buf.machine, "i586") == 0 ||
+	if (g_strcmp0 (buf.machine, "i386") == 0 || g_strcmp0 (buf.machine, "i586") == 0 ||
 	    g_strcmp0 (buf.machine, "i686") == 0)
 		goto out;
 
@@ -252,15 +256,21 @@ make_platform_data (const gchar *startup_id)
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("a{sv}"));
 
 	if (startup_id && g_utf8_validate (startup_id, -1, NULL)) {
-		g_variant_builder_add (&builder, "{sv}",
-		                       "desktop-startup-id", g_variant_new_string (startup_id));
+		g_variant_builder_add (&builder,
+				       "{sv}",
+				       "desktop-startup-id",
+				       g_variant_new_string (startup_id));
 	}
 
 	return g_variant_builder_end (&builder);
 }
 
 static gboolean
-pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const gchar *startup_id, const gchar *interaction, GError **error)
+pk_gst_dbus_install_resources (gchar **resources,
+			       const gchar *desktop_id,
+			       const gchar *startup_id,
+			       const gchar *interaction,
+			       GError **error)
 {
 	g_autoptr(GDBusProxy) proxy = NULL;
 	g_autoptr(GVariant) value = NULL;
@@ -268,7 +278,7 @@ pk_gst_dbus_install_resources (gchar **resources, const gchar *desktop_id, const
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
 					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						   G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 					       NULL,
 					       "org.freedesktop.PackageKit",
 					       "/org/freedesktop/PackageKit",
@@ -304,7 +314,7 @@ pk_gst_dbus_install_resources_compat (gchar **resources, gint xid, GError **erro
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
 					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						   G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 					       NULL,
 					       "org.freedesktop.PackageKit",
 					       "/org/freedesktop/PackageKit",
@@ -313,16 +323,14 @@ pk_gst_dbus_install_resources_compat (gchar **resources, gint xid, GError **erro
 					       error);
 	if (proxy != NULL) {
 		/* invoke the method */
-		value = g_dbus_proxy_call_sync (proxy,
-						"InstallGStreamerResources",
-						g_variant_new ("(u^a&ss)",
-							       xid,
-							       resources,
-							       "hide-finished"),
-						G_DBUS_CALL_FLAGS_NONE,
-						60 * 60 * 1000, /* 1 hour */
-						NULL,
-						error);
+		value = g_dbus_proxy_call_sync (
+		    proxy,
+		    "InstallGStreamerResources",
+		    g_variant_new ("(u^a&ss)", xid, resources, "hide-finished"),
+		    G_DBUS_CALL_FLAGS_NONE,
+		    60 * 60 * 1000, /* 1 hour */
+		    NULL,
+		    error);
 		if (value != NULL)
 			return TRUE;
 	}
@@ -348,9 +356,9 @@ main (int argc, gchar **argv)
 	g_autoptr(GPtrArray) array = NULL;
 	g_auto(GStrv) resources = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
 		{ "desktop-id", '\0', 0, G_OPTION_ARG_STRING, &desktop_id, "The desktop ID of the calling application", NULL },
@@ -359,7 +367,7 @@ main (int argc, gchar **argv)
 		{ G_OPTION_REMAINING, '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &codecs, "GStreamer install infos", NULL },
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	gst_init (&argc, &argv);
 
@@ -367,13 +375,16 @@ main (int argc, gchar **argv)
 	g_option_context_add_main_entries (context, options, NULL);
 
 	if (!g_option_context_parse (context, &argc, &argv, &error)) {
-		g_print ("%s\nRun '%s --help' to see a full list of available command line options.\n",
-			 error->message, argv[0]);
+		g_print (
+		    "%s\nRun '%s --help' to see a full list of available command line options.\n",
+		    error->message,
+		    argv[0]);
 		return GST_INSTALL_PLUGINS_ERROR;
 	}
 	if (codecs == NULL) {
 		g_print ("Missing codecs information\n");
-		g_print ("Run 'with --help' to see a full list of available command line options.\n");
+		g_print (
+		    "Run 'with --help' to see a full list of available command line options.\n");
 		return GST_INSTALL_PLUGINS_ERROR;
 	}
 
@@ -414,7 +425,8 @@ main (int argc, gchar **argv)
 						gstreamer_version,
 						info->type_name,
 						gst_structure_get_name (info->structure),
-						s, suffix);
+						s,
+						suffix);
 			g_message ("PackageKit: structure: %s", type);
 		} else {
 			type = g_strdup_printf ("gstreamer%s(%s)%s",
@@ -442,7 +454,11 @@ main (int argc, gchar **argv)
 	resources = pk_ptr_array_to_strv (array);
 
 	/* first try the new interface */
-	ret = pk_gst_dbus_install_resources (resources, desktop_id, startup_id, interaction, &error);
+	ret = pk_gst_dbus_install_resources (resources,
+					     desktop_id,
+					     startup_id,
+					     interaction,
+					     &error);
 	if (g_error_matches (error, G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD)) {
 		/* ... and if that fails, fall back to the compat interface */
 		g_clear_error (&error);
@@ -460,4 +476,3 @@ main (int argc, gchar **argv)
 	}
 	return GST_INSTALL_PLUGINS_SUCCESS;
 }
-

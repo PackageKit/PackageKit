@@ -52,9 +52,7 @@ pk_guess_application_id (void)
  **/
 
 static void
-pk_install_fonts_method_finished_cb (GObject *source_object,
-				     GAsyncResult *res,
-				     gpointer user_data)
+pk_install_fonts_method_finished_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
 	GDBusProxy *proxy = G_DBUS_PROXY (source_object);
 	g_autoptr(GError) error = NULL;
@@ -98,7 +96,7 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 	/* get proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
 					       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						   G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
 					       NULL,
 					       "org.freedesktop.PackageKit",
 					       "/org/freedesktop/PackageKit",
@@ -116,8 +114,8 @@ pk_install_fonts_idle_cb (gpointer data G_GNUC_UNUSED)
 			   g_variant_new ("(^a&sss@a{sv})",
 					  font_tags,
 					  "hide-finished",
-					   application_id ? application_id : "",
-					   pk_make_platform_data ()),
+					  application_id ? application_id : "",
+					  pk_make_platform_data ()),
 			   G_DBUS_CALL_FLAGS_NONE,
 			   60 * 60 * 1000, /* 1 hour */
 			   NULL,
@@ -177,21 +175,18 @@ out:
 		free (tag);
 }
 
-
 /**
  * A PangoFcFontMap implementation that detects font-not-found events
  **/
 
-
-typedef struct {
+typedef struct
+{
 	PangoLanguage *language;
 	gboolean found;
 } FontsetForeachClosure;
 
 static gboolean
-fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED,
-		    PangoFont *font,
-		    gpointer data)
+fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED, PangoFont *font, gpointer data)
 {
 	FontsetForeachClosure *closure = data;
 	PangoFcFont *fcfont = PANGO_FC_FONT (font);
@@ -215,7 +210,6 @@ fontset_foreach_cb (PangoFontset *fontset G_GNUC_UNUSED,
 	return closure->found;
 }
 
-
 static PangoFontset *(*pk_pango_fc_font_map_load_fontset_default) (PangoFontMap *font_map,
 								   PangoContext *context,
 								   const PangoFontDescription *desc,
@@ -230,15 +224,14 @@ pk_pango_fc_font_map_load_fontset (PangoFontMap *font_map,
 	static PangoLanguage *last_language = NULL;
 	static GHashTable *seen_languages = NULL;
 	PangoFontset *fontset;
-	
+
 	fontset = pk_pango_fc_font_map_load_fontset_default (font_map, context, desc, language);
 
 	/* "xx" is Pango's "unknown language" language code.
 	 * we can fall back to scripts maybe, but the facilities for that
 	 * is not in place yet.	Maybe Pango can use a four-letter script
 	 * code instead of "xx"... */
-	if (G_LIKELY (language == last_language) ||
-	    language == NULL ||
+	if (G_LIKELY (language == last_language) || language == NULL ||
 	    pango_language_matches (language, "c;xx"))
 		return fontset;
 
@@ -281,7 +274,8 @@ pk_pango_fc_font_map_overload_type (GType default_pango_fc_font_map_type)
 					      query.class_size,
 					      (GClassInitFunc) pk_pango_fc_font_map_class_init,
 					      query.instance_size,
-					      NULL, 0);
+					      NULL,
+					      0);
 }
 
 static void
@@ -299,13 +293,13 @@ install_pango_font_map (void)
 			return;
 		}
 
-		font_map_type = pk_pango_fc_font_map_overload_type (G_TYPE_FROM_INSTANCE (font_map));
+		font_map_type = pk_pango_fc_font_map_overload_type (
+		    G_TYPE_FROM_INSTANCE (font_map));
 		font_map = g_object_new (font_map_type, NULL);
 		pango_cairo_font_map_set_default (PANGO_CAIRO_FONT_MAP (font_map));
 		g_object_unref (font_map);
 	}
 }
-
 
 /**
  * GTK module declaraction
@@ -314,8 +308,7 @@ install_pango_font_map (void)
 void gtk_module_init (gint *argc, gchar ***argv);
 
 void
-gtk_module_init (gint *argc G_GNUC_UNUSED,
-		 gchar ***argv G_GNUC_UNUSED)
+gtk_module_init (gint *argc G_GNUC_UNUSED, gchar ***argv G_GNUC_UNUSED)
 {
 	install_pango_font_map ();
 }

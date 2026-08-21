@@ -36,7 +36,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_require_restart_finalize	(GObject     *object);
+static void pk_require_restart_finalize (GObject *object);
 
 /**
  * PkRequireRestartPrivate:
@@ -45,8 +45,8 @@ static void     pk_require_restart_finalize	(GObject     *object);
  **/
 struct _PkRequireRestartPrivate
 {
-	PkRestartEnum			 restart;
-	gchar				*package_id;
+	PkRestartEnum restart;
+	gchar *package_id;
 };
 
 enum {
@@ -85,7 +85,10 @@ pk_require_restart_get_property (GObject *object, guint prop_id, GValue *value, 
  * pk_require_restart_set_property:
  **/
 static void
-pk_require_restart_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_require_restart_set_property (GObject *object,
+				 guint prop_id,
+				 const GValue *value,
+				 GParamSpec *pspec)
 {
 	PkRequireRestart *require_restart = PK_REQUIRE_RESTART (object);
 	PkRequireRestartPrivate *priv = GET_PRIVATE(require_restart);
@@ -121,8 +124,11 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("restart", NULL, NULL,
-				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("restart",
+				   NULL,
+				   NULL,
+				   PK_TYPE_RESTART_ENUM,
+				   PK_RESTART_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_RESTART, pspec);
 
@@ -131,7 +137,9 @@ pk_require_restart_class_init (PkRequireRestartClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("package-id", NULL, NULL,
+	pspec = g_param_spec_string ("package-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);

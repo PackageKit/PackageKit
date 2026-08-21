@@ -36,11 +36,11 @@
 #include "pk-shared.h"
 
 #ifdef linux
-  #include <sys/syscall.h>
+#include <sys/syscall.h>
 #endif
 
 #ifdef PK_BUILD_DAEMON
-  #include "pk-resources.h"
+#include "pk-resources.h"
 #endif
 
 gboolean
@@ -400,13 +400,11 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 		/* turn 'libpk_backend_test.so' into 'test' */
 		name_tmp = g_strdup (tmp + 14);
 		g_strdelimit (name_tmp, ".", '\0');
-		g_ptr_array_add (array,
-				 name_tmp);
+		g_ptr_array_add (array, name_tmp);
 	} while (1);
 
 	/* need to sort by id predictably */
-	g_ptr_array_sort (array,
-			  (GCompareFunc) pk_util_sort_backends_cb);
+	g_ptr_array_sort (array, (GCompareFunc) pk_util_sort_backends_cb);
 
 	/* set best backend */
 	if (array->len == 0) {
@@ -434,7 +432,7 @@ pk_ioprio_set_idle (GPid pid)
 		IOPRIO_WHO_PGRP,
 		IOPRIO_WHO_USER
 	};
-	#define IOPRIO_CLASS_SHIFT	13
+#define IOPRIO_CLASS_SHIFT 13
 	gint prio = 7;
 	gint class = IOPRIO_CLASS_IDLE << IOPRIO_CLASS_SHIFT;
 	/* FIXME: glibc should have this function */
@@ -462,15 +460,13 @@ pk_string_replace (GString *string, const gchar *search, const gchar *replace)
 
 		/* reallocate the string if required */
 		if (search_len > replace_len) {
-			g_string_erase (string,
-					tmp - string->str,
-					search_len - replace_len);
+			g_string_erase (string, tmp - string->str, search_len - replace_len);
 		}
 		if (search_len < replace_len) {
 			g_string_insert_len (string,
-					    tmp - string->str,
-					    search,
-					    replace_len - search_len);
+					     tmp - string->str,
+					     search,
+					     replace_len - search_len);
 		}
 
 		/* just memcmp in the new string */
@@ -492,7 +488,7 @@ out:
  *
  * Return value: (nullable): the cmdline, or %NULL if it could not be obtained
  **/
-gchar*
+gchar *
 pk_get_cmdline_for_pid (guint32 pid)
 {
 	gboolean ret;

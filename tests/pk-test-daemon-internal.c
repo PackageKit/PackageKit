@@ -36,9 +36,11 @@
 #include "pk-transaction-private.h"
 #include "pk-scheduler.h"
 
-
-#define PK_TRANSACTION_ERROR_INPUT_INVALID	14
-#define GET_DETAILS_TEST_DATA "details\tgimp;3.0.4-84;x86_64;Solus\tGNU Image Manipulation Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image editor.\thttps://www.gimp.org/\t"
+#define PK_TRANSACTION_ERROR_INPUT_INVALID 14
+#define GET_DETAILS_TEST_DATA                                            \
+	"details\tgimp;3.0.4-84;x86_64;Solus\tGNU Image Manipulation "   \
+	"Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image " \
+	"editor.\thttps://www.gimp.org/\t"
 
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
@@ -47,7 +49,7 @@ static guint _test_loop_timeout_id = 0;
 static gboolean
 _g_test_hang_check_cb (gpointer user_data)
 {
-	guint timeout_ms = *((guint*) user_data);
+	guint timeout_ms = *((guint *) user_data);
 	g_main_loop_quit (_test_loop);
 	g_warning ("loop not completed in %ims", timeout_ms);
 	g_assert_not_reached ();
@@ -111,28 +113,25 @@ pk_test_backend_watch_file_cb (PkBackend *backend, gpointer user_data)
 }
 
 static void
-pk_test_backend_func_true (PkBackendJob *job,
-			   GVariant *params,
-			   gpointer user_data)
+pk_test_backend_func_true (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	g_usleep (1000*1000);
+	g_usleep (1000 * 1000);
 	g_assert_cmpint (GPOINTER_TO_INT (user_data), ==, 999);
 	/* trigger duplicate test */
 
-	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
+	pk_backend_job_package (job,
+				PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
-	pk_backend_job_package (job, PK_INFO_ENUM_AVAILABLE,
+	pk_backend_job_package (job,
+				PK_INFO_ENUM_AVAILABLE,
 				"vips-doc;7.12.4-2.fc8;noarch;linva",
 				"The vips documentation package.");
 }
 
 static void
-pk_test_backend_func_immediate_false (PkBackendJob *job,
-				      GVariant *params,
-				      gpointer user_data)
-{
-}
+pk_test_backend_func_immediate_false (PkBackendJob *job, GVariant *params, gpointer user_data)
+{}
 
 static void
 pk_test_backend_package_cb (PkBackend *backend, PkPackage *package, gpointer user_data)
@@ -174,7 +173,10 @@ pk_test_backend_func (void)
 	g_assert_true (ret);
 
 	/* set up a watch file on a config file */
-	ret = pk_backend_watch_file (backend, filename, (PkBackendFileChanged) pk_test_backend_watch_file_cb, NULL);
+	ret = pk_backend_watch_file (backend,
+				     filename,
+				     (PkBackendFileChanged) pk_test_backend_watch_file_cb,
+				     NULL);
 	g_assert_true (ret);
 
 	/* change the config file */
@@ -282,10 +284,7 @@ pk_test_backend_func (void)
 	pk_backend_job_set_backend (job, backend);
 
 	/* wait for a thread to return false (straight away) */
-	ret = pk_backend_job_thread_create (job,
-					    pk_test_backend_func_immediate_false,
-					    NULL,
-					    NULL);
+	ret = pk_backend_job_thread_create (job, pk_test_backend_func_immediate_false, NULL, NULL);
 	g_assert_true (ret);
 
 	/* wait for Finished */
@@ -298,8 +297,7 @@ pk_test_backend_func (void)
 	pk_backend_job_error_code (job, PK_ERROR_ENUM_GPG_FAILURE, "test error");
 
 	/* get exit code from error code */
-	g_assert_cmpint (pk_backend_job_get_exit_code (job), ==,
-		         PK_EXIT_ENUM_NEED_UNTRUSTED);
+	g_assert_cmpint (pk_backend_job_get_exit_code (job), ==, PK_EXIT_ENUM_NEED_UNTRUSTED);
 }
 
 static guint _backend_spawn_number_packages = 0;
@@ -313,15 +311,18 @@ pk_test_backend_spawn_finished_cb (PkBackendJob *job,
 }
 
 static void
-pk_test_backend_spawn_package_cb (PkBackend *backend, PkInfoEnum info,
-				  const gchar *package_id, const gchar *summary,
+pk_test_backend_spawn_package_cb (PkBackend *backend,
+				  PkInfoEnum info,
+				  const gchar *package_id,
+				  const gchar *summary,
 				  PkBackendSpawn *backend_spawn)
 {
 	_backend_spawn_number_packages++;
 }
 
 static void
-pk_test_backend_spawn_packages_cb (PkBackend *backend, GPtrArray *package_array,
+pk_test_backend_spawn_packages_cb (PkBackend *backend,
+				   GPtrArray *package_array,
 				   PkBackendSpawn *backend_spawn)
 {
 	_backend_spawn_number_packages += package_array->len;
@@ -388,7 +389,10 @@ pk_test_backend_spawn_func (void)
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data failure */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "error\tnot-present-woohoo\tdescription text", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    "error\tnot-present-woohoo\tdescription text",
+					    NULL);
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data Status */
@@ -396,15 +400,26 @@ pk_test_backend_spawn_func (void)
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (
+	    backend_spawn,
+	    job,
+	    "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;data",
+	    NULL);
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data", NULL);
+	ret = pk_backend_spawn_inject_data (
+	    backend_spawn,
+	    job,
+	    "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;data",
+	    NULL);
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "requirerestart\tsystem\tdetails about the restart", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    "requirerestart\tsystem\tdetails about the restart",
+					    NULL);
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data AllowUpdate1 */
@@ -416,19 +431,32 @@ pk_test_backend_spawn_func (void)
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data details - valid (install size, download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\t20920696", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    GET_DETAILS_TEST_DATA "145158504\t20920696",
+					    NULL);
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data details - valid (huge install size, huge download size) - actual sizes from "0ad-data;0.27.0-11;x86_64;Solus" */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "3526938164\t1368603575", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    GET_DETAILS_TEST_DATA "3526938164\t1368603575",
+					    NULL);
 	g_assert_true (ret);
 
 	/* test pk_backend_spawn_inject_data details - invalid (invalid size, valid download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "INVALID-SIZE\t1368603575", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    GET_DETAILS_TEST_DATA "INVALID-SIZE\t1368603575",
+					    NULL);
 	g_assert_true (!ret);
 
 	/* test pk_backend_spawn_inject_data details - invalid (valid size, invalid download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, GET_DETAILS_TEST_DATA "145158504\tINVALID-DOWNLOAD-SIZE", NULL);
+	ret = pk_backend_spawn_inject_data (backend_spawn,
+					    job,
+					    GET_DETAILS_TEST_DATA
+					    "145158504\tINVALID-DOWNLOAD-SIZE",
+					    NULL);
 	g_assert_true (!ret);
 
 	/* convert proxy uri (bare) */
@@ -447,8 +475,11 @@ pk_test_backend_spawn_func (void)
 	g_free (uri);
 
 	/* test pk_backend_spawn_parse_common_out Package */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job,
-		"package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software", NULL);
+	ret = pk_backend_spawn_inject_data (
+	    backend_spawn,
+	    job,
+	    "package\tinstalled\tgnome-power-manager;0.0.1;i386;data\tMore useless software",
+	    NULL);
 	g_assert_true (ret);
 
 	/* manually unlock as we have no engine */
@@ -531,7 +562,7 @@ pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, gpointer user_data)
 static gboolean
 cancel_cb (gpointer data)
 {
-	PkSpawn *spawn = PK_SPAWN(data);
+	PkSpawn *spawn = PK_SPAWN (data);
 	pk_spawn_kill (spawn);
 	return FALSE;
 }
@@ -544,10 +575,8 @@ new_spawn_object (PkSpawn **pspawn)
 		g_object_unref (*pspawn);
 	conf = g_key_file_new ();
 	*pspawn = pk_spawn_new (conf);
-	g_signal_connect (*pspawn, "exit",
-			  G_CALLBACK (pk_test_exit_cb), NULL);
-	g_signal_connect (*pspawn, "stdout",
-			  G_CALLBACK (pk_test_stdout_cb), NULL);
+	g_signal_connect (*pspawn, "exit", G_CALLBACK (pk_test_exit_cb), NULL);
+	g_signal_connect (*pspawn, "stdout", G_CALLBACK (pk_test_stdout_cb), NULL);
 	stdout_count = 0;
 }
 
@@ -600,7 +629,7 @@ pk_test_spawn_func (void)
 	g_assert_cmpint (finished_count, ==, 1);
 
 	/* make sure we got the right stdout data */
-	g_assert_cmpint (stdout_count, ==, 4+11);
+	g_assert_cmpint (stdout_count, ==, 4 + 11);
 
 	/* get new object */
 	new_spawn_object (&spawn);
@@ -609,7 +638,9 @@ pk_test_spawn_func (void)
 	mexit = -1;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-proxy.sh", " ", 0);
 	envp = g_strsplit ("http_proxy=username:password@server:port "
-			   "ftp_proxy=username:password@server:port", " ", 0);
+			   "ftp_proxy=username:password@server:port",
+			   " ",
+			   0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -643,9 +674,7 @@ pk_test_spawn_func (void)
 	/* with SIGKILL disabled the helper is only ever sent SIGTERM */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
 	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
-	g_object_set (spawn,
-		      "allow-sigkill", FALSE,
-		      NULL);
+	g_object_set (spawn, "allow-sigkill", FALSE, NULL);
 	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -688,8 +717,12 @@ pk_test_spawn_func (void)
 
 	/* run the dispatcher */
 	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager", "\t", 0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C.UTF-8 BACKGROUND=TRUE INTERACTIVE=TRUE UID=500", " ", 0);
+	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager",
+			   "\t",
+			   0);
+	envp = g_strsplit ("NETWORK=TRUE LANG=C.UTF-8 BACKGROUND=TRUE INTERACTIVE=TRUE UID=500",
+			   " ",
+			   0);
 	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -843,7 +876,9 @@ pk_test_transaction_db_func (void)
 	g_assert_cmpint (value, <=, 4);
 
 	/* can we set the proxies */
-	ret = pk_transaction_db_set_proxy (db, 500, "session1",
+	ret = pk_transaction_db_set_proxy (db,
+					   500,
+					   "session1",
 					   "127.0.0.1:80",
 					   NULL,
 					   "127.0.0.1:21",
@@ -853,7 +888,9 @@ pk_test_transaction_db_func (void)
 	g_assert_true (ret);
 
 	/* can we set the proxies (overwrite) */
-	ret = pk_transaction_db_set_proxy (db, 500, "session1",
+	ret = pk_transaction_db_set_proxy (db,
+					   500,
+					   "session1",
 					   "127.0.0.1:80",
 					   NULL,
 					   "127.0.0.1:21",
@@ -863,7 +900,9 @@ pk_test_transaction_db_func (void)
 	g_assert_true (ret);
 
 	/* can we get the proxies (non-existant user) */
-	ret = pk_transaction_db_get_proxy (db, 501, "session1",
+	ret = pk_transaction_db_get_proxy (db,
+					   501,
+					   "session1",
 					   &proxy_http,
 					   NULL,
 					   &proxy_ftp,
@@ -875,7 +914,9 @@ pk_test_transaction_db_func (void)
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
 	/* can we get the proxies (non-existant session) */
-	ret = pk_transaction_db_get_proxy (db, 500, "session2",
+	ret = pk_transaction_db_get_proxy (db,
+					   500,
+					   "session2",
 					   &proxy_http,
 					   NULL,
 					   &proxy_ftp,
@@ -887,7 +928,9 @@ pk_test_transaction_db_func (void)
 	g_assert_cmpstr (proxy_ftp, ==, NULL);
 
 	/* can we get the proxies (match) */
-	ret = pk_transaction_db_get_proxy (db, 500, "session1",
+	ret = pk_transaction_db_get_proxy (db,
+					   500,
+					   "session1",
 					   &proxy_http,
 					   NULL,
 					   &proxy_ftp,
@@ -902,7 +945,10 @@ pk_test_transaction_db_func (void)
 static PkTransactionDb *db = NULL;
 
 static void
-pk_test_scheduler_finished_cb (PkTransaction *transaction, const gchar *exit_text, guint time, gpointer user_data)
+pk_test_scheduler_finished_cb (PkTransaction *transaction,
+			       const gchar *exit_text,
+			       guint time,
+			       gpointer user_data)
 {
 	_g_test_loop_quit ();
 }
@@ -1020,13 +1066,14 @@ pk_test_scheduler_func (void)
 	/* get from db */
 	transaction = pk_scheduler_get_transaction (tlist, tid);
 	g_assert_true (transaction != NULL);
-	g_signal_connect (transaction, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 
 	/* this tests the run-on-commit action */
 	pk_transaction_get_updates (transaction,
-				    g_variant_new ("(t)",
-						   pk_bitfield_value (PK_FILTER_ENUM_NONE)),
+				    g_variant_new ("(t)", pk_bitfield_value (PK_FILTER_ENUM_NONE)),
 				    NULL);
 
 	/* make sure transaction has correct flags */
@@ -1093,46 +1140,49 @@ pk_test_scheduler_func (void)
 	g_strfreev (array);
 
 	transaction = pk_scheduler_get_transaction (tlist, tid_item1);
-	g_signal_connect (transaction, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction = pk_scheduler_get_transaction (tlist, tid_item2);
-	g_signal_connect (transaction, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction = pk_scheduler_get_transaction (tlist, tid_item3);
-	g_signal_connect (transaction, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 
 	/* this starts one action */
 	array = g_strsplit ("dave", " ", -1);
 	transaction = pk_scheduler_get_transaction (tlist, tid_item1);
 	pk_transaction_make_exclusive (transaction);
-	pk_transaction_search_details (transaction,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_search_details (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* this should be chained after the first action completes */
 	array = g_strsplit ("power", " ", -1);
 	transaction = pk_scheduler_get_transaction (tlist, tid_item2);
 	pk_transaction_make_exclusive (transaction);
-	pk_transaction_search_names (transaction,
-				     g_variant_new ("(t^as)",
-						    pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						    array),
-				     NULL);
+	pk_transaction_search_names (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* this starts be chained after the second action completes */
 	array = g_strsplit ("paul", " ", -1);
 	transaction = pk_scheduler_get_transaction (tlist, tid_item3);
 	pk_transaction_make_exclusive (transaction);
-	pk_transaction_search_details (transaction,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_search_details (
+	    transaction,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* get transactions (committed, not finished) in progress (all) */
@@ -1289,61 +1339,67 @@ pk_test_scheduler_parallel_func (void)
 	g_strfreev (array);
 
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item1);
-	g_signal_connect (transaction1, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction1,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
-	g_signal_connect (transaction1, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction1,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item3);
-	g_signal_connect (transaction1, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction1,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
-	g_signal_connect (transaction1, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction1,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item5);
-	g_signal_connect (transaction1, "finished",
-			  G_CALLBACK (pk_test_scheduler_finished_cb), NULL);
+	g_signal_connect (transaction1,
+			  "finished",
+			  G_CALLBACK (pk_test_scheduler_finished_cb),
+			  NULL);
 
 	/* this starts one action */
 	array = g_strsplit ("dave", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item1);
-	pk_transaction_search_details (transaction1,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_search_details (
+	    transaction1,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* run a second (and exclusive!) action in parallel */
 	array = g_strsplit ("libawesome;42;i386;debian", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
-	pk_transaction_install_packages (transaction1,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_install_packages (
+	    transaction1,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* run a third action in parallel */
 	array = g_strsplit ("power", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item3);
-	pk_transaction_search_names (transaction1,
-				     g_variant_new ("(t^as)",
-						    pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						    array),
-				     NULL);
+	pk_transaction_search_names (
+	    transaction1,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* run a fourth (and exclusive!) action in parallel */
 	array = g_strsplit ("foobar;1.1.0;i386;debian", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
 	pk_transaction_skip_auth_checks (transaction1, TRUE);
-	pk_transaction_install_packages (transaction1,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_install_packages (
+	    transaction1,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* get transactions (committed, not finished) in progress (all should be RUNNING now) */
@@ -1370,11 +1426,10 @@ pk_test_scheduler_parallel_func (void)
 	/* run a fifth (non-exclusive) action in parallel to the running exclusive */
 	array = g_strsplit ("paul", " ", -1);
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item5);
-	pk_transaction_search_details (transaction1,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_value (PK_FILTER_ENUM_NONE),
-						      array),
-				       NULL);
+	pk_transaction_search_details (
+	    transaction1,
+	    g_variant_new ("(t^as)", pk_bitfield_value (PK_FILTER_ENUM_NONE), array),
+	    NULL);
 	g_strfreev (array);
 
 	/* get all transactions in queue */
@@ -1392,12 +1447,11 @@ pk_test_scheduler_parallel_func (void)
 		transaction2 = pk_scheduler_get_transaction (tlist, tid_item3);
 		transaction3 = pk_scheduler_get_transaction (tlist, tid_item5);
 
-		if (i >= 100 ||
-		    transaction1 == NULL ||
-		    transaction2 == NULL ||
+		if (i >= 100 || transaction1 == NULL || transaction2 == NULL ||
 		    transaction3 == NULL) {
 			g_print ("Dumping scheduler state:\n%s\n", pk_scheduler_get_state (tlist));
-			g_warning ("did not reach state where all non-exclusive transactions are finished");
+			g_warning ("did not reach state where all non-exclusive transactions are "
+				   "finished");
 			g_assert_not_reached ();
 		}
 
@@ -1418,7 +1472,9 @@ pk_test_scheduler_parallel_func (void)
 
 	/* make sure transaction2 (first exclusive) is FINISHED */
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item2);
-	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_FINISHED);
+	g_assert_cmpint (pk_transaction_get_state (transaction1),
+			 ==,
+			 PK_TRANSACTION_STATE_FINISHED);
 
 	/* make sure transaction4 (second exclusive) is RUNNING now */
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
@@ -1429,7 +1485,9 @@ pk_test_scheduler_parallel_func (void)
 
 	/* make sure transaction4 (second exclusive) is now finished too */
 	transaction1 = pk_scheduler_get_transaction (tlist, tid_item4);
-	g_assert_cmpint (pk_transaction_get_state (transaction1), ==, PK_TRANSACTION_STATE_FINISHED);
+	g_assert_cmpint (pk_transaction_get_state (transaction1),
+			 ==,
+			 PK_TRANSACTION_STATE_FINISHED);
 
 	/* we shouldn't have transactions left */
 	array = pk_scheduler_get_array (tlist);
@@ -1463,4 +1521,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-

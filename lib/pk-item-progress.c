@@ -35,7 +35,7 @@
 #include "pk-item-progress.h"
 #include "pk-enum.h"
 
-static void     pk_item_progress_finalize	(GObject     *object);
+static void pk_item_progress_finalize (GObject *object);
 
 /**
  * PkItemProgressPrivate:
@@ -44,9 +44,9 @@ static void     pk_item_progress_finalize	(GObject     *object);
  **/
 struct _PkItemProgressPrivate
 {
-	gchar				*package_id;
-	PkStatusEnum			 status;
-	guint				 percentage;
+	gchar *package_id;
+	PkStatusEnum status;
+	guint percentage;
 };
 
 enum {
@@ -143,7 +143,10 @@ pk_item_progress_get_property (GObject *object, guint prop_id, GValue *value, GP
  * pk_item_progress_set_property:
  **/
 static void
-pk_item_progress_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_item_progress_set_property (GObject *object,
+			       guint prop_id,
+			       const GValue *value,
+			       GParamSpec *pspec)
 {
 	PkItemProgress *item_progress = PK_ITEM_PROGRESS (object);
 	PkItemProgressPrivate *priv = GET_PRIVATE(item_progress);
@@ -182,7 +185,9 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_string ("package-id", NULL, NULL,
+	pspec = g_param_spec_string ("package-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
@@ -192,8 +197,12 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 *
 	 * Since: 0.8.2
 	 */
-	pspec = g_param_spec_uint ("status", NULL, NULL,
-				   0, G_MAXUINT, 0,
+	pspec = g_param_spec_uint ("status",
+				   NULL,
+				   NULL,
+				   0,
+				   G_MAXUINT,
+				   0,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATUS, pspec);
 
@@ -202,8 +211,12 @@ pk_item_progress_class_init (PkItemProgressClass *klass)
 	 *
 	 * Since: 0.8.1
 	 */
-	pspec = g_param_spec_uint ("percentage", NULL, NULL,
-				   0, G_MAXUINT, 0,
+	pspec = g_param_spec_uint ("percentage",
+				   NULL,
+				   NULL,
+				   0,
+				   G_MAXUINT,
+				   0,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PERCENTAGE, pspec);
 }

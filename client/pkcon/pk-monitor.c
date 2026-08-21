@@ -79,14 +79,13 @@ pk_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *t
 	g_autofree gchar *text = NULL;
 
 	/* get data */
-	g_object_get (item,
-		      "media-type", &type,
-		      "media-id", &id,
-		      "media-text", &text,
-		      NULL);
+	g_object_get (item, "media-type", &type, "media-id", &id, "media-text", &text, NULL);
 
 	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
-		 transaction_id, pk_media_type_enum_to_string (type), id, text);
+		 transaction_id,
+		 pk_media_type_enum_to_string (type),
+		 id,
+		 text);
 }
 
 static void
@@ -108,21 +107,19 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 
 	/* get progress data about the transaction */
-	g_object_get (results,
-		      "progress", &progress,
-		      NULL);
+	g_object_get (results, "progress", &progress, NULL);
 
 	/* get data */
-	g_object_get (progress,
-		      "transaction-id", &transaction_id,
-		      NULL);
+	g_object_get (progress, "transaction-id", &transaction_id, NULL);
 
 	exit_enum = pk_results_get_exit_code (results);
 	g_print ("%s\texit code: %s\n", transaction_id, pk_exit_enum_to_string (exit_enum));
 
 	/* media change required */
 	media_array = pk_results_get_media_change_required_array (results);
-	g_ptr_array_foreach (media_array, (GFunc) pk_monitor_media_change_required_cb, transaction_id);
+	g_ptr_array_foreach (media_array,
+			     (GFunc) pk_monitor_media_change_required_cb,
+			     transaction_id);
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
@@ -134,7 +131,7 @@ pk_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	}
 }
 
-static gchar*
+static gchar *
 pk_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 {
 	gboolean ret;
@@ -147,15 +144,13 @@ pk_monitor_get_caller_info (GDBusProxy *bus_proxy, const gchar *bus_name)
 	/* get pid from D-Bus */
 	value = g_dbus_proxy_call_sync (bus_proxy,
 					"GetConnectionUnixProcessID",
-					g_variant_new ("(s)",
-						       bus_name),
+					g_variant_new ("(s)", bus_name),
 					G_DBUS_CALL_FLAGS_NONE,
 					2000,
 					NULL,
 					&error);
 	if (value == NULL) {
-		g_warning ("Failed to get pid for %s: %s",
-			   bus_name, error->message);
+		g_warning ("Failed to get pid for %s: %s", bus_name, error->message);
 		return g_strdup_printf ("bus:%s", bus_name);
 	}
 	g_variant_get (value, "(u)", &pid);
@@ -191,15 +186,24 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 
 	/* get data */
 	g_object_get (progress,
-		      "role", &role,
-		      "status", &status,
-		      "percentage", &percentage,
-		      "allow-cancel", &allow_cancel,
-		      "package", &package,
-		      "item-progress", &item_progress,
-		      "package-id", &package_id,
-		      "transaction-id", &transaction_id,
-		      "sender", &sender,
+		      "role",
+		      &role,
+		      "status",
+		      &status,
+		      "percentage",
+		      &percentage,
+		      "allow-cancel",
+		      &allow_cancel,
+		      "package",
+		      &package,
+		      "item-progress",
+		      &item_progress,
+		      "package-id",
+		      &package_id,
+		      "transaction-id",
+		      &transaction_id,
+		      "sender",
+		      &sender,
 		      NULL);
 
 	/* don't print before we have properties */
@@ -212,9 +216,12 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 		g_print ("%s\tpackage-id   %s\n", transaction_id, package_id);
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE) {
 		g_object_get (package,
-			      "info", &info,
-			      "package-id", &package_id_tmp,
-			      "summary", &summary,
+			      "info",
+			      &info,
+			      "package-id",
+			      &package_id_tmp,
+			      "summary",
+			      &summary,
 			      NULL);
 		g_print ("%s\tpackage      %s:%s:%s\n",
 			 transaction_id,
@@ -226,7 +233,9 @@ pk_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer user
 	} else if (type == PK_PROGRESS_TYPE_ALLOW_CANCEL) {
 		g_print ("%s\tallow_cancel %i\n", transaction_id, allow_cancel);
 	} else if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_print ("%s\tstatus       %s\n", transaction_id, pk_status_enum_to_string (status));
+		g_print ("%s\tstatus       %s\n",
+			 transaction_id,
+			 pk_status_enum_to_string (status));
 	} else if (type == PK_PROGRESS_TYPE_ITEM_PROGRESS) {
 		g_print ("%s\titem-progress %s,%i [%s]\n",
 			 transaction_id,
@@ -252,7 +261,7 @@ pk_monitor_list_print (PkTransactionList *tlist)
 		return;
 	}
 	for (i = 0; list[i] != NULL; i++)
-		g_print (" %i\t%s\n", i+1, list[i]);
+		g_print (" %i\t%s\n", i + 1, list[i]);
 }
 
 static void
@@ -273,12 +282,16 @@ pk_monitor_get_daemon_state_cb (PkControl *control, GAsyncResult *res, gpointer 
 static void
 pk_monitor_get_daemon_state (PkControl *control)
 {
-	pk_control_get_daemon_state_async (control, NULL,
-					   (GAsyncReadyCallback) pk_monitor_get_daemon_state_cb, NULL);
+	pk_control_get_daemon_state_async (control,
+					   NULL,
+					   (GAsyncReadyCallback) pk_monitor_get_daemon_state_cb,
+					   NULL);
 }
 
 static void
-pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_ids, gpointer user_data)
+pk_monitor_transaction_list_changed_cb (PkControl *control,
+					gchar **transaction_ids,
+					gpointer user_data)
 {
 	/* only print state when verbose */
 	if (pk_debug_is_verbose ())
@@ -286,17 +299,25 @@ pk_monitor_transaction_list_changed_cb (PkControl *control, gchar **transaction_
 }
 
 static void
-pk_monitor_transaction_list_added_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer user_data)
+pk_monitor_transaction_list_added_cb (PkTransactionList *tlist,
+				      const gchar *transaction_id,
+				      gpointer user_data)
 {
 	g_debug ("added: %s", transaction_id);
-	pk_client_adopt_async (client, transaction_id, NULL,
-			       (PkProgressCallback) pk_monitor_progress_cb, user_data,
-			       (GAsyncReadyCallback) pk_monitor_adopt_cb, user_data);
+	pk_client_adopt_async (client,
+			       transaction_id,
+			       NULL,
+			       (PkProgressCallback) pk_monitor_progress_cb,
+			       user_data,
+			       (GAsyncReadyCallback) pk_monitor_adopt_cb,
+			       user_data);
 	pk_monitor_list_print (tlist);
 }
 
 static void
-pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist, const gchar *transaction_id, gpointer data)
+pk_monitor_transaction_list_removed_cb (PkTransactionList *tlist,
+					const gchar *transaction_id,
+					gpointer data)
 {
 	g_debug ("removed: %s", transaction_id);
 	pk_monitor_list_print (tlist);
@@ -325,15 +346,15 @@ main (int argc, char *argv[])
 	g_autoptr(GDBusProxy) bus_proxy = NULL;
 	g_autoptr(GError) error = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			_("Show the program version and exit"), NULL},
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -361,14 +382,14 @@ main (int argc, char *argv[])
 		goto out;
 	}
 	bus_proxy = g_dbus_proxy_new_sync (bus_conn,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-				       NULL,
-				       "org.freedesktop.DBus",
-				       "/org/freedesktop/DBus/Bus",
-				       "org.freedesktop.DBus",
-				       NULL,
-				       &error);
+					   G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+					       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+					   NULL,
+					   "org.freedesktop.DBus",
+					   "/org/freedesktop/DBus/Bus",
+					   "org.freedesktop.DBus",
+					   NULL,
+					   &error);
 	if (bus_proxy == NULL) {
 		g_printerr ("Cannot connect to D-Bus: %s\n", error->message);
 		retval = EXIT_FAILURE;
@@ -378,28 +399,48 @@ main (int argc, char *argv[])
 	loop = g_main_loop_new (NULL, FALSE);
 
 	control = pk_control_new ();
-	g_signal_connect (control, "installed-changed",
-			  G_CALLBACK (pk_monitor_installed_changed_cb), NULL);
-	g_signal_connect (control, "repo-list-changed",
-			  G_CALLBACK (pk_monitor_repo_list_changed_cb), NULL);
-	g_signal_connect (control, "updates-changed",
-			  G_CALLBACK (pk_monitor_updates_changed_cb), NULL);
-	g_signal_connect (control, "transaction-list-changed",
-			  G_CALLBACK (pk_monitor_transaction_list_changed_cb), NULL);
-	g_signal_connect (control, "notify::locked",
-			  G_CALLBACK (pk_monitor_notify_locked_cb), NULL);
-	g_signal_connect (control, "notify::connected",
-			  G_CALLBACK (pk_monitor_notify_connected_cb), NULL);
-	g_signal_connect (control, "notify::network-state",
-			  G_CALLBACK (pk_monitor_notify_network_status_cb), NULL);
-	pk_control_get_properties_async (control, NULL,
-					 (GAsyncReadyCallback) pk_control_properties_cb, NULL);
+	g_signal_connect (control,
+			  "installed-changed",
+			  G_CALLBACK (pk_monitor_installed_changed_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "repo-list-changed",
+			  G_CALLBACK (pk_monitor_repo_list_changed_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "updates-changed",
+			  G_CALLBACK (pk_monitor_updates_changed_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "transaction-list-changed",
+			  G_CALLBACK (pk_monitor_transaction_list_changed_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "notify::locked",
+			  G_CALLBACK (pk_monitor_notify_locked_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "notify::connected",
+			  G_CALLBACK (pk_monitor_notify_connected_cb),
+			  NULL);
+	g_signal_connect (control,
+			  "notify::network-state",
+			  G_CALLBACK (pk_monitor_notify_network_status_cb),
+			  NULL);
+	pk_control_get_properties_async (control,
+					 NULL,
+					 (GAsyncReadyCallback) pk_control_properties_cb,
+					 NULL);
 
 	tlist = pk_transaction_list_new ();
-	g_signal_connect (tlist, "added",
-			  G_CALLBACK (pk_monitor_transaction_list_added_cb), bus_proxy);
-	g_signal_connect (tlist, "removed",
-			  G_CALLBACK (pk_monitor_transaction_list_removed_cb), NULL);
+	g_signal_connect (tlist,
+			  "added",
+			  G_CALLBACK (pk_monitor_transaction_list_added_cb),
+			  bus_proxy);
+	g_signal_connect (tlist,
+			  "removed",
+			  G_CALLBACK (pk_monitor_transaction_list_removed_cb),
+			  NULL);
 
 	client = pk_client_new ();
 

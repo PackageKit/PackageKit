@@ -29,7 +29,7 @@
 
 struct _PkTaskWrapper
 {
- PkTask parent;
+	PkTask parent;
 };
 
 G_DEFINE_TYPE (PkTaskWrapper, pk_task_wrapper, PK_TYPE_TASK)
@@ -98,8 +98,10 @@ pk_task_wrapper_simulate_question (PkTask *task, guint request, PkResults *resul
 		package = g_ptr_array_index (array, i);
 		package_id = pk_package_get_id (package);
 		printable = pk_package_id_to_printable (package_id);
-		g_print ("%s\t%s\t%s\n", pk_info_enum_to_string (pk_package_get_info (package)),
-			 printable, pk_package_get_summary (package));
+		g_print ("%s\t%s\t%s\n",
+			 pk_info_enum_to_string (pk_package_get_info (package)),
+			 printable,
+			 pk_package_get_summary (package));
 	}
 
 	/* just accept without asking */
@@ -127,8 +129,7 @@ pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
  **/
 static void
 pk_task_wrapper_init (PkTaskWrapper *task)
-{
-}
+{}
 
 /**
  * pk_task_wrapper_new:

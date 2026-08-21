@@ -29,36 +29,33 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_SCHEDULER		(pk_scheduler_get_type ())
+#define PK_TYPE_SCHEDULER (pk_scheduler_get_type ())
 G_DECLARE_FINAL_TYPE (PkScheduler, pk_scheduler, PK, SCHEDULER, GObject)
 
-#define PK_SCHEDULER_ERROR		(pk_scheduler_error_quark ())
-#define PK_SCHEDULER_TYPE_ERROR	(pk_scheduler_error_get_type ())
+#define PK_SCHEDULER_ERROR	(pk_scheduler_error_quark ())
+#define PK_SCHEDULER_TYPE_ERROR (pk_scheduler_error_get_type ())
 
+PkScheduler   *pk_scheduler_new (GKeyFile *conf);
 
-PkScheduler	*pk_scheduler_new		(GKeyFile	*conf);
-
-gboolean	 pk_scheduler_create		(PkScheduler	*scheduler,
-						 const gchar	*tid,
-						 const gchar	*sender,
-						 GError		**error);
-gboolean	 pk_scheduler_remove		(PkScheduler	*scheduler,
-						 const gchar	*tid);
-gboolean	 pk_scheduler_role_present	(PkScheduler	*scheduler,
-						 PkRoleEnum	 role);
-gchar		**pk_scheduler_get_array	(PkScheduler	*scheduler)
-						 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_scheduler_get_state		(PkScheduler	*scheduler)
-						 G_GNUC_WARN_UNUSED_RESULT;
-guint		 pk_scheduler_get_size		(PkScheduler	*scheduler);
-gboolean	 pk_scheduler_get_locked	(PkScheduler	*scheduler);
-gboolean	 pk_scheduler_get_inhibited	(PkScheduler	*scheduler);
-PkTransaction	*pk_scheduler_get_transaction	(PkScheduler	*scheduler,
-						 const gchar	*tid);
-void		 pk_scheduler_cancel_background	(PkScheduler	*scheduler);
-void		 pk_scheduler_cancel_queued	(PkScheduler	*scheduler);
-void		 pk_scheduler_set_backend	(PkScheduler	*scheduler,
-						 PkBackend	*backend);
+gboolean       pk_scheduler_create (PkScheduler *scheduler,
+				    const gchar *tid,
+				    const gchar *sender,
+				    GError     **error);
+gboolean       pk_scheduler_remove (PkScheduler *scheduler,
+				    const gchar *tid);
+gboolean       pk_scheduler_role_present (PkScheduler *scheduler,
+					  PkRoleEnum   role);
+gchar	     **pk_scheduler_get_array (PkScheduler *scheduler) G_GNUC_WARN_UNUSED_RESULT;
+gchar	      *pk_scheduler_get_state (PkScheduler *scheduler) G_GNUC_WARN_UNUSED_RESULT;
+guint	       pk_scheduler_get_size (PkScheduler *scheduler);
+gboolean       pk_scheduler_get_locked (PkScheduler *scheduler);
+gboolean       pk_scheduler_get_inhibited (PkScheduler *scheduler);
+PkTransaction *pk_scheduler_get_transaction (PkScheduler *scheduler,
+					     const gchar *tid);
+void	       pk_scheduler_cancel_background (PkScheduler *scheduler);
+void	       pk_scheduler_cancel_queued (PkScheduler *scheduler);
+void	       pk_scheduler_set_backend (PkScheduler *scheduler,
+					 PkBackend   *backend);
 
 G_END_DECLS
 

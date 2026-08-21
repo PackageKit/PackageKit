@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -32,16 +32,19 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_REQUIRE_RESTART		(pk_require_restart_get_type ())
-#define PK_REQUIRE_RESTART(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestart))
-#define PK_REQUIRE_RESTART_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REQUIRE_RESTART, PkRequireRestartClass))
-#define PK_IS_REQUIRE_RESTART(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REQUIRE_RESTART))
-#define PK_IS_REQUIRE_RESTART_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REQUIRE_RESTART))
-#define PK_REQUIRE_RESTART_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestartClass))
+#define PK_TYPE_REQUIRE_RESTART (pk_require_restart_get_type ())
+#define PK_REQUIRE_RESTART(o) \
+	(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestart))
+#define PK_REQUIRE_RESTART_CLASS(k) \
+	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REQUIRE_RESTART, PkRequireRestartClass))
+#define PK_IS_REQUIRE_RESTART(o)       (G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REQUIRE_RESTART))
+#define PK_IS_REQUIRE_RESTART_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REQUIRE_RESTART))
+#define PK_REQUIRE_RESTART_GET_CLASS(o) \
+	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_REQUIRE_RESTART, PkRequireRestartClass))
 
-typedef struct _PkRequireRestartPrivate		PkRequireRestartPrivate;
-typedef struct _PkRequireRestart		PkRequireRestart;
-typedef struct _PkRequireRestartClass		PkRequireRestartClass;
+typedef struct _PkRequireRestartPrivate PkRequireRestartPrivate;
+typedef struct _PkRequireRestart	PkRequireRestart;
+typedef struct _PkRequireRestartClass	PkRequireRestartClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRequireRestart, g_object_unref)
@@ -49,13 +52,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRequireRestart, g_object_unref)
 
 struct _PkRequireRestart
 {
-	 PkSource			 parent;
-	 PkRequireRestartPrivate	*priv;
+	PkSource		 parent;
+	PkRequireRestartPrivate *priv;
 };
 
 struct _PkRequireRestartClass
 {
-	PkSourceClass	parent_class;
+	PkSourceClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -64,10 +67,9 @@ struct _PkRequireRestartClass
 	void (*_pk_reserved5) (void);
 };
 
-GType			 pk_require_restart_get_type	 	(void);
-PkRequireRestart	*pk_require_restart_new			(void);
+GType		  pk_require_restart_get_type (void);
+PkRequireRestart *pk_require_restart_new (void);
 
 G_END_DECLS
 
 #endif /* __PK_REQUIRE_RESTART_H */
-

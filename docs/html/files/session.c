@@ -3,9 +3,7 @@
 int
 main (int argc, char *argv[])
 {
-	const gchar *packages[] = {"openoffice-clipart",
-				   "openoffice-clipart-extras",
-				   NULL};
+	const gchar *packages[] = { "openoffice-clipart", "openoffice-clipart-extras", NULL };
 	GDBusProxy *proxy = NULL;
 	GError *error = NULL;
 	guint32 xid = 0;
@@ -13,11 +11,13 @@ main (int argc, char *argv[])
 
 	/* get a session bus proxy */
 	proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-					       G_DBUS_PROXY_FLAGS_NONE, NULL,
+					       G_DBUS_PROXY_FLAGS_NONE,
+					       NULL,
 					       "org.freedesktop.PackageKit",
 					       "/org/freedesktop/PackageKit",
 					       "org.freedesktop.PackageKit.Modify",
-					       NULL, &error);
+					       NULL,
+					       &error);
 	if (proxy == NULL) {
 		g_warning ("failed: %s", error->message);
 		g_error_free (error);
@@ -30,12 +30,9 @@ main (int argc, char *argv[])
 	/* issue the sync request */
 	retval = g_dbus_proxy_call_sync (proxy,
 					 "InstallPackageNames",
-					 g_variant_new ("(u^a&ss)",
-							xid,
-							packages,
-							"hide-finished"),
+					 g_variant_new ("(u^a&ss)", xid, packages, "hide-finished"),
 					 G_DBUS_CALL_FLAGS_NONE,
-					 -1, /* timeout */
+					 -1,   /* timeout */
 					 NULL, /* cancellable */
 					 &error);
 	if (retval == NULL) {
@@ -50,4 +47,3 @@ out:
 		g_object_unref (retval);
 	return 0;
 }
-

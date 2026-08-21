@@ -43,32 +43,32 @@
 #include "pk-spawn.h"
 #include "pk-shared.h"
 
-static void     pk_spawn_finalize	(GObject       *object);
+static void pk_spawn_finalize (GObject *object);
 
-#define PK_SPAWN_POLL_DELAY	50 /* ms */
-#define PK_SPAWN_SIGKILL_DELAY	5000 /* ms */
+#define PK_SPAWN_POLL_DELAY    50   /* ms */
+#define PK_SPAWN_SIGKILL_DELAY 5000 /* ms */
 
 struct _PkSpawn
 {
-	GObject			 parent;
+	GObject parent;
 
-	pid_t			 child_pid;
-	gint			 stdin_fd;
-	gint			 stdout_fd;
-	gint			 stderr_fd;
-	guint			 poll_id;
-	guint			 kill_id;
-	gboolean		 finished;
-	gboolean		 background;
-	gboolean		 is_sending_exit;
-	gboolean		 is_changing_dispatcher;
-	gboolean		 allow_sigkill;
-	PkSpawnExitType		 exit;
-	GString			*stdout_buf;
-	GString			*stderr_buf;
-	gchar			*last_argv0;
-	gchar			**last_envp;
-	GKeyFile		*conf;
+	pid_t child_pid;
+	gint stdin_fd;
+	gint stdout_fd;
+	gint stderr_fd;
+	guint poll_id;
+	guint kill_id;
+	gboolean finished;
+	gboolean background;
+	gboolean is_sending_exit;
+	gboolean is_changing_dispatcher;
+	gboolean allow_sigkill;
+	PkSpawnExitType exit;
+	GString *stdout_buf;
+	GString *stderr_buf;
+	gchar *last_argv0;
+	gchar **last_envp;
+	GKeyFile *conf;
 };
 
 enum {
@@ -85,7 +85,7 @@ enum {
 	PROP_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkSpawn, pk_spawn, G_TYPE_OBJECT)
 
@@ -96,7 +96,7 @@ pk_spawn_read_fd_into_buffer (gint fd, GString *string)
 	gchar buffer[BUFSIZ];
 
 	/* ITS4: ignore, we manually NULL terminate and GString cannot overflow */
-	while ((bytes_read = read (fd, buffer, BUFSIZ-1)) > 0) {
+	while ((bytes_read = read (fd, buffer, BUFSIZ - 1)) > 0) {
 		buffer[bytes_read] = '\0';
 		g_string_append (string, buffer);
 	}
@@ -126,8 +126,8 @@ pk_spawn_emit_whole_lines (PkSpawn *spawn, GString *string)
 
 	bytes_processed = 0;
 	/* we only emit n-1 strings */
-	for (i = 0; i < (size-1); i++) {
-		g_signal_emit (spawn, signals [SIGNAL_STDOUT], 0, lines[i]);
+	for (i = 0; i < (size - 1); i++) {
+		g_signal_emit (spawn, signals[SIGNAL_STDOUT], 0, lines[i]);
 		/* ITS4: ignore, g_strsplit always NULL terminates */
 		bytes_processed += strlen (lines[i]) + 1;
 	}
@@ -176,7 +176,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 	/* emit all lines on standard out in one callback, as it's all probably
 	* related to the error that just happened */
 	if (spawn->stderr_buf->len != 0) {
-		g_signal_emit (spawn, signals [SIGNAL_STDERR], 0, spawn->stderr_buf->str);
+		g_signal_emit (spawn, signals[SIGNAL_STDERR], 0, spawn->stderr_buf->str);
 		g_string_set_size (spawn->stderr_buf, 0);
 	}
 
@@ -185,12 +185,12 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* Only print one in twenty times to avoid filling the screen */
 	if (limit_printing++ % 20 == 0)
-		g_debug ("polling child_pid=%ld (1/20)", (long)spawn->child_pid);
+		g_debug ("polling child_pid=%ld (1/20)", (long) spawn->child_pid);
 
 	/* check if the child exited */
 	pid = waitpid (spawn->child_pid, &status, WNOHANG);
 	if (pid == -1) {
-		g_warning ("failed to get the child PID data for %ld", (long)spawn->child_pid);
+		g_warning ("failed to get the child PID data for %ld", (long) spawn->child_pid);
 		return TRUE;
 	}
 	if (pid == 0) {
@@ -199,7 +199,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 	}
 	if (pid != spawn->child_pid) {
 		g_warning ("some other process id was returned: got %ld and wanted %ld",
-			     (long)pid, (long)spawn->child_pid);
+			   (long) pid,
+			   (long) spawn->child_pid);
 		return TRUE;
 	}
 
@@ -228,7 +229,8 @@ pk_spawn_check_child (PkSpawn *spawn)
 			g_debug ("the child process was terminated by SIGKILL");
 			spawn->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 		} else {
-			g_warning ("the child process was terminated by signal %i", WTERMSIG (status));
+			g_warning ("the child process was terminated by signal %i",
+				   WTERMSIG (status));
 			spawn->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 		}
 	} else {
@@ -271,7 +273,7 @@ pk_spawn_check_child (PkSpawn *spawn)
 
 	/* don't emit if we just closed an invalid dispatcher */
 	g_debug ("emitting exit %s", pk_spawn_exit_type_enum_to_string (spawn->exit));
-	g_signal_emit (spawn, signals [SIGNAL_EXIT], 0, spawn->exit);
+	g_signal_emit (spawn, signals[SIGNAL_EXIT], 0, spawn->exit);
 
 	spawn->poll_id = 0;
 	return FALSE;
@@ -291,7 +293,7 @@ pk_spawn_sigkill_cb (PkSpawn *spawn)
 	/* set this in case the script catches the signal and exits properly */
 	spawn->exit = PK_SPAWN_EXIT_TYPE_SIGKILL;
 
-	g_debug ("sending SIGKILL %ld", (long)spawn->child_pid);
+	g_debug ("sending SIGKILL %ld", (long) spawn->child_pid);
 	retval = kill (spawn->child_pid, SIGKILL);
 	if (retval == EINVAL) {
 		g_warning ("The signum argument is an invalid or unsupported number");
@@ -350,7 +352,7 @@ pk_spawn_kill (PkSpawn *spawn)
 	/* set this in case the script catches the signal and exits properly */
 	spawn->exit = PK_SPAWN_EXIT_TYPE_SIGTERM;
 
-	g_debug ("sending SIGTERM %ld", (long)spawn->child_pid);
+	g_debug ("sending SIGTERM %ld", (long) spawn->child_pid);
 	retval = kill (spawn->child_pid, SIGTERM);
 	if (retval < 0) {
 		if (errno == EINVAL)
@@ -358,13 +360,17 @@ pk_spawn_kill (PkSpawn *spawn)
 		else if (errno == EPERM)
 			g_warning ("We did not have the privilege to send a signal to the process");
 		else
-			g_warning ("Failed to send SIGTERM to %ld: %s", (long)spawn->child_pid, g_strerror (errno));
+			g_warning ("Failed to send SIGTERM to %ld: %s",
+				   (long) spawn->child_pid,
+				   g_strerror (errno));
 		return FALSE;
 	}
 
 	/* the program might not be able to handle SIGTERM, give it a few seconds and then SIGKILL it */
 	if (spawn->allow_sigkill) {
-		spawn->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY, (GSourceFunc) pk_spawn_sigkill_cb, spawn);
+		spawn->kill_id = g_timeout_add (PK_SPAWN_SIGKILL_DELAY,
+						(GSourceFunc) pk_spawn_sigkill_cb,
+						spawn);
 		g_source_set_name_by_id (spawn->kill_id, "[PkSpawn] sigkill");
 	}
 	return TRUE;
@@ -407,8 +413,11 @@ pk_spawn_send_stdin (PkSpawn *spawn, const gchar *command)
 	/* write to the waiting process */
 	wrote = write (spawn->stdin_fd, buffer, length);
 	if (wrote != length) {
-		g_warning ("wrote %i/%i bytes on fd %i (%s)", wrote, length,
-			   spawn->stdin_fd, strerror (errno));
+		g_warning ("wrote %i/%i bytes on fd %i (%s)",
+			   wrote,
+			   length,
+			   spawn->stdin_fd,
+			   strerror (errno));
 		return FALSE;
 	}
 	return TRUE;
@@ -449,7 +458,7 @@ pk_spawn_exit (PkSpawn *spawn)
 		 * If we run the loop, other idle events can be processed,
 		 * and this includes sending data to a new instance,
 		 * which of course will fail as the 'old' script is exiting */
-		g_usleep (10*1000); /* 10 ms */
+		g_usleep (10 * 1000); /* 10 ms */
 		ret = pk_spawn_check_child (spawn);
 	} while (ret && count++ < 500);
 
@@ -521,8 +530,7 @@ pk_spawn_child_setup (gpointer user_data)
  *
  **/
 gboolean
-pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
-	       PkSpawnArgvFlags flags, GError **error)
+pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, PkSpawnArgvFlags flags, GError **error)
 {
 	gboolean ret = TRUE;
 	guint i;
@@ -549,7 +557,10 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	/* check we are not using a closing instance */
 	if (spawn->is_sending_exit) {
 		ret = FALSE;
-		g_set_error_literal (error, 1, 0, "trying to use instance that is in the process of exiting");
+		g_set_error_literal (error,
+				     1,
+				     0,
+				     "trying to use instance that is in the process of exiting");
 		goto out;
 	}
 
@@ -596,13 +607,17 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	/* create spawned object for tracking */
 	spawn->finished = FALSE;
 	g_debug ("creating new instance of %s", argv[0]);
-	ret = g_spawn_async_with_pipes (NULL, argv, envp,
-				 G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
-				 pk_spawn_child_setup, NULL, &spawn->child_pid,
-				 &spawn->stdin_fd,
-				 &spawn->stdout_fd,
-				 &spawn->stderr_fd,
-				 &error_local);
+	ret = g_spawn_async_with_pipes (NULL,
+					argv,
+					envp,
+					G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
+					pk_spawn_child_setup,
+					NULL,
+					&spawn->child_pid,
+					&spawn->stdin_fd,
+					&spawn->stdout_fd,
+					&spawn->stderr_fd,
+					&error_local);
 	/* we failed to invoke the helper */
 	if (!ret) {
 		g_set_error (error, 1, 0, "failed to spawn %s: %s", argv[0], error_local->message);
@@ -656,7 +671,9 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp,
 	}
 
 	/* poll quickly */
-	spawn->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY, (GSourceFunc) pk_spawn_check_child, spawn);
+	spawn->poll_id = g_timeout_add (PK_SPAWN_POLL_DELAY,
+					(GSourceFunc) pk_spawn_check_child,
+					spawn);
 	g_source_set_name_by_id (spawn->poll_id, "[PkSpawn] main poll");
 out:
 	return ret;
@@ -711,7 +728,9 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	/**
 	 * PkSpawn:background:
 	 */
-	pspec = g_param_spec_boolean ("background", NULL, NULL,
+	pspec = g_param_spec_boolean ("background",
+				      NULL,
+				      NULL,
 				      FALSE,
 				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
@@ -722,26 +741,43 @@ pk_spawn_class_init (PkSpawnClass *klass)
 	 * respond to SIGTERM. This ensures that Cancel() works as expected, but
 	 * sometimes can corrupt databases if they are open.
 	 */
-	pspec = g_param_spec_boolean ("allow-sigkill", NULL, NULL,
+	pspec = g_param_spec_boolean ("allow-sigkill",
+				      NULL,
+				      NULL,
 				      FALSE,
 				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ALLOW_SIGKILL, pspec);
 
-	signals [SIGNAL_EXIT] =
-		g_signal_new ("exit",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__INT,
-			      G_TYPE_NONE, 1, G_TYPE_INT);
-	signals [SIGNAL_STDOUT] =
-		g_signal_new ("stdout",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
-	signals [SIGNAL_STDERR] =
-		g_signal_new ("stderr",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals[SIGNAL_EXIT] = g_signal_new ("exit",
+					     G_TYPE_FROM_CLASS (object_class),
+					     G_SIGNAL_RUN_LAST,
+					     0,
+					     NULL,
+					     NULL,
+					     g_cclosure_marshal_VOID__INT,
+					     G_TYPE_NONE,
+					     1,
+					     G_TYPE_INT);
+	signals[SIGNAL_STDOUT] = g_signal_new ("stdout",
+					       G_TYPE_FROM_CLASS (object_class),
+					       G_SIGNAL_RUN_LAST,
+					       0,
+					       NULL,
+					       NULL,
+					       g_cclosure_marshal_VOID__STRING,
+					       G_TYPE_NONE,
+					       1,
+					       G_TYPE_STRING);
+	signals[SIGNAL_STDERR] = g_signal_new ("stderr",
+					       G_TYPE_FROM_CLASS (object_class),
+					       G_SIGNAL_RUN_LAST,
+					       0,
+					       NULL,
+					       NULL,
+					       g_cclosure_marshal_VOID__STRING,
+					       G_TYPE_NONE,
+					       1,
+					       G_TYPE_STRING);
 }
 
 static void

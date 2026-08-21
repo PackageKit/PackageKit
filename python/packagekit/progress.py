@@ -42,7 +42,7 @@ class PackagekitProgress(Iterable):
             print "progress : %s " % milestone
     '''
 
-    #TODO: Add support for elapsed/remaining time
+    # TODO: Add support for elapsed/remaining time
 
     def __init__(self, steps=None):
         super(PackagekitProgress, self).__init__()
@@ -69,7 +69,7 @@ class PackagekitProgress(Iterable):
         '''
         Step to the next step in the transaction
         '''
-        if self.current_step < len(self.steps)-1:
+        if self.current_step < len(self.steps) - 1:
             self.current_step += 1
             self.percent = self.steps[self.current_step]
         else:
@@ -88,11 +88,10 @@ class PackagekitProgress(Iterable):
         if self.current_step == 0:
             startpct = 0
         else:
-            startpct = self.steps[self.current_step-1]
-        if self.current_step < len(self.steps)-1:
-            endpct = self.steps[self.current_step+1]
+            startpct = self.steps[self.current_step - 1]
+        if self.current_step < len(self.steps) - 1:
+            endpct = self.steps[self.current_step + 1]
         else:
             endpct = 100
-        incr = endpct -startpct
+        incr = endpct - startpct
         self.percent = startpct + incr
-

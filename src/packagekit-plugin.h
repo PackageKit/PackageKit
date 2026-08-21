@@ -37,4 +37,3 @@
 #undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_PLUGIN_H__ */
-

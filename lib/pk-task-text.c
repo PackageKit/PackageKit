@@ -34,7 +34,7 @@
 
 struct _PkTaskText
 {
- PkTask parent;
+	PkTask parent;
 };
 
 G_DEFINE_TYPE (PkTaskText, pk_task_text, PK_TYPE_TASK)
@@ -51,7 +51,8 @@ pk_task_text_untrusted_question (PkTask *task, guint request, PkResults *results
 	g_print ("\n");
 
 	/* TRANSLATORS: ask the user if they are comfortable installing insecure packages */
-	ret = pk_console_get_prompt (_("Do you want to allow installing of unsigned software?"), FALSE);
+	ret = pk_console_get_prompt (_("Do you want to allow installing of unsigned software?"),
+				       FALSE);
 	if (ret) {
 		pk_task_user_accepted (task, request);
 	} else {
@@ -88,13 +89,20 @@ pk_task_text_key_question (PkTask *task, guint request, PkResults *results)
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
-			      "package-id", &package_id,
-			      "repository-name", &repository_name,
-			      "key-url", &key_url,
-			      "key-userid", &key_userid,
-			      "key-id", &key_id,
-			      "key-fingerprint", &key_fingerprint,
-			      "key-timestamp", &key_timestamp,
+			      "package-id",
+			      &package_id,
+			      "repository-name",
+			      &repository_name,
+			      "key-url",
+			      &key_url,
+			      "key-userid",
+			      &key_userid,
+			      "key-id",
+			      &key_id,
+			      "key-fingerprint",
+			      &key_fingerprint,
+			      "key-timestamp",
+			      &key_timestamp,
 			      NULL);
 
 		/* create printable */
@@ -181,7 +189,8 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 		g_print (" %s: %s\n", _("Vendor"), pk_eula_required_get_vendor_name (item));
 
 		/* TRANSLATORS: the EULA text itself (long and boring) */
-		g_print (" %s: %s\n", _("Agreement"), pk_eula_required_get_license_agreement (item));
+		g_print (" %s: %s\n",
+			 _("Agreement"), pk_eula_required_get_license_agreement (item));
 	}
 
 	/* TRANSLATORS: ask the user if they've read and accepted the EULA */
@@ -219,9 +228,12 @@ pk_task_text_media_change_question (PkTask *task, guint request, PkResults *resu
 	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_object_get (item,
-			      "media-id", &media_id,
-			      "media-type", &media_type,
-			      "media-text", &media_text,
+			      "media-id",
+			      &media_id,
+			      "media-type",
+			      &media_type,
+			      "media-text",
+			      &media_text,
 			      NULL);
 
 		/* TRANSLATORS: the user needs to change media inserted into the computer */
@@ -305,8 +317,8 @@ package_sort_func (gconstpointer a, gconstpointer b)
 	g_auto(GStrv) split1 = NULL;
 	g_auto(GStrv) split2 = NULL;
 
-	package_id1 = pk_package_get_id (*(PkPackage **)a);
-	package_id2 = pk_package_get_id (*(PkPackage **)b);
+	package_id1 = pk_package_get_id (*(PkPackage **) a);
+	package_id2 = pk_package_get_id (*(PkPackage **) b);
 	split1 = pk_package_id_split (package_id1);
 	split2 = pk_package_id_split (package_id2);
 	return g_strcmp0 (split1[PK_PACKAGE_ID_NAME], split2[PK_PACKAGE_ID_NAME]);
@@ -332,25 +344,26 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 	array = pk_results_get_package_array (results);
 
 	/* put data in a hash table for easier sorting */
-	table = g_hash_table_new_full (g_direct_hash, g_direct_equal,
-	                               NULL, (GDestroyNotify) g_ptr_array_unref);
+	table = g_hash_table_new_full (g_direct_hash,
+				       g_direct_equal,
+				       NULL,
+				       (GDestroyNotify) g_ptr_array_unref);
 	for (guint i = 0; i < array->len; i++) {
 		PkInfoEnum info;
 		g_autoptr(GPtrArray) package_array = NULL;
 
 		package = g_ptr_array_index (array, i);
-		g_object_get (package,
-			      "info", &info,
-			      NULL);
+		g_object_get (package, "info", &info, NULL);
 
 		if (g_hash_table_contains (table, GINT_TO_POINTER (info)))
-			package_array = g_ptr_array_ref (g_hash_table_lookup (table, GINT_TO_POINTER (info)));
+			package_array = g_ptr_array_ref (
+			    g_hash_table_lookup (table, GINT_TO_POINTER (info)));
 		else
 			package_array = g_ptr_array_new_with_free_func (g_object_unref);
 		g_ptr_array_add (package_array, g_object_ref (package));
 		g_hash_table_insert (table,
-		                     GINT_TO_POINTER (info),
-		                     g_ptr_array_ref (package_array));
+				     GINT_TO_POINTER (info),
+				     g_ptr_array_ref (package_array));
 	}
 
 	/* calculate the maximum package name width for proper alignment */
@@ -408,8 +421,10 @@ pk_task_text_simulate_question (PkTask *task, guint request, PkResults *results)
 
 			package = g_ptr_array_index (package_array, i);
 			g_object_get (package,
-				      "package-id", &package_id,
-				      "summary", &summary,
+				      "package-id",
+				      &package_id,
+				      "summary",
+				      &summary,
 				      NULL);
 			printable = pk_package_id_to_printable (package_id);
 
@@ -451,8 +466,7 @@ pk_task_text_class_init (PkTaskTextClass *klass)
  **/
 static void
 pk_task_text_init (PkTaskText *task)
-{
-}
+{}
 
 /**
  * pk_task_text_new:

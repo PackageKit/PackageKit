@@ -38,15 +38,16 @@
 
 #include "pk-spawn-polkit-agent.h"
 
-#define memzero(x,l) (memset((x), 0, (l)))
-#define zero(x) (memzero(&(x), sizeof(x)))
+#define memzero(x, l) (memset ((x), 0, (l)))
+#define zero(x)	      (memzero (&(x), sizeof (x)))
 
 #define POLKIT_TTY_AGENT_BINARY_PATH "/usr/bin/pkttyagent"
 
 static pid_t agent_pid = 0;
 
 static int
-fork_agent (pid_t *pid, const char *path, ...) {
+fork_agent (pid_t *pid, const char *path, ...)
+{
 	pid_t parent_pid, n_agent_pid;
 	int fd;
 	gboolean stdout_is_tty, stderr_is_tty;
@@ -96,35 +97,35 @@ fork_agent (pid_t *pid, const char *path, ...) {
 		 * read EOF we actually do generate EOF and
 		 * not delay this indefinitely by because we
 		 * keep an unused copy of stdin around. */
-		fd = open("/dev/tty", O_WRONLY);
+		fd = open ("/dev/tty", O_WRONLY);
 		if (fd < 0) {
 			g_error ("Failed to open /dev/tty: %m");
-			_exit(EXIT_FAILURE);
+			_exit (EXIT_FAILURE);
 		}
 
 		if (!stdout_is_tty)
-			dup2(fd, STDOUT_FILENO);
+			dup2 (fd, STDOUT_FILENO);
 
 		if (!stderr_is_tty)
-			dup2(fd, STDERR_FILENO);
+			dup2 (fd, STDERR_FILENO);
 
 		if (fd > 2)
-			close(fd);
+			close (fd);
 	}
 
 	/* Count arguments */
 	va_start (ap, path);
-	for (n = 0; va_arg(ap, char*); n++)
+	for (n = 0; va_arg (ap, char *); n++)
 		;
-	va_end(ap);
+	va_end (ap);
 
 	/* Allocate strv */
-	l = alloca (sizeof(char *) * (n + 1));
+	l = alloca (sizeof (char *) * (n + 1));
 
 	/* Fill in arguments */
 	va_start (ap, path);
 	for (i = 0; i <= n; i++)
-		l[i] = va_arg (ap, char*);
+		l[i] = va_arg (ap, char *);
 	va_end (ap);
 
 	execv (path, l);
@@ -132,23 +133,25 @@ fork_agent (pid_t *pid, const char *path, ...) {
 }
 
 static int
-close_nointr (int fd) {
-        g_assert (fd >= 0);
+close_nointr (int fd)
+{
+	g_assert (fd >= 0);
 
-        for (;;) {
-                int r;
+	for (;;) {
+		int r;
 
-                r = close (fd);
-                if (r >= 0)
-                        return r;
+		r = close (fd);
+		if (r >= 0)
+			return r;
 
-                if (errno != EINTR)
-                        return -errno;
-        }
+		if (errno != EINTR)
+			return -errno;
+	}
 }
 
 static void
-close_nointr_nofail (int fd) {
+close_nointr_nofail (int fd)
+{
 	int saved_errno = errno;
 
 	/* cannot fail, and guarantees errno is unchanged */
@@ -159,15 +162,16 @@ close_nointr_nofail (int fd) {
 }
 
 static int
-fd_wait_for_event (int fd, int event, uint64_t t) {
+fd_wait_for_event (int fd, int event, uint64_t t)
+{
 	struct pollfd pollfd;
 	int r;
 
-	zero(pollfd);
+	zero (pollfd);
 	pollfd.fd = fd;
 	pollfd.events = event;
 
-	r = poll(&pollfd, 1, t == (uint64_t) -1 ? -1 : (int) (t / 1000));
+	r = poll (&pollfd, 1, t == (uint64_t) -1 ? -1 : (int) (t / 1000));
 	if (r < 0)
 		return -errno;
 
@@ -178,12 +182,13 @@ fd_wait_for_event (int fd, int event, uint64_t t) {
 }
 
 static int
-wait_for_terminate (pid_t pid) {
-        int status;
+wait_for_terminate (pid_t pid)
+{
+	int status;
 	g_assert (pid >= 1);
 
 	for (;;) {
-		if (waitpid(pid, &status, 0) < 0) {
+		if (waitpid (pid, &status, 0) < 0) {
 			if (errno == EINTR)
 				continue;
 			return -errno;
@@ -193,7 +198,8 @@ wait_for_terminate (pid_t pid) {
 }
 
 int
-pk_polkit_agent_open (void) {
+pk_polkit_agent_open (void)
+{
 	int r;
 	int pipe_fd[2];
 	char notify_fd[10 + 1];
@@ -210,11 +216,15 @@ pk_polkit_agent_open (void) {
 		return -errno;
 
 	snprintf (notify_fd, sizeof (notify_fd), "%i", pipe_fd[1]);
-	notify_fd[sizeof (notify_fd) -1] = 0;
+	notify_fd[sizeof (notify_fd) - 1] = 0;
 
 	r = fork_agent (&agent_pid,
-		       POLKIT_TTY_AGENT_BINARY_PATH,
-		       POLKIT_TTY_AGENT_BINARY_PATH, "--notify-fd", notify_fd, "--fallback", NULL);
+			POLKIT_TTY_AGENT_BINARY_PATH,
+			POLKIT_TTY_AGENT_BINARY_PATH,
+			"--notify-fd",
+			notify_fd,
+			"--fallback",
+			NULL);
 
 	/* Close the writing side, because that's the one for the agent */
 	close_nointr_nofail (pipe_fd[1]);
@@ -231,7 +241,8 @@ pk_polkit_agent_open (void) {
 }
 
 void
-pk_polkit_agent_close (void) {
+pk_polkit_agent_close (void)
+{
 
 	if (agent_pid <= 0)
 		return;

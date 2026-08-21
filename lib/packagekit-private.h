@@ -33,4 +33,3 @@
 #undef __PACKAGEKIT_H_INSIDE__
 
 #endif /* __PACKAGEKIT_PRIVATE_H__ */
-

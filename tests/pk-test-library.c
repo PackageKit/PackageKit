@@ -57,7 +57,8 @@ pk_test_bitfield_func (void)
 	g_free (text);
 
 	/* check we can invert a bit 1 -> 0 */
-	values = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) | pk_bitfield_value (PK_FILTER_ENUM_NOT_NEWEST);
+	values = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
+		 pk_bitfield_value (PK_FILTER_ENUM_NOT_NEWEST);
 	pk_bitfield_invert (values, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	g_assert_cmpint (values, ==, pk_bitfield_value (PK_FILTER_ENUM_NOT_NEWEST));
 
@@ -73,8 +74,8 @@ pk_test_bitfield_func (void)
 
 	/* check we can convert filter bitfield to text (plural) */
 	text = pk_filter_bitfield_to_string (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		   pk_bitfield_value (PK_FILTER_ENUM_GUI) |
-		   pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
+					     pk_bitfield_value (PK_FILTER_ENUM_GUI) |
+					     pk_bitfield_value (PK_FILTER_ENUM_NEWEST));
 	g_assert_cmpstr (text, ==, "~devel;gui;newest");
 	g_free (text);
 
@@ -88,14 +89,15 @@ pk_test_bitfield_func (void)
 
 	/* check we can convert filter text to bitfield (plural) */
 	filter = pk_filter_bitfield_from_string ("~devel;gui;newest");
-	g_assert_cmpint (filter, ==, (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		       pk_bitfield_value (PK_FILTER_ENUM_GUI) |
-		       pk_bitfield_value (PK_FILTER_ENUM_NEWEST)));
+	g_assert_cmpint (filter,
+			 ==,
+			 (pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
+			  pk_bitfield_value (PK_FILTER_ENUM_GUI) |
+			  pk_bitfield_value (PK_FILTER_ENUM_NEWEST)));
 
 	/* check we can add / remove bitfield */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_GUI) |
-		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_GUI) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	pk_bitfield_add (filter, PK_FILTER_ENUM_NOT_FREE);
 	pk_bitfield_remove (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT);
 	text = pk_filter_bitfield_to_string (filter);
@@ -104,8 +106,7 @@ pk_test_bitfield_func (void)
 
 	/* check we can test enum presence */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NOT_DEVELOPMENT) |
-		 pk_bitfield_value (PK_FILTER_ENUM_GUI) |
-		 pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
+		 pk_bitfield_value (PK_FILTER_ENUM_GUI) | pk_bitfield_value (PK_FILTER_ENUM_NEWEST);
 	g_assert_true (pk_bitfield_contain (filter, PK_FILTER_ENUM_NOT_DEVELOPMENT));
 
 	/* check we can test enum false-presence */
@@ -123,9 +124,13 @@ pk_test_bitfield_func (void)
 	g_assert_cmpint (values, ==, pk_bitfield_value (PK_ROLE_ENUM_UNKNOWN));
 
 	/* role bitfield from enums (random) */
-	values = pk_bitfield_from_enums (PK_ROLE_ENUM_SEARCH_GROUP, PK_ROLE_ENUM_SEARCH_DETAILS, -1);
-	g_assert_cmpint (values, ==, (pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
-		       pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)));
+	values = pk_bitfield_from_enums (PK_ROLE_ENUM_SEARCH_GROUP,
+					 PK_ROLE_ENUM_SEARCH_DETAILS,
+					 -1);
+	g_assert_cmpint (values,
+			 ==,
+			 (pk_bitfield_value (PK_ROLE_ENUM_SEARCH_DETAILS) |
+			  pk_bitfield_value (PK_ROLE_ENUM_SEARCH_GROUP)));
 
 	/* group bitfield from enums (unknown) */
 	values = pk_bitfield_from_enums (PK_GROUP_ENUM_UNKNOWN, -1);
@@ -164,7 +169,10 @@ pk_test_bitfield_func (void)
 	g_assert_cmpint (value, ==, PK_ROLE_ENUM_SEARCH_GROUP);
 
 	/* priority check second, correct */
-	value = pk_bitfield_contain_priority (values, PK_ROLE_ENUM_SEARCH_FILE, PK_ROLE_ENUM_SEARCH_GROUP, -1);
+	value = pk_bitfield_contain_priority (values,
+					      PK_ROLE_ENUM_SEARCH_FILE,
+					      PK_ROLE_ENUM_SEARCH_GROUP,
+					      -1);
 	g_assert_cmpint (value, ==, PK_ROLE_ENUM_SEARCH_GROUP);
 }
 
@@ -417,7 +425,7 @@ static void
 pk_test_package_ids_func (void)
 {
 	gboolean ret;
-	gchar *package_ids_blank[] = {NULL};
+	gchar *package_ids_blank[] = { NULL };
 	gchar **package_ids;
 
 	/* parse va_list */
@@ -475,12 +483,12 @@ pk_test_results_func (void)
 	/* add package */
 	item = pk_package_new ();
 	g_object_set (item,
-		      "info", PK_INFO_ENUM_AVAILABLE,
-		      "summary", "Power manager for GNOME",
+		      "info",
+		      PK_INFO_ENUM_AVAILABLE,
+		      "summary",
+		      "Power manager for GNOME",
 		      NULL);
-	ret = pk_package_set_id (item,
-				 "gnome-power-manager;0.1.2;i386;fedora",
-				 &error);
+	ret = pk_package_set_id (item, "gnome-power-manager;0.1.2;i386;fedora", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_results_add_package (results, item);
@@ -493,11 +501,7 @@ pk_test_results_func (void)
 
 	/* check data */
 	item = g_ptr_array_index (packages, 0);
-	g_object_get (item,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
+	g_object_get (item, "info", &info, "package-id", &package_id, "summary", &summary, NULL);
 	g_assert_cmpint (info, ==, PK_INFO_ENUM_AVAILABLE);
 	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora", ==, package_id);
 	g_assert_cmpstr ("Power manager for GNOME", ==, summary);
@@ -507,11 +511,7 @@ pk_test_results_func (void)
 	g_free (summary);
 
 	/* check ref */
-	g_object_get (item,
-		      "info", &info,
-		      "package-id", &package_id,
-		      "summary", &summary,
-		      NULL);
+	g_object_get (item, "info", &info, "package-id", &package_id, "summary", &summary, NULL);
 	g_assert_cmpint (info, ==, PK_INFO_ENUM_AVAILABLE);
 	g_assert_cmpstr ("gnome-power-manager;0.1.2;i386;fedora", ==, package_id);
 	g_assert_cmpstr ("Power manager for GNOME", ==, summary);
@@ -601,36 +601,44 @@ pk_test_offline_func (void)
 	g_autoptr(PkPackageSack) sack = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) packages = NULL;
-	const gchar *results_failed =
-			"[PackageKit Offline Update Results]\n"
-			"Success=false\n"
-			"ErrorCode=missing-gpg-signature\n"
-			"ErrorDetails=signature is not installed\n";
-	const gchar *results_success =
-			"[PackageKit Offline Update Results]\n"
-			"Success=true\n"
-			"Packages=upower;0.9.16-1.fc17;x86_64;updates,"
-				 "zif;0.3.0-1.fc17;x86_64;updates\n";
+	const gchar *results_failed = "[PackageKit Offline Update Results]\n"
+				      "Success=false\n"
+				      "ErrorCode=missing-gpg-signature\n"
+				      "ErrorDetails=signature is not installed\n";
+	const gchar *results_success = "[PackageKit Offline Update Results]\n"
+				       "Success=true\n"
+				       "Packages=upower;0.9.16-1.fc17;x86_64;updates,"
+				       "zif;0.3.0-1.fc17;x86_64;updates\n";
 
 	/* cleanup */
 	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
 		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
-						 NULL, NULL, NULL, &error);
+						 NULL,
+						 NULL,
+						 NULL,
+						 &error);
 		g_assert_no_error (error);
 		g_assert_true (ret);
 	}
-	g_assert_cmpint (g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755), ==, 0);
+	g_assert_cmpint (
+	    g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755),
+	    ==,
+	    0);
 
 	/* test enums */
 	g_assert_cmpint (pk_offline_action_from_string ("unknown"), ==, PK_OFFLINE_ACTION_UNKNOWN);
 	g_assert_cmpint (pk_offline_action_from_string ("reboot"), ==, PK_OFFLINE_ACTION_REBOOT);
-	g_assert_cmpint (pk_offline_action_from_string ("power-off"), ==, PK_OFFLINE_ACTION_POWER_OFF);
+	g_assert_cmpint (pk_offline_action_from_string ("power-off"),
+			 ==,
+			 PK_OFFLINE_ACTION_POWER_OFF);
 	g_assert_cmpint (pk_offline_action_from_string ("unset"), ==, PK_OFFLINE_ACTION_UNSET);
 	g_assert_cmpint (pk_offline_action_from_string ("XXX"), ==, PK_OFFLINE_ACTION_UNKNOWN);
 
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_UNKNOWN), ==, "unknown");
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_REBOOT), ==, "reboot");
-	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_POWER_OFF), ==, "power-off");
+	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_POWER_OFF),
+			 ==,
+			 "power-off");
 	g_assert_cmpstr (pk_offline_action_to_string (PK_OFFLINE_ACTION_UNSET), ==, "unset");
 	g_assert_cmpstr (pk_offline_action_to_string (999), ==, NULL);
 
@@ -667,8 +675,10 @@ pk_test_offline_func (void)
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpstr (tmp, ==, "[update]\n"
-	                          "prepared_ids=powertop;0.1.3;i386;fedora,\n");
+	g_assert_cmpstr (tmp,
+			 ==,
+			 "[update]\n"
+			 "prepared_ids=powertop;0.1.3;i386;fedora,\n");
 	g_free (tmp);
 	sack = pk_offline_get_prepared_sack (&error);
 	g_assert_no_error (error);
@@ -734,8 +744,7 @@ pk_test_offline_func (void)
 	g_clear_error (&error);
 
 	/* save some dummy success results */
-	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_success,
-				   -1, &error);
+	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_success, -1, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -756,8 +765,7 @@ pk_test_offline_func (void)
 	g_object_unref (results);
 
 	/* save some dummy failed results */
-	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_failed,
-				   -1, &error);
+	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_failed, -1, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -805,11 +813,17 @@ pk_test_offline_upgrade_func (void)
 	/* cleanup */
 	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
 		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
-						 NULL, NULL, NULL, &error);
+						 NULL,
+						 NULL,
+						 NULL,
+						 &error);
 		g_assert_no_error (error);
 		g_assert_true (ret);
 	}
-	g_assert_cmpint (g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755), ==, 0);
+	g_assert_cmpint (
+	    g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755),
+	    ==,
+	    0);
 
 	/* try to trigger without the fake upgrade */
 	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
@@ -842,9 +856,11 @@ pk_test_offline_upgrade_func (void)
 	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpstr (tmp, ==, "[update]\n"
-	                          "name=Fedora\n"
-	                          "releasever=25\n");
+	g_assert_cmpstr (tmp,
+			 ==,
+			 "[update]\n"
+			 "name=Fedora\n"
+			 "releasever=25\n");
 	g_free (tmp);
 
 	/* check monitor */
@@ -982,16 +998,17 @@ pk_test_client_helper_func (void)
 	g_rmdir (tmp_dir);
 }
 
-#define PK_TEST_TYPE(TYPE_NAME, CTOR_NAME) \
-{ \
-	TYPE_NAME *var = CTOR_NAME (); \
-	g_assert_true (var != NULL); \
-	g_object_unref (var); \
-}
+#define PK_TEST_TYPE(TYPE_NAME, CTOR_NAME)     \
+	{                                      \
+		TYPE_NAME *var = CTOR_NAME (); \
+		g_assert_true (var != NULL);   \
+		g_object_unref (var);          \
+	}
 
 /* Sanity test to check all object types in public API */
 static void
-pk_test_object_types_func (void) {
+pk_test_object_types_func (void)
+{
 	PK_TEST_TYPE (PkCategory, pk_category_new);
 	PK_TEST_TYPE (PkClient, pk_client_new);
 	PK_TEST_TYPE (PkClientHelper, pk_client_helper_new);

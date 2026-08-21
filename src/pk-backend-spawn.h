@@ -27,38 +27,37 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_BACKEND_SPAWN		(pk_backend_spawn_get_type ())
+#define PK_TYPE_BACKEND_SPAWN (pk_backend_spawn_get_type ())
 G_DECLARE_FINAL_TYPE (PkBackendSpawn, pk_backend_spawn, PK, BACKEND_SPAWN, GObject)
 
-#define PK_BACKEND_SPAWN_FILENAME_DELIM	"|"
+#define PK_BACKEND_SPAWN_FILENAME_DELIM "|"
 
 /* general */
-PkBackendSpawn	*pk_backend_spawn_new			(GKeyFile		*conf);
-gboolean	 pk_backend_spawn_helper		(PkBackendSpawn	*backend_spawn,
-							 PkBackendJob	*job,
-							 const gchar	*first_element, ...)
-							 G_GNUC_NULL_TERMINATED;
-gboolean	 pk_backend_spawn_is_busy		(PkBackendSpawn	*backend_spawn);
-gboolean	 pk_backend_spawn_kill			(PkBackendSpawn	*backend_spawn);
-gboolean	 pk_backend_spawn_exit			(PkBackendSpawn	*backend_spawn);
-const gchar	*pk_backend_spawn_get_name		(PkBackendSpawn	*backend_spawn);
-gboolean	 pk_backend_spawn_set_name		(PkBackendSpawn	*backend_spawn,
-							 const gchar	*name);
-void		 pk_backend_spawn_set_allow_sigkill	(PkBackendSpawn	*backend_spawn,
-							 gboolean	 allow_sigkill);
-gboolean	 pk_backend_spawn_inject_data		(PkBackendSpawn *backend_spawn,
-							 PkBackendJob	*job,
-							 const gchar	*line,
-							 GError		**error);
+PkBackendSpawn *pk_backend_spawn_new (GKeyFile *conf);
+gboolean	pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
+					 PkBackendJob	*job,
+					 const gchar	*first_element,
+					 ...) G_GNUC_NULL_TERMINATED;
+gboolean	pk_backend_spawn_is_busy (PkBackendSpawn *backend_spawn);
+gboolean	pk_backend_spawn_kill (PkBackendSpawn *backend_spawn);
+gboolean	pk_backend_spawn_exit (PkBackendSpawn *backend_spawn);
+const gchar    *pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn);
+gboolean	pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn,
+					   const gchar	  *name);
+void		pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn,
+						    gboolean	    allow_sigkill);
+gboolean	pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
+					      PkBackendJob   *job,
+					      const gchar    *line,
+					      GError	    **error);
 
 /* filtering */
-typedef gboolean (*PkBackendSpawnFilterFunc)		(PkBackendJob	*job,
-							 const gchar	*data);
-gboolean	 pk_backend_spawn_set_filter_stderr	(PkBackendSpawn	*backend_spawn,
-							 PkBackendSpawnFilterFunc func);
-gboolean	 pk_backend_spawn_set_filter_stdout	(PkBackendSpawn	*backend_spawn,
-							 PkBackendSpawnFilterFunc func);
-
+typedef gboolean (*PkBackendSpawnFilterFunc) (PkBackendJob *job,
+					      const gchar  *data);
+gboolean pk_backend_spawn_set_filter_stderr (PkBackendSpawn	     *backend_spawn,
+					     PkBackendSpawnFilterFunc func);
+gboolean pk_backend_spawn_set_filter_stdout (PkBackendSpawn	     *backend_spawn,
+					     PkBackendSpawnFilterFunc func);
 
 G_END_DECLS
 

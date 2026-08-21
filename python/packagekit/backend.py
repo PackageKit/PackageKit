@@ -35,11 +35,13 @@ FILENAME_DELIM = '|'
 
 MAXUINT64 = (1 << 64) - 1
 
+
 def _to_unicode(txt, encoding='utf-8'):
     if isinstance(txt, str):
         if not isinstance(txt, str):
             txt = str(txt, encoding, errors='replace')
     return txt
+
 
 def _to_utf8(txt, errors='replace'):
     if isinstance(txt, str):
@@ -48,12 +50,15 @@ def _to_utf8(txt, errors='replace'):
         return txt.encode('utf-8', errors=errors)
     return str(txt)
 
+
 class PkError(Exception):
     def __init__(self, code, details):
         self.code = code
         self.details = details
+
     def __str__(self):
         return repr("%s: %s" % (self.code, self.details))
+
 
 class PackageKitBaseBackend:
 
@@ -110,11 +115,11 @@ class PackageKitBaseBackend:
             pass
 
     def doLock(self):
-        ''' Generic locking, overide and extend in child class'''
+        '''Generic locking, overide and extend in child class'''
         self._locked = True
 
     def unLock(self):
-        ''' Generic unlocking, overide and extend in child class'''
+        '''Generic unlocking, overide and extend in child class'''
         self._locked = False
 
     def isLocked(self):
@@ -223,7 +228,9 @@ class PackageKitBaseBackend:
         @param repoid: The repo id tag
         @param state: false is repo is disabled else true.
         '''
-        sys.stdout.write(_to_utf8("repo-detail\t%s\t%s\t%s\n" % (repoid, name, _bool_to_string(state))))
+        sys.stdout.write(
+            _to_utf8("repo-detail\t%s\t%s\t%s\n" % (repoid, name, _bool_to_string(state)))
+        )
         sys.stdout.flush()
 
     def data(self, data):
@@ -234,7 +241,17 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("data\t%s\n" % data))
         sys.stdout.flush()
 
-    def details(self, package_id, summary, package_license, group, desc, url, bytes: int | None = None, download_bytes: int | None = None):
+    def details(
+        self,
+        package_id,
+        summary,
+        package_license,
+        group,
+        desc,
+        url,
+        bytes: int | None = None,
+        download_bytes: int | None = None,
+    ):
         '''
         Send 'details' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -253,7 +270,12 @@ class PackageKitBaseBackend:
         if download_bytes is None:
             download_bytes = MAXUINT64
 
-        sys.stdout.write(_to_utf8("details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n" % (package_id, summary, package_license, group, desc, url, bytes, download_bytes)))
+        sys.stdout.write(
+            _to_utf8(
+                "details\t%s\t%s\t%s\t%s\t%s\t%s\t%ld\t%ld\n"
+                % (package_id, summary, package_license, group, desc, url, bytes, download_bytes)
+            )
+        )
         sys.stdout.flush()
 
     def files(self, package_id, file_list):
@@ -273,7 +295,9 @@ class PackageKitBaseBackend:
         summery   : a summary of the category in current locale.
         icon      : an icon name to represent the category
         '''
-        sys.stdout.write(_to_utf8("category\t%s\t%s\t%s\t%s\t%s\n" % (parent_id, cat_id, name, summary, icon)))
+        sys.stdout.write(
+            _to_utf8("category\t%s\t%s\t%s\t%s\t%s\n" % (parent_id, cat_id, name, summary, icon))
+        )
         sys.stdout.flush()
 
     def finished(self):
@@ -283,7 +307,21 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("finished\n"))
         sys.stdout.flush()
 
-    def update_detail(self, package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated):
+    def update_detail(
+        self,
+        package_id,
+        updates,
+        obsoletes,
+        vendor_url,
+        bugzilla_url,
+        cve_url,
+        restart,
+        update_text,
+        changelog,
+        state,
+        issued,
+        updated,
+    ):
         '''
         Send 'updatedetail' signal
         @param package_id: The package ID name, e.g. openoffice-clipart;2.6.22;ppc64;fedora
@@ -299,7 +337,25 @@ class PackageKitBaseBackend:
         @param issued:
         @param updated:
         '''
-        sys.stdout.write(_to_utf8("updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (package_id, updates, obsoletes, vendor_url, bugzilla_url, cve_url, restart, update_text, changelog, state, issued, updated)))
+        sys.stdout.write(
+            _to_utf8(
+                "updatedetail\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
+                % (
+                    package_id,
+                    updates,
+                    obsoletes,
+                    vendor_url,
+                    bugzilla_url,
+                    cve_url,
+                    restart,
+                    update_text,
+                    changelog,
+                    state,
+                    issued,
+                    updated,
+                )
+            )
+        )
         sys.stdout.flush()
 
     def require_restart(self, restart_type, details):
@@ -323,7 +379,17 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("allow-cancel\t%s\n" % data))
         sys.stdout.flush()
 
-    def repo_signature_required(self, package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type):
+    def repo_signature_required(
+        self,
+        package_id,
+        repo_name,
+        key_url,
+        key_userid,
+        key_id,
+        key_fingerprint,
+        key_timestamp,
+        sig_type,
+    ):
         '''
         send 'repo-signature-required' signal:
         @param package_id:      Id of the package needing a signature
@@ -335,9 +401,21 @@ class PackageKitBaseBackend:
         @param key_timestamp:   Key timestamp
         @param sig_type:        Key type (GPG)
         '''
-        sys.stdout.write(_to_utf8("repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
-            package_id, repo_name, key_url, key_userid, key_id, key_fingerprint, key_timestamp, sig_type
-            )))
+        sys.stdout.write(
+            _to_utf8(
+                "repo-signature-required\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
+                % (
+                    package_id,
+                    repo_name,
+                    key_url,
+                    key_userid,
+                    key_id,
+                    key_fingerprint,
+                    key_timestamp,
+                    sig_type,
+                )
+            )
+        )
         sys.stdout.flush()
 
     def eula_required(self, eula_id, package_id, vendor_name, license_agreement):
@@ -348,105 +426,134 @@ class PackageKitBaseBackend:
         @param vendor_name:     Name of the vendor that wrote the EULA
         @param license_agreement: The license text
         '''
-        sys.stdout.write(_to_utf8("eula-required\t%s\t%s\t%s\t%s\n" % (
-            eula_id, package_id, vendor_name, license_agreement
-            )))
+        sys.stdout.write(
+            _to_utf8(
+                "eula-required\t%s\t%s\t%s\t%s\n"
+                % (eula_id, package_id, vendor_name, license_agreement)
+            )
+        )
         sys.stdout.flush()
 
-#
-# Backend Action Methods
-#
+    #
+    # Backend Action Methods
+    #
 
     def search_name(self, filters, values):
         '''
         Implement the {backend}-search-name functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def search_details(self, filters, values):
         '''
         Implement the {backend}-search-details functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def search_group(self, filters, values):
         '''
         Implement the {backend}-search-group functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def search_file(self, filters, values):
         '''
         Implement the {backend}-search-file functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_update_detail(self, package_ids):
         '''
         Implement the {backend}-get-update-detail functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def depends_on(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-depends-on functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_packages(self, filters):
         '''
         Implement the {backend}-get-packages functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def required_by(self, filters, package_ids, recursive):
         '''
         Implement the {backend}-required-by functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def what_provides(self, filters, provides_type, values):
         '''
         Implement the {backend}-what-provides functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def upgrade_system(self, distro_id):
         '''
         Implement the {backend}-update-system functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def refresh_cache(self, force):
         '''
         Implement the {backend}-refresh_cache functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def install_packages(self, transaction_flags, package_ids):
         '''
         Implement the {backend}-install functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def install_signature(self, sigtype, key_id, package_id):
         '''
         Implement the {backend}-install-signature functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def install_files(self, transaction_flags, inst_files):
         '''
@@ -454,120 +561,153 @@ class PackageKitBaseBackend:
         Install the package containing the inst_file file
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def resolve(self, filters, values):
         '''
         Implement the {backend}-resolve functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def remove_packages(self, transaction_flags, package_ids, allowdep, autoremove):
         '''
         Implement the {backend}-remove functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def update_packages(self, transaction_flags, package_ids):
         '''
         Implement the {backend}-update functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_details(self, package_ids):
         '''
         Implement the {backend}-get-details functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_details_local(self, files):
         '''
         Implement the {backend}-get-details-local functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_files(self, package_ids):
         '''
         Implement the {backend}-get-files functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_updates(self, filters):
         '''
         Implement the {backend}-get-updates functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_distro_upgrades(self):
         '''
         Implement the {backend}-get-distro-upgrades functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def repo_enable(self, repoid, enable):
         '''
         Implement the {backend}-repo-enable functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def repo_set_data(self, repoid, parameter, value):
         '''
         Implement the {backend}-repo-set-data functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_repo_list(self, filters):
         '''
         Implement the {backend}-get-repo-list functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def repo_signature_install(self, package_id):
         '''
         Implement the {backend}-repo-signature-install functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def download_packages(self, directory, package_ids):
         '''
         Implement the {backend}-download-packages functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def set_locale(self, code):
         '''
         Implement the {backend}-set-locale functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def get_categories(self):
         '''
         Implement the {backend}-get-categories functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def repair_system(self, transaction_flags):
         '''
         Implement the {backend}-repair-system functionality
         Needed to be implemented in a sub class
         '''
-        self.error(ERROR_NOT_SUPPORTED, "This function is not implemented in this backend",
-                   exit=False)
+        self.error(
+            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
+        )
 
     def customTracebackHandler(self, tb):
         '''
@@ -585,7 +725,7 @@ class PackageKitBaseBackend:
         interprete the command from the calling args (self.cmds)
         '''
         fname = os.path.split(self.cmds[0])[1]
-        cmd = fname.split('.')[0] # get the helper filename wo ext
+        cmd = fname.split('.')[0]  # get the helper filename wo ext
         args = self.cmds[1:]
         self.dispatch_command(cmd, args)
 
@@ -763,20 +903,24 @@ def format_string(text, encoding='utf-8'):
         text = str(text, encoding, errors='replace')
     return text.replace("\n", ";")
 
+
 def _text_to_bool(text):
     '''Convert a string to a boolean value.'''
     if text.lower() in ["yes", "true"]:
         return True
     return False
 
+
 def _bool_to_string(value):
     if value:
         return "true"
     return "false"
 
+
 def get_package_id(name, version, arch, data):
     """Returns a package id."""
     return ";".join((name, version, arch, data))
+
 
 def split_package_id(id):
     """
@@ -784,6 +928,7 @@ def split_package_id(id):
     package id.
     """
     return id.split(";", 4)
+
 
 def exceptionHandler(typ, value, tb, base):
     # Restore original exception handler
@@ -794,12 +939,12 @@ def exceptionHandler(typ, value, tb, base):
         errmsg = 'Error Type: %s;' % str(typ)
         errmsg += 'Error Value: %s;' % str(value)
         for tub in etb:
-            f, l, m, c = tub # file, lineno, function, codeline
+            f, l, m, c = tub  # file, lineno, function, codeline
             errmsg += '  File : %s, line %s, in %s;' % (f, str(l), m)
             errmsg += '    %s;' % c
         # send the traceback to PackageKit
         base.error(ERROR_INTERNAL_ERROR, errmsg, exit=True)
 
+
 def installExceptionHandler(base):
     sys.excepthook = lambda typ, value, tb: exceptionHandler(typ, value, tb, base)
-

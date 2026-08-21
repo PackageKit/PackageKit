@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -38,13 +38,13 @@ G_BEGIN_DECLS
 #define PK_CONTROL_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_CONTROL, PkControlClass))
 #define PK_IS_CONTROL(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_CONTROL))
 #define PK_IS_CONTROL_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CONTROL))
-#define PK_CONTROL_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CONTROL, PkControlClass))
+#define PK_CONTROL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CONTROL, PkControlClass))
 #define PK_CONTROL_ERROR	(pk_control_error_quark ())
 #define PK_CONTROL_TYPE_ERROR	(pk_control_error_get_type ())
 
-typedef struct _PkControlPrivate	PkControlPrivate;
-typedef struct _PkControl		PkControl;
-typedef struct _PkControlClass		PkControlClass;
+typedef struct _PkControlPrivate PkControlPrivate;
+typedef struct _PkControl	 PkControl;
+typedef struct _PkControlClass	 PkControlClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkControl, g_object_unref)
@@ -57,34 +57,33 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkControl, g_object_unref)
  *
  * Errors that can be thrown
  */
-typedef enum
-{
+typedef enum {
 	PK_CONTROL_ERROR_FAILED,
 	PK_CONTROL_ERROR_CANNOT_START_DAEMON
 } PkControlError;
 
 struct _PkControl
 {
-	 GObject		 parent;
-	 PkControlPrivate	*priv;
+	GObject		  parent;
+	PkControlPrivate *priv;
 };
 
 struct _PkControlClass
 {
-	GObjectClass	parent_class;
+	GObjectClass parent_class;
 
 	/* signals */
-	void		(* transaction_list_changed)	(PkControl	*control,
-							 gchar		**transaction_ids);
-	void		(* updates_changed)		(PkControl	*control);
-	void		(* repo_list_changed)		(PkControl	*control);
-	void		(* network_state_changed)	(PkControl	*control);
-	void		(* restart_schedule)		(PkControl	*control);
-	void		(* locked)			(PkControl	*control,
-							 gboolean	 is_locked);
-	void		(* connection_changed)		(PkControl	*control,
-							 gboolean	 connected);
-	void		(* installed_changed)		(PkControl	*control);
+	void (*transaction_list_changed) (PkControl *control,
+					  gchar	   **transaction_ids);
+	void (*updates_changed) (PkControl *control);
+	void (*repo_list_changed) (PkControl *control);
+	void (*network_state_changed) (PkControl *control);
+	void (*restart_schedule) (PkControl *control);
+	void (*locked) (PkControl *control,
+			gboolean   is_locked);
+	void (*connection_changed) (PkControl *control,
+				    gboolean   connected);
+	void (*installed_changed) (PkControl *control);
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -92,82 +91,81 @@ struct _PkControlClass
 	void (*_pk_reserved4) (void);
 };
 
-GQuark		 pk_control_error_quark			(void);
-GType		 pk_control_get_type		  	(void);
-PkControl	*pk_control_new				(void);
+GQuark		pk_control_error_quark (void);
+GType		pk_control_get_type (void);
+PkControl      *pk_control_new (void);
 
-void		 pk_control_get_tid_async		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gchar		*pk_control_get_tid_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_suggest_daemon_quit_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gboolean	 pk_control_suggest_daemon_quit_finish	(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_daemon_state_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gchar		*pk_control_get_daemon_state_finish	(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_set_proxy_async		(PkControl		*control,
-							 const gchar		*proxy_http,
-							 const gchar		*proxy_ftp,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-void		 pk_control_set_proxy2_async		(PkControl		*control,
-							 const gchar		*proxy_http,
-							 const gchar		*proxy_https,
-							 const gchar		*proxy_ftp,
-							 const gchar		*proxy_socks,
-							 const gchar		*no_proxy,
-							 const gchar		*pac,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gboolean	 pk_control_set_proxy_finish		(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_time_since_action_async	(PkControl		*control,
-							 PkRoleEnum		 role,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-guint		 pk_control_get_time_since_action_finish (PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_transaction_list_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gchar		**pk_control_get_transaction_list_finish (PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_can_authorize_async		(PkControl		*control,
-							 const gchar		*action_id,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-PkAuthorizeEnum	 pk_control_can_authorize_finish	(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
-void		 pk_control_get_properties_async	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GAsyncReadyCallback	 callback,
-							 gpointer		 user_data);
-gboolean	 pk_control_get_properties_finish	(PkControl		*control,
-							 GAsyncResult		*res,
-							 GError			**error);
+void		pk_control_get_tid_async (PkControl	     *control,
+					  GCancellable	     *cancellable,
+					  GAsyncReadyCallback callback,
+					  gpointer	      user_data);
+gchar	       *pk_control_get_tid_finish (PkControl	*control,
+					   GAsyncResult *res,
+					   GError      **error);
+void		pk_control_suggest_daemon_quit_async (PkControl		 *control,
+						      GCancellable	 *cancellable,
+						      GAsyncReadyCallback callback,
+						      gpointer		  user_data);
+gboolean	pk_control_suggest_daemon_quit_finish (PkControl    *control,
+						       GAsyncResult *res,
+						       GError	   **error);
+void		pk_control_get_daemon_state_async (PkControl	      *control,
+						   GCancellable	      *cancellable,
+						   GAsyncReadyCallback callback,
+						   gpointer	       user_data);
+gchar	       *pk_control_get_daemon_state_finish (PkControl	 *control,
+						    GAsyncResult *res,
+						    GError	**error);
+void		pk_control_set_proxy_async (PkControl	       *control,
+					    const gchar	       *proxy_http,
+					    const gchar	       *proxy_ftp,
+					    GCancellable       *cancellable,
+					    GAsyncReadyCallback callback,
+					    gpointer		user_data);
+void		pk_control_set_proxy2_async (PkControl		*control,
+					     const gchar	*proxy_http,
+					     const gchar	*proxy_https,
+					     const gchar	*proxy_ftp,
+					     const gchar	*proxy_socks,
+					     const gchar	*no_proxy,
+					     const gchar	*pac,
+					     GCancellable	*cancellable,
+					     GAsyncReadyCallback callback,
+					     gpointer		 user_data);
+gboolean	pk_control_set_proxy_finish (PkControl	  *control,
+					     GAsyncResult *res,
+					     GError	 **error);
+void		pk_control_get_time_since_action_async (PkControl	   *control,
+							PkRoleEnum	    role,
+							GCancellable	   *cancellable,
+							GAsyncReadyCallback callback,
+							gpointer	    user_data);
+guint		pk_control_get_time_since_action_finish (PkControl    *control,
+							 GAsyncResult *res,
+							 GError	     **error);
+void		pk_control_get_transaction_list_async (PkControl	  *control,
+						       GCancellable	  *cancellable,
+						       GAsyncReadyCallback callback,
+						       gpointer		   user_data);
+gchar	      **pk_control_get_transaction_list_finish (PkControl    *control,
+							GAsyncResult *res,
+							GError	    **error);
+void		pk_control_can_authorize_async (PkControl	   *control,
+						const gchar	   *action_id,
+						GCancellable	   *cancellable,
+						GAsyncReadyCallback callback,
+						gpointer	    user_data);
+PkAuthorizeEnum pk_control_can_authorize_finish (PkControl    *control,
+						 GAsyncResult *res,
+						 GError	     **error);
+void		pk_control_get_properties_async (PkControl	    *control,
+						 GCancellable	    *cancellable,
+						 GAsyncReadyCallback callback,
+						 gpointer	     user_data);
+gboolean	pk_control_get_properties_finish (PkControl    *control,
+						  GAsyncResult *res,
+						  GError      **error);
 
 G_END_DECLS
 
 #endif /* __PK_CONTROL_H */
-

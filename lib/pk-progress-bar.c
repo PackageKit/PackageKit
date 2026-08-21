@@ -33,28 +33,29 @@
 #include "pk-progress-bar.h"
 #include "pk-console-private.h"
 
-typedef struct {
-	guint			 position;
-	gboolean		 move_forward;
+typedef struct
+{
+	guint position;
+	gboolean move_forward;
 } PkProgressBarPulseState;
 
 struct PkProgressBarPrivate
 {
-	guint			 size;
-	gint			 percentage;
-	guint			 timer_id;
-	PkProgressBarPulseState	 pulse_state;
-	gint			 tty_fd;
-	gchar			*old_start_text;
-	guint			 area_width;
-	gboolean		 use_unicode;
+	guint size;
+	gint percentage;
+	guint timer_id;
+	PkProgressBarPulseState pulse_state;
+	gint tty_fd;
+	gchar *old_start_text;
+	guint area_width;
+	gboolean use_unicode;
 
-	gboolean		 allow_restart;
+	gboolean allow_restart;
 };
 
-#define PK_PROGRESS_BAR_PERCENTAGE_INVALID	101
-#define PK_PROGRESS_BAR_PULSE_TIMEOUT		40 /* ms */
-#define PK_PROGRESS_BAR_DEFAULT_SIZE		30
+#define PK_PROGRESS_BAR_PERCENTAGE_INVALID 101
+#define PK_PROGRESS_BAR_PULSE_TIMEOUT	   40 /* ms */
+#define PK_PROGRESS_BAR_DEFAULT_SIZE	   30
 
 /* space for percentage text (e.g., " 100%") or spacing */
 static const guint PK_PERCENT_TEXT_WIDTH = 5;
@@ -102,10 +103,10 @@ pk_progress_bar_console (PkProgressBar *self, const gchar *tmp)
 		return;
 
 	written = write (priv->tty_fd, tmp, count);
-	if (written < 0 || (size_t)written != count) {
-		g_warning ("Only wrote %" G_GSSIZE_FORMAT
-			   " of %" G_GSSIZE_FORMAT " bytes",
-			   written, (gssize)count);
+	if (written < 0 || (size_t) written != count) {
+		g_warning ("Only wrote %" G_GSSIZE_FORMAT " of %" G_GSSIZE_FORMAT " bytes",
+			   written,
+			   (gssize) count);
 	}
 }
 
@@ -158,7 +159,9 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 	g_string_append (str, "\r\033[K");
 
 	/* calculate available width for text + bar */
-	available_width = priv->area_width > PK_PERCENT_TEXT_WIDTH ? priv->area_width - PK_PERCENT_TEXT_WIDTH : priv->area_width;
+	available_width = priv->area_width > PK_PERCENT_TEXT_WIDTH
+			      ? priv->area_width - PK_PERCENT_TEXT_WIDTH
+			      : priv->area_width;
 
 	/* determine bar width (use configured size or auto-calculate) */
 	bar_width = priv->size;
@@ -182,8 +185,8 @@ pk_progress_bar_draw (PkProgressBar *self, gint percentage)
 		g_string_append (str, display_text);
 	} else {
 		gsize old_len = str->len;
-		g_string_set_size(str, old_len + text_width);
-		memset(str->str + old_len, ' ', text_width);
+		g_string_set_size (str, old_len + text_width);
+		memset (str->str + old_len, ' ', text_width);
 		str->str[str->len] = '\0';
 	}
 
@@ -267,7 +270,9 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 	g_string_append (str, "\r\033[K");
 
 	/* calculate dimensions */
-	available = priv->area_width > PK_PERCENT_TEXT_WIDTH ? priv->area_width - PK_PERCENT_TEXT_WIDTH : priv->area_width;
+	available = priv->area_width > PK_PERCENT_TEXT_WIDTH
+			? priv->area_width - PK_PERCENT_TEXT_WIDTH
+			: priv->area_width;
 
 	bar_width = priv->size;
 	if (bar_width > available / 2)
@@ -289,8 +294,8 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 		g_string_append (str, display_text);
 	} else {
 		gsize old_len = str->len;
-		g_string_set_size(str, old_len + text_width);
-		memset(str->str + old_len, ' ', text_width);
+		g_string_set_size (str, old_len + text_width);
+		memset (str->str + old_len, ' ', text_width);
 		str->str[str->len] = '\0';
 	}
 
@@ -299,7 +304,8 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 		for (guint i = 0; i < bar_width; i++) {
 			if (i == priv->pulse_state.position)
 				g_string_append (str, "▓");
-			else if (i == priv->pulse_state.position - 1 || i == priv->pulse_state.position + 1)
+			else if (i == priv->pulse_state.position - 1 ||
+				 i == priv->pulse_state.position + 1)
 				g_string_append (str, "░");
 			else
 				g_string_append (str, " ");
@@ -343,7 +349,8 @@ pk_progress_bar_draw_pulse_bar (PkProgressBar *self)
 	priv->pulse_state.position = 1;
 	priv->pulse_state.move_forward = TRUE;
 	priv->timer_id = g_timeout_add (PK_PROGRESS_BAR_PULSE_TIMEOUT,
-					G_SOURCE_FUNC (pk_progress_bar_pulse_bar), self);
+					G_SOURCE_FUNC (pk_progress_bar_pulse_bar),
+					self);
 	g_source_set_name_by_id (priv->timer_id, "[PkProgressBar] pulse");
 }
 
@@ -366,7 +373,8 @@ pk_progress_bar_set_percentage (PkProgressBar *progress_bar, gint percentage)
 
 	/* never called pk_progress_bar_start() */
 	if (priv->percentage == G_MININT)
-		pk_progress_bar_start (progress_bar, "FIXME: need to call pk_progress_bar_start() earlier!");
+		pk_progress_bar_start (progress_bar,
+				       "FIXME: need to call pk_progress_bar_start() earlier!");
 
 	/* check for old percentage */
 	if (percentage == priv->percentage) {
@@ -470,7 +478,7 @@ pk_progress_bar_end (PkProgressBar *progress_bar)
  *
  */
 void
-pk_progress_bar_set_allow_restart (PkProgressBar* progress_bar, gboolean allow_restart)
+pk_progress_bar_set_allow_restart (PkProgressBar *progress_bar, gboolean allow_restart)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(progress_bar);
 	g_return_if_fail (PK_IS_PROGRESS_BAR (progress_bar));
@@ -521,9 +529,8 @@ pk_progress_bar_init (PkProgressBar *self)
 
 	/* check if we can use Unicode */
 	codeset = nl_langinfo (CODESET);
-	priv->use_unicode = codeset != NULL &&
-						(g_ascii_strcasecmp (codeset, "UTF-8") == 0 ||
-						 g_ascii_strcasecmp (codeset, "utf8") == 0);
+	priv->use_unicode = codeset != NULL && (g_ascii_strcasecmp (codeset, "UTF-8") == 0 ||
+						g_ascii_strcasecmp (codeset, "utf8") == 0);
 
 	/* try to open TTY */
 	priv->tty_fd = open ("/dev/tty", O_RDWR, 0);

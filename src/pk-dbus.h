@@ -26,24 +26,23 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_DBUS		(pk_dbus_get_type ())
+#define PK_TYPE_DBUS (pk_dbus_get_type ())
 G_DECLARE_FINAL_TYPE (PkDbus, pk_dbus, PK, DBUS, GObject)
 
-PkDbus		*pk_dbus_new			(void);
-gboolean	 pk_dbus_connect		(PkDbus		*dbus,
-						 GError		**error);
-gboolean	 pk_dbus_get_uid_pid		(PkDbus		*dbus,
-						 const gchar	*sender,
-						 guint32	*uid,
-						 guint32	*pid);
-guint32		 pk_dbus_get_uid		(PkDbus		*dbus,
-						 const gchar	*sender);
-guint32		 pk_dbus_get_pid		(PkDbus		*dbus,
-						 const gchar 	*sender);
-gchar		*pk_dbus_get_session		(PkDbus		*dbus,
-						 const gchar	*sender);
+PkDbus	*pk_dbus_new (void);
+gboolean pk_dbus_connect (PkDbus  *dbus,
+			  GError **error);
+gboolean pk_dbus_get_uid_pid (PkDbus	  *dbus,
+			      const gchar *sender,
+			      guint32	  *uid,
+			      guint32	  *pid);
+guint32	 pk_dbus_get_uid (PkDbus      *dbus,
+			  const gchar *sender);
+guint32	 pk_dbus_get_pid (PkDbus      *dbus,
+			  const gchar *sender);
+gchar	*pk_dbus_get_session (PkDbus	  *dbus,
+			      const gchar *sender);
 
 G_END_DECLS
 
 #endif /* __PK_DBUS_H */
-

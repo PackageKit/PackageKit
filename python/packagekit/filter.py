@@ -23,30 +23,31 @@ from .enums import *
 from .package import PackagekitPackage
 import collections
 
+
 class PackagekitFilter(object, PackagekitPackage):
 
     def __init__(self, fltlist="none"):
-        ''' save state '''
+        '''save state'''
         self.fltlist = fltlist
-        self.package_list = [] #we can't do emitting as found if we are post-processing
+        self.package_list = []  # we can't do emitting as found if we are post-processing
         self.installed_unique = {}
 
     def add_installed(self, pkgs):
-        ''' add a list of packages that are already installed '''
+        '''add a list of packages that are already installed'''
         for pkg in pkgs:
             self.package_list.append((pkg, INFO_INSTALLED))
 
     def add_available(self, pkgs):
-        ''' add a list of packages that are available '''
+        '''add a list of packages that are available'''
         for pkg in pkgs:
             self.package_list.append((pkg, INFO_AVAILABLE))
 
     def add_custom(self, pkg, info):
-        ''' add a custom packages indervidually '''
+        '''add a custom packages indervidually'''
         self.package_list.append((pkg, info))
 
     def _filter_base(self, pkg):
-        ''' do extra filtering (gui, devel etc) '''
+        '''do extra filtering (gui, devel etc)'''
         for flt in self.fltlist:
             if flt in (FILTER_GUI, FILTER_NOT_GUI):
                 if not self._do_gui_filtering(flt, pkg):
@@ -63,7 +64,7 @@ class PackagekitFilter(object, PackagekitPackage):
         return True
 
     def _filter_installed(self, pkg):
-        ''' do extra filtering (gui, devel etc) '''
+        '''do extra filtering (gui, devel etc)'''
         for flt in self.fltlist:
             if flt in (FILTER_INSTALLED, FILTER_NOT_INSTALLED):
                 if not self._do_installed_filtering(flt, pkg):
@@ -220,4 +221,3 @@ class PackagekitFilter(object, PackagekitPackage):
         else:
             want_arch = False
         return is_arch == want_arch
-

@@ -34,7 +34,7 @@
 
 #include "pk-files.h"
 
-static void     pk_files_finalize	(GObject     *object);
+static void pk_files_finalize (GObject *object);
 
 /**
  * PkFilesPrivate:
@@ -43,8 +43,8 @@ static void     pk_files_finalize	(GObject     *object);
  **/
 struct _PkFilesPrivate
 {
-	gchar				*package_id;
-	gchar				**files;
+	gchar *package_id;
+	gchar **files;
 };
 
 enum {
@@ -161,7 +161,9 @@ pk_files_class_init (PkFilesClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("package-id", NULL, NULL,
+	pspec = g_param_spec_string ("package-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
@@ -171,7 +173,9 @@ pk_files_class_init (PkFilesClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_boxed ("files", NULL, NULL,
+	pspec = g_param_spec_boxed ("files",
+				    NULL,
+				    NULL,
 				    G_TYPE_STRV,
 				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_FILES, pspec);
@@ -182,8 +186,7 @@ pk_files_class_init (PkFilesClass *klass)
  **/
 static void
 pk_files_init (PkFiles *files)
-{
-}
+{}
 
 /*
  * pk_files_finalize:

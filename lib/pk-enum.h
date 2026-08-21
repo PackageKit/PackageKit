@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -37,9 +37,10 @@ G_BEGIN_DECLS
  *
  * Matching an enumerated type to a string
  **/
-typedef struct {
-	guint		 value;
-	const gchar	*string;
+typedef struct
+{
+	guint	     value;
+	const gchar *string;
 } PkEnumMatch;
 
 /**
@@ -115,11 +116,11 @@ typedef enum {
 	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
 	PK_ROLE_ENUM_GET_CATEGORIES,
 	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
-	PK_ROLE_ENUM_REPAIR_SYSTEM,			/* Since: 0.7.2 */
-	PK_ROLE_ENUM_GET_DETAILS_LOCAL,			/* Since: 0.8.17 */
-	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
-	PK_ROLE_ENUM_REPO_REMOVE,			/* Since: 0.9.1 */
-	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 1.0.10 */
+	PK_ROLE_ENUM_REPAIR_SYSTEM,	/* Since: 0.7.2 */
+	PK_ROLE_ENUM_GET_DETAILS_LOCAL, /* Since: 0.8.17 */
+	PK_ROLE_ENUM_GET_FILES_LOCAL,	/* Since: 0.9.1 */
+	PK_ROLE_ENUM_REPO_REMOVE,	/* Since: 0.9.1 */
+	PK_ROLE_ENUM_UPGRADE_SYSTEM,	/* Since: 1.0.10 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -339,8 +340,8 @@ typedef enum {
 	PK_FILTER_ENUM_NOT_COLLECTIONS,
 	PK_FILTER_ENUM_APPLICATION,
 	PK_FILTER_ENUM_NOT_APPLICATION,
-	PK_FILTER_ENUM_DOWNLOADED,		/* Since: 0.8.10 */
-	PK_FILTER_ENUM_NOT_DOWNLOADED,		/* Since: 0.8.10 */
+	PK_FILTER_ENUM_DOWNLOADED,     /* Since: 0.8.10 */
+	PK_FILTER_ENUM_NOT_DOWNLOADED, /* Since: 0.8.10 */
 	PK_FILTER_ENUM_LAST,
 } PkFilterEnum;
 
@@ -363,7 +364,7 @@ typedef enum {
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
 	PK_RESTART_ENUM_SYSTEM,
-	PK_RESTART_ENUM_SECURITY_SESSION,	/* a library that is being used by this package has been updated for security */
+	PK_RESTART_ENUM_SECURITY_SESSION, /* a library that is being used by this package has been updated for security */
 	PK_RESTART_ENUM_SECURITY_SYSTEM,
 	PK_RESTART_ENUM_LAST
 } PkRestartEnum;
@@ -787,76 +788,74 @@ typedef enum {
  * The transaction flags that alter how the transaction is handled
  **/
 typedef enum {
-	PK_TRANSACTION_FLAG_ENUM_NONE,			/* Since: 0.8.1 */
-	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,		/* Since: 0.8.1 */
-	PK_TRANSACTION_FLAG_ENUM_SIMULATE,		/* Since: 0.8.1 */
-	PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD,		/* Since: 0.8.1 */
-	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL,	/* Since: 1.0.2 */
-	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,	/* Since: 1.0.2 */
-	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE,	/* Since: 1.0.2 */
-	PK_TRANSACTION_FLAG_ENUM_LAST			/* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_NONE,		  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED,	  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_SIMULATE,	  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD,	  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL, /* Since: 1.0.2 */
+	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
+	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */
+	PK_TRANSACTION_FLAG_ENUM_LAST		  /* Since: 0.8.1 */
 } PkTransactionFlagEnum;
 
 /* general */
-guint		 pk_enum_find_value			(const PkEnumMatch *table,
-							 const gchar	*string)
-							 G_GNUC_WARN_UNUSED_RESULT;
-const gchar	*pk_enum_find_string			(const PkEnumMatch *table,
-							 guint		 value)
-							 G_GNUC_WARN_UNUSED_RESULT;
+guint		      pk_enum_find_value (const PkEnumMatch *table,
+					  const gchar	    *string) G_GNUC_WARN_UNUSED_RESULT;
+const gchar	     *pk_enum_find_string (const PkEnumMatch *table,
+					   guint	      value) G_GNUC_WARN_UNUSED_RESULT;
 
-PkSigTypeEnum	 pk_sig_type_enum_from_string		(const gchar	*sig_type);
-const gchar	*pk_sig_type_enum_to_string		(PkSigTypeEnum	 sig_type);
+PkSigTypeEnum	      pk_sig_type_enum_from_string (const gchar *sig_type);
+const gchar	     *pk_sig_type_enum_to_string (PkSigTypeEnum sig_type);
 
-PkInfoEnum	 pk_info_enum_from_string		(const gchar	*info);
-const gchar	*pk_info_enum_to_string			(PkInfoEnum	 info);
+PkInfoEnum	      pk_info_enum_from_string (const gchar *info);
+const gchar	     *pk_info_enum_to_string (PkInfoEnum info);
 
-PkUpdateStateEnum  pk_update_state_enum_from_string	(const gchar	*update_state);
-const gchar	*pk_update_state_enum_to_string		(PkUpdateStateEnum update_state);
+PkUpdateStateEnum     pk_update_state_enum_from_string (const gchar *update_state);
+const gchar	     *pk_update_state_enum_to_string (PkUpdateStateEnum update_state);
 
-PkExitEnum	 pk_exit_enum_from_string		(const gchar	*exit);
-const gchar	*pk_exit_enum_to_string			(PkExitEnum	 exit);
+PkExitEnum	      pk_exit_enum_from_string (const gchar *exit);
+const gchar	     *pk_exit_enum_to_string (PkExitEnum exit);
 
-PkNetworkEnum	 pk_network_enum_from_string		(const gchar	*network);
-const gchar	*pk_network_enum_to_string		(PkNetworkEnum	 network);
+PkNetworkEnum	      pk_network_enum_from_string (const gchar *network);
+const gchar	     *pk_network_enum_to_string (PkNetworkEnum network);
 
-PkStatusEnum	 pk_status_enum_from_string		(const gchar	*status);
-const gchar	*pk_status_enum_to_string		(PkStatusEnum	 status);
+PkStatusEnum	      pk_status_enum_from_string (const gchar *status);
+const gchar	     *pk_status_enum_to_string (PkStatusEnum status);
 
-PkRoleEnum	 pk_role_enum_from_string		(const gchar	*role);
-const gchar	*pk_role_enum_to_string			(PkRoleEnum	 role);
+PkRoleEnum	      pk_role_enum_from_string (const gchar *role);
+const gchar	     *pk_role_enum_to_string (PkRoleEnum role);
 
-PkErrorEnum	 pk_error_enum_from_string		(const gchar	*code);
-const gchar	*pk_error_enum_to_string		(PkErrorEnum code);
+PkErrorEnum	      pk_error_enum_from_string (const gchar *code);
+const gchar	     *pk_error_enum_to_string (PkErrorEnum code);
 
-PkRestartEnum	 pk_restart_enum_from_string		(const gchar	*restart);
-const gchar	*pk_restart_enum_to_string		(PkRestartEnum	 restart);
+PkRestartEnum	      pk_restart_enum_from_string (const gchar *restart);
+const gchar	     *pk_restart_enum_to_string (PkRestartEnum restart);
 
-PkGroupEnum	 pk_group_enum_from_string		(const gchar	*group);
-const gchar	*pk_group_enum_to_string		(PkGroupEnum	 group);
+PkGroupEnum	      pk_group_enum_from_string (const gchar *group);
+const gchar	     *pk_group_enum_to_string (PkGroupEnum group);
 
-PkFilterEnum	 pk_filter_enum_from_string		(const gchar	*filter);
-const gchar	*pk_filter_enum_to_string		(PkFilterEnum	 filter);
+PkFilterEnum	      pk_filter_enum_from_string (const gchar *filter);
+const gchar	     *pk_filter_enum_to_string (PkFilterEnum filter);
 
-PkDistroUpgradeEnum pk_distro_upgrade_enum_from_string	(const gchar	*upgrade);
-const gchar	*pk_distro_upgrade_enum_to_string	(PkDistroUpgradeEnum upgrade);
+PkDistroUpgradeEnum   pk_distro_upgrade_enum_from_string (const gchar *upgrade);
+const gchar	     *pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade);
 
-PkMediaTypeEnum  pk_media_type_enum_from_string		(const gchar	*media_type);
-const gchar	*pk_media_type_enum_to_string		(PkMediaTypeEnum media_type);
+PkMediaTypeEnum	      pk_media_type_enum_from_string (const gchar *media_type);
+const gchar	     *pk_media_type_enum_to_string (PkMediaTypeEnum media_type);
 
-PkAuthorizeEnum  pk_authorize_type_enum_from_string	(const gchar	*authorize_type);
-const gchar	*pk_authorize_type_enum_to_string	(PkAuthorizeEnum authorize_type);
+PkAuthorizeEnum	      pk_authorize_type_enum_from_string (const gchar *authorize_type);
+const gchar	     *pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type);
 
-PkUpgradeKindEnum  pk_upgrade_kind_enum_from_string	(const gchar	*upgrade_kind);
-const gchar	*pk_upgrade_kind_enum_to_string		(PkUpgradeKindEnum upgrade_kind);
+PkUpgradeKindEnum     pk_upgrade_kind_enum_from_string (const gchar *upgrade_kind);
+const gchar	     *pk_upgrade_kind_enum_to_string (PkUpgradeKindEnum upgrade_kind);
 
-PkTransactionFlagEnum pk_transaction_flag_enum_from_string (const gchar	*transaction_flag);
-const gchar	*pk_transaction_flag_enum_to_string	(PkTransactionFlagEnum transaction_flag);
+PkTransactionFlagEnum pk_transaction_flag_enum_from_string (const gchar *transaction_flag);
+const gchar	     *pk_transaction_flag_enum_to_string (PkTransactionFlagEnum transaction_flag);
 
-const gchar	*pk_status_enum_to_localised_text	(PkStatusEnum	 status);
-const gchar	*pk_info_enum_to_localised_past		(PkInfoEnum	 info);
-const gchar	*pk_info_enum_to_localised_present	(PkInfoEnum	 info);
-const gchar	*pk_role_enum_to_localised_present	(PkRoleEnum	 role);
+const gchar	     *pk_status_enum_to_localised_text (PkStatusEnum status);
+const gchar	     *pk_info_enum_to_localised_past (PkInfoEnum info);
+const gchar	     *pk_info_enum_to_localised_present (PkInfoEnum info);
+const gchar	     *pk_role_enum_to_localised_present (PkRoleEnum role);
 
 G_END_DECLS
 

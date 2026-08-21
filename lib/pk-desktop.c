@@ -126,8 +126,7 @@ pk_desktop_open_database (PkDesktop *desktop, GError **error)
  **/
 static void
 pk_desktop_class_init (PkDesktopClass *klass)
-{
-}
+{}
 
 /*
  * pk_desktop_init:

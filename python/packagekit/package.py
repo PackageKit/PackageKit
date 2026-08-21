@@ -19,14 +19,15 @@
 
 from packagekit.backend import PackageKitEnum
 
+
 class PackagekitPackage:
 
     def get_package_id(self, name, version, arch, data):
         return "%s;%s;%s;%s" % (name, version, arch, data)
 
     def get_package_from_id(self, package_id):
-        ''' split up a package id name;ver;arch;data into a tuple
-            containing (name, ver, arch, data)
+        '''split up a package id name;ver;arch;data into a tuple
+        containing (name, ver, arch, data)
         '''
         return tuple(package_id.split(';', 4))
 
@@ -86,4 +87,3 @@ class PackagekitPackage:
             return False
 
         return True
-

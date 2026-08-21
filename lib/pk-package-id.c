@@ -109,8 +109,7 @@ pk_package_id_check (const gchar *package_id)
  * Since: 0.5.0
  **/
 gchar *
-pk_package_id_build (const gchar *name, const gchar *version,
-		     const gchar *arch, const gchar *data)
+pk_package_id_build (const gchar *name, const gchar *version, const gchar *arch, const gchar *data)
 {
 	g_return_val_if_fail (name != NULL, NULL);
 	return g_strjoin (";",
@@ -127,10 +126,8 @@ pk_package_id_build (const gchar *name, const gchar *version,
 static gboolean
 pk_arch_base_ix86 (const gchar *arch)
 {
-	if (g_strcmp0 (arch, "i386") == 0 ||
-	    g_strcmp0 (arch, "i486") == 0 ||
-	    g_strcmp0 (arch, "i586") == 0 ||
-	    g_strcmp0 (arch, "i686") == 0)
+	if (g_strcmp0 (arch, "i386") == 0 || g_strcmp0 (arch, "i486") == 0 ||
+	    g_strcmp0 (arch, "i586") == 0 || g_strcmp0 (arch, "i686") == 0)
 		return TRUE;
 	return FALSE;
 }

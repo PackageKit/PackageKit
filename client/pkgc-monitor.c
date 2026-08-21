@@ -122,11 +122,7 @@ pkgc_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar 
 	g_autofree gchar *text = NULL;
 
 	/* get data */
-	g_object_get (item,
-		      "media-type", &type,
-		      "media-id", &id,
-		      "media-text", &text,
-		      NULL);
+	g_object_get (item, "media-type", &type, "media-id", &id, "media-text", &text, NULL);
 
 	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
 		 transaction_id,
@@ -262,15 +258,24 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 
 	/* get data */
 	g_object_get (progress,
-		      "role", &role,
-		      "status", &status,
-		      "percentage", &percentage,
-		      "allow-cancel", &allow_cancel,
-		      "package", &package,
-		      "item-progress", &item_progress,
-		      "package-id", &package_id,
-		      "transaction-id", &transaction_id,
-		      "sender", &sender,
+		      "role",
+		      &role,
+		      "status",
+		      &status,
+		      "percentage",
+		      &percentage,
+		      "allow-cancel",
+		      &allow_cancel,
+		      "package",
+		      &package,
+		      "item-progress",
+		      &item_progress,
+		      "package-id",
+		      &package_id,
+		      "transaction-id",
+		      &transaction_id,
+		      "sender",
+		      &sender,
 		      NULL);
 
 	/* don't print before we have properties */
@@ -298,9 +303,12 @@ pkgc_monitor_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 	} else if (type == PK_PROGRESS_TYPE_PACKAGE) {
 		const gchar *info_color;
 		g_object_get (package,
-			      "info", &info,
-			      "package-id", &package_id_tmp,
-			      "summary", &summary,
+			      "info",
+			      &info,
+			      "package-id",
+			      &package_id_tmp,
+			      "summary",
+			      &summary,
 			      NULL);
 		/* Color based on package info type */
 		if (info == PK_INFO_ENUM_INSTALLING || info == PK_INFO_ENUM_UPDATING)
@@ -452,9 +460,13 @@ pkgc_monitor_transaction_list_added_cb (PkTransactionList *tlist,
 		 transaction_id,
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
 
-	pk_client_adopt_async (PK_CLIENT (ctx->task), transaction_id, NULL,
-			       (PkProgressCallback) pkgc_monitor_progress_cb, user_data,
-			       (GAsyncReadyCallback) pkgc_monitor_adopt_cb, user_data);
+	pk_client_adopt_async (PK_CLIENT (ctx->task),
+			       transaction_id,
+			       NULL,
+			       (PkProgressCallback) pkgc_monitor_progress_cb,
+			       user_data,
+			       (GAsyncReadyCallback) pkgc_monitor_adopt_cb,
+			       user_data);
 	pkgc_monitor_list_print (ctx, tlist);
 }
 

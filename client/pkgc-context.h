@@ -29,15 +29,15 @@
 G_BEGIN_DECLS
 
 /* exit codes */
-#define PKGC_EXIT_SUCCESS		0
-#define PKGC_EXIT_FAILURE		1
-#define PKGC_EXIT_SYNTAX_ERROR		2
-#define PKGC_EXIT_PERMISSION_DENIED	3
-#define PKGC_EXIT_NOT_FOUND		4
-#define PKGC_EXIT_TRANSACTION_FAILED	5
+#define PKGC_EXIT_SUCCESS	     0
+#define PKGC_EXIT_FAILURE	     1
+#define PKGC_EXIT_SYNTAX_ERROR	     2
+#define PKGC_EXIT_PERMISSION_DENIED  3
+#define PKGC_EXIT_NOT_FOUND	     4
+#define PKGC_EXIT_TRANSACTION_FAILED 5
 
 /* error domain */
-#define PKGC_ERROR	(pkgc_error_quark ())
+#define PKGC_ERROR (pkgc_error_quark ())
 
 /* default cache age (3 days) */
 #define PKGC_DEFAULT_CACHE_AGE_SEC (3 * 24 * 60 * 60)
@@ -61,7 +61,8 @@ typedef enum {
  *
  * Context structure for pkgcli
  */
-typedef struct {
+typedef struct
+{
 	PkControl     *control;
 	PkTaskText    *task;
 	GCancellable  *cancellable;
@@ -99,35 +100,38 @@ typedef struct {
  * Structure defining a pkgcli command
  */
 typedef struct PkgcliCommand PkgcliCommand;
-struct PkgcliCommand {
+struct PkgcliCommand
+{
 	gchar *name;
 	gchar *summary;
 	gchar *param_summary;
 
 	gint (*handler) (PkgcliContext *ctx,
-					 PkgcliCommand *cmd,
-					 gint argc,
-					 gchar **argv);
+			 PkgcliCommand *cmd,
+			 gint		argc,
+			 gchar	      **argv);
 };
 
-GQuark			 pkgc_error_quark (void);
-PkgcliContext	    *pkgc_context_new (void);
-void		     pkgc_context_free (PkgcliContext *ctx);
-gboolean	     pkgc_context_init (PkgcliContext *ctx, GError **error);
-void		     pkgc_context_apply_settings (PkgcliContext *ctx);
+GQuark	       pkgc_error_quark (void);
+PkgcliContext *pkgc_context_new (void);
+void	       pkgc_context_free (PkgcliContext *ctx);
+gboolean       pkgc_context_init (PkgcliContext *ctx,
+				  GError       **error);
+void	       pkgc_context_apply_settings (PkgcliContext *ctx);
 
-void		     pkgc_context_register_command (PkgcliContext *ctx,
-						    const gchar	  *name,
-						    gint (*handler) (PkgcliContext *ctx,
-						    				 PkgcliCommand *cmd,
-						    				 gint argc,
-						    				 gchar **argv),
-						    const gchar *summary);
-PkgcliCommand	*pkgc_context_find_command (PkgcliContext *ctx, const char *name);
-void			pkgc_context_stop_progress_bar (PkgcliContext *ctx);
+void	       pkgc_context_register_command (PkgcliContext *ctx,
+					      const gchar   *name,
+					      gint (*handler) (PkgcliContext *ctx,
+							       PkgcliCommand *cmd,
+							       gint	      argc,
+							       gchar	    **argv),
+					      const gchar *summary);
+PkgcliCommand *pkgc_context_find_command (PkgcliContext *ctx,
+					  const char	*name);
+void	       pkgc_context_stop_progress_bar (PkgcliContext *ctx);
 
-void			pkgc_context_on_progress_cb (PkProgress *progress,
-											 PkProgressType type,
-											 gpointer user_data);
+void	       pkgc_context_on_progress_cb (PkProgress	  *progress,
+					    PkProgressType type,
+					    gpointer	   user_data);
 
 G_END_DECLS

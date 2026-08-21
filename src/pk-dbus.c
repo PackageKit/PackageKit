@@ -26,19 +26,19 @@
 #include <gio/gio.h>
 
 #ifdef HAVE_SYSTEMD_SD_LOGIN_H
- #include <systemd/sd-login.h>
+#include <systemd/sd-login.h>
 #endif
 
 #include "pk-dbus.h"
 
 struct _PkDbus
 {
-	GObject			 parent;
+	GObject parent;
 
-	GDBusConnection		*connection;
-	GDBusProxy		*proxy_pid;
-	GDBusProxy		*proxy_uid;
-	GDBusProxy		*proxy_session;
+	GDBusConnection *connection;
+	GDBusProxy *proxy_pid;
+	GDBusProxy *proxy_uid;
+	GDBusProxy *proxy_session;
 };
 
 static gpointer pk_dbus_object = NULL;
@@ -74,16 +74,14 @@ pk_dbus_get_uid_pid (PkDbus *dbus, const gchar *sender, guint32 *uid, guint32 *p
 
 	/* get caller credentials from D-Bus */
 	reply_var = g_dbus_proxy_call_sync (dbus->proxy_pid,
-					"GetConnectionCredentials",
-					g_variant_new ("(s)",
-						       sender),
-					G_DBUS_CALL_FLAGS_NONE,
-					2000,
-					NULL,
-					&error);
+					    "GetConnectionCredentials",
+					    g_variant_new ("(s)", sender),
+					    G_DBUS_CALL_FLAGS_NONE,
+					    2000,
+					    NULL,
+					    &error);
 	if (reply_var == NULL) {
-		g_warning ("Failed to get uid/pid for %s: %s",
-			   sender, error->message);
+		g_warning ("Failed to get uid/pid for %s: %s", sender, error->message);
 		return FALSE;
 	}
 
@@ -138,15 +136,13 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 	}
 	value = g_dbus_proxy_call_sync (dbus->proxy_uid,
 					"GetConnectionUnixUser",
-					g_variant_new ("(s)",
-						       sender),
+					g_variant_new ("(s)", sender),
 					G_DBUS_CALL_FLAGS_NONE,
 					2000,
 					NULL,
 					&error);
 	if (value == NULL) {
-		g_warning ("Failed to get uid for %s: %s",
-			   sender, error->message);
+		g_warning ("Failed to get uid for %s: %s", sender, error->message);
 		return G_MAXUINT;
 	}
 	g_variant_get (value, "(u)", &uid);
@@ -185,15 +181,13 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	/* get pid from D-Bus */
 	value = g_dbus_proxy_call_sync (dbus->proxy_pid,
 					"GetConnectionUnixProcessID",
-					g_variant_new ("(s)",
-						       sender),
+					g_variant_new ("(s)", sender),
 					G_DBUS_CALL_FLAGS_NONE,
 					2000,
 					NULL,
 					&error);
 	if (value == NULL) {
-		g_warning ("Failed to get pid for %s: %s",
-			   sender, error->message);
+		g_warning ("Failed to get pid for %s: %s", sender, error->message);
 		return G_MAXUINT;
 	}
 	g_variant_get (value, "(u)", &pid);
@@ -278,15 +272,13 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	/* get session from ConsoleKit */
 	value = g_dbus_proxy_call_sync (dbus->proxy_session,
 					"GetSessionForUnixProcess",
-					g_variant_new ("(u)",
-						       pid),
+					g_variant_new ("(u)", pid),
 					G_DBUS_CALL_FLAGS_NONE,
 					2000,
 					NULL,
 					&error);
 	if (value == NULL) {
-		g_warning ("Failed to get session for %s: %s",
-			   sender, error->message);
+		g_warning ("Failed to get session for %s: %s", sender, error->message);
 		goto out;
 	}
 	g_variant_get (value, "(o)", &session);
@@ -328,56 +320,52 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
 		return TRUE;
 
 	/* use the bus to get the uid */
-	dbus->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
-						 NULL, error);
+	dbus->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, error);
 	if (dbus->connection == NULL) {
 		g_prefix_error (error, "cannot connect to the system bus: ");
 		return FALSE;
 	}
 
 	/* connect to D-Bus so we can get the pid */
-	dbus->proxy_pid =
-		g_dbus_proxy_new_sync (dbus->connection,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-				       NULL,
-				       "org.freedesktop.DBus",
-				       "/org/freedesktop/DBus/Bus",
-				       "org.freedesktop.DBus",
-				       NULL,
-				       error);
+	dbus->proxy_pid = g_dbus_proxy_new_sync (dbus->connection,
+						 G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+						     G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						 NULL,
+						 "org.freedesktop.DBus",
+						 "/org/freedesktop/DBus/Bus",
+						 "org.freedesktop.DBus",
+						 NULL,
+						 error);
 	if (dbus->proxy_pid == NULL) {
 		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
 	}
 
 	/* connect to D-Bus so we can get the uid */
-	dbus->proxy_uid =
-		g_dbus_proxy_new_sync (dbus->connection,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-				       NULL,
-				       "org.freedesktop.DBus",
-				       "/org/freedesktop/DBus",
-				       "org.freedesktop.DBus",
-				       NULL,
-				       error);
+	dbus->proxy_uid = g_dbus_proxy_new_sync (dbus->connection,
+						 G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+						     G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						 NULL,
+						 "org.freedesktop.DBus",
+						 "/org/freedesktop/DBus",
+						 "org.freedesktop.DBus",
+						 NULL,
+						 error);
 	if (dbus->proxy_uid == NULL) {
 		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
 	}
 
 	/* use ConsoleKit to get the session */
-	dbus->proxy_session =
-		g_dbus_proxy_new_sync (dbus->connection,
-				       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-				       G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
-				       NULL,
-				       "org.freedesktop.ConsoleKit",
-				       "/org/freedesktop/ConsoleKit/Manager",
-				       "org.freedesktop.ConsoleKit.Manager",
-				       NULL,
-				       error);
+	dbus->proxy_session = g_dbus_proxy_new_sync (dbus->connection,
+						     G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
+							 G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS,
+						     NULL,
+						     "org.freedesktop.ConsoleKit",
+						     "/org/freedesktop/ConsoleKit/Manager",
+						     "org.freedesktop.ConsoleKit.Manager",
+						     NULL,
+						     error);
 	if (dbus->proxy_session == NULL) {
 		g_prefix_error (error, "Cannot connect to D-Bus: ");
 		return FALSE;
@@ -396,8 +384,7 @@ pk_dbus_connect (PkDbus *dbus, GError **error)
  **/
 static void
 pk_dbus_init (PkDbus *dbus)
-{
-}
+{}
 
 PkDbus *
 pk_dbus_new (void)
@@ -410,4 +397,3 @@ pk_dbus_new (void)
 	}
 	return PK_DBUS (pk_dbus_object);
 }
-

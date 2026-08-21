@@ -30,9 +30,8 @@ G_BEGIN_DECLS
 #define PK_TYPE_TASK_WRAPPER (pk_task_wrapper_get_type ())
 G_DECLARE_FINAL_TYPE (PkTaskWrapper, pk_task_wrapper, PK, TASK_WRAPPER, PkTask)
 
-PkTaskWrapper	*pk_task_wrapper_new (void);
+PkTaskWrapper *pk_task_wrapper_new (void);
 
 G_END_DECLS
 
 #endif /* __PK_TASK_WRAPPER_H */
-

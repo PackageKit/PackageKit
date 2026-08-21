@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -30,16 +30,16 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_SOURCE			(pk_source_get_type ())
-#define PK_SOURCE(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_SOURCE, PkSource))
-#define PK_SOURCE_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_SOURCE, PkSourceClass))
-#define PK_IS_SOURCE(o)			(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_SOURCE))
-#define PK_IS_SOURCE_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SOURCE))
-#define PK_SOURCE_GET_CLASS(o)		(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SOURCE, PkSourceClass))
+#define PK_TYPE_SOURCE	       (pk_source_get_type ())
+#define PK_SOURCE(o)	       (G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_SOURCE, PkSource))
+#define PK_SOURCE_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_SOURCE, PkSourceClass))
+#define PK_IS_SOURCE(o)	       (G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_SOURCE))
+#define PK_IS_SOURCE_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_SOURCE))
+#define PK_SOURCE_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_SOURCE, PkSourceClass))
 
-typedef struct _PkSourcePrivate		PkSourcePrivate;
-typedef struct _PkSource		PkSource;
-typedef struct _PkSourceClass		PkSourceClass;
+typedef struct _PkSourcePrivate PkSourcePrivate;
+typedef struct _PkSource	PkSource;
+typedef struct _PkSourceClass	PkSourceClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkSource, g_object_unref)
@@ -47,13 +47,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkSource, g_object_unref)
 
 struct _PkSource
 {
-	 GObject			 parent;
-	 PkSourcePrivate		*priv;
+	GObject		 parent;
+	PkSourcePrivate *priv;
 };
 
 struct _PkSourceClass
 {
-	GObjectClass	parent_class;
+	GObjectClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -62,10 +62,9 @@ struct _PkSourceClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_source_get_type		(void);
-PkSource	*pk_source_new			(void);
+GType	  pk_source_get_type (void);
+PkSource *pk_source_new (void);
 
 G_END_DECLS
 
 #endif /* __PK_SOURCE_H */
-

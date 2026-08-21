@@ -32,7 +32,7 @@
 
 #include "pk-category.h"
 
-static void     pk_category_finalize	(GObject     *object);
+static void pk_category_finalize (GObject *object);
 
 /**
  * PkCategoryPrivate:
@@ -41,11 +41,11 @@ static void     pk_category_finalize	(GObject     *object);
  **/
 struct _PkCategoryPrivate
 {
-	gchar				*parent_id;
-	gchar				*cat_id;
-	gchar				*name;
-	gchar				*summary;
-	gchar				*icon;
+	gchar *parent_id;
+	gchar *cat_id;
+	gchar *name;
+	gchar *summary;
+	gchar *icon;
 };
 
 enum {
@@ -58,7 +58,9 @@ enum {
 	PROP_LAST
 };
 
-static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
+static GParamSpec *obj_properties[PROP_LAST] = {
+	NULL,
+};
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkCategory, pk_category, PK_TYPE_SOURCE)
 #define GET_PRIVATE(o) (pk_category_get_instance_private (o))
@@ -360,50 +362,60 @@ pk_category_class_init (PkCategoryClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_PARENT_ID] =
-		g_param_spec_string ("parent-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_PARENT_ID] = g_param_spec_string (
+	    "parent-id",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkCategory:cat-id:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_CAT_ID] =
-		g_param_spec_string ("cat-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_CAT_ID] = g_param_spec_string (
+	    "cat-id",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkCategory:name:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_NAME] =
-		g_param_spec_string ("name", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_NAME] = g_param_spec_string (
+	    "name",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkCategory:summary:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_SUMMARY] =
-		g_param_spec_string ("summary", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_SUMMARY] = g_param_spec_string (
+	    "summary",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
 	 * PkCategory:icon:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_ICON] =
-		g_param_spec_string ("icon", NULL, NULL,
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_ICON] = g_param_spec_string (
+	    "icon",
+	    NULL,
+	    NULL,
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 }

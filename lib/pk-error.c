@@ -36,7 +36,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_error_finalize	(GObject     *object);
+static void pk_error_finalize (GObject *object);
 
 /**
  * PkErrorPrivate:
@@ -45,8 +45,8 @@ static void     pk_error_finalize	(GObject     *object);
  **/
 struct _PkErrorPrivate
 {
-	PkErrorEnum			 code;
-	gchar				*details;
+	PkErrorEnum code;
+	gchar *details;
 };
 
 enum {
@@ -161,8 +161,11 @@ pk_error_class_init (PkErrorClass *klass)
 	 *
 	 * Since: 0.5.5
 	 */
-	pspec = g_param_spec_enum ("code", NULL, NULL,
-				   PK_TYPE_ERROR_ENUM, PK_ERROR_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("code",
+				   NULL,
+				   NULL,
+				   PK_TYPE_ERROR_ENUM,
+				   PK_ERROR_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_CODE, pspec);
 
@@ -171,7 +174,9 @@ pk_error_class_init (PkErrorClass *klass)
 	 *
 	 * Since: 0.5.5
 	 */
-	pspec = g_param_spec_string ("details", NULL, NULL,
+	pspec = g_param_spec_string ("details",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DETAILS, pspec);

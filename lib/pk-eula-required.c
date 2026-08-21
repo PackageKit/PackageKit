@@ -34,7 +34,7 @@
 
 #include "pk-eula-required.h"
 
-static void     pk_eula_required_finalize	(GObject     *object);
+static void pk_eula_required_finalize (GObject *object);
 
 /**
  * PkEulaRequiredPrivate:
@@ -43,10 +43,10 @@ static void     pk_eula_required_finalize	(GObject     *object);
  **/
 struct _PkEulaRequiredPrivate
 {
-	gchar				*eula_id;
-	gchar				*package_id;
-	gchar				*vendor_name;
-	gchar				*license_agreement;
+	gchar *eula_id;
+	gchar *package_id;
+	gchar *vendor_name;
+	gchar *license_agreement;
 };
 
 enum {
@@ -173,7 +173,10 @@ pk_eula_required_get_property (GObject *object, guint prop_id, GValue *value, GP
  * pk_eula_required_set_property:
  **/
 static void
-pk_eula_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_eula_required_set_property (GObject *object,
+			       guint prop_id,
+			       const GValue *value,
+			       GParamSpec *pspec)
 {
 	PkEulaRequired *eula_required = PK_EULA_REQUIRED (object);
 	PkEulaRequiredPrivate *priv = GET_PRIVATE(eula_required);
@@ -220,7 +223,9 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
          *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("eula-id", NULL, NULL,
+	pspec = g_param_spec_string ("eula-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_EULA_ID, pspec);
@@ -232,7 +237,9 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
          *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("package-id", NULL, NULL,
+	pspec = g_param_spec_string ("package-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_PACKAGE_ID, pspec);
@@ -244,7 +251,9 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
          *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("vendor-name", NULL, NULL,
+	pspec = g_param_spec_string ("vendor-name",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_VENDOR_NAME, pspec);
@@ -256,7 +265,9 @@ pk_eula_required_class_init (PkEulaRequiredClass *klass)
          *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("license-agreement", NULL, NULL,
+	pspec = g_param_spec_string ("license-agreement",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_LICENSE_AGREEMENT, pspec);

@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -50,12 +50,12 @@ G_BEGIN_DECLS
 #define PK_RESULTS_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_RESULTS, PkResultsClass))
 #define PK_IS_RESULTS(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_RESULTS))
 #define PK_IS_RESULTS_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_RESULTS))
-#define PK_RESULTS_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_RESULTS, PkResultsClass))
+#define PK_RESULTS_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_RESULTS, PkResultsClass))
 #define PK_RESULTS_TYPE_ERROR	(pk_results_error_get_type ())
 
-typedef struct _PkResultsPrivate	PkResultsPrivate;
-typedef struct _PkResults		PkResults;
-typedef struct _PkResultsClass		PkResultsClass;
+typedef struct _PkResultsPrivate PkResultsPrivate;
+typedef struct _PkResults	 PkResults;
+typedef struct _PkResultsClass	 PkResultsClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkResults, g_object_unref)
@@ -63,13 +63,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkResults, g_object_unref)
 
 struct _PkResults
 {
-	 GObject		 parent;
-	 PkResultsPrivate	*priv;
+	GObject		  parent;
+	PkResultsPrivate *priv;
 };
 
 struct _PkResultsClass
 {
-	GObjectClass	parent_class;
+	GObjectClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -78,66 +78,65 @@ struct _PkResultsClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_results_get_type		  	(void);
-PkResults	*pk_results_new				(void);
+GType	       pk_results_get_type (void);
+PkResults     *pk_results_new (void);
 
 /* set */
-gboolean	 pk_results_set_exit_code		(PkResults		*results,
-							 PkExitEnum		 exit_enum);
-gboolean	 pk_results_set_role	 		(PkResults		*results,
-							 PkRoleEnum		 role);
-gboolean	 pk_results_set_error_code 		(PkResults		*results,
-							 PkError		*item);
+gboolean       pk_results_set_exit_code (PkResults *results,
+					 PkExitEnum exit_enum);
+gboolean       pk_results_set_role (PkResults *results,
+				    PkRoleEnum role);
+gboolean       pk_results_set_error_code (PkResults *results,
+					  PkError   *item);
 
 /* add */
-gboolean	 pk_results_add_package			(PkResults		*results,
-							 PkPackage		*item);
-gboolean	 pk_results_add_details			(PkResults		*results,
-							 PkDetails		*item);
-gboolean	 pk_results_add_update_detail		(PkResults		*results,
-							 PkUpdateDetail		*item);
-gboolean	 pk_results_add_category		(PkResults		*results,
-							 PkCategory		*item);
-gboolean	 pk_results_add_distro_upgrade		(PkResults		*results,
-							 PkDistroUpgrade	*item);
-gboolean	 pk_results_add_require_restart		(PkResults		*results,
-							 PkRequireRestart	*item);
-gboolean	 pk_results_add_transaction		(PkResults		*results,
-							 PkTransactionPast	*item);
-gboolean	 pk_results_add_files 			(PkResults		*results,
-							 PkFiles		*item);
-gboolean	 pk_results_add_repo_signature_required	(PkResults		*results,
-							 PkRepoSignatureRequired *item);
-gboolean	 pk_results_add_eula_required		(PkResults		*results,
-							 PkEulaRequired		*item);
-gboolean	 pk_results_add_media_change_required	(PkResults		*results,
-							 PkMediaChangeRequired	*item);
-gboolean	 pk_results_add_repo_detail 		(PkResults		*results,
-							 PkRepoDetail		*item);
+gboolean       pk_results_add_package (PkResults *results,
+				       PkPackage *item);
+gboolean       pk_results_add_details (PkResults *results,
+				       PkDetails *item);
+gboolean       pk_results_add_update_detail (PkResults	    *results,
+					     PkUpdateDetail *item);
+gboolean       pk_results_add_category (PkResults  *results,
+					PkCategory *item);
+gboolean       pk_results_add_distro_upgrade (PkResults	      *results,
+					      PkDistroUpgrade *item);
+gboolean       pk_results_add_require_restart (PkResults	*results,
+					       PkRequireRestart *item);
+gboolean       pk_results_add_transaction (PkResults	     *results,
+					   PkTransactionPast *item);
+gboolean       pk_results_add_files (PkResults *results,
+				     PkFiles   *item);
+gboolean       pk_results_add_repo_signature_required (PkResults	       *results,
+						       PkRepoSignatureRequired *item);
+gboolean       pk_results_add_eula_required (PkResults	    *results,
+					     PkEulaRequired *item);
+gboolean       pk_results_add_media_change_required (PkResults		   *results,
+						     PkMediaChangeRequired *item);
+gboolean       pk_results_add_repo_detail (PkResults	*results,
+					   PkRepoDetail *item);
 
 /* get single data */
-PkExitEnum	 pk_results_get_exit_code		(PkResults		*results);
-PkPackageSack	*pk_results_get_package_sack		(PkResults		*results);
-PkError		*pk_results_get_error_code		(PkResults		*results);
-PkRoleEnum	 pk_results_get_role			(PkResults		*results);
-PkBitfield	 pk_results_get_transaction_flags	(PkResults		*results);
-PkRestartEnum	 pk_results_get_require_restart_worst	(PkResults		*results);
+PkExitEnum     pk_results_get_exit_code (PkResults *results);
+PkPackageSack *pk_results_get_package_sack (PkResults *results);
+PkError	      *pk_results_get_error_code (PkResults *results);
+PkRoleEnum     pk_results_get_role (PkResults *results);
+PkBitfield     pk_results_get_transaction_flags (PkResults *results);
+PkRestartEnum  pk_results_get_require_restart_worst (PkResults *results);
 
 /* get array objects */
-GPtrArray	*pk_results_get_package_array		(PkResults		*results);
-GPtrArray	*pk_results_get_details_array		(PkResults		*results);
-GPtrArray	*pk_results_get_update_detail_array	(PkResults		*results);
-GPtrArray	*pk_results_get_category_array		(PkResults		*results);
-GPtrArray	*pk_results_get_distro_upgrade_array	(PkResults		*results);
-GPtrArray	*pk_results_get_require_restart_array	(PkResults		*results);
-GPtrArray	*pk_results_get_transaction_array	(PkResults		*results);
-GPtrArray	*pk_results_get_files_array		(PkResults		*results);
-GPtrArray	*pk_results_get_repo_signature_required_array (PkResults	*results);
-GPtrArray	*pk_results_get_eula_required_array	(PkResults		*results);
-GPtrArray	*pk_results_get_media_change_required_array (PkResults		*results);
-GPtrArray	*pk_results_get_repo_detail_array	(PkResults		*results);
+GPtrArray     *pk_results_get_package_array (PkResults *results);
+GPtrArray     *pk_results_get_details_array (PkResults *results);
+GPtrArray     *pk_results_get_update_detail_array (PkResults *results);
+GPtrArray     *pk_results_get_category_array (PkResults *results);
+GPtrArray     *pk_results_get_distro_upgrade_array (PkResults *results);
+GPtrArray     *pk_results_get_require_restart_array (PkResults *results);
+GPtrArray     *pk_results_get_transaction_array (PkResults *results);
+GPtrArray     *pk_results_get_files_array (PkResults *results);
+GPtrArray     *pk_results_get_repo_signature_required_array (PkResults *results);
+GPtrArray     *pk_results_get_eula_required_array (PkResults *results);
+GPtrArray     *pk_results_get_media_change_required_array (PkResults *results);
+GPtrArray     *pk_results_get_repo_detail_array (PkResults *results);
 
 G_END_DECLS
 
 #endif /* __PK_RESULTS_H */
-

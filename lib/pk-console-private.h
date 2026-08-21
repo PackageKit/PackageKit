@@ -30,16 +30,16 @@
 
 G_BEGIN_DECLS
 
-guint			pk_console_str_width (const gchar *text);
-gchar		   *pk_console_text_truncate (const gchar *text,
-										  guint max_width);
-gchar		   *pk_console_strpad (const gchar	*text,
-									guint	width);
+guint	 pk_console_str_width (const gchar *text);
+gchar	*pk_console_text_truncate (const gchar *text,
+				   guint	max_width);
+gchar	*pk_console_strpad (const gchar *text,
+			    guint	 width);
 
-guint			pk_console_get_number (const gchar	*question,
-										guint		 maxnum);
-gboolean		pk_console_get_prompt (const gchar	*question,
-										gboolean	 defaultyes);
+guint	 pk_console_get_number (const gchar *question,
+				guint	     maxnum);
+gboolean pk_console_get_prompt (const gchar *question,
+				gboolean     defaultyes);
 
 G_END_DECLS
 

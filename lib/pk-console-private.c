@@ -60,7 +60,7 @@ pk_console_str_width (const gchar *text)
 	while (*p != '\0') {
 		size_t bytes = mbrtowc (&wc, p, MB_CUR_MAX, &state);
 
-		if (bytes == (size_t)-1 || bytes == (size_t)-2) {
+		if (bytes == (size_t) -1 || bytes == (size_t) -2) {
 			/* Invalid multibyte sequence, treat as single-width */
 			width++;
 			p++;
@@ -91,7 +91,7 @@ pk_console_str_width (const gchar *text)
  *
  * Truncate a UTF-8 string to fit within a given display width
  */
-gchar*
+gchar *
 pk_console_text_truncate (const gchar *text, guint max_width)
 {
 	const gchar *p;
@@ -127,7 +127,7 @@ pk_console_text_truncate (const gchar *text, guint max_width)
 	while (*p != '\0') {
 		size_t bytes = mbrtowc (&wc, p, MB_CUR_MAX, &state);
 
-		if (bytes == (size_t)-1 || bytes == (size_t)-2) {
+		if (bytes == (size_t) -1 || bytes == (size_t) -2) {
 			/* Invalid multibyte sequence */
 			if (width + 1 > target_width)
 				break;
@@ -230,7 +230,6 @@ pk_console_get_number (const gchar *question, guint maxnum)
 	return answer;
 }
 
-
 /*
  * pk_readline_unbuffered:
  **/
@@ -244,15 +243,15 @@ pk_readline_unbuffered (const gchar *prompt)
 
 	tty_name = ctermid (NULL);
 	if (tty_name == NULL) {
-		g_warning ("Cannot get terminal: %s",
-			   strerror (errno));
+		g_warning ("Cannot get terminal: %s", strerror (errno));
 		goto out;
 	}
 
 	tty = fopen (tty_name, "r+");
 	if (tty == NULL) {
 		g_warning ("Error opening terminal for the process (`%s'): %s",
-			   tty_name, strerror (errno));
+			   tty_name,
+			   strerror (errno));
 		goto out;
 	}
 
@@ -293,7 +292,6 @@ out:
 	return str;
 }
 
-
 /**
  * pk_console_get_prompt:
  * @question: question to ask user
@@ -311,9 +309,7 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 	gchar *prompt;
 	GString *string;
 
-	prompt = g_strdup_printf ("%s %s ",
-				  question,
-				  defaultyes ? "[Y/n]" : "[N/y]");
+	prompt = g_strdup_printf ("%s %s ", question, defaultyes ? "[Y/n]" : "[N/y]");
 	while (!valid) {
 		string = pk_readline_unbuffered (prompt);
 		if (string == NULL)
@@ -327,13 +323,11 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 				ret = FALSE;
 			}
 		}
-		if (strcasecmp (string->str, "y") == 0 ||
-		    strcasecmp (string->str, "yes") == 0) {
+		if (strcasecmp (string->str, "y") == 0 || strcasecmp (string->str, "yes") == 0) {
 			valid = TRUE;
 			ret = TRUE;
 		}
-		if (strcasecmp (string->str, "n") == 0 ||
-		    strcasecmp (string->str, "no") == 0) {
+		if (strcasecmp (string->str, "n") == 0 || strcasecmp (string->str, "no") == 0) {
 			valid = TRUE;
 			ret = FALSE;
 		}

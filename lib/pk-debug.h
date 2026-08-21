@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if !defined (PK_COMPILATION)
+#if !defined(PK_COMPILATION)
 #error "Can only include this internally!"
 #endif
 
@@ -30,10 +30,10 @@
 
 G_BEGIN_DECLS
 
-gboolean	 pk_debug_is_verbose		(void);
-GOptionGroup	*pk_debug_get_option_group	(void);
-void		 pk_debug_add_log_domain	(const gchar	*log_domain);
-void		 pk_debug_set_verbose		(gboolean	 verbose);
+gboolean      pk_debug_is_verbose (void);
+GOptionGroup *pk_debug_get_option_group (void);
+void	      pk_debug_add_log_domain (const gchar *log_domain);
+void	      pk_debug_set_verbose (gboolean verbose);
 
 G_END_DECLS
 

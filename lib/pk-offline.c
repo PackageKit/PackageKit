@@ -180,7 +180,9 @@ pk_offline_cancel_with_flags (PkOfflineFlags flags, GCancellable *cancellable, G
 gboolean
 pk_offline_clear_results (GCancellable *cancellable, GError **error)
 {
-	return pk_offline_clear_results_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, cancellable, error);
+	return pk_offline_clear_results_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE,
+						    cancellable,
+						    error);
 }
 
 /**
@@ -197,7 +199,9 @@ pk_offline_clear_results (GCancellable *cancellable, GError **error)
  * Since: 1.2.5
  **/
 gboolean
-pk_offline_clear_results_with_flags (PkOfflineFlags flags, GCancellable *cancellable, GError **error)
+pk_offline_clear_results_with_flags (PkOfflineFlags flags,
+				     GCancellable *cancellable,
+				     GError **error)
 {
 	g_autoptr(GDBusConnection) connection = NULL;
 	g_autoptr(GVariant) res = NULL;
@@ -241,7 +245,10 @@ pk_offline_clear_results_with_flags (PkOfflineFlags flags, GCancellable *cancell
 gboolean
 pk_offline_trigger (PkOfflineAction action, GCancellable *cancellable, GError **error)
 {
-	return pk_offline_trigger_with_flags (action, PK_OFFLINE_FLAGS_INTERACTIVE, cancellable, error);
+	return pk_offline_trigger_with_flags (action,
+					      PK_OFFLINE_FLAGS_INTERACTIVE,
+					      cancellable,
+					      error);
 }
 
 /**
@@ -259,7 +266,10 @@ pk_offline_trigger (PkOfflineAction action, GCancellable *cancellable, GError **
  * Since: 1.2.5
  **/
 gboolean
-pk_offline_trigger_with_flags (PkOfflineAction action, PkOfflineFlags flags, GCancellable *cancellable, GError **error)
+pk_offline_trigger_with_flags (PkOfflineAction action,
+			       PkOfflineFlags flags,
+			       GCancellable *cancellable,
+			       GError **error)
 {
 	const gchar *tmp;
 	g_autoptr(GDBusConnection) connection = NULL;
@@ -305,7 +315,10 @@ pk_offline_trigger_with_flags (PkOfflineAction action, PkOfflineFlags flags, GCa
 gboolean
 pk_offline_trigger_upgrade (PkOfflineAction action, GCancellable *cancellable, GError **error)
 {
-	return pk_offline_trigger_upgrade_with_flags (action, PK_OFFLINE_FLAGS_INTERACTIVE, cancellable, error);
+	return pk_offline_trigger_upgrade_with_flags (action,
+						      PK_OFFLINE_FLAGS_INTERACTIVE,
+						      cancellable,
+						      error);
 }
 
 /**
@@ -323,7 +336,10 @@ pk_offline_trigger_upgrade (PkOfflineAction action, GCancellable *cancellable, G
  * Since: 1.2.5
  **/
 gboolean
-pk_offline_trigger_upgrade_with_flags (PkOfflineAction action, PkOfflineFlags flags, GCancellable *cancellable, GError **error)
+pk_offline_trigger_upgrade_with_flags (PkOfflineAction action,
+				       PkOfflineFlags flags,
+				       GCancellable *cancellable,
+				       GError **error)
 {
 	const gchar *tmp;
 	g_autoptr(GDBusConnection) connection = NULL;
@@ -378,8 +394,7 @@ pk_offline_get_action (GError **error)
 		return PK_OFFLINE_ACTION_UNSET;
 
 	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME,
-				  &action_data, NULL, &error_local)) {
+	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &action_data, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -393,7 +408,8 @@ pk_offline_get_action (GError **error)
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_INVALID_VALUE,
-			     "Failed to parse '%s'", action_data);
+			     "Failed to parse '%s'",
+			     action_data);
 	}
 	return action;
 }
@@ -423,9 +439,7 @@ pk_offline_get_prepared_sack (GError **error)
 	/* add them to the new array */
 	sack = pk_package_sack_new ();
 	for (i = 0; package_ids[i] != NULL; i++) {
-		if (!pk_package_sack_add_package_by_id (sack,
-							package_ids[i],
-							error))
+		if (!pk_package_sack_add_package_by_id (sack, package_ids[i], error))
 			return NULL;
 	}
 	return g_object_ref (sack);
@@ -462,8 +476,7 @@ pk_offline_get_prepared_ids (GError **error)
 	}
 
 	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME,
-				  &data, NULL, &error_local)) {
+	if (!g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &data, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -480,7 +493,11 @@ pk_offline_get_prepared_ids (GError **error)
 		return g_strsplit (data, "\n", -1);
 	}
 
-	prepared_ids = g_key_file_get_string_list (keyfile, "update", "prepared_ids", &prepared_ids_size, error);
+	prepared_ids = g_key_file_get_string_list (keyfile,
+						   "update",
+						   "prepared_ids",
+						   &prepared_ids_size,
+						   error);
 
 	if (prepared_ids == NULL || prepared_ids_size == 0)
 		return NULL;
@@ -691,8 +708,7 @@ pk_offline_get_results (GError **error)
 
 	/* add error */
 	results = pk_results_new ();
-	success = g_key_file_get_boolean (file, PK_OFFLINE_RESULTS_GROUP,
-					  "Success", NULL);
+	success = g_key_file_get_boolean (file, PK_OFFLINE_RESULTS_GROUP, "Success", NULL);
 	if (!success) {
 		g_autofree gchar *details = NULL;
 		g_autofree gchar *enum_str = NULL;
@@ -706,8 +722,10 @@ pk_offline_get_results (GError **error)
 						 "ErrorDetails",
 						 NULL);
 		g_object_set (pk_error,
-			      "code", pk_error_enum_from_string (enum_str),
-			      "details", details,
+			      "code",
+			      pk_error_enum_from_string (enum_str),
+			      "details",
+			      details,
 			      NULL);
 		pk_results_set_error_code (results, pk_error);
 		pk_results_set_exit_code (results, PK_EXIT_ENUM_FAILED);
@@ -716,16 +734,16 @@ pk_offline_get_results (GError **error)
 	}
 
 	/* set role */
-	role_str = g_key_file_get_string (file,
-	                                  PK_OFFLINE_RESULTS_GROUP,
-	                                  "Role",
-	                                  NULL);
+	role_str = g_key_file_get_string (file, PK_OFFLINE_RESULTS_GROUP, "Role", NULL);
 	if (role_str != NULL)
 		pk_results_set_role (results, pk_role_enum_from_string (role_str));
 
 	/* add packages */
-	package_ids = g_key_file_get_string_list (file, PK_OFFLINE_RESULTS_GROUP,
-						  "Packages", &package_ids_size, NULL);
+	package_ids = g_key_file_get_string_list (file,
+						  PK_OFFLINE_RESULTS_GROUP,
+						  "Packages",
+						  &package_ids_size,
+						  NULL);
 	if (package_ids == NULL || package_ids_size == 0)
 		goto out;
 

@@ -67,46 +67,47 @@
 #include "pk-transaction-private.h"
 #include "pk-scheduler.h"
 
-static void     pk_scheduler_finalize	(GObject	*object);
+static void pk_scheduler_finalize (GObject *object);
 
 /* the interval between each CST, in seconds */
-#define PK_TRANSACTION_WEDGE_CHECK			10
+#define PK_TRANSACTION_WEDGE_CHECK 10
 
 /* How long the transaction should be queryable after it is finished */
-#define PK_TRANSACTION_KEEP_FINISHED_TIMOUT		5 /* s */
+#define PK_TRANSACTION_KEEP_FINISHED_TIMOUT 5 /* s */
 
 /* how many times we should retry a locked transaction */
-#define PK_SCHEDULER_MAX_LOCK_RETRIES			4
+#define PK_SCHEDULER_MAX_LOCK_RETRIES 4
 
 /* how long the transaction is valid before it's destroyed */
-#define PK_SCHEDULER_CREATE_COMMIT_TIMEOUT		300 /* s */
+#define PK_SCHEDULER_CREATE_COMMIT_TIMEOUT 300 /* s */
 
 /* maximum number of requests a given user is able to request and queue */
-#define PK_SCHEDULER_SIMULTANEOUS_TRANSACTIONS_FOR_UID	500
+#define PK_SCHEDULER_SIMULTANEOUS_TRANSACTIONS_FOR_UID 500
 
 struct _PkScheduler
 {
-	GObject			parent;
+	GObject parent;
 
-	GPtrArray		*array;
-	guint			 unwedge_id;
-	GKeyFile		*conf;
-	PkBackend		*backend;
-	GDBusNodeInfo		*introspection;
+	GPtrArray *array;
+	guint unwedge_id;
+	GKeyFile *conf;
+	PkBackend *backend;
+	GDBusNodeInfo *introspection;
 };
 
-typedef struct {
-	PkTransaction		*transaction;
-	PkScheduler		*scheduler;
-	gchar			*tid;
-	guint			 remove_id;
-	guint			 idle_id;
-	guint			 commit_id;
-	gulong			 finished_id;
-	gulong			 state_changed_id;
-	gulong			 allow_cancel_changed_id;
-	guint			 uid;
-	guint			 tries;
+typedef struct
+{
+	PkTransaction *transaction;
+	PkScheduler *scheduler;
+	gchar *tid;
+	guint remove_id;
+	guint idle_id;
+	guint commit_id;
+	gulong finished_id;
+	gulong state_changed_id;
+	gulong allow_cancel_changed_id;
+	guint uid;
+	guint tries;
 } PkSchedulerItem;
 
 enum {
@@ -114,7 +115,7 @@ enum {
 	PK_SCHEDULER_LAST_SIGNAL
 };
 
-static guint signals [PK_SCHEDULER_LAST_SIGNAL] = { 0 };
+static guint signals[PK_SCHEDULER_LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (PkScheduler, pk_scheduler, G_TYPE_OBJECT)
 
@@ -281,8 +282,7 @@ pk_scheduler_run_idle_cb (PkSchedulerItem *item)
 	gboolean ret;
 
 	/* run the transaction */
-	pk_transaction_set_backend (item->transaction,
-				    item->scheduler->backend);
+	pk_transaction_set_backend (item->transaction, item->scheduler->backend);
 	ret = pk_transaction_run (item->transaction);
 	if (!ret)
 		g_error ("failed to run transaction (fatal)");
@@ -403,7 +403,8 @@ pk_scheduler_get_next_item (PkScheduler *scheduler)
 		item = (PkSchedulerItem *) g_ptr_array_index (array, i);
 		state = pk_transaction_get_state (item->transaction);
 
-		if ((state == PK_TRANSACTION_STATE_READY) && (!pk_transaction_get_background (item->transaction))) {
+		if ((state == PK_TRANSACTION_STATE_READY) &&
+		    (!pk_transaction_get_background (item->transaction))) {
 			/* check if we can run the transaction now or if we need to wait for lock release */
 			if (pk_transaction_is_exclusive (item->transaction)) {
 				if (!exclusive_running)
@@ -458,14 +459,14 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 	g_clear_handle_id (&item->commit_id, g_source_remove);
 
 	/* we will changed what is running */
-	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
+	g_signal_emit (scheduler, signals[PK_SCHEDULER_CHANGED], 0);
 
 	/* is one of the current running transactions background, and this new
 	 * transaction foreground? */
 	if (!pk_transaction_get_background (item->transaction) &&
 	    pk_scheduler_get_background_running (scheduler)) {
 		g_debug ("cancelling running background transactions and instead running %s",
-			item->tid);
+			 item->tid);
 		pk_scheduler_cancel_background (scheduler);
 	}
 
@@ -477,11 +478,11 @@ pk_scheduler_commit (PkScheduler *scheduler, const gchar *tid)
 
 static void
 pk_scheduler_transaction_allow_cancel_changed_cb (PkTransaction *transaction,
-					          gboolean allow_cancel,
-					          PkScheduler *scheduler)
+						  gboolean allow_cancel,
+						  PkScheduler *scheduler)
 {
 	/* just proxy this back up */
-	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
+	g_signal_emit (scheduler, signals[PK_SCHEDULER_CHANGED], 0);
 }
 
 static void
@@ -501,8 +502,7 @@ pk_scheduler_transaction_state_changed_cb (PkTransaction *transaction,
 }
 
 static void
-pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
-				      PkScheduler *scheduler)
+pk_scheduler_transaction_finished_cb (PkTransaction *transaction, PkScheduler *scheduler)
 {
 	PkSchedulerItem *item;
 	PkTransactionState state;
@@ -536,8 +536,11 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
 			job = pk_transaction_get_backend_job (item->transaction);
 
 			/* we finally failed completely to get a package manager lock */
-			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_GET_LOCK,
-						   "Unable to lock package database! There is probably another application using it already.");
+			pk_backend_job_error_code (
+			    job,
+			    PK_ERROR_ENUM_CANNOT_GET_LOCK,
+			    "Unable to lock package database! There is probably another "
+			    "application using it already.");
 
 			/* now really finish & fail the transaction */
 			pk_backend_job_finished (job);
@@ -563,7 +566,7 @@ pk_scheduler_transaction_finished_cb (PkTransaction *transaction,
 	}
 
 	/* we have changed what is running */
-	g_signal_emit (scheduler, signals [PK_SCHEDULER_CHANGED], 0);
+	g_signal_emit (scheduler, signals[PK_SCHEDULER_CHANGED], 0);
 }
 
 static gboolean
@@ -597,10 +600,7 @@ pk_scheduler_get_number_transactions_for_uid (PkScheduler *scheduler, guint uid)
 }
 
 gboolean
-pk_scheduler_create (PkScheduler *scheduler,
-			    const gchar *tid,
-			    const gchar *sender,
-			    GError **error)
+pk_scheduler_create (PkScheduler *scheduler, const gchar *tid, const gchar *sender, GError **error)
 {
 	guint count;
 	gboolean ret = FALSE;
@@ -621,20 +621,22 @@ pk_scheduler_create (PkScheduler *scheduler,
 	item = g_new0 (PkSchedulerItem, 1);
 	item->scheduler = g_object_ref (scheduler);
 	item->tid = g_strdup (tid);
-	item->transaction = pk_transaction_new (scheduler->conf,
-						scheduler->introspection);
-	item->finished_id =
-		g_signal_connect_after (item->transaction, "finished",
-					G_CALLBACK (pk_scheduler_transaction_finished_cb),
-					scheduler);
-	item->state_changed_id =
-		g_signal_connect_after (item->transaction, "state-changed",
-					G_CALLBACK (pk_scheduler_transaction_state_changed_cb),
-					scheduler);
-	item->allow_cancel_changed_id =
-		g_signal_connect_after (item->transaction, "allow-cancel-changed",
-					G_CALLBACK (pk_scheduler_transaction_allow_cancel_changed_cb),
-					scheduler);
+	item->transaction = pk_transaction_new (scheduler->conf, scheduler->introspection);
+	item->finished_id = g_signal_connect_after (
+	    item->transaction,
+	    "finished",
+	    G_CALLBACK (pk_scheduler_transaction_finished_cb),
+	    scheduler);
+	item->state_changed_id = g_signal_connect_after (
+	    item->transaction,
+	    "state-changed",
+	    G_CALLBACK (pk_scheduler_transaction_state_changed_cb),
+	    scheduler);
+	item->allow_cancel_changed_id = g_signal_connect_after (
+	    item->transaction,
+	    "allow-cancel-changed",
+	    G_CALLBACK (pk_scheduler_transaction_allow_cancel_changed_cb),
+	    scheduler);
 
 	/* set transaction state */
 	pk_transaction_set_state (item->transaction, PK_TRANSACTION_STATE_NEW);
@@ -657,8 +659,7 @@ pk_scheduler_create (PkScheduler *scheduler,
 	 * pk_transaction_run is called) as transactions may want to check
 	 * to see if roles are possible before accepting actions */
 	if (scheduler->backend != NULL) {
-		pk_transaction_set_backend (item->transaction,
-					    scheduler->backend);
+		pk_transaction_set_backend (item->transaction, scheduler->backend);
 	}
 
 	/* get the uid for the transaction */
@@ -669,10 +670,14 @@ pk_scheduler_create (PkScheduler *scheduler,
 
 	/* would this take us over the maximum number of requests allowed */
 	if (count > PK_SCHEDULER_SIMULTANEOUS_TRANSACTIONS_FOR_UID) {
-		g_set_error (error, 1, 0,
+		g_set_error (error,
+			     1,
+			     0,
 			     "failed to allocate %s as uid %i already has "
 			     "%i transactions in progress",
-			     tid, item->uid, count);
+			     tid,
+			     item->uid,
+			     count);
 		/* free transaction, as it's never going to be added */
 		pk_scheduler_item_free (item);
 		return FALSE;
@@ -769,8 +774,7 @@ pk_scheduler_cancel_background (PkScheduler *scheduler)
 			continue;
 		if (!pk_transaction_get_background (item->transaction))
 			continue;
-		g_debug ("cancelling running background transaction %s",
-			 item->tid);
+		g_debug ("cancelling running background transaction %s", item->tid);
 		pk_transaction_cancel_bg (item->transaction);
 	}
 }
@@ -819,12 +823,10 @@ pk_scheduler_get_array (PkScheduler *scheduler)
 		item = (PkSchedulerItem *) g_ptr_array_index (scheduler->array, i);
 		/* only return in the list if its committed and not finished */
 		state = pk_transaction_get_state (item->transaction);
-		if (state == PK_TRANSACTION_STATE_READY ||
-		    state == PK_TRANSACTION_STATE_RUNNING)
+		if (state == PK_TRANSACTION_STATE_READY || state == PK_TRANSACTION_STATE_RUNNING)
 			g_ptr_array_add (parray, g_strdup (item->tid));
 	}
-	g_debug ("%i transactions in list, %i committed but not finished",
-		 length, parray->len);
+	g_debug ("%i transactions in list, %i committed but not finished", length, parray->len);
 	return pk_ptr_array_to_strv (parray);
 }
 
@@ -860,9 +862,12 @@ pk_scheduler_get_state (PkScheduler *scheduler)
 			waiting++;
 
 		role = pk_transaction_get_role (item->transaction);
-		g_string_append_printf (string, "%0i\t%s\t%s\tstate[%s] "
-					"exclusive[%i] background[%i]\n", i,
-					pk_role_enum_to_string (role), item->tid,
+		g_string_append_printf (string,
+					"%0i\t%s\t%s\tstate[%s] "
+					"exclusive[%i] background[%i]\n",
+					i,
+					pk_role_enum_to_string (role),
+					item->tid,
 					pk_transaction_state_to_string (state),
 					pk_transaction_is_exclusive (item->transaction),
 					pk_transaction_get_background (item->transaction));
@@ -978,8 +983,7 @@ pk_scheduler_wedge_check (PkScheduler *scheduler)
  * be instantiated if this PkBackend is busy.
  */
 void
-pk_scheduler_set_backend (PkScheduler *scheduler,
-				 PkBackend *backend)
+pk_scheduler_set_backend (PkScheduler *scheduler, PkBackend *backend)
 {
 	g_return_if_fail (PK_IS_SCHEDULER (scheduler));
 	g_return_if_fail (PK_IS_BACKEND (backend));
@@ -994,11 +998,15 @@ pk_scheduler_class_init (PkSchedulerClass *klass)
 
 	object_class->finalize = pk_scheduler_finalize;
 
-	signals [PK_SCHEDULER_CHANGED] =
-		g_signal_new ("changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
+	signals[PK_SCHEDULER_CHANGED] = g_signal_new ("changed",
+						      G_TYPE_FROM_CLASS (object_class),
+						      G_SIGNAL_RUN_LAST,
+						      0,
+						      NULL,
+						      NULL,
+						      g_cclosure_marshal_VOID__VOID,
+						      G_TYPE_NONE,
+						      0);
 }
 
 static void
@@ -1006,9 +1014,10 @@ pk_scheduler_init (PkScheduler *scheduler)
 {
 	scheduler->array = g_ptr_array_new ();
 	scheduler->introspection = pk_load_introspection (PK_DBUS_INTERFACE_TRANSACTION ".xml",
-							    NULL);
+							  NULL);
 	scheduler->unwedge_id = g_timeout_add_seconds (PK_TRANSACTION_WEDGE_CHECK,
-							  (GSourceFunc) pk_scheduler_wedge_check, scheduler);
+						       (GSourceFunc) pk_scheduler_wedge_check,
+						       scheduler);
 	g_source_set_name_by_id (scheduler->unwedge_id, "[PkScheduler] wedge-check (main)");
 }
 
@@ -1018,8 +1027,7 @@ pk_scheduler_finalize (GObject *object)
 	PkScheduler *scheduler = PK_SCHEDULER (object);
 
 	g_clear_handle_id (&scheduler->unwedge_id, g_source_remove);
-	g_ptr_array_foreach (scheduler->array,
-			     (GFunc) pk_scheduler_item_free_cb, NULL);
+	g_ptr_array_foreach (scheduler->array, (GFunc) pk_scheduler_item_free_cb, NULL);
 	g_clear_pointer (&scheduler->array, g_ptr_array_unref);
 	g_clear_pointer (&scheduler->introspection, g_dbus_node_info_unref);
 	g_clear_pointer (&scheduler->conf, g_key_file_unref);
@@ -1035,4 +1043,3 @@ pk_scheduler_new (GKeyFile *conf)
 	scheduler->conf = g_key_file_ref (conf);
 	return scheduler;
 }
-

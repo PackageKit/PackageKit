@@ -45,48 +45,63 @@ typedef enum {
 	PKGC_COLOR_GRAY
 } PkgcColor;
 
-gboolean		pkgc_util_setup_proxy (PkgcliContext *ctx, GError **error);
-gboolean		pkgc_util_check_connection (PkgcliContext *ctx, GError **error);
-gchar			*pkgc_util_format_size (guint64 size);
-gchar			*pkgc_util_format_time (guint seconds);
+gboolean	pkgc_util_setup_proxy (PkgcliContext *ctx,
+				       GError	    **error);
+gboolean	pkgc_util_check_connection (PkgcliContext *ctx,
+					    GError	 **error);
+gchar	       *pkgc_util_format_size (guint64 size);
+gchar	       *pkgc_util_format_time (guint seconds);
 
-void			pkgc_print_json_decref (json_t *root);
+void		pkgc_print_json_decref (json_t *root);
 
-const gchar		*pkgc_get_ansi_color (PkgcliContext *ctx, PkgcColor color);
+const gchar    *pkgc_get_ansi_color (PkgcliContext *ctx,
+				     PkgcColor	    color);
 
-void			pkgc_print_package (PkgcliContext *ctx, PkPackage *package);
-void			pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details);
-void			pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update);
-void			pkgc_print_repo (PkgcliContext *ctx, PkRepoDetail *repo);
-void			pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction);
-void			pkgc_print_error (PkgcliContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void			pkgc_print_warning (PkgcliContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void			pkgc_print_info (PkgcliContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void			pkgc_print_success (PkgcliContext *ctx, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void			pkgc_println (const char *format, ...) G_GNUC_PRINTF (1, 2);
+void		pkgc_print_package (PkgcliContext *ctx,
+				    PkPackage	  *package);
+void		pkgc_print_package_detail (PkgcliContext *ctx,
+					   PkDetails	 *details);
+void		pkgc_print_update_detail (PkgcliContext	 *ctx,
+					  PkUpdateDetail *update);
+void		pkgc_print_repo (PkgcliContext *ctx,
+				 PkRepoDetail  *repo);
+void		pkgc_print_transaction (PkgcliContext	  *ctx,
+					PkTransactionPast *transaction);
+void		pkgc_print_error (PkgcliContext *ctx,
+				  const char	*format,
+				  ...) G_GNUC_PRINTF (2, 3);
+void		pkgc_print_warning (PkgcliContext *ctx,
+				    const char	  *format,
+				    ...) G_GNUC_PRINTF (2, 3);
+void		pkgc_print_info (PkgcliContext *ctx,
+				 const char    *format,
+				 ...) G_GNUC_PRINTF (2, 3);
+void		pkgc_print_success (PkgcliContext *ctx,
+				    const char	  *format,
+				    ...) G_GNUC_PRINTF (2, 3);
+void		pkgc_println (const char *format,
+			      ...) G_GNUC_PRINTF (1, 2);
 
-gboolean		pkgc_is_local_package (const gchar *package_name);
+gboolean	pkgc_is_local_package (const gchar *package_name);
 
-GOptionContext	*pkgc_option_context_for_command (PkgcliContext *ctx,
-												  PkgcliCommand *cmd,
-												  const gchar *parameter_summary,
-												  const gchar *description);
-gboolean		pkgc_parse_command_options (PkgcliContext  *ctx,
-											PkgcliCommand  *cmd,
-											GOptionContext *option_context,
-											gint		   *argc,
-											gchar          ***argv,
-											gint		   min_arg_count);
+GOptionContext *pkgc_option_context_for_command (PkgcliContext *ctx,
+						 PkgcliCommand *cmd,
+						 const gchar   *parameter_summary,
+						 const gchar   *description);
+gboolean	pkgc_parse_command_options (PkgcliContext  *ctx,
+					    PkgcliCommand  *cmd,
+					    GOptionContext *option_context,
+					    gint	   *argc,
+					    gchar	 ***argv,
+					    gint	    min_arg_count);
 
-
-
-gchar			*pkgc_resolve_package (PkgcliContext *ctx,
-										PkBitfield	  filters,
-										const gchar	 *package_name,
-										GError	**error);
-gchar			**pkgc_resolve_packages (PkgcliContext *ctx,
-										PkBitfield	   filters,
-										gchar	 **packages,
-										GError	 **error);
+gchar	       *pkgc_resolve_package (PkgcliContext *ctx,
+				      PkBitfield     filters,
+				      const gchar   *package_name,
+				      GError	   **error);
+gchar	      **pkgc_resolve_packages (PkgcliContext *ctx,
+				       PkBitfield     filters,
+				       gchar	    **packages,
+				       GError	    **error);
 
 G_END_DECLS

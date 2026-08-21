@@ -217,7 +217,8 @@ pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 			pkgc_println (_("Author: %s"), backend_author);
 
 		if (roles_str != NULL) {
-			g_print ("\n"); /* add some extra space before the potentially long roles list */
+			g_print (
+			    "\n"); /* add some extra space before the potentially long roles list */
 			/* TRANSLATORS: List of backend-roles */
 			pkgc_println (_("Roles: %s"), roles_str);
 		}
@@ -470,15 +471,15 @@ pkgc_query_list_depends (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	g_autoptr(GOptionContext) option_context = NULL;
 	g_autoptr(GError) error = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "recursive", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &recursive,
 		  _("Check dependencies recursively"), NULL },
 		{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
@@ -759,15 +760,15 @@ pkgc_query_list_requiring (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gc
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GOptionContext) option_context = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "recursive", 0, G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, &recursive,
 		  _("Check dependencies recursively"), NULL },
 		{ NULL, 0, 0, 0, NULL, NULL, NULL }
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
@@ -987,107 +988,107 @@ void
 pkgc_register_query_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
-		ctx,
-		"backend",
-		pkgc_backend_info,
-		/* TRANSLATORS: Description for backend command in pkgcli help */
-		_("Show backend information"));
+	    ctx,
+	    "backend",
+	    pkgc_backend_info,
+	    /* TRANSLATORS: Description for backend command in pkgcli help */
+	    _("Show backend information"));
 
 	pkgc_context_register_command (
-		ctx,
-		"history",
-		pkgc_history,
-		/* TRANSLATORS: Description for history command in pkgcli help */
-		_("Show transaction history"));
+	    ctx,
+	    "history",
+	    pkgc_history,
+	    /* TRANSLATORS: Description for history command in pkgcli help */
+	    _("Show transaction history"));
 
 	pkgc_context_register_command (
-		ctx,
-		"search",
-		pkgc_query_search,
-		/* TRANSLATORS: Description for search command in pkgcli help */
-		_("Search for packages"));
+	    ctx,
+	    "search",
+	    pkgc_query_search,
+	    /* TRANSLATORS: Description for search command in pkgcli help */
+	    _("Search for packages"));
 
 	pkgc_context_register_command (
-		ctx,
-		"list",
-		pkgc_query_list,
-		/* TRANSLATORS: Description for list command in pkgcli help */
-		_("List packages"));
+	    ctx,
+	    "list",
+	    pkgc_query_list,
+	    /* TRANSLATORS: Description for list command in pkgcli help */
+	    _("List packages"));
 
 	pkgc_context_register_command (
-		ctx,
-		"show",
-		pkgc_query_show,
-		/* TRANSLATORS: Description for show command in pkgcli help */
-		_("Show package information"));
+	    ctx,
+	    "show",
+	    pkgc_query_show,
+	    /* TRANSLATORS: Description for show command in pkgcli help */
+	    _("Show package information"));
 
 	pkgc_context_register_command (
-		ctx,
-		"list-depends",
-		pkgc_query_list_depends,
-		/* TRANSLATORS: Description for list-depends command in pkgcli help */
-		_("List dependencies of the specified package(s)"));
+	    ctx,
+	    "list-depends",
+	    pkgc_query_list_depends,
+	    /* TRANSLATORS: Description for list-depends command in pkgcli help */
+	    _("List dependencies of the specified package(s)"));
 
 	pkgc_context_register_command (
-		ctx,
-		"list-requiring",
-		pkgc_query_list_requiring,
-		/* TRANSLATORS: Description for list-requiring command in pkgcli help */
-		_("List other packages requiring the specified package(s)"));
+	    ctx,
+	    "list-requiring",
+	    pkgc_query_list_requiring,
+	    /* TRANSLATORS: Description for list-requiring command in pkgcli help */
+	    _("List other packages requiring the specified package(s)"));
 
 	pkgc_context_register_command (
-		ctx,
-		"what-provides",
-		pkgc_query_what_provides,
-		/* TRANSLATORS: Description for what-provides command in pkgcli help */
-		_("List packages providing a capability"));
+	    ctx,
+	    "what-provides",
+	    pkgc_query_what_provides,
+	    /* TRANSLATORS: Description for what-provides command in pkgcli help */
+	    _("List packages providing a capability"));
 
 	pkgc_context_register_command (
-		ctx,
-		"files",
-		pkgc_query_files,
-		/* TRANSLATORS: Description for files command in pkgcli help */
-		_("Show files in package"));
+	    ctx,
+	    "files",
+	    pkgc_query_files,
+	    /* TRANSLATORS: Description for files command in pkgcli help */
+	    _("Show files in package"));
 
 	pkgc_context_register_command (
-		ctx,
-		"list-updates",
-		pkgc_updates_list_updates,
-		/* TRANSLATORS: Description for list-updates command in pkgcli help */
-		_("Get available updates"));
+	    ctx,
+	    "list-updates",
+	    pkgc_updates_list_updates,
+	    /* TRANSLATORS: Description for list-updates command in pkgcli help */
+	    _("Get available updates"));
 
 	pkgc_context_register_command (
-		ctx,
-		"show-update",
-		pkgc_updates_show_update,
-		/* TRANSLATORS: Description for show-update command in pkgcli help */
-		_("Get update details"));
+	    ctx,
+	    "show-update",
+	    pkgc_updates_show_update,
+	    /* TRANSLATORS: Description for show-update command in pkgcli help */
+	    _("Get update details"));
 
 	pkgc_context_register_command (
-		ctx,
-		"resolve",
-		pkgc_query_resolve,
-		/* TRANSLATORS: Description for resolve command in pkgcli help */
-		_("Resolve package names"));
+	    ctx,
+	    "resolve",
+	    pkgc_query_resolve,
+	    /* TRANSLATORS: Description for resolve command in pkgcli help */
+	    _("Resolve package names"));
 
 	pkgc_context_register_command (
-		ctx,
-		"organization",
-		pkgc_query_organization,
-		/* TRANSLATORS: Description for organization command in pkgcli help */
-		_("List available filters and categories"));
+	    ctx,
+	    "organization",
+	    pkgc_query_organization,
+	    /* TRANSLATORS: Description for organization command in pkgcli help */
+	    _("List available filters and categories"));
 
 	pkgc_context_register_command (
-		ctx,
-		"show-os-upgrade",
-		pkgc_query_show_os_upgrade,
-		/* TRANSLATORS: Description for show-os-upgrade command in pkgcli help */
-		_("Show available distribution upgrades"));
+	    ctx,
+	    "show-os-upgrade",
+	    pkgc_query_show_os_upgrade,
+	    /* TRANSLATORS: Description for show-os-upgrade command in pkgcli help */
+	    _("Show available distribution upgrades"));
 
 	pkgc_context_register_command (
-		ctx,
-		"last-time",
-		pkgc_query_last_time,
-		/* TRANSLATORS: Description for last-time command in pkgcli help */
-		_("Get time since last action"));
+	    ctx,
+	    "last-time",
+	    pkgc_query_last_time,
+	    /* TRANSLATORS: Description for last-time command in pkgcli help */
+	    _("Get time since last action"));
 }

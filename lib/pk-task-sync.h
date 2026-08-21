@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -33,188 +33,187 @@
 
 G_BEGIN_DECLS
 
-PkResults	*pk_task_remove_packages_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 gboolean		 allow_deps,
-							 gboolean		 autoremove,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_remove_packages_sync (PkTask		   *task,
+					 gchar		  **package_ids,
+					 gboolean	    allow_deps,
+					 gboolean	    autoremove,
+					 GCancellable	   *cancellable,
+					 PkProgressCallback progress_callback,
+					 gpointer	    progress_user_data,
+					 GError		  **error);
 
-PkResults	*pk_task_install_packages_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_install_packages_sync (PkTask	    *task,
+					  gchar		   **package_ids,
+					  GCancellable	    *cancellable,
+					  PkProgressCallback progress_callback,
+					  gpointer	     progress_user_data,
+					  GError	   **error);
 
-PkResults	*pk_task_update_packages_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_update_packages_sync (PkTask		   *task,
+					 gchar		  **package_ids,
+					 GCancellable	   *cancellable,
+					 PkProgressCallback progress_callback,
+					 gpointer	    progress_user_data,
+					 GError		  **error);
 
-PkResults	*pk_task_install_files_sync		(PkTask			*task,
-							 gchar			**files,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_install_files_sync (PkTask		 *task,
+				       gchar		**files,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
-PkResults	*pk_task_resolve_sync			(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**packages,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_resolve_sync (PkTask		   *task,
+				 PkBitfield	    filters,
+				 gchar		  **packages,
+				 GCancellable	   *cancellable,
+				 PkProgressCallback progress_callback,
+				 gpointer	    progress_user_data,
+				 GError		  **error);
 
-PkResults	*pk_task_search_names_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**values,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_search_names_sync (PkTask		*task,
+				      PkBitfield	 filters,
+				      gchar	       **values,
+				      GCancellable	*cancellable,
+				      PkProgressCallback progress_callback,
+				      gpointer		 progress_user_data,
+				      GError	       **error);
 
-PkResults	*pk_task_search_details_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**values,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_search_details_sync (PkTask		  *task,
+					PkBitfield	   filters,
+					gchar		 **values,
+					GCancellable	  *cancellable,
+					PkProgressCallback progress_callback,
+					gpointer	   progress_user_data,
+					GError		 **error);
 
-PkResults	*pk_task_search_groups_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**values,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_search_groups_sync (PkTask		 *task,
+				       PkBitfield	  filters,
+				       gchar		**values,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
-PkResults	*pk_task_search_files_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**values,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_search_files_sync (PkTask		*task,
+				      PkBitfield	 filters,
+				      gchar	       **values,
+				      GCancellable	*cancellable,
+				      PkProgressCallback progress_callback,
+				      gpointer		 progress_user_data,
+				      GError	       **error);
 
-PkResults	*pk_task_get_details_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_details_sync (PkTask	       *task,
+				     gchar	      **package_ids,
+				     GCancellable      *cancellable,
+				     PkProgressCallback progress_callback,
+				     gpointer		progress_user_data,
+				     GError	      **error);
 
-PkResults	*pk_task_get_update_detail_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_update_detail_sync (PkTask	     *task,
+					   gchar	    **package_ids,
+					   GCancellable	     *cancellable,
+					   PkProgressCallback progress_callback,
+					   gpointer	      progress_user_data,
+					   GError	    **error);
 
-PkResults	*pk_task_download_packages_sync		(PkTask			*task,
-							 gchar			**package_ids,
-							 const gchar		*directory,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_download_packages_sync (PkTask	     *task,
+					   gchar	    **package_ids,
+					   const gchar	     *directory,
+					   GCancellable	     *cancellable,
+					   PkProgressCallback progress_callback,
+					   gpointer	      progress_user_data,
+					   GError	    **error);
 
-PkResults	*pk_task_get_updates_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_updates_sync (PkTask	       *task,
+				     PkBitfield		filters,
+				     GCancellable      *cancellable,
+				     PkProgressCallback progress_callback,
+				     gpointer		progress_user_data,
+				     GError	      **error);
 
-PkResults	*pk_task_depends_on_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**package_ids,
-							 gboolean		 recursive,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_depends_on_sync (PkTask	      *task,
+				    PkBitfield	       filters,
+				    gchar	     **package_ids,
+				    gboolean	       recursive,
+				    GCancellable      *cancellable,
+				    PkProgressCallback progress_callback,
+				    gpointer	       progress_user_data,
+				    GError	     **error);
 
-PkResults	*pk_task_get_packages_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_packages_sync (PkTask		*task,
+				      PkBitfield	 filters,
+				      GCancellable	*cancellable,
+				      PkProgressCallback progress_callback,
+				      gpointer		 progress_user_data,
+				      GError	       **error);
 
-PkResults	*pk_task_required_by_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**package_ids,
-							 gboolean		 recursive,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_required_by_sync (PkTask	       *task,
+				     PkBitfield		filters,
+				     gchar	      **package_ids,
+				     gboolean		recursive,
+				     GCancellable      *cancellable,
+				     PkProgressCallback progress_callback,
+				     gpointer		progress_user_data,
+				     GError	      **error);
 
-PkResults	*pk_task_what_provides_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 gchar			**values,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_what_provides_sync (PkTask		 *task,
+				       PkBitfield	  filters,
+				       gchar		**values,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
-PkResults	*pk_task_get_files_sync			(PkTask			*task,
-							 gchar			**package_ids,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_files_sync (PkTask	     *task,
+				   gchar	    **package_ids,
+				   GCancellable	     *cancellable,
+				   PkProgressCallback progress_callback,
+				   gpointer	      progress_user_data,
+				   GError	    **error);
 
-PkResults	*pk_task_get_categories_sync		(PkTask			*task,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_categories_sync (PkTask		  *task,
+					GCancellable	  *cancellable,
+					PkProgressCallback progress_callback,
+					gpointer	   progress_user_data,
+					GError		 **error);
 
-PkResults	*pk_task_refresh_cache_sync		(PkTask			*task,
-							 gboolean		 force,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_refresh_cache_sync (PkTask		 *task,
+				       gboolean		  force,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
-PkResults	*pk_task_get_repo_list_sync		(PkTask			*task,
-							 PkBitfield		 filters,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_get_repo_list_sync (PkTask		 *task,
+				       PkBitfield	  filters,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
-PkResults	*pk_task_repo_enable_sync		(PkTask			*task,
-							 const gchar		*repo_id,
-							 gboolean		 enabled,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_repo_enable_sync (PkTask	       *task,
+				     const gchar       *repo_id,
+				     gboolean		enabled,
+				     GCancellable      *cancellable,
+				     PkProgressCallback progress_callback,
+				     gpointer		progress_user_data,
+				     GError	      **error);
 
-PkResults	*pk_task_upgrade_system_sync		(PkTask			*task,
-							 const gchar		*distro_id,
-							 PkUpgradeKindEnum	 upgrade_kind,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_upgrade_system_sync (PkTask		  *task,
+					const gchar	  *distro_id,
+					PkUpgradeKindEnum  upgrade_kind,
+					GCancellable	  *cancellable,
+					PkProgressCallback progress_callback,
+					gpointer	   progress_user_data,
+					GError		 **error);
 
-PkResults	*pk_task_repair_system_sync		(PkTask			*task,
-							 GCancellable		*cancellable,
-							 PkProgressCallback	 progress_callback,
-							 gpointer		 progress_user_data,
-							 GError			**error);
+PkResults *pk_task_repair_system_sync (PkTask		 *task,
+				       GCancellable	 *cancellable,
+				       PkProgressCallback progress_callback,
+				       gpointer		  progress_user_data,
+				       GError		**error);
 
 G_END_DECLS
 
 #endif /* __PK_TASK_SYNC_H */
-

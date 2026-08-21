@@ -39,22 +39,23 @@
 #define PK_EXIT_CODE_FILE_NOT_FOUND	4
 #define PK_EXIT_CODE_NOTHING_USEFUL	5
 #define PK_EXIT_CODE_CANNOT_SETUP	6
-#define PK_EXIT_CODE_TRANSACTION_FAILED	7
+#define PK_EXIT_CODE_TRANSACTION_FAILED 7
 
-#define PK_CONSOLE_ERROR	1
+#define PK_CONSOLE_ERROR 1
 
-typedef struct {
-	GCancellable	*cancellable;
-	GMainLoop	*loop;
-	PkBitfield	 roles;
-	PkControl	*control;
-	PkProgressBar	*progressbar;
-	PkTaskText	*task;
-	gboolean	 is_console;
-	gint		 retval;
-	PkBitfield	 filters;
-	guint		 defered_status_id;
-	PkStatusEnum	 defered_status;
+typedef struct
+{
+	GCancellable *cancellable;
+	GMainLoop *loop;
+	PkBitfield roles;
+	PkControl *control;
+	PkProgressBar *progressbar;
+	PkTaskText *task;
+	gboolean is_console;
+	gint retval;
+	PkBitfield filters;
+	guint defered_status_id;
+	PkStatusEnum defered_status;
 } PkConsoleCtx;
 
 /**
@@ -128,8 +129,7 @@ pk_console_package_cb (PkPackage *package, PkConsoleCtx *ctx)
 
 	/* pad the name-version */
 	printable_pad = pk_strpad (printable, 60);
-	g_print ("%s\t%s\t%s\n", info_pad, printable_pad,
-		 pk_package_get_summary (package));
+	g_print ("%s\t%s\t%s\n", info_pad, printable_pad, pk_package_get_summary (package));
 }
 
 static void
@@ -150,14 +150,22 @@ pk_console_transaction_cb (PkTransactionPast *item, PkConsoleCtx *ctx)
 
 	/* get data */
 	g_object_get (item,
-		      "role", &role,
-		      "tid", &tid,
-		      "timespec", &timespec,
-		      "succeeded", &succeeded,
-		      "duration", &duration,
-		      "cmdline", &cmdline,
-		      "uid", &uid,
-		      "data", &data,
+		      "role",
+		      &role,
+		      "tid",
+		      &tid,
+		      "timespec",
+		      &timespec,
+		      "succeeded",
+		      &succeeded,
+		      "duration",
+		      &duration,
+		      "cmdline",
+		      &cmdline,
+		      "uid",
+		      &uid,
+		      "data",
+		      &data,
 		      NULL);
 
 	role_text = pk_role_enum_to_string (role);
@@ -220,11 +228,7 @@ pk_console_distro_upgrade_cb (PkDistroUpgrade *item, gpointer user_data)
 	g_autofree gchar *summary = NULL;
 
 	/* get data */
-	g_object_get (item,
-		      "name", &name,
-		      "state", &state,
-		      "summary", &summary,
-		      NULL);
+	g_object_get (item, "name", &name, "state", &state, "summary", &summary, NULL);
 
 	/* TRANSLATORS: this is the distro, e.g. Fedora 10 */
 	g_print ("%s: %s\n", _("Distribution"), name);
@@ -245,11 +249,16 @@ pk_console_category_cb (PkCategory *item, gpointer user_data)
 
 	/* get data */
 	g_object_get (item,
-		      "name", &name,
-		      "cat_id", &cat_id,
-		      "parent_id", &parent_id,
-		      "summary", &summary,
-		      "icon", &icon,
+		      "name",
+		      &name,
+		      "cat_id",
+		      &cat_id,
+		      "parent_id",
+		      &parent_id,
+		      "summary",
+		      &summary,
+		      "icon",
+		      &icon,
 		      NULL);
 
 	/* TRANSLATORS: this is the group category name */
@@ -290,18 +299,30 @@ pk_console_update_detail_cb (PkUpdateDetail *item, gpointer data)
 
 	/* get data */
 	g_object_get (item,
-		      "package-id", &package_id,
-		      "updates", &updates,
-		      "obsoletes", &obsoletes,
-		      "vendor-urls", &vendor_urls,
-		      "bugzilla-urls", &bugzilla_urls,
-		      "cve-urls", &cve_urls,
-		      "restart", &restart,
-		      "update-text", &update_text,
-		      "changelog", &changelog,
-		      "state", &state,
-		      "issued", &issued,
-		      "updated", &updated,
+		      "package-id",
+		      &package_id,
+		      "updates",
+		      &updates,
+		      "obsoletes",
+		      &obsoletes,
+		      "vendor-urls",
+		      &vendor_urls,
+		      "bugzilla-urls",
+		      &bugzilla_urls,
+		      "cve-urls",
+		      &cve_urls,
+		      "restart",
+		      &restart,
+		      "update-text",
+		      &update_text,
+		      "changelog",
+		      &changelog,
+		      "state",
+		      &state,
+		      "issued",
+		      &issued,
+		      "updated",
+		      &updated,
 		      NULL);
 
 	/* TRANSLATORS: this is a header for the package that can be updated */
@@ -387,9 +408,12 @@ pk_console_repo_detail_cb (PkRepoDetail *item, gpointer data)
 
 	/* get data */
 	g_object_get (item,
-		      "repo-id", &repo_id,
-		      "enabled", &enabled,
-		      "description", &description,
+		      "repo-id",
+		      &repo_id,
+		      "enabled",
+		      &enabled,
+		      "description",
+		      &description,
 		      NULL);
 
 	if (enabled) {
@@ -416,10 +440,7 @@ pk_console_require_restart_cb (PkRequireRestart *item, gpointer data)
 	g_autofree gchar *package_id = NULL;
 
 	/* get data */
-	g_object_get (item,
-		      "package-id", &package_id,
-		      "restart", &restart,
-		      NULL);
+	g_object_get (item, "package-id", &package_id, "restart", &restart, NULL);
 
 	/* create printable */
 	package = pk_package_id_to_printable (package_id);
@@ -461,14 +482,22 @@ pk_console_details_cb (PkDetails *item, gpointer data)
 
 	/* get data */
 	g_object_get (item,
-		      "package-id", &package_id,
-		      "license", &license,
-		      "description", &description,
-		      "url", &url,
-		      "summary", &summary,
-		      "group", &group,
-		      "size", &size,
-		      "download-size", &download_size,
+		      "package-id",
+		      &package_id,
+		      "license",
+		      &license,
+		      "description",
+		      &description,
+		      "url",
+		      &url,
+		      "summary",
+		      &summary,
+		      "group",
+		      &group,
+		      "size",
+		      &size,
+		      "download-size",
+		      &download_size,
 		      NULL);
 
 	/* create printable */
@@ -535,9 +564,7 @@ pk_console_defer_status_update (PkConsoleCtx *ctx, PkStatusEnum status)
 	if (ctx->defered_status_id > 0)
 		g_source_remove (ctx->defered_status_id);
 	ctx->defered_status = status;
-	ctx->defered_status_id = g_timeout_add (50,
-						pk_console_defer_status_update_cb,
-						ctx);
+	ctx->defered_status_id = g_timeout_add (50, pk_console_defer_status_update_cb, ctx);
 }
 
 static void
@@ -555,16 +582,17 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	/* role */
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_object_get (progress,
-			      "role", &role,
-			      "transaction-flags", &transaction_flags,
+			      "role",
+			      &role,
+			      "transaction-flags",
+			      &transaction_flags,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
 			return;
 
 		/* don't show the role when simulating */
 		if (ctx->defered_status != PK_STATUS_ENUM_UNKNOWN &&
-		    pk_bitfield_contain (transaction_flags,
-					 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+		    pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 			return;
 
 		/* show new status on the bar */
@@ -580,9 +608,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 
 	/* package-id */
 	if (type == PK_PROGRESS_TYPE_PACKAGE_ID) {
-		g_object_get (progress,
-			      "package-id", &package_id,
-			      NULL);
+		g_object_get (progress, "package-id", &package_id, NULL);
 		if (package_id == NULL)
 			return;
 
@@ -598,9 +624,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 
 	/* percentage */
 	if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
-		g_object_get (progress,
-			      "percentage", &percentage,
-			      NULL);
+		g_object_get (progress, "percentage", &percentage, NULL);
 		if (!ctx->is_console) {
 			/* only print the 10's */
 			if (percentage % 10 != 0)
@@ -616,14 +640,16 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 	/* status */
 	if (type == PK_PROGRESS_TYPE_STATUS) {
 		g_object_get (progress,
-			      "role", &role,
-			      "status", &status,
-			      "transaction-flags", &transaction_flags,
+			      "role",
+			      &role,
+			      "status",
+			      &status,
+			      "transaction-flags",
+			      &transaction_flags,
 			      NULL);
 
 		/* don't show finished multiple times in the output */
-		if (role == PK_ROLE_ENUM_RESOLVE &&
-		    status == PK_STATUS_ENUM_FINISHED)
+		if (role == PK_ROLE_ENUM_RESOLVE && status == PK_STATUS_ENUM_FINISHED)
 			return;
 
 		/* show new status on the bar */
@@ -639,8 +665,7 @@ pk_console_progress_cb (PkProgress *progress, PkProgressType type, gpointer data
 			if (pk_bitfield_contain (transaction_flags,
 						 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 				/* don't show progress when doing the simulate pass */
-				pk_console_defer_status_update (ctx,
-								PK_STATUS_ENUM_TEST_COMMIT);
+				pk_console_defer_status_update (ctx, PK_STATUS_ENUM_TEST_COMMIT);
 			} else {
 				pk_console_defer_status_update (ctx, status);
 			}
@@ -703,7 +728,10 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 		} else {
 			/* TRANSLATORS: the transaction failed in a way we could
 			 * not expect */
-			g_print ("%s: %s, %s\n", _("The transaction failed"), pk_error_enum_to_string (pk_error_get_code (error_code)), pk_error_get_details (error_code));
+			g_print ("%s: %s, %s\n",
+				 _("The transaction failed"),
+				   pk_error_enum_to_string (pk_error_get_code (error_code)),
+				   pk_error_get_details (error_code));
 		}
 
 		/* special case */
@@ -720,17 +748,14 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 	/* package */
 	filename = g_object_get_data (G_OBJECT (ctx->task), "PkConsole:list-create-filename");
 	if (!ctx->is_console ||
-	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES &&
-	     role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
-	     role != PK_ROLE_ENUM_REMOVE_PACKAGES &&
-	     filename == NULL)) {
+	    (role != PK_ROLE_ENUM_INSTALL_PACKAGES && role != PK_ROLE_ENUM_UPDATE_PACKAGES &&
+	     role != PK_ROLE_ENUM_REMOVE_PACKAGES && filename == NULL)) {
 		g_ptr_array_foreach (array, (GFunc) pk_console_package_cb, ctx);
 	}
 
 	/* special case */
 	if (array->len == 0 &&
-	    (role == PK_ROLE_ENUM_GET_UPDATES ||
-	     role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
+	    (role == PK_ROLE_ENUM_GET_UPDATES || role == PK_ROLE_ENUM_UPDATE_PACKAGES)) {
 		/* TRANSLATORS: print a message when there are no updates */
 		g_print ("%s\n", _("There are no updates available at this time."));
 		ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
@@ -823,10 +848,12 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 		g_print ("%s\n", _("Please logout and login to complete the update."));
 	} else if (restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
 		/* TRANSLATORS: a package needs to restart their system (due to security) */
-		g_print ("%s\n", _("Please restart the computer to complete the update as important security updates have been installed."));
+		g_print ("%s\n",
+			 _("Please restart the computer to complete the update as important security updates have been installed."));
 	} else if (restart == PK_RESTART_ENUM_SECURITY_SESSION) {
 		/* TRANSLATORS: a package needs to restart the session (due to security) */
-		g_print ("%s\n", _("Please logout and login to complete the update as important security updates have been installed."));
+		g_print ("%s\n",
+			 _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 
 	/* write the sack to disk */
@@ -891,9 +918,11 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 
 	/* get the list of possibles */
 	results = pk_client_resolve (PK_CLIENT (ctx->task),
-				     ctx->filters, tmp,
+				     ctx->filters,
+				     tmp,
 				     ctx->cancellable,
-				     pk_console_progress_cb, ctx,
+				     pk_console_progress_cb,
+				     ctx,
 				     error);
 	if (results == NULL)
 		return NULL;
@@ -914,16 +943,15 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 		g_set_error (error,
 			     PK_CONSOLE_ERROR,
 			     PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-			     "could not find %s", package_name);
+			     "could not find %s",
+			     package_name);
 		return NULL;
 	}
 
 	/* just one thing found */
 	if (array->len == 1) {
 		package = g_ptr_array_index (array, 0);
-		g_object_get (package,
-			      "package-id", &package_id,
-			      NULL);
+		g_object_get (package, "package-id", &package_id, NULL);
 		return g_strdup (pk_package_get_id (package));
 	}
 
@@ -937,7 +965,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 		package_id_tmp = pk_package_get_id (package);
 		split = pk_package_id_split (package_id_tmp);
 		printable = pk_package_id_to_printable (package_id_tmp);
-		g_print ("%i. %s [%s]\n", i+1, printable, split[PK_PACKAGE_ID_DATA]);
+		g_print ("%i. %s [%s]\n", i + 1, printable, split[PK_PACKAGE_ID_DATA]);
 	}
 
 	/* TRANSLATORS: This finds out which package in the list to use */
@@ -969,17 +997,14 @@ pk_console_resolve_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 	/* resolve each package */
 	array = g_ptr_array_new ();
 	for (i = 0; i < len; i++) {
-		package_id = pk_console_resolve_package (ctx,
-							 packages[i],
-							 &error_local);
+		package_id = pk_console_resolve_package (ctx, packages[i], &error_local);
 		if (package_id == NULL) {
 			if (g_error_matches (error_local,
 					     PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_PACKAGE_NOT_FOUND)) {
 				/* TRANSLATORS: we asked to install a package
 				 * that could not be found in any repo */
-				g_print ("%s: %s\n", _("Package not found"),
-					 packages[i]);
+				g_print ("%s: %s\n", _("Package not found"), packages[i]);
 				g_clear_error (&error_local);
 				continue;
 			} else {
@@ -1018,12 +1043,12 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 			g_set_error (error,
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
-					/* TRANSLATORS: The user used
+				     /* TRANSLATORS: The user used
 					 * 'pkcon install dave.rpm' rather than
 					 * 'pkcon install-local dave.rpm' */
 				     _("Expected package name, actually got file. "
 				       "Try using 'pkcon install-local %s' instead."),
-				     packages[i]);
+				       packages[i]);
 			return FALSE;
 		}
 	}
@@ -1049,15 +1074,17 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 		/* the the error was not "no package found", or we did allow reinstallations
 		 * (and therefore didn't filter out already installed packages) we show the
 		 * emitted error immediately. */
-		if (!g_error_matches (error_local, PK_CONSOLE_ERROR, PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
-		     reinstall_allowed) {
+		if (!g_error_matches (error_local,
+				      PK_CONSOLE_ERROR,
+				      PK_ERROR_ENUM_PACKAGE_NOT_FOUND) ||
+		    reinstall_allowed) {
 			g_set_error (error,
 				     PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
 				     /* TRANSLATORS: There was an error finding a package
 				      * for installation. The detailed error follows. */
 				     _("This tool could not find any available package: %s"),
-				     error_local->message);
+				       error_local->message);
 			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			return FALSE;
 		}
@@ -1069,20 +1096,21 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 		package_ids = pk_console_resolve_packages (ctx, packages, NULL);
 		if (package_ids == NULL) {
 			/* the package does not exist at all */
-			g_set_error_literal (error,
-					     PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     /* TRANSLATORS: We were unable to find a package for installation. */
-					     _("This tool could not find any available package."));
+			g_set_error_literal (
+			    error,
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    /* TRANSLATORS: We were unable to find a package for installation. */
+			    _("This tool could not find any available package."));
 			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 		} else {
 			/* the package exists, but is already installed */
 			g_set_error_literal (error,
-				     PK_CONSOLE_ERROR,
-				     PK_ERROR_ENUM_INTERNAL_ERROR,
-				     /* TRANSLATORS: There was an error finding a package
+					     PK_CONSOLE_ERROR,
+					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     /* TRANSLATORS: There was an error finding a package
 				      * for installation, it may already be installed. */
-				     _("The selected packages may already be installed."));
+					     _("The selected packages may already be installed."));
 			ctx->retval = PK_EXIT_CODE_NOTHING_USEFUL;
 		}
 		return FALSE;
@@ -1090,14 +1118,20 @@ pk_console_install_packages (PkConsoleCtx *ctx, gchar **packages, GError **error
 
 	/* do the async action */
 	pk_task_install_packages_async (PK_TASK (ctx->task),
-					package_ids, ctx->cancellable,
-					pk_console_progress_cb, ctx,
-					pk_console_task_finished_cb, ctx);
+					package_ids,
+					ctx->cancellable,
+					pk_console_progress_cb,
+					ctx,
+					pk_console_task_finished_cb,
+					ctx);
 	return TRUE;
 }
 
 static gboolean
-pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autoremove, GError **error)
+pk_console_remove_packages (PkConsoleCtx *ctx,
+			    gchar **packages,
+			    gboolean autoremove,
+			    GError **error)
 {
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
@@ -1111,22 +1145,28 @@ pk_console_remove_packages (PkConsoleCtx *ctx, gchar **packages, gboolean autore
 			     /* TRANSLATORS: There was an error getting the list
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find the installed package: %s"),
-			     error_local->message);
+			       error_local->message);
 		return FALSE;
 	}
 
 	/* do the async action */
 	pk_task_remove_packages_async (PK_TASK (ctx->task),
 				       package_ids,
-				       TRUE, autoremove,
+				       TRUE,
+				       autoremove,
 				       ctx->cancellable,
-				       pk_console_progress_cb, ctx,
-				       pk_console_task_finished_cb, ctx);
+				       pk_console_progress_cb,
+				       ctx,
+				       pk_console_task_finished_cb,
+				       ctx);
 	return TRUE;
 }
 
 static gboolean
-pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *directory, GError **error)
+pk_console_download_packages (PkConsoleCtx *ctx,
+			      gchar **packages,
+			      const gchar *directory,
+			      GError **error)
 {
 	g_autoptr(GError) error_local = NULL;
 	g_auto(GStrv) package_ids = NULL;
@@ -1139,8 +1179,7 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     /* TRANSLATORS: There was an error getting the list
 			      * of files for the package. The detailed error follows */
-			     _("This tool could not find the package: %s"),
-			     error_local->message);
+			     _("This tool could not find the package: %s"), error_local->message);
 		return FALSE;
 	}
 
@@ -1149,8 +1188,10 @@ pk_console_download_packages (PkConsoleCtx *ctx, gchar **packages, const gchar *
 					 package_ids,
 					 directory,
 					 ctx->cancellable,
-					 pk_console_progress_cb, ctx,
-					 pk_console_task_finished_cb, ctx);
+					 pk_console_progress_cb,
+					 ctx,
+					 pk_console_task_finished_cb,
+					 ctx);
 	return TRUE;
 }
 
@@ -1170,8 +1211,7 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     /* TRANSLATORS: There was an error getting the list
 			      * of files for the package. The detailed error follows */
-			     _("This tool could not find the package: %s"),
-			     error_local->message);
+			     _("This tool could not find the package: %s"), error_local->message);
 		return FALSE;
 	}
 
@@ -1179,8 +1219,10 @@ pk_console_update_packages (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	pk_task_update_packages_async (PK_TASK (ctx->task),
 				       package_ids,
 				       ctx->cancellable,
-				       pk_console_progress_cb, ctx,
-				       pk_console_task_finished_cb, ctx);
+				       pk_console_progress_cb,
+				       ctx,
+				       pk_console_task_finished_cb,
+				       ctx);
 	return TRUE;
 }
 
@@ -1203,7 +1245,8 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 	results = pk_task_get_updates_sync (PK_TASK (ctx->task),
 					    ctx->filters,
 					    ctx->cancellable,
-					    pk_console_progress_cb, ctx,
+					    pk_console_progress_cb,
+					    ctx,
 					    error);
 	if (results == NULL)
 		return FALSE;
@@ -1224,20 +1267,27 @@ pk_console_update_system (PkConsoleCtx *ctx, GError **error)
 	pk_task_update_packages_async (PK_TASK (ctx->task),
 				       package_ids,
 				       ctx->cancellable,
-				       pk_console_progress_cb, ctx,
-				       pk_console_task_finished_cb, ctx);
+				       pk_console_progress_cb,
+				       ctx,
+				       pk_console_task_finished_cb,
+				       ctx);
 	return TRUE;
 }
 
 static gboolean
-pk_console_upgrade_system (PkConsoleCtx *ctx, const gchar *distro_id, const gchar *upgrade_kind, GError **error)
+pk_console_upgrade_system (PkConsoleCtx *ctx,
+			   const gchar *distro_id,
+			   const gchar *upgrade_kind,
+			   GError **error)
 {
 	pk_task_upgrade_system_async (PK_TASK (ctx->task),
 				      distro_id,
 				      pk_upgrade_kind_enum_from_string (upgrade_kind),
 				      ctx->cancellable,
-				      pk_console_progress_cb, ctx,
-				      pk_console_task_finished_cb, ctx);
+				      pk_console_progress_cb,
+				      ctx,
+				      pk_console_task_finished_cb,
+				      ctx);
 	return TRUE;
 }
 
@@ -1256,18 +1306,20 @@ pk_console_required_by (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     /* TRANSLATORS: There was an error getting the list
 			      * of files for the package. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
-			     error_local->message);
+			       error_local->message);
 		return FALSE;
 	}
 
 	/* do the async action */
 	pk_task_required_by_async (PK_TASK (ctx->task),
-				    ctx->filters,
-				    package_ids,
-				    TRUE,
-				    ctx->cancellable,
-				    pk_console_progress_cb, ctx,
-				    pk_console_task_finished_cb, ctx);
+				   ctx->filters,
+				   package_ids,
+				   TRUE,
+				   ctx->cancellable,
+				   pk_console_progress_cb,
+				   ctx,
+				   pk_console_task_finished_cb,
+				   ctx);
 	return TRUE;
 }
 
@@ -1285,18 +1337,20 @@ pk_console_depends_on (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     /* TRANSLATORS: There was an error getting the
 			      * dependencies for the package. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
-			     error_local->message);
+			       error_local->message);
 		return FALSE;
 	}
 
 	/* do the async action */
 	pk_task_depends_on_async (PK_TASK (ctx->task),
-				   ctx->filters,
-				   package_ids,
-				   FALSE,
-				   ctx->cancellable,
-				   pk_console_progress_cb, ctx,
-				   pk_console_task_finished_cb, ctx);
+				  ctx->filters,
+				  package_ids,
+				  FALSE,
+				  ctx->cancellable,
+				  pk_console_progress_cb,
+				  ctx,
+				  pk_console_task_finished_cb,
+				  ctx);
 	return TRUE;
 }
 
@@ -1311,8 +1365,10 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 		pk_client_get_details_local_async (PK_CLIENT (ctx->task),
 						   packages,
 						   ctx->cancellable,
-						   pk_console_progress_cb, ctx,
-						   pk_console_client_finished_cb, ctx);
+						   pk_console_progress_cb,
+						   ctx,
+						   pk_console_client_finished_cb,
+						   ctx);
 		return TRUE;
 	}
 
@@ -1323,8 +1379,8 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     /* TRANSLATORS: There was an error getting the
 			      * details about the package. The detailed error follows */
-			      _("This tool could not find all the packages: %s"),
-			     error_local->message);
+			     _("This tool could not find all the packages: %s"),
+			       error_local->message);
 		return FALSE;
 	}
 
@@ -1332,8 +1388,10 @@ pk_console_get_details (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	pk_task_get_details_async (PK_TASK (ctx->task),
 				   package_ids,
 				   ctx->cancellable,
-				   pk_console_progress_cb, ctx,
-				   pk_console_task_finished_cb, ctx);
+				   pk_console_progress_cb,
+				   ctx,
+				   pk_console_task_finished_cb,
+				   ctx);
 	return TRUE;
 }
 
@@ -1343,8 +1401,10 @@ pk_console_get_details_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 	pk_client_get_details_local_async (PK_CLIENT (ctx->task),
 					   files,
 					   ctx->cancellable,
-					   pk_console_progress_cb, ctx,
-					   pk_console_client_finished_cb, ctx);
+					   pk_console_progress_cb,
+					   ctx,
+					   pk_console_client_finished_cb,
+					   ctx);
 	return TRUE;
 }
 
@@ -1354,8 +1414,10 @@ pk_console_get_files_local (PkConsoleCtx *ctx, gchar **files, GError **error)
 	pk_client_get_files_local_async (PK_CLIENT (ctx->task),
 					 files,
 					 ctx->cancellable,
-					 pk_console_progress_cb, ctx,
-					 pk_console_client_finished_cb, ctx);
+					 pk_console_progress_cb,
+					 ctx,
+					 pk_console_client_finished_cb,
+					 ctx);
 	return TRUE;
 }
 
@@ -1368,10 +1430,12 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	/* local file */
 	if (g_file_test (packages[0], G_FILE_TEST_EXISTS)) {
 		pk_client_get_files_local_async (PK_CLIENT (ctx->task),
-						   packages,
-						   ctx->cancellable,
-						   pk_console_progress_cb, ctx,
-						   pk_console_client_finished_cb, ctx);
+						 packages,
+						 ctx->cancellable,
+						 pk_console_progress_cb,
+						 ctx,
+						 pk_console_client_finished_cb,
+						 ctx);
 		return TRUE;
 	}
 
@@ -1383,7 +1447,7 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 			     /* TRANSLATORS: The package name was not found in
 			      * any software repositories. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
-			     error_local->message);
+			       error_local->message);
 		return FALSE;
 	}
 
@@ -1391,8 +1455,10 @@ pk_console_get_files (PkConsoleCtx *ctx, gchar **packages, GError **error)
 	pk_task_get_files_async (PK_TASK (ctx->task),
 				 package_ids,
 				 ctx->cancellable,
-				 pk_console_progress_cb, ctx,
-				 pk_console_task_finished_cb, ctx);
+				 pk_console_progress_cb,
+				 ctx,
+				 pk_console_task_finished_cb,
+				 ctx);
 	return TRUE;
 }
 
@@ -1411,7 +1477,7 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 			     /* TRANSLATORS: The package name was not found in
 			      * any software repositories. The detailed error follows */
 			     _("This tool could not find all the packages: %s"),
-			     error_local->message);
+			       error_local->message);
 		return FALSE;
 	}
 
@@ -1419,8 +1485,10 @@ pk_console_get_update_detail (PkConsoleCtx *ctx, gchar **packages, GError **erro
 	pk_task_get_update_detail_async (PK_TASK (ctx->task),
 					 package_ids,
 					 ctx->cancellable,
-					 pk_console_progress_cb, ctx,
-					 pk_console_task_finished_cb, ctx);
+					 pk_console_progress_cb,
+					 ctx,
+					 pk_console_task_finished_cb,
+					 ctx);
 	return TRUE;
 }
 
@@ -1431,9 +1499,7 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 	gboolean connected;
 
 	/* if the daemon crashed, don't hang around */
-	g_object_get (control_,
-		      "connected", &connected,
-		      NULL);
+	g_object_get (control_, "connected", &connected, NULL);
 	if (!connected) {
 		/* TRANSLATORS: This is when the daemon crashed, and we are up
 		 * shit creek without a paddle */
@@ -1441,7 +1507,6 @@ pk_console_notify_connected_cb (PkControl *control_, GParamSpec *pspec, gpointer
 		g_main_loop_quit (ctx->loop);
 	}
 }
-
 
 static gboolean
 pk_console_sigint_cb (gpointer user_data)
@@ -1453,13 +1518,12 @@ pk_console_sigint_cb (gpointer user_data)
 }
 
 static int
-cmp_strings (gconstpointer a,
-             gconstpointer b)
+cmp_strings (gconstpointer a, gconstpointer b)
 {
-  const char **aa = (const char **)a;
-  const char **bb = (const char **)b;
+	const char **aa = (const char **) a;
+	const char **bb = (const char **) b;
 
-  return g_strcmp0 (*aa, *bb);
+	return g_strcmp0 (*aa, *bb);
 }
 
 static gchar *
@@ -1469,9 +1533,11 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	g_autoptr(GPtrArray) cmds = g_ptr_array_sized_new (30);
 
 	/* TRANSLATORS: This is the header to the --help menu */
-	g_string_append_printf (string, "%s\n\n%s\n", _("PackageKit Console Interface"),
-				/* these are commands we can use with pkcon */
-				_("Subcommands:"));
+	g_string_append_printf (string,
+				"%s\n\n%s\n",
+				_("PackageKit Console Interface"),
+				  /* these are commands we can use with pkcon */
+				  _("Subcommands:"));
 
 	/* always */
 	g_ptr_array_add (cmds, (gchar *) "backend-details");
@@ -1535,7 +1601,9 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_GET_CATEGORIES))
 		g_ptr_array_add (cmds, (gchar *) "get-categories");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_UPGRADE_SYSTEM))
-		g_ptr_array_add (cmds, (gchar *) "upgrade-system [distro-name] [minimal|default|complete]");
+		g_ptr_array_add (
+		    cmds,
+		    (gchar *) "upgrade-system [distro-name] [minimal|default|complete]");
 	if (pk_bitfield_contain (ctx->roles, PK_ROLE_ENUM_REPAIR_SYSTEM))
 		g_ptr_array_add (cmds, (gchar *) "repair");
 
@@ -1569,7 +1637,9 @@ pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	if (time_ms == 0) {
 		/* TRANSLATORS: we keep a database updated with the time that an
 		 * action was last executed */
-		g_print ("%s: %s\n", _("Failed to get the time since this action was last completed"), error->message);
+		g_print ("%s: %s\n",
+			 _("Failed to get the time since this action was last completed"),
+			   error->message);
 		goto out;
 	}
 	/* TRANSLATORS: this is the time since this role was used */
@@ -1614,7 +1684,8 @@ pk_console_offline_status (GError **error)
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
 		g_print ("Status:\tFailed\n");
-		g_print ("ErrorCode:\%s\n", pk_error_enum_to_string (pk_error_get_code (error_code)));
+		g_print ("ErrorCode:\%s\n",
+			 pk_error_enum_to_string (pk_error_get_code (error_code)));
 		g_print ("ErrorDetails:\%s\n", pk_error_get_details (error_code));
 	} else {
 		guint i;
@@ -1662,8 +1733,7 @@ pk_console_set_proxy (PkConsoleCtx *ctx, GError **error)
 			     PK_ERROR_ENUM_INTERNAL_ERROR,
 			     "%s: %s",
 			     /* TRANSLATORS: The network settings could not be sent */
-			     _("The proxy could not be set"),
-			     error_local->message);
+			     _("The proxy could not be set"), error_local->message);
 		return FALSE;
 	}
 	return TRUE;
@@ -1700,9 +1770,9 @@ main (int argc, char *argv[])
 	guint bar_size = 34;
 	struct winsize w;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			/* TRANSLATORS: command line argument, just show the version string */
@@ -1737,7 +1807,7 @@ main (int argc, char *argv[])
 			_("Allow untrusted packages to be installed."), NULL },
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -1748,11 +1818,7 @@ main (int argc, char *argv[])
 	ctx = g_new0 (PkConsoleCtx, 1);
 	ctx->defered_status = PK_STATUS_ENUM_UNKNOWN;
 	ctx->loop = g_main_loop_new (NULL, FALSE);
-	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
-				SIGINT,
-				pk_console_sigint_cb,
-				ctx,
-				NULL);
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT, SIGINT, pk_console_sigint_cb, ctx, NULL);
 
 	/* Shrink the progresbar to fit in small spaces i.e. termux, small tmux panes, large font terminals */
 	/* If ioctl reports back and the terminal is small, shrink to fit as best we can */
@@ -1764,7 +1830,7 @@ main (int argc, char *argv[])
 
 	ctx->cancellable = g_cancellable_new ();
 	context = g_option_context_new ("PackageKit Console Program");
-	g_option_context_set_summary (context, summary) ;
+	g_option_context_set_summary (context, summary);
 	g_option_context_add_main_entries (context, options, NULL);
 	g_option_context_add_group (context, pk_debug_get_option_group ());
 	ret = g_option_context_parse (context, &argc, &argv, &error);
@@ -1786,13 +1852,11 @@ main (int argc, char *argv[])
 	}
 
 	/* get data */
-	g_object_get (ctx->control,
-		      "roles", &ctx->roles,
-		      NULL);
+	g_object_get (ctx->control, "roles", &ctx->roles, NULL);
 
 	/* set the summary text based on the available ctx->roles */
 	summary = pk_console_get_summary (ctx);
-	g_option_context_set_summary (context, summary) ;
+	g_option_context_set_summary (context, summary);
 	options_help = g_option_context_get_help (context, TRUE, NULL);
 
 	/* check if we are on console */
@@ -1811,20 +1875,30 @@ main (int argc, char *argv[])
 	}
 
 	/* watch when the daemon aborts */
-	g_signal_connect (ctx->control, "notify::connected",
-			  G_CALLBACK (pk_console_notify_connected_cb), ctx);
+	g_signal_connect (ctx->control,
+			  "notify::connected",
+			  G_CALLBACK (pk_console_notify_connected_cb),
+			  ctx);
 
 	/* create transactions */
 	ctx->task = pk_task_text_new ();
 	g_object_set (ctx->task,
-		      "background", background,
-		      "simulate", !noninteractive && !only_download,
-		      "interactive", !noninteractive,
-		      "only-download", only_download,
-		      "allow-downgrade", allow_downgrade,
-		      "allow-reinstall", allow_reinstall,
-		      "cache-age", cache_age,
-		      "only-trusted", !allow_untrusted,
+		      "background",
+		      background,
+		      "simulate",
+		      !noninteractive && !only_download,
+		      "interactive",
+		      !noninteractive,
+		      "only-download",
+		      only_download,
+		      "allow-downgrade",
+		      allow_downgrade,
+		      "allow-reinstall",
+		      allow_reinstall,
+		      "cache-age",
+		      cache_age,
+		      "only-trusted",
+		      !allow_untrusted,
 		      NULL);
 
 	/* set the proxy */
@@ -1843,8 +1917,7 @@ main (int argc, char *argv[])
 					     "%s: %s",
 					     /* TRANSLATORS: The user specified
 					      * an incorrect filter */
-					     _("The filter specified was invalid"),
-					     filter);
+					     _("The filter specified was invalid"), filter);
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -1869,7 +1942,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: a search type can
 					      * be name, details, file, etc */
-					     "%s", _("A search type is required, e.g. name"));
+					     "%s",
+					     _("A search type is required, e.g. name"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 
@@ -1879,7 +1953,8 @@ main (int argc, char *argv[])
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
 						     /* TRANSLATORS: the user
 						      * needs to provide a search term */
-						     "%s", _("A search term is required"));
+						     "%s",
+						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
@@ -1887,8 +1962,10 @@ main (int argc, char *argv[])
 						    ctx->filters,
 						    argv + 3,
 						    ctx->cancellable,
-						    pk_console_progress_cb, ctx,
-						    pk_console_task_finished_cb, ctx);
+						    pk_console_progress_cb,
+						    ctx,
+						    pk_console_task_finished_cb,
+						    ctx);
 
 		} else if (strcmp (value, "details") == 0) {
 			if (details == NULL) {
@@ -1896,7 +1973,8 @@ main (int argc, char *argv[])
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s", _("A search term is required"));
+						     "%s",
+						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
@@ -1904,8 +1982,10 @@ main (int argc, char *argv[])
 						      ctx->filters,
 						      argv + 3,
 						      ctx->cancellable,
-						      pk_console_progress_cb, ctx,
-						      pk_console_task_finished_cb, ctx);
+						      pk_console_progress_cb,
+						      ctx,
+						      pk_console_task_finished_cb,
+						      ctx);
 
 		} else if (strcmp (value, "group") == 0) {
 			if (details == NULL) {
@@ -1913,7 +1993,8 @@ main (int argc, char *argv[])
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s", _("A search term is required"));
+						     "%s",
+						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
@@ -1921,8 +2002,10 @@ main (int argc, char *argv[])
 						     ctx->filters,
 						     argv + 3,
 						     ctx->cancellable,
-						     pk_console_progress_cb, ctx,
-						     pk_console_task_finished_cb, ctx);
+						     pk_console_progress_cb,
+						     ctx,
+						     pk_console_task_finished_cb,
+						     ctx);
 
 		} else if (strcmp (value, "file") == 0) {
 			if (details == NULL) {
@@ -1930,7 +2013,8 @@ main (int argc, char *argv[])
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s", _("A search term is required"));
+						     "%s",
+						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
 			}
@@ -1938,16 +2022,20 @@ main (int argc, char *argv[])
 						    ctx->filters,
 						    argv + 3,
 						    ctx->cancellable,
-						    pk_console_progress_cb, ctx,
-						    pk_console_task_finished_cb, ctx);
+						    pk_console_progress_cb,
+						    ctx,
+						    pk_console_task_finished_cb,
+						    ctx);
 		} else {
 			/* fallback to a generic search */
 			pk_task_search_details_async (PK_TASK (ctx->task),
 						      ctx->filters,
 						      argv + 2,
 						      ctx->cancellable,
-						      pk_console_progress_cb, ctx,
-						      pk_console_task_finished_cb, ctx);
+						      pk_console_progress_cb,
+						      ctx,
+						      pk_console_task_finished_cb,
+						      ctx);
 		}
 
 	} else if (strcmp (mode, "install") == 0) {
@@ -1956,13 +2044,12 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to install */
-					     "%s", _("A package name to install is required"));
+					     "%s",
+					     _("A package name to install is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		run_mainloop = pk_console_install_packages (ctx,
-							    argv + 2,
-							    &error);
+		run_mainloop = pk_console_install_packages (ctx, argv + 2, &error);
 
 	} else if (strcmp (mode, "install-local") == 0) {
 		if (value == NULL) {
@@ -1970,15 +2057,18 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to install */
-					     "%s", _("A filename to install is required"));
+					     "%s",
+					     _("A filename to install is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		pk_task_install_files_async (PK_TASK (ctx->task),
 					     argv + 2,
 					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_task_finished_cb, ctx);
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_task_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "install-sig") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
@@ -1986,7 +2076,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: geeky error, real
 					      * users won't see this */
-					     "%s", _("A type, key_id and package_id are required"));
+					     "%s",
+					     _("A type, key_id and package_id are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -1995,8 +2086,10 @@ main (int argc, char *argv[])
 						   details,
 						   parameter,
 						   ctx->cancellable,
-						   pk_console_progress_cb, ctx,
-						   pk_console_client_finished_cb, ctx);
+						   pk_console_progress_cb,
+						   ctx,
+						   pk_console_client_finished_cb,
+						   ctx);
 
 	} else if (strcmp (mode, "remove") == 0) {
 		if (value == NULL) {
@@ -2004,7 +2097,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to remove */
-					     "%s", _("A package name to remove is required"));
+					     "%s",
+					     _("A package name to remove is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2017,7 +2111,8 @@ main (int argc, char *argv[])
 					     /* TRANSLATORS: the user did not
 					      * specify anything about what to
 					      * download or where */
-					     "%s", _("A destination directory and the package names to download are required"));
+					     "%s",
+					     _("A destination directory and the package names to download are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2027,14 +2122,12 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: the directory does
 					      * not exist, so we can't continue */
-					     "%s: %s", _("Directory not found"), value);
+					     "%s: %s",
+					     _("Directory not found"), value);
 			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
 		}
-		run_mainloop = pk_console_download_packages (ctx,
-							     argv + 3,
-							     value,
-							     &error);
+		run_mainloop = pk_console_download_packages (ctx, argv + 3, value, &error);
 
 	} else if (strcmp (mode, "accept-eula") == 0) {
 		if (value == NULL) {
@@ -2042,24 +2135,25 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: geeky error, real
 					      * users won't see this */
-					     "%s", _("A licence identifier (eula-id) is required"));
+					     "%s",
+					     _("A licence identifier (eula-id) is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		pk_client_accept_eula_async (PK_CLIENT (ctx->task),
 					     value,
 					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_client_finished_cb, ctx);
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_client_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "update") == 0) {
 		if (value == NULL) {
 			/* do the system update */
 			run_mainloop = pk_console_update_system (ctx, &error);
 		} else {
-			run_mainloop = pk_console_update_packages (ctx,
-								   argv + 2,
-								   &error);
+			run_mainloop = pk_console_update_packages (ctx, argv + 2, &error);
 		}
 
 	} else if (strcmp (mode, "resolve") == 0) {
@@ -2068,7 +2162,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user did not
 					      * specify a package name */
-					     "%s", _("A package name to resolve is required"));
+					     "%s",
+					     _("A package name to resolve is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2076,8 +2171,10 @@ main (int argc, char *argv[])
 				       ctx->filters,
 				       argv + 2,
 				       ctx->cancellable,
-				       pk_console_progress_cb, ctx,
-				       pk_console_task_finished_cb, ctx);
+				       pk_console_progress_cb,
+				       ctx,
+				       pk_console_task_finished_cb,
+				       ctx);
 
 	} else if (strcmp (mode, "repo-enable") == 0) {
 		if (value == NULL) {
@@ -2085,7 +2182,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user did not
 					      * specify a repository name */
-					     "%s", _("A repository name is required"));
+					     "%s",
+					     _("A repository name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2093,8 +2191,10 @@ main (int argc, char *argv[])
 					   value,
 					   TRUE,
 					   ctx->cancellable,
-					   pk_console_progress_cb, ctx,
-					   pk_console_task_finished_cb, ctx);
+					   pk_console_progress_cb,
+					   ctx,
+					   pk_console_task_finished_cb,
+					   ctx);
 
 	} else if (strcmp (mode, "repo-disable") == 0) {
 		if (value == NULL) {
@@ -2102,7 +2202,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user did not
 					      * specify a repository name */
-					     "%s", _("A repository name is required"));
+					     "%s",
+					     _("A repository name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2110,15 +2211,18 @@ main (int argc, char *argv[])
 					   value,
 					   FALSE,
 					   ctx->cancellable,
-					   pk_console_progress_cb, ctx,
-					   pk_console_task_finished_cb, ctx);
+					   pk_console_progress_cb,
+					   ctx,
+					   pk_console_task_finished_cb,
+					   ctx);
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
 			/* TRANSLATORS: The user didn't provide any data */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A repo name, parameter and value are required"));
+					     "%s",
+					     _("A repo name, parameter and value are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2127,33 +2231,40 @@ main (int argc, char *argv[])
 					       details,
 					       parameter,
 					       ctx->cancellable,
-					       pk_console_progress_cb, ctx,
-					       pk_console_client_finished_cb, ctx);
+					       pk_console_progress_cb,
+					       ctx,
+					       pk_console_client_finished_cb,
+					       ctx);
 
 	} else if (strcmp (mode, "repo-remove") == 0) {
 		if (value == NULL || details == NULL) {
 			/* TRANSLATORS: The user didn't provide any data */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A repo id and autoremove required"));
+					     "%s",
+					     _("A repo id and autoremove required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
-		pk_client_repo_remove_async (PK_CLIENT (ctx->task),
-					     pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE,
-								     -1),
-					     value,
-					     atoi (details),
-					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_client_finished_cb, ctx);
+		pk_client_repo_remove_async (
+		    PK_CLIENT (ctx->task),
+		    pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1),
+		    value,
+		    atoi (details),
+		    ctx->cancellable,
+		    pk_console_progress_cb,
+		    ctx,
+		    pk_console_client_finished_cb,
+		    ctx);
 
 	} else if (strcmp (mode, "repo-list") == 0) {
 		pk_task_get_repo_list_async (PK_TASK (ctx->task),
 					     ctx->filters,
 					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_task_finished_cb, ctx);
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_task_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "get-time") == 0) {
 		PkRoleEnum role;
@@ -2162,7 +2273,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user didn't
 					      * specify what action to use */
-					     "%s", _("An action, e.g. 'update-packages' is required"));
+					     "%s",
+					     _("An action, e.g. 'update-packages' is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2172,19 +2284,19 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user specified
 					      * an invalid action */
-					     "%s", _("A correct role is required"));
+					     "%s",
+					     _("A correct role is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
 		pk_control_get_time_since_action_async (ctx->control,
 							role,
 							ctx->cancellable,
-							pk_console_get_time_since_action_cb, ctx);
+							pk_console_get_time_since_action_cb,
+							ctx);
 
 	} else if (strcmp (mode, "quit") == 0) {
-		pk_control_suggest_daemon_quit (ctx->control,
-						ctx->cancellable,
-						NULL);
+		pk_control_suggest_daemon_quit (ctx->control, ctx->cancellable, NULL);
 		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "depends-on") == 0) {
@@ -2192,7 +2304,8 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A package name is required"));
+					     "%s",
+					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2201,15 +2314,18 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "get-distro-upgrades") == 0) {
 		pk_client_get_distro_upgrades_async (PK_CLIENT (ctx->task),
 						     ctx->cancellable,
-						     pk_console_progress_cb, ctx,
-						     pk_console_client_finished_cb, ctx);
+						     pk_console_progress_cb,
+						     ctx,
+						     pk_console_client_finished_cb,
+						     ctx);
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A package name is required"));
+					     "%s",
+					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2221,7 +2337,8 @@ main (int argc, char *argv[])
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     /* TRANSLATORS: The user did not
 					      * provide a package name */
-					     "%s", _("A package name is required"));
+					     "%s",
+					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2235,7 +2352,8 @@ main (int argc, char *argv[])
 					      * "provides" certain things, e.g.
 					      * mime(gstreamer-decoder-mp3),
 					      * the user didn't specify it */
-					     "%s", _("A package provide string is required"));
+					     "%s",
+					     _("A package provide string is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2243,15 +2361,18 @@ main (int argc, char *argv[])
 					     ctx->filters,
 					     argv + 2,
 					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_task_finished_cb, ctx);
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_task_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A package name is required"));
+					     "%s",
+					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2262,7 +2383,8 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A filename is required"));
+					     "%s",
+					     _("A filename is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2273,7 +2395,8 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A filename is required"));
+					     "%s",
+					     _("A filename is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2284,7 +2407,8 @@ main (int argc, char *argv[])
 			/* TRANSLATORS: The user did not provide a package name */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s", _("A package name is required"));
+					     "%s",
+					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2294,21 +2418,27 @@ main (int argc, char *argv[])
 		pk_task_get_updates_async (PK_TASK (ctx->task),
 					   ctx->filters,
 					   ctx->cancellable,
-					   pk_console_progress_cb, ctx,
-					   pk_console_task_finished_cb, ctx);
+					   pk_console_progress_cb,
+					   ctx,
+					   pk_console_task_finished_cb,
+					   ctx);
 
 	} else if (strcmp (mode, "get-categories") == 0) {
 		pk_task_get_categories_async (PK_TASK (ctx->task),
 					      ctx->cancellable,
-					      pk_console_progress_cb, ctx,
-					      pk_console_task_finished_cb, ctx);
+					      pk_console_progress_cb,
+					      ctx,
+					      pk_console_task_finished_cb,
+					      ctx);
 
 	} else if (strcmp (mode, "get-packages") == 0) {
 		pk_task_get_packages_async (PK_TASK (ctx->task),
 					    ctx->filters,
 					    ctx->cancellable,
-					    pk_console_progress_cb, ctx,
-					    pk_console_task_finished_cb, ctx);
+					    pk_console_progress_cb,
+					    ctx,
+					    pk_console_task_finished_cb,
+					    ctx);
 
 	} else if (strcmp (mode, "upgrade-system") == 0) {
 		/* do the system upgrade */
@@ -2321,9 +2451,7 @@ main (int argc, char *argv[])
 		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "get-filters") == 0) {
-		g_object_get (ctx->control,
-			      "filters", &ctx->filters,
-			      NULL);
+		g_object_get (ctx->control, "filters", &ctx->filters, NULL);
 		text = pk_filter_bitfield_to_string (ctx->filters);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
@@ -2335,9 +2463,12 @@ main (int argc, char *argv[])
 		gchar *backend_description = NULL;
 		gchar *backend_name = NULL;
 		g_object_get (ctx->control,
-			      "backend-author", &backend_author,
-			      "backend-description", &backend_description,
-			      "backend-name", &backend_name,
+			      "backend-author",
+			      &backend_author,
+			      "backend-description",
+			      &backend_description,
+			      "backend-name",
+			      &backend_name,
 			      NULL);
 		if (backend_name != NULL && backend_name[0] != '\0') {
 			/* TRANSLATORS: this is the name of the backend */
@@ -2357,9 +2488,7 @@ main (int argc, char *argv[])
 		run_mainloop = FALSE;
 
 	} else if (strcmp (mode, "get-groups") == 0) {
-		g_object_get (ctx->control,
-			      "groups", &groups,
-			      NULL);
+		g_object_get (ctx->control, "groups", &groups, NULL);
 		text = pk_group_bitfield_to_string (groups);
 		g_strdelimit (text, ";", '\n');
 		g_print ("%s\n", text);
@@ -2376,7 +2505,10 @@ main (int argc, char *argv[])
 	} else if (strcmp (mode, "offline-trigger") == 0) {
 
 		run_mainloop = FALSE;
-		ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+		ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
+						     PK_OFFLINE_FLAGS_INTERACTIVE,
+						     NULL,
+						     &error);
 		if (!ret)
 			ctx->retval = error->code;
 
@@ -2398,28 +2530,37 @@ main (int argc, char *argv[])
 		pk_client_get_old_transactions_async (PK_CLIENT (ctx->task),
 						      10,
 						      ctx->cancellable,
-						      pk_console_progress_cb, ctx,
-						      pk_console_client_finished_cb, ctx);
+						      pk_console_progress_cb,
+						      ctx,
+						      pk_console_client_finished_cb,
+						      ctx);
 
 	} else if (strcmp (mode, "refresh") == 0) {
 		gboolean force = (value != NULL && g_strcmp0 (value, "force") == 0);
 		pk_task_refresh_cache_async (PK_TASK (ctx->task),
 					     force,
 					     ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_task_finished_cb, ctx);
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_task_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "repair") == 0) {
-		pk_task_repair_system_async (PK_TASK (ctx->task), ctx->cancellable,
-					     pk_console_progress_cb, ctx,
-					     pk_console_task_finished_cb, ctx);
+		pk_task_repair_system_async (PK_TASK (ctx->task),
+					     ctx->cancellable,
+					     pk_console_progress_cb,
+					     ctx,
+					     pk_console_task_finished_cb,
+					     ctx);
 
 	} else if (strcmp (mode, "list-create") == 0) {
 		if (value == NULL) {
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     /* TRANSLATORS: The user did not provide a distro name */
-					     "%s", _("You need to specify a list file to create"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    /* TRANSLATORS: The user did not provide a distro name */
+			    "%s",
+			    _("You need to specify a list file to create"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2439,12 +2580,16 @@ main (int argc, char *argv[])
 
 		/* get package list */
 		g_object_set_data_full (G_OBJECT (ctx->task),
-					"PkConsole:list-create-filename",
-					g_strdup (value),
-					g_free);
-		pk_task_get_packages_async (PK_TASK (ctx->task), ctx->filters, ctx->cancellable,
-					    pk_console_progress_cb, ctx,
-					    pk_console_task_finished_cb, ctx);
+						 "PkConsole:list-create-filename",
+						 g_strdup (value),
+						 g_free);
+		pk_task_get_packages_async (PK_TASK (ctx->task),
+					    ctx->filters,
+					    ctx->cancellable,
+					    pk_console_progress_cb,
+					    ctx,
+					    pk_console_task_finished_cb,
+					    ctx);
 	} else {
 		error = g_error_new (PK_CONSOLE_ERROR,
 				     PK_ERROR_ENUM_INTERNAL_ERROR,
@@ -2484,4 +2629,3 @@ out_last:
 	g_option_context_free (context);
 	return retval_copy;
 }
-

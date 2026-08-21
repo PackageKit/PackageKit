@@ -34,7 +34,7 @@
 
 #include "pk-repo-detail.h"
 
-static void     pk_repo_detail_finalize	(GObject     *object);
+static void pk_repo_detail_finalize (GObject *object);
 
 /**
  * PkRepoDetailPrivate:
@@ -43,9 +43,9 @@ static void     pk_repo_detail_finalize	(GObject     *object);
  **/
 struct _PkRepoDetailPrivate
 {
-	gchar				*repo_id;
-	gchar				*description;
-	gboolean			 enabled;
+	gchar *repo_id;
+	gchar *description;
+	gboolean enabled;
 };
 
 enum {
@@ -188,7 +188,9 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("repo-id", NULL, NULL,
+	pspec = g_param_spec_string ("repo-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_REPO_ID, pspec);
@@ -198,7 +200,9 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("description", NULL, NULL,
+	pspec = g_param_spec_string ("description",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
@@ -208,7 +212,9 @@ pk_repo_detail_class_init (PkRepoDetailClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_boolean ("enabled", NULL, NULL,
+	pspec = g_param_spec_boolean ("enabled",
+				      NULL,
+				      NULL,
 				      FALSE,
 				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ENABLED, pspec);

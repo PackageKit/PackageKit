@@ -27,39 +27,37 @@
 
 G_BEGIN_DECLS
 
-gboolean	 pk_directory_remove_contents		(const gchar	*directory);
-GPtrArray	*pk_directory_find_files_with_suffix	(const gchar	*directory,
-							 const gchar	*filename_suffix);
-guint		 pk_strlen				(const gchar	*text,
-							 guint		 len)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strzero				(const gchar	*text)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gboolean	 pk_strtoint				(const gchar	*text,
-							 gint		*value);
-gboolean	 pk_strtouint				(const gchar	*text,
-							 guint		*value);
-gboolean	 pk_strtoulong				(const gchar	*text,
-							 gulong		*value);
-gboolean	 pk_strtouint64				(const gchar	*text,
-							 guint64	*value);
-GDBusNodeInfo	*pk_load_introspection			(const gchar	*filename,
-							 GError		**error);
+gboolean       pk_directory_remove_contents (const gchar *directory);
+GPtrArray     *pk_directory_find_files_with_suffix (const gchar *directory,
+						    const gchar *filename_suffix);
+guint	       pk_strlen (const gchar *text,
+			  guint	       len) G_GNUC_WARN_UNUSED_RESULT;
+gboolean       pk_strzero (const gchar *text) G_GNUC_WARN_UNUSED_RESULT;
+gboolean       pk_strtoint (const gchar *text,
+			    gint	*value);
+gboolean       pk_strtouint (const gchar *text,
+			     guint	 *value);
+gboolean       pk_strtoulong (const gchar *text,
+			      gulong	  *value);
+gboolean       pk_strtouint64 (const gchar *text,
+			       guint64	   *value);
+GDBusNodeInfo *pk_load_introspection (const gchar *filename,
+				      GError	 **error);
 
-gchar		*pk_util_get_config_filename		(void);
-gboolean	 pk_util_set_auto_backend		(GKeyFile	*conf,
-							 GError		**error);
+gchar	      *pk_util_get_config_filename (void);
+gboolean       pk_util_set_auto_backend (GKeyFile *conf,
+					 GError	 **error);
 
-#define pk_is_thread_default() pk_is_thread_default_real(G_STRLOC, G_STRFUNC)
-gboolean	 pk_is_thread_default_real		(const gchar *strloc,
-							 const gchar *strfunc);
+#define pk_is_thread_default() pk_is_thread_default_real (G_STRLOC, G_STRFUNC)
+gboolean pk_is_thread_default_real (const gchar *strloc,
+				    const gchar *strfunc);
 
-gboolean	 pk_ioprio_set_idle			(GPid		 pid);
-guint		 pk_string_replace			(GString	*string,
-							 const gchar	*search,
-							 const gchar	*replace);
+gboolean pk_ioprio_set_idle (GPid pid);
+guint	 pk_string_replace (GString	*string,
+			    const gchar *search,
+			    const gchar *replace);
 
-gchar		*pk_get_cmdline_for_pid			(guint32	pid);
+gchar	*pk_get_cmdline_for_pid (guint32 pid);
 
 G_END_DECLS
 

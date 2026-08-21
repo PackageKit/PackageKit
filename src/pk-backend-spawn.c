@@ -47,23 +47,23 @@
 
 //#define ENABLE_STRACE
 
-#define PK_BACKEND_SPAWN_PERCENTAGE_INVALID	101
+#define PK_BACKEND_SPAWN_PERCENTAGE_INVALID 101
 
-#define	PK_UNSAFE_DELIMITERS	"\\\f\r\t"
+#define PK_UNSAFE_DELIMITERS "\\\f\r\t"
 
 struct _PkBackendSpawn
 {
-	GObject			parent;
+	GObject parent;
 
-	PkSpawn			*spawn;
-	PkBackend		*backend;
-	PkBackendJob		*job;
-	gchar			*name;
-	guint			 kill_id;
-	GKeyFile		*conf;
-	gboolean		 finished;
-	gboolean		 allow_sigkill;
-	gboolean		 is_busy;
+	PkSpawn *spawn;
+	PkBackend *backend;
+	PkBackendJob *job;
+	gchar *name;
+	guint kill_id;
+	GKeyFile *conf;
+	gboolean finished;
+	gboolean allow_sigkill;
+	gboolean is_busy;
 	PkBackendSpawnFilterFunc stdout_func;
 	PkBackendSpawnFilterFunc stderr_func;
 };
@@ -113,14 +113,20 @@ pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
 		g_source_remove (backend_spawn->kill_id);
 
 	/* get policy timeout */
-	timeout = g_key_file_get_integer (backend_spawn->conf, "Daemon", "BackendShutdownTimeout", NULL);
+	timeout = g_key_file_get_integer (backend_spawn->conf,
+					  "Daemon",
+					  "BackendShutdownTimeout",
+					  NULL);
 	if (timeout == 0) {
 		g_warning ("using built in default value");
 		timeout = 5;
 	}
 
 	/* close down the dispatcher if it is still open after this much time */
-	backend_spawn->kill_id = g_timeout_add_seconds (timeout, (GSourceFunc) pk_backend_spawn_exit_timeout_cb, backend_spawn);
+	backend_spawn->kill_id = g_timeout_add_seconds (
+	    timeout,
+	    (GSourceFunc) pk_backend_spawn_exit_timeout_cb,
+	    backend_spawn);
 	g_source_set_name_by_id (backend_spawn->kill_id, "[PkBackendSpawn] exit");
 }
 
@@ -174,35 +180,39 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		info = pk_info_enum_from_string (sections[1]);
 		if (info == PK_INFO_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Info enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Info enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[3], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[3]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[3]);
 			return FALSE;
 		}
 		pk_backend_job_package (job, info, sections[2], sections[3]);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 9) {
-			g_set_error (error, 1, 0,
-				     "invalid command'%s', size %i",
-				     command, size);
+			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			return FALSE;
 		}
 		group = pk_group_enum_from_string (sections[4]);
 
 		/* ITS4: ignore, checked for overflow */
 		if (!pk_strtoulong (sections[7], &package_size)) {
-			g_set_error (error, 1, 0,
+			g_set_error (error,
+				     1,
+				     0,
 				     "failed to parse package size: '%s'",
 				     sections[7]);
 			return FALSE;
 		}
 		if (!pk_strtoulong (sections[8], &download_size)) {
-			g_set_error (error, 1, 0,
+			g_set_error (error,
+				     1,
+				     0,
 				     "failed to parse download size: '%s'",
 				     sections[7]);
 			return FALSE;
@@ -210,16 +220,21 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 
 		g_strdelimit (sections[5], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[4], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[5]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[5]);
 			return FALSE;
 		}
 		text = g_strdup (sections[5]);
 		/* convert ; to \n as we can't emit them on stdout */
 		g_strdelimit (text, ";", '\n');
-		pk_backend_job_details (job, sections[1], sections[2], sections[3],
-					group, text, sections[6], package_size, download_size);
+		pk_backend_job_details (job,
+					sections[1],
+					sections[2],
+					sections[3],
+					group,
+					text,
+					sections[6],
+					package_size,
+					download_size);
 		g_free (text);
 	} else if (g_strcmp0 (command, "finished") == 0) {
 		if (size != 1) {
@@ -247,9 +262,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		g_strdelimit (sections[2], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[2], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[2]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[2]);
 			return FALSE;
 		}
 		if (g_strcmp0 (sections[3], "true") == 0) {
@@ -272,14 +285,16 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		restart = pk_restart_enum_from_string (sections[7]);
 		if (restart == PK_RESTART_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[7]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Restart enum not recognised, and hence ignored: '%s'",
+				     sections[7]);
 			return FALSE;
 		}
 		g_strdelimit (sections[12], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[12], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[12]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[12]);
 			return FALSE;
 		}
 		update_state_enum = pk_update_state_enum_from_string (sections[10]);
@@ -292,18 +307,18 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		bugzilla_urls = g_strsplit (sections[5], ";", -1);
 		cve_urls = g_strsplit (sections[6], ";", -1);
 		pk_backend_job_update_detail (job,
-					  sections[1],
-					  updates,
-					  obsoletes,
-					  vendor_urls,
-					  bugzilla_urls,
-					  cve_urls,
-					  restart,
-					  sections[8],
-					  sections[9],
-					  update_state_enum,
-					  sections[11],
-					  sections[12]);
+					      sections[1],
+					      updates,
+					      obsoletes,
+					      vendor_urls,
+					      bugzilla_urls,
+					      cve_urls,
+					      restart,
+					      sections[8],
+					      sections[9],
+					      update_state_enum,
+					      sections[11],
+					      sections[12]);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -329,7 +344,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		status_enum = pk_status_enum_from_string (sections[2]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Status enum not recognised, and hence ignored: '%s'", sections[2]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Status enum not recognised, and hence ignored: '%s'",
+				     sections[2]);
 			return FALSE;
 		}
 		if (!pk_strtoint (sections[3], &percentage)) {
@@ -340,10 +359,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			g_set_error (error, 1, 0, "invalid item-progress value %i", percentage);
 			return FALSE;
 		}
-		pk_backend_job_set_item_progress (job,
-						  sections[1],
-						  status_enum,
-						  percentage);
+		pk_backend_job_set_item_progress (job, sections[1], status_enum, percentage);
 	} else if (g_strcmp0 (command, "error") == 0) {
 		if (size != 3) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
@@ -351,7 +367,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		error_enum = pk_error_enum_from_string (sections[1]);
 		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Error enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Error enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		/* convert back all the ;'s to newlines */
@@ -372,7 +392,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		restart_enum = pk_restart_enum_from_string (sections[1]);
 		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Restart enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Restart enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		if (!pk_package_id_check (sections[2])) {
@@ -387,7 +411,11 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		status_enum = pk_status_enum_from_string (sections[1]);
 		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Status enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Status enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		pk_backend_job_set_status (job, status_enum);
@@ -397,9 +425,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			return FALSE;
 		}
 		if (!pk_strtouint64 (sections[1], &speed)) {
-			g_set_error (error, 1, 0,
-				     "failed to parse speed: '%s'",
-				     sections[1]);
+			g_set_error (error, 1, 0, "failed to parse speed: '%s'", sections[1]);
 			return FALSE;
 		}
 		pk_backend_job_set_speed (job, speed);
@@ -409,7 +435,9 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			return FALSE;
 		}
 		if (!pk_strtouint64 (sections[1], &download_size_remaining)) {
-			g_set_error (error, 1, 0,
+			g_set_error (error,
+				     1,
+				     0,
 				     "failed to parse download_size_remaining: '%s'",
 				     sections[1]);
 			return FALSE;
@@ -443,22 +471,40 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 
 		sig_type = pk_sig_type_enum_from_string (sections[8]);
 		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "Sig enum not recognised, and hence ignored: '%s'", sections[8]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "Sig enum not recognised, and hence ignored: '%s'",
+				     sections[8]);
 			return FALSE;
 		}
 		if (pk_strzero (sections[1])) {
-			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "package_id blank, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		if (pk_strzero (sections[2])) {
-			g_set_error (error, 1, 0, "repository name blank, and hence ignored: '%s'", sections[2]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "repository name blank, and hence ignored: '%s'",
+				     sections[2]);
 			return FALSE;
 		}
 
 		/* pass _all_ of the data */
-		pk_backend_job_repo_signature_required (job, sections[1],
-							  sections[2], sections[3], sections[4],
-							  sections[5], sections[6], sections[7], sig_type);
+		pk_backend_job_repo_signature_required (job,
+							sections[1],
+							sections[2],
+							sections[3],
+							sections[4],
+							sections[5],
+							sections[6],
+							sections[7],
+							sig_type);
 	} else if (g_strcmp0 (command, "eula-required") == 0) {
 
 		if (size != 5) {
@@ -467,21 +513,37 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 
 		if (pk_strzero (sections[1])) {
-			g_set_error (error, 1, 0, "eula_id blank, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "eula_id blank, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 
 		if (pk_strzero (sections[2])) {
-			g_set_error (error, 1, 0, "package_id blank, and hence ignored: '%s'", sections[2]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "package_id blank, and hence ignored: '%s'",
+				     sections[2]);
 			return FALSE;
 		}
 
 		if (pk_strzero (sections[4])) {
-			g_set_error (error, 1, 0, "agreement name blank, and hence ignored: '%s'", sections[4]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "agreement name blank, and hence ignored: '%s'",
+				     sections[4]);
 			return FALSE;
 		}
 
-		pk_backend_job_eula_required (job, sections[1], sections[2], sections[3], sections[4]);
+		pk_backend_job_eula_required (job,
+					      sections[1],
+					      sections[2],
+					      sections[3],
+					      sections[4]);
 	} else if (g_strcmp0 (command, "media-change-required") == 0) {
 
 		if (size != 4) {
@@ -491,11 +553,18 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 
 		media_type_enum = pk_media_type_enum_from_string (sections[1]);
 		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "media type enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "media type enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 
-		pk_backend_job_media_change_required (job, media_type_enum, sections[2], sections[3]);
+		pk_backend_job_media_change_required (job,
+						      media_type_enum,
+						      sections[2],
+						      sections[3]);
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
 		if (size != 4) {
@@ -505,14 +574,16 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 
 		distro_upgrade_enum = pk_distro_upgrade_enum_from_string (sections[1]);
 		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
-			g_set_error (error, 1, 0, "distro upgrade enum not recognised, and hence ignored: '%s'", sections[1]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "distro upgrade enum not recognised, and hence ignored: '%s'",
+				     sections[1]);
 			return FALSE;
 		}
 		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[3], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[3]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[3]);
 			return FALSE;
 		}
 
@@ -537,9 +608,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
 		if (!g_utf8_validate (sections[4], -1, NULL)) {
-			g_set_error (error, 1, 0,
-				     "text '%s' was not valid UTF8!",
-				     sections[4]);
+			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[4]);
 			return FALSE;
 		}
 		if (pk_strzero (sections[5])) {
@@ -547,10 +616,19 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			return FALSE;
 		}
 		if (g_str_has_prefix (sections[5], "/")) {
-			g_set_error (error, 1, 0, "icon '%s' should be a named icon, not a path", sections[5]);
+			g_set_error (error,
+				     1,
+				     0,
+				     "icon '%s' should be a named icon, not a path",
+				     sections[5]);
 			return FALSE;
 		}
-		pk_backend_job_category (job, sections[1], sections[2], sections[3], sections[4], sections[5]);
+		pk_backend_job_category (job,
+					 sections[1],
+					 sections[2],
+					 sections[3],
+					 sections[4],
+					 sections[5]);
 	} else {
 		g_set_error (error, 1, 0, "invalid command '%s'", command);
 		return FALSE;
@@ -570,8 +648,9 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 	/* if we force killed the process, set an error */
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_SIGKILL) {
 		/* we just call this failed, and set an error */
-		pk_backend_job_error_code (backend_spawn->job, PK_ERROR_ENUM_PROCESS_KILL,
-				       "Process had to be killed to be cancelled");
+		pk_backend_job_error_code (backend_spawn->job,
+					   PK_ERROR_ENUM_PROCESS_KILL,
+					   "Process had to be killed to be cancelled");
 	}
 
 	if (exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT ||
@@ -586,9 +665,10 @@ pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSp
 		ret = pk_backend_job_has_set_error_code (backend_spawn->job);
 		if (!ret) {
 			pk_backend_job_error_code (backend_spawn->job,
-					       PK_ERROR_ENUM_INTERNAL_ERROR,
-					       "The backend exited unexpectedly. "
-					       "This is a serious error as the spawned backend did not complete the pending transaction.");
+						   PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "The backend exited unexpectedly. "
+						   "This is a serious error as the spawned backend "
+						   "did not complete the pending transaction.");
 		}
 		pk_backend_job_finished (backend_spawn->job);
 	}
@@ -616,10 +696,7 @@ pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendS
 {
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    backend_spawn->job,
-					    line,
-					    &error);
+	ret = pk_backend_spawn_inject_data (backend_spawn, backend_spawn->job, line, &error);
 	if (!ret)
 		g_warning ("failed to parse: %s: %s", line, error->message);
 }
@@ -678,9 +755,9 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 			g_auto(GStrv) env_item_split = NULL;
 			env_item_split = g_strsplit (*env_item, "=", 2);
 			if (env_item_split && (g_strv_length (env_item_split) == 2))
-				g_hash_table_replace (env_table, g_strdup (env_item_split[0]),
-						g_strdup (env_item_split[1]));
-
+				g_hash_table_replace (env_table,
+						      g_strdup (env_item_split[0]),
+						      g_strdup (env_item_split[1]));
 		}
 	}
 
@@ -720,8 +797,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* no_proxy */
 	no_proxy = pk_backend_job_get_no_proxy (backend_spawn->job);
 	if (!pk_strzero (no_proxy)) {
-		g_hash_table_replace (env_table, g_strdup ("no_proxy"),
-		                      g_strdup (no_proxy));
+		g_hash_table_replace (env_table, g_strdup ("no_proxy"), g_strdup (no_proxy));
 	}
 
 	/* pac */
@@ -747,11 +823,15 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 
 	/* BACKGROUND */
 	ret = pk_backend_job_get_background (backend_spawn->job);
-	g_hash_table_replace (env_table, g_strdup ("BACKGROUND"), g_strdup (ret ? "TRUE" : "FALSE"));
+	g_hash_table_replace (env_table,
+			      g_strdup ("BACKGROUND"),
+			      g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* INTERACTIVE */
 	ret = pk_backend_job_get_interactive (backend_spawn->job);
-	g_hash_table_replace (env_table, g_strdup ("INTERACTIVE"), g_strdup (ret ? "TRUE" : "FALSE"));
+	g_hash_table_replace (env_table,
+			      g_strdup ("INTERACTIVE"),
+			      g_strdup (ret ? "TRUE" : "FALSE"));
 
 	/* UID */
 	g_hash_table_replace (env_table,
@@ -761,9 +841,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	/* CACHE_AGE */
 	cache_age = pk_backend_job_get_cache_age (backend_spawn->job);
 	if (cache_age == G_MAXUINT) {
-		g_hash_table_replace (env_table,
-				      g_strdup ("CACHE_AGE"),
-				      g_strdup ("-1"));
+		g_hash_table_replace (env_table, g_strdup ("CACHE_AGE"), g_strdup ("-1"));
 	} else if (cache_age > 0) {
 		g_hash_table_replace (env_table,
 				      g_strdup ("CACHE_AGE"),
@@ -774,7 +852,7 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 	envp = g_new0 (gchar *, g_hash_table_size (env_table) + 1);
 	g_hash_table_iter_init (&env_iter, env_table);
 	i = 0;
-	while (g_hash_table_iter_next (&env_iter, (void**)&env_key, (void**)&env_value)) {
+	while (g_hash_table_iter_next (&env_iter, (void **) &env_key, (void **) &env_value)) {
 		env_key = g_strdup (env_key);
 		env_value = g_strdup (env_value);
 		if (!keep_environment) {
@@ -793,9 +871,9 @@ pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
 }
 
 #ifdef ENABLE_STRACE
- #define PK_BACKEND_SPAWN_ARGV0		4
+#define PK_BACKEND_SPAWN_ARGV0 4
 #else
- #define PK_BACKEND_SPAWN_ARGV0		0
+#define PK_BACKEND_SPAWN_ARGV0 0
 #endif
 
 /**
@@ -822,8 +900,9 @@ pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
 	g_ptr_array_add (ptr_array, g_strdup ("strace"));
 	g_ptr_array_add (ptr_array, g_strdup ("-T"));
 	g_ptr_array_add (ptr_array, g_strdup ("-tt"));
-	g_ptr_array_add (ptr_array, g_strdup_printf ("-o/var/log/PackageKit-strace-%06i",
-						     g_random_int_range (1, 999999)));
+	g_ptr_array_add (
+	    ptr_array,
+	    g_strdup_printf ("-o/var/log/PackageKit-strace-%06i", g_random_int_range (1, 999999)));
 #endif
 	g_ptr_array_add (ptr_array, g_strdup (string_first));
 
@@ -870,23 +949,38 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 	if (g_str_has_prefix (directory, "test_"))
 		directory = "test";
 
-	filename = g_build_filename (SOURCEROOTDIR, "backends", directory, "helpers",
-				     argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+	filename = g_build_filename (SOURCEROOTDIR,
+				     "backends",
+				     directory,
+				     "helpers",
+				     argv[PK_BACKEND_SPAWN_ARGV0],
+				     NULL);
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename (SOURCEROOTDIR, "backends", directory,
-					     argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+		filename = g_build_filename (SOURCEROOTDIR,
+					     "backends",
+					     directory,
+					     argv[PK_BACKEND_SPAWN_ARGV0],
+					     NULL);
 	}
 	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
 		g_debug ("local helper not found '%s'", filename);
 		g_free (filename);
-		filename = g_build_filename (DATADIR, "PackageKit", "helpers",
-					     backend_spawn->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+		filename = g_build_filename (DATADIR,
+					     "PackageKit",
+					     "helpers",
+					     backend_spawn->name,
+					     argv[PK_BACKEND_SPAWN_ARGV0],
+					     NULL);
 	}
 #else
-	filename = g_build_filename (DATADIR, "PackageKit", "helpers",
-				     backend_spawn->name, argv[PK_BACKEND_SPAWN_ARGV0], NULL);
+	filename = g_build_filename (DATADIR,
+				     "PackageKit",
+				     "helpers",
+				     backend_spawn->name,
+				     argv[PK_BACKEND_SPAWN_ARGV0],
+				     NULL);
 #endif
 	g_debug ("using spawn filename %s", filename);
 
@@ -896,9 +990,7 @@ pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
 
 	/* copy idle setting from backend to PkSpawn instance */
 	background = pk_backend_job_get_background (job);
-	g_object_set (backend_spawn->spawn,
-		      "background", (background == TRUE),
-		      NULL);
+	g_object_set (backend_spawn->spawn, "background", (background == TRUE), NULL);
 
 #ifdef ENABLE_STRACE
 	/* we can't reuse when using strace */
@@ -944,8 +1036,8 @@ pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
 
 	/* set an error as the script will just exit without doing finished */
 	pk_backend_job_error_code (backend_spawn->job,
-			       PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-			       "the script was killed as the action was cancelled");
+				   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
+				   "the script was killed as the action was cancelled");
 	pk_spawn_kill (backend_spawn->spawn);
 	return TRUE;
 }
@@ -968,7 +1060,8 @@ pk_backend_spawn_exit (PkBackendSpawn *backend_spawn)
 gboolean
 pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
 			 PkBackendJob *job,
-			 const gchar *first_element, ...)
+			 const gchar *first_element,
+			 ...)
 {
 	gboolean ret = TRUE;
 	va_list args;
@@ -1000,9 +1093,7 @@ void
 pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allow_sigkill)
 {
 	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-	g_object_set (backend_spawn->spawn,
-		      "allow-sigkill", allow_sigkill,
-		      NULL);
+	g_object_set (backend_spawn->spawn, "allow-sigkill", allow_sigkill, NULL);
 }
 
 static void
@@ -1028,8 +1119,7 @@ pk_backend_spawn_class_init (PkBackendSpawnClass *klass)
 
 static void
 pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
-{
-}
+{}
 
 PkBackendSpawn *
 pk_backend_spawn_new (GKeyFile *conf)
@@ -1038,12 +1128,17 @@ pk_backend_spawn_new (GKeyFile *conf)
 	backend_spawn = g_object_new (PK_TYPE_BACKEND_SPAWN, NULL);
 	backend_spawn->conf = g_key_file_ref (conf);
 	backend_spawn->spawn = pk_spawn_new (backend_spawn->conf);
-	g_signal_connect (backend_spawn->spawn, "exit",
-			  G_CALLBACK (pk_backend_spawn_exit_cb), backend_spawn);
-	g_signal_connect (backend_spawn->spawn, "stdout",
-			  G_CALLBACK (pk_backend_spawn_stdout_cb), backend_spawn);
-	g_signal_connect (backend_spawn->spawn, "stderr",
-			  G_CALLBACK (pk_backend_spawn_stderr_cb), backend_spawn);
+	g_signal_connect (backend_spawn->spawn,
+			  "exit",
+			  G_CALLBACK (pk_backend_spawn_exit_cb),
+			  backend_spawn);
+	g_signal_connect (backend_spawn->spawn,
+			  "stdout",
+			  G_CALLBACK (pk_backend_spawn_stdout_cb),
+			  backend_spawn);
+	g_signal_connect (backend_spawn->spawn,
+			  "stderr",
+			  G_CALLBACK (pk_backend_spawn_stderr_cb),
+			  backend_spawn);
 	return PK_BACKEND_SPAWN (backend_spawn);
 }
-

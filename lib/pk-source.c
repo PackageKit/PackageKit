@@ -35,7 +35,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_source_finalize	(GObject     *object);
+static void pk_source_finalize (GObject *object);
 
 /**
  * PkSourcePrivate:
@@ -44,8 +44,8 @@ static void     pk_source_finalize	(GObject     *object);
  **/
 struct _PkSourcePrivate
 {
-	PkRoleEnum			 role;
-	gchar				*transaction_id;
+	PkRoleEnum role;
+	gchar *transaction_id;
 };
 
 enum {
@@ -120,8 +120,11 @@ pk_source_class_init (PkSourceClass *klass)
 	 *
 	 * Since: 0.6.0
 	 */
-	pspec = g_param_spec_enum ("role", NULL, NULL,
-				   PK_TYPE_ROLE_ENUM, PK_ROLE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("role",
+				   NULL,
+				   NULL,
+				   PK_TYPE_ROLE_ENUM,
+				   PK_ROLE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_ROLE, pspec);
 
@@ -130,7 +133,9 @@ pk_source_class_init (PkSourceClass *klass)
 	 *
 	 * Since: 0.6.0
 	 */
-	pspec = g_param_spec_string ("transaction-id", NULL, NULL,
+	pspec = g_param_spec_string ("transaction-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_TRANSACTION_ID, pspec);

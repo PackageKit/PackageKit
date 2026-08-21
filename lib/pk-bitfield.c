@@ -331,7 +331,8 @@ pk_transaction_flag_bitfield_to_string (PkBitfield transaction_flags)
 
 	/* shortcut */
 	if (transaction_flags == 0)
-		return g_strdup (pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
+		return g_strdup (
+		    pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
 
 	string = g_string_new ("");
 	for (i = 0; i < PK_TRANSACTION_FLAG_ENUM_LAST; i++) {
@@ -342,7 +343,9 @@ pk_transaction_flag_bitfield_to_string (PkBitfield transaction_flags)
 	/* do we have a 'none' transaction_flag? \n */
 	if (string->len == 0) {
 		g_warning ("not valid!");
-		g_string_append (string, pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
+		g_string_append (
+		    string,
+		    pk_transaction_flag_enum_to_string (PK_TRANSACTION_FLAG_ENUM_NONE));
 	} else {
 		/* remove last \n */
 		g_string_set_size (string, string->len - 1);

@@ -38,7 +38,7 @@
 #include "pk-enum-types.h"
 #include "pk-package-id.h"
 
-static void     pk_package_finalize	(GObject     *object);
+static void pk_package_finalize (GObject *object);
 
 /**
  * PkPackagePrivate:
@@ -47,28 +47,28 @@ static void     pk_package_finalize	(GObject     *object);
  **/
 struct _PkPackagePrivate
 {
-	PkInfoEnum		 info;
-	gchar			*package_id;
-	gchar			*package_id_data;
-	const gchar		*package_id_split[4];
-	gchar			*summary;
-	gchar			*license;
-	PkGroupEnum		 group;
-	gchar			*description;
-	gchar			*url;
-	guint64			 size;
-	gchar			*update_updates;
-	gchar			*update_obsoletes;
-	gchar			**update_vendor_urls;
-	gchar			**update_bugzilla_urls;
-	gchar			**update_cve_urls;
-	PkRestartEnum		 update_restart;
-	gchar			*update_text;
-	gchar			*update_changelog;
-	PkUpdateStateEnum	 update_state;
-	gchar			*update_issued;
-	gchar			*update_updated;
-	PkInfoEnum	 	 update_severity;
+	PkInfoEnum info;
+	gchar *package_id;
+	gchar *package_id_data;
+	const gchar *package_id_split[4];
+	gchar *summary;
+	gchar *license;
+	PkGroupEnum group;
+	gchar *description;
+	gchar *url;
+	guint64 size;
+	gchar *update_updates;
+	gchar *update_obsoletes;
+	gchar **update_vendor_urls;
+	gchar **update_bugzilla_urls;
+	gchar **update_cve_urls;
+	PkRestartEnum update_restart;
+	gchar *update_text;
+	gchar *update_changelog;
+	PkUpdateStateEnum update_state;
+	gchar *update_issued;
+	gchar *update_updated;
+	PkInfoEnum update_severity;
 };
 
 enum {
@@ -101,9 +101,11 @@ enum {
 	PROP_LAST
 };
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
-static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
+static GParamSpec *obj_properties[PROP_LAST] = {
+	NULL,
+};
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkPackage, pk_package, PK_TYPE_SOURCE)
 #define GET_PRIVATE(o) (pk_package_get_instance_private (o))
@@ -129,8 +131,8 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
 	g_return_val_if_fail (PK_IS_PACKAGE (package2), FALSE);
 
 	return (g_strcmp0 (priv1->summary, priv2->summary) == 0 &&
-	        g_strcmp0 (priv1->package_id, priv2->package_id) == 0 &&
-	        priv1->info == priv2->info);
+		g_strcmp0 (priv1->package_id, priv2->package_id) == 0 &&
+		priv1->info == priv2->info);
 }
 
 /**
@@ -194,7 +196,7 @@ pk_package_set_id (PkPackage *package, const gchar *package_id, GError **error)
 		if (package_id[i] == ';') {
 			if (++cnt > 3)
 				continue;
-			priv->package_id_split[cnt] = &priv->package_id_data[i+1];
+			priv->package_id_split[cnt] = &priv->package_id_data[i + 1];
 			priv->package_id_data[i] = '\0';
 		}
 	}
@@ -648,209 +650,232 @@ pk_package_class_init (PkPackageClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_INFO] =
-		g_param_spec_enum ("info", NULL,
-				   "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
-				   PK_TYPE_INFO_ENUM, PK_INFO_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_INFO] = g_param_spec_enum (
+	    "info",
+	    NULL,
+	    "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
+	    PK_TYPE_INFO_ENUM,
+	    PK_INFO_ENUM_UNKNOWN,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:package-id:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_PACKAGE_ID] =
-		g_param_spec_string ("package-id", NULL,
-				     "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
-				     NULL,
-				     G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_PACKAGE_ID] = g_param_spec_string (
+	    "package-id",
+	    NULL,
+	    "The full package_id, e.g. 'gnome-power-manager;0.1.2;i386;fedora'",
+	    NULL,
+	    G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:summary:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_SUMMARY] =
-		g_param_spec_string ("summary", NULL,
-				     "The package summary",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_SUMMARY] = g_param_spec_string ("summary",
+							    NULL,
+							    "The package summary",
+							    NULL,
+							    G_PARAM_READWRITE |
+								G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:license:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_LICENSE] =
-		g_param_spec_string ("license", NULL,
-				     "The package license",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_LICENSE] = g_param_spec_string ("license",
+							    NULL,
+							    "The package license",
+							    NULL,
+							    G_PARAM_READWRITE |
+								G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:group:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_GROUP] =
-		g_param_spec_enum ("group", NULL,
-				   "The package group",
-				   PK_TYPE_GROUP_ENUM, PK_GROUP_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_GROUP] = g_param_spec_enum ("group",
+							NULL,
+							"The package group",
+							PK_TYPE_GROUP_ENUM,
+							PK_GROUP_ENUM_UNKNOWN,
+							G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:description:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_DESCRIPTION] =
-		g_param_spec_string ("description", NULL,
-				     "The package description",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_DESCRIPTION] = g_param_spec_string ("description",
+								NULL,
+								"The package description",
+								NULL,
+								G_PARAM_READWRITE |
+								    G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:url:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_URL] =
-		g_param_spec_string ("url", NULL,
-				     "The package homepage URL",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_URL] = g_param_spec_string ("url",
+							NULL,
+							"The package homepage URL",
+							NULL,
+							G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:size:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_SIZE] =
-		g_param_spec_uint64 ("size", NULL,
-				     "The package size",
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_SIZE] = g_param_spec_uint64 ("size",
+							 NULL,
+							 "The package size",
+							 0,
+							 G_MAXUINT64,
+							 0,
+							 G_PARAM_READWRITE |
+							     G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-updates:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_UPDATES] =
-		g_param_spec_string ("update-updates", NULL,
-				     "The update packages",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_UPDATES] = g_param_spec_string ("update-updates",
+								   NULL,
+								   "The update packages",
+								   NULL,
+								   G_PARAM_READWRITE |
+								       G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-obsoletes:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_OBSOLETES] =
-		g_param_spec_string ("update-obsoletes", NULL,
-				     "The update packages that are obsoleted",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_OBSOLETES] = g_param_spec_string (
+	    "update-obsoletes",
+	    NULL,
+	    "The update packages that are obsoleted",
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-vendor-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	obj_properties[PROP_UPDATE_VENDOR_URLS] =
-		g_param_spec_boxed ("update-vendor-urls", NULL,
-				    "The update vendor URLs",
-				    G_TYPE_STRV,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_VENDOR_URLS] = g_param_spec_boxed ("update-vendor-urls",
+								      NULL,
+								      "The update vendor URLs",
+								      G_TYPE_STRV,
+								      G_PARAM_READWRITE |
+									  G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-bugzilla-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	obj_properties[PROP_UPDATE_BUGZILLA_URLS] =
-		g_param_spec_boxed ("update-bugzilla-urls", NULL,
-				    "The update bugzilla URLs",
-				    G_TYPE_STRV,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_BUGZILLA_URLS] = g_param_spec_boxed ("update-bugzilla-urls",
+									NULL,
+									"The update bugzilla URLs",
+									G_TYPE_STRV,
+									G_PARAM_READWRITE |
+									    G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-cve-urls:
 	 *
 	 * Since: 0.8.1
 	 */
-	obj_properties[PROP_UPDATE_CVE_URLS] =
-		g_param_spec_boxed ("update-cve-urls", NULL,
-				    "The update CVE URLs",
-				    G_TYPE_STRV,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_CVE_URLS] = g_param_spec_boxed ("update-cve-urls",
+								   NULL,
+								   "The update CVE URLs",
+								   G_TYPE_STRV,
+								   G_PARAM_READWRITE |
+								       G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-restart:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_RESTART] =
-		g_param_spec_enum ("update-restart", NULL,
-				   "The update restart type",
-				   PK_TYPE_RESTART_ENUM, PK_RESTART_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_RESTART] = g_param_spec_enum ("update-restart",
+								 NULL,
+								 "The update restart type",
+								 PK_TYPE_RESTART_ENUM,
+								 PK_RESTART_ENUM_UNKNOWN,
+								 G_PARAM_READWRITE |
+								     G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-text:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_UPDATE_TEXT] =
-		g_param_spec_string ("update-text", NULL,
-				     "The update description",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_UPDATE_TEXT] = g_param_spec_string ("update-text",
+								       NULL,
+								       "The update description",
+								       NULL,
+								       G_PARAM_READWRITE |
+									   G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-changelog:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_CHANGELOG] =
-		g_param_spec_string ("update-changelog", NULL,
-				     "The update ChangeLog",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_CHANGELOG] = g_param_spec_string ("update-changelog",
+								     NULL,
+								     "The update ChangeLog",
+								     NULL,
+								     G_PARAM_READWRITE |
+									 G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-state:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_STATE] =
-		g_param_spec_enum ("update-state", NULL,
-				   "The update state",
-				   PK_TYPE_UPDATE_STATE_ENUM, PK_UPDATE_STATE_ENUM_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_STATE] = g_param_spec_enum ("update-state",
+							       NULL,
+							       "The update state",
+							       PK_TYPE_UPDATE_STATE_ENUM,
+							       PK_UPDATE_STATE_ENUM_UNKNOWN,
+							       G_PARAM_READWRITE |
+								   G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-issued:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_ISSUED] =
-		g_param_spec_string ("update-issued", NULL,
-				     "When the update was issued",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_ISSUED] = g_param_spec_string ("update-issued",
+								  NULL,
+								  "When the update was issued",
+								  NULL,
+								  G_PARAM_READWRITE |
+								      G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-updated:
 	 *
 	 * Since: 0.5.4
 	 */
-	obj_properties[PROP_UPDATE_UPDATED] =
-		g_param_spec_string ("update-updated", NULL,
-				     "When the update was last updated",
-				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_UPDATE_UPDATED] = g_param_spec_string (
+	    "update-updated",
+	    NULL,
+	    "When the update was last updated",
+	    NULL,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkPackage:update-severity:
@@ -862,11 +887,13 @@ pk_package_class_init (PkPackageClass *klass)
 	 *
 	 * Since: 1.2.4
 	 */
-	obj_properties[PROP_UPDATE_SEVERITY] =
-		g_param_spec_enum ("update-severity", NULL,
-				   "Package update severity",
-				    PK_TYPE_INFO_ENUM, PK_INFO_ENUM_UNKNOWN,
-				    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+	obj_properties[PROP_UPDATE_SEVERITY] = g_param_spec_enum (
+	    "update-severity",
+	    NULL,
+	    "Package update severity",
+	    PK_TYPE_INFO_ENUM,
+	    PK_INFO_ENUM_UNKNOWN,
+	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 
@@ -876,12 +903,15 @@ pk_package_class_init (PkPackageClass *klass)
 	 *
 	 * The ::changed signal is emitted when the package data may have changed.
 	 **/
-	signals [SIGNAL_CHANGED] =
-		g_signal_new ("changed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkPackageClass, changed),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
+	signals[SIGNAL_CHANGED] = g_signal_new ("changed",
+						G_TYPE_FROM_CLASS (object_class),
+						G_SIGNAL_RUN_LAST,
+						G_STRUCT_OFFSET (PkPackageClass, changed),
+						NULL,
+						NULL,
+						g_cclosure_marshal_VOID__VOID,
+						G_TYPE_NONE,
+						0);
 }
 
 /*
@@ -981,20 +1011,16 @@ pk_package_get_update_severity (PkPackage *package)
  * Since: 1.2.4
  **/
 void
-pk_package_set_update_severity (PkPackage *package,
-				PkInfoEnum update_severity)
+pk_package_set_update_severity (PkPackage *package, PkInfoEnum update_severity)
 {
 	PkPackagePrivate *priv = GET_PRIVATE(package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
-	g_return_if_fail (update_severity == PK_INFO_ENUM_UNKNOWN ||
-			  update_severity == PK_INFO_ENUM_LOW ||
-			  update_severity == PK_INFO_ENUM_ENHANCEMENT ||
-			  update_severity == PK_INFO_ENUM_NORMAL ||
-			  update_severity == PK_INFO_ENUM_BUGFIX ||
-			  update_severity == PK_INFO_ENUM_IMPORTANT ||
-			  update_severity == PK_INFO_ENUM_SECURITY ||
-			  update_severity == PK_INFO_ENUM_CRITICAL);
+	g_return_if_fail (
+	    update_severity == PK_INFO_ENUM_UNKNOWN || update_severity == PK_INFO_ENUM_LOW ||
+	    update_severity == PK_INFO_ENUM_ENHANCEMENT || update_severity == PK_INFO_ENUM_NORMAL ||
+	    update_severity == PK_INFO_ENUM_BUGFIX || update_severity == PK_INFO_ENUM_IMPORTANT ||
+	    update_severity == PK_INFO_ENUM_SECURITY || update_severity == PK_INFO_ENUM_CRITICAL);
 
 	if (priv->update_severity == update_severity)
 		return;

@@ -18,9 +18,10 @@ import sys
 import time
 import os
 
-sys.path.insert(0,os.path.join(os.getcwd(), 'python'))
+sys.path.insert(0, os.path.join(os.getcwd(), 'python'))
 
 from packagekit.backend import *
+
 
 class PackageKitYumBackend(PackageKitBaseBackend):
     def __init__(self, args, lock=True):
@@ -39,9 +40,11 @@ class PackageKitYumBackend(PackageKitBaseBackend):
         if key == ['power manager']:
             self.package("polkit;0.0.1;i386;data", INFO_AVAILABLE, "PolicyKit daemon")
 
+
 def main():
     backend = PackageKitYumBackend('', lock=True)
     backend.dispatcher(sys.argv[1:])
+
 
 if __name__ == "__main__":
     main()

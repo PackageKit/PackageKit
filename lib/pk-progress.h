@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -33,17 +33,18 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_PROGRESS		(pk_progress_get_type ())
-#define PK_PROGRESS(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_PROGRESS, PkProgress))
-#define PK_PROGRESS_CLASS(k)		(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_PROGRESS, PkProgressClass))
-#define PK_IS_PROGRESS(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_PROGRESS))
-#define PK_IS_PROGRESS_CLASS(k)		(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PROGRESS))
-#define PK_PROGRESS_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PROGRESS, PkProgressClass))
-#define PK_PROGRESS_TYPE_ERROR		(pk_progress_error_get_type ())
+#define PK_TYPE_PROGRESS	(pk_progress_get_type ())
+#define PK_PROGRESS(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_PROGRESS, PkProgress))
+#define PK_PROGRESS_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_PROGRESS, PkProgressClass))
+#define PK_IS_PROGRESS(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_PROGRESS))
+#define PK_IS_PROGRESS_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PROGRESS))
+#define PK_PROGRESS_GET_CLASS(o) \
+	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PROGRESS, PkProgressClass))
+#define PK_PROGRESS_TYPE_ERROR (pk_progress_error_get_type ())
 
-typedef struct _PkProgressPrivate	PkProgressPrivate;
-typedef struct _PkProgress		PkProgress;
-typedef struct _PkProgressClass		PkProgressClass;
+typedef struct _PkProgressPrivate PkProgressPrivate;
+typedef struct _PkProgress	  PkProgress;
+typedef struct _PkProgressClass	  PkProgressClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkProgress, g_object_unref)
@@ -51,13 +52,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkProgress, g_object_unref)
 
 struct _PkProgress
 {
-	 GObject		 parent;
-	 PkProgressPrivate	*priv;
+	GObject		   parent;
+	PkProgressPrivate *priv;
 };
 
 struct _PkProgressClass
 {
-	GObjectClass	parent_class;
+	GObjectClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -66,8 +67,8 @@ struct _PkProgressClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_progress_get_type		  	(void);
-PkProgress	*pk_progress_new			(void);
+GType	    pk_progress_get_type (void);
+PkProgress *pk_progress_new (void);
 
 /**
  * PkProgressType:
@@ -119,58 +120,58 @@ typedef enum {
  *
  * Function that is called when progress updates are given.
  */
-typedef void	(*PkProgressCallback)			(PkProgress		*progress,
-							 PkProgressType		 type,
-                                                         gpointer		 user_data);
+typedef void (*PkProgressCallback) (PkProgress	  *progress,
+				    PkProgressType type,
+				    gpointer	   user_data);
 
-gboolean	 pk_progress_set_package_id		(PkProgress		*progress,
-							 const gchar		*package_id);
-const gchar	*pk_progress_get_package_id		(PkProgress		*progress);
-gboolean	 pk_progress_set_item_progress		(PkProgress		*progress,
-							 PkItemProgress		*item_progress);
-PkItemProgress	*pk_progress_get_item_progress		(PkProgress		*progress);
-gboolean	 pk_progress_set_transaction_id		(PkProgress		*progress,
-							 const gchar		*transaction_id);
-const gchar	*pk_progress_get_transaction_id		(PkProgress		*progress);
-gboolean	 pk_progress_set_percentage		(PkProgress		*progress,
-							 gint			 percentage);
-gint		 pk_progress_get_percentage		(PkProgress		*progress);
-gboolean	 pk_progress_set_status			(PkProgress		*progress,
-							 PkStatusEnum		 status);
-PkStatusEnum	 pk_progress_get_status			(PkProgress		*progress);
-gboolean	 pk_progress_set_role			(PkProgress		*progress,
-							 PkRoleEnum		 role);
-PkRoleEnum	 pk_progress_get_role			(PkProgress		*progress);
-gboolean	 pk_progress_set_allow_cancel		(PkProgress		*progress,
-							 gboolean		 allow_cancel);
-gboolean	 pk_progress_get_allow_cancel		(PkProgress		*progress);
-gboolean	 pk_progress_set_caller_active		(PkProgress		*progress,
-							 gboolean		 caller_active);
-gboolean	 pk_progress_get_caller_active		(PkProgress		*progress);
-gboolean	 pk_progress_set_elapsed_time		(PkProgress		*progress,
-							 guint			 elapsed_time);
-guint		 pk_progress_get_elapsed_time		(PkProgress		*progress);
-gboolean	 pk_progress_set_remaining_time		(PkProgress		*progress,
-							 guint			 remaining_time);
-guint		 pk_progress_get_remaining_time		(PkProgress		*progress);
-gboolean	 pk_progress_set_speed			(PkProgress		*progress,
-							 guint			 speed);
-guint		 pk_progress_get_speed			(PkProgress		*progress);
-gboolean	 pk_progress_set_download_size_remaining(PkProgress		*progress,
-							 guint64		 download_size_remaining);
-guint64	 pk_progress_get_download_size_remaining(PkProgress		*progress);
-gboolean	 pk_progress_set_transaction_flags	(PkProgress		*progress,
-							 guint64		 transaction_flags);
-guint64	 pk_progress_get_transaction_flags	(PkProgress		*progress);
-gboolean	 pk_progress_set_uid			(PkProgress		*progress,
-							 guint			 uid);
-guint		 pk_progress_get_uid			(PkProgress		*progress);
-gboolean	 pk_progress_set_sender			(PkProgress		*progress,
-							 const gchar		*bus_name);
-gchar		*pk_progress_get_sender			(PkProgress		*progress);
-gboolean	 pk_progress_set_package		(PkProgress		*progress,
-							 PkPackage		*package);
-PkPackage	*pk_progress_get_package		(PkProgress		*progress);
+gboolean	pk_progress_set_package_id (PkProgress	*progress,
+					    const gchar *package_id);
+const gchar    *pk_progress_get_package_id (PkProgress *progress);
+gboolean	pk_progress_set_item_progress (PkProgress     *progress,
+					       PkItemProgress *item_progress);
+PkItemProgress *pk_progress_get_item_progress (PkProgress *progress);
+gboolean	pk_progress_set_transaction_id (PkProgress  *progress,
+						const gchar *transaction_id);
+const gchar    *pk_progress_get_transaction_id (PkProgress *progress);
+gboolean	pk_progress_set_percentage (PkProgress *progress,
+					    gint	percentage);
+gint		pk_progress_get_percentage (PkProgress *progress);
+gboolean	pk_progress_set_status (PkProgress  *progress,
+					PkStatusEnum status);
+PkStatusEnum	pk_progress_get_status (PkProgress *progress);
+gboolean	pk_progress_set_role (PkProgress *progress,
+				      PkRoleEnum  role);
+PkRoleEnum	pk_progress_get_role (PkProgress *progress);
+gboolean	pk_progress_set_allow_cancel (PkProgress *progress,
+					      gboolean	  allow_cancel);
+gboolean	pk_progress_get_allow_cancel (PkProgress *progress);
+gboolean	pk_progress_set_caller_active (PkProgress *progress,
+					       gboolean	   caller_active);
+gboolean	pk_progress_get_caller_active (PkProgress *progress);
+gboolean	pk_progress_set_elapsed_time (PkProgress *progress,
+					      guint	  elapsed_time);
+guint		pk_progress_get_elapsed_time (PkProgress *progress);
+gboolean	pk_progress_set_remaining_time (PkProgress *progress,
+						guint	    remaining_time);
+guint		pk_progress_get_remaining_time (PkProgress *progress);
+gboolean	pk_progress_set_speed (PkProgress *progress,
+				       guint	   speed);
+guint		pk_progress_get_speed (PkProgress *progress);
+gboolean	pk_progress_set_download_size_remaining (PkProgress *progress,
+							 guint64     download_size_remaining);
+guint64		pk_progress_get_download_size_remaining (PkProgress *progress);
+gboolean	pk_progress_set_transaction_flags (PkProgress *progress,
+						   guint64     transaction_flags);
+guint64		pk_progress_get_transaction_flags (PkProgress *progress);
+gboolean	pk_progress_set_uid (PkProgress *progress,
+				     guint	 uid);
+guint		pk_progress_get_uid (PkProgress *progress);
+gboolean	pk_progress_set_sender (PkProgress  *progress,
+					const gchar *bus_name);
+gchar	       *pk_progress_get_sender (PkProgress *progress);
+gboolean	pk_progress_set_package (PkProgress *progress,
+					 PkPackage  *package);
+PkPackage      *pk_progress_get_package (PkProgress *progress);
 
 G_END_DECLS
 

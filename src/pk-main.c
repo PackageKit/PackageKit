@@ -40,11 +40,12 @@
 #include "pk-shared.h"
 #include "pk-transaction.h"
 
-typedef struct {
-	GMainLoop	*loop;
-	PkEngine	*engine;
-	guint		 exit_idle_time;
-	guint		 timer_id;
+typedef struct
+{
+	GMainLoop *loop;
+	PkEngine *engine;
+	guint exit_idle_time;
+	guint timer_id;
 } PkMainHelper;
 
 /**
@@ -111,9 +112,9 @@ main (int argc, char *argv[])
 	g_autoptr(GKeyFile) conf = NULL;
 	g_autoptr(PkEngine) engine = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
@@ -135,7 +136,7 @@ main (int argc, char *argv[])
 		  _("Don't clear environment on startup"), NULL },
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -178,11 +179,11 @@ main (int argc, char *argv[])
 		g_printerr ("%s\n", _("Config file was not found."));
 		goto out;
 	}
-	ret = g_key_file_load_from_file (conf, conf_filename,
-					 G_KEY_FILE_NONE, &error);
+	ret = g_key_file_load_from_file (conf, conf_filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		/* TRANSLATORS: The placeholder is an error message */
-		g_autofree gchar *message = g_strdup_printf (_("Failed to load config file: %s"), error->message);
+		g_autofree gchar *message = g_strdup_printf (_("Failed to load config file: %s"),
+							       error->message);
 		g_printerr ("%s\n", message);
 		goto out;
 	}
@@ -209,20 +210,18 @@ main (int argc, char *argv[])
 
 	/* override the backend name */
 	if (backend_name != NULL) {
-		g_key_file_set_string (conf,
-				       "Daemon",
-				       "DefaultBackend",
-				       backend_name);
+		g_key_file_set_string (conf, "Daemon", "DefaultBackend", backend_name);
 	}
 
 	/* resolve 'auto' to an actual name */
 	backend_name = g_key_file_get_string (conf, "Daemon", "DefaultBackend", NULL);
 	if (backend_name == NULL || g_strcmp0 (backend_name, "auto") == 0) {
-		ret  = pk_util_set_auto_backend (conf, &error);
+		ret = pk_util_set_auto_backend (conf, &error);
 		if (!ret) {
 			/* TRANSLATORS: The placeholder is an error message.
 			 * `auto` is a potential value of the DefaultBackend= configuration key. */
-			g_autofree gchar *message = g_strdup_printf (_("Failed to resolve auto: %s"), error->message);
+			g_autofree gchar *message = g_strdup_printf (
+			    _("Failed to resolve auto: %s"), error->message);
 			g_printerr ("%s\n", message);
 			goto out;
 		}
@@ -232,21 +231,17 @@ main (int argc, char *argv[])
 
 	/* create a new engine object */
 	engine = pk_engine_new (conf);
-	g_signal_connect (engine, "quit",
-			  G_CALLBACK (pk_main_quit_cb), loop);
+	g_signal_connect (engine, "quit", G_CALLBACK (pk_main_quit_cb), loop);
 
 	/* do stuff on ctrl-c */
-	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
-				SIGINT,
-				pk_main_sigint_cb,
-				loop,
-				NULL);
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT, SIGINT, pk_main_sigint_cb, loop, NULL);
 
 	/* load the backend */
 	ret = pk_engine_load_backend (engine, &error);
 	if (!ret) {
 		/* TRANSLATORS: cannot load the backend the user specified */
-		g_autofree gchar *message = g_strdup_printf (_("Failed to load the backend: %s"), error->message);
+		g_autofree gchar *message = g_strdup_printf (_("Failed to load the backend: %s"),
+							       error->message);
 		g_printerr ("%s\n", message);
 		goto out;
 	}
@@ -261,7 +256,9 @@ main (int argc, char *argv[])
 		helper.engine = engine;
 		helper.exit_idle_time = exit_idle_time;
 		helper.loop = loop;
-		helper.timer_id = g_timeout_add_seconds (5, (GSourceFunc) pk_main_timeout_check_cb, &helper);
+		helper.timer_id = g_timeout_add_seconds (5,
+							 (GSourceFunc) pk_main_timeout_check_cb,
+							 &helper);
 		g_source_set_name_by_id (helper.timer_id, "[PkMain] main poll");
 	} else {
 		helper.timer_id = 0;

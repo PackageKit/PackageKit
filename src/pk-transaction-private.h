@@ -28,27 +28,26 @@
 G_BEGIN_DECLS
 
 /* only here for the self test program to use */
-void	pk_transaction_get_updates	(PkTransaction	*transaction,
-					 GVariant	*params,
-					 GDBusMethodInvocation *context);
-void	pk_transaction_search_details	(PkTransaction	*transaction,
-					 GVariant	*params,
-					 GDBusMethodInvocation *context);
-void	pk_transaction_search_names	(PkTransaction	*transaction,
-					 GVariant	*params,
-					 GDBusMethodInvocation *context);
-void	pk_transaction_install_packages (PkTransaction *transaction,
-					 GVariant *params,
-					 GDBusMethodInvocation *context);
-gboolean	 pk_transaction_set_sender			(PkTransaction	*transaction,
-								 const gchar	*sender);
-gboolean	 pk_transaction_filter_check			(const gchar	*filter,
-								 GError		**error);
-gboolean	 pk_transaction_strvalidate			(const gchar	*textr,
-								 GError		**error);
-gboolean	 pk_transaction_set_tid				(PkTransaction	*transaction,
-								 const gchar	*tid);
-
+void	 pk_transaction_get_updates (PkTransaction	   *transaction,
+				     GVariant		   *params,
+				     GDBusMethodInvocation *context);
+void	 pk_transaction_search_details (PkTransaction	      *transaction,
+					GVariant	      *params,
+					GDBusMethodInvocation *context);
+void	 pk_transaction_search_names (PkTransaction	    *transaction,
+				      GVariant		    *params,
+				      GDBusMethodInvocation *context);
+void	 pk_transaction_install_packages (PkTransaction		*transaction,
+					  GVariant		*params,
+					  GDBusMethodInvocation *context);
+gboolean pk_transaction_set_sender (PkTransaction *transaction,
+				    const gchar	  *sender);
+gboolean pk_transaction_filter_check (const gchar *filter,
+				      GError	 **error);
+gboolean pk_transaction_strvalidate (const gchar *textr,
+				     GError	**error);
+gboolean pk_transaction_set_tid (PkTransaction *transaction,
+				 const gchar   *tid);
 
 G_END_DECLS
 

@@ -34,9 +34,9 @@
 #include "pk-enum.h"
 #include "pk-results.h"
 
-static void     pk_task_finalize	(GObject     *object);
+static void pk_task_finalize (GObject *object);
 
-#define PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT	2000 /* ms */
+#define PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT 2000 /* ms */
 
 /**
  * PkTaskPrivate:
@@ -45,12 +45,12 @@ static void     pk_task_finalize	(GObject     *object);
  **/
 struct _PkTaskPrivate
 {
-	GHashTable			*gtasks; /* uint, GTask* */
-	gboolean			 simulate;
-	gboolean			 only_download;
-	gboolean			 only_trusted;
-	gboolean			 allow_reinstall;
-	gboolean			 allow_downgrade;
+	GHashTable *gtasks; /* uint, GTask* */
+	gboolean simulate;
+	gboolean only_download;
+	gboolean only_trusted;
+	gboolean allow_reinstall;
+	gboolean allow_downgrade;
 };
 
 enum {
@@ -63,41 +63,44 @@ enum {
 	PROP_LAST
 };
 
-static GParamSpec *obj_properties[PROP_LAST] = { NULL, };
+static GParamSpec *obj_properties[PROP_LAST] = {
+	NULL,
+};
 
 /**
  * PkTaskState:
  *
  * For use in the async methods
  **/
-typedef struct {
-	guint				 request;
-	PkRoleEnum			 role;
-	PkExitEnum			 exit_enum;
-	gboolean			 simulate;
-	gboolean			 only_download;
-	gboolean			 allow_reinstall;
-	gboolean			 allow_downgrade;
-	gboolean			 transaction_flags;
-	gchar				**package_ids;
-	gboolean			 allow_deps;
-	gboolean			 autoremove;
-	gchar				**files;
-	PkResults			*results;
-	PkProgressCallback		 progress_callback;
-	gpointer			 progress_user_data;
-	gboolean			 enabled;
-	gboolean			 force;
-	gboolean			 recursive;
-	gchar				*directory;
-	gchar				*distro_id;
-	gchar				**packages;
-	gchar				*repo_id;
-	gchar				*transaction_id;
-	gchar				**values;
-	PkBitfield			 filters;
-	PkUpgradeKindEnum		 upgrade_kind;
-	guint				 retry_id;
+typedef struct
+{
+	guint request;
+	PkRoleEnum role;
+	PkExitEnum exit_enum;
+	gboolean simulate;
+	gboolean only_download;
+	gboolean allow_reinstall;
+	gboolean allow_downgrade;
+	gboolean transaction_flags;
+	gchar **package_ids;
+	gboolean allow_deps;
+	gboolean autoremove;
+	gchar **files;
+	PkResults *results;
+	PkProgressCallback progress_callback;
+	gpointer progress_user_data;
+	gboolean enabled;
+	gboolean force;
+	gboolean recursive;
+	gchar *directory;
+	gchar *distro_id;
+	gchar **packages;
+	gchar *repo_id;
+	gchar *transaction_id;
+	gchar **values;
+	PkBitfield filters;
+	PkUpgradeKindEnum upgrade_kind;
+	guint retry_id;
 } PkTaskState;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkTask, pk_task, PK_TYPE_CLIENT)
@@ -168,29 +171,36 @@ pk_task_do_async_action (GTask *gtask)
 	/* only prepare the transaction */
 	transaction_flags = state->transaction_flags;
 	if (priv->only_download) {
-		pk_bitfield_add (transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
+		pk_bitfield_add (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD);
 	}
 	if (priv->allow_reinstall) {
-		pk_bitfield_add (transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
+		pk_bitfield_add (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
 	}
 	if (priv->allow_downgrade) {
-		pk_bitfield_add (transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
+		pk_bitfield_add (transaction_flags, PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
 	}
 
 	/* do the correct action */
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
-		pk_client_install_packages_async (PK_CLIENT(task), transaction_flags, state->package_ids,
-						  cancellable, state->progress_callback, state->progress_user_data,
-						  pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_install_packages_async (PK_CLIENT (task),
+						  transaction_flags,
+						  state->package_ids,
+						  cancellable,
+						  state->progress_callback,
+						  state->progress_user_data,
+						  pk_task_ready_cb,
+						  g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		pk_client_update_packages_async (PK_CLIENT(task), transaction_flags, state->package_ids,
-						 cancellable, state->progress_callback, state->progress_user_data,
-						 pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_update_packages_async (PK_CLIENT (task),
+						 transaction_flags,
+						 state->package_ids,
+						 cancellable,
+						 state->progress_callback,
+						 state->progress_user_data,
+						 pk_task_ready_cb,
+						 g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
-		pk_client_remove_packages_async (PK_CLIENT(task),
+		pk_client_remove_packages_async (PK_CLIENT (task),
 						 transaction_flags,
 						 state->package_ids,
 						 state->allow_deps,
@@ -198,91 +208,190 @@ pk_task_do_async_action (GTask *gtask)
 						 cancellable,
 						 state->progress_callback,
 						 state->progress_user_data,
-						 pk_task_ready_cb, g_steal_pointer (&gtask));
+						 pk_task_ready_cb,
+						 g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
-		pk_client_install_files_async (PK_CLIENT(task), transaction_flags, state->files,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_install_files_async (PK_CLIENT (task),
+					       transaction_flags,
+					       state->files,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_RESOLVE) {
-		pk_client_resolve_async (PK_CLIENT(task), state->filters, state->packages,
-					 cancellable, state->progress_callback, state->progress_user_data,
-					 pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_resolve_async (PK_CLIENT (task),
+					 state->filters,
+					 state->packages,
+					 cancellable,
+					 state->progress_callback,
+					 state->progress_user_data,
+					 pk_task_ready_cb,
+					 g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_NAME) {
-		pk_client_search_names_async (PK_CLIENT(task), state->filters, state->values,
-					      cancellable, state->progress_callback, state->progress_user_data,
-					      pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_search_names_async (PK_CLIENT (task),
+					      state->filters,
+					      state->values,
+					      cancellable,
+					      state->progress_callback,
+					      state->progress_user_data,
+					      pk_task_ready_cb,
+					      g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_DETAILS) {
-		pk_client_search_details_async (PK_CLIENT(task), state->filters, state->values,
-						cancellable, state->progress_callback, state->progress_user_data,
-						pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_search_details_async (PK_CLIENT (task),
+						state->filters,
+						state->values,
+						cancellable,
+						state->progress_callback,
+						state->progress_user_data,
+						pk_task_ready_cb,
+						g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_GROUP) {
-		pk_client_search_groups_async (PK_CLIENT(task), state->filters, state->values,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_search_groups_async (PK_CLIENT (task),
+					       state->filters,
+					       state->values,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_SEARCH_FILE) {
-		pk_client_search_files_async (PK_CLIENT(task), state->filters, state->values,
-					      cancellable, state->progress_callback, state->progress_user_data,
-					      pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_search_files_async (PK_CLIENT (task),
+					      state->filters,
+					      state->values,
+					      cancellable,
+					      state->progress_callback,
+					      state->progress_user_data,
+					      pk_task_ready_cb,
+					      g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_DETAILS) {
-		pk_client_get_details_async (PK_CLIENT(task), state->package_ids,
-					     cancellable, state->progress_callback, state->progress_user_data,
-					     pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_details_async (PK_CLIENT (task),
+					     state->package_ids,
+					     cancellable,
+					     state->progress_callback,
+					     state->progress_user_data,
+					     pk_task_ready_cb,
+					     g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATE_DETAIL) {
-		pk_client_get_update_detail_async (PK_CLIENT(task), state->package_ids,
-						   cancellable, state->progress_callback, state->progress_user_data,
-						   pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_update_detail_async (PK_CLIENT (task),
+						   state->package_ids,
+						   cancellable,
+						   state->progress_callback,
+						   state->progress_user_data,
+						   pk_task_ready_cb,
+						   g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_DOWNLOAD_PACKAGES) {
-		pk_client_download_packages_async (PK_CLIENT(task), state->package_ids, state->directory,
-						   cancellable, state->progress_callback, state->progress_user_data,
-						   pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_download_packages_async (PK_CLIENT (task),
+						   state->package_ids,
+						   state->directory,
+						   cancellable,
+						   state->progress_callback,
+						   state->progress_user_data,
+						   pk_task_ready_cb,
+						   g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_UPDATES) {
-		pk_client_get_updates_async (PK_CLIENT(task), state->filters,
-					     cancellable, state->progress_callback, state->progress_user_data,
-					     pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_updates_async (PK_CLIENT (task),
+					     state->filters,
+					     cancellable,
+					     state->progress_callback,
+					     state->progress_user_data,
+					     pk_task_ready_cb,
+					     g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_DEPENDS_ON) {
-		pk_client_depends_on_async (PK_CLIENT(task), state->filters, state->package_ids, state->recursive,
-					     cancellable, state->progress_callback, state->progress_user_data,
-					     pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_depends_on_async (PK_CLIENT (task),
+					    state->filters,
+					    state->package_ids,
+					    state->recursive,
+					    cancellable,
+					    state->progress_callback,
+					    state->progress_user_data,
+					    pk_task_ready_cb,
+					    g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_PACKAGES) {
-		pk_client_get_packages_async (PK_CLIENT(task), state->filters,
-					      cancellable, state->progress_callback, state->progress_user_data,
-					      pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_packages_async (PK_CLIENT (task),
+					      state->filters,
+					      cancellable,
+					      state->progress_callback,
+					      state->progress_user_data,
+					      pk_task_ready_cb,
+					      g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REQUIRED_BY) {
-		pk_client_required_by_async (PK_CLIENT(task), state->filters, state->package_ids, state->recursive,
-					      cancellable, state->progress_callback, state->progress_user_data,
-					      pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_required_by_async (PK_CLIENT (task),
+					     state->filters,
+					     state->package_ids,
+					     state->recursive,
+					     cancellable,
+					     state->progress_callback,
+					     state->progress_user_data,
+					     pk_task_ready_cb,
+					     g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_WHAT_PROVIDES) {
-		pk_client_what_provides_async (PK_CLIENT(task), state->filters, state->values,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_what_provides_async (PK_CLIENT (task),
+					       state->filters,
+					       state->values,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_FILES) {
-		pk_client_get_files_async (PK_CLIENT(task), state->package_ids,
-					   cancellable, state->progress_callback, state->progress_user_data,
-					   pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_files_async (PK_CLIENT (task),
+					   state->package_ids,
+					   cancellable,
+					   state->progress_callback,
+					   state->progress_user_data,
+					   pk_task_ready_cb,
+					   g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
-		pk_client_get_categories_async (PK_CLIENT(task),
-						cancellable, state->progress_callback, state->progress_user_data,
-						pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_categories_async (PK_CLIENT (task),
+						cancellable,
+						state->progress_callback,
+						state->progress_user_data,
+						pk_task_ready_cb,
+						g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
-		pk_client_refresh_cache_async (PK_CLIENT(task), state->force,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_refresh_cache_async (PK_CLIENT (task),
+					       state->force,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_GET_REPO_LIST) {
-		pk_client_get_repo_list_async (PK_CLIENT(task), state->filters,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_get_repo_list_async (PK_CLIENT (task),
+					       state->filters,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REPO_ENABLE) {
-		pk_client_repo_enable_async (PK_CLIENT(task), state->repo_id, state->enabled,
-					     cancellable, state->progress_callback, state->progress_user_data,
-					     pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_repo_enable_async (PK_CLIENT (task),
+					     state->repo_id,
+					     state->enabled,
+					     cancellable,
+					     state->progress_callback,
+					     state->progress_user_data,
+					     pk_task_ready_cb,
+					     g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
-		pk_client_upgrade_system_async (PK_CLIENT(task), transaction_flags, state->distro_id, state->upgrade_kind,
-						cancellable, state->progress_callback, state->progress_user_data,
-						pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_upgrade_system_async (PK_CLIENT (task),
+						transaction_flags,
+						state->distro_id,
+						state->upgrade_kind,
+						cancellable,
+						state->progress_callback,
+						state->progress_user_data,
+						pk_task_ready_cb,
+						g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
-		pk_client_repair_system_async (PK_CLIENT(task), transaction_flags,
-					       cancellable, state->progress_callback, state->progress_user_data,
-					       pk_task_ready_cb, g_steal_pointer (&gtask));
+		pk_client_repair_system_async (PK_CLIENT (task),
+					       transaction_flags,
+					       cancellable,
+					       state->progress_callback,
+					       state->progress_user_data,
+					       pk_task_ready_cb,
+					       g_steal_pointer (&gtask));
 	} else {
 		g_assert_not_reached ();
 	}
@@ -296,8 +405,7 @@ pk_task_package_filter_cb (PkPackage *package, gpointer user_data)
 {
 	PkInfoEnum info;
 	info = pk_package_get_info (package);
-	if (info == PK_INFO_ENUM_CLEANUP ||
-	    info == PK_INFO_ENUM_UNTRUSTED ||
+	if (info == PK_INFO_ENUM_CLEANUP || info == PK_INFO_ENUM_UNTRUSTED ||
 	    info == PK_INFO_ENUM_FINISHED)
 		return FALSE;
 	if (g_strcmp0 (pk_package_get_data (package), "local") == 0)
@@ -324,7 +432,7 @@ pk_task_simulate_ready_cb (GObject *source_object, GAsyncResult *res, gpointer u
 	g_clear_object (&state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(source_object), res, &error);
+	state->results = pk_client_generic_finish (PK_CLIENT (source_object), res, &error);
 	if (state->results == NULL) {
 
 		/* handle case where this is not implemented */
@@ -404,7 +512,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	if (state->role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
 		/* simulate install async */
 		g_debug ("doing install");
-		pk_client_install_packages_async (PK_CLIENT(task),
+		pk_client_install_packages_async (PK_CLIENT (task),
 						  transaction_flags,
 						  state->package_ids,
 						  cancellable,
@@ -415,7 +523,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
 		/* simulate update async */
 		g_debug ("doing update");
-		pk_client_update_packages_async (PK_CLIENT(task),
+		pk_client_update_packages_async (PK_CLIENT (task),
 						 transaction_flags,
 						 state->package_ids,
 						 cancellable,
@@ -426,7 +534,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		/* simulate remove async */
 		g_debug ("doing remove");
-		pk_client_remove_packages_async (PK_CLIENT(task),
+		pk_client_remove_packages_async (PK_CLIENT (task),
 						 transaction_flags,
 						 state->package_ids,
 						 state->allow_deps,
@@ -439,7 +547,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_INSTALL_FILES) {
 		/* simulate install async */
 		g_debug ("doing install files");
-		pk_client_install_files_async (PK_CLIENT(task),
+		pk_client_install_files_async (PK_CLIENT (task),
 					       transaction_flags,
 					       state->files,
 					       cancellable,
@@ -450,7 +558,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
 		/* simulate upgrade system async */
 		g_debug ("doing upgrade system");
-		pk_client_upgrade_system_async (PK_CLIENT(task),
+		pk_client_upgrade_system_async (PK_CLIENT (task),
 						transaction_flags,
 						state->distro_id,
 						state->upgrade_kind,
@@ -462,7 +570,7 @@ pk_task_do_async_simulate_action (GTask *gtask)
 	} else if (state->role == PK_ROLE_ENUM_REPAIR_SYSTEM) {
 		/* simulate repair system async */
 		g_debug ("doing repair system");
-		pk_client_repair_system_async (PK_CLIENT(task),
+		pk_client_repair_system_async (PK_CLIENT (task),
 					       transaction_flags,
 					       cancellable,
 					       state->progress_callback,
@@ -489,7 +597,7 @@ pk_task_install_signatures_ready_cb (GObject *source_object, GAsyncResult *res, 
 	g_clear_object (&state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	state->results = pk_client_generic_finish (PK_CLIENT (task), res, &error);
 	if (state->results == NULL) {
 		g_task_return_error (gtask, g_steal_pointer (&error));
 		return;
@@ -554,17 +662,19 @@ pk_task_install_signatures (GTask *given_gtask)
 
 	/* get first item of data */
 	item = g_ptr_array_index (array, 0);
-	g_object_get (item,
-		      "type", &type,
-		      "key-id", &key_id,
-		      "package-id", &package_id,
-		      NULL);
+	g_object_get (item, "type", &type, "key-id", &key_id, "package-id", &package_id, NULL);
 
 	/* do new async method */
 	cancellable = g_task_get_cancellable (gtask);
-	pk_client_install_signature_async (PK_CLIENT(task), type, key_id, package_id,
-					   cancellable, state->progress_callback, state->progress_user_data,
-					   pk_task_install_signatures_ready_cb, g_object_ref (gtask));
+	pk_client_install_signature_async (PK_CLIENT (task),
+					   type,
+					   key_id,
+					   package_id,
+					   cancellable,
+					   state->progress_callback,
+					   state->progress_user_data,
+					   pk_task_install_signatures_ready_cb,
+					   g_object_ref (gtask));
 }
 
 /*
@@ -582,7 +692,7 @@ pk_task_accept_eulas_ready_cb (GObject *source_object, GAsyncResult *res, gpoint
 	g_clear_object (&state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	state->results = pk_client_generic_finish (PK_CLIENT (task), res, &error);
 	if (state->results == NULL) {
 		g_task_return_error (gtask, g_steal_pointer (&error));
 		return;
@@ -649,9 +759,13 @@ pk_task_accept_eulas (GTask *given_gtask)
 
 	/* do new async method */
 	cancellable = g_task_get_cancellable (gtask);
-	pk_client_accept_eula_async (PK_CLIENT(task), eula_id,
-				     cancellable, state->progress_callback, state->progress_user_data,
-				     pk_task_accept_eulas_ready_cb, g_object_ref (gtask));
+	pk_client_accept_eula_async (PK_CLIENT (task),
+				     eula_id,
+				     cancellable,
+				     state->progress_callback,
+				     state->progress_user_data,
+				     pk_task_accept_eulas_ready_cb,
+				     g_object_ref (gtask));
 }
 
 /*
@@ -669,7 +783,7 @@ pk_task_repair_ready_cb (GObject *source_object, GAsyncResult *res, gpointer use
 	g_clear_object (&state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	state->results = pk_client_generic_finish (PK_CLIENT (task), res, &error);
 	if (state->results == NULL) {
 		g_task_return_error (gtask, g_steal_pointer (&error));
 		return;
@@ -723,12 +837,13 @@ pk_task_user_accepted_idle_cb (gpointer user_data)
 		GCancellable *cancellable = g_task_get_cancellable (gtask);
 		PkTask *task = g_task_get_source_object (gtask);
 		g_debug ("need to do repair");
-		pk_client_repair_system_async (PK_CLIENT(task),
+		pk_client_repair_system_async (PK_CLIENT (task),
 					       pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_NONE),
 					       cancellable,
 					       state->progress_callback,
 					       state->progress_user_data,
-					       (GAsyncReadyCallback) pk_task_repair_ready_cb, g_object_ref (gtask));
+					       (GAsyncReadyCallback) pk_task_repair_ready_cb,
+					       g_object_ref (gtask));
 		return FALSE;
 	}
 
@@ -763,7 +878,10 @@ pk_task_user_accepted (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_accepted_idle_cb), g_object_ref (gtask), g_object_unref);
+	g_source_set_callback (idle_source,
+			       G_SOURCE_FUNC (pk_task_user_accepted_idle_cb),
+			       g_object_ref (gtask),
+			       g_object_unref);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
@@ -783,7 +901,8 @@ pk_task_user_declined_idle_cb (gpointer user_data)
 	/* the introduction is finished */
 	if (state->simulate) {
 		g_task_return_new_error (gtask,
-					 PK_CLIENT_ERROR, PK_CLIENT_ERROR_DECLINED_SIMULATION,
+					 PK_CLIENT_ERROR,
+					 PK_CLIENT_ERROR_DECLINED_SIMULATION,
 					 "user declined simulation");
 		return FALSE;
 	}
@@ -791,7 +910,8 @@ pk_task_user_declined_idle_cb (gpointer user_data)
 	/* doing task */
 	g_debug ("declined request %i", state->request);
 	g_task_return_new_error (gtask,
-				 PK_CLIENT_ERROR, PK_CLIENT_ERROR_DECLINED_INTERACTION,
+				 PK_CLIENT_ERROR,
+				 PK_CLIENT_ERROR_DECLINED_INTERACTION,
 				 "user declined interaction");
 	return FALSE;
 }
@@ -821,7 +941,10 @@ pk_task_user_declined (PkTask *task, guint request)
 	}
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, G_SOURCE_FUNC (pk_task_user_declined_idle_cb), g_object_ref (gtask), g_object_unref);
+	g_source_set_callback (idle_source,
+			       G_SOURCE_FUNC (pk_task_user_declined_idle_cb),
+			       g_object_ref (gtask),
+			       g_object_unref);
 	g_source_set_name (idle_source, "[PkTask] user-accept");
 	g_source_attach (idle_source, g_main_context_get_thread_default ());
 	return TRUE;
@@ -858,7 +981,7 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 	g_clear_object (&state->results);
 
 	/* get the results */
-	state->results = pk_client_generic_finish (PK_CLIENT(task), res, &error);
+	state->results = pk_client_generic_finish (PK_CLIENT (task), res, &error);
 	if (state->results == NULL) {
 		g_task_return_error (gtask, g_steal_pointer (&error));
 		return;
@@ -884,10 +1007,11 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 
 		/* no support */
 		if (klass->untrusted_question == NULL) {
-			g_task_return_new_error (gtask,
-						 PK_CLIENT_ERROR,
-						 PK_CLIENT_ERROR_NOT_SUPPORTED,
-						 "could not do untrusted question as no klass support");
+			g_task_return_new_error (
+			    gtask,
+			    PK_CLIENT_ERROR,
+			    PK_CLIENT_ERROR_NOT_SUPPORTED,
+			    "could not do untrusted question as no klass support");
 			return;
 		}
 
@@ -932,10 +1056,11 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 
 		/* no support */
 		if (klass->repair_question == NULL) {
-			g_task_return_new_error (gtask,
-						 PK_CLIENT_ERROR,
-						 PK_CLIENT_ERROR_NOT_SUPPORTED,
-						 "could not do repair question as no klass support");
+			g_task_return_new_error (
+			    gtask,
+			    PK_CLIENT_ERROR,
+			    PK_CLIENT_ERROR_NOT_SUPPORTED,
+			    "could not do repair question as no klass support");
 			return;
 		}
 
@@ -975,16 +1100,19 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 		if (!interactive) {
 			g_debug ("working non-interactive, so calling accept");
 			pk_task_user_accepted (task, state->request);
-			g_task_return_pointer (gtask, g_steal_pointer (&state->results), g_object_unref);
+			g_task_return_pointer (gtask,
+					       g_steal_pointer (&state->results),
+					       g_object_unref);
 			return;
 		}
 
 		/* no support */
 		if (klass->media_change_question == NULL) {
-			g_task_return_new_error (gtask,
-						 PK_CLIENT_ERROR,
-						 PK_CLIENT_ERROR_NOT_SUPPORTED,
-						 "could not do media change question as no klass support");
+			g_task_return_new_error (
+			    gtask,
+			    PK_CLIENT_ERROR,
+			    PK_CLIENT_ERROR_NOT_SUPPORTED,
+			    "could not do media change question as no klass support");
 			return;
 		}
 
@@ -1020,9 +1148,13 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
  * Since: 0.5.2
  **/
 void
-pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
-				PkProgressCallback progress_callback, gpointer progress_user_data,
-				GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_install_packages_async (PkTask *task,
+				gchar **package_ids,
+				GCancellable *cancellable,
+				PkProgressCallback progress_callback,
+				gpointer progress_user_data,
+				GAsyncReadyCallback callback_ready,
+				gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1079,9 +1211,13 @@ pk_task_install_packages_async (PkTask *task, gchar **package_ids, GCancellable 
  * Since: 0.5.2
  **/
 void
-pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
-			       PkProgressCallback progress_callback, gpointer progress_user_data,
-			       GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_update_packages_async (PkTask *task,
+			       gchar **package_ids,
+			       GCancellable *cancellable,
+			       PkProgressCallback progress_callback,
+			       gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready,
+			       gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1136,11 +1272,13 @@ pk_task_update_packages_async (PkTask *task, gchar **package_ids, GCancellable *
  **/
 void
 pk_task_upgrade_system_async (PkTask *task,
-                              const gchar *distro_id,
-                              PkUpgradeKindEnum upgrade_kind,
-                              GCancellable *cancellable,
-                              PkProgressCallback progress_callback, gpointer progress_user_data,
-                              GAsyncReadyCallback callback_ready, gpointer user_data)
+			      const gchar *distro_id,
+			      PkUpgradeKindEnum upgrade_kind,
+			      GCancellable *cancellable,
+			      PkProgressCallback progress_callback,
+			      gpointer progress_user_data,
+			      GAsyncReadyCallback callback_ready,
+			      gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1193,9 +1331,15 @@ pk_task_upgrade_system_async (PkTask *task,
  * Since: 0.5.2
  **/
 void
-pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow_deps, gboolean autoremove, GCancellable *cancellable,
-			       PkProgressCallback progress_callback, gpointer progress_user_data,
-			       GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_remove_packages_async (PkTask *task,
+			       gchar **package_ids,
+			       gboolean allow_deps,
+			       gboolean autoremove,
+			       GCancellable *cancellable,
+			       PkProgressCallback progress_callback,
+			       gpointer progress_user_data,
+			       GAsyncReadyCallback callback_ready,
+			       gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1246,9 +1390,13 @@ pk_task_remove_packages_async (PkTask *task, gchar **package_ids, gboolean allow
  * Since: 0.5.2
  **/
 void
-pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_install_files_async (PkTask *task,
+			     gchar **files,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1263,7 +1411,8 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
 	state = g_slice_new0 (PkTaskState);
 	state->role = PK_ROLE_ENUM_INSTALL_FILES;
 	if (priv->only_trusted)
-		state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
+		state->transaction_flags = pk_bitfield_value (
+		    PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	else
 		state->transaction_flags = 0;
 	state->files = g_strdupv (files);
@@ -1300,9 +1449,14 @@ pk_task_install_files_async (PkTask *task, gchar **files, GCancellable *cancella
  * Since: 0.6.5
  **/
 void
-pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCancellable *cancellable,
-		       PkProgressCallback progress_callback, gpointer progress_user_data,
-		       GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_resolve_async (PkTask *task,
+		       PkBitfield filters,
+		       gchar **packages,
+		       GCancellable *cancellable,
+		       PkProgressCallback progress_callback,
+		       gpointer progress_user_data,
+		       GAsyncReadyCallback callback_ready,
+		       gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1318,13 +1472,13 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
 	state->progress_callback = progress_callback;
 	state->progress_user_data = progress_user_data;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
-	
+
 	if (priv->allow_downgrade)
 		pk_bitfield_add (state->transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
+				 PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE);
 	if (priv->allow_reinstall)
 		pk_bitfield_add (state->transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
+				 PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL);
 	state->filters = filters;
 	state->packages = g_strdupv (packages);
 	state->request = pk_task_generate_request_id ();
@@ -1355,9 +1509,14 @@ pk_task_resolve_async (PkTask *task, PkBitfield filters, gchar **packages, GCanc
  * Since: 0.6.5
  **/
 void
-pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data,
-			    GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_search_names_async (PkTask *task,
+			    PkBitfield filters,
+			    gchar **values,
+			    GCancellable *cancellable,
+			    PkProgressCallback progress_callback,
+			    gpointer progress_user_data,
+			    GAsyncReadyCallback callback_ready,
+			    gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1403,9 +1562,14 @@ pk_task_search_names_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * Since: 0.6.5
  **/
 void
-pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data,
-			      GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_search_details_async (PkTask *task,
+			      PkBitfield filters,
+			      gchar **values,
+			      GCancellable *cancellable,
+			      PkProgressCallback progress_callback,
+			      gpointer progress_user_data,
+			      GAsyncReadyCallback callback_ready,
+			      gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1451,9 +1615,14 @@ pk_task_search_details_async (PkTask *task, PkBitfield filters, gchar **values, 
  * Since: 0.6.5
  **/
 void
-pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_search_groups_async (PkTask *task,
+			     PkBitfield filters,
+			     gchar **values,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1499,9 +1668,14 @@ pk_task_search_groups_async (PkTask *task, PkBitfield filters, gchar **values, G
  * Since: 0.6.5
  **/
 void
-pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data,
-			    GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_search_files_async (PkTask *task,
+			    PkBitfield filters,
+			    gchar **values,
+			    GCancellable *cancellable,
+			    PkProgressCallback progress_callback,
+			    gpointer progress_user_data,
+			    GAsyncReadyCallback callback_ready,
+			    gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1546,9 +1720,13 @@ pk_task_search_files_async (PkTask *task, PkBitfield filters, gchar **values, GC
  * Since: 0.6.5
  **/
 void
-pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
-			   PkProgressCallback progress_callback, gpointer progress_user_data,
-			   GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_details_async (PkTask *task,
+			   gchar **package_ids,
+			   GCancellable *cancellable,
+			   PkProgressCallback progress_callback,
+			   gpointer progress_user_data,
+			   GAsyncReadyCallback callback_ready,
+			   gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1593,9 +1771,13 @@ pk_task_get_details_async (PkTask *task, gchar **package_ids, GCancellable *canc
  * Since: 0.6.5
  **/
 void
-pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
-				 PkProgressCallback progress_callback, gpointer progress_user_data,
-				 GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_update_detail_async (PkTask *task,
+				 gchar **package_ids,
+				 GCancellable *cancellable,
+				 PkProgressCallback progress_callback,
+				 gpointer progress_user_data,
+				 GAsyncReadyCallback callback_ready,
+				 gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1641,9 +1823,14 @@ pk_task_get_update_detail_async (PkTask *task, gchar **package_ids, GCancellable
  * Since: 0.6.5
  **/
 void
-pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar *directory, GCancellable *cancellable,
-				 PkProgressCallback progress_callback, gpointer progress_user_data,
-				 GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_download_packages_async (PkTask *task,
+				 gchar **package_ids,
+				 const gchar *directory,
+				 GCancellable *cancellable,
+				 PkProgressCallback progress_callback,
+				 gpointer progress_user_data,
+				 GAsyncReadyCallback callback_ready,
+				 gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1689,9 +1876,13 @@ pk_task_download_packages_async (PkTask *task, gchar **package_ids, const gchar 
  * Since: 0.6.5
  **/
 void
-pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cancellable,
-			   PkProgressCallback progress_callback, gpointer progress_user_data,
-			   GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_updates_async (PkTask *task,
+			   PkBitfield filters,
+			   GCancellable *cancellable,
+			   PkProgressCallback progress_callback,
+			   gpointer progress_user_data,
+			   GAsyncReadyCallback callback_ready,
+			   gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1737,9 +1928,15 @@ pk_task_get_updates_async (PkTask *task, PkBitfield filters, GCancellable *cance
  * Since: 0.6.5
  **/
 void
-pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
-			   PkProgressCallback progress_callback, gpointer progress_user_data,
-			   GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_depends_on_async (PkTask *task,
+			  PkBitfield filters,
+			  gchar **package_ids,
+			  gboolean recursive,
+			  GCancellable *cancellable,
+			  PkProgressCallback progress_callback,
+			  gpointer progress_user_data,
+			  GAsyncReadyCallback callback_ready,
+			  gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1786,9 +1983,13 @@ pk_task_depends_on_async (PkTask *task, PkBitfield filters, gchar **package_ids,
  * Since: 0.6.5
  **/
 void
-pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data,
-			    GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_packages_async (PkTask *task,
+			    PkBitfield filters,
+			    GCancellable *cancellable,
+			    PkProgressCallback progress_callback,
+			    gpointer progress_user_data,
+			    GAsyncReadyCallback callback_ready,
+			    gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1834,9 +2035,15 @@ pk_task_get_packages_async (PkTask *task, PkBitfield filters, GCancellable *canc
  * Since: 0.6.5
  **/
 void
-pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids, gboolean recursive, GCancellable *cancellable,
-			    PkProgressCallback progress_callback, gpointer progress_user_data,
-			    GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_required_by_async (PkTask *task,
+			   PkBitfield filters,
+			   gchar **package_ids,
+			   gboolean recursive,
+			   GCancellable *cancellable,
+			   PkProgressCallback progress_callback,
+			   gpointer progress_user_data,
+			   GAsyncReadyCallback callback_ready,
+			   gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1884,10 +2091,14 @@ pk_task_required_by_async (PkTask *task, PkBitfield filters, gchar **package_ids
  * Since: 0.6.5
  **/
 void
-pk_task_what_provides_async (PkTask *task, PkBitfield filters,
-			     gchar **values, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_what_provides_async (PkTask *task,
+			     PkBitfield filters,
+			     gchar **values,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1932,9 +2143,13 @@ pk_task_what_provides_async (PkTask *task, PkBitfield filters,
  * Since: 0.6.5
  **/
 void
-pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancellable,
-			 PkProgressCallback progress_callback, gpointer progress_user_data,
-			 GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_files_async (PkTask *task,
+			 gchar **package_ids,
+			 GCancellable *cancellable,
+			 PkProgressCallback progress_callback,
+			 gpointer progress_user_data,
+			 GAsyncReadyCallback callback_ready,
+			 gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -1978,9 +2193,12 @@ pk_task_get_files_async (PkTask *task, gchar **package_ids, GCancellable *cancel
  * Since: 0.6.5
  **/
 void
-pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
-			      PkProgressCallback progress_callback, gpointer progress_user_data,
-			      GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_categories_async (PkTask *task,
+			      GCancellable *cancellable,
+			      PkProgressCallback progress_callback,
+			      gpointer progress_user_data,
+			      GAsyncReadyCallback callback_ready,
+			      gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -2023,9 +2241,13 @@ pk_task_get_categories_async (PkTask *task, GCancellable *cancellable,
  * Since: 0.6.5
  **/
 void
-pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_refresh_cache_async (PkTask *task,
+			     gboolean force,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -2069,9 +2291,13 @@ pk_task_refresh_cache_async (PkTask *task, gboolean force, GCancellable *cancell
  * Since: 0.6.5
  **/
 void
-pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *cancellable,
-			     PkProgressCallback progress_callback, gpointer progress_user_data,
-			     GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_get_repo_list_async (PkTask *task,
+			     PkBitfield filters,
+			     GCancellable *cancellable,
+			     PkProgressCallback progress_callback,
+			     gpointer progress_user_data,
+			     GAsyncReadyCallback callback_ready,
+			     gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -2116,9 +2342,14 @@ pk_task_get_repo_list_async (PkTask *task, PkBitfield filters, GCancellable *can
  * Since: 0.6.5
  **/
 void
-pk_task_repo_enable_async (PkTask *task, const gchar *repo_id, gboolean enabled, GCancellable *cancellable,
-			   PkProgressCallback progress_callback, gpointer progress_user_data,
-			   GAsyncReadyCallback callback_ready, gpointer user_data)
+pk_task_repo_enable_async (PkTask *task,
+			   const gchar *repo_id,
+			   gboolean enabled,
+			   GCancellable *cancellable,
+			   PkProgressCallback progress_callback,
+			   gpointer progress_user_data,
+			   GAsyncReadyCallback callback_ready,
+			   gpointer user_data)
 {
 	PkTaskPrivate *priv = GET_PRIVATE(task);
 	PkTaskState *state;
@@ -2191,7 +2422,6 @@ pk_task_repair_system_async (PkTask *task,
 	g_debug ("adding state %p", state);
 	g_hash_table_insert (priv->gtasks, GUINT_TO_POINTER (state->request), g_object_ref (gtask));
 	g_task_set_task_data (gtask, g_steal_pointer (&state), pk_task_state_free);
-
 
 	/* start trusted repair system async */
 	if (priv->simulate && klass->simulate_question != NULL)
@@ -2318,7 +2548,6 @@ pk_task_get_only_download (PkTask *task)
 
 	return priv->only_download;
 }
-
 
 /**
  * pk_task_set_only_trusted:
@@ -2530,10 +2759,12 @@ pk_task_class_init (PkTaskClass *klass)
          *
 	 * Since: 0.5.2
 	 */
-	obj_properties[PROP_SIMULATE] =
-		g_param_spec_boolean ("simulate", NULL, NULL,
-				      TRUE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_SIMULATE] = g_param_spec_boolean ("simulate",
+							      NULL,
+							      NULL,
+							      TRUE,
+							      G_PARAM_READWRITE |
+								  G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkTask:only-download:
@@ -2542,10 +2773,12 @@ pk_task_class_init (PkTaskClass *klass)
          *
 	 * Since: 0.8.1
 	 */
-	obj_properties[PROP_ONLY_DOWNLOAD] =
-		g_param_spec_boolean ("only-download", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_ONLY_DOWNLOAD] = g_param_spec_boolean ("only-download",
+								   NULL,
+								   NULL,
+								   FALSE,
+								   G_PARAM_READWRITE |
+								       G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkTask:only-trusted:
@@ -2554,10 +2787,12 @@ pk_task_class_init (PkTaskClass *klass)
          *
 	 * Since: 0.9.5
 	 */
-	obj_properties[PROP_ONLY_TRUSTED] =
-		g_param_spec_boolean ("only-trusted", NULL, NULL,
-				      TRUE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_ONLY_TRUSTED] = g_param_spec_boolean ("only-trusted",
+								  NULL,
+								  NULL,
+								  TRUE,
+								  G_PARAM_READWRITE |
+								      G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkTask:allow-reinstall:
@@ -2566,10 +2801,12 @@ pk_task_class_init (PkTaskClass *klass)
          *
 	 * Since: 1.0.2
 	 */
-	obj_properties[PROP_ALLOW_REINSTALL] =
-		g_param_spec_boolean ("allow-reinstall", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_ALLOW_REINSTALL] = g_param_spec_boolean ("allow-reinstall",
+								     NULL,
+								     NULL,
+								     FALSE,
+								     G_PARAM_READWRITE |
+									 G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * PkTask:allow-downgrade:
@@ -2578,10 +2815,12 @@ pk_task_class_init (PkTaskClass *klass)
          *
 	 * Since: 1.0.2
 	 */
-	obj_properties[PROP_ALLOW_DOWNGRADE] =
-		g_param_spec_boolean ("allow-downgrade", NULL, NULL,
-				      FALSE,
-				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	obj_properties[PROP_ALLOW_DOWNGRADE] = g_param_spec_boolean ("allow-downgrade",
+								     NULL,
+								     NULL,
+								     FALSE,
+								     G_PARAM_READWRITE |
+									 G_PARAM_STATIC_STRINGS);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
 }

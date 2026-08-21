@@ -241,10 +241,11 @@ pkgc_context_apply_settings (PkgcliContext *ctx)
  * Register a command in the given #PkgctlContext.
  */
 void
-pkgc_context_register_command (PkgcliContext *ctx,
-				const gchar *name,
-				gint (*handler) (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv),
-				const gchar *summary)
+pkgc_context_register_command (
+    PkgcliContext *ctx,
+    const gchar *name,
+    gint (*handler) (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv),
+    const gchar *summary)
 {
 	PkgcliCommand *cmd;
 
@@ -317,8 +318,10 @@ pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 	/* role */
 	if (type == PK_PROGRESS_TYPE_ROLE) {
 		g_object_get (progress,
-			      "role", &role,
-			      "transaction-flags", &transaction_flags,
+			      "role",
+			      &role,
+			      "transaction-flags",
+			      &transaction_flags,
 			      NULL);
 		if (role == PK_ROLE_ENUM_UNKNOWN)
 			return;
@@ -334,9 +337,12 @@ pkgc_context_on_progress_cb (PkProgress *progress, PkProgressType type, gpointer
 	/* status */
 	if (type == PK_PROGRESS_TYPE_STATUS) {
 		g_object_get (progress,
-			      "role", &role,
-			      "status", &status,
-			      "transaction-flags", &transaction_flags,
+			      "role",
+			      &role,
+			      "status",
+			      &status,
+			      "transaction-flags",
+			      &transaction_flags,
 			      NULL);
 
 		/* don't show finished multiple times in the output */

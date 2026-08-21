@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -34,7 +34,7 @@
 
 G_BEGIN_DECLS
 
-#define PK_OFFLINE_ERROR	(pk_offline_error_quark ())
+#define PK_OFFLINE_ERROR (pk_offline_error_quark ())
 
 /**
  * PkOfflineAction:
@@ -62,8 +62,7 @@ typedef enum {
  *
  * Errors that can be thrown
  */
-typedef enum
-{
+typedef enum {
 	PK_OFFLINE_ERROR_FAILED,
 	PK_OFFLINE_ERROR_INVALID_VALUE,
 	PK_OFFLINE_ERROR_NO_DATA,
@@ -80,57 +79,51 @@ typedef enum
  *
  * Since: 1.2.5
  */
-typedef enum
-{
-	PK_OFFLINE_FLAGS_NONE		= 0,
-	PK_OFFLINE_FLAGS_INTERACTIVE	= 1 << 0
+typedef enum {
+	PK_OFFLINE_FLAGS_NONE	     = 0,
+	PK_OFFLINE_FLAGS_INTERACTIVE = 1 << 0
 } PkOfflineFlags;
 
-GQuark			 pk_offline_error_quark		(void);
-const gchar		*pk_offline_action_to_string	(PkOfflineAction	 action);
-PkOfflineAction		 pk_offline_action_from_string	(const gchar		*action);
-PkOfflineAction		 pk_offline_get_action		(GError			**error);
-gchar			**pk_offline_get_prepared_ids	(GError			**error);
-gchar			*pk_offline_get_prepared_upgrade_name
-							(GError			**error);
-gchar			*pk_offline_get_prepared_upgrade_version
-							(GError			**error);
-PkPackageSack		*pk_offline_get_prepared_sack	(GError			**error);
-GFileMonitor		*pk_offline_get_prepared_monitor(GCancellable		*cancellable,
-							 GError			**error);
-GFileMonitor		*pk_offline_get_prepared_upgrade_monitor
-							(GCancellable		*cancellable,
-							 GError			**error);
-GFileMonitor		*pk_offline_get_action_monitor	(GCancellable		*cancellable,
-							 GError			**error);
-PkResults		*pk_offline_get_results		(GError			**error);
-guint64			 pk_offline_get_results_mtime	(GError			**error);
-gboolean		 pk_offline_cancel		(GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_cancel_with_flags	(PkOfflineFlags		 flags,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_clear_results	(GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_clear_results_with_flags
-							(PkOfflineFlags		 flags,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_trigger		(PkOfflineAction	 action,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_trigger_with_flags	(PkOfflineAction	 action,
-							 PkOfflineFlags		 flags,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_trigger_upgrade	(PkOfflineAction	 action,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean		 pk_offline_trigger_upgrade_with_flags
-							(PkOfflineAction	 action,
-							 PkOfflineFlags		 flags,
-							 GCancellable		*cancellable,
-							 GError			**error);
+GQuark		pk_offline_error_quark (void);
+const gchar    *pk_offline_action_to_string (PkOfflineAction action);
+PkOfflineAction pk_offline_action_from_string (const gchar *action);
+PkOfflineAction pk_offline_get_action (GError **error);
+gchar	      **pk_offline_get_prepared_ids (GError **error);
+gchar	       *pk_offline_get_prepared_upgrade_name (GError **error);
+gchar	       *pk_offline_get_prepared_upgrade_version (GError **error);
+PkPackageSack  *pk_offline_get_prepared_sack (GError **error);
+GFileMonitor   *pk_offline_get_prepared_monitor (GCancellable *cancellable,
+						 GError	     **error);
+GFileMonitor   *pk_offline_get_prepared_upgrade_monitor (GCancellable *cancellable,
+							 GError	     **error);
+GFileMonitor   *pk_offline_get_action_monitor (GCancellable *cancellable,
+					       GError	   **error);
+PkResults      *pk_offline_get_results (GError **error);
+guint64		pk_offline_get_results_mtime (GError **error);
+gboolean	pk_offline_cancel (GCancellable *cancellable,
+				   GError      **error);
+gboolean	pk_offline_cancel_with_flags (PkOfflineFlags flags,
+					      GCancellable  *cancellable,
+					      GError	   **error);
+gboolean	pk_offline_clear_results (GCancellable *cancellable,
+					  GError      **error);
+gboolean	pk_offline_clear_results_with_flags (PkOfflineFlags flags,
+						     GCancellable  *cancellable,
+						     GError	  **error);
+gboolean	pk_offline_trigger (PkOfflineAction action,
+				    GCancellable   *cancellable,
+				    GError	  **error);
+gboolean	pk_offline_trigger_with_flags (PkOfflineAction action,
+					       PkOfflineFlags  flags,
+					       GCancellable   *cancellable,
+					       GError	     **error);
+gboolean	pk_offline_trigger_upgrade (PkOfflineAction action,
+					    GCancellable   *cancellable,
+					    GError	  **error);
+gboolean	pk_offline_trigger_upgrade_with_flags (PkOfflineAction action,
+						       PkOfflineFlags  flags,
+						       GCancellable   *cancellable,
+						       GError	     **error);
 
 G_END_DECLS
 

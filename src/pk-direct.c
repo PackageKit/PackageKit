@@ -33,28 +33,28 @@
 #include "pk-backend.h"
 #include "pk-shared.h"
 
-#define PK_ERROR			1
-#define PK_ERROR_INVALID_ARGUMENTS	0
-#define PK_ERROR_NO_SUCH_CMD		1
+#define PK_ERROR		   1
+#define PK_ERROR_INVALID_ARGUMENTS 0
+#define PK_ERROR_NO_SUCH_CMD	   1
 
-typedef struct {
-	GMainLoop		*loop;
-	GOptionContext		*context;
-	GPtrArray		*cmd_array;
-	PkBackend		*backend;
-	PkBackendJob		*job;
-	gboolean		 value_only;
+typedef struct
+{
+	GMainLoop *loop;
+	GOptionContext *context;
+	GPtrArray *cmd_array;
+	PkBackend *backend;
+	PkBackendJob *job;
+	gboolean value_only;
 } PkDirectPrivate;
 
-typedef gboolean (*PkDirectCommandCb)	(PkDirectPrivate	*util,
-					 gchar		**values,
-					 GError		**error);
+typedef gboolean (*PkDirectCommandCb) (PkDirectPrivate *util, gchar **values, GError **error);
 
-typedef struct {
-	gchar			*name;
-	gchar			*arguments;
-	gchar			*description;
-	PkDirectCommandCb	 callback;
+typedef struct
+{
+	gchar *name;
+	gchar *arguments;
+	gchar *description;
+	PkDirectCommandCb callback;
 } PkDirectItem;
 
 static void
@@ -74,10 +74,10 @@ pk_sort_command_name_cb (PkDirectItem **item1, PkDirectItem **item2)
 
 static void
 pk_direct_add (GPtrArray *array,
-	     const gchar *name,
-	     const gchar *arguments,
-	     const gchar *description,
-	     PkDirectCommandCb callback)
+	       const gchar *name,
+	       const gchar *arguments,
+	       const gchar *description,
+	       PkDirectCommandCb callback)
 {
 	PkDirectItem *item;
 	guint i;
@@ -96,8 +96,7 @@ pk_direct_add (GPtrArray *array,
 			item->description = g_strdup (description);
 		} else {
 			/* TRANSLATORS: this is a command alias */
-			item->description = g_strdup_printf (_("Alias to %s"),
-							     names[0]);
+			item->description = g_strdup_printf (_("Alias to %s"), names[0]);
 		}
 		item->arguments = g_strdup (arguments);
 		item->callback = callback;
@@ -164,11 +163,11 @@ pk_direct_run (PkDirectPrivate *priv, const gchar *command, gchar **values, GErr
 
 	/* not found */
 	string = g_string_new ("");
-	g_string_append_printf (string, "%s\n",
-				_("Command not found, valid commands are:"));
+	g_string_append_printf (string, "%s\n", _("Command not found, valid commands are:"));
 	for (i = 0; i < priv->cmd_array->len; i++) {
 		item = g_ptr_array_index (priv->cmd_array, i);
-		g_string_append_printf (string, " * %s %s\n",
+		g_string_append_printf (string,
+					" * %s %s\n",
 					item->name,
 					item->arguments ? item->arguments : "");
 	}
@@ -261,7 +260,8 @@ pk_direct_install (PkDirectPrivate *priv, gchar **values, GError **error)
 		g_set_error (error,
 			     PK_ERROR,
 			     PK_ERROR_INVALID_ARGUMENTS,
-			     "Not a package-id: %s", values[0]);
+			     "Not a package-id: %s",
+			     values[0]);
 		return FALSE;
 	}
 	pk_backend_start_job (priv->backend, priv->job);
@@ -285,7 +285,8 @@ pk_direct_remove (PkDirectPrivate *priv, gchar **values, GError **error)
 		g_set_error (error,
 			     PK_ERROR,
 			     PK_ERROR_INVALID_ARGUMENTS,
-			     "Not a package-id: %s", values[0]);
+			     "Not a package-id: %s",
+			     values[0]);
 		return FALSE;
 	}
 	pk_backend_start_job (priv->backend, priv->job);
@@ -307,8 +308,7 @@ pk_direct_repo_set_data (PkDirectPrivate *priv, gchar **values, GError **error)
 		return FALSE;
 	}
 	pk_backend_start_job (priv->backend, priv->job);
-	pk_backend_repo_set_data (priv->backend, priv->job,
-				  values[0], values[1], values[2]);
+	pk_backend_repo_set_data (priv->backend, priv->job, values[0], values[1], values[2]);
 	g_main_loop_run (priv->loop);
 	pk_backend_stop_job (priv->backend, priv->job);
 	return TRUE;
@@ -402,16 +402,16 @@ main (int argc, char *argv[])
 	g_autofree gchar *conf_filename = NULL;
 	g_autoptr(GKeyFile) conf = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -423,42 +423,49 @@ main (int argc, char *argv[])
 
 	/* add commands */
 	priv->cmd_array = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_direct_item_free);
-	pk_direct_add (priv->cmd_array, "refresh", NULL,
+	pk_direct_add (priv->cmd_array,
+		       "refresh",
+		       NULL,
 		       /* TRANSLATORS: command description */
-		       _("Refresh the cache"),
-		       pk_direct_refresh);
-	pk_direct_add (priv->cmd_array, "refresh-force", NULL,
+		       _("Refresh the cache"), pk_direct_refresh);
+	pk_direct_add (priv->cmd_array,
+		       "refresh-force",
+		       NULL,
 		       /* TRANSLATORS: command description */
-		       _("Refresh the cache (forced)"),
-		       pk_direct_refresh_force);
-	pk_direct_add (priv->cmd_array, "search-name", "[SEARCH]",
+		       _("Refresh the cache (forced)"), pk_direct_refresh_force);
+	pk_direct_add (priv->cmd_array,
+		       "search-name",
+		       "[SEARCH]",
 		       /* TRANSLATORS: command description */
-		       _("Search by names"),
-		       pk_direct_search_names);
-	pk_direct_add (priv->cmd_array, "search-detail", "[SEARCH]",
+		       _("Search by names"), pk_direct_search_names);
+	pk_direct_add (priv->cmd_array,
+		       "search-detail",
+		       "[SEARCH]",
 		       /* TRANSLATORS: command description */
-		       _("Search by details"),
-		       pk_direct_search_details);
-	pk_direct_add (priv->cmd_array, "search-file", "[SEARCH]",
+		       _("Search by details"), pk_direct_search_details);
+	pk_direct_add (priv->cmd_array,
+		       "search-file",
+		       "[SEARCH]",
 		       /* TRANSLATORS: command description */
-		       _("Search by files"),
-		       pk_direct_search_files);
-	pk_direct_add (priv->cmd_array, "install", "[PKGID]",
+		       _("Search by files"), pk_direct_search_files);
+	pk_direct_add (priv->cmd_array,
+		       "install",
+		       "[PKGID]",
 		       /* TRANSLATORS: command description */
-		       _("Install package"),
-		       pk_direct_install);
-	pk_direct_add (priv->cmd_array, "remove", "[PKGID]",
+		       _("Install package"), pk_direct_install);
+	pk_direct_add (priv->cmd_array,
+		       "remove",
+		       "[PKGID]",
 		       /* TRANSLATORS: command description */
-		       _("Remove package"),
-		       pk_direct_remove);
-	pk_direct_add (priv->cmd_array, "repo-set-data", "[REPO] [KEY] [VALUE]",
+		       _("Remove package"), pk_direct_remove);
+	pk_direct_add (priv->cmd_array,
+		       "repo-set-data",
+		       "[REPO] [KEY] [VALUE]",
 		       /* TRANSLATORS: command description */
-		       _("Set repository options"),
-		       pk_direct_repo_set_data);
+		       _("Set repository options"), pk_direct_repo_set_data);
 
 	/* sort by command name */
-	g_ptr_array_sort (priv->cmd_array,
-			  (GCompareFunc) pk_sort_command_name_cb);
+	g_ptr_array_sort (priv->cmd_array, (GCompareFunc) pk_sort_command_name_cb);
 
 	/* get a list of the commands */
 	priv->context = g_option_context_new (NULL);
@@ -479,8 +486,7 @@ main (int argc, char *argv[])
 	/* get values from the config file */
 	conf = g_key_file_new ();
 	conf_filename = pk_util_get_config_filename ();
-	ret = g_key_file_load_from_file (conf, conf_filename,
-					 G_KEY_FILE_NONE, &error);
+	ret = g_key_file_load_from_file (conf, conf_filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		/* TRANSLATORS: probably not yet installed */
 		g_print ("%s: %s\n", _("Failed to load the config file"), error->message);
@@ -509,8 +515,7 @@ main (int argc, char *argv[])
 
 	/* do stuff on ctrl-c */
 	priv->loop = g_main_loop_new (NULL, FALSE);
-	g_unix_signal_add_full (G_PRIORITY_DEFAULT, SIGINT,
-				pk_direct_sigint_cb, &priv, NULL);
+	g_unix_signal_add_full (G_PRIORITY_DEFAULT, SIGINT, pk_direct_sigint_cb, &priv, NULL);
 
 	/* load the backend */
 	priv->backend = pk_backend_new (conf);
@@ -525,23 +530,34 @@ main (int argc, char *argv[])
 	priv->job = pk_backend_job_new (conf);
 	pk_backend_job_set_cache_age (priv->job, G_MAXUINT);
 	pk_backend_job_set_backend (priv->job, priv->backend);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_FINISHED,
-				  pk_direct_finished_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PERCENTAGE,
-				  pk_direct_percentage_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_STATUS_CHANGED,
-				  pk_direct_status_changed_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PACKAGE,
-				  pk_direct_package_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PACKAGES,
-				  pk_direct_packages_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_ERROR_CODE,
-				  pk_direct_error_cb, priv);
-	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_ITEM_PROGRESS,
-				  pk_direct_item_progress_cb, priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  pk_direct_finished_cb,
+				  priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_PERCENTAGE,
+				  pk_direct_percentage_cb,
+				  priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_STATUS_CHANGED,
+				  pk_direct_status_changed_cb,
+				  priv);
+	pk_backend_job_set_vfunc (priv->job, PK_BACKEND_SIGNAL_PACKAGE, pk_direct_package_cb, priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_PACKAGES,
+				  pk_direct_packages_cb,
+				  priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_ERROR_CODE,
+				  pk_direct_error_cb,
+				  priv);
+	pk_backend_job_set_vfunc (priv->job,
+				  PK_BACKEND_SIGNAL_ITEM_PROGRESS,
+				  pk_direct_item_progress_cb,
+				  priv);
 
 	/* run the specified command */
-	ret = pk_direct_run (priv, argv[1], (gchar**) &argv[2], &error);
+	ret = pk_direct_run (priv, argv[1], (gchar **) &argv[2], &error);
 	if (!ret) {
 		if (g_error_matches (error, PK_ERROR, PK_ERROR_NO_SUCH_CMD)) {
 			g_autofree gchar *tmp = NULL;

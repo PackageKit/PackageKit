@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -35,14 +35,14 @@ G_BEGIN_DECLS
 #define PK_DESKTOP_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_DESKTOP, PkDesktopClass))
 #define PK_IS_DESKTOP(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_DESKTOP))
 #define PK_IS_DESKTOP_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_DESKTOP))
-#define PK_DESKTOP_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_DESKTOP, PkDesktopClass))
+#define PK_DESKTOP_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_DESKTOP, PkDesktopClass))
 
 /**
  * PK_DESKTOP_DEFAULT_DATABASE:
  *
  * The default location for the database
  */
-#define PK_DESKTOP_DEFAULT_DATABASE		LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
+#define PK_DESKTOP_DEFAULT_DATABASE LOCALSTATEDIR "/lib/PackageKit/desktop-files.db"
 
 /**
  * PK_DESKTOP_DEFAULT_APPLICATION_DIR:
@@ -50,14 +50,14 @@ G_BEGIN_DECLS
  * The default location for the desktop files
  */
 #ifndef __FreeBSD__
-#define PK_DESKTOP_DEFAULT_APPLICATION_DIR	"/usr/share/applications"
+#define PK_DESKTOP_DEFAULT_APPLICATION_DIR "/usr/share/applications"
 #else
-#define PK_DESKTOP_DEFAULT_APPLICATION_DIR	"/usr/local/share/applications"
+#define PK_DESKTOP_DEFAULT_APPLICATION_DIR "/usr/local/share/applications"
 #endif
 
-typedef struct _PkDesktopPrivate	PkDesktopPrivate;
-typedef struct _PkDesktop		PkDesktop;
-typedef struct _PkDesktopClass		PkDesktopClass;
+typedef struct _PkDesktopPrivate PkDesktopPrivate;
+typedef struct _PkDesktop	 PkDesktop;
+typedef struct _PkDesktopClass	 PkDesktopClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDesktop, g_object_unref)
@@ -65,31 +65,30 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkDesktop, g_object_unref)
 
 struct _PkDesktop
 {
-	GObject			 parent;
-	PkDesktopPrivate	*priv;
+	GObject		  parent;
+	PkDesktopPrivate *priv;
 };
 
 struct _PkDesktopClass
 {
-	GObjectClass	parent_class;
+	GObjectClass parent_class;
 };
 
-GType		 pk_desktop_get_type			(void);
-PkDesktop	*pk_desktop_new				(void);
+GType	   pk_desktop_get_type (void);
+PkDesktop *pk_desktop_new (void);
 
-gboolean	 pk_desktop_open_database		(PkDesktop	*desktop,
-							 GError		**error);
-GPtrArray	*pk_desktop_get_files_for_package	(PkDesktop	*desktop,
-							 const gchar	*package,
-							 GError		**error);
-GPtrArray	*pk_desktop_get_shown_for_package	(PkDesktop	*desktop,
-							 const gchar	*package,
-							 GError		**error);
-gchar		*pk_desktop_get_package_for_file	(PkDesktop	*desktop,
-							 const gchar	*filename,
-							 GError		**error);
+gboolean   pk_desktop_open_database (PkDesktop *desktop,
+				     GError   **error);
+GPtrArray *pk_desktop_get_files_for_package (PkDesktop	 *desktop,
+					     const gchar *package,
+					     GError	**error);
+GPtrArray *pk_desktop_get_shown_for_package (PkDesktop	 *desktop,
+					     const gchar *package,
+					     GError	**error);
+gchar	  *pk_desktop_get_package_for_file (PkDesktop	*desktop,
+					    const gchar *filename,
+					    GError     **error);
 
 G_END_DECLS
 
 #endif /* __PK_DESKTOP_H */
-

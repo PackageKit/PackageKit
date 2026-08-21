@@ -46,10 +46,15 @@ main (int argc, char *argv[])
 	}
 
 	length = pk_package_list_get_size (list);
-	for (i=0; i<length; i++) {
+	for (i = 0; i < length; i++) {
 		/* get each package to be updated, and print to the screen */
 		obj = pk_package_list_get_obj (list, i);
-		g_print ("%i. %s-%s.%s\t%s\n", i, obj->id->name, obj->id->version, obj->id->arch, obj->summary);
+		g_print ("%i. %s-%s.%s\t%s\n",
+			 i,
+			 obj->id->name,
+			 obj->id->version,
+			 obj->id->arch,
+			 obj->summary);
 	}
 
 out:
@@ -62,4 +67,3 @@ out:
 		g_object_unref (client);
 	return 0;
 }
-

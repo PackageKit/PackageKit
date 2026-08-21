@@ -42,42 +42,44 @@ pk_debug_is_verbose (void)
 {
 	/* local first */
 	if (_verbose)
-		 return TRUE;
+		return TRUE;
 
 	/* fall back to env variable */
 	if (g_getenv ("VERBOSE") != NULL)
-		 return TRUE;
+		return TRUE;
 	return FALSE;
 }
-
 
 /*
  * pk_debug_ignore_cb:
  **/
 static void
-pk_debug_ignore_cb (const gchar *log_domain, GLogLevelFlags log_level,
-		    const gchar *message, gpointer user_data)
-{
-}
+pk_debug_ignore_cb (const gchar *log_domain,
+		    GLogLevelFlags log_level,
+		    const gchar *message,
+		    gpointer user_data)
+{}
 
-#define CONSOLE_RESET		0
-#define CONSOLE_BLACK		30
-#define CONSOLE_RED		31
-#define CONSOLE_GREEN		32
-#define CONSOLE_YELLOW		33
-#define CONSOLE_BLUE		34
-#define CONSOLE_MAGENTA		35
-#define CONSOLE_CYAN		36
-#define CONSOLE_WHITE		37
+#define CONSOLE_RESET	0
+#define CONSOLE_BLACK	30
+#define CONSOLE_RED	31
+#define CONSOLE_GREEN	32
+#define CONSOLE_YELLOW	33
+#define CONSOLE_BLUE	34
+#define CONSOLE_MAGENTA 35
+#define CONSOLE_CYAN	36
+#define CONSOLE_WHITE	37
 
-#define PK_DEBUG_LOG_DOMAIN_LENGTH	20
+#define PK_DEBUG_LOG_DOMAIN_LENGTH 20
 
 /*
  * pk_debug_handler_cb:
  **/
 static void
-pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
-		     const gchar *message, gpointer user_data)
+pk_debug_handler_cb (const gchar *log_domain,
+		     GLogLevelFlags log_level,
+		     const gchar *message,
+		     gpointer user_data)
 {
 	gchar str_time[255];
 	time_t the_time;
@@ -117,8 +119,7 @@ pk_debug_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 	}
 
 	/* critical is also in red */
-	if (log_level == G_LOG_LEVEL_CRITICAL ||
-	    log_level == G_LOG_LEVEL_WARNING ||
+	if (log_level == G_LOG_LEVEL_CRITICAL || log_level == G_LOG_LEVEL_WARNING ||
 	    log_level == G_LOG_LEVEL_ERROR) {
 		g_print ("%c[%dm%s\n%c[%dm", 0x1B, CONSOLE_RED, message, 0x1B, CONSOLE_RESET);
 	} else {
@@ -134,18 +135,21 @@ out:
  * pk_debug_pre_parse_hook:
  */
 static gboolean
-pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer data, GError **error)
+pk_debug_pre_parse_hook (GOptionContext *context,
+			 GOptionGroup *group,
+			 gpointer data,
+			 GError **error)
 {
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry main_entries[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose,
 		  /* TRANSLATORS: turn on all debugging */
 		  N_("Show debugging information for all files"), NULL },
 		G_OPTION_ENTRY_NULL
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	/* add main entry */
 	g_option_context_add_main_entries (context, main_entries, NULL);
@@ -164,16 +168,16 @@ pk_debug_add_log_domain (const gchar *log_domain)
 	if (_verbose) {
 		g_log_set_fatal_mask (log_domain, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
 		g_log_set_handler (log_domain,
-				   G_LOG_LEVEL_ERROR |
-				   G_LOG_LEVEL_CRITICAL |
-				   G_LOG_LEVEL_DEBUG |
-				   G_LOG_LEVEL_WARNING,
-				   pk_debug_handler_cb, NULL);
+				   G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_DEBUG |
+				       G_LOG_LEVEL_WARNING,
+				   pk_debug_handler_cb,
+				   NULL);
 	} else {
 		/* hide all debugging */
 		g_log_set_handler (log_domain,
 				   G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_WARNING,
-				   pk_debug_ignore_cb, NULL);
+				   pk_debug_ignore_cb,
+				   NULL);
 	}
 }
 
@@ -194,12 +198,17 @@ pk_debug_set_verbose (gboolean verbose)
  * pk_debug_post_parse_hook:
  */
 static gboolean
-pk_debug_post_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer data, GError **error)
+pk_debug_post_parse_hook (GOptionContext *context,
+			  GOptionGroup *group,
+			  gpointer data,
+			  GError **error)
 {
 	/* verbose? */
 	pk_debug_add_log_domain (G_LOG_DOMAIN);
 	_console = (isatty (fileno (stdout)) == 1);
-	g_debug ("Verbose debugging %s (on console %i)", _verbose ? "enabled" : "disabled", _console);
+	g_debug ("Verbose debugging %s (on console %i)",
+		 _verbose ? "enabled" : "disabled",
+		 _console);
 	return TRUE;
 }
 
@@ -217,8 +226,9 @@ GOptionGroup *
 pk_debug_get_option_group (void)
 {
 	GOptionGroup *group;
-	group = g_option_group_new ("debug", _("Debugging Options"), _("Show debugging options"), NULL, NULL);
+	group = g_option_group_new ("debug",
+				    _("Debugging Options"),
+				      _("Show debugging options"), NULL, NULL);
 	g_option_group_set_parse_hooks (group, pk_debug_pre_parse_hook, pk_debug_post_parse_hook);
 	return group;
 }
-

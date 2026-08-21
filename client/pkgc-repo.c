@@ -189,9 +189,9 @@ pkgc_repo_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 	gboolean autoremove = FALSE;
 	g_autoptr(GOptionContext) option_context = NULL;
 
-/* Each option is one record per line; clang-format would put every field
+	/* Each option is one record per line; clang-format would put every field
  * on a line of its own and make the table unreadable. */
-/* clang-format off */
+	/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "autoremove",
 		  0,		  0,
@@ -200,7 +200,7 @@ pkgc_repo_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 		  NULL	},
 		{ NULL,	0, 0, 0, NULL, NULL,NULL }
 	};
-/* clang-format on */
+	/* clang-format on */
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (
@@ -242,30 +242,30 @@ void
 pkgc_register_repo_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
-		ctx,
-		"repo-list",
-		pkgc_repo_list,
-		/* TRANSLATORS: Description for repo-list command in pkgcli help */
-		_("List repositories"));
+	    ctx,
+	    "repo-list",
+	    pkgc_repo_list,
+	    /* TRANSLATORS: Description for repo-list command in pkgcli help */
+	    _("List repositories"));
 
 	pkgc_context_register_command (
-		ctx,
-		"repo-enable",
-		pkgc_repo_enable,
-		/* TRANSLATORS: Description for repo-enable command in pkgcli help */
-		_("Enable a repository"));
+	    ctx,
+	    "repo-enable",
+	    pkgc_repo_enable,
+	    /* TRANSLATORS: Description for repo-enable command in pkgcli help */
+	    _("Enable a repository"));
 
 	pkgc_context_register_command (
-		ctx,
-		"repo-disable",
-		pkgc_repo_disable,
-		/* TRANSLATORS: Description for repo-disable command in pkgcli help */
-		_("Disable a repository"));
+	    ctx,
+	    "repo-disable",
+	    pkgc_repo_disable,
+	    /* TRANSLATORS: Description for repo-disable command in pkgcli help */
+	    _("Disable a repository"));
 
 	pkgc_context_register_command (
-		ctx,
-		"repo-remove",
-		pkgc_repo_remove,
-		/* TRANSLATORS: Description for repo-remove command in pkgcli help */
-		_("Remove a repository"));
+	    ctx,
+	    "repo-remove",
+	    pkgc_repo_remove,
+	    /* TRANSLATORS: Description for repo-remove command in pkgcli help */
+	    _("Remove a repository"));
 }

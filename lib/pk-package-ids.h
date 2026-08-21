@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -41,20 +41,20 @@ G_BEGIN_DECLS
  * - backends/urpmi/helpers/urpmi-dispatched-backend.pl
  * - python/packagekit/backend.py
  */
-#define PK_PACKAGE_IDS_DELIM	"&"
+#define PK_PACKAGE_IDS_DELIM "&"
 
-gchar		**pk_package_ids_from_id		(const gchar	*package_id);
-gchar		**pk_package_ids_from_string		(const gchar	*package_id);
-gboolean	 pk_package_ids_check			(gchar		**package_ids);
-gchar		*pk_package_ids_to_string			(gchar		**package_ids);
-gboolean	 pk_package_ids_present_id		(gchar		**package_ids,
-							 const gchar	*package_id);
-gchar		**pk_package_ids_add_id			(gchar		**package_ids,
-							 const gchar	*package_id);
-gchar		**pk_package_ids_add_ids		(gchar		**package_ids,
-							 gchar		**package_ids_new);
-gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
-							 const gchar	*package_id);
+gchar  **pk_package_ids_from_id (const gchar *package_id);
+gchar  **pk_package_ids_from_string (const gchar *package_id);
+gboolean pk_package_ids_check (gchar **package_ids);
+gchar	*pk_package_ids_to_string (gchar **package_ids);
+gboolean pk_package_ids_present_id (gchar      **package_ids,
+				    const gchar *package_id);
+gchar  **pk_package_ids_add_id (gchar	   **package_ids,
+				const gchar *package_id);
+gchar  **pk_package_ids_add_ids (gchar **package_ids,
+				 gchar **package_ids_new);
+gchar  **pk_package_ids_remove_id (gchar      **package_ids,
+				   const gchar *package_id);
 
 /* compat defines for old versions */
 
@@ -69,7 +69,7 @@ gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
  *
  * Deprecated: Use pk_package_ids_from_string()
  */
-#define pk_package_ids_from_text	pk_package_ids_from_string
+#define pk_package_ids_from_text pk_package_ids_from_string
 
 /**
  * pk_package_ids_to_text:
@@ -80,7 +80,7 @@ gchar		**pk_package_ids_remove_id		(gchar		**package_ids,
  *
  * Deprecated: pk_package_ids_to_string()
  */
-#define pk_package_ids_to_text		pk_package_ids_to_string
+#define pk_package_ids_to_text pk_package_ids_to_string
 
 G_END_DECLS
 

@@ -30,9 +30,8 @@ G_BEGIN_DECLS
 #define PK_TYPE_TASK_TEXT (pk_task_text_get_type ())
 G_DECLARE_FINAL_TYPE (PkTaskText, pk_task_text, PK, TASK_TEXT, PkTask)
 
-PkTaskText	*pk_task_text_new (void);
+PkTaskText *pk_task_text_new (void);
 
 G_END_DECLS
 
 #endif /* __PK_TASK_TEXT_H */
-

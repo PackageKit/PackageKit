@@ -31,13 +31,14 @@
 #include "pk-control-sync.h"
 
 /* tiny helper to help us do the async operation */
-typedef struct {
-	GError		**error;
-	GMainContext	*context;
-	GMainLoop	*loop;
-	gboolean	 ret;
-	guint		 seconds;
-	gchar		**transaction_list;
+typedef struct
+{
+	GError **error;
+	GMainContext *context;
+	GMainLoop *loop;
+	gboolean ret;
+	guint seconds;
+	gchar **transaction_list;
 } PkControlHelper;
 
 /*
@@ -83,7 +84,10 @@ pk_control_get_properties (PkControl *control, GCancellable *cancellable, GError
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_get_properties_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_properties_cb, &helper);
+	pk_control_get_properties_async (control,
+					 cancellable,
+					 (GAsyncReadyCallback) pk_control_get_properties_cb,
+					 &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;
@@ -104,7 +108,9 @@ static void
 pk_control_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkControlHelper *helper)
 {
 	/* get the result */
-	helper->transaction_list = pk_control_get_transaction_list_finish (control, res, helper->error);
+	helper->transaction_list = pk_control_get_transaction_list_finish (control,
+									   res,
+									   helper->error);
 	g_main_loop_quit (helper->loop);
 }
 
@@ -140,7 +146,11 @@ pk_control_get_transaction_list (PkControl *control, GCancellable *cancellable, 
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_get_transaction_list_async (control, cancellable, (GAsyncReadyCallback) pk_control_get_transaction_list_cb, &helper);
+	pk_control_get_transaction_list_async (
+	    control,
+	    cancellable,
+	    (GAsyncReadyCallback) pk_control_get_transaction_list_cb,
+	    &helper);
 	g_main_loop_run (helper.loop);
 
 	transaction_list = helper.transaction_list;
@@ -197,7 +207,11 @@ pk_control_suggest_daemon_quit (PkControl *control, GCancellable *cancellable, G
 	g_main_context_push_thread_default (helper.context);
 
 	/* run async method */
-	pk_control_suggest_daemon_quit_async (control, cancellable, (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb, &helper);
+	pk_control_suggest_daemon_quit_async (
+	    control,
+	    cancellable,
+	    (GAsyncReadyCallback) pk_control_suggest_daemon_quit_cb,
+	    &helper);
 	g_main_loop_run (helper.loop);
 
 	ret = helper.ret;
@@ -290,7 +304,6 @@ pk_control_set_proxy2 (PkControl *control,
 
 	return ret;
 }
-
 
 /**
  * pk_control_set_proxy:

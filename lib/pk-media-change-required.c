@@ -36,7 +36,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_media_change_required_finalize	(GObject     *object);
+static void pk_media_change_required_finalize (GObject *object);
 
 /**
  * PkMediaChangeRequiredPrivate:
@@ -45,9 +45,9 @@ static void     pk_media_change_required_finalize	(GObject     *object);
  **/
 struct _PkMediaChangeRequiredPrivate
 {
-	PkMediaTypeEnum			 media_type;
-	gchar				*media_id;
-	gchar				*media_text;
+	PkMediaTypeEnum media_type;
+	gchar *media_id;
+	gchar *media_text;
 };
 
 enum {
@@ -65,7 +65,10 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkMediaChangeRequired, pk_media_change_required, PK_
  * pk_media_change_required_get_property:
  **/
 static void
-pk_media_change_required_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+pk_media_change_required_get_property (GObject *object,
+				       guint prop_id,
+				       GValue *value,
+				       GParamSpec *pspec)
 {
 	PkMediaChangeRequired *media_change_required = PK_MEDIA_CHANGE_REQUIRED (object);
 	PkMediaChangeRequiredPrivate *priv = GET_PRIVATE(media_change_required);
@@ -90,7 +93,10 @@ pk_media_change_required_get_property (GObject *object, guint prop_id, GValue *v
  * pk_media_change_required_set_property:
  **/
 static void
-pk_media_change_required_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_media_change_required_set_property (GObject *object,
+				       guint prop_id,
+				       const GValue *value,
+				       GParamSpec *pspec)
 {
 	PkMediaChangeRequired *media_change_required = PK_MEDIA_CHANGE_REQUIRED (object);
 	PkMediaChangeRequiredPrivate *priv = GET_PRIVATE(media_change_required);
@@ -130,8 +136,11 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("media-type", NULL, NULL,
-				   PK_TYPE_MEDIA_TYPE_ENUM, PK_MEDIA_TYPE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("media-type",
+				   NULL,
+				   NULL,
+				   PK_TYPE_MEDIA_TYPE_ENUM,
+				   PK_MEDIA_TYPE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_TYPE, pspec);
 
@@ -140,7 +149,9 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("media-id", NULL, NULL,
+	pspec = g_param_spec_string ("media-id",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_ID, pspec);
@@ -150,7 +161,9 @@ pk_media_change_required_class_init (PkMediaChangeRequiredClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("media-text", NULL, NULL,
+	pspec = g_param_spec_string ("media-text",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_MEDIA_TEXT, pspec);

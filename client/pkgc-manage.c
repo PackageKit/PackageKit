@@ -836,10 +836,7 @@ pkgc_offline_update (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **
 						"  status  - show status information about a prepared or finished offline update");
 
 	/* parse options */
-	option_context = pkgc_option_context_for_command (
-		ctx, cmd,
-		"[REQUEST]",
-		cmd_description);
+	option_context = pkgc_option_context_for_command (ctx, cmd, "[REQUEST]", cmd_description);
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -1031,25 +1028,25 @@ void
 pkgc_register_manage_commands (PkgcliContext *ctx)
 {
 	pkgc_context_register_command (
-		ctx,
-       "refresh",
-       pkgc_refresh,
-       /* TRANSLATORS: Description for refresh command in pkgcli help */
-       _("Refresh package metadata"));
+	    ctx,
+	    "refresh",
+	    pkgc_refresh,
+	    /* TRANSLATORS: Description for refresh command in pkgcli help */
+	    _("Refresh package metadata"));
 
 	pkgc_context_register_command (
-		ctx,
-		"install",
-		pkgc_install,
-		/* TRANSLATORS: Description for install command in pkgcli help */
-		_("Install packages"));
+	    ctx,
+	    "install",
+	    pkgc_install,
+	    /* TRANSLATORS: Description for install command in pkgcli help */
+	    _("Install packages"));
 
 	pkgc_context_register_command (
-		ctx,
-		"remove",
-		pkgc_remove,
-		/* TRANSLATORS: Description for remove command in pkgcli help */
-		_("Remove packages"));
+	    ctx,
+	    "remove",
+	    pkgc_remove,
+	    /* TRANSLATORS: Description for remove command in pkgcli help */
+	    _("Remove packages"));
 
 	pkgc_context_register_command (
 	    ctx,
@@ -1073,30 +1070,30 @@ pkgc_register_manage_commands (PkgcliContext *ctx)
 	    _("Download packages"));
 
 	pkgc_context_register_command (
-		ctx,
-		"offline-update",
-		pkgc_offline_update,
-		/* TRANSLATORS: Description for offline-update command in pkgcli help */
-		_("Manage offline system updates"));
+	    ctx,
+	    "offline-update",
+	    pkgc_offline_update,
+	    /* TRANSLATORS: Description for offline-update command in pkgcli help */
+	    _("Manage offline system updates"));
 
 	pkgc_context_register_command (
-		ctx,
-		"install-sig",
-		pkgc_install_sig,
-		/* TRANSLATORS: Description for install-sig command in pkgcli help */
-		_("Install package signature"));
+	    ctx,
+	    "install-sig",
+	    pkgc_install_sig,
+	    /* TRANSLATORS: Description for install-sig command in pkgcli help */
+	    _("Install package signature"));
 
 	pkgc_context_register_command (
-		ctx,
-		"repair",
-		pkgc_repair,
-		/* TRANSLATORS: Description for repair command in pkgcli help */
-		_("Repair package system"));
+	    ctx,
+	    "repair",
+	    pkgc_repair,
+	    /* TRANSLATORS: Description for repair command in pkgcli help */
+	    _("Repair package system"));
 
 	pkgc_context_register_command (
-		ctx,
-		"quit",
-		pkgc_suggest_quit,
-		/* TRANSLATORS: Description for quit command in pkgcli help */
-		_("Safely stop the PackageKit daemon"));
+	    ctx,
+	    "quit",
+	    pkgc_suggest_quit,
+	    /* TRANSLATORS: Description for quit command in pkgcli help */
+	    _("Safely stop the PackageKit daemon"));
 }

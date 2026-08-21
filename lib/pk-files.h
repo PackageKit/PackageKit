@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -32,16 +32,16 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_FILES		(pk_files_get_type ())
-#define PK_FILES(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_FILES, PkFiles))
-#define PK_FILES_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_FILES, PkFilesClass))
-#define PK_IS_FILES(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_FILES))
-#define PK_IS_FILES_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_FILES))
-#define PK_FILES_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_FILES, PkFilesClass))
+#define PK_TYPE_FILES	      (pk_files_get_type ())
+#define PK_FILES(o)	      (G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_FILES, PkFiles))
+#define PK_FILES_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_FILES, PkFilesClass))
+#define PK_IS_FILES(o)	      (G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_FILES))
+#define PK_IS_FILES_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_FILES))
+#define PK_FILES_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_FILES, PkFilesClass))
 
-typedef struct _PkFilesPrivate	PkFilesPrivate;
-typedef struct _PkFiles		PkFiles;
-typedef struct _PkFilesClass	PkFilesClass;
+typedef struct _PkFilesPrivate PkFilesPrivate;
+typedef struct _PkFiles	       PkFiles;
+typedef struct _PkFilesClass   PkFilesClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkFiles, g_object_unref)
@@ -49,13 +49,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkFiles, g_object_unref)
 
 struct _PkFiles
 {
-	 PkSource		 parent;
-	 PkFilesPrivate		*priv;
+	PkSource	parent;
+	PkFilesPrivate *priv;
 };
 
 struct _PkFilesClass
 {
-	PkSourceClass	parent_class;
+	PkSourceClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -64,12 +64,11 @@ struct _PkFilesClass
 	void (*_pk_reserved5) (void);
 };
 
-GType		 pk_files_get_type			(void);
-PkFiles		*pk_files_new				(void);
-const gchar	*pk_files_get_package_id		(PkFiles	*files);
-gchar **	 pk_files_get_files			(PkFiles	*files);
+GType	     pk_files_get_type (void);
+PkFiles	    *pk_files_new (void);
+const gchar *pk_files_get_package_id (PkFiles *files);
+gchar	   **pk_files_get_files (PkFiles *files);
 
 G_END_DECLS
 
 #endif /* __PK_FILES_H */
-

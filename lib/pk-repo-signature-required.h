@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -32,16 +32,23 @@
 
 G_BEGIN_DECLS
 
-#define PK_TYPE_REPO_SIGNATURE_REQUIRED		(pk_repo_signature_required_get_type ())
-#define PK_REPO_SIGNATURE_REQUIRED(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequired))
-#define PK_REPO_SIGNATURE_REQUIRED_CLASS(k)	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequiredClass))
-#define PK_IS_REPO_SIGNATURE_REQUIRED(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED))
-#define PK_IS_REPO_SIGNATURE_REQUIRED_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REPO_SIGNATURE_REQUIRED))
-#define PK_REPO_SIGNATURE_REQUIRED_GET_CLASS(o)	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequiredClass))
+#define PK_TYPE_REPO_SIGNATURE_REQUIRED (pk_repo_signature_required_get_type ())
+#define PK_REPO_SIGNATURE_REQUIRED(o) \
+	(G_TYPE_CHECK_INSTANCE_CAST ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequired))
+#define PK_REPO_SIGNATURE_REQUIRED_CLASS(k) \
+	(G_TYPE_CHECK_CLASS_CAST((k), PK_TYPE_REPO_SIGNATURE_REQUIRED, PkRepoSignatureRequiredClass))
+#define PK_IS_REPO_SIGNATURE_REQUIRED(o) \
+	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_REPO_SIGNATURE_REQUIRED))
+#define PK_IS_REPO_SIGNATURE_REQUIRED_CLASS(k) \
+	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_REPO_SIGNATURE_REQUIRED))
+#define PK_REPO_SIGNATURE_REQUIRED_GET_CLASS(o)                      \
+	(G_TYPE_INSTANCE_GET_CLASS ((o),                             \
+				    PK_TYPE_REPO_SIGNATURE_REQUIRED, \
+				    PkRepoSignatureRequiredClass))
 
-typedef struct _PkRepoSignatureRequiredPrivate	PkRepoSignatureRequiredPrivate;
-typedef struct _PkRepoSignatureRequired		PkRepoSignatureRequired;
-typedef struct _PkRepoSignatureRequiredClass	PkRepoSignatureRequiredClass;
+typedef struct _PkRepoSignatureRequiredPrivate PkRepoSignatureRequiredPrivate;
+typedef struct _PkRepoSignatureRequired	       PkRepoSignatureRequired;
+typedef struct _PkRepoSignatureRequiredClass   PkRepoSignatureRequiredClass;
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRepoSignatureRequired, g_object_unref)
@@ -49,13 +56,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(PkRepoSignatureRequired, g_object_unref)
 
 struct _PkRepoSignatureRequired
 {
-	 PkSource			 parent;
-	 PkRepoSignatureRequiredPrivate	*priv;
+	PkSource			parent;
+	PkRepoSignatureRequiredPrivate *priv;
 };
 
 struct _PkRepoSignatureRequiredClass
 {
-	PkSourceClass	parent_class;
+	PkSourceClass parent_class;
 	/* padding for future expansion */
 	void (*_pk_reserved1) (void);
 	void (*_pk_reserved2) (void);
@@ -64,10 +71,9 @@ struct _PkRepoSignatureRequiredClass
 	void (*_pk_reserved5) (void);
 };
 
-GType			 pk_repo_signature_required_get_type		(void);
-PkRepoSignatureRequired	*pk_repo_signature_required_new			(void);
+GType			 pk_repo_signature_required_get_type (void);
+PkRepoSignatureRequired *pk_repo_signature_required_new (void);
 
 G_END_DECLS
 
 #endif /* __PK_REPO_SIGNATURE_REQUIRED_H */
-

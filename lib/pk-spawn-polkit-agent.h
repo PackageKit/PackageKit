@@ -22,7 +22,7 @@
 #ifndef __PK_SPAWN_POLKIT_AGENT_H
 #define __PK_SPAWN_POLKIT_AGENT_H
 
-int pk_polkit_agent_open(void);
-void pk_polkit_agent_close(void);
+int  pk_polkit_agent_open (void);
+void pk_polkit_agent_close (void);
 
 #endif

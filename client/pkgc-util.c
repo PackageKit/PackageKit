@@ -73,14 +73,14 @@ pkgc_util_setup_proxy (PkgcliContext *ctx, GError **error)
 
 	/* set proxy configuration */
 	return pk_control_set_proxy2 (ctx->control,
-					http_proxy,
-					https_proxy,
-					ftp_proxy,
-					g_getenv ("all_proxy"),
-					g_getenv ("no_proxy"),
-					pac,
-					ctx->cancellable,
-					error);
+				      http_proxy,
+				      https_proxy,
+				      ftp_proxy,
+				      g_getenv ("all_proxy"),
+				      g_getenv ("no_proxy"),
+				      pac,
+				      ctx->cancellable,
+				      error);
 }
 
 /**
@@ -592,15 +592,23 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		return;
 
 	g_object_get (details,
-			  "package-id", &package_id,
-			  "license", &license,
-			  "description", &description,
-			  "url", &url,
-			  "summary", &summary,
-			  "group", &group,
-			  "size", &install_size,
-			  "download-size", &download_size,
-			  NULL);
+		      "package-id",
+		      &package_id,
+		      "license",
+		      &license,
+		      "description",
+		      &description,
+		      "url",
+		      &url,
+		      "summary",
+		      &summary,
+		      "group",
+		      &group,
+		      "size",
+		      &install_size,
+		      "download-size",
+		      &download_size,
+		      NULL);
 
 	split = pk_package_id_split (package_id);
 	if (split == NULL)

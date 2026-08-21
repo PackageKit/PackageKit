@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -53,7 +53,10 @@ typedef guint64 PkBitfield;
  *
  * Set a value in a bitfield
  */
-#define pk_bitfield_add(bitfield,enum)		do { ((bitfield) |= (pk_bitfield_value(enum))); } while (0)
+#define pk_bitfield_add(bitfield, enum)                     \
+	do {                                                \
+		((bitfield) |= (pk_bitfield_value (enum))); \
+	} while (0)
 
 /**
  * pk_bitfield_remove:
@@ -62,7 +65,10 @@ typedef guint64 PkBitfield;
  *
  * Remove a value from a bitfield
  */
-#define pk_bitfield_remove(bitfield,enum)	do { ((bitfield) &= ~(pk_bitfield_value(enum))); } while (0)
+#define pk_bitfield_remove(bitfield, enum)                   \
+	do {                                                 \
+		((bitfield) &= ~(pk_bitfield_value (enum))); \
+	} while (0)
 
 /**
  * pk_bitfield_invert:
@@ -71,7 +77,10 @@ typedef guint64 PkBitfield;
  *
  * Invert a value in a bitfield
  */
-#define pk_bitfield_invert(bitfield,enum)	do { ((bitfield) ^= (pk_bitfield_value(enum))); } while (0)
+#define pk_bitfield_invert(bitfield, enum)                  \
+	do {                                                \
+		((bitfield) ^= (pk_bitfield_value (enum))); \
+	} while (0)
 
 /**
  * pk_bitfield_contain:
@@ -82,7 +91,7 @@ typedef guint64 PkBitfield;
  *
  * Return value: %TRUE if the bitfield contains this value
  */
-#define pk_bitfield_contain(bitfield,enum)	(((bitfield) & (pk_bitfield_value(enum))) > 0)
+#define pk_bitfield_contain(bitfield, enum) (((bitfield) & (pk_bitfield_value (enum))) > 0)
 
 /**
  * pk_bitfield_value:
@@ -92,21 +101,22 @@ typedef guint64 PkBitfield;
  *
  * Return value: a bitfield value
  */
-#define pk_bitfield_value(enum)			((PkBitfield) 1 << (enum))
+#define pk_bitfield_value(enum) ((PkBitfield) 1 << (enum))
 
-gint		 pk_bitfield_contain_priority		(PkBitfield	 values,
-							 gint		 value, ...);
-PkBitfield	 pk_bitfield_from_enums			(gint		 value, ...);
-PkBitfield	 pk_role_bitfield_from_string 		(const gchar	*roles);
-gchar		*pk_role_bitfield_to_string		(PkBitfield	 roles);
-PkBitfield	 pk_group_bitfield_from_string 		(const gchar	*groups);
-gchar		*pk_group_bitfield_to_string		(PkBitfield	 groups);
-PkBitfield	 pk_filter_bitfield_from_string 		(const gchar	*filters);
-gchar		*pk_filter_bitfield_to_string		(PkBitfield	 filters);
-PkBitfield	 pk_transaction_flag_bitfield_from_string (const gchar	*transaction_flags);
-gchar		*pk_transaction_flag_bitfield_to_string	(PkBitfield	 transaction_flags);
+gint	   pk_bitfield_contain_priority (PkBitfield values,
+					 gint	    value,
+					 ...);
+PkBitfield pk_bitfield_from_enums (gint value,
+				   ...);
+PkBitfield pk_role_bitfield_from_string (const gchar *roles);
+gchar	  *pk_role_bitfield_to_string (PkBitfield roles);
+PkBitfield pk_group_bitfield_from_string (const gchar *groups);
+gchar	  *pk_group_bitfield_to_string (PkBitfield groups);
+PkBitfield pk_filter_bitfield_from_string (const gchar *filters);
+gchar	  *pk_filter_bitfield_to_string (PkBitfield filters);
+PkBitfield pk_transaction_flag_bitfield_from_string (const gchar *transaction_flags);
+gchar	  *pk_transaction_flag_bitfield_to_string (PkBitfield transaction_flags);
 
 G_END_DECLS
 
 #endif /* __PK_BITFIELD_H */
-

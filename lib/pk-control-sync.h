@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -31,32 +31,30 @@
 
 G_BEGIN_DECLS
 
-gboolean	 pk_control_get_properties		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gchar		**pk_control_get_transaction_list	(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean	 pk_control_suggest_daemon_quit		(PkControl		*control,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean	 pk_control_set_proxy			(PkControl		*control,
-							 const gchar		*proxy_http,
-							 const gchar		*proxy_ftp,
-							 GCancellable		*cancellable,
-							 GError			**error);
-gboolean	 pk_control_set_proxy2			(PkControl		*control,
-							 const gchar		*proxy_http,
-							 const gchar		*proxy_https,
-							 const gchar		*proxy_ftp,
-							 const gchar		*proxy_socks,
-							 const gchar		*no_proxy,
-							 const gchar		*pac,
-							 GCancellable		*cancellable,
-							 GError			**error);
+gboolean pk_control_get_properties (PkControl	 *control,
+				    GCancellable *cancellable,
+				    GError	**error);
+gchar  **pk_control_get_transaction_list (PkControl    *control,
+					  GCancellable *cancellable,
+					  GError      **error);
+gboolean pk_control_suggest_daemon_quit (PkControl    *control,
+					 GCancellable *cancellable,
+					 GError	     **error);
+gboolean pk_control_set_proxy (PkControl    *control,
+			       const gchar  *proxy_http,
+			       const gchar  *proxy_ftp,
+			       GCancellable *cancellable,
+			       GError	   **error);
+gboolean pk_control_set_proxy2 (PkControl    *control,
+				const gchar  *proxy_http,
+				const gchar  *proxy_https,
+				const gchar  *proxy_ftp,
+				const gchar  *proxy_socks,
+				const gchar  *no_proxy,
+				const gchar  *pac,
+				GCancellable *cancellable,
+				GError	    **error);
 
 G_END_DECLS
 
-
 #endif /* __PK_CONTROL_SYNC_H */
-

@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if !defined (__PACKAGEKIT_H_INSIDE__) && !defined (PK_COMPILATION)
+#if !defined(__PACKAGEKIT_H_INSIDE__) && !defined(PK_COMPILATION)
 #error "Only <packagekit-glib2/packagekit.h> can be included directly."
 #endif
 
@@ -37,35 +37,35 @@ G_BEGIN_DECLS
  *
  * The well-known name for the PackageKit system D-Bus service.
  */
-#define	PK_DBUS_SERVICE			"org.freedesktop.PackageKit"
+#define PK_DBUS_SERVICE "org.freedesktop.PackageKit"
 
 /**
  * PK_DBUS_PATH:
  *
  * The path to the main PackageKit service D-Bus object.
  */
-#define	PK_DBUS_PATH			"/org/freedesktop/PackageKit"
+#define PK_DBUS_PATH "/org/freedesktop/PackageKit"
 
 /**
  * PK_DBUS_INTERFACE:
  *
  * The D-Bus interface used by the PackageKit service.
  */
-#define	PK_DBUS_INTERFACE		"org.freedesktop.PackageKit"
+#define PK_DBUS_INTERFACE "org.freedesktop.PackageKit"
 
 /**
  * PK_DBUS_INTERFACE_TRANSACTION:
  *
  * The D-Bus interface for PackageKit transactions.
  */
-#define	PK_DBUS_INTERFACE_TRANSACTION	"org.freedesktop.PackageKit.Transaction"
+#define PK_DBUS_INTERFACE_TRANSACTION "org.freedesktop.PackageKit.Transaction"
 
 /**
  * PK_DBUS_INTERFACE_OFFLINE:
  *
  * The D-Bus interface for PackageKit offline update functionality
  */
-#define	PK_DBUS_INTERFACE_OFFLINE	"org.freedesktop.PackageKit.Offline"
+#define PK_DBUS_INTERFACE_OFFLINE "org.freedesktop.PackageKit.Offline"
 
 /**
  * PK_PACKAGE_LIST_FILENAME:
@@ -75,7 +75,7 @@ G_BEGIN_DECLS
  * NOTE: This constant is unused and will be removed next time the library
  * soname changes!
  */
-#define	PK_SYSTEM_PACKAGE_LIST_FILENAME	"/var/lib/PackageKit/system.package-list"
+#define PK_SYSTEM_PACKAGE_LIST_FILENAME "/var/lib/PackageKit/system.package-list"
 
 /**
  * PK_PACKAGE_CACHE_FILENAME:
@@ -85,16 +85,14 @@ G_BEGIN_DECLS
  * NOTE: This constant is unused and will be removed next time the library
  * soname changes!
  */
-#define	PK_SYSTEM_PACKAGE_CACHE_FILENAME	"/var/lib/PackageKit/package-cache.db"
+#define PK_SYSTEM_PACKAGE_CACHE_FILENAME "/var/lib/PackageKit/package-cache.db"
 
-gchar		**pk_ptr_array_to_strv			(GPtrArray	*array)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_iso8601_present			(void)
-							 G_GNUC_WARN_UNUSED_RESULT;
-gchar		*pk_iso8601_from_date			(const GDate	*date);
-GDate		*pk_iso8601_to_date			(const gchar	*iso_date);
-GDateTime	*pk_iso8601_to_datetime			(const gchar	*iso_date);
-gchar		*pk_get_distro_id			(void);
+gchar	 **pk_ptr_array_to_strv (GPtrArray *array) G_GNUC_WARN_UNUSED_RESULT;
+gchar	  *pk_iso8601_present (void) G_GNUC_WARN_UNUSED_RESULT;
+gchar	  *pk_iso8601_from_date (const GDate *date);
+GDate	  *pk_iso8601_to_date (const gchar *iso_date);
+GDateTime *pk_iso8601_to_datetime (const gchar *iso_date);
+gchar	  *pk_get_distro_id (void);
 
 G_END_DECLS
 

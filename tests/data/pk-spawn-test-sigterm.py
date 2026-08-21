@@ -15,8 +15,10 @@ from signal import *
 from time import sleep
 from sys import stdout
 
+
 def process_term(signum, frame):
     exit()
+
 
 def main():
     signal(SIGTERM, process_term)
@@ -25,6 +27,7 @@ def main():
         stdout.write("percentage\t%i\n" % (i * 10))
         stdout.flush()
         sleep(0.3)
+
 
 if __name__ == "__main__":
     main()

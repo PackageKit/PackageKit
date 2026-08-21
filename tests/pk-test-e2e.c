@@ -50,7 +50,7 @@ static guint _test_loop_timeout_id = 0;
 static gboolean
 _g_test_hang_check_cb (gpointer user_data)
 {
-	guint timeout_ms = *((guint*) user_data);
+	guint timeout_ms = *((guint *) user_data);
 	g_main_loop_quit (_test_loop);
 	g_warning ("loop not completed in %ims", timeout_ms);
 	g_assert_not_reached ();
@@ -137,12 +137,15 @@ pk_test_offline_func (void)
 	/* set up an offline update */
 	client = pk_client_new ();
 	package_ids = pk_package_ids_from_string ("powertop;1.8-1.fc8;i386;fedora");
-	pk_client_update_packages_async (client,
-					 pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, -1),
-					 package_ids,
-					 NULL,
-					 NULL, NULL,
-					 pk_test_offline_cb, NULL);
+	pk_client_update_packages_async (
+	    client,
+	    pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD, -1),
+	    package_ids,
+	    NULL,
+	    NULL,
+	    NULL,
+	    pk_test_offline_cb,
+	    NULL);
 	_g_test_loop_run_with_timeout (25000);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
@@ -154,7 +157,10 @@ pk_test_offline_func (void)
 	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
 
 	/* trigger */
-	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT, PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
+					     PK_OFFLINE_FLAGS_INTERACTIVE,
+					     NULL,
+					     &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
@@ -172,8 +178,7 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* ensure a cache update kills the prepared update file */
-	pk_client_refresh_cache_async (client, FALSE, NULL, NULL, NULL,
-				       pk_test_offline_cb, NULL);
+	pk_client_refresh_cache_async (client, FALSE, NULL, NULL, NULL, pk_test_offline_cb, NULL);
 	_g_test_loop_run_with_timeout (25000);
 	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
@@ -189,7 +194,7 @@ pk_test_client_helper_output_cb (GSocket *socket, GIOCondition condition, gpoint
 {
 	GError *error = NULL;
 	gsize len;
-	gchar buffer[6] = {0};
+	gchar buffer[6] = { 0 };
 	gboolean ret = TRUE;
 
 	/* the helper process exited */
@@ -248,13 +253,20 @@ pk_test_client_helper_func (void)
 	g_unlink (filename);
 
 	/* start a demo program */
-	ret = pk_client_helper_start (client_helper, filename, (gchar**) argv, (gchar**) envp, &error);
+	ret = pk_client_helper_start (client_helper,
+				      filename,
+				      (gchar **) argv,
+				      (gchar **) envp,
+				      &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (filename, G_FILE_TEST_EXISTS));
 
 	/* create socket */
-	socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, &error);
+	socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+			       G_SOCKET_TYPE_STREAM,
+			       G_SOCKET_PROTOCOL_DEFAULT,
+			       &error);
 	g_assert_no_error (error);
 	g_assert (socket != NULL);
 	g_socket_set_blocking (socket, FALSE);
@@ -294,9 +306,7 @@ pk_test_client_helper_func (void)
 }
 
 static void
-async_result_cb (GObject      *object,
-                 GAsyncResult *result,
-                 void         *user_data)
+async_result_cb (GObject *object, GAsyncResult *result, void *user_data)
 {
 	GAsyncResult **result_out = user_data;
 
@@ -423,8 +433,10 @@ pk_test_client_search_name_cb (GObject *object, GAsyncResult *res, gpointer user
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	g_assert_cmpint (pk_error_get_code (error_code), ==, PK_ERROR_ENUM_TRANSACTION_CANCELLED);
-	g_assert_cmpstr (pk_error_get_details (error_code), ==, "The task was stopped successfully");
-//	g_assert_cmpstr (pk_error_get_details (error_code), ==, "transaction was cancelled");
+	g_assert_cmpstr (pk_error_get_details (error_code),
+			 ==,
+			 "The task was stopped successfully");
+	//	g_assert_cmpstr (pk_error_get_details (error_code), ==, "transaction was cancelled");
 
 	if (error_code != NULL)
 		g_object_unref (error_code);
@@ -434,7 +446,9 @@ pk_test_client_search_name_cb (GObject *object, GAsyncResult *res, gpointer user
 }
 
 static void
-pk_test_client_search_name_cancellable_cancelled_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+pk_test_client_search_name_cancellable_cancelled_cb (GObject *object,
+						     GAsyncResult *res,
+						     gpointer user_data)
 {
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
@@ -505,10 +519,7 @@ pk_test_client_download_cb (GObject *object, GAsyncResult *res, gpointer user_da
 
 	/* check a result */
 	item = g_ptr_array_index (array, 0);
-	g_object_get (item,
-		      "package-id", &package_id,
-		      "files", &files,
-		      NULL);
+	g_object_get (item, "package-id", &package_id, "files", &files, NULL);
 	g_assert_cmpstr (package_id, ==, "powertop-common;1.8-1.fc8;i386;fedora");
 	g_assert_cmpint (g_strv_length (files), ==, 1);
 	g_assert_cmpstr (files[0], ==, "/tmp/powertop-common-1.8-1.fc8.rpm");
@@ -562,7 +573,7 @@ static void
 pk_test_client_func (void)
 {
 	gchar **package_ids;
-//	gchar *file;
+	//	gchar *file;
 	gboolean ret;
 	gchar **values;
 	GError *error = NULL;
@@ -570,7 +581,7 @@ pk_test_client_func (void)
 	gchar *tid;
 	PkRoleEnum role;
 	PkStatusEnum status;
-//	PkResults *results;
+	//	PkResults *results;
 	g_autoptr(GCancellable) cancellable = NULL;
 	g_autoptr(PkClient) client = NULL;
 
@@ -606,8 +617,7 @@ pk_test_client_func (void)
 
 	/* get client */
 	client = pk_client_new ();
-	g_signal_connect (client, "notify::idle",
-		  G_CALLBACK (pk_test_client_notify_idle_cb), NULL);
+	g_signal_connect (client, "notify::idle", G_CALLBACK (pk_test_client_notify_idle_cb), NULL);
 	g_assert (client != NULL);
 
 	/* check idle */
@@ -616,9 +626,14 @@ pk_test_client_func (void)
 
 	/* resolve package */
 	package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
-	pk_client_resolve_async (client, pk_bitfield_value (PK_FILTER_ENUM_INSTALLED), package_ids, NULL,
-		 (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		 (GAsyncReadyCallback) pk_test_client_resolve_cb, NULL);
+	pk_client_resolve_async (client,
+				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+				 package_ids,
+				 NULL,
+				 (PkProgressCallback) pk_test_client_progress_cb,
+				 NULL,
+				 (GAsyncReadyCallback) pk_test_client_resolve_cb,
+				 NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
@@ -629,11 +644,7 @@ pk_test_client_func (void)
 
 	/* get progress of past transaction */
 	progress = pk_client_get_progress (client, _tid, NULL, &error);
-	g_object_get (progress,
-		      "transaction-id", &tid,
-		      "role", &role,
-		      "status", &status,
-		      NULL);
+	g_object_get (progress, "transaction-id", &tid, "role", &role, "status", &status, NULL);
 	g_assert_cmpstr (tid, ==, _tid);
 	g_assert_cmpint (role, ==, PK_ROLE_ENUM_RESOLVE);
 	g_assert_cmpint (status, ==, PK_STATUS_ENUM_FINISHED);
@@ -649,13 +660,17 @@ pk_test_client_func (void)
 	/* reset */
 	_progress_cb = 0;
 	_status_cb = 0;
-//	_package_cb = 0;
+	//	_package_cb = 0;
 
 	/* get details about package */
 	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
-	pk_client_get_details_async (client, package_ids, NULL,
-		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		     (GAsyncReadyCallback) pk_test_client_get_details_cb, NULL);
+	pk_client_get_details_async (client,
+				     package_ids,
+				     NULL,
+				     (PkProgressCallback) pk_test_client_progress_cb,
+				     NULL,
+				     (GAsyncReadyCallback) pk_test_client_get_details_cb,
+				     NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
@@ -667,12 +682,16 @@ pk_test_client_func (void)
 	/* reset */
 	_progress_cb = 0;
 	_status_cb = 0;
-//	_package_cb = 0;
+	//	_package_cb = 0;
 
 	/* get updates */
-	pk_client_get_updates_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), NULL,
-		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		     (GAsyncReadyCallback) pk_test_client_get_updates_cb, NULL);
+	pk_client_get_updates_async (client,
+				     pk_bitfield_value (PK_FILTER_ENUM_NONE),
+				     NULL,
+				     (PkProgressCallback) pk_test_client_progress_cb,
+				     NULL,
+				     (GAsyncReadyCallback) pk_test_client_get_updates_cb,
+				     NULL);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("got updates in %f", g_test_timer_elapsed ());
 
@@ -687,17 +706,28 @@ pk_test_client_func (void)
 	/* search by name */
 	cancellable = g_cancellable_new ();
 	values = g_strsplit ("power", "&", -1);
-	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
-		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		     (GAsyncReadyCallback) pk_test_client_search_name_cb, NULL);
+	pk_client_search_names_async (client,
+				      pk_bitfield_value (PK_FILTER_ENUM_NONE),
+				      values,
+				      cancellable,
+				      (PkProgressCallback) pk_test_client_progress_cb,
+				      NULL,
+				      (GAsyncReadyCallback) pk_test_client_search_name_cb,
+				      NULL);
 	g_timeout_add (500, G_SOURCE_FUNC (pk_test_client_cancel_cb), cancellable);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("cancelled in %f", g_test_timer_elapsed ());
 
 	/* ensure we abort with error if we cancel */
-	pk_client_search_names_async (client, pk_bitfield_value (PK_FILTER_ENUM_NONE), values, cancellable,
-		     (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		     (GAsyncReadyCallback) pk_test_client_search_name_cancellable_cancelled_cb, NULL);
+	pk_client_search_names_async (
+	    client,
+	    pk_bitfield_value (PK_FILTER_ENUM_NONE),
+	    values,
+	    cancellable,
+	    (PkProgressCallback) pk_test_client_progress_cb,
+	    NULL,
+	    (GAsyncReadyCallback) pk_test_client_search_name_cancellable_cancelled_cb,
+	    NULL);
 	_g_test_loop_run_with_timeout (15000);
 
 	g_strfreev (values);
@@ -707,10 +737,15 @@ pk_test_client_func (void)
 
 	/* do the update-packages role to trigger the fake pipe stuff */
 	package_ids = pk_package_ids_from_string ("testsocket;0.1;i386;fedora");
-	pk_client_update_packages_async (client, 0, package_ids,
-					 NULL,
-					 (PkProgressCallback) pk_test_client_progress_cb, NULL,
-					 (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb, NULL);
+	pk_client_update_packages_async (
+	    client,
+	    0,
+	    package_ids,
+	    NULL,
+	    (PkProgressCallback) pk_test_client_progress_cb,
+	    NULL,
+	    (GAsyncReadyCallback) pk_test_client_update_system_socket_test_cb,
+	    NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 
@@ -720,9 +755,14 @@ pk_test_client_func (void)
 
 	/* do downloads */
 	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
-	pk_client_download_packages_async (client, package_ids, "/tmp", cancellable,
-		   (PkProgressCallback) pk_test_client_progress_cb, NULL,
-		   (GAsyncReadyCallback) pk_test_client_download_cb, NULL);
+	pk_client_download_packages_async (client,
+					   package_ids,
+					   "/tmp",
+					   cancellable,
+					   (PkProgressCallback) pk_test_client_progress_cb,
+					   NULL,
+					   (GAsyncReadyCallback) pk_test_client_download_cb,
+					   NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (15000);
 	g_debug ("downloaded and copied in %f", g_test_timer_elapsed ());
@@ -753,9 +793,7 @@ idle_cancel_cb (void *user_data)
 }
 
 static void
-cancellation_progress_cb (PkProgress     *progress,
-                          PkProgressType  type,
-                          void           *user_data)
+cancellation_progress_cb (PkProgress *progress, PkProgressType type, void *user_data)
 {
 	char ***tid_out = user_data;
 
@@ -775,15 +813,15 @@ cancellation_progress_cb (PkProgress     *progress,
 static void
 pk_test_client_cancellation_func (void)
 {
-	g_auto(GStrv) package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
+	g_auto(GStrv)
+		   package_ids = pk_package_ids_from_string ("glib2;2.14.0;i386;fedora&powertop");
 	g_autoptr(PkClient) client = NULL;
 	gboolean idle;
 	const unsigned int n_iterations = g_test_thorough () ? 500 : 250;
 
 	/* get client */
 	client = pk_client_new ();
-	g_signal_connect (client, "notify::idle",
-		  G_CALLBACK (pk_test_client_notify_idle_cb), NULL);
+	g_signal_connect (client, "notify::idle", G_CALLBACK (pk_test_client_notify_idle_cb), NULL);
 	g_assert_nonnull (client);
 
 	/* check idle */
@@ -821,8 +859,10 @@ pk_test_client_cancellation_func (void)
 					 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
 					 package_ids,
 					 cancellable,
-					 (PkProgressCallback) cancellation_progress_cb, tid_wrapper,
-					 (GAsyncReadyCallback) async_result_cb, &async_result);
+					 (PkProgressCallback) cancellation_progress_cb,
+					 tid_wrapper,
+					 (GAsyncReadyCallback) async_result_cb,
+					 &async_result);
 
 		g_source_set_callback (idle_source, idle_cancel_cb, cancellable, NULL);
 		if (!cancel_after_tid_set)
@@ -921,10 +961,14 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* get values */
 	g_object_get (control,
-		      "mime-types", &mime_types,
-		      "roles", &roles,
-		      "filters", &filters,
-		      "groups", &groups,
+		      "mime-types",
+		      &mime_types,
+		      "roles",
+		      &roles,
+		      "filters",
+		      &filters,
+		      "groups",
+		      &groups,
 		      NULL);
 
 	/* check mime_types */
@@ -935,13 +979,16 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 
 	/* check roles */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text, ==, "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
-		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
-		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-		     "search-details;search-file;search-group;search-name;update-packages;"
-		     "what-provides;download-packages;get-distro-upgrades;"
-		     "get-old-transactions;repair-system;get-details-local;"
-		     "get-files-local;upgrade-system");
+	g_assert_cmpstr (text,
+			 ==,
+			 "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
+			 "required-by;get-update-detail;get-updates;install-files;install-packages;"
+			 "install-signature;"
+			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
+			 "search-details;search-file;search-group;search-name;update-packages;"
+			 "what-provides;download-packages;get-distro-upgrades;"
+			 "get-old-transactions;repair-system;get-details-local;"
+			 "get-files-local;upgrade-system");
 	g_free (text);
 
 	/* check filters */
@@ -1008,51 +1055,85 @@ pk_test_control_func (void)
 
 	/* get TID async */
 	_refcount = 1;
-	pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
+	pk_control_get_tid_async (control,
+				  NULL,
+				  (GAsyncReadyCallback) pk_test_control_get_tid_cb,
+				  NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got tid in %f", g_test_timer_elapsed ());
 
 	/* get multiple TIDs async */
 	_refcount = LOOP_SIZE;
 	for (i = 0; i < _refcount; i++) {
-		g_debug ("getting #%i", i+1);
-		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
+		g_debug ("getting #%i", i + 1);
+		pk_control_get_tid_async (control,
+					  NULL,
+					  (GAsyncReadyCallback) pk_test_control_get_tid_cb,
+					  NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got %i tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get properties async */
 	_refcount = 1;
-	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
+	pk_control_get_properties_async (control,
+					 NULL,
+					 (GAsyncReadyCallback) pk_test_control_get_properties_cb,
+					 NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got properties types in %f", g_test_timer_elapsed ());
 
 	/* get properties async (again, to test caching) */
 	_refcount = 1;
-	pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
+	pk_control_get_properties_async (control,
+					 NULL,
+					 (GAsyncReadyCallback) pk_test_control_get_properties_cb,
+					 NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got properties in %f", g_test_timer_elapsed ());
 
 	/* do multiple requests async */
 	_refcount = LOOP_SIZE * 4;
 	for (i = 0; i < _refcount; i++) {
-		g_debug ("getting #%i", i+1);
-		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
-		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
-		pk_control_get_tid_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_tid_cb, NULL);
-		pk_control_get_properties_async (control, NULL, (GAsyncReadyCallback) pk_test_control_get_properties_cb, NULL);
+		g_debug ("getting #%i", i + 1);
+		pk_control_get_tid_async (control,
+					  NULL,
+					  (GAsyncReadyCallback) pk_test_control_get_tid_cb,
+					  NULL);
+		pk_control_get_properties_async (
+		    control,
+		    NULL,
+		    (GAsyncReadyCallback) pk_test_control_get_properties_cb,
+		    NULL);
+		pk_control_get_tid_async (control,
+					  NULL,
+					  (GAsyncReadyCallback) pk_test_control_get_tid_cb,
+					  NULL);
+		pk_control_get_properties_async (
+		    control,
+		    NULL,
+		    (GAsyncReadyCallback) pk_test_control_get_properties_cb,
+		    NULL);
 	}
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got %i 2*properties and 2*tids in %f", LOOP_SIZE, g_test_timer_elapsed ());
 
 	/* get time since async */
-	pk_control_get_time_since_action_async (control, PK_ROLE_ENUM_GET_UPDATES, NULL, (GAsyncReadyCallback) pk_test_control_get_time_since_action_cb, NULL);
+	pk_control_get_time_since_action_async (
+	    control,
+	    PK_ROLE_ENUM_GET_UPDATES,
+	    NULL,
+	    (GAsyncReadyCallback) pk_test_control_get_time_since_action_cb,
+	    NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got get time since in %f", g_test_timer_elapsed ());
 
 	/* get auth state async */
-	pk_control_can_authorize_async (control, "org.freedesktop.packagekit.system-update", NULL,
-		(GAsyncReadyCallback) pk_test_control_can_authorize_cb, NULL);
+	pk_control_can_authorize_async (control,
+					"org.freedesktop.packagekit.system-update",
+					NULL,
+					(GAsyncReadyCallback) pk_test_control_can_authorize_cb,
+					NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("get auth state in %f", g_test_timer_elapsed ());
 
@@ -1074,19 +1155,20 @@ pk_test_control_func (void)
 	g_assert (ret);
 
 	/* get data */
-	g_object_get (control,
-		      "roles", &roles,
-		      NULL);
+	g_object_get (control, "roles", &roles, NULL);
 
 	/* check data */
 	text = pk_role_bitfield_to_string (roles);
-	g_assert_cmpstr (text, ==, "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
-		     "required-by;get-update-detail;get-updates;install-files;install-packages;install-signature;"
-		     "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
-		     "search-details;search-file;search-group;search-name;update-packages;"
-		     "what-provides;download-packages;get-distro-upgrades;"
-		     "get-old-transactions;repair-system;get-details-local;"
-		     "get-files-local;upgrade-system");
+	g_assert_cmpstr (text,
+			 ==,
+			 "cancel;depends-on;get-details;get-files;get-packages;get-repo-list;"
+			 "required-by;get-update-detail;get-updates;install-files;install-packages;"
+			 "install-signature;"
+			 "refresh-cache;remove-packages;repo-enable;repo-set-data;resolve;"
+			 "search-details;search-file;search-group;search-name;update-packages;"
+			 "what-provides;download-packages;get-distro-upgrades;"
+			 "get-old-transactions;repair-system;get-details-local;"
+			 "get-files-local;upgrade-system");
 	g_free (text);
 
 	g_object_unref (control);
@@ -1184,7 +1266,12 @@ pk_test_package_sack_func (void)
 	g_assert (size == 1);
 
 	/* merge resolve results */
-	pk_package_sack_resolve_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_resolve_cb, NULL);
+	pk_package_sack_resolve_async (sack,
+				       NULL,
+				       NULL,
+				       NULL,
+				       (GAsyncReadyCallback) pk_test_package_sack_resolve_cb,
+				       NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("resolved in %f", g_test_timer_elapsed ());
 
@@ -1193,10 +1280,7 @@ pk_test_package_sack_func (void)
 	g_assert (package != NULL);
 
 	/* check new summary */
-	g_object_get (package,
-		      "info", &info,
-		      "summary", &text,
-		      NULL);
+	g_object_get (package, "info", &info, "summary", &text, NULL);
 	g_assert_cmpstr (text, ==, "Power consumption monitor");
 
 	/* check new info */
@@ -1206,7 +1290,12 @@ pk_test_package_sack_func (void)
 	g_object_unref (package);
 
 	/* merge details results */
-	pk_package_sack_get_details_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_details_cb, NULL);
+	pk_package_sack_get_details_async (sack,
+					   NULL,
+					   NULL,
+					   NULL,
+					   (GAsyncReadyCallback) pk_test_package_sack_details_cb,
+					   NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got details in %f", g_test_timer_elapsed ());
 
@@ -1215,15 +1304,19 @@ pk_test_package_sack_func (void)
 	g_assert (package != NULL);
 
 	/* check new url */
-	g_object_get (package,
-		      "url", &text,
-		      NULL);
+	g_object_get (package, "url", &text, NULL);
 	g_assert_cmpstr (text, ==, "http://live.gnome.org/powertop");
 	g_object_unref (package);
 	g_free (text);
 
 	/* merge update detail results */
-	pk_package_sack_get_update_detail_async (sack, NULL, NULL, NULL, (GAsyncReadyCallback) pk_test_package_sack_update_detail_cb, NULL);
+	pk_package_sack_get_update_detail_async (
+	    sack,
+	    NULL,
+	    NULL,
+	    NULL,
+	    (GAsyncReadyCallback) pk_test_package_sack_update_detail_cb,
+	    NULL);
 	_g_test_loop_run_with_timeout (5000);
 	g_debug ("got update detail in %f", g_test_timer_elapsed ());
 
@@ -1232,9 +1325,7 @@ pk_test_package_sack_func (void)
 	g_assert (package != NULL);
 
 	/* check new vendor url */
-	g_object_get (package,
-		      "update-vendor-urls", &strv,
-		      NULL);
+	g_object_get (package, "update-vendor-urls", &strv, NULL);
 	g_assert (strv != NULL);
 	g_assert_cmpstr (strv[0], ==, "http://www.distro-update.org/page?moo");
 	g_strfreev (strv);
@@ -1290,9 +1381,7 @@ pk_test_task_progress_cb (PkProgress *progress, PkProgressType type, gpointer us
 {
 	PkStatusEnum status;
 	if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_object_get (progress,
-		      "status", &status,
-		      NULL);
+		g_object_get (progress, "status", &status, NULL);
 		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
@@ -1308,9 +1397,13 @@ pk_test_task_func (void)
 
 	/* install package */
 	package_ids = pk_package_ids_from_id ("glib2;2.14.0;i386;fedora");
-	pk_task_install_packages_async (task, package_ids, NULL,
-		        (PkProgressCallback) pk_test_task_progress_cb, NULL,
-		        (GAsyncReadyCallback) pk_test_task_install_packages_cb, NULL);
+	pk_task_install_packages_async (task,
+					package_ids,
+					NULL,
+					(PkProgressCallback) pk_test_task_progress_cb,
+					NULL,
+					(GAsyncReadyCallback) pk_test_task_install_packages_cb,
+					NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
 	g_debug ("installed in %f", g_test_timer_elapsed ());
@@ -1353,9 +1446,7 @@ pk_test_task_text_progress_cb (PkProgress *progress, PkProgressType type, gpoint
 {
 	PkStatusEnum status;
 	if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_object_get (progress,
-		      "status", &status,
-		      NULL);
+		g_object_get (progress, "status", &status, NULL);
 		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
@@ -1377,9 +1468,13 @@ pk_test_task_text_func (void)
 
 	/* install package */
 	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
-	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
-		        (PkProgressCallback) pk_test_task_text_progress_cb, NULL,
-		        (GAsyncReadyCallback) pk_test_task_text_install_packages_cb, NULL);
+	pk_task_install_packages_async (PK_TASK (task),
+					package_ids,
+					NULL,
+					(PkProgressCallback) pk_test_task_text_progress_cb,
+					NULL,
+					(GAsyncReadyCallback) pk_test_task_text_install_packages_cb,
+					NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
 	g_debug ("installed in %f", g_test_timer_elapsed ());
@@ -1422,9 +1517,7 @@ pk_test_task_wrapper_progress_cb (PkProgress *progress, PkProgressType type, gpo
 {
 	PkStatusEnum status;
 	if (type == PK_PROGRESS_TYPE_STATUS) {
-		g_object_get (progress,
-		      "status", &status,
-		      NULL);
+		g_object_get (progress, "status", &status, NULL);
 		g_debug ("now %s", pk_status_enum_to_string (status));
 	}
 }
@@ -1440,9 +1533,14 @@ pk_test_task_wrapper_func (void)
 
 	/* install package */
 	package_ids = pk_package_ids_from_id ("vips-doc;7.12.4-2.fc8;noarch;linva");
-	pk_task_install_packages_async (PK_TASK (task), package_ids, NULL,
-		        (PkProgressCallback) pk_test_task_wrapper_progress_cb, NULL,
-		        (GAsyncReadyCallback) pk_test_task_wrapper_install_packages_cb, NULL);
+	pk_task_install_packages_async (
+	    PK_TASK (task),
+	    package_ids,
+	    NULL,
+	    (PkProgressCallback) pk_test_task_wrapper_progress_cb,
+	    NULL,
+	    (GAsyncReadyCallback) pk_test_task_wrapper_install_packages_cb,
+	    NULL);
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
 	g_debug ("installed in %f", g_test_timer_elapsed ());
@@ -1507,10 +1605,8 @@ pk_test_transaction_list_func (void)
 	/* get transaction_list object */
 	tlist = pk_transaction_list_new ();
 	g_assert (tlist != NULL);
-	g_signal_connect (tlist, "added",
-		  G_CALLBACK (pk_test_transaction_list_added_cb), NULL);
-	g_signal_connect (tlist, "removed",
-		  G_CALLBACK (pk_test_transaction_list_removed_cb), NULL);
+	g_signal_connect (tlist, "added", G_CALLBACK (pk_test_transaction_list_added_cb), NULL);
+	g_signal_connect (tlist, "removed", G_CALLBACK (pk_test_transaction_list_removed_cb), NULL);
 
 	/* get client */
 	client = pk_client_new ();
@@ -1567,7 +1663,8 @@ main (int argc, char **argv)
 	g_setenv ("PK_TEST_DATA_DIR", TESTDATADIR, TRUE);
 
 	/* tests go here */
-	if(0) g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
+	if (0)
+		g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
 	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
@@ -1581,4 +1678,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-

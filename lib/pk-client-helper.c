@@ -54,7 +54,7 @@
 
 #include "pk-client-helper.h"
 
-static void     pk_client_helper_finalize	(GObject     *object);
+static void pk_client_helper_finalize (GObject *object);
 
 /**
  * PkClientHelperPrivate:
@@ -63,36 +63,36 @@ static void     pk_client_helper_finalize	(GObject     *object);
  **/
 struct _PkClientHelperPrivate
 {
-	gchar				**argv;
-	gchar				**envp;
-	GFile				*socket_file;
-	GSocket				*socket;
-	GIOChannel			*socket_channel;
-	GSource				*socket_channel_source;
-	GPtrArray			*children;
-	GPid				 kde_helper_pid;
+	gchar **argv;
+	gchar **envp;
+	GFile *socket_file;
+	GSocket *socket;
+	GIOChannel *socket_channel;
+	GSource *socket_channel_source;
+	GPtrArray *children;
+	GPid kde_helper_pid;
 };
 
 typedef struct
 {
-	PkClientHelper			*helper;
-	GSocket				*socket;
-	GIOChannel			*socket_channel;
-	GSource				*socket_channel_source;
-	GPid				 pid;
-	GIOChannel			*stdin_channel;
-	GIOChannel			*stdout_channel;
-	GIOChannel			*stderr_channel;
-	GSource				*stdout_channel_source;
-	GSource				*stderr_channel_source;
+	PkClientHelper *helper;
+	GSocket *socket;
+	GIOChannel *socket_channel;
+	GSource *socket_channel_source;
+	GPid pid;
+	GIOChannel *stdin_channel;
+	GIOChannel *stdout_channel;
+	GIOChannel *stderr_channel;
+	GSource *stdout_channel_source;
+	GSource *stderr_channel_source;
 } PkClientHelperChild;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkClientHelper, pk_client_helper, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_client_helper_get_instance_private (o))
 
 /* how long to wait for a helper to exit on SIGTERM before escalating to SIGKILL */
-#define PK_CLIENT_HELPER_SIGKILL_TIMEOUT	5 /* seconds */
-#define PK_CLIENT_HELPER_POLL_DELAY		50 /* ms */
+#define PK_CLIENT_HELPER_SIGKILL_TIMEOUT 5  /* seconds */
+#define PK_CLIENT_HELPER_POLL_DELAY	 50 /* ms */
 
 /*
  * pk_client_helper_kill_child:
@@ -111,7 +111,7 @@ pk_client_helper_kill_child (GPid pid)
 	if (pid <= 0)
 		return;
 
-	g_debug ("sending SIGTERM %ld", (long)pid);
+	g_debug ("sending SIGTERM %ld", (long) pid);
 	if (kill (pid, SIGTERM) < 0 && errno == ESRCH) {
 		/* already gone, just reap it */
 		waitpid (pid, NULL, WNOHANG);
@@ -127,7 +127,7 @@ pk_client_helper_kill_child (GPid pid)
 	}
 
 	/* still running, murder it */
-	g_debug ("helper %ld did not exit on SIGTERM, sending SIGKILL", (long)pid);
+	g_debug ("helper %ld did not exit on SIGTERM, sending SIGKILL", (long) pid);
 	kill (pid, SIGKILL);
 	waitpid (pid, NULL, 0);
 }
@@ -211,7 +211,9 @@ pk_client_helper_stop (PkClientHelper *client_helper, GError **error)
  * pk_client_helper_copy_stdout_cb:
  **/
 static gboolean
-pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+pk_client_helper_copy_stdout_cb (GIOChannel *source,
+				 GIOCondition condition,
+				 PkClientHelperChild *child)
 {
 	gchar data[1024];
 	gsize len = 0;
@@ -249,12 +251,15 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 	g_debug ("child has input to push to the socket: %s", data);
 	status = g_io_channel_write_chars (child->socket_channel, data, len, &written, &error);
 	if (status != G_IO_STATUS_NORMAL) {
-		g_warning ("failed to write to socket: %s", error ?  error->message : "Unknown error");
+		g_warning ("failed to write to socket: %s",
+			   error ? error->message : "Unknown error");
 		return G_SOURCE_REMOVE;
 	}
 	if (written != len) {
 		g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
-			   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
+			   "only wrote %" G_GSIZE_FORMAT " bytes",
+			   len,
+			   written);
 		return G_SOURCE_REMOVE;
 	}
 	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to socket", written);
@@ -266,7 +271,9 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
  * pk_client_helper_echo_stderr_cb:
  **/
 static gboolean
-pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+pk_client_helper_echo_stderr_cb (GIOChannel *source,
+				 GIOCondition condition,
+				 PkClientHelperChild *child)
 {
 	gchar data[1024];
 	gsize len = 0;
@@ -290,7 +297,9 @@ pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkC
  * pk_client_helper_copy_conn_cb:
  **/
 static gboolean
-pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
+pk_client_helper_copy_conn_cb (GIOChannel *source,
+			       GIOCondition condition,
+			       PkClientHelperChild *child)
 {
 	PkClientHelperPrivate *helper_priv = pk_client_helper_get_instance_private (child->helper);
 	gchar data[1024];
@@ -304,7 +313,8 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 		g_debug ("socket hung up");
 
 		/* Shutdown helper */
-		if (g_io_channel_shutdown (child->stdin_channel, TRUE, &error) != G_IO_STATUS_NORMAL)
+		if (g_io_channel_shutdown (child->stdin_channel, TRUE, &error) !=
+		    G_IO_STATUS_NORMAL)
 			g_warning ("failed to close connection to child: %s", error->message);
 		return G_SOURCE_REMOVE;
 	}
@@ -320,12 +330,15 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 	g_debug ("socket has data to push to child: '%s'", data);
 	status = g_io_channel_write_chars (child->stdin_channel, data, len, &written, &error);
 	if (status != G_IO_STATUS_NORMAL) {
-		g_warning ("failed to write to stdin: %s", error ? error->message : "Unknown error");
+		g_warning ("failed to write to stdin: %s",
+			   error ? error->message : "Unknown error");
 		return G_SOURCE_REMOVE;
 	}
 	if (written != len) {
 		g_warning ("failed to write %" G_GSIZE_FORMAT " bytes, "
-			   "only wrote %" G_GSIZE_FORMAT " bytes", len, written);
+			   "only wrote %" G_GSIZE_FORMAT " bytes",
+			   len,
+			   written);
 		return G_SOURCE_REMOVE;
 	}
 	g_debug ("wrote %" G_GSIZE_FORMAT " bytes to stdin of %s", written, helper_priv->argv[0]);
@@ -334,7 +347,10 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 }
 
 static GSource *
-make_input_source (GIOChannel *channel, GIOCondition condition, GSourceFunc func, gpointer user_data)
+make_input_source (GIOChannel *channel,
+		   GIOCondition condition,
+		   GSourceFunc func,
+		   gpointer user_data)
 {
 	GSource *source;
 	GMainContext *context;
@@ -360,7 +376,9 @@ make_input_source (GIOChannel *channel, GIOCondition condition, GSourceFunc func
  * pk_client_helper_accept_connection_cb:
  **/
 static gboolean
-pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
+pk_client_helper_accept_connection_cb (GIOChannel *source,
+				       GIOCondition condition,
+				       PkClientHelper *client_helper)
 {
 	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
 	g_autoptr(GSocket) socket = NULL;
@@ -403,7 +421,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	child = g_slice_new0 (PkClientHelperChild);
 	g_ptr_array_add (priv->children, child);
-        child->helper = client_helper;
+	child->helper = client_helper;
 	child->socket = g_steal_pointer (&socket);
 	child->pid = pid;
 	child->stdin_channel = g_io_channel_unix_new (standard_input);
@@ -437,8 +455,11 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	/* socket has data */
 	fd = g_socket_get_fd (child->socket);
 	child->socket_channel = g_io_channel_unix_new (fd);
-	child->socket_channel_source =
-		make_input_source (child->socket_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
+	child->socket_channel_source = make_input_source (
+	    child->socket_channel,
+	    G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+	    G_SOURCE_FUNC (pk_client_helper_copy_conn_cb),
+	    child);
 	/* binary data */
 	status = g_io_channel_set_encoding (child->socket_channel, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
@@ -448,10 +469,16 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	g_io_channel_set_buffered (child->socket_channel, FALSE);
 
 	/* frontend has data */
-	child->stdout_channel_source =
-		make_input_source (child->stdout_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
-	child->stderr_channel_source =
-		make_input_source (child->stderr_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
+	child->stdout_channel_source = make_input_source (
+	    child->stdout_channel,
+	    G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+	    G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb),
+	    child);
+	child->stderr_channel_source = make_input_source (
+	    child->stderr_channel,
+	    G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+	    G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb),
+	    child);
 	return G_SOURCE_CONTINUE;
 }
 
@@ -473,7 +500,8 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 gboolean
 pk_client_helper_start (PkClientHelper *client_helper,
 			const gchar *socket_filename,
-			gchar **argv, gchar **envp,
+			gchar **argv,
+			gchar **envp,
 			GError **error)
 {
 	gboolean use_kde_helper = FALSE;
@@ -520,7 +548,10 @@ pk_client_helper_start (PkClientHelper *client_helper,
 	}
 
 	/* create socket */
-	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX, G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_DEFAULT, error);
+	priv->socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				     G_SOCKET_TYPE_STREAM,
+				     G_SOCKET_PROTOCOL_DEFAULT,
+				     error);
 	if (priv->socket == NULL)
 		return FALSE;
 
@@ -578,7 +609,8 @@ pk_client_helper_start (PkClientHelper *client_helper,
 gboolean
 pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 				    GSocket *socket,
-				    gchar **argv, gchar **envp,
+				    gchar **argv,
+				    gchar **envp,
 				    GError **error)
 {
 	gint fd;
@@ -604,8 +636,11 @@ pk_client_helper_start_with_socket (PkClientHelper *client_helper,
 	/* socket has data */
 	fd = g_socket_get_fd (priv->socket);
 	priv->socket_channel = g_io_channel_unix_new (fd);
-	priv->socket_channel_source =
-		make_input_source (priv->socket_channel, G_IO_IN, G_SOURCE_FUNC (pk_client_helper_accept_connection_cb), client_helper);
+	priv->socket_channel_source = make_input_source (
+	    priv->socket_channel,
+	    G_IO_IN,
+	    G_SOURCE_FUNC (pk_client_helper_accept_connection_cb),
+	    client_helper);
 	return TRUE;
 }
 
@@ -629,8 +664,7 @@ pk_client_helper_is_active (PkClientHelper *client_helper)
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
 
 		/* the sources are NULL if child setup failed halfway through */
-		if (child->socket_channel_source == NULL ||
-		    child->stdout_channel_source == NULL)
+		if (child->socket_channel_source == NULL || child->stdout_channel_source == NULL)
 			continue;
 		if (!g_source_is_destroyed (child->socket_channel_source) &&
 		    !g_source_is_destroyed (child->stdout_channel_source))
@@ -659,7 +693,8 @@ pk_client_helper_init (PkClientHelper *client_helper)
 	PkClientHelperPrivate *priv = GET_PRIVATE(client_helper);
 
 	client_helper->priv = priv;
-	priv->children = g_ptr_array_new_with_free_func ((GDestroyNotify) pk_client_helper_child_free);
+	priv->children = g_ptr_array_new_with_free_func (
+	    (GDestroyNotify) pk_client_helper_child_free);
 }
 
 /*

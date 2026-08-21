@@ -36,7 +36,7 @@
 #include "pk-control.h"
 #include "pk-common.h"
 
-static void     pk_transaction_list_finalize		(GObject         *object);
+static void pk_transaction_list_finalize (GObject *object);
 
 /**
  * PkTransactionListPrivate:
@@ -45,9 +45,9 @@ static void     pk_transaction_list_finalize		(GObject         *object);
  **/
 struct _PkTransactionListPrivate
 {
-	GPtrArray		*transaction_ids;
-	PkControl		*control;
-	GCancellable		*cancellable;
+	GPtrArray *transaction_ids;
+	PkControl *control;
+	GCancellable *cancellable;
 };
 
 typedef enum {
@@ -56,7 +56,7 @@ typedef enum {
 	SIGNAL_LAST
 } PkSignals;
 
-static guint signals [SIGNAL_LAST] = { 0 };
+static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (PkTransactionList, pk_transaction_list, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) (pk_transaction_list_get_instance_private (o))
@@ -109,7 +109,7 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
 
 		/* check to see if tid is in array */
 		ret = FALSE;
-		for (j = 0; j<array->len; j++) {
+		for (j = 0; j < array->len; j++) {
 			tid = g_ptr_array_index (array, j);
 			ret = (g_strcmp0 (tid, transaction_ids[i]) == 0);
 			if (ret)
@@ -129,7 +129,9 @@ pk_transaction_list_process_transaction_list (PkTransactionList *tlist, gchar **
  * pk_transaction_list_get_transaction_list_cb:
  **/
 static void
-pk_transaction_list_get_transaction_list_cb (PkControl *control, GAsyncResult *res, PkTransactionList *tlist)
+pk_transaction_list_get_transaction_list_cb (PkControl *control,
+					     GAsyncResult *res,
+					     PkTransactionList *tlist)
 {
 	g_autoptr(GError) error = NULL;
 	g_auto(GStrv) transaction_ids = NULL;
@@ -154,15 +156,20 @@ pk_transaction_list_get_transaction_list (PkTransactionList *tlist)
 	PkTransactionListPrivate *priv = GET_PRIVATE(tlist);
 
 	g_debug ("refreshing task list");
-	pk_control_get_transaction_list_async (priv->control, priv->cancellable,
-					       (GAsyncReadyCallback) pk_transaction_list_get_transaction_list_cb, tlist);
+	pk_control_get_transaction_list_async (
+	    priv->control,
+	    priv->cancellable,
+	    (GAsyncReadyCallback) pk_transaction_list_get_transaction_list_cb,
+	    tlist);
 }
 
 /*
  * pk_transaction_list_task_list_changed_cb:
  **/
 static void
-pk_transaction_list_task_list_changed_cb (PkControl *control, gchar **transaction_ids, PkTransactionList *tlist)
+pk_transaction_list_task_list_changed_cb (PkControl *control,
+					  gchar **transaction_ids,
+					  PkTransactionList *tlist)
 {
 	/* process */
 	pk_transaction_list_process_transaction_list (tlist, transaction_ids);
@@ -172,7 +179,9 @@ pk_transaction_list_task_list_changed_cb (PkControl *control, gchar **transactio
  * pk_transaction_list_notify_connected_cb:
  **/
 static void
-pk_transaction_list_notify_connected_cb (PkControl *control, GParamSpec *pspec, PkTransactionList *tlist)
+pk_transaction_list_notify_connected_cb (PkControl *control,
+					 GParamSpec *pspec,
+					 PkTransactionList *tlist)
 {
 	gboolean connected;
 	g_object_get (control, "connected", &connected, NULL);
@@ -217,12 +226,16 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 	 *
 	 * The ::added signal is emitted when a tid has been added to the transaction list
 	 **/
-	signals [SIGNAL_ADDED] =
-		g_signal_new ("added",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTransactionListClass, added),
-			      NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals[SIGNAL_ADDED] = g_signal_new ("added",
+					      G_TYPE_FROM_CLASS (object_class),
+					      G_SIGNAL_RUN_LAST,
+					      G_STRUCT_OFFSET (PkTransactionListClass, added),
+					      NULL,
+					      NULL,
+					      g_cclosure_marshal_VOID__STRING,
+					      G_TYPE_NONE,
+					      1,
+					      G_TYPE_STRING);
 
 	/**
 	 * PkTransactionList::removed:
@@ -231,12 +244,16 @@ pk_transaction_list_class_init (PkTransactionListClass *klass)
 	 *
 	 * The ::removed signal is emitted when a tid has been removed from the transaction list
 	 **/
-	signals [SIGNAL_REMOVED] =
-		g_signal_new ("removed",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (PkTransactionListClass, added),
-			      NULL, NULL, g_cclosure_marshal_VOID__STRING,
-			      G_TYPE_NONE, 1, G_TYPE_STRING);
+	signals[SIGNAL_REMOVED] = g_signal_new ("removed",
+						G_TYPE_FROM_CLASS (object_class),
+						G_SIGNAL_RUN_LAST,
+						G_STRUCT_OFFSET (PkTransactionListClass, added),
+						NULL,
+						NULL,
+						g_cclosure_marshal_VOID__STRING,
+						G_TYPE_NONE,
+						1,
+						G_TYPE_STRING);
 }
 
 /*
@@ -252,10 +269,14 @@ pk_transaction_list_init (PkTransactionList *tlist)
 	/* get the changing job list */
 	priv->cancellable = g_cancellable_new ();
 	priv->control = pk_control_new ();
-	g_signal_connect (priv->control, "transaction-list-changed",
-			  G_CALLBACK (pk_transaction_list_task_list_changed_cb), tlist);
-	g_signal_connect (priv->control, "notify::connected",
-			  G_CALLBACK (pk_transaction_list_notify_connected_cb), tlist);
+	g_signal_connect (priv->control,
+			  "transaction-list-changed",
+			  G_CALLBACK (pk_transaction_list_task_list_changed_cb),
+			  tlist);
+	g_signal_connect (priv->control,
+			  "notify::connected",
+			  G_CALLBACK (pk_transaction_list_notify_connected_cb),
+			  tlist);
 
 	/* we maintain a local copy */
 	priv->transaction_ids = g_ptr_array_new_with_free_func (g_free);
@@ -277,8 +298,12 @@ pk_transaction_list_finalize (GObject *object)
 	g_cancellable_cancel (priv->cancellable);
 
 	/* unhook all signals */
-	g_signal_handlers_disconnect_by_func (priv->control, G_CALLBACK (pk_transaction_list_task_list_changed_cb), tlist);
-	g_signal_handlers_disconnect_by_func (priv->control, G_CALLBACK (pk_transaction_list_notify_connected_cb), tlist);
+	g_signal_handlers_disconnect_by_func (priv->control,
+					      G_CALLBACK (pk_transaction_list_task_list_changed_cb),
+					      tlist);
+	g_signal_handlers_disconnect_by_func (priv->control,
+					      G_CALLBACK (pk_transaction_list_notify_connected_cb),
+					      tlist);
 
 	/* remove all watches */
 	g_clear_pointer (&priv->transaction_ids, g_ptr_array_unref);

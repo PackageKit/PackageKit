@@ -36,7 +36,7 @@
 #include "pk-enum.h"
 #include "pk-enum-types.h"
 
-static void     pk_distro_upgrade_finalize	(GObject     *object);
+static void pk_distro_upgrade_finalize (GObject *object);
 
 /**
  * PkDistroUpgradePrivate:
@@ -45,15 +45,15 @@ static void     pk_distro_upgrade_finalize	(GObject     *object);
  **/
 struct _PkDistroUpgradePrivate
 {
-	PkDistroUpgradeEnum		 state;
-	gchar				*name;
-	gchar				*summary;
+	PkDistroUpgradeEnum state;
+	gchar *name;
+	gchar *summary;
 };
 
 enum {
 	PROP_0,
 	PROP_STATE,
-	PROP_NAME,	/* FIXME: should be "ID" */
+	PROP_NAME, /* FIXME: should be "ID" */
 	PROP_SUMMARY,
 	PROP_LAST
 };
@@ -117,11 +117,11 @@ pk_distro_upgrade_get_state (PkDistroUpgrade *distro_upgrade)
 {
 	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
 
-	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade), PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_DISTRO_UPGRADE (distro_upgrade),
+			      PK_DISTRO_UPGRADE_ENUM_UNKNOWN);
 
 	return priv->state;
 }
-
 
 /*
  * pk_distro_upgrade_get_property:
@@ -152,7 +152,10 @@ pk_distro_upgrade_get_property (GObject *object, guint prop_id, GValue *value, G
  * pk_distro_upgrade_set_property:
  **/
 static void
-pk_distro_upgrade_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+pk_distro_upgrade_set_property (GObject *object,
+				guint prop_id,
+				const GValue *value,
+				GParamSpec *pspec)
 {
 	PkDistroUpgrade *distro_upgrade = PK_DISTRO_UPGRADE (object);
 	PkDistroUpgradePrivate *priv = GET_PRIVATE(distro_upgrade);
@@ -192,8 +195,11 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_enum ("state", NULL, NULL,
-				   PK_TYPE_DISTRO_UPGRADE_ENUM, PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
+	pspec = g_param_spec_enum ("state",
+				   NULL,
+				   NULL,
+				   PK_TYPE_DISTRO_UPGRADE_ENUM,
+				   PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
@@ -202,7 +208,9 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("name", NULL, NULL,
+	pspec = g_param_spec_string ("name",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_NAME, pspec);
@@ -212,7 +220,9 @@ pk_distro_upgrade_class_init (PkDistroUpgradeClass *klass)
 	 *
 	 * Since: 0.5.4
 	 */
-	pspec = g_param_spec_string ("summary", NULL, NULL,
+	pspec = g_param_spec_string ("summary",
+				     NULL,
+				     NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
