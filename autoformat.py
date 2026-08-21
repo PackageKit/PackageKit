@@ -51,8 +51,12 @@ C_LIKE_SUFFIXES = ('.c', '.h', '.cpp', '.hpp', '.cc', '.hh')
 # table: the return type, the name and the parameter list each get their own
 # column, and every parameter goes on its own line.
 HEADER_STYLE_RULES = [
-    # line up the declared names into a column, as the headers already do
+    # line up the declared names into a column
     'AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments',
+    # line up the values of enum members and other consecutive assignments
+    'AlignConsecutiveAssignments: AcrossComments',
+    # declarations keep their return type on the same line as the name
+    'PenaltyReturnTypeOnItsOwnLine: 1000',
     # keep one parameter per line instead of collapsing declarations that
     # happen to fit within the column limit
     'BinPackParameters: AlwaysOnePerLine',

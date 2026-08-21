@@ -36,6 +36,9 @@
 #include "pk-common.h"
 #include "pk-enum.h"
 
+/* The enum <-> string tables below are hand-aligned: the columns make the
+ * mapping readable at a glance, and clang-format cannot reproduce them. */
+/* clang-format off */
 static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
 	{PK_EXIT_ENUM_SUCCESS,			"success"},
@@ -387,6 +390,7 @@ static const PkEnumMatch enum_transaction_flag[] = {
 	{PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE,	"allow-downgrade"},
 	{0, NULL}
 };
+/* clang-format on */
 
 /**
  * pk_enum_find_value:

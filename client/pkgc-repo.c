@@ -189,6 +189,9 @@ pkgc_repo_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 	gboolean autoremove = FALSE;
 	g_autoptr(GOptionContext) option_context = NULL;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "autoremove",
 		  0,		  0,
@@ -197,6 +200,7 @@ pkgc_repo_remove (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **arg
 		  NULL	},
 		{ NULL,	0, 0, 0, NULL, NULL,NULL }
 	};
+/* clang-format on */
 
 	/* parse options */
 	option_context = pkgc_option_context_for_command (

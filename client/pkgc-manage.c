@@ -34,6 +34,9 @@ static gboolean opt_allow_untrusted = FALSE;
 static gboolean opt_no_autoremove = FALSE;
 static gint opt_cache_age = -1;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 static const GOptionEntry option_download_only[] = {
 	{ "download-only", 'd', 0, G_OPTION_ARG_NONE, &opt_download_only,
 		/* TRANSLATORS: command line argument, do we just download or apply changes */
@@ -75,6 +78,7 @@ static const GOptionEntry option_cache_age[] = {
 		N_("Maximum metadata cache age in seconds (default: 3 days)"), N_("SECONDS") },
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
+/* clang-format on */
 
 /**
  * pkgc_manage_reset_options:

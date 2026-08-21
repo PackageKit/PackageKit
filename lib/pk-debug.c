@@ -136,12 +136,16 @@ out:
 static gboolean
 pk_debug_pre_parse_hook (GOptionContext *context, GOptionGroup *group, gpointer data, GError **error)
 {
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry main_entries[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &_verbose,
 		  /* TRANSLATORS: turn on all debugging */
 		  N_("Show debugging information for all files"), NULL },
 		G_OPTION_ENTRY_NULL
 	};
+/* clang-format on */
 
 	/* add main entry */
 	g_option_context_add_main_entries (context, main_entries, NULL);

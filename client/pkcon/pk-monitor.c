@@ -325,11 +325,15 @@ main (int argc, char *argv[])
 	g_autoptr(GDBusProxy) bus_proxy = NULL;
 	g_autoptr(GError) error = NULL;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			_("Show the program version and exit"), NULL},
 		G_OPTION_ENTRY_NULL
 	};
+/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);

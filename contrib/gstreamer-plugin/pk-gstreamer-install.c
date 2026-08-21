@@ -348,6 +348,9 @@ main (int argc, gchar **argv)
 	g_autoptr(GPtrArray) array = NULL;
 	g_auto(GStrv) resources = NULL;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "transient-for", '\0', 0, G_OPTION_ARG_INT, &xid, "The XID of the parent window", NULL },
 		{ "desktop-id", '\0', 0, G_OPTION_ARG_STRING, &desktop_id, "The desktop ID of the calling application", NULL },
@@ -356,6 +359,7 @@ main (int argc, gchar **argv)
 		{ G_OPTION_REMAINING, '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &codecs, "GStreamer install infos", NULL },
 		G_OPTION_ENTRY_NULL
 	};
+/* clang-format on */
 
 	gst_init (&argc, &argv);
 

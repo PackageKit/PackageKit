@@ -70,6 +70,9 @@ static gboolean opt_background = FALSE;
 static gchar *opt_filter_str = NULL;
 
 /* Global options that apply to all commands */
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 const GOptionEntry pkgc_global_options[] = {
 	{ "version", 'v', 0, G_OPTION_ARG_NONE, &opt_version,
 		/* TRANSLATORS: command line argument, just show the version string */
@@ -95,6 +98,7 @@ const GOptionEntry pkgc_global_options[] = {
 		N_("Run the command using idle network bandwidth and also using less power"), NULL},
 	{ NULL, 0, 0, 0, NULL, NULL, NULL }
 };
+/* clang-format on */
 
 /**
  * pkgc_dispatch_command:

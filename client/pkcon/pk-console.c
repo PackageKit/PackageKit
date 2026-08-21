@@ -1700,6 +1700,9 @@ main (int argc, char *argv[])
 	guint bar_size = 34;
 	struct winsize w;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "version", '\0', 0, G_OPTION_ARG_NONE, &program_version,
 			/* TRANSLATORS: command line argument, just show the version string */
@@ -1734,6 +1737,7 @@ main (int argc, char *argv[])
 			_("Allow untrusted packages to be installed."), NULL },
 		G_OPTION_ENTRY_NULL
 	};
+/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);

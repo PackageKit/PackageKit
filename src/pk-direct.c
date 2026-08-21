@@ -402,12 +402,16 @@ main (int argc, char *argv[])
 	g_autofree gchar *conf_filename = NULL;
 	g_autoptr(GKeyFile) conf = NULL;
 
+/* Each option is one record per line; clang-format would put every field
+ * on a line of its own and make the table unreadable. */
+/* clang-format off */
 	const GOptionEntry options[] = {
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
 		G_OPTION_ENTRY_NULL
 	};
+/* clang-format on */
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
