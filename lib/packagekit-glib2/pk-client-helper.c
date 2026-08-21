@@ -221,24 +221,28 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
 
 	/* read data */
 	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, &error);
-	if (status == G_IO_STATUS_EOF) {
+	if (status == G_IO_STATUS_ERROR)
+		g_warning ("failed to read from helper stdout: %s", error->message);
+	if (status == G_IO_STATUS_EOF || status == G_IO_STATUS_ERROR) {
 		g_debug ("helper process exited");
+		g_clear_error (&error);
+
 		/* reap it now if the process is gone; we own reaping since it was spawned with G_SPAWN_DO_NOT_REAP_CHILD.
 		 * If it has not exited yet (stdout closed but still running), leave it for kill_child(). */
 		if (child->pid > 0 && waitpid (child->pid, NULL, WNOHANG) == child->pid)
 			child->pid = -1;
+
+		/* the socket watch is polling the fd we are about to close: leaving it
+		 * attached would spin the main loop on POLLNVAL, and the fd number may
+		 * later be reused by an unrelated descriptor */
+		if (child->socket_channel_source != NULL)
+			g_source_destroy (child->socket_channel_source);
 		if (!g_socket_close (child->socket, &error))
 			g_warning ("failed to close socket");
 		return G_SOURCE_REMOVE;
 	}
-	if (len == 0) {
-		/* no data pending: if the descriptor hung up or errored, remove the
-		 * watch. Otherwise poll() keeps returning immediately on the dead fd
-		 * and the main loop spins at 100% CPU until the helper times out. */
-		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
-			return G_SOURCE_REMOVE;
+	if (len == 0)
 		return G_SOURCE_CONTINUE;
-	}
 
 	/* write to socket */
 	data[len] = '\0';
@@ -262,7 +266,7 @@ pk_client_helper_copy_stdout_cb (GIOChannel *source, GIOCondition condition, PkC
  * pk_client_helper_echo_stderr_cb:
  **/
 static gboolean
-pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelper *client_helper)
+pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkClientHelperChild *child)
 {
 	gchar data[1024];
 	gsize len = 0;
@@ -270,17 +274,10 @@ pk_client_helper_echo_stderr_cb (GIOChannel *source, GIOCondition condition, PkC
 
 	/* read data */
 	status = g_io_channel_read_chars (source, data, sizeof (data) - 1, &len, NULL);
-	if (status == G_IO_STATUS_EOF) {
+	if (status == G_IO_STATUS_EOF || status == G_IO_STATUS_ERROR)
 		return G_SOURCE_REMOVE;
-	}
-	if (len == 0) {
-		/* no data pending: if the descriptor hung up or errored, remove the
-		 * watch. Otherwise poll() keeps returning immediately on the dead fd
-		 * and the main loop spins at 100% CPU until the helper times out. */
-		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
-			return G_SOURCE_REMOVE;
+	if (len == 0)
 		return G_SOURCE_CONTINUE;
-	}
 
 	/* write to socket */
 	data[len] = '\0';
@@ -307,22 +304,16 @@ pk_client_helper_copy_conn_cb (GIOChannel *source, GIOCondition condition, PkCli
 		g_debug ("socket hung up");
 
 		/* Shutdown helper */
-		if (!g_io_channel_shutdown (child->stdin_channel, TRUE, &error))
+		if (g_io_channel_shutdown (child->stdin_channel, TRUE, &error) != G_IO_STATUS_NORMAL)
 			g_warning ("failed to close connection to child: %s", error->message);
 		return G_SOURCE_REMOVE;
 	}
-	if (error != NULL) {
+	if (status == G_IO_STATUS_ERROR) {
 		g_warning ("failed to read: %s", error->message);
 		return G_SOURCE_REMOVE;
 	}
-	if (len == 0) {
-		/* no data pending: if the descriptor hung up or errored, remove the
-		 * watch. Otherwise poll() keeps returning immediately on the dead fd
-		 * and the main loop spins at 100% CPU until the helper times out. */
-		if (condition & (G_IO_HUP | G_IO_ERR | G_IO_NVAL))
-			return G_SOURCE_REMOVE;
+	if (len == 0)
 		return G_SOURCE_CONTINUE;
-	}
 
 	/* write to child */
 	data[len] = '\0';
@@ -348,9 +339,12 @@ make_input_source (GIOChannel *channel, GIOCondition condition, GSourceFunc func
 	GSource *source;
 	GMainContext *context;
 
-	/* callers pass G_IO_HUP/G_IO_ERR for child pipes and sockets so the watch is
-	 * dispatched (and then removed) on hang-up, instead of the main loop
-	 * busy-looping on poll() when the peer closes the descriptor */
+	/* G_IO_IN alone is not enough for the child pipes and sockets: a drained pipe
+	 * whose writer has exited reports only G_IO_HUP, and GIOChannel's check()
+	 * masks revents against the requested condition - so the callback would never
+	 * be dispatched while poll() kept returning instantly, spinning the main loop
+	 * at 100% CPU. Callers therefore also watch for hang-up and error, so the
+	 * callback runs, reads the EOF and removes the source. */
 	source = g_io_create_watch (channel, condition);
 	g_source_set_callback (source, func, user_data, NULL);
 
@@ -444,7 +438,7 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 	fd = g_socket_get_fd (child->socket);
 	child->socket_channel = g_io_channel_unix_new (fd);
 	child->socket_channel_source =
-		make_input_source (child->socket_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
+		make_input_source (child->socket_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_conn_cb), child);
 	/* binary data */
 	status = g_io_channel_set_encoding (child->socket_channel, NULL, &error);
 	if (status != G_IO_STATUS_NORMAL) {
@@ -455,9 +449,9 @@ pk_client_helper_accept_connection_cb (GIOChannel *source, GIOCondition conditio
 
 	/* frontend has data */
 	child->stdout_channel_source =
-		make_input_source (child->stdout_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
+		make_input_source (child->stdout_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_copy_stdout_cb), child);
 	child->stderr_channel_source =
-		make_input_source (child->stderr_channel, G_IO_IN | G_IO_HUP | G_IO_ERR, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
+		make_input_source (child->stderr_channel, G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL, G_SOURCE_FUNC (pk_client_helper_echo_stderr_cb), child);
 	return G_SOURCE_CONTINUE;
 }
 
@@ -633,6 +627,11 @@ pk_client_helper_is_active (PkClientHelper *client_helper)
 
 	for (guint i = 0; i < priv->children->len; i++) {
 		PkClientHelperChild *child = g_ptr_array_index (priv->children, i);
+
+		/* the sources are NULL if child setup failed halfway through */
+		if (child->socket_channel_source == NULL ||
+		    child->stdout_channel_source == NULL)
+			continue;
 		if (!g_source_is_destroyed (child->socket_channel_source) &&
 		    !g_source_is_destroyed (child->stdout_channel_source))
 			return TRUE;

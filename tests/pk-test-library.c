@@ -23,6 +23,8 @@
 #include "config.h"
 
 #include <glib-object.h>
+#include <glib/gstdio.h>
+#include <gio/gunixsocketaddress.h>
 
 #include "pk-client-helper.h"
 #include "pk-common.h"
@@ -894,6 +896,92 @@ pk_test_offline_upgrade_func (void)
 	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 }
 
+static gboolean
+pk_test_client_helper_timeout_cb (gpointer user_data)
+{
+	gboolean *timed_out = user_data;
+	*timed_out = TRUE;
+	return G_SOURCE_REMOVE;
+}
+
+/* Regression test for the main loop spinning at 100% CPU once the spawned
+ * helper has exited: the GIOChannel watches used to be created with G_IO_IN
+ * only, so a drained pipe reporting nothing but G_IO_HUP never dispatched its
+ * callback - and therefore never removed its source - while poll() kept
+ * returning instantly. */
+static void
+pk_test_client_helper_func (void)
+{
+	PkClientHelper *helper;
+	g_autoptr(GMainContext) context = NULL;
+	g_autoptr(GSource) timeout_source = NULL;
+	g_autoptr(GSocket) client_socket = NULL;
+	g_autoptr(GSocketAddress) address = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *tmp_dir = NULL;
+	g_autofree gchar *socket_filename = NULL;
+	g_autofree gchar *true_path = NULL;
+	gchar *argv[] = { NULL, NULL };
+	gboolean timed_out = FALSE;
+	guint iterations = 0;
+	gboolean ret;
+
+	true_path = g_find_program_in_path ("true");
+	g_assert_nonnull (true_path);
+	argv[0] = true_path;
+
+	tmp_dir = g_dir_make_tmp ("pk-self-test-XXXXXX", &error);
+	g_assert_no_error (error);
+	socket_filename = g_build_filename (tmp_dir, "helper.socket", NULL);
+
+	/* run in a private context, so that counting main loop iterations is not
+	 * confused by whatever the other tests left on the default context */
+	context = g_main_context_new ();
+	g_main_context_push_thread_default (context);
+
+	helper = pk_client_helper_new ();
+	ret = pk_client_helper_start (helper, socket_filename, argv, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	/* connecting makes the helper spawn `true`, which exits immediately and
+	 * leaves its stdout and stderr pipes in a permanent hang-up; we keep our
+	 * end of the socket open, so only those pipes can wake the main loop */
+	client_socket = g_socket_new (G_SOCKET_FAMILY_UNIX,
+				      G_SOCKET_TYPE_STREAM,
+				      G_SOCKET_PROTOCOL_DEFAULT,
+				      &error);
+	g_assert_no_error (error);
+	address = g_unix_socket_address_new (socket_filename);
+	ret = g_socket_connect (client_socket, address, NULL, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	/* the watches have to notice the hang-up and remove themselves. If they do
+	 * not, poll() returns immediately forever and this loop runs away, whereas
+	 * a healthy run dispatches a handful of sources and then just waits. */
+	timeout_source = g_timeout_source_new (500);
+	g_source_set_callback (timeout_source, pk_test_client_helper_timeout_cb, &timed_out, NULL);
+	g_source_attach (timeout_source, context);
+	while (!timed_out) {
+		g_main_context_iteration (context, TRUE);
+		iterations++;
+	}
+	g_source_destroy (timeout_source);
+	g_assert_cmpuint (iterations, <, 200);
+
+	/* the helper has to consider the connection finished */
+	g_assert_false (pk_client_helper_is_active (helper));
+
+	ret = pk_client_helper_stop (helper, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+
+	g_object_unref (helper);
+	g_main_context_pop_thread_default (context);
+	g_rmdir (tmp_dir);
+}
+
 #define PK_TEST_TYPE(TYPE_NAME, CTOR_NAME) \
 { \
 	TYPE_NAME *var = CTOR_NAME (); \
@@ -961,6 +1049,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 	g_test_add_func ("/packagekit-glib2/offline-upgrade", pk_test_offline_upgrade_func);
 	g_test_add_func ("/packagekit-glib2/object-types", pk_test_object_types_func);
+	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
 
 	return g_test_run ();
 }
