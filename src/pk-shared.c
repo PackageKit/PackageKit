@@ -347,6 +347,13 @@ pk_util_get_config_filename (void)
 
 #if PK_BUILD_LOCAL
 	/* try a local path first */
+	path = g_build_filename ("..", "data", "config", "PackageKit.conf", NULL);
+	if (g_file_test (path, G_FILE_TEST_EXISTS))
+		goto out;
+	g_debug ("local config file not found '%s'", path);
+	g_free (path);
+
+	/* compatibility with older local-checkout layouts */
 	path = g_build_filename ("..", "etc", "PackageKit.conf", NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS))
 		goto out;
