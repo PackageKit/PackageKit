@@ -2,22 +2,21 @@ Hacking PackageKit
 
 Coding Style
 ------------
-Please stick to the existing coding style.
-Tabs should be hard (not expanded to spaces), and set equivalent to
-8 spaces.
+The tree is auto-formatted. Before submitting, run:
 
-All documentation and code should be in US English.
+	$> ./autoformat.py
 
-Please consider enabling git's default pre-commit hook:
+This formats C and C++ with clang-format and Python with black, following
+the rules in .clang-format. The C++ backends carry their own .clang-format,
+which the script picks up automatically.
 
-	$> cd PackageKit
-	$> chmod +x .git/hooks/pre-commit
+To check without changing anything, or to format only what you touched:
 
-This hook will run before every checkin, and check your changes for
-suspicious use of whitespace.
+	$> ./autoformat.py --check
+	$> ./autoformat.py src/pk-engine.c lib/
 
-In the C files use the following convention.
-The number of spaces and tabs are very important!
+Tabs are hard (not expanded to spaces) and 8 wide, and trailing whitespace
+is removed for you, so the C ends up looking like this:
 
 	/* map the roles to policykit rules */
 	if (role == PK_ROLE_ENUM_UPDATE_PACKAGES ||
@@ -27,7 +26,26 @@ The number of spaces and tabs are very important!
 		policy = "org.freedesktop.packagekit.remove";
 	}
 
-and please DO NOT use "!" for a null pointer check.
+A few things the formatter cannot decide for you:
+
+* All documentation and code should be in US English.
+
+* Please DO NOT use "!" for a null pointer check.
+
+* Tables whose columns carry meaning -- the enum-to-string maps in
+  lib/pk-enum.c, the GOptionEntry tables -- are wrapped in
+  /* clang-format off */ ... /* clang-format on */, because clang-format
+  would put every field on a line of its own. Keep new ones that way.
+
+* A TRANSLATORS comment has to sit on the line directly above the call it
+  describes:
+
+	g_print ("%s\n",
+		 /* TRANSLATORS: the user did not provide a package name */
+		 _("A package name is required"));
+
+  xgettext only picks it up from there. If reformatting moves the string
+  onto a line of its own, move the comment down with it.
 
 Functions are nearly always the same format, gtk-doc is optional:
 
@@ -45,8 +63,6 @@ pk_engine_search_name (PkEngine *engine, const gchar *search, GError **error)
 
 	return TRUE;
 }
-
-Finally: DO NOT COMMIT TRAILING WHITESPACE.
 
 Security
 --------
