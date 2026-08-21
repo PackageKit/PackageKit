@@ -425,8 +425,8 @@ pk_offline_update_do_upgrade (PkTask *task, PkProgressBar *progressbar, GError *
 
 	pk_offline_update_set_plymouth_mode ("system-upgrade");
 
-	/* TRANSLATORS: we've started doing offline system upgrade */
 	pk_offline_update_set_plymouth_msg (
+	    /* TRANSLATORS: we've started doing offline system upgrade */
 	    _("Installing system upgrade; this could take a while..."));
 	pk_offline_update_write_dummy_results ();
 	results = pk_client_upgrade_system (PK_CLIENT (task),

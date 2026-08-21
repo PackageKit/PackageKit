@@ -435,9 +435,9 @@ pkgc_query_show (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **argv
 		package_ids = pkgc_resolve_packages (ctx, ctx->filters, argv + 1, &error);
 		if (package_ids == NULL) {
 			if (error) {
-				/* TRANSLATORS: There was an error getting the
-				 * details about the package. The detailed error follows */
 				pkgc_print_error (ctx,
+						  /* TRANSLATORS: There was an error getting the
+						   * details about the package. The detailed error follows */
 						  _("Could not find packages: %s"), error->message);
 			}
 
@@ -907,9 +907,9 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	/* get the results */
 	time_s = pk_control_get_time_since_action_finish (ctx->control, res, &error);
 	if (time_s == 0) {
-		/* TRANSLATORS: we keep a database updated with the time that an
-		 * action was last executed */
 		g_print ("%s: %s\n",
+			 /* TRANSLATORS: we keep a database updated with the time that an
+			  * action was last executed */
 			 _("Failed to get the time since this action was last completed"),
 			   error->message);
 		goto out;
@@ -958,16 +958,16 @@ pkgc_query_last_time (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar *
 
 	if (value == NULL) {
 		pkgc_print_error (ctx,
-				  /* TRANSLATORS: The user didn't specify what action to use */
 				  "%s",
+				  /* TRANSLATORS: The user didn't specify what action to use */
 				  _("An action, e.g. 'update-packages' is required"));
 		return PKGC_EXIT_FAILURE;
 	}
 	role = pk_role_enum_from_string (value);
 	if (role == PK_ROLE_ENUM_UNKNOWN) {
 		pkgc_print_error (ctx,
-				  /* TRANSLATORS: The user specified an invalid action */
 				  "%s",
+				  /* TRANSLATORS: The user specified an invalid action */
 				  _("A correct role is required"));
 		return PKGC_EXIT_FAILURE;
 	}

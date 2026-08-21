@@ -510,11 +510,12 @@ pk_cnf_find_available (const gchar *cmd, guint max_search_time)
 		if (pk_error_get_code (error_code) == PK_ERROR_ENUM_TRANSACTION_CANCELLED) {
 			g_debug ("The search was cancelled as it was taking too long");
 		} else {
-			/* TRANSLATORS: the transaction failed in a way we could not expect */
-			g_printerr ("%s: %s, %s\n",
-				    _("Getting the list of files failed"),
-				      pk_error_enum_to_string (pk_error_get_code (error_code)),
-				      pk_error_get_details (error_code));
+			g_printerr (
+			    "%s: %s, %s\n",
+			    /* TRANSLATORS: the transaction failed in a way we could not expect */
+			    _("Getting the list of files failed"),
+			      pk_error_enum_to_string (pk_error_get_code (error_code)),
+			      pk_error_get_details (error_code));
 			goto out;
 		}
 	}
@@ -695,8 +696,8 @@ pk_cnf_install_package_id (const gchar *package_id)
 	/* check error code */
 	error_code = pk_results_get_error_code (results);
 	if (error_code != NULL) {
-		/* TRANSLATORS: the transaction failed in a way we could not expect */
 		g_printerr ("%s: %s, %s\n",
+			    /* TRANSLATORS: the transaction failed in a way we could not expect */
 			    _("The transaction failed"),
 			      pk_error_enum_to_string (pk_error_get_code (error_code)),
 			      pk_error_get_details (error_code));
@@ -893,17 +894,18 @@ main (int argc, char *argv[])
 		if (len == 1) {
 			parts = pk_package_id_split (package_ids[0]);
 			if (config->single_install == PK_CNF_POLICY_WARN) {
-				/* TRANSLATORS: tell the user what package provides the command */
-				g_printerr ("%s '%s'\n",
-					    _("The package providing this file is:"),
-					      parts[PK_PACKAGE_ID_NAME]);
+				g_printerr (
+				    "%s '%s'\n",
+				    /* TRANSLATORS: tell the user what package provides the command */
+				    _("The package providing this file is:"),
+				      parts[PK_PACKAGE_ID_NAME]);
 				goto out;
 			}
 
 			/* ask */
 			if (config->single_install == PK_CNF_POLICY_ASK) {
-				/* TRANSLATORS: as the user if we want to install a package to provide the command */
 				text = g_strdup_printf (
+				    /* TRANSLATORS: as the user if we want to install a package to provide the command */
 				    _("Install package '%s' to provide command '%s'?"),
 				      parts[PK_PACKAGE_ID_NAME],
 				      argv[1]);

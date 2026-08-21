@@ -2667,9 +2667,9 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 		string = g_string_new ("");
 
-		/* TRANSLATORS: is not GPG signed */
 		g_string_append (
 		    string,
+		    /* TRANSLATORS: is not GPG signed */
 		    g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
 		g_string_append (string, "\n");
 

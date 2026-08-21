@@ -726,9 +726,9 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 			 * but there is nothing that can be updated */
 			g_print ("%s\n", _("There are no packages to update."));
 		} else {
-			/* TRANSLATORS: the transaction failed in a way we could
-			 * not expect */
 			g_print ("%s: %s, %s\n",
+				 /* TRANSLATORS: the transaction failed in a way we could
+				  * not expect */
 				 _("The transaction failed"),
 				   pk_error_enum_to_string (pk_error_get_code (error_code)),
 				   pk_error_get_details (error_code));
@@ -847,12 +847,13 @@ pk_console_process_results (PkResults *results, PkConsoleCtx *ctx, const GError 
 		/* TRANSLATORS: a package needs to restart the session */
 		g_print ("%s\n", _("Please logout and login to complete the update."));
 	} else if (restart == PK_RESTART_ENUM_SECURITY_SYSTEM) {
-		/* TRANSLATORS: a package needs to restart their system (due to security) */
-		g_print ("%s\n",
-			 _("Please restart the computer to complete the update as important security updates have been installed."));
+		g_print (
+		    "%s\n",
+		    /* TRANSLATORS: a package needs to restart their system (due to security) */
+		    _("Please restart the computer to complete the update as important security updates have been installed."));
 	} else if (restart == PK_RESTART_ENUM_SECURITY_SESSION) {
-		/* TRANSLATORS: a package needs to restart the session (due to security) */
 		g_print ("%s\n",
+			 /* TRANSLATORS: a package needs to restart the session (due to security) */
 			 _("Please logout and login to complete the update as important security updates have been installed."));
 	}
 
@@ -1532,9 +1533,9 @@ pk_console_get_summary (PkConsoleCtx *ctx)
 	GString *string = g_string_new ("");
 	g_autoptr(GPtrArray) cmds = g_ptr_array_sized_new (30);
 
-	/* TRANSLATORS: This is the header to the --help menu */
 	g_string_append_printf (string,
 				"%s\n\n%s\n",
+				/* TRANSLATORS: This is the header to the --help menu */
 				_("PackageKit Console Interface"),
 				  /* these are commands we can use with pkcon */
 				  _("Subcommands:"));
@@ -1635,9 +1636,9 @@ pk_console_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	/* get the results */
 	time_ms = pk_control_get_time_since_action_finish (ctx->control, res, &error);
 	if (time_ms == 0) {
-		/* TRANSLATORS: we keep a database updated with the time that an
-		 * action was last executed */
 		g_print ("%s: %s\n",
+			 /* TRANSLATORS: we keep a database updated with the time that an
+			  * action was last executed */
 			 _("Failed to get the time since this action was last completed"),
 			   error->message);
 		goto out;
@@ -1940,9 +1941,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: a search type can
 					      * be name, details, file, etc */
-					     "%s",
 					     _("A search type is required, e.g. name"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -1951,9 +1952,9 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				error = g_error_new (PK_CONSOLE_ERROR,
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
+						     "%s",
 						     /* TRANSLATORS: the user
 						      * needs to provide a search term */
-						     "%s",
 						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
@@ -1971,9 +1972,9 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				error = g_error_new (PK_CONSOLE_ERROR,
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
+						     "%s",
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s",
 						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
@@ -1991,9 +1992,9 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				error = g_error_new (PK_CONSOLE_ERROR,
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
+						     "%s",
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s",
 						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
@@ -2011,9 +2012,9 @@ main (int argc, char *argv[])
 			if (details == NULL) {
 				error = g_error_new (PK_CONSOLE_ERROR,
 						     PK_ERROR_ENUM_INTERNAL_ERROR,
+						     "%s",
 						     /* TRANSLATORS: the user needs
 						      * to provide a search term */
-						     "%s",
 						     _("A search term is required"));
 				ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 				goto out;
@@ -2042,9 +2043,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to install */
-					     "%s",
 					     _("A package name to install is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2055,9 +2056,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to install */
-					     "%s",
 					     _("A filename to install is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2074,9 +2075,9 @@ main (int argc, char *argv[])
 		if (value == NULL || details == NULL || parameter == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: geeky error, real
 					      * users won't see this */
-					     "%s",
 					     _("A type, key_id and package_id are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2095,9 +2096,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: the user did not
 					      * specify what they wanted to remove */
-					     "%s",
 					     _("A package name to remove is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2108,10 +2109,10 @@ main (int argc, char *argv[])
 		if (value == NULL || details == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: the user did not
 					      * specify anything about what to
 					      * download or where */
-					     "%s",
 					     _("A destination directory and the package names to download are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2120,9 +2121,9 @@ main (int argc, char *argv[])
 		if (!ret) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s: %s",
 					     /* TRANSLATORS: the directory does
 					      * not exist, so we can't continue */
-					     "%s: %s",
 					     _("Directory not found"), value);
 			ctx->retval = PK_EXIT_CODE_FILE_NOT_FOUND;
 			goto out;
@@ -2133,9 +2134,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: geeky error, real
 					      * users won't see this */
-					     "%s",
 					     _("A licence identifier (eula-id) is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2160,9 +2161,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user did not
 					      * specify a package name */
-					     "%s",
 					     _("A package name to resolve is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2180,9 +2181,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user did not
 					      * specify a repository name */
-					     "%s",
 					     _("A repository name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2200,9 +2201,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user did not
 					      * specify a repository name */
-					     "%s",
 					     _("A repository name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2218,10 +2219,10 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "repo-set-data") == 0) {
 		if (value == NULL || details == NULL || parameter == NULL) {
-			/* TRANSLATORS: The user didn't provide any data */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     "%s",
+					     /* TRANSLATORS: The user didn't provide any data */
 					     _("A repo name, parameter and value are required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2238,10 +2239,10 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "repo-remove") == 0) {
 		if (value == NULL || details == NULL) {
-			/* TRANSLATORS: The user didn't provide any data */
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
 					     "%s",
+					     /* TRANSLATORS: The user didn't provide any data */
 					     _("A repo id and autoremove required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2271,9 +2272,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user didn't
 					      * specify what action to use */
-					     "%s",
 					     _("An action, e.g. 'update-packages' is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2282,9 +2283,9 @@ main (int argc, char *argv[])
 		if (role == PK_ROLE_ENUM_UNKNOWN) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user specified
 					      * an invalid action */
-					     "%s",
 					     _("A correct role is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2301,11 +2302,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "depends-on") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A package name is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2321,11 +2323,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-update-detail") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A package name is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2335,9 +2338,9 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: The user did not
 					      * provide a package name */
-					     "%s",
 					     _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2348,11 +2351,11 @@ main (int argc, char *argv[])
 		if (value == NULL) {
 			error = g_error_new (PK_CONSOLE_ERROR,
 					     PK_ERROR_ENUM_INTERNAL_ERROR,
+					     "%s",
 					     /* TRANSLATORS: each package
 					      * "provides" certain things, e.g.
 					      * mime(gstreamer-decoder-mp3),
 					      * the user didn't specify it */
-					     "%s",
 					     _("A package provide string is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
@@ -2368,11 +2371,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-details") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A package name is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2380,11 +2384,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-details-local") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A filename is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A filename is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2392,11 +2397,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-files-local") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A filename is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A filename is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2404,11 +2410,12 @@ main (int argc, char *argv[])
 
 	} else if (strcmp (mode, "get-files") == 0) {
 		if (value == NULL) {
-			/* TRANSLATORS: The user did not provide a package name */
-			error = g_error_new (PK_CONSOLE_ERROR,
-					     PK_ERROR_ENUM_INTERNAL_ERROR,
-					     "%s",
-					     _("A package name is required"));
+			error = g_error_new (
+			    PK_CONSOLE_ERROR,
+			    PK_ERROR_ENUM_INTERNAL_ERROR,
+			    "%s",
+			    /* TRANSLATORS: The user did not provide a package name */
+			    _("A package name is required"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;
 		}
@@ -2558,8 +2565,8 @@ main (int argc, char *argv[])
 			error = g_error_new (
 			    PK_CONSOLE_ERROR,
 			    PK_ERROR_ENUM_INTERNAL_ERROR,
-			    /* TRANSLATORS: The user did not provide a distro name */
 			    "%s",
+			    /* TRANSLATORS: The user did not provide a distro name */
 			    _("You need to specify a list file to create"));
 			ctx->retval = PK_EXIT_CODE_SYNTAX_INVALID;
 			goto out;

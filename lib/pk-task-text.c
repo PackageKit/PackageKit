@@ -188,8 +188,8 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 		/* TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA */
 		g_print (" %s: %s\n", _("Vendor"), pk_eula_required_get_vendor_name (item));
 
-		/* TRANSLATORS: the EULA text itself (long and boring) */
 		g_print (" %s: %s\n",
+			 /* TRANSLATORS: the EULA text itself (long and boring) */
 			 _("Agreement"), pk_eula_required_get_license_agreement (item));
 	}
 

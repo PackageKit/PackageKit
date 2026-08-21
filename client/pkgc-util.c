@@ -438,9 +438,10 @@ pkgc_parse_command_options (PkgcliContext *ctx,
 	}
 
 	if (*argc < min_arg_count) {
-		/* TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters */
-		pkgc_print_error (ctx,
-				  _("Usage: %s %s %s"), "pkgcli", cmd->name, cmd->param_summary);
+		pkgc_print_error (
+		    ctx,
+		    /* TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters */
+		    _("Usage: %s %s %s"), "pkgcli", cmd->name, cmd->param_summary);
 		return FALSE;
 	}
 

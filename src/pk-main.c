@@ -218,9 +218,9 @@ main (int argc, char *argv[])
 	if (backend_name == NULL || g_strcmp0 (backend_name, "auto") == 0) {
 		ret = pk_util_set_auto_backend (conf, &error);
 		if (!ret) {
-			/* TRANSLATORS: The placeholder is an error message.
-			 * `auto` is a potential value of the DefaultBackend= configuration key. */
 			g_autofree gchar *message = g_strdup_printf (
+			    /* TRANSLATORS: The placeholder is an error message.
+			     * `auto` is a potential value of the DefaultBackend= configuration key. */
 			    _("Failed to resolve auto: %s"), error->message);
 			g_printerr ("%s\n", message);
 			goto out;
