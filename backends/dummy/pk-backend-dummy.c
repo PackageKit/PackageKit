@@ -845,6 +845,28 @@ pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
 	pk_backend_job_set_locked (job, FALSE);
 }
 
+void
+pk_backend_purge_packages (PkBackend *backend, PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   gchar **package_ids,
+			   gboolean allow_deps,
+			   gboolean autoremove)
+{
+	/* simulate */
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
+		pk_backend_job_package (job, PK_INFO_ENUM_PURGING,
+					"powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+		pk_backend_job_finished (job);
+		return;
+	}
+
+	pk_backend_job_set_status (job, PK_STATUS_ENUM_PURGE);
+	pk_backend_job_package (job, PK_INFO_ENUM_PURGING,
+				"powertop;1.8-1.fc8;i386;fedora", "Power consumption monitor");
+	pk_backend_job_finished (job);
+}
+
 static void
 pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {

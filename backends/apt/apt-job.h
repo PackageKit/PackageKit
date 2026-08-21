@@ -109,6 +109,7 @@ public:
      * runs a transaction to install/remove/update packages
      * @param install List of packages to install
      * @param remove List of packages to remove
+     * @param purge List of packages to remove together with their configuration files
      * @param update List of packages to update
      * @param fixBroken whether to automatically fix broken packages
      * @param flags operation flags as per public API
@@ -118,6 +119,7 @@ public:
     bool runTransaction(
         const PkgList &install,
         const PkgList &remove,
+        const PkgList &purge,
         const PkgList &update,
         bool fixBroken,
         PkBitfield flags,
@@ -307,7 +309,7 @@ private:
      * Mark any package for removal that became garbage as a result of the
      * current transaction (i.e. was not garbage initially).
      */
-    void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage);
+    void markNewGarbageForRemoval(pkgProblemResolver &Fix, const PkgList &initialGarbage, bool purge);
 
     PkgList checkChangedPackages(bool emitChanged);
     pkgCache::VerIterator findTransactionPackage(const std::string &name);

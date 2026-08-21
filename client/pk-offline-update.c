@@ -152,6 +152,10 @@ pk_offline_update_progress_cb (PkProgress *progress,
 			msg = g_strdup_printf ("Removing %s",
 					       pk_package_get_name (pkg));
 			pk_progress_bar_start (progressbar, msg);
+		} else if (info == PK_INFO_ENUM_PURGING) {
+			msg = g_strdup_printf ("Purging %s",
+					       pk_package_get_name (pkg));
+			pk_progress_bar_start (progressbar, msg);
 		}
 		sd_journal_print (LOG_INFO,
 				  "package %s\t%s-%s.%s (%s)",

@@ -941,7 +941,7 @@ pk_test_control_get_properties_cb (GObject *object, GAsyncResult *res, gpointer 
 		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;"
 		     "get-old-transactions;repair-system;get-details-local;"
-		     "get-files-local;upgrade-system");
+		     "get-files-local;upgrade-system;purge-packages");
 	g_free (text);
 
 	/* check filters */
@@ -1086,7 +1086,7 @@ pk_test_control_func (void)
 		     "search-details;search-file;search-group;search-name;update-packages;"
 		     "what-provides;download-packages;get-distro-upgrades;"
 		     "get-old-transactions;repair-system;get-details-local;"
-		     "get-files-local;upgrade-system");
+		     "get-files-local;upgrade-system;purge-packages");
 	g_free (text);
 
 	g_object_unref (control);
@@ -1319,6 +1319,48 @@ pk_test_task_func (void)
 }
 
 static void
+pk_test_task_purge_packages_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkTask *task = PK_TASK (object);
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkResults) results = NULL;
+	PkExitEnum exit_enum;
+
+	/* get the results: a purge does not require the untrusted question (it
+	 * removes packages, it does not install untrusted ones), so unlike
+	 * install it completes successfully against the dummy backend */
+	results = pk_task_generic_finish (task, res, &error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+
+	exit_enum = pk_results_get_exit_code (results);
+	g_assert_cmpint (exit_enum, ==, PK_EXIT_ENUM_SUCCESS);
+
+	_g_test_loop_quit ();
+}
+
+static void
+pk_test_task_purge_packages_func (void)
+{
+	PkTask *task;
+	gchar **package_ids;
+
+	task = pk_task_new ();
+	g_assert (task != NULL);
+
+	/* purge package */
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	pk_task_purge_packages_async (task, package_ids, FALSE, FALSE, NULL,
+		        (PkProgressCallback) pk_test_task_progress_cb, NULL,
+		        (GAsyncReadyCallback) pk_test_task_purge_packages_cb, NULL);
+	g_strfreev (package_ids);
+	_g_test_loop_run_with_timeout (150000);
+	g_debug ("purged in %f", g_test_timer_elapsed ());
+
+	g_object_unref (task);
+}
+
+static void
 pk_test_task_text_install_packages_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 {
 	PkTaskText *task = PK_TASK_TEXT (object);
@@ -1383,6 +1425,55 @@ pk_test_task_text_func (void)
 	g_strfreev (package_ids);
 	_g_test_loop_run_with_timeout (150000);
 	g_debug ("installed in %f", g_test_timer_elapsed ());
+
+	g_object_unref (task);
+}
+
+static void
+pk_test_task_text_purge_packages_cb (GObject *object, GAsyncResult *res, gpointer user_data)
+{
+	PkTaskText *task = PK_TASK_TEXT (object);
+	GError *error = NULL;
+	PkResults *results;
+	PkExitEnum exit_enum;
+	GPtrArray *packages;
+
+	/* get the results */
+	results = pk_task_generic_finish (PK_TASK (task), res, &error);
+	g_assert_no_error (error);
+	g_assert (results != NULL);
+
+	exit_enum = pk_results_get_exit_code (results);
+	g_assert_cmpint (exit_enum, ==, PK_EXIT_ENUM_SUCCESS);
+
+	packages = pk_results_get_package_array (results);
+	g_assert (packages != NULL);
+	g_assert_cmpint (packages->len, ==, 1);
+
+	g_ptr_array_unref (packages);
+
+	if (results != NULL)
+		g_object_unref (results);
+	_g_test_loop_quit ();
+}
+
+static void
+pk_test_task_text_purge_packages_func (void)
+{
+	PkTaskText *task;
+	gchar **package_ids;
+
+	task = pk_task_text_new ();
+	g_assert (task != NULL);
+
+	/* purge package */
+	package_ids = pk_package_ids_from_id ("powertop;1.8-1.fc8;i386;fedora");
+	pk_task_purge_packages_async (PK_TASK (task), package_ids, FALSE, FALSE, NULL,
+		        (PkProgressCallback) pk_test_task_text_progress_cb, NULL,
+		        (GAsyncReadyCallback) pk_test_task_text_purge_packages_cb, NULL);
+	g_strfreev (package_ids);
+	_g_test_loop_run_with_timeout (150000);
+	g_debug ("purged in %f", g_test_timer_elapsed ());
 
 	g_object_unref (task);
 }
@@ -1575,8 +1666,10 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit-glib2/client/cancellation", pk_test_client_cancellation_func);
 	g_test_add_func ("/packagekit-glib2/package-sack", pk_test_package_sack_func);
 	g_test_add_func ("/packagekit-glib2/task", pk_test_task_func);
+	g_test_add_func ("/packagekit-glib2/task-purge", pk_test_task_purge_packages_func);
 	g_test_add_func ("/packagekit-glib2/task-wrapper", pk_test_task_wrapper_func);
 	g_test_add_func ("/packagekit-glib2/task-text", pk_test_task_text_func);
+	g_test_add_func ("/packagekit-glib2/task-text-purge", pk_test_task_text_purge_packages_func);
 	g_test_add_func ("/packagekit-glib2/console", pk_test_console_func);
 
 	return g_test_run ();

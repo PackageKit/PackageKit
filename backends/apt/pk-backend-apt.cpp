@@ -698,6 +698,8 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         g_variant_get(params, "(t^a&s)", &transaction_flags, &full_paths);
     } else if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
         g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allowRemoveDeps, &autoremove);
+    } else if (role == PK_ROLE_ENUM_PURGE_PACKAGES) {
+        g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allowRemoveDeps, &autoremove);
     } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
         g_variant_get(params, "(t^a&s)", &transaction_flags, &package_ids);
     } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
@@ -720,12 +722,14 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     }
 
     pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    PkgList installPkgs, removePkgs, updatePkgs;
+    PkgList installPkgs, removePkgs, purgePkgs, updatePkgs;
 
     if (!fixBroken) {
         // Resolve the given packages
         if (role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
             removePkgs = apt->resolvePackageIds(package_ids);
+        } else if (role == PK_ROLE_ENUM_PURGE_PACKAGES) {
+            purgePkgs = apt->resolvePackageIds(package_ids);
         } else if (role == PK_ROLE_ENUM_INSTALL_PACKAGES) {
             installPkgs = apt->resolvePackageIds(package_ids);
         } else if (role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
@@ -751,7 +755,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
             return;
         }
 
-        if (removePkgs.size() == 0 && installPkgs.size() == 0 && updatePkgs.size() == 0) {
+        if (removePkgs.size() == 0 && purgePkgs.size() == 0 && installPkgs.size() == 0 && updatePkgs.size() == 0) {
             pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "Could not find package(s)");
             return;
         }
@@ -761,6 +765,7 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
     bool ret = apt->runTransaction(
         installPkgs,
         removePkgs,
+        purgePkgs,
         updatePkgs,
         fixBroken,
         transaction_flags,
@@ -797,6 +802,17 @@ void pk_backend_install_files(PkBackend *backend, PkBackendJob *job, PkBitfield 
 }
 
 void pk_backend_remove_packages(
+    PkBackend *backend,
+    PkBackendJob *job,
+    PkBitfield transaction_flags,
+    gchar **package_ids,
+    gboolean allow_deps,
+    gboolean autoremove)
+{
+    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+}
+
+void pk_backend_purge_packages(
     PkBackend *backend,
     PkBackendJob *job,
     PkBitfield transaction_flags,
@@ -900,6 +916,7 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
                         ret = apt->runTransaction(
                             PkgList(),
                             removePkgs,
+                            PkgList(),
                             PkgList(),
                             false,
                             transaction_flags,
@@ -1007,6 +1024,7 @@ PkBitfield pk_backend_get_roles(PkBackend *backend)
         PK_ROLE_ENUM_INSTALL_SIGNATURE,
         PK_ROLE_ENUM_REFRESH_CACHE,
         PK_ROLE_ENUM_REMOVE_PACKAGES,
+        PK_ROLE_ENUM_PURGE_PACKAGES,
         PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
         PK_ROLE_ENUM_RESOLVE,
         PK_ROLE_ENUM_SEARCH_DETAILS,

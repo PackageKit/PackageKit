@@ -124,6 +124,10 @@ manpage.1: manpage.xml
         <listitem><para>Remove the given package.</para></listitem>
       </varlistentry>
       <varlistentry>
+        <term>purge <replaceable>PACKAGE</replaceable></term>
+        <listitem><para>Purge the given package. This is the same as remove but also deletes any configuration files normally left behind.</para></listitem>
+      </varlistentry>
+      <varlistentry>
         <term>update [<replaceable>PACKAGES</replaceable>]</term>
         <listitem><para>Update the system by installing available updates. If
         a list of packages is specified, only install updates for these packages.</para></listitem>

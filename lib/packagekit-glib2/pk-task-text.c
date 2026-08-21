@@ -263,6 +263,11 @@ pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 		return _("The following packages have to be removed:");
 	}
 
+	if (info == PK_INFO_ENUM_PURGING) {
+		/* TRANSLATORS: When processing, we might have to purge other dependencies, removing their configuration files too */
+		return _("The following packages have to be purged:");
+	}
+
 	if (info == PK_INFO_ENUM_INSTALLING) {
 		/* TRANSLATORS: When processing, we might have to install other dependencies */
 		return _("The following packages have to be installed:");

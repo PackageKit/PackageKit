@@ -78,6 +78,7 @@ typedef struct {
  * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
  * @PK_ROLE_ENUM_REPO_REMOVE: Remove repository
  * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade system
+ * @PK_ROLE_ENUM_PURGE_PACKAGES: Same as PK_ROLE_ENUM_REMOVE_PACKAGES, but also purges (apt only)
  * @PK_ROLE_ENUM_LAST:
  *
  * What we were asked to do, this never changes for the lifetime of the
@@ -120,6 +121,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_FILES_LOCAL,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_REPO_REMOVE,			/* Since: 0.9.1 */
 	PK_ROLE_ENUM_UPGRADE_SYSTEM,			/* Since: 1.0.10 */
+	PK_ROLE_ENUM_PURGE_PACKAGES,			/* Since: 1.3.7 */
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -162,6 +164,7 @@ typedef enum {
  * @PK_STATUS_ENUM_CHECK_LIBRARIES: Checking libraries
  * @PK_STATUS_ENUM_COPY_FILES: Copying files
  * @PK_STATUS_ENUM_RUN_HOOK: Running package hook
+ * @PK_STATUS_ENUM_PURGE: Purging
  * @PK_STATUS_ENUM_LAST:
  *
  * What status we are now; this can change for each transaction giving a
@@ -219,6 +222,7 @@ typedef enum {
 	PK_STATUS_ENUM_CHECK_LIBRARIES,
 	PK_STATUS_ENUM_COPY_FILES,
 	PK_STATUS_ENUM_RUN_HOOK,
+	PK_STATUS_ENUM_PURGE,
 	PK_STATUS_ENUM_LAST
 } PkStatusEnum;
 
@@ -649,6 +653,7 @@ typedef enum {
  * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
  * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
  * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
+ * @PK_INFO_ENUM_PURGING:	Package is being purged. Since 1.3.7
  * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific
@@ -686,6 +691,7 @@ typedef enum {
 	PK_INFO_ENUM_REMOVE,
 	PK_INFO_ENUM_OBSOLETE,
 	PK_INFO_ENUM_DOWNGRADE,
+	PK_INFO_ENUM_PURGING,
 	PK_INFO_ENUM_LAST
 } PkInfoEnum;
 

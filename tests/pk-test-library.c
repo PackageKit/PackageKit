@@ -221,6 +221,20 @@ pk_test_enum_func (void)
 	string = pk_role_enum_to_string (PK_ROLE_ENUM_SEARCH_FILE);
 	g_assert_cmpstr (string, ==, "search-file");
 
+	/* check the purge enums round-trip both ways */
+	role_value = pk_role_enum_from_string ("purge-packages");
+	g_assert_cmpint (role_value, ==, PK_ROLE_ENUM_PURGE_PACKAGES);
+	string = pk_role_enum_to_string (PK_ROLE_ENUM_PURGE_PACKAGES);
+	g_assert_cmpstr (string, ==, "purge-packages");
+
+	g_assert_cmpint (pk_status_enum_from_string ("purge"), ==, PK_STATUS_ENUM_PURGE);
+	string = pk_status_enum_to_string (PK_STATUS_ENUM_PURGE);
+	g_assert_cmpstr (string, ==, "purge");
+
+	g_assert_cmpint (pk_info_enum_from_string ("purging"), ==, PK_INFO_ENUM_PURGING);
+	string = pk_info_enum_to_string (PK_INFO_ENUM_PURGING);
+	g_assert_cmpstr (string, ==, "purging");
+
 	/* check we convert all the role bitfield */
 	for (i = 1; i < PK_ROLE_ENUM_LAST; i++) {
 		string = pk_role_enum_to_string (i);
