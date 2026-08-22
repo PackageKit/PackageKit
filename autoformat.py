@@ -45,8 +45,6 @@ EXCLUDE_MATCH = [
     '*/subprojects/*',
     '*.gen.hh',
     '*.gen.h',
-    # website example snippet, still written in Python 2, so black cannot parse it
-    '*/docs/html/files/session.py',
     # backends that are opted-out of autoformatting
     '*/backends/alpm/*',
     '*/backends/dnf5/*',
