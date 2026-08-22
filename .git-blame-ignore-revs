@@ -1,0 +1,16 @@
+# Commits to skip when running git-blame, because they only moved whitespace
+# around.
+#
+# Teach your checkout about this file once with:
+#
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub and GitLab pick it up on their own. Only add a commit here if it
+# changed no code at all.
+
+# Autoformat source code
+16bf77d27011168a789e37d4f01e8a8156c828db
+
+# Enable autoformatting for backend code
+399d6859815620e8154ff72da7a296818326ed0f
+1a5101f3247d385bbd71dc9d30d45c94d95c1522
