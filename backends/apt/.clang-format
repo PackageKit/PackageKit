@@ -38,6 +38,7 @@ WhitespaceSensitiveMacros: ['g_autoptr', 'g_auto', '_', '__attribute__', 'G_DEFI
 Language: Cpp
 Standard: c++20
 
+BreakBeforeBraces: Linux
 AlignAfterOpenBracket: true
 BreakAfterOpenBracketBracedList: true
 BreakAfterOpenBracketFunction: true
