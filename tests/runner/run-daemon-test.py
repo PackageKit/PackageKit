@@ -59,13 +59,13 @@ def check_prerequisites():
     if not os.path.exists(DBUS_CONF):
         reasons.append(
             'Missing D-Bus policy {!r}. Install it with:\n'
-            '    sudo cp data/org.freedesktop.PackageKit.conf '
+            '    sudo cp <builddir>/data/org.freedesktop.PackageKit.conf '
             '/usr/share/dbus-1/system.d/'.format(DBUS_CONF)
         )
     if not os.path.exists(POLKIT_POLICY):
         reasons.append(
             'Missing polkit policy {!r}. Install it with:\n'
-            '    sudo cp policy/org.freedesktop.packagekit.policy '
+            '    sudo cp <builddir>/data/policy/org.freedesktop.packagekit.policy '
             '/usr/share/polkit-1/actions/'.format(POLKIT_POLICY)
         )
     if not shutil.which('gdbus'):
