@@ -271,6 +271,7 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 
 	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), NULL);
 
+	/* clang-format off */
 	if (limit == 0) {
 		statement = g_strdup ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 				      "FROM transactions ORDER BY timespec DESC");
@@ -278,6 +279,8 @@ pk_transaction_db_get_list (PkTransactionDb *tdb, guint limit)
 		statement = g_strdup_printf ("SELECT transaction_id, timespec, succeeded, duration, role, data, uid, cmdline "
 					     "FROM transactions ORDER BY timespec DESC LIMIT %i", limit);
 	}
+	/* clang-format on */
+
 	rc = sqlite3_exec (tdb->db,
 			   statement,
 			   pk_transaction_db_add_transaction_cb,
@@ -632,8 +635,10 @@ pk_transaction_db_is_proxy_set (PkTransactionDb *tdb, guint uid, const gchar *se
 
 	/* get existing data */
 	item = g_new0 (PkTransactionDbProxyItem, 1);
+	/* clang-format off */
 	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
 				     uid, session);
+	/* clang-format on */
 	rc = sqlite3_exec (tdb->db, statement,
 			   pk_transaction_sqlite_proxy_cb,
 			   item,
@@ -683,8 +688,10 @@ pk_transaction_db_get_proxy (PkTransactionDb *tdb, guint uid, const gchar *sessi
 
 	/* get existing data */
 	item = g_new0 (PkTransactionDbProxyItem, 1);
+	/* clang-format off */
 	statement = g_strdup_printf ("SELECT proxy_http, proxy_https, proxy_ftp, proxy_socks, no_proxy, pac FROM proxy WHERE uid = '%i' AND session = '%s' LIMIT 1",
 				     uid, session);
+	/* clang-format on */
 	rc = sqlite3_exec (tdb->db, statement,
 			   pk_transaction_sqlite_proxy_cb,
 			   item,
@@ -911,6 +918,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	if (!pk_transaction_db_execute (tdb, "SELECT * FROM transactions LIMIT 1", &error_local)) {
 		g_debug ("creating table to repair: %s", error_local->message);
 		g_clear_error (&error_local);
+		/* clang-format off */
 		statement = "CREATE TABLE transactions ("
 			    "transaction_id TEXT PRIMARY KEY,"
 			    "timespec TEXT,"
@@ -921,6 +929,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 			    "description TEXT,"
 			    "uid INTEGER DEFAULT 0,"
 			    "cmdline TEXT);";
+		/* clang-format on */
 		if (!pk_transaction_db_execute (tdb, statement, error))
 			return FALSE;
 	}
@@ -965,7 +974,9 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	if (!pk_transaction_db_execute (tdb, "SELECT * FROM proxy LIMIT 1", &error_local)) {
 		g_debug ("adding table proxy: %s", error_local->message);
 		g_clear_error (&error_local);
+		/* clang-format off */
 		statement = "CREATE TABLE proxy (created TEXT, proxy_http TEXT, proxy_https TEXT, proxy_ftp TEXT, proxy_socks TEXT, no_proxy TEXT, pac TEXT, uid INTEGER, session TEXT);";
+		/* clang-format on */
 		if (!pk_transaction_db_execute (tdb, statement, error))
 			return FALSE;
 	}

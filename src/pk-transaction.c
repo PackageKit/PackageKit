@@ -181,6 +181,7 @@ static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkTransaction, pk_transaction, G_TYPE_OBJECT)
 
+/* clang-format off */
 static const GDBusErrorEntry pk_transaction_error_entries[] = {
 	{ PK_TRANSACTION_ERROR_DENIED,                       PK_DBUS_INTERFACE_TRANSACTION ".Denied" },
 	{ PK_TRANSACTION_ERROR_NOT_RUNNING,                  PK_DBUS_INTERFACE_TRANSACTION ".NotRunning" },
@@ -205,6 +206,7 @@ static const GDBusErrorEntry pk_transaction_error_entries[] = {
 	{ PK_TRANSACTION_ERROR_MIME_TYPE_NOT_SUPPORTED,      PK_DBUS_INTERFACE_TRANSACTION ".MimeTypeNotSupported" },
 	{ PK_TRANSACTION_ERROR_NUMBER_OF_PACKAGES_INVALID,   PK_DBUS_INTERFACE_TRANSACTION ".NumberOfPackagesInvalid" },
 };
+/* clang-format on */
 
 GQuark
 pk_transaction_error_quark (void)
