@@ -20,6 +20,9 @@ from glob import glob
 # Minimum version of clang-format that we need
 MIN_CLANG_FORMAT_VERSION = 22
 
+# Minimum version of black that we need
+MIN_BLACK_VERSION = 26
+
 # Directories (or single files) to format. Paths are relative to the source root.
 INCLUDE_LOCATIONS = [
     'autoformat.py',
@@ -36,6 +39,8 @@ INCLUDE_LOCATIONS = [
 # Files that must not be touched, as fnmatch patterns against the full path.
 EXCLUDE_MATCH = [
     '*/build/*',
+    '*/_build/*',
+    '*/builddir/*',
     '*/subprojects/*',
     '*.gen.hh',
     '*.gen.h',
@@ -243,7 +248,7 @@ def collect_sources(current_dir, locations):
 def run(current_dir, args):
     if not check_tool('clang-format', r'version (\d+)', MIN_CLANG_FORMAT_VERSION):
         return 1
-    if not check_tool('black'):
+    if not check_tool('black', r'black, (\d+)', MIN_BLACK_VERSION):
         return 1
 
     locations = args.paths if args.paths else INCLUDE_LOCATIONS
