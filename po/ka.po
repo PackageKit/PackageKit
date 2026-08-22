@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-06-16 18:20+0200\n"
+"POT-Creation-Date: 2026-08-22 14:06+0200\n"
 "PO-Revision-Date: 2026-05-28 14:11+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/packagekit/translations/ka/>\n"
@@ -22,169 +22,169 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 2026.6.dev0\n"
 
-#: backends/dnf/pk-backend-dnf-refresh.c:140 src/pk-main.c:174
+#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
 msgid "Config file was not found."
 msgstr "კონფიგურაციის ფაილი აღმოჩენილი არაა."
 
 #. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:147 src/pk-main.c:181
+#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
 #, c-format
 msgid "Failed to load config file: %s"
 msgstr "კონფიგურაციის ფაილის ჩატვირთვის შეცდომა: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:171
+#: client/pk-offline-update.c:166
 #, c-format
 msgid "%i%%"
 msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:177
+#: client/pk-offline-update.c:172
 msgid "Installing System Upgrade"
 msgstr "სისტემის განახლებების დაყენება"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:181
+#: client/pk-offline-update.c:176
 msgid "Installing Updates"
 msgstr "მიმდინარეობს განახლებების დაყენება"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:214
+#: client/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
 msgstr "გადატვირთვა განახლებების დაყენების შემდეგ…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:256
+#: client/pk-offline-update.c:246
 msgid "Shutting down after installing updates…"
 msgstr "გამორთვა განახლებების დაყენების შემდეგ…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:401
+#: client/pk-offline-update.c:392
 msgid "Installing updates; this could take a while..."
 msgstr "მიმდინარეობს განახლებების დაყენებას. ამას, შეიძლება, საკმაო დრო დასჭირდეს..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:438
+#: client/pk-offline-update.c:430
 msgid "Installing system upgrade; this could take a while..."
 msgstr "მიმდინარეობს სისტემის განახლება. ამას, შეიძლება, საკმაო დრო დასჭირდეს..."
 
 #. TRANSLATORS: this is an atomic transaction
 #. TRANSLATORS: the role is the point of the transaction,
 #. * e.g. update-packages
-#: client/pkcon/pk-console.c:165 client/pkcon/pk-console.c:575
+#: client/pkcon/pk-console.c:173 client/pkcon/pk-console.c:603
 msgid "Transaction"
 msgstr "ტრანზაქცია"
 
 #. TRANSLATORS: this is the time the transaction was started in system timezone
-#: client/pkcon/pk-console.c:167
+#: client/pkcon/pk-console.c:175
 msgid "System time"
 msgstr "სისტემური დრო"
 
-#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1005
+#: client/pkcon/pk-console.c:177 client/pkgc-util.c:1014
 msgid "False"
 msgstr "მცდარი"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pkcon/pk-console.c:169
+#: client/pkcon/pk-console.c:177
 msgid "Succeeded"
 msgstr "წარმატებულია"
 
-#: client/pkcon/pk-console.c:169 client/pkgc-util.c:1004
+#: client/pkcon/pk-console.c:177 client/pkgc-util.c:1013
 msgid "True"
 msgstr "ჭეშმარიტი"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pkcon/pk-console.c:171
+#: client/pkcon/pk-console.c:179
 msgid "Role"
 msgstr "როლი"
 
-#: client/pkcon/pk-console.c:176
+#: client/pkcon/pk-console.c:184
 msgid "(seconds)"
 msgstr "(წამი)"
 
 #. TRANSLATORS: this is The duration of the transaction
-#: client/pkcon/pk-console.c:176
+#: client/pkcon/pk-console.c:184
 msgid "Duration"
 msgstr "ხანგრძლივობა"
 
 #. TRANSLATORS: this is The command line used to do the action
-#: client/pkcon/pk-console.c:180
+#: client/pkcon/pk-console.c:188
 msgid "Command line"
 msgstr "ბრძანების სტრიქონი"
 
 #. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pkcon/pk-console.c:182
+#: client/pkcon/pk-console.c:190
 msgid "User ID"
 msgstr "მომხმარებლის ID"
 
 #. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pkcon/pk-console.c:189
+#: client/pkcon/pk-console.c:197
 msgid "Username"
 msgstr "მომხმარებლის სახელი"
 
 #. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pkcon/pk-console.c:193
+#: client/pkcon/pk-console.c:201
 msgid "Real name"
 msgstr "ნამდვილი სახელი"
 
 #. TRANSLATORS: Label for affected packages in transaction
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:201 client/pkgc-util.c:1055
-#: client/pkgc-util.c:1073
+#: client/pkcon/pk-console.c:209 client/pkgc-util.c:1064
+#: client/pkgc-util.c:1082
 msgid "Affected packages:"
 msgstr "შეიცვლება პაკეტები:"
 
 #. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:204
+#: client/pkcon/pk-console.c:212
 msgid "Affected packages: None"
 msgstr "შეიცვლება პაკეტები: არცერთი"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pkcon/pk-console.c:230
+#: client/pkcon/pk-console.c:234
 msgid "Distribution"
 msgstr "დისტრიბუტივი"
 
 #. TRANSLATORS: this is type of update, stable or testing
-#: client/pkcon/pk-console.c:232
+#: client/pkcon/pk-console.c:236
 msgid "Type"
 msgstr "ტიპი"
 
 #. TRANSLATORS: this is any summary text describing the upgrade
 #. TRANSLATORS: this is the summary of the group
-#: client/pkcon/pk-console.c:234 client/pkcon/pk-console.c:267
+#: client/pkcon/pk-console.c:238 client/pkcon/pk-console.c:276
 msgid "Summary"
 msgstr "შეჯამება"
 
 #. TRANSLATORS: this is the group category name
-#: client/pkcon/pk-console.c:256
+#: client/pkcon/pk-console.c:265
 msgid "Category"
 msgstr "კატეგორია"
 
 #. TRANSLATORS: this is group identifier
-#: client/pkcon/pk-console.c:258
+#: client/pkcon/pk-console.c:267
 msgid "ID"
 msgstr "ID"
 
 #. TRANSLATORS: this is the parent group
-#: client/pkcon/pk-console.c:261
+#: client/pkcon/pk-console.c:270
 msgid "Parent"
 msgstr "მშობელი"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
-#: client/pkcon/pk-console.c:264 client/pkcon/pk-console.c:2340
+#: client/pkcon/pk-console.c:273 client/pkcon/pk-console.c:2482
 msgid "Name"
 msgstr "სახელი"
 
 #. TRANSLATORS: this is preferred icon for the group
-#: client/pkcon/pk-console.c:270
+#: client/pkcon/pk-console.c:279
 msgid "Icon"
 msgstr "ხატულა"
 
 #. TRANSLATORS: this is a header for the package that can be updated
-#: client/pkcon/pk-console.c:308
+#: client/pkcon/pk-console.c:329
 msgid "Details about the update:"
 msgstr "დეტალები განახლების შესახებ:"
 
@@ -192,259 +192,258 @@ msgstr "დეტალები განახლების შესახ�
 #. TRANSLATORS: the package that is being processed
 #. TRANSLATORS: the package that is not signed by a known key
 #. TRANSLATORS: the package name that was trying to be installed
-#: client/pkcon/pk-console.c:314 client/pkcon/pk-console.c:594
-#: lib/packagekit-glib2/pk-task-text.c:107
-#: lib/packagekit-glib2/pk-task-text.c:178
+#: client/pkcon/pk-console.c:335 client/pkcon/pk-console.c:620
+#: lib/pk-task-text.c:115 lib/pk-task-text.c:186
 msgid "Package"
 msgstr "პაკეტი"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update updates
-#: client/pkcon/pk-console.c:319
+#: client/pkcon/pk-console.c:340
 msgid "Updates"
 msgstr "განახლებები"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
-#: client/pkcon/pk-console.c:326
+#: client/pkcon/pk-console.c:347
 msgid "Obsoletes"
 msgstr "მოძველებულად მონიშნავს"
 
 #. TRANSLATORS: details about the update, the vendor URLs
 #. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pkcon/pk-console.c:332 lib/packagekit-glib2/pk-task-text.c:181
+#: client/pkcon/pk-console.c:353 lib/pk-task-text.c:189
 msgid "Vendor"
 msgstr "მომწოდებელი"
 
 #. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pkcon/pk-console.c:338
+#: client/pkcon/pk-console.c:359
 msgid "Bugzilla"
 msgstr "Bugzilla"
 
 #. TRANSLATORS: details about the update, the CVE URLs
-#: client/pkcon/pk-console.c:344
+#: client/pkcon/pk-console.c:365
 msgid "CVE"
 msgstr "CVE"
 
 #. TRANSLATORS: details about the update, if the package
 #. * requires a restart
-#: client/pkcon/pk-console.c:350
+#: client/pkcon/pk-console.c:371
 msgid "Restart"
 msgstr "გადატვირთვა"
 
 #. TRANSLATORS: details about the update, any description of
 #. * the update
-#: client/pkcon/pk-console.c:355
+#: client/pkcon/pk-console.c:376
 msgid "Update text"
 msgstr "განახლების ტექსტი"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
-#: client/pkcon/pk-console.c:360
+#: client/pkcon/pk-console.c:381
 msgid "Changes"
 msgstr "ცვლილებები"
 
 #. TRANSLATORS: details about the update, the ongoing state
 #. * of the update
-#: client/pkcon/pk-console.c:365
+#: client/pkcon/pk-console.c:386
 msgid "State"
 msgstr "მდგომარეობა"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was issued
-#: client/pkcon/pk-console.c:370
+#: client/pkcon/pk-console.c:391
 msgid "Issued"
 msgstr "გამოშვება"
 
 #. TRANSLATORS: details about the update, date the update
 #. * was updated
 #. TRANSLATORS: The action of the package, in past tense
-#: client/pkcon/pk-console.c:375 lib/packagekit-glib2/pk-enum.c:1107
+#: client/pkcon/pk-console.c:396 lib/pk-enum.c:1111
 msgid "Updated"
 msgstr "განახლდა"
 
 #. TRANSLATORS: if the repo is enabled
-#: client/pkcon/pk-console.c:397
+#: client/pkcon/pk-console.c:421
 msgid "Enabled"
 msgstr "ჩართულია"
 
 #. TRANSLATORS: if the repo is disabled
-#: client/pkcon/pk-console.c:400
+#: client/pkcon/pk-console.c:424
 msgid "Disabled"
 msgstr "გამორთულია"
 
 #. TRANSLATORS: a package requires the system to be restarted
-#: client/pkcon/pk-console.c:429
+#: client/pkcon/pk-console.c:450
 msgid "System restart required by:"
 msgstr "სისტემის გადატვირთვას ითხოვს:"
 
 #. TRANSLATORS: a package requires the session to be restarted
-#: client/pkcon/pk-console.c:432
+#: client/pkcon/pk-console.c:453
 msgid "Session restart required:"
 msgstr "საჭიროა სესიის გადატვირთვა:"
 
 #. TRANSLATORS: a package requires the system to be restarted
 #. * due to a security update
-#: client/pkcon/pk-console.c:436
+#: client/pkcon/pk-console.c:457
 msgid "System restart (security) required by:"
 msgstr "სისტემის გადატვირთვას (უსაფრთხოებისთვის) ითხოვს:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
-#: client/pkcon/pk-console.c:440
+#: client/pkcon/pk-console.c:461
 msgid "Session restart (security) required:"
 msgstr "სესიის გადატვირთვას (უსაფრთხოებისთვის) ითხოვს:"
 
 #. TRANSLATORS: a package requires the application to be restarted
-#: client/pkcon/pk-console.c:443
+#: client/pkcon/pk-console.c:464
 msgid "Application restart required by:"
 msgstr "პროგრამის გადატვირთვას ითხოვს:"
 
 #. TRANSLATORS: This a list of details about the package
-#: client/pkcon/pk-console.c:488
+#: client/pkcon/pk-console.c:517
 msgid "Package description"
 msgstr "პაკეტის აღწერა"
 
 #. TRANSLATORS: This where the package has no files
-#: client/pkcon/pk-console.c:509
+#: client/pkcon/pk-console.c:538
 msgid "No files"
 msgstr "ფაილების გარეშე"
 
 #. TRANSLATORS: This a list files contained in the package
-#: client/pkcon/pk-console.c:514
+#: client/pkcon/pk-console.c:543
 msgid "Package files"
 msgstr "პაკეტის ფაილები"
 
 #. TRANSLATORS: the percentage complete of the transaction
-#: client/pkcon/pk-console.c:610
+#: client/pkcon/pk-console.c:634
 msgid "Percentage"
 msgstr "პროცენტი"
 
 #. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pkcon/pk-console.c:633
+#: client/pkcon/pk-console.c:659
 msgid "Status"
 msgstr "სტატუსი"
 
 #. TRANSLATORS: the results from the transaction
-#: client/pkcon/pk-console.c:671
+#: client/pkcon/pk-console.c:696
 msgid "Results:"
 msgstr "შედეგები:"
 
 #. TRANSLATORS: we failed to get any results, which is pretty
 #. * fatal in my book
-#: client/pkcon/pk-console.c:677 client/pkcon/pk-console.c:838
+#: client/pkcon/pk-console.c:702 client/pkcon/pk-console.c:866
 msgid "Fatal error"
 msgstr "ფატალური შეცდომა"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
-#: client/pkcon/pk-console.c:702
+#: client/pkcon/pk-console.c:727
 msgid "There are no packages to update."
 msgstr "განახლების პაკეტები არ არის."
 
 #. TRANSLATORS: the transaction failed in a way we could
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pkcon/pk-console.c:706
-#: contrib/command-not-found/pk-command-not-found.c:670
+#: client/pkcon/pk-console.c:732
+#: contrib/command-not-found/pk-command-not-found.c:701
 msgid "The transaction failed"
 msgstr "ტრანზაქცია ჩავარდა"
 
 #. TRANSLATORS: print a message when there are no updates
-#: client/pkcon/pk-console.c:735
+#: client/pkcon/pk-console.c:760
 msgid "There are no updates available at this time."
 msgstr "ამ მომენტისთვის განახლებები ხელმისაწვდომი არაა."
 
-#: client/pkcon/pk-console.c:758
+#: client/pkcon/pk-console.c:783
 msgid "There are no upgrades available at this time."
 msgstr "ამ მომენტისთვის გაუმჯობესებები ხელმისაწვდომი არაა."
 
 #. TRANSLATORS: a package needs to restart their system
-#: client/pkcon/pk-console.c:820
+#: client/pkcon/pk-console.c:845
 msgid "Please restart the computer to complete the update."
 msgstr "განახლების დასასრულებლად გადატვირთეთ კომპიუტერი."
 
 #. TRANSLATORS: a package needs to restart the session
-#: client/pkcon/pk-console.c:823
+#: client/pkcon/pk-console.c:848
 msgid "Please logout and login to complete the update."
 msgstr "განახლების დასასრულებლად გადით და თავიდან შემოდით თქვენს ანგარიშში."
 
 #. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pkcon/pk-console.c:826
+#: client/pkcon/pk-console.c:853
 msgid "Please restart the computer to complete the update as important security updates have been installed."
 msgstr "გადატვირთეთ კომპიუტერი განახლების დასასრულებლად, რადგან მოხდა მნიშვნელოვანი უსაფრთხოების განახლებების დაყენება."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pkcon/pk-console.c:829
+#: client/pkcon/pk-console.c:857
 msgid "Please logout and login to complete the update as important security updates have been installed."
 msgstr "გადით და შედით თავიდან სესიაში განახლების დასასრულებლად, რადგან მოხდა მნიშვნელოვანი უსაფრთხოების განახლებების დაყენება."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
-#: client/pkcon/pk-console.c:932 client/pkgc-util.c:1165
+#: client/pkcon/pk-console.c:961 client/pkgc-util.c:1174
 msgid "More than one package matches:"
 msgstr "ემთხვევა ერთზე მეტი პაკეტი:"
 
 #. prompt user for selection
 #. TRANSLATORS: This finds out which package in the list to use
-#: client/pkcon/pk-console.c:944 client/pkgc-util.c:1177
+#: client/pkcon/pk-console.c:973 client/pkgc-util.c:1186
 #, c-format
 msgid "Please choose the correct package: "
 msgstr "აირჩიეთ სწორი პაკეტი: "
 
 #. TRANSLATORS: we asked to install a package
 #. * that could not be found in any repo
-#: client/pkcon/pk-console.c:981
+#: client/pkcon/pk-console.c:1008
 msgid "Package not found"
 msgstr "პაკეტი აღმოჩენილი არაა"
 
 #. TRANSLATORS: we couldn't find anything
-#: client/pkcon/pk-console.c:999
+#: client/pkcon/pk-console.c:1025
 msgid "No packages were found"
 msgstr "პაკეტები ნაპოვნი არაა"
 
 #. TRANSLATORS: The user used
 #. * 'pkcon install dave.rpm' rather than
 #. * 'pkcon install-local dave.rpm'
-#: client/pkcon/pk-console.c:1024
+#: client/pkcon/pk-console.c:1050
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
 msgstr "მოველოდი პაკეტის სახელს და მივიღე ფაილი. სცადეთ, 'pkcon install-local %s' გამოიყენოთ."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
-#: client/pkcon/pk-console.c:1059
+#: client/pkcon/pk-console.c:1087
 #, c-format
 msgid "This tool could not find any available package: %s"
 msgstr "ამ პროგრამამ ხელმისაწვდომი პაკეტები ვერ იპოვა: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkcon/pk-console.c:1076
+#: client/pkcon/pk-console.c:1105
 msgid "This tool could not find any available package."
 msgstr "ამ პროგრამამ ხელმისაწვდომი პაკეტები ვერ იპოვა."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
-#: client/pkcon/pk-console.c:1085
+#: client/pkcon/pk-console.c:1114
 msgid "The selected packages may already be installed."
 msgstr "არჩეული პაკეტი, შეიძლება, უკვე დაყენებულია."
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1113
+#: client/pkcon/pk-console.c:1148
 #, c-format
 msgid "This tool could not find the installed package: %s"
 msgstr "ამ პროგრამამ დაყენებული პაკეტები ვერ იპოვა: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1142 client/pkcon/pk-console.c:1173
+#: client/pkcon/pk-console.c:1183 client/pkcon/pk-console.c:1215
 #, c-format
 msgid "This tool could not find the package: %s"
 msgstr "ამ პროგრამამ ვერ იპოვა პაკეტი: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
-#: client/pkcon/pk-console.c:1220
+#: client/pkcon/pk-console.c:1264
 msgid "No packages require updating to newer versions."
 msgstr "არ არსებობს პაკეტი, რომელიც უფრო ახალ ვერსიამდე განახლებას ითხოვს."
 
@@ -456,124 +455,124 @@ msgstr "არ არსებობს პაკეტი, რომელი�
 #. * details about the package. The detailed error follows
 #. TRANSLATORS: The package name was not found in
 #. * any software repositories. The detailed error follows
-#: client/pkcon/pk-console.c:1258 client/pkcon/pk-console.c:1287
-#: client/pkcon/pk-console.c:1326 client/pkcon/pk-console.c:1385
-#: client/pkcon/pk-console.c:1413
+#: client/pkcon/pk-console.c:1309 client/pkcon/pk-console.c:1340
+#: client/pkcon/pk-console.c:1383 client/pkcon/pk-console.c:1450
+#: client/pkcon/pk-console.c:1480
 #, c-format
 msgid "This tool could not find all the packages: %s"
 msgstr "ამ პროგრამამ ყველა პაკეტი ვერ იპოვა: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkcon/pk-console.c:1440 client/pkgc-context.c:130
+#: client/pkcon/pk-console.c:1507 client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
 msgstr "დემონი ავარიულად დასრულდა შუა ტრანზაქციაში!"
 
 #. TRANSLATORS: This is the header to the --help menu
-#: client/pkcon/pk-console.c:1472
+#: client/pkcon/pk-console.c:1539
 msgid "PackageKit Console Interface"
 msgstr "PackageKit კონსოლის ინტერფეისი"
 
 #. these are commands we can use with pkcon
-#: client/pkcon/pk-console.c:1474
+#: client/pkcon/pk-console.c:1541
 msgid "Subcommands:"
 msgstr "ქვებრძანებები:"
 
 #. TRANSLATORS: we keep a database updated with the time that an
 #. * action was last executed
-#: client/pkcon/pk-console.c:1572 client/pkgc-query.c:904
+#: client/pkcon/pk-console.c:1642 client/pkgc-query.c:913
 msgid "Failed to get the time since this action was last completed"
 msgstr "ბოლოს დასრულებული ქმედების შემდეგ გასული დროის მიღება ჩავარდა"
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkcon/pk-console.c:1576
+#: client/pkcon/pk-console.c:1647
 msgid "Time since"
 msgstr "გავიდა დრო"
 
 #. TRANSLATORS: There follows a list of packages downloaded and ready
 #. * to be updated
-#: client/pkcon/pk-console.c:1596
+#: client/pkcon/pk-console.c:1667
 msgid "Prepared updates:"
 msgstr "მომზადებული განახლებები:"
 
 #. TRANSLATORS: The network settings could not be sent
-#: client/pkcon/pk-console.c:1665
+#: client/pkcon/pk-console.c:1737
 msgid "The proxy could not be set"
 msgstr "პროქსის დაყენება შეუძლებელია"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkcon/pk-console.c:1706 client/pkcon/pk-monitor.c:330
+#: client/pkcon/pk-console.c:1780 client/pkcon/pk-monitor.c:354
 msgid "Show the program version and exit"
 msgstr "პროგრამის ვერსიის ჩვენება და გასვლა"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkcon/pk-console.c:1709
+#: client/pkcon/pk-console.c:1783
 msgid "Set the filter, e.g. installed"
 msgstr "დააყენეთ ფილტრი. მაგ: 'installed' (დაყენებულია)"
 
 #. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1712
+#: client/pkcon/pk-console.c:1786
 msgid "Install the packages without asking for confirmation"
 msgstr "პაკეტების დაყენება დადასტურების გარეშე"
 
 #. TRANSLATORS: command line argument, do we just download or apply changes
 #. command line argument, do we just download or apply changes
-#: client/pkcon/pk-console.c:1715 client/pkgc-manage.c:40
+#: client/pkcon/pk-console.c:1789 client/pkgc-manage.c:43
 msgid "Prepare the transaction by downloading packages only"
 msgstr "ტრანზაქციის მომზადება პაკეტების, მხოლოდ, გადმოწერით"
 
 #. command line argument, do we allow package downgrades
-#: client/pkcon/pk-console.c:1718
+#: client/pkcon/pk-console.c:1792
 msgid "Allow packages to be downgraded during transaction"
 msgstr "პაკეტების ვერსიის დაწევის დაშვება ტრანზაქციის მიმდინარეობისას"
 
-#: client/pkcon/pk-console.c:1720
+#: client/pkcon/pk-console.c:1794
 msgid "Allow packages to be reinstalled during transaction"
 msgstr "პაკეტების თავიდან დაყენების დაშვება ტრანზაქციის მიმდინარეობისას"
 
-#: client/pkcon/pk-console.c:1722
+#: client/pkcon/pk-console.c:1796
 msgid "Automatically remove unused dependencies"
 msgstr "გამოუყენებელი დამოკიდებულებების ავტომატური წაშლა"
 
 #. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkcon/pk-console.c:1725 client/pkgcli.c:95
+#: client/pkcon/pk-console.c:1799 client/pkgcli.c:98
 msgid "Run the command using idle network bandwidth and also using less power"
 msgstr "პროგრამის გაშვება უქმე ქსელის გამტარობაზე და ნაკლები ენერგიის დახარჯვა"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1728
+#: client/pkcon/pk-console.c:1802
 msgid "Print to screen a machine readable output, rather than using animated widgets"
 msgstr "მანქანისთვის წაკითხვადი ინფორმაციის გამოტანა ანიმირებული ვიჯეტების მაგიერ"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1731
+#: client/pkcon/pk-console.c:1805
 msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgstr "მეტამონაცემების კეშის მაქსიმალური ასაკი (წამებში). -1, მხოლოდ, კეშის გამოსაყენებლად, 1 კი კეშის თავიდან ჩასატვირთად."
 
 #. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1734
+#: client/pkcon/pk-console.c:1808
 msgid "Allow untrusted packages to be installed."
 msgstr "არასანდო პაკეტების დაყენების დაშვება."
 
 #. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1769
+#: client/pkcon/pk-console.c:1840
 msgid "Failed to parse command line"
 msgstr "ბრძანების სტრიქონის დამუშავების შეცდომა"
 
 #. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1779
+#: client/pkcon/pk-console.c:1850
 msgid "Failed to contact PackageKit"
 msgstr "PackageKit-თან დაკავშირების შეცდომა"
 
 #. TRANSLATORS: The user specified
 #. * an incorrect filter
-#: client/pkcon/pk-console.c:1842 client/pkgcli.c:257
+#: client/pkcon/pk-console.c:1921 client/pkgcli.c:261
 msgid "The filter specified was invalid"
 msgstr "მითითებული ფილტრი არასწორია"
 
 #. TRANSLATORS: a search type can
 #. * be name, details, file, etc
-#: client/pkcon/pk-console.c:1868
+#: client/pkcon/pk-console.c:1947
 msgid "A search type is required, e.g. name"
 msgstr "ძებნის ტიპი აუცილებელია. მაგ: სახელი"
 
@@ -581,91 +580,97 @@ msgstr "ძებნის ტიპი აუცილებელია. მ�
 #. * needs to provide a search term
 #. TRANSLATORS: the user needs
 #. * to provide a search term
-#: client/pkcon/pk-console.c:1878 client/pkcon/pk-console.c:1895
-#: client/pkcon/pk-console.c:1912 client/pkcon/pk-console.c:1929
+#: client/pkcon/pk-console.c:1958 client/pkcon/pk-console.c:1978
+#: client/pkcon/pk-console.c:1998 client/pkcon/pk-console.c:2018
 msgid "A search term is required"
 msgstr "ძებნის პირობა აუცილებელია"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1955
+#: client/pkcon/pk-console.c:2049
 msgid "A package name to install is required"
 msgstr "დასაყენებელი პაკეტის სახელი აუცილებელია"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
-#: client/pkcon/pk-console.c:1969
+#: client/pkcon/pk-console.c:2062
 msgid "A filename to install is required"
 msgstr "საჭიროა დასაყენებელი ფაილის სახელი"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: client/pkcon/pk-console.c:1985
+#: client/pkcon/pk-console.c:2081
 msgid "A type, key_id and package_id are required"
 msgstr "აუცილებელია ტიპი, key_id და package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
-#: client/pkcon/pk-console.c:2003
+#: client/pkcon/pk-console.c:2102
 msgid "A package name to remove is required"
 msgstr "წასაშლელი პაკეტის სახელი აუცილებელია"
 
 #. TRANSLATORS: the user did not
 #. * specify anything about what to
 #. * download or where
-#: client/pkcon/pk-console.c:2016
+#: client/pkcon/pk-console.c:2116
 msgid "A destination directory and the package names to download are required"
 msgstr "სამიზნე საქაღალდის და გადმოსაწერი პაკეტის სახელების მითითება აუცილებელია"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
-#: client/pkcon/pk-console.c:2026
+#: client/pkcon/pk-console.c:2127
 msgid "Directory not found"
 msgstr "საქაღალდე აღმოჩენილი არაა"
 
 #. TRANSLATORS: geeky error, real
 #. * users won't see this
-#: client/pkcon/pk-console.c:2041
+#: client/pkcon/pk-console.c:2140
 msgid "A licence identifier (eula-id) is required"
 msgstr "ლიცენზიის იდენტიფიკატორი (eula-id) აუცილებელია"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
-#: client/pkcon/pk-console.c:2067
+#: client/pkcon/pk-console.c:2167
 msgid "A package name to resolve is required"
 msgstr "მოსახსნელი პაკეტის სახელი აუცილებელია"
 
 #. TRANSLATORS: The user did not
 #. * specify a repository name
-#: client/pkcon/pk-console.c:2084 client/pkcon/pk-console.c:2101
+#: client/pkcon/pk-console.c:2187 client/pkcon/pk-console.c:2207
 msgid "A repository name is required"
 msgstr "რეპოზიტორიის სახელი აუცილებელია"
 
-#: client/pkcon/pk-console.c:2117
+#. TRANSLATORS: The user didn't provide any data
+#: client/pkcon/pk-console.c:2226
 msgid "A repo name, parameter and value are required"
 msgstr "რეპოს სახელი, პარამეტრი და მნიშვნელობა აუცილებელია"
 
-#: client/pkcon/pk-console.c:2134
+#. TRANSLATORS: The user didn't provide any data
+#: client/pkcon/pk-console.c:2246
 msgid "A repo id and autoremove required"
 msgstr "რეპოზიტორიის id და autoremove აუცილებელია"
 
+#. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
 #. * specify what action to use
-#: client/pkcon/pk-console.c:2161 client/pkgc-query.c:954
+#: client/pkcon/pk-console.c:2278 client/pkgc-query.c:963
 msgid "An action, e.g. 'update-packages' is required"
 msgstr "ქმედება (მაგ: 'update-packages') აუცილებელია"
 
+#. TRANSLATORS: The user specified an invalid action
 #. TRANSLATORS: The user specified
 #. * an invalid action
-#: client/pkcon/pk-console.c:2171 client/pkgc-query.c:962
+#: client/pkcon/pk-console.c:2289 client/pkgc-query.c:971
 msgid "A correct role is required"
 msgstr "აუცილებელია სწორი როლი"
 
+#. TRANSLATORS: The user did not provide a package name
 #. TRANSLATORS: The user did not
 #. * provide a package name
-#: client/pkcon/pk-console.c:2191 client/pkcon/pk-console.c:2208
-#: client/pkcon/pk-console.c:2220 client/pkcon/pk-console.c:2250
-#: client/pkcon/pk-console.c:2283
+#. TRANSLATORS: The user did not provide a package name
+#: client/pkcon/pk-console.c:2310 client/pkcon/pk-console.c:2331
+#: client/pkcon/pk-console.c:2344 client/pkcon/pk-console.c:2379
+#: client/pkcon/pk-console.c:2418
 msgid "A package name is required"
 msgstr "პაკეტის სახელი აუცილებელია"
 
@@ -673,166 +678,167 @@ msgstr "პაკეტის სახელი აუცილებელი�
 #. * "provides" certain things, e.g.
 #. * mime(gstreamer-decoder-mp3),
 #. * the user didn't specify it
-#: client/pkcon/pk-console.c:2234
+#: client/pkcon/pk-console.c:2359
 msgid "A package provide string is required"
 msgstr "პაკეტს მომწოდებლის სტრიქონი აუცილებელია"
 
-#: client/pkcon/pk-console.c:2261 client/pkcon/pk-console.c:2272
+#. TRANSLATORS: The user did not provide a package name
+#: client/pkcon/pk-console.c:2392 client/pkcon/pk-console.c:2405
 msgid "A filename is required"
 msgstr "ფაილის სახელი აუცილებელია"
 
 #. TRANSLATORS: this is the description of the backend
-#: client/pkcon/pk-console.c:2344
+#: client/pkcon/pk-console.c:2486
 msgid "Description"
 msgstr "აღწერა"
 
 #. TRANSLATORS: this is the author of the backend
-#: client/pkcon/pk-console.c:2348
+#: client/pkcon/pk-console.c:2490
 msgid "Author"
 msgstr "ავტორი"
 
 #. TRANSLATORS: The user did not provide a distro name
-#: client/pkcon/pk-console.c:2418
+#: client/pkcon/pk-console.c:2570
 msgid "You need to specify a list file to create"
 msgstr "შესაქმნელი სიის ფაილის მითითება აუცილებელია"
 
 #. TRANSLATORS: There was an error
 #. * getting the list of packages.
 #. * The filename follows
-#: client/pkcon/pk-console.c:2431
+#: client/pkcon/pk-console.c:2583
 #, c-format
 msgid "File already exists: %s"
 msgstr "ფაილი უკვე არსებობს: %s"
 
 #. TRANSLATORS: The user tried to use an
 #. * unsupported option on the command line
-#: client/pkcon/pk-console.c:2449
+#: client/pkcon/pk-console.c:2605
 #, c-format
 msgid "Option '%s' is not supported"
 msgstr "პარამეტრი '%s' მხარდაჭერილი არაა"
 
 #. TRANSLATORS: Generic failure of what they asked to do
-#: client/pkcon/pk-console.c:2459
+#: client/pkcon/pk-console.c:2615
 msgid "Command failed"
 msgstr "ბრძანება ჩავარდა"
 
-#: client/pkcon/pk-monitor.c:267 client/pkgc-monitor.c:416
+#: client/pkcon/pk-monitor.c:276 client/pkgc-monitor.c:424
 msgid "Failed to get daemon state"
 msgstr "დემონის მდგომარეობის მიღების შეცდომა"
 
-#: client/pkcon/pk-monitor.c:310 client/pkgc-monitor.c:482
+#: client/pkcon/pk-monitor.c:331 client/pkgc-monitor.c:494
 msgid "Failed to get properties"
 msgstr "თვისებების მიღება ჩავარდა"
 
 #. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pkcon/pk-monitor.c:341
+#: client/pkcon/pk-monitor.c:366
 msgid "PackageKit Monitor"
 msgstr "PackageKit-ის მონიტორი"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
-#: client/pkgc-manage.c:47
+#: client/pkgc-manage.c:50
 msgid "Allow package downgrades"
 msgstr "პაკეტების ვერსიის ჩამოწევის დაშვება"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
-#: client/pkgc-manage.c:54
+#: client/pkgc-manage.c:57
 msgid "Allow package re-installations"
 msgstr "პაკეტის თავიდან დაყენების დაშვება"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:61
+#: client/pkgc-manage.c:64
 msgid "Allow installation of untrusted packages"
 msgstr "არასანდო პაკეტების დაყენების დაშვება"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:68
+#: client/pkgc-manage.c:71
 msgid "Do not automatically remove unused dependencies"
 msgstr "გამოუყენებელი დამოკიდებულებები ავტომატურად არ წაიშლება"
 
 #. TRANSLATORS: command line argument
-#: client/pkgc-manage.c:75
+#: client/pkgc-manage.c:78
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
 msgstr "მაქსიმალური მეტამონაცემების კეშის ასაკი წამებში (ნაგულისხმევი: 3 დღე)"
 
-#: client/pkgc-manage.c:75
+#: client/pkgc-manage.c:78
 msgid "SECONDS"
 msgstr "წამი"
 
 #. TRANSLATORS: Description for pkgcli refresh
-#: client/pkgc-manage.c:199
+#: client/pkgc-manage.c:203
 msgid "Refresh the package metadata cache."
 msgstr "პაკეტის მეტამონაცემების კეშის განახლება."
 
-#: client/pkgc-manage.c:225
+#: client/pkgc-manage.c:229
 msgid "Package metadata refreshed"
 msgstr "პაკეტის მეტამონაცემები განახლდა"
 
 #. TRANSLATORS: Description for pkgcli install
-#: client/pkgc-manage.c:250
+#: client/pkgc-manage.c:254
 msgid "Install one or more packages or local package files."
 msgstr "ერთი, ან მეტი პაკეტის, ან ლოკალური პაკეტის ფაილების დაყენება."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkgc-manage.c:312 client/pkgc-manage.c:326
+#: client/pkgc-manage.c:316 client/pkgc-manage.c:330
 #, c-format
 msgid "Could not find any available package: %s"
 msgstr "ხელმისაწვდომი პაკეტები აღმოჩენილი არაა: %s"
 
-#: client/pkgc-manage.c:331
+#: client/pkgc-manage.c:335
 msgid "The selected package is already installed."
 msgstr "არჩეული პაკეტი უკვე დაყენებულია."
 
 #. TRANSLATORS: Description for pkgcli remove
-#: client/pkgc-manage.c:372
+#: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
 msgstr "ერთი ან მეტი პაკეტის წაშლა სისტემიდან."
 
-#: client/pkgc-manage.c:389
+#: client/pkgc-manage.c:393
 #, c-format
 msgid "Could not find installed packages: %s"
 msgstr "დაყენებული პაკეტების აღმოჩენა შეუძლებელია: %s"
 
 #. TRANSLATORS: Description for pkgcli download
-#: client/pkgc-manage.c:431
+#: client/pkgc-manage.c:435
 msgid "Download packages to the specified directory without installing."
 msgstr "პაკეტების გადმოწერა მითითებულ საქაღალდეში, დაყენების გარეშე."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
-#: client/pkgc-manage.c:444 client/pkgc-query.c:440 client/pkgc-query.c:779
+#: client/pkgc-manage.c:448 client/pkgc-query.c:441 client/pkgc-query.c:788
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "ვერ ვიპოვე პაკეტები: %s"
 
-#: client/pkgc-manage.c:452
+#: client/pkgc-manage.c:456
 #, c-format
 msgid "Directory does not exist: %s"
 msgstr "საქაღალდე არ არსებობს: %s"
 
 #. TRANSLATORS: Description for pkgcli update
-#: client/pkgc-manage.c:496
+#: client/pkgc-manage.c:500
 msgid "Update all packages or specific packages to their latest versions."
 msgstr "ყველა, ან მითითებული პაკეტების განახლება უკანასკნელ ვერსიამდე."
 
-#: client/pkgc-manage.c:518
+#: client/pkgc-manage.c:522
 #, c-format
 msgid "Could not find packages to update: %s"
 msgstr "განახლებისთვის პაკეტები აღმოჩენილი არაა: %s"
 
-#: client/pkgc-manage.c:548 client/pkgc-manage.c:649 client/pkgc-manage.c:882
+#: client/pkgc-manage.c:552 client/pkgc-manage.c:653 client/pkgc-manage.c:885
 #, c-format
 msgid "Failed to get updates: %s"
 msgstr "განახლებების მიღების შეცდომა: %s"
 
-#: client/pkgc-manage.c:560 client/pkgc-manage.c:658 client/pkgc-manage.c:890
+#: client/pkgc-manage.c:564 client/pkgc-manage.c:664 client/pkgc-manage.c:893
 msgid "No packages require updating"
 msgstr "პაკეტებს განახლება არ სჭირდებათ"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
-#: client/pkgc-manage.c:600
+#: client/pkgc-manage.c:604
 msgid ""
 "Upgrade all packages or perform a distribution upgrade.\n"
 "\n"
@@ -842,64 +848,64 @@ msgstr ""
 "\n"
 "ტიპები: minimal, default, complete"
 
-#: client/pkgc-manage.c:695
+#: client/pkgc-manage.c:701
 #, c-format
 msgid "Failed to read offline update action: %s"
 msgstr "ინტერნეტგარეშე განახლების ქმედების წაკითხვა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:705
+#: client/pkgc-manage.c:711
 msgid "Offline update is not triggered."
 msgstr "ინტერნეტგარეშე განახლება დატრიგერებული არაა."
 
-#: client/pkgc-manage.c:714
+#: client/pkgc-manage.c:720
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
 msgstr "დატრიგერებულია ინტერნეტგარეშე განახლება. ქმედება განახლების შემდეგ: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
-#: client/pkgc-manage.c:725
+#: client/pkgc-manage.c:731
 msgid "Prepared packages:"
 msgstr "მომზადებული პაკეტები:"
 
-#: client/pkgc-manage.c:739
+#: client/pkgc-manage.c:745
 msgid "No offline update is prepared."
 msgstr "ინტერნეტგარეშე განახლება მომზადებული არაა."
 
-#: client/pkgc-manage.c:742
+#: client/pkgc-manage.c:748
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
 msgstr "მომზადებული ინტერნეტგარეშე განახლებების წაკითხვა ჩავარდა: %s"
 
-#: client/pkgc-manage.c:753
+#: client/pkgc-manage.c:759
 msgid "No results from last offline update available."
 msgstr "ბოლო ინტერნეტგარეშე განახლებიდან შედეგები ხელმისაწვდომი არაა."
 
-#: client/pkgc-manage.c:760
+#: client/pkgc-manage.c:766
 #, c-format
 msgid "Last offline update failed: %s: %s"
 msgstr "ბოლო ინტერნეტგარეშე განახლება ჩავარდა: %s: %s"
 
-#: client/pkgc-manage.c:767
+#: client/pkgc-manage.c:773
 msgid "Last offline update completed successfully"
 msgstr "ბოლო ინტერნეტგარეშე განახლება წარმატებით დასრულდა"
 
-#: client/pkgc-manage.c:777
+#: client/pkgc-manage.c:783
 #, c-format
 msgid "Updated: %s"
 msgstr "განახლდა: %s"
 
-#: client/pkgc-manage.c:801
+#: client/pkgc-manage.c:807
 #, c-format
 msgid "Failed to trigger offline update: %s"
 msgstr "ინტერნეტგარეშე განახლების დატრიგერების შეცდომა: %s"
 
-#: client/pkgc-manage.c:805
+#: client/pkgc-manage.c:811
 msgid "Offline update scheduled. System will update on next reboot."
 msgstr "ინტერნეტგარეშე განახლება დაგეგმილია. სისტემა შემდეგი გადატვირთვისას განახლდება."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
-#: client/pkgc-manage.c:825
+#: client/pkgc-manage.c:831
 msgid ""
 "Trigger & manage offline system updates.\n"
 "\n"
@@ -917,101 +923,101 @@ msgstr ""
 "  cancel  - დაგეგმილი ინტერნეტგარესე განახლების გაუქმება\n"
 "  status  - სტატუსის ინფორმაციის ჩვენება დაგეგმილი, ან დასრულებული ინტერნეტგარეშე განახლების შესახებ"
 
-#: client/pkgc-manage.c:850
+#: client/pkgc-manage.c:853
 #, c-format
 msgid "Failed to cancel offline update: %s"
 msgstr "ინტერნეტგარეშე განახლების გაუქმების შეცდომა: %s"
 
-#: client/pkgc-manage.c:854
+#: client/pkgc-manage.c:857
 msgid "Offline update cancelled"
 msgstr "ინტერნეტგარეშე განახლება გაუქმდა"
 
-#: client/pkgc-manage.c:911
+#: client/pkgc-manage.c:914
 #, c-format
 msgid "Unknown offline-update request: %s"
 msgstr "უცნობი ინტერნეტგარეშე განახლების მოთხოვნა: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
-#: client/pkgc-manage.c:932
+#: client/pkgc-manage.c:935
 msgid "Install a package signature for GPG verification."
 msgstr "პაკეტის ხელმოწერის დაყენება GPG-ით გადასამოწმებლად."
 
 #. TRANSLATORS: Description for pkgcli repair
-#: client/pkgc-manage.c:968
+#: client/pkgc-manage.c:971
 msgid "Attempt to repair the package management system."
 msgstr "პაკეტების მართვის სისტემის შეკეთების ცდა."
 
-#: client/pkgc-manage.c:984
+#: client/pkgc-manage.c:987
 msgid "System repaired successfully"
 msgstr "სისტემის რემონტი წარმატებულია"
 
 #. TRANSLATORS: Description for pkgcli quit
-#: client/pkgc-manage.c:1006
+#: client/pkgc-manage.c:1009
 msgid "Safely terminate the PackageKit daemon."
 msgstr "PackageKit-ის დემონის უსაფრთხო გათიშვა."
 
-#: client/pkgc-manage.c:1012
+#: client/pkgc-manage.c:1015
 #, c-format
 msgid "Failed to send daemon quit request: %s"
 msgstr "დემონისთვის გასვლის მოთხოვნის გაგზავნა ჩავარდა: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
-#: client/pkgc-manage.c:1032
+#: client/pkgc-manage.c:1035
 msgid "Refresh package metadata"
 msgstr "პაკეტის მეტამონაცემების განახლება"
 
 #. TRANSLATORS: Description for install command in pkgcli help
-#: client/pkgc-manage.c:1039
+#: client/pkgc-manage.c:1042
 msgid "Install packages"
 msgstr "პაკეტების დაყენება"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
-#: client/pkgc-manage.c:1046
+#: client/pkgc-manage.c:1049
 msgid "Remove packages"
 msgstr "პაკეტების წაშლა"
 
 #. TRANSLATORS: Description for update command in pkgcli help
-#: client/pkgc-manage.c:1053
+#: client/pkgc-manage.c:1056
 msgid "Update packages"
 msgstr "პაკეტების განახლება"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
-#: client/pkgc-manage.c:1060
+#: client/pkgc-manage.c:1063
 msgid "Upgrade the system"
 msgstr "სისტემის ვერსიის აწევა"
 
 #. TRANSLATORS: Description for download command in pkgcli help
-#: client/pkgc-manage.c:1067
+#: client/pkgc-manage.c:1070
 msgid "Download packages"
 msgstr "პაკეტების გადმოწერა"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
-#: client/pkgc-manage.c:1074
+#: client/pkgc-manage.c:1077
 msgid "Manage offline system updates"
 msgstr "სისტემის ინტერნეტგარეშე განახლებების მართვა"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
-#: client/pkgc-manage.c:1081
+#: client/pkgc-manage.c:1084
 msgid "Install package signature"
 msgstr "პაკეტის ხელმოწერის დაყენება"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
-#: client/pkgc-manage.c:1088
+#: client/pkgc-manage.c:1091
 msgid "Repair package system"
 msgstr "პაკეტის სისტემის შეკეთება"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
-#: client/pkgc-manage.c:1095
+#: client/pkgc-manage.c:1098
 msgid "Safely stop the PackageKit daemon"
 msgstr "PackageKit-ის დემონის უსაფრთხო გაჩერება"
 
 #. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:504
+#: client/pkgc-monitor.c:516
 msgid "Monitor PackageKit D-Bus events"
 msgstr "PackageKit-ის D-Bus-ის მოვლენების მონიტორინგი"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
-#: client/pkgc-monitor.c:626
+#: client/pkgc-monitor.c:638
 msgid "Monitor PackageKit bus events"
 msgstr "PackageKit-ის სალტეს მოვლენების მონიტორინგი"
 
@@ -1037,18 +1043,18 @@ msgstr "ავტორი: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:222
+#: client/pkgc-query.c:223
 #, c-format
 msgid "Roles: %s"
 msgstr "როლები: %s"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:246
+#: client/pkgc-query.c:247
 msgid "Show recent package management transactions."
 msgstr "უახლესი პაკეტის მართვის ტრანზაქციების ჩვენება."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:285
+#: client/pkgc-query.c:286
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -1066,171 +1072,171 @@ msgstr ""
 "  file    - ფაილის სახელით ძებნა\n"
 "  group   - პაკეტის ჯგუფით ძებნა"
 
-#: client/pkgc-query.c:313
+#: client/pkgc-query.c:314
 msgid "No search pattern specified"
 msgstr "ძებნის ნიმუში მითითებული არაა"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:374
+#: client/pkgc-query.c:375
 msgid "List all packages or those matching a pattern."
 msgstr "ყველა, ან ნიმუშის შესაბამისი პაკეტის ჩვენება."
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:419
+#: client/pkgc-query.c:420
 msgid "Show information about one or more packages."
 msgstr "ინფორმაციის ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
 
-#: client/pkgc-query.c:475 client/pkgc-query.c:760
+#: client/pkgc-query.c:479 client/pkgc-query.c:768
 msgid "Check dependencies recursively"
 msgstr "დამოკიდებულებების რეკურსიული შემოწმება"
 
 #. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:485
+#: client/pkgc-query.c:490
 msgid "Show dependencies for one or more packages."
 msgstr "დამოკიდებულებების ჩვენება ერთი, ან მეტი პაკეტის შესახებ."
 
-#: client/pkgc-query.c:493 client/pkgc-query.c:577 client/pkgc-query.c:694
+#: client/pkgc-query.c:498 client/pkgc-query.c:582 client/pkgc-query.c:699
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "პაკეტების ამოხსნა შეუძლებელია: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:526
+#: client/pkgc-query.c:531
 msgid "Show which packages provide the specified capability."
 msgstr "ჩვენება, რომელი პაკეტი მოგაწვდით მითითებულ შესაძლებლობას."
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:558
+#: client/pkgc-query.c:563
 msgid "List all files contained in one or more packages."
 msgstr "ერთ ან მეტ პაკეტში არსებული ფაილების სრული სია."
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:654
+#: client/pkgc-query.c:659
 msgid "List all currently available package updates."
 msgstr "ამჟამად ხელმისაწვდომი პაკეტის განახლებების ჩამონათვალი."
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:687
+#: client/pkgc-query.c:692
 msgid "Show detailed information about the specified package update."
 msgstr "დეტალური ინფორმაციის ჩვენება მითითებული პაკეტის განახლების შესახებ."
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:726
+#: client/pkgc-query.c:731
 msgid "Resolve package names to package IDs."
 msgstr "პაკეტის სახელების ამოხსნა პაკეტის ID-ებში."
 
 #. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:770
+#: client/pkgc-query.c:779
 msgid "Show which packages require the specified packages."
 msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტებს."
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:814
+#: client/pkgc-query.c:823
 msgid "List all available filters, groups and categories for package organization."
 msgstr "ხელმისაწვდომი ფილტრების, ჯგუფებისა და კატეგორიების სია პაკეტის ორგანიზაციისთვის."
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:822
+#: client/pkgc-query.c:831
 msgid "Filters:"
 msgstr "ფილტრები:"
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:834
+#: client/pkgc-query.c:843
 msgid "Groups:"
 msgstr "ჯგუფები:"
 
 #. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:846
+#: client/pkgc-query.c:855
 msgid "Categories:"
 msgstr "კატეგორიები:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:872
+#: client/pkgc-query.c:881
 msgid "Show distribution version upgrades, if any are available."
 msgstr "დისტრიბუტივის ვერსიის განახლებების ჩვენება მათი ხელმისაწვდომობის შემთხვევაში."
 
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:918
+#: client/pkgc-query.c:927
 msgid "Elapsed time"
 msgstr "გასული დრო"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:943
+#: client/pkgc-query.c:952
 msgid "Get time in seconds since the last specified action."
 msgstr "ბოლოს მითითებული ქმედების შემდეგ გასული დრო წამებში."
 
 #. TRANSLATORS: Description for backend command in pkgcli help
-#: client/pkgc-query.c:986
+#: client/pkgc-query.c:995
 msgid "Show backend information"
 msgstr "უკანაბოლოს ინფორმაციის ჩვენება"
 
 #. TRANSLATORS: Description for history command in pkgcli help
-#: client/pkgc-query.c:993
+#: client/pkgc-query.c:1002
 msgid "Show transaction history"
 msgstr "ტრანზაქციის ისტორიის ჩვენება"
 
 #. TRANSLATORS: Description for search command in pkgcli help
-#: client/pkgc-query.c:1000
+#: client/pkgc-query.c:1009
 msgid "Search for packages"
 msgstr "პაკეტების ძებნა"
 
 #. TRANSLATORS: Description for list command in pkgcli help
-#: client/pkgc-query.c:1007
+#: client/pkgc-query.c:1016
 msgid "List packages"
 msgstr "პაკეტის სია"
 
 #. TRANSLATORS: Description for show command in pkgcli help
-#: client/pkgc-query.c:1014
+#: client/pkgc-query.c:1023
 msgid "Show package information"
 msgstr "პაკეტის ინფორმაციის ჩვენება"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
-#: client/pkgc-query.c:1021
+#: client/pkgc-query.c:1030
 msgid "List dependencies of the specified package(s)"
 msgstr "მითითებული პაკეტ(ებ)-ის დამოკიდებულებების ჩამონათვალი"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
-#: client/pkgc-query.c:1028
+#: client/pkgc-query.c:1037
 msgid "List other packages requiring the specified package(s)"
 msgstr "ჩვენება, რომელი პაკეტები ითხოვენ მითითებულ პაკეტ(ებ)-ს"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
-#: client/pkgc-query.c:1035
+#: client/pkgc-query.c:1044
 msgid "List packages providing a capability"
 msgstr "შესაძლებლობის მომწოდებელი პაკეტების სია"
 
 #. TRANSLATORS: Description for files command in pkgcli help
-#: client/pkgc-query.c:1042
+#: client/pkgc-query.c:1051
 msgid "Show files in package"
 msgstr "პაკეტში არსებული ფაილების ჩვენება"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
-#: client/pkgc-query.c:1049
+#: client/pkgc-query.c:1058
 msgid "Get available updates"
 msgstr "ხელმისაწვდომი განახლებების მღება"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
-#: client/pkgc-query.c:1056
+#: client/pkgc-query.c:1065
 msgid "Get update details"
 msgstr "განახლების დეტალების მიღება"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
-#: client/pkgc-query.c:1063
+#: client/pkgc-query.c:1072
 msgid "Resolve package names"
 msgstr "პაკეტის სახელების ამოხსნა"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
-#: client/pkgc-query.c:1070
+#: client/pkgc-query.c:1079
 msgid "List available filters and categories"
 msgstr "ხელმისაწვდომი ფილტრებისა და კატეგორიების სია"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
-#: client/pkgc-query.c:1077
+#: client/pkgc-query.c:1086
 msgid "Show available distribution upgrades"
 msgstr "ხელმისაწვდომი დისტრიბუტივის ვერსიის აწევების ჩვენება"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
-#: client/pkgc-query.c:1084
+#: client/pkgc-query.c:1093
 msgid "Get time since last action"
 msgstr "ბოლო ქმედების შემდეგ გასული დროის მიღება"
 
@@ -1259,37 +1265,37 @@ msgstr "მითითებული რეპოზიტორიის გ�
 msgid "Repository '%s' disabled"
 msgstr "რეპოზიტორია '%s' გამოირთო"
 
-#: client/pkgc-repo.c:196
+#: client/pkgc-repo.c:199
 msgid "Automatically remove orphaned packages"
 msgstr "მიტოვებული პაკეტების ავტომატური წაშლა"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
-#: client/pkgc-repo.c:207
+#: client/pkgc-repo.c:211
 msgid "Remove the specified repository."
 msgstr "მითითებული რეპოზიტორიის წაშლა."
 
-#: client/pkgc-repo.c:227
+#: client/pkgc-repo.c:231
 #, c-format
 msgid "Repository '%s' removed"
 msgstr "რეპოზიტორია '%s' წაიშალა"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
-#: client/pkgc-repo.c:245
+#: client/pkgc-repo.c:249
 msgid "List repositories"
 msgstr "რეპოზიტორიების სია"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
-#: client/pkgc-repo.c:252
+#: client/pkgc-repo.c:256
 msgid "Enable a repository"
 msgstr "რეპოზიტორიის ჩართვა"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
-#: client/pkgc-repo.c:259
+#: client/pkgc-repo.c:263
 msgid "Disable a repository"
 msgstr "რეპოზიტორიის გამორთვა"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
-#: client/pkgc-repo.c:266
+#: client/pkgc-repo.c:270
 msgid "Remove a repository"
 msgstr "რეპოზიტორიის წაშლა"
 
@@ -1349,984 +1355,352 @@ msgid "Warning:"
 msgstr "გაფრთხილება:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:436 client/pkgcli.c:190
+#: client/pkgc-util.c:436 client/pkgcli.c:194
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "არგუმენტების დამუშავების შეცდომა: %s"
 
-#: client/pkgc-util.c:443
+#. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
+#: client/pkgc-util.c:444
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "გამოყენება: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:630 client/pkgc-util.c:785
+#: client/pkgc-util.c:639 client/pkgc-util.c:794
 msgid "Package:"
 msgstr "პაკეტი:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:634
+#: client/pkgc-util.c:643
 msgid "Version:"
 msgstr "ვერსია:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:640
+#: client/pkgc-util.c:649
 msgid "Summary:"
 msgstr "შეჯამება:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:648
+#: client/pkgc-util.c:657
 msgid "Description:"
 msgstr "აღწერა:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:655
+#: client/pkgc-util.c:664
 msgid "License:"
 msgstr "ლიცენზია:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:662
+#: client/pkgc-util.c:671
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:670
+#: client/pkgc-util.c:679
 msgid "Group:"
 msgstr "ჯგუფი:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:678
+#: client/pkgc-util.c:687
 msgid "Installed Size:"
 msgstr "დაყენებულის ზომა:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:687
+#: client/pkgc-util.c:696
 msgid "Download Size:"
 msgstr "გადმოწერილის ზომა:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:781
+#: client/pkgc-util.c:790
 msgid "Update Details:"
 msgstr "განახლების დეტალები:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:792
+#: client/pkgc-util.c:801
 msgid "Updates:"
 msgstr "განახლებები:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:801
+#: client/pkgc-util.c:810
 msgid "Obsoletes:"
 msgstr "მოძველებულად მონიშნავს:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:810
+#: client/pkgc-util.c:819
 msgid "Vendor:"
 msgstr "მომწოდებელი:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:819
+#: client/pkgc-util.c:828
 msgid "Issue Tracker:"
 msgstr "პრობლემების ტრეკერი:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:828
+#: client/pkgc-util.c:837
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:836
+#: client/pkgc-util.c:845
 msgid "Restart:"
 msgstr "გადატვირთვა:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:845
+#: client/pkgc-util.c:854
 msgid "Update text:"
 msgstr "განახლების ტექსტი:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:852
+#: client/pkgc-util.c:861
 msgid "Changes:"
 msgstr "ცვლილებები:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:859
+#: client/pkgc-util.c:868
 msgid "State:"
 msgstr "მდგომარეობა:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:868
+#: client/pkgc-util.c:877
 msgid "Issued:"
 msgstr "გამოშვებულია:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:875
+#: client/pkgc-util.c:884
 msgid "Updated:"
 msgstr "განახლდა:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:992
+#: client/pkgc-util.c:1001
 msgid "Transaction:"
 msgstr "ტრანზაქცია:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:996
+#: client/pkgc-util.c:1005
 msgid "System time:"
 msgstr "სისტემური დრო:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1000
+#: client/pkgc-util.c:1009
 msgid "Succeeded:"
 msgstr "წარმატებულია:"
 
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1009
+#: client/pkgc-util.c:1018
 msgid "Role:"
 msgstr "როლი:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1016
+#: client/pkgc-util.c:1025
 msgid "Duration:"
 msgstr "ხანგრძლივობა:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1023
+#: client/pkgc-util.c:1032
 msgid "Command line:"
 msgstr "ბრძანების სტრიქონი:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1029
+#: client/pkgc-util.c:1038
 msgid "User ID:"
 msgstr "მომხმარებლის ID:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1038
+#: client/pkgc-util.c:1047
 msgid "Username:"
 msgstr "მომხმარებლის სახელი:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1044
+#: client/pkgc-util.c:1053
 msgid "Real name:"
 msgstr "ნამდვილი სახელი:"
 
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1076
+#: client/pkgc-util.c:1085
 msgid "None"
 msgstr "არცერთი"
 
-#: client/pkgc-util.c:1221
+#: client/pkgc-util.c:1230
 #, c-format
 msgid "Package not found: %s"
 msgstr "პაკეტი აღმოჩენილი არაა: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
-#: client/pkgcli.c:76
+#: client/pkgcli.c:79
 msgid "Show pkgcli version"
 msgstr "pkgcli-ის ვერსიის ჩვენება"
 
-#: client/pkgcli.c:78
+#: client/pkgcli.c:81
 msgid "Show help"
 msgstr "დახმარების ჩვენება"
 
-#: client/pkgcli.c:80
+#: client/pkgcli.c:83
 msgid "Only provide minimal output"
 msgstr "მინიმალური ინფორმაციის გამოტანა"
 
-#: client/pkgcli.c:82
+#: client/pkgcli.c:85
 msgid "Show more detailed output"
 msgstr "უფრო დეტალური ინფორმაციის გამოტანა"
 
-#: client/pkgcli.c:84
+#: client/pkgcli.c:87
 msgid "Output in JSON format"
 msgstr "გამოტანა JSON ფორმატში"
 
-#: client/pkgcli.c:86
+#: client/pkgcli.c:89
 msgid "Disable colored output"
 msgstr "ფერადი გამოტანის გამორთვა"
 
 #. TRANSLATORS: command line argument, do we ask questions
-#: client/pkgcli.c:89
+#: client/pkgcli.c:92
 msgid "Answer 'yes' to all questions"
 msgstr "'დიახ' პასუხის გაცემა ყველა კითხვაზე"
 
-#: client/pkgcli.c:92
+#: client/pkgcli.c:95
 msgid "FILTER"
 msgstr "ფილტრი"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkgcli.c:92
+#: client/pkgcli.c:95
 msgid "Filter packages (installed, available, etc.)"
 msgstr "პაკეტების ფილტრი (დაყენებულია, ხელმისაწვდომია, ა.შ.)"
 
-#: client/pkgcli.c:118
+#: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
 msgstr "ბრძანება მითითებული არაა. გამოყენების ინფორმაციისთვის გამოიყენეთ --help."
 
-#: client/pkgcli.c:126
+#: client/pkgcli.c:130
 #, c-format
 msgid "Unknown command: %s"
 msgstr "უცნობი ბრძანება: %s"
 
-#: client/pkgcli.c:136
+#: client/pkgcli.c:140
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
 msgstr "PackageKit-თან დაკავშირების შეცდომა: %s"
 
-#: client/pkgcli.c:198
+#: client/pkgcli.c:202
 #, c-format
 msgid "Version: %s"
 msgstr "ვერსია: %s"
 
-#: client/pkgcli.c:213
+#: client/pkgcli.c:217
 msgid "Available Commands:"
 msgstr "ხელმისაწვდომი ბრძანებები:"
 
-#: client/pkgcli.c:219
+#: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "ბრძანებისთვის სპეციფიკური დახმარების მისაღებად გამოიყენეთ 'pkgcli ბრძანება --help'."
 
 #. TRANSLATORS: downloading repo data so we can search
-#: contrib/command-not-found/pk-command-not-found.c:427
+#: contrib/command-not-found/pk-command-not-found.c:426
 msgid "Downloading details about the software repositories."
 msgstr "დეტალების გადმოწერა პროგრამის რეპოზიტორიების შესახებ."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: contrib/command-not-found/pk-command-not-found.c:431
+#: contrib/command-not-found/pk-command-not-found.c:430
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "ფაილების სიის გადმოწერა (ამის დასრულებას, შეიძლება, საკმაო დრო დასჭირდეს)."
 
 #. TRANSLATORS: waiting for native lock
-#: contrib/command-not-found/pk-command-not-found.c:435
+#: contrib/command-not-found/pk-command-not-found.c:434
 msgid "Waiting for package manager lock."
 msgstr "პაკეტების მმართველის ბლოკის მოლოდინი."
 
 #. TRANSLATORS: loading package cache so we can search
-#: contrib/command-not-found/pk-command-not-found.c:439
+#: contrib/command-not-found/pk-command-not-found.c:438
 msgid "Loading list of packages."
 msgstr "პაკეტების სიის ჩატვირთვა."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: contrib/command-not-found/pk-command-not-found.c:499
+#: contrib/command-not-found/pk-command-not-found.c:502
 msgid "Failed to search for file"
 msgstr "შეცდომა ფაილის ძებნისას"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: contrib/command-not-found/pk-command-not-found.c:511
+#: contrib/command-not-found/pk-command-not-found.c:516
 msgid "Getting the list of files failed"
 msgstr "ფაილების სიის მიღება ჩავარდა"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: contrib/command-not-found/pk-command-not-found.c:643
+#: contrib/command-not-found/pk-command-not-found.c:669
 msgid "Failed to launch:"
 msgstr "გაშვების შეცდომა:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:662
+#: contrib/command-not-found/pk-command-not-found.c:692
 msgid "Failed to install packages"
 msgstr "პაკეტების დაყენების შეცდომა"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:781
+#: contrib/command-not-found/pk-command-not-found.c:817
 msgid "command not found"
 msgstr "ბრძანება ვერ ვიპოვე"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:802
+#: contrib/command-not-found/pk-command-not-found.c:837
 msgid "Similar command is:"
 msgstr "მსგავსი ბრძანებაა:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:815
+#: contrib/command-not-found/pk-command-not-found.c:850
 msgid "Run similar command:"
 msgstr "მსგავსი ბრძანების გაშვება:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:827
-#: contrib/command-not-found/pk-command-not-found.c:836
+#: contrib/command-not-found/pk-command-not-found.c:862
+#: contrib/command-not-found/pk-command-not-found.c:871
 msgid "Similar commands are:"
 msgstr "მსგავსი ბრძანებებია:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:843
+#: contrib/command-not-found/pk-command-not-found.c:878
 msgid "Please choose a command to run"
 msgstr "აირჩიეთ გასაშვები ბრძანება"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:863
+#: contrib/command-not-found/pk-command-not-found.c:900
 msgid "The package providing this file is:"
 msgstr "პაკეტის სახელი, რომელიც გაწვდით ამ ფაილს, არის:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:870
+#: contrib/command-not-found/pk-command-not-found.c:909
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "დავაყენო პაკეტი '%s' ბრძანებისთვის '%s'?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:893
+#: contrib/command-not-found/pk-command-not-found.c:936
 msgid "Packages providing this file are:"
 msgstr "პაკეტები, რომლებიც წარმოადგენენ ამ ფაილს:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:903
+#: contrib/command-not-found/pk-command-not-found.c:946
 msgid "Suitable packages are:"
 msgstr "შესატყვისი პაკეტებია:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:911
+#: contrib/command-not-found/pk-command-not-found.c:954
 msgid "Please choose a package to install"
 msgstr "აირჩიეთ დასაყენებელი პაკეტი"
 
-#: contrib/command-not-found/pk-command-not-found.c:913
+#: contrib/command-not-found/pk-command-not-found.c:957
 msgid "User aborted selection"
 msgstr "მომხმარებელმა შეწყვიტა მონიშვნა"
-
-#: lib/packagekit-glib2/pk-console-private.c:228
-#, c-format
-msgid "Please enter a number from 1 to %i: "
-msgstr "შეიყვანეთ რიცხვი 1-დან %i-მდე: "
-
-#. TRANSLATORS: This is when the transaction status is not known
-#: lib/packagekit-glib2/pk-console-private.c:361
-msgid "Unknown state"
-msgstr "უცნობი მდგომარეობა"
-
-#. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/packagekit-glib2/pk-console-private.c:365
-msgid "Starting"
-msgstr "გაშვება"
-
-#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/packagekit-glib2/pk-console-private.c:369
-msgid "Waiting in queue"
-msgstr "რიგში მოლოდინი"
-
-#. TRANSLATORS: transaction state, just started
-#: lib/packagekit-glib2/pk-console-private.c:373
-msgid "Running"
-msgstr "გაშვებულია"
-
-#. TRANSLATORS: transaction state, is querying data
-#: lib/packagekit-glib2/pk-console-private.c:377
-msgid "Querying"
-msgstr "მოთხოვნა"
-
-#. TRANSLATORS: transaction state, getting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:381
-msgid "Getting information"
-msgstr "ინფორმაციის მიღება"
-
-#. TRANSLATORS: transaction state, removing packages
-#: lib/packagekit-glib2/pk-console-private.c:385
-msgid "Removing packages"
-msgstr "მიმდინარეობს პაკეტების წაშლა"
-
-#. TRANSLATORS: transaction state, downloading package files
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-console-private.c:389
-#: lib/packagekit-glib2/pk-enum.c:1258
-msgid "Downloading packages"
-msgstr "მიმდინარეობს პაკეტების გადმოწერა"
-
-#. TRANSLATORS: transaction state, installing packages
-#: lib/packagekit-glib2/pk-console-private.c:393
-msgid "Installing packages"
-msgstr "მიმდინარეობს პაკეტების დაყენება"
-
-#. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/packagekit-glib2/pk-console-private.c:397
-msgid "Refreshing software list"
-msgstr "მიმდინარეობს პროგრამების სიის განახლება"
-
-#. TRANSLATORS: transaction state, installing updates
-#: lib/packagekit-glib2/pk-console-private.c:401
-msgid "Installing updates"
-msgstr "განახლებების დაყენება"
-
-#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/packagekit-glib2/pk-console-private.c:405
-msgid "Cleaning up packages"
-msgstr "პაკეტების გასუფთავება"
-
-#. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/packagekit-glib2/pk-console-private.c:409
-msgid "Obsoleting packages"
-msgstr "პაკეტების მოძველებულად მონიშვნა"
-
-#. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/packagekit-glib2/pk-console-private.c:413
-msgid "Resolving dependencies"
-msgstr "ურთიერთდამოკიდებულებების ამოხსნა"
-
-#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/packagekit-glib2/pk-console-private.c:417
-msgid "Checking signatures"
-msgstr "ხელმოწერების შემოწმება"
-
-#. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/packagekit-glib2/pk-console-private.c:421
-msgid "Testing changes"
-msgstr "ცვლილებების ტესტირება"
-
-#. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/packagekit-glib2/pk-console-private.c:425
-msgid "Committing changes"
-msgstr "ცვლილებების გადაცემა"
-
-#. TRANSLATORS: transaction state, requesting data from a server
-#: lib/packagekit-glib2/pk-console-private.c:429
-msgid "Requesting data"
-msgstr "მონაცემების მოთხოვნა"
-
-#. TRANSLATORS: transaction state, all done!
-#: lib/packagekit-glib2/pk-console-private.c:433
-msgid "Finished"
-msgstr "დასრულებულდა"
-
-#. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/packagekit-glib2/pk-console-private.c:437
-msgid "Cancelling"
-msgstr "მიმდინარეობს გაუქმება"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:441
-msgid "Downloading repository information"
-msgstr "რეპოზიტორიის ინფორმაციის გადმოწერა"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:445
-msgid "Downloading list of packages"
-msgstr "პაკეტების სიის გადმოწერა"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:449
-msgid "Downloading file lists"
-msgstr "ფაილის სიების გადმოწერა"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:453
-msgid "Downloading lists of changes"
-msgstr "ცვლილებების სიის გადმოწერა"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:457
-msgid "Downloading groups"
-msgstr "ჯგუფების გადმოწერა"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/packagekit-glib2/pk-console-private.c:461
-msgid "Downloading update information"
-msgstr "განახლებების ინფორმაციის გადმოწერა"
-
-#. TRANSLATORS: transaction state, repackaging delta files
-#: lib/packagekit-glib2/pk-console-private.c:465
-msgid "Repackaging files"
-msgstr "ფაილების თავიდან შეფუთვა"
-
-#. TRANSLATORS: transaction state, loading databases
-#: lib/packagekit-glib2/pk-console-private.c:469
-msgid "Loading cache"
-msgstr "ქეშის ჩატვირთვა"
-
-#. TRANSLATORS: transaction state, scanning for running processes
-#: lib/packagekit-glib2/pk-console-private.c:473
-msgid "Scanning applications"
-msgstr "აპლიკაციების სკანირება"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/packagekit-glib2/pk-console-private.c:477
-msgid "Generating package lists"
-msgstr "პაკეტის სიების გენერაცია"
-
-#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/packagekit-glib2/pk-console-private.c:481
-msgid "Waiting for package manager lock"
-msgstr "პაკეტების მმართველის ბლოკის მოლოდინი"
-
-#. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/packagekit-glib2/pk-console-private.c:485
-msgid "Waiting for authentication"
-msgstr "ავთენტიკაციის მოლოდინი"
-
-#. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/packagekit-glib2/pk-console-private.c:489
-msgid "Updating running applications"
-msgstr "გაშვებული პროგრამების განახლება"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/packagekit-glib2/pk-console-private.c:493
-msgid "Checking applications in use"
-msgstr "ამჟამად გამოყენებული პროგრამების შემოწმება"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/packagekit-glib2/pk-console-private.c:497
-msgid "Checking libraries in use"
-msgstr "ამჟამად გამოყენებული ბიბლიოთეკების შემოწმება"
-
-#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:501
-msgid "Copying files"
-msgstr "ფაილების კოპირება"
-
-#. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/packagekit-glib2/pk-console-private.c:505
-msgid "Running hooks"
-msgstr "დამხმარე პროცესების გაშვება"
-
-#. TRANSLATORS: turn on all debugging
-#: lib/packagekit-glib2/pk-debug.c:142
-msgid "Show debugging information for all files"
-msgstr "გამართვის ინფორმაციის ჩვენება ყველა ფაილისთვის"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Debugging Options"
-msgstr "გამართვის პარამეტრები"
-
-#: lib/packagekit-glib2/pk-debug.c:216
-msgid "Show debugging options"
-msgstr "გამართვის პარამეტრების ჩვენება"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:975
-msgid "Trivial"
-msgstr "ტრივიალური"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:979
-msgid "Normal"
-msgstr "ნორმალური"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:983
-msgid "Important"
-msgstr "მნიშვნელოვანი"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:987
-msgid "Security"
-msgstr "უსაფრთხოება"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:991
-msgid "Bug fix"
-msgstr "შეცდომის გასწორება"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:995
-msgid "Enhancement"
-msgstr "გაფართოება"
-
-#. TRANSLATORS: The type of update
-#: lib/packagekit-glib2/pk-enum.c:999
-msgid "Blocked"
-msgstr "დაბლოკილია"
-
-#. TRANSLATORS: The state of a package
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1004 lib/packagekit-glib2/pk-enum.c:1111
-msgid "Installed"
-msgstr "დაყენებულია"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1009
-msgid "Available"
-msgstr "ხელმისაწვდომია"
-
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/packagekit-glib2/pk-enum.c:1013
-msgid "Unavailable"
-msgstr "ხელმიუწვდომელია"
-
-#. TRANSLATORS: The state of a package: to be installed with the next action
-#: lib/packagekit-glib2/pk-enum.c:1017
-msgid "Install"
-msgstr "დაყენება"
-
-#. TRANSLATORS: The state of a package: to be removed with the next action
-#: lib/packagekit-glib2/pk-enum.c:1021
-msgid "Remove"
-msgstr "წაიშლება"
-
-#. TRANSLATORS: The state of a package: package is obsolete
-#: lib/packagekit-glib2/pk-enum.c:1025
-msgid "Obsolete"
-msgstr "მოძველებული"
-
-#. TRANSLATORS: The state of a package: package is to be downgraded
-#: lib/packagekit-glib2/pk-enum.c:1029
-msgid "Downgrade"
-msgstr "ვერსიის დაწევა"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1054
-msgid "Downloading"
-msgstr "გადმოწერა"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1058
-msgid "Updating"
-msgstr "განახლება"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1062 lib/packagekit-glib2/pk-enum.c:1197
-msgid "Installing"
-msgstr "მიმდინარეობს დაყენება"
-
-#. TRANSLATORS: The action of the package, in present tense
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1066 lib/packagekit-glib2/pk-enum.c:1193
-msgid "Removing"
-msgstr "წაშლა"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1070
-msgid "Cleaning up"
-msgstr "მოსუფთავება"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1074
-msgid "Obsoleting"
-msgstr "მოძველება"
-
-#. TRANSLATORS: The action of the package, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1078
-msgid "Reinstalling"
-msgstr "გადაყენება"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1103
-msgid "Downloaded"
-msgstr "გადმოწერილია"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1115
-msgid "Removed"
-msgstr "წაიშალა"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1119
-msgid "Cleaned up"
-msgstr "მოსუფთავებულია"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1123
-msgid "Obsoleted"
-msgstr "მოძველებულია"
-
-#. TRANSLATORS: The action of the package, in past tense
-#: lib/packagekit-glib2/pk-enum.c:1127
-msgid "Reinstalled"
-msgstr "თავიდან დაყენებულია"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1152
-msgid "Unknown role type"
-msgstr "უცნობი როლის ტიპი"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1156
-msgid "Getting dependencies"
-msgstr "დამოკიდებულებების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1160
-msgid "Getting update details"
-msgstr "მიმდინარეობს განახლების დეტალების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1165
-msgid "Getting details"
-msgstr "დეტალების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1169
-msgid "Getting requires"
-msgstr "საჭიროებების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1173
-msgid "Getting updates"
-msgstr "განახლებების მღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1177
-msgid "Searching by details"
-msgstr "დეტალებით ძებნა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1181
-msgid "Searching by file"
-msgstr "ფაილით ძებნა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1185
-msgid "Searching groups"
-msgstr "ჯგუფების ძებნა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1189
-msgid "Searching by name"
-msgstr "სახელით ძებნა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1201
-msgid "Installing files"
-msgstr "ფაილების დაყენება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1205
-msgid "Refreshing cache"
-msgstr "მიმდინარეობს კეშის განახლება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1209
-msgid "Updating packages"
-msgstr "მიმდინარეობს პაკეტების განახლება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1213
-msgid "Canceling"
-msgstr "მიმდინარეობს გაუქმება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1217
-msgid "Getting repositories"
-msgstr "რეპოზიტორიების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1221
-msgid "Modifying repository"
-msgstr "რეპოზიტორიის ჩასწორება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1225
-msgid "Setting data"
-msgstr "მონაცემების დაყენება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1229
-msgid "Removing repository"
-msgstr "მიმდინარეობს რეპოზიტორიის წაშლა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1233
-msgid "Resolving"
-msgstr "ამოხსნა"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1238
-msgid "Getting file list"
-msgstr "ფაილების სიის მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1242
-msgid "Getting provides"
-msgstr "მომწოდებლების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1246
-msgid "Installing signature"
-msgstr "ხელმოწერის დაყენება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1250
-msgid "Getting packages"
-msgstr "პაკეტების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1254
-msgid "Accepting EULA"
-msgstr "EULA-ზე დათანხმება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1262
-msgid "Getting upgrades"
-msgstr "განახლებების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1266
-msgid "Getting categories"
-msgstr "კატეგორიების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1270
-msgid "Getting transactions"
-msgstr "ტრანზაქციების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1274
-msgid "Getting system upgrades"
-msgstr "სისტემის განახლებების მიღება"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/packagekit-glib2/pk-enum.c:1278
-msgid "Repairing system"
-msgstr "მიმდინარეობს სისტემის შეკეთება"
-
-#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
-#: lib/packagekit-glib2/pk-task-text.c:54
-msgid "Do you want to allow installing of unsigned software?"
-msgstr "გნებავთ ხელმოუწერელი პროგრამების დაყენების დაშვება?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:59
-msgid "The unsigned software will not be installed."
-msgstr "ხელმოუწერელი პროგრამების დაყენება არ მოხდება."
-
-#. TRANSLATORS: the package repository is signed by a key that is not recognised
-#: lib/packagekit-glib2/pk-task-text.c:104
-msgid "Software source signature required"
-msgstr "პროგრამის წყაროს ხელმოწერა აუცილებელია"
-
-#. TRANSLATORS: the package repository name
-#: lib/packagekit-glib2/pk-task-text.c:110
-msgid "Software source name"
-msgstr "პროგრამის წყაროს სახელი"
-
-#. TRANSLATORS: the key URL
-#: lib/packagekit-glib2/pk-task-text.c:113
-msgid "Key URL"
-msgstr "გასაღების URL"
-
-#. TRANSLATORS: the username of the key
-#: lib/packagekit-glib2/pk-task-text.c:116
-msgid "Key user"
-msgstr "გასაღების მომხმარებელი"
-
-#. TRANSLATORS: the key ID, usually a few hex digits
-#: lib/packagekit-glib2/pk-task-text.c:119
-msgid "Key ID"
-msgstr "გასაღების ID"
-
-#. TRANSLATORS: the key fingerprint, again, yet more hex
-#: lib/packagekit-glib2/pk-task-text.c:122
-msgid "Key fingerprint"
-msgstr "გასაღებს ანაბეჭდი"
-
-#. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: lib/packagekit-glib2/pk-task-text.c:125
-msgid "Key Timestamp"
-msgstr "გასაღების დროის შტამპი"
-
-#. TRANSLATORS: ask the user if they want to import
-#: lib/packagekit-glib2/pk-task-text.c:138
-msgid "Do you accept this signature?"
-msgstr "იღებთ ამ ხელმოწერას?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:143
-msgid "The signature was not accepted."
-msgstr "ხელმოწერა მიღებული არაა."
-
-#. TRANSLATORS: this is another name for a software licence that has to be read before installing
-#: lib/packagekit-glib2/pk-task-text.c:175
-msgid "End user licence agreement required"
-msgstr "აუცილებელია საბოლოო მომხმარებლის სალიცენზიო შეთანხმება"
-
-#. TRANSLATORS: the EULA text itself (long and boring)
-#: lib/packagekit-glib2/pk-task-text.c:184
-msgid "Agreement"
-msgstr "შეთანხმება"
-
-#. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: lib/packagekit-glib2/pk-task-text.c:188
-msgid "Do you accept this agreement?"
-msgstr "ეთანხმებით ამ შეთანხმებას?"
-
-#. TRANSLATORS: tell the user we've not done anything
-#: lib/packagekit-glib2/pk-task-text.c:193
-msgid "The agreement was not accepted."
-msgstr "შეთანხმება მიღებული არ იყო."
-
-#. TRANSLATORS: the user needs to change media inserted into the computer
-#: lib/packagekit-glib2/pk-task-text.c:228
-msgid "Media change required"
-msgstr "საჭიროა დისკის შეცვლა"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: lib/packagekit-glib2/pk-task-text.c:231
-msgid "Media type"
-msgstr "მედიის ტიპი"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: lib/packagekit-glib2/pk-task-text.c:234
-msgid "Media label"
-msgstr "მედიის ჭდე"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: lib/packagekit-glib2/pk-task-text.c:237
-msgid "Text"
-msgstr "ტექსტი"
-
-#. TRANSLATORS: ask the user to insert the media
-#: lib/packagekit-glib2/pk-task-text.c:243
-msgid "Please insert the correct media"
-msgstr "ჩადეთ სწორი დისკი"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: lib/packagekit-glib2/pk-task-text.c:248
-msgid "The correct media was not inserted."
-msgstr "ჩადებული დისკი არასწორია."
-
-#. TRANSLATORS: When processing, we might have to remove other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:263
-msgid "The following packages have to be removed:"
-msgstr "წაიშლება შემდეგი პაკეტები:"
-
-#. TRANSLATORS: When processing, we might have to install other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:268
-msgid "The following packages have to be installed:"
-msgstr "მოხდება შემდეგი პაკეტების დაყენება:"
-
-#. TRANSLATORS: When processing, we might have to update other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:273
-msgid "The following packages have to be updated:"
-msgstr "საჭიროა შემდეგი პაკეტების განახლება:"
-
-#. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:278
-msgid "The following packages have to be reinstalled:"
-msgstr "მოხდება შემდეგი პაკეტების თავიდან დაყენება:"
-
-#. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:283
-msgid "The following packages have to be downgraded:"
-msgstr "მოხდება შემდეგი პაკეტების ვერსიის ჩამოწევა:"
-
-#. TRANSLATORS: When processing, we might have to obsolete other dependencies
-#: lib/packagekit-glib2/pk-task-text.c:288
-msgid "The following packages have to be obsoleted:"
-msgstr "მოხდება შემდეგი პაკეტების მოძველებულად მონიშვნა:"
-
-#. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
-#: lib/packagekit-glib2/pk-task-text.c:293
-msgid "The following packages are untrusted:"
-msgstr "შემდეგი პაკეტები არასანდოა:"
-
-#. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/packagekit-glib2/pk-task-text.c:423
-msgid "Proceed with changes?"
-msgstr "გავაგრძელო ცვლილებების შეტანა?"
-
-#. TRANSLATORS: tell the user we didn't do anything
-#: lib/packagekit-glib2/pk-task-text.c:428
-msgid "The transaction did not proceed."
-msgstr "ტრანზაქცია ვერ გაგრძელდა."
 
 #. SECURITY:
 #. - Normal users are allowed to cancel their own task without
 #. authentication, but a different user id needs the admin password
 #. to cancel another users task.
-#: policy/org.freedesktop.packagekit.policy.in:22
+#: data/policy/org.freedesktop.packagekit.policy.in:22
 msgid "Cancel foreign task"
 msgstr "უცხო ამოცანის გაუქმება"
 
-#: policy/org.freedesktop.packagekit.policy.in:23
+#: data/policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
 msgstr "ამოცანის, რომელიც თქვენ არ გაგიშვიათ, გასაუქმებლად, ავთენტიკაცია დაგჭირდებათ"
 
@@ -2335,11 +1709,11 @@ msgstr "ამოცანის, რომელიც თქვენ არ �
 #. from signed repositories, because otherwise the system is
 #. only as secure as the least-secure package available in the
 #. repositories.
-#: policy/org.freedesktop.packagekit.policy.in:39
+#: data/policy/org.freedesktop.packagekit.policy.in:39
 msgid "Install signed package"
 msgstr "ხელმოწერილი პაკეტის დაყენება"
 
-#: policy/org.freedesktop.packagekit.policy.in:40
+#: data/policy/org.freedesktop.packagekit.policy.in:40
 msgid "Authentication is required to install software"
 msgstr "პროგრამების დასაყენებლად საჭიროა ავთენტიკაცია"
 
@@ -2348,11 +1722,11 @@ msgstr "პროგრამების დასაყენებლად �
 #. unrecognised packages, as allowing users to do this without a
 #. password would be a massive security hole.
 #. - This is not retained as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:56
+#: data/policy/org.freedesktop.packagekit.policy.in:56
 msgid "Install untrusted local file"
 msgstr "არასანდო ლოკალური ფაილის დაყენება"
 
-#: policy/org.freedesktop.packagekit.policy.in:57
+#: data/policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
 msgstr "არასანდო პაკეტების დასაყენებლად აუცილებელია, ავთენტიკაცია გაიაროთ"
 
@@ -2362,11 +1736,11 @@ msgstr "არასანდო პაკეტების დასაყე�
 #. reinstall them and vice versa.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:75
+#: data/policy/org.freedesktop.packagekit.policy.in:75
 msgid "Install already installed package again"
 msgstr "უკვე დაყენებული პაკეტის თავიდან დაყენება"
 
-#: policy/org.freedesktop.packagekit.policy.in:76
+#: data/policy/org.freedesktop.packagekit.policy.in:76
 msgid "Authentication is required to reinstall software"
 msgstr "პროგრამის თავიდან დასაყენებლად აუცილებელია, ავტენტიკაცია გაიაროთ"
 
@@ -2376,11 +1750,11 @@ msgstr "პროგრამის თავიდან დასაყენ�
 #. them as well.
 #. - If a package in question is not trusted, user's permission to install
 #. untrusted package will be checked as well.
-#: policy/org.freedesktop.packagekit.policy.in:93
+#: data/policy/org.freedesktop.packagekit.policy.in:93
 msgid "Install older version of installed package"
 msgstr "დაყენებული პაკეტის უფრო ძველი ვერსიის დაყენება"
 
-#: policy/org.freedesktop.packagekit.policy.in:94
+#: data/policy/org.freedesktop.packagekit.policy.in:94
 msgid "Authentication is required to downgrade software"
 msgstr "პროგრამის ვერსიის დასაწევად აუცილებელია, ავთენტიკაცია გაიაროთ"
 
@@ -2389,11 +1763,11 @@ msgstr "პროგრამის ვერსიის დასაწევ�
 #. - This implies adding an explicit trust, and should not be granted
 #. without a secure authentication.
 #. - This is not kept as each package should be authenticated.
-#: policy/org.freedesktop.packagekit.policy.in:111
+#: data/policy/org.freedesktop.packagekit.policy.in:111
 msgid "Trust a key used for signing software"
 msgstr "გასაღების ნდობა პროგრამის პაკეტების ხელმოსაწერად"
 
-#: policy/org.freedesktop.packagekit.policy.in:112
+#: data/policy/org.freedesktop.packagekit.policy.in:112
 msgid "Authentication is required to consider a key used for signing software as trusted"
 msgstr "პროგრამების ხელმოწერისთვის გამოყენებული გასაღების სანდოდ ჩასათვლელად ავთენტიკაცია დაგჭირდებათ"
 
@@ -2402,11 +1776,11 @@ msgstr "პროგრამების ხელმოწერისთვ�
 #. licence agreements.
 #. - Change this to 'auth_admin' for environments where users should not
 #. be given the option to make legal decisions.
-#: policy/org.freedesktop.packagekit.policy.in:128
+#: data/policy/org.freedesktop.packagekit.policy.in:128
 msgid "Accept EULA"
 msgstr "EULA-ის მიღება"
 
-#: policy/org.freedesktop.packagekit.policy.in:129
+#: data/policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
 msgstr "EULA-ზე დასათანხმებლად ავთენტიკაციის გავლა დაგჭირდებათ"
 
@@ -2419,11 +1793,11 @@ msgstr "EULA-ზე დასათანხმებლად ავთენ�
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:448
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
 msgid "Remove package"
 msgstr "პაკეტის წაშლა"
 
-#: policy/org.freedesktop.packagekit.policy.in:149
+#: data/policy/org.freedesktop.packagekit.policy.in:149
 msgid "Authentication is required to remove software"
 msgstr "პროგრამების წასაშლელად საჭიროა, ავთენტიკაცია გაიაროთ"
 
@@ -2433,11 +1807,11 @@ msgstr "პროგრამების წასაშლელად სა�
 #. to update the system when unattended.
 #. - Changing this to anything other than 'yes' will break unattended
 #. updates.
-#: policy/org.freedesktop.packagekit.policy.in:167
+#: data/policy/org.freedesktop.packagekit.policy.in:167
 msgid "Update software"
 msgstr "პროგრამების განახლება"
 
-#: policy/org.freedesktop.packagekit.policy.in:168
+#: data/policy/org.freedesktop.packagekit.policy.in:168
 msgid "Authentication is required to update software"
 msgstr "პროგრამების განახლებისთვის საჭიროა, ავთენტიკაცია გაიაროთ"
 
@@ -2445,33 +1819,33 @@ msgstr "პროგრამების განახლებისთვ�
 #. - Normal users require admin authentication to enable or disable
 #. software repositories as this can be used to enable new updates or
 #. install different versions of software.
-#: policy/org.freedesktop.packagekit.policy.in:183
+#: data/policy/org.freedesktop.packagekit.policy.in:183
 msgid "Change software repository parameters"
 msgstr "პროგრამის რეპოზიტორიის პარამეტრების შეცვლა"
 
-#: policy/org.freedesktop.packagekit.policy.in:184
+#: data/policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
 msgstr "პროგრამების რეპოზიტორიის პარამეტრების შესაცვლელად ავთენტიკაციის გავლა დაგჭირდებათ"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
 #. cache, as this doesn't actually install or remove software.
-#: policy/org.freedesktop.packagekit.policy.in:198
+#: data/policy/org.freedesktop.packagekit.policy.in:198
 msgid "Refresh system repositories"
 msgstr "სისტემური რეპოზიტორიების განახლება"
 
-#: policy/org.freedesktop.packagekit.policy.in:199
+#: data/policy/org.freedesktop.packagekit.policy.in:199
 msgid "Authentication is required to refresh the system repositories"
 msgstr "სისტემის რეპოზიტორიების განახლებისთვის ავთენტიკაციაა საჭირო"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
 #. used for downloading packages.
-#: policy/org.freedesktop.packagekit.policy.in:213
+#: data/policy/org.freedesktop.packagekit.policy.in:213
 msgid "Set network proxy"
 msgstr "ქსელური პროქსის დაყენება"
 
-#: policy/org.freedesktop.packagekit.policy.in:214
+#: data/policy/org.freedesktop.packagekit.policy.in:214
 msgid "Authentication is required to set the network proxy used for downloading software"
 msgstr "პროგრამების გადმოსაწერად გამოყენებული ქსელური პროქსის დასაყენებლად ავთენტიკაცია დაგჭირდებათ"
 
@@ -2479,11 +1853,11 @@ msgstr "პროგრამების გადმოსაწერად �
 #. - Normal users require admin authentication to upgrade the disto as
 #. this can make the system unbootable or stop other applications from
 #. working.
-#: policy/org.freedesktop.packagekit.policy.in:229
+#: data/policy/org.freedesktop.packagekit.policy.in:229
 msgid "Upgrade System"
 msgstr "სისტემის განახლება"
 
-#: policy/org.freedesktop.packagekit.policy.in:230
+#: data/policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
 msgstr "ოპერაციული ვერსიის ასაწევად ავთენტიკაცია დაგჭირდებათ"
 
@@ -2491,11 +1865,11 @@ msgstr "ოპერაციული ვერსიის ასაწევ�
 #. - Normal users require admin authentication to repair the system
 #. since this can make the system unbootable or stop other
 #. applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:245
+#: data/policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
 msgstr "სისტემის შეკეთება"
 
-#: policy/org.freedesktop.packagekit.policy.in:246
+#: data/policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
 msgstr "დაყენებული პროგრამების შეკეთებისთვის ავთენტიკაცია დაგჭირდებათ"
 
@@ -2506,26 +1880,658 @@ msgstr "დაყენებული პროგრამების შე�
 #. - Normal users require admin authentication to upgrade the system
 #. to a new distribution since this can make the system unbootable or
 #. stop other applications from working.
-#: policy/org.freedesktop.packagekit.policy.in:260
-#: policy/org.freedesktop.packagekit.policy.in:276
+#: data/policy/org.freedesktop.packagekit.policy.in:260
+#: data/policy/org.freedesktop.packagekit.policy.in:276
 msgid "Trigger offline updates"
 msgstr "ინტერნეტგარეშე განახლებების ტრიგერი"
 
-#: policy/org.freedesktop.packagekit.policy.in:261
-#: policy/org.freedesktop.packagekit.policy.in:277
+#: data/policy/org.freedesktop.packagekit.policy.in:261
+#: data/policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
 msgstr "ინტერნეტგარეშე განახლებების დასატრიგერებლად ავთენტიკაციის გავლა დაგჭირდებათ"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
 #. shown after an updates are applied at boot time.
-#: policy/org.freedesktop.packagekit.policy.in:291
+#: data/policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
 msgstr "ინტერნეტგარეშე განახლების შეტყობინების გასუფთავება"
 
-#: policy/org.freedesktop.packagekit.policy.in:292
+#: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
 msgstr "ინტერნეტგარეშე განახლების შეტყობინების გასასუფთავებლად ავთენტიკაცია დაგჭირდებათ"
+
+#: lib/pk-console-private.c:228
+#, c-format
+msgid "Please enter a number from 1 to %i: "
+msgstr "შეიყვანეთ რიცხვი 1-დან %i-მდე: "
+
+#. TRANSLATORS: This is when the transaction status is not known
+#: lib/pk-console-private.c:355
+msgid "Unknown state"
+msgstr "უცნობი მდგომარეობა"
+
+#. TRANSLATORS: transaction state, the daemon is in the process of starting
+#: lib/pk-console-private.c:359
+msgid "Starting"
+msgstr "გაშვება"
+
+#. TRANSLATORS: transaction state, the transaction is waiting for another to complete
+#: lib/pk-console-private.c:363
+msgid "Waiting in queue"
+msgstr "რიგში მოლოდინი"
+
+#. TRANSLATORS: transaction state, just started
+#: lib/pk-console-private.c:367
+msgid "Running"
+msgstr "გაშვებულია"
+
+#. TRANSLATORS: transaction state, is querying data
+#: lib/pk-console-private.c:371
+msgid "Querying"
+msgstr "მოთხოვნა"
+
+#. TRANSLATORS: transaction state, getting data from a server
+#: lib/pk-console-private.c:375
+msgid "Getting information"
+msgstr "ინფორმაციის მიღება"
+
+#. TRANSLATORS: transaction state, removing packages
+#: lib/pk-console-private.c:379
+msgid "Removing packages"
+msgstr "მიმდინარეობს პაკეტების წაშლა"
+
+#. TRANSLATORS: transaction state, downloading package files
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-console-private.c:383 lib/pk-enum.c:1262
+msgid "Downloading packages"
+msgstr "მიმდინარეობს პაკეტების გადმოწერა"
+
+#. TRANSLATORS: transaction state, installing packages
+#: lib/pk-console-private.c:387
+msgid "Installing packages"
+msgstr "მიმდინარეობს პაკეტების დაყენება"
+
+#. TRANSLATORS: transaction state, refreshing internal lists
+#: lib/pk-console-private.c:391
+msgid "Refreshing software list"
+msgstr "მიმდინარეობს პროგრამების სიის განახლება"
+
+#. TRANSLATORS: transaction state, installing updates
+#: lib/pk-console-private.c:395
+msgid "Installing updates"
+msgstr "განახლებების დაყენება"
+
+#. TRANSLATORS: transaction state, removing old packages, and cleaning config files
+#: lib/pk-console-private.c:399
+msgid "Cleaning up packages"
+msgstr "პაკეტების გასუფთავება"
+
+#. TRANSLATORS: transaction state, obsoleting old packages
+#: lib/pk-console-private.c:403
+msgid "Obsoleting packages"
+msgstr "პაკეტების მოძველებულად მონიშვნა"
+
+#. TRANSLATORS: transaction state, checking the transaction before we do it
+#: lib/pk-console-private.c:407
+msgid "Resolving dependencies"
+msgstr "ურთიერთდამოკიდებულებების ამოხსნა"
+
+#. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
+#: lib/pk-console-private.c:411
+msgid "Checking signatures"
+msgstr "ხელმოწერების შემოწმება"
+
+#. TRANSLATORS: transaction state, when we're doing a test transaction
+#: lib/pk-console-private.c:415
+msgid "Testing changes"
+msgstr "ცვლილებების ტესტირება"
+
+#. TRANSLATORS: transaction state, when we're writing to the system package database
+#: lib/pk-console-private.c:419
+msgid "Committing changes"
+msgstr "ცვლილებების გადაცემა"
+
+#. TRANSLATORS: transaction state, requesting data from a server
+#: lib/pk-console-private.c:423
+msgid "Requesting data"
+msgstr "მონაცემების მოთხოვნა"
+
+#. TRANSLATORS: transaction state, all done!
+#: lib/pk-console-private.c:427
+msgid "Finished"
+msgstr "დასრულებულდა"
+
+#. TRANSLATORS: transaction state, in the process of cancelling
+#: lib/pk-console-private.c:431
+msgid "Cancelling"
+msgstr "მიმდინარეობს გაუქმება"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:435
+msgid "Downloading repository information"
+msgstr "რეპოზიტორიის ინფორმაციის გადმოწერა"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:439
+msgid "Downloading list of packages"
+msgstr "პაკეტების სიის გადმოწერა"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:443
+msgid "Downloading file lists"
+msgstr "ფაილის სიების გადმოწერა"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:447
+msgid "Downloading lists of changes"
+msgstr "ცვლილებების სიის გადმოწერა"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:451
+msgid "Downloading groups"
+msgstr "ჯგუფების გადმოწერა"
+
+#. TRANSLATORS: transaction state, downloading metadata
+#: lib/pk-console-private.c:455
+msgid "Downloading update information"
+msgstr "განახლებების ინფორმაციის გადმოწერა"
+
+#. TRANSLATORS: transaction state, repackaging delta files
+#: lib/pk-console-private.c:459
+msgid "Repackaging files"
+msgstr "ფაილების თავიდან შეფუთვა"
+
+#. TRANSLATORS: transaction state, loading databases
+#: lib/pk-console-private.c:463
+msgid "Loading cache"
+msgstr "ქეშის ჩატვირთვა"
+
+#. TRANSLATORS: transaction state, scanning for running processes
+#: lib/pk-console-private.c:467
+msgid "Scanning applications"
+msgstr "აპლიკაციების სკანირება"
+
+#. TRANSLATORS: transaction state, generating a list of packages installed on the system
+#: lib/pk-console-private.c:471
+msgid "Generating package lists"
+msgstr "პაკეტის სიების გენერაცია"
+
+#. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
+#: lib/pk-console-private.c:475
+msgid "Waiting for package manager lock"
+msgstr "პაკეტების მმართველის ბლოკის მოლოდინი"
+
+#. TRANSLATORS: transaction state, waiting for user to type in a password
+#: lib/pk-console-private.c:479
+msgid "Waiting for authentication"
+msgstr "ავთენტიკაციის მოლოდინი"
+
+#. TRANSLATORS: transaction state, we are updating the list of processes
+#: lib/pk-console-private.c:483
+msgid "Updating running applications"
+msgstr "გაშვებული პროგრამების განახლება"
+
+#. TRANSLATORS: transaction state, we are checking executable files currently in use
+#: lib/pk-console-private.c:487
+msgid "Checking applications in use"
+msgstr "ამჟამად გამოყენებული პროგრამების შემოწმება"
+
+#. TRANSLATORS: transaction state, we are checking for libraries currently in use
+#: lib/pk-console-private.c:491
+msgid "Checking libraries in use"
+msgstr "ამჟამად გამოყენებული ბიბლიოთეკების შემოწმება"
+
+#. TRANSLATORS: transaction state, we are copying package files before or after the transaction
+#: lib/pk-console-private.c:495
+msgid "Copying files"
+msgstr "ფაილების კოპირება"
+
+#. TRANSLATORS: transaction state, we are running hooks before or after the transaction
+#: lib/pk-console-private.c:499
+msgid "Running hooks"
+msgstr "დამხმარე პროცესების გაშვება"
+
+#. TRANSLATORS: turn on all debugging
+#: lib/pk-debug.c:149
+msgid "Show debugging information for all files"
+msgstr "გამართვის ინფორმაციის ჩვენება ყველა ფაილისთვის"
+
+#: lib/pk-debug.c:230
+msgid "Debugging Options"
+msgstr "გამართვის პარამეტრები"
+
+#: lib/pk-debug.c:231
+msgid "Show debugging options"
+msgstr "გამართვის პარამეტრების ჩვენება"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:979
+msgid "Trivial"
+msgstr "ტრივიალური"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:983
+msgid "Normal"
+msgstr "ნორმალური"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:987
+msgid "Important"
+msgstr "მნიშვნელოვანი"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:991
+msgid "Security"
+msgstr "უსაფრთხოება"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:995
+msgid "Bug fix"
+msgstr "შეცდომის გასწორება"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:999
+msgid "Enhancement"
+msgstr "გაფართოება"
+
+#. TRANSLATORS: The type of update
+#: lib/pk-enum.c:1003
+msgid "Blocked"
+msgstr "დაბლოკილია"
+
+#. TRANSLATORS: The state of a package
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1008 lib/pk-enum.c:1115
+msgid "Installed"
+msgstr "დაყენებულია"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/pk-enum.c:1013
+msgid "Available"
+msgstr "ხელმისაწვდომია"
+
+#. TRANSLATORS: The state of a package, i.e. not installed
+#: lib/pk-enum.c:1017
+msgid "Unavailable"
+msgstr "ხელმიუწვდომელია"
+
+#. TRANSLATORS: The state of a package: to be installed with the next action
+#: lib/pk-enum.c:1021
+msgid "Install"
+msgstr "დაყენება"
+
+#. TRANSLATORS: The state of a package: to be removed with the next action
+#: lib/pk-enum.c:1025
+msgid "Remove"
+msgstr "წაიშლება"
+
+#. TRANSLATORS: The state of a package: package is obsolete
+#: lib/pk-enum.c:1029
+msgid "Obsolete"
+msgstr "მოძველებული"
+
+#. TRANSLATORS: The state of a package: package is to be downgraded
+#: lib/pk-enum.c:1033
+msgid "Downgrade"
+msgstr "ვერსიის დაწევა"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/pk-enum.c:1058
+msgid "Downloading"
+msgstr "გადმოწერა"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/pk-enum.c:1062
+msgid "Updating"
+msgstr "განახლება"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1066 lib/pk-enum.c:1201
+msgid "Installing"
+msgstr "მიმდინარეობს დაყენება"
+
+#. TRANSLATORS: The action of the package, in present tense
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1070 lib/pk-enum.c:1197
+msgid "Removing"
+msgstr "წაშლა"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/pk-enum.c:1074
+msgid "Cleaning up"
+msgstr "მოსუფთავება"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/pk-enum.c:1078
+msgid "Obsoleting"
+msgstr "მოძველება"
+
+#. TRANSLATORS: The action of the package, in present tense
+#: lib/pk-enum.c:1082
+msgid "Reinstalling"
+msgstr "გადაყენება"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1107
+msgid "Downloaded"
+msgstr "გადმოწერილია"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1119
+msgid "Removed"
+msgstr "წაიშალა"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1123
+msgid "Cleaned up"
+msgstr "მოსუფთავებულია"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1127
+msgid "Obsoleted"
+msgstr "მოძველებულია"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1131
+msgid "Reinstalled"
+msgstr "თავიდან დაყენებულია"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1156
+msgid "Unknown role type"
+msgstr "უცნობი როლის ტიპი"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1160
+msgid "Getting dependencies"
+msgstr "დამოკიდებულებების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1164
+msgid "Getting update details"
+msgstr "მიმდინარეობს განახლების დეტალების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1169
+msgid "Getting details"
+msgstr "დეტალების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1173
+msgid "Getting requires"
+msgstr "საჭიროებების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1177
+msgid "Getting updates"
+msgstr "განახლებების მღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1181
+msgid "Searching by details"
+msgstr "დეტალებით ძებნა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1185
+msgid "Searching by file"
+msgstr "ფაილით ძებნა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1189
+msgid "Searching groups"
+msgstr "ჯგუფების ძებნა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1193
+msgid "Searching by name"
+msgstr "სახელით ძებნა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1205
+msgid "Installing files"
+msgstr "ფაილების დაყენება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1209
+msgid "Refreshing cache"
+msgstr "მიმდინარეობს კეშის განახლება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1213
+msgid "Updating packages"
+msgstr "მიმდინარეობს პაკეტების განახლება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1217
+msgid "Canceling"
+msgstr "მიმდინარეობს გაუქმება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1221
+msgid "Getting repositories"
+msgstr "რეპოზიტორიების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1225
+msgid "Modifying repository"
+msgstr "რეპოზიტორიის ჩასწორება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1229
+msgid "Setting data"
+msgstr "მონაცემების დაყენება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1233
+msgid "Removing repository"
+msgstr "მიმდინარეობს რეპოზიტორიის წაშლა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1237
+msgid "Resolving"
+msgstr "ამოხსნა"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1242
+msgid "Getting file list"
+msgstr "ფაილების სიის მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1246
+msgid "Getting provides"
+msgstr "მომწოდებლების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1250
+msgid "Installing signature"
+msgstr "ხელმოწერის დაყენება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1254
+msgid "Getting packages"
+msgstr "პაკეტების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1258
+msgid "Accepting EULA"
+msgstr "EULA-ზე დათანხმება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1266
+msgid "Getting upgrades"
+msgstr "განახლებების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1270
+msgid "Getting categories"
+msgstr "კატეგორიების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1274
+msgid "Getting transactions"
+msgstr "ტრანზაქციების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1278
+msgid "Getting system upgrades"
+msgstr "სისტემის განახლებების მიღება"
+
+#. TRANSLATORS: The role of the transaction, in present tense
+#: lib/pk-enum.c:1282
+msgid "Repairing system"
+msgstr "მიმდინარეობს სისტემის შეკეთება"
+
+#. TRANSLATORS: ask the user if they are comfortable installing insecure packages
+#: lib/pk-task-text.c:54
+msgid "Do you want to allow installing of unsigned software?"
+msgstr "გნებავთ ხელმოუწერელი პროგრამების დაყენების დაშვება?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/pk-task-text.c:60
+msgid "The unsigned software will not be installed."
+msgstr "ხელმოუწერელი პროგრამების დაყენება არ მოხდება."
+
+#. TRANSLATORS: the package repository is signed by a key that is not recognised
+#: lib/pk-task-text.c:112
+msgid "Software source signature required"
+msgstr "პროგრამის წყაროს ხელმოწერა აუცილებელია"
+
+#. TRANSLATORS: the package repository name
+#: lib/pk-task-text.c:118
+msgid "Software source name"
+msgstr "პროგრამის წყაროს სახელი"
+
+#. TRANSLATORS: the key URL
+#: lib/pk-task-text.c:121
+msgid "Key URL"
+msgstr "გასაღების URL"
+
+#. TRANSLATORS: the username of the key
+#: lib/pk-task-text.c:124
+msgid "Key user"
+msgstr "გასაღების მომხმარებელი"
+
+#. TRANSLATORS: the key ID, usually a few hex digits
+#: lib/pk-task-text.c:127
+msgid "Key ID"
+msgstr "გასაღების ID"
+
+#. TRANSLATORS: the key fingerprint, again, yet more hex
+#: lib/pk-task-text.c:130
+msgid "Key fingerprint"
+msgstr "გასაღებს ანაბეჭდი"
+
+#. TRANSLATORS: the timestamp (a bit like a machine readable time)
+#: lib/pk-task-text.c:133
+msgid "Key Timestamp"
+msgstr "გასაღების დროის შტამპი"
+
+#. TRANSLATORS: ask the user if they want to import
+#: lib/pk-task-text.c:146
+msgid "Do you accept this signature?"
+msgstr "იღებთ ამ ხელმოწერას?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/pk-task-text.c:151
+msgid "The signature was not accepted."
+msgstr "ხელმოწერა მიღებული არაა."
+
+#. TRANSLATORS: this is another name for a software licence that has to be read before installing
+#: lib/pk-task-text.c:183
+msgid "End user licence agreement required"
+msgstr "აუცილებელია საბოლოო მომხმარებლის სალიცენზიო შეთანხმება"
+
+#. TRANSLATORS: the EULA text itself (long and boring)
+#: lib/pk-task-text.c:193
+msgid "Agreement"
+msgstr "შეთანხმება"
+
+#. TRANSLATORS: ask the user if they've read and accepted the EULA
+#: lib/pk-task-text.c:197
+msgid "Do you accept this agreement?"
+msgstr "ეთანხმებით ამ შეთანხმებას?"
+
+#. TRANSLATORS: tell the user we've not done anything
+#: lib/pk-task-text.c:202
+msgid "The agreement was not accepted."
+msgstr "შეთანხმება მიღებული არ იყო."
+
+#. TRANSLATORS: the user needs to change media inserted into the computer
+#: lib/pk-task-text.c:240
+msgid "Media change required"
+msgstr "საჭიროა დისკის შეცვლა"
+
+#. TRANSLATORS: the type, e.g. DVD, CD, etc
+#: lib/pk-task-text.c:243
+msgid "Media type"
+msgstr "მედიის ტიპი"
+
+#. TRANSLATORS: the media label, usually like 'disk-1of3'
+#: lib/pk-task-text.c:246
+msgid "Media label"
+msgstr "მედიის ჭდე"
+
+#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
+#: lib/pk-task-text.c:249
+msgid "Text"
+msgstr "ტექსტი"
+
+#. TRANSLATORS: ask the user to insert the media
+#: lib/pk-task-text.c:255
+msgid "Please insert the correct media"
+msgstr "ჩადეთ სწორი დისკი"
+
+#. TRANSLATORS: tell the user we've not done anything as they are lazy
+#: lib/pk-task-text.c:260
+msgid "The correct media was not inserted."
+msgstr "ჩადებული დისკი არასწორია."
+
+#. TRANSLATORS: When processing, we might have to remove other dependencies
+#: lib/pk-task-text.c:275
+msgid "The following packages have to be removed:"
+msgstr "წაიშლება შემდეგი პაკეტები:"
+
+#. TRANSLATORS: When processing, we might have to install other dependencies
+#: lib/pk-task-text.c:280
+msgid "The following packages have to be installed:"
+msgstr "მოხდება შემდეგი პაკეტების დაყენება:"
+
+#. TRANSLATORS: When processing, we might have to update other dependencies
+#: lib/pk-task-text.c:285
+msgid "The following packages have to be updated:"
+msgstr "საჭიროა შემდეგი პაკეტების განახლება:"
+
+#. TRANSLATORS: When processing, we might have to reinstall other dependencies
+#: lib/pk-task-text.c:290
+msgid "The following packages have to be reinstalled:"
+msgstr "მოხდება შემდეგი პაკეტების თავიდან დაყენება:"
+
+#. TRANSLATORS: When processing, we might have to downgrade other dependencies
+#: lib/pk-task-text.c:295
+msgid "The following packages have to be downgraded:"
+msgstr "მოხდება შემდეგი პაკეტების ვერსიის ჩამოწევა:"
+
+#. TRANSLATORS: When processing, we might have to obsolete other dependencies
+#: lib/pk-task-text.c:300
+msgid "The following packages have to be obsoleted:"
+msgstr "მოხდება შემდეგი პაკეტების მოძველებულად მონიშვნა:"
+
+#. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
+#: lib/pk-task-text.c:305
+msgid "The following packages are untrusted:"
+msgstr "შემდეგი პაკეტები არასანდოა:"
+
+#. TRANSLATORS: ask the user if the proposed changes are okay
+#: lib/pk-task-text.c:438
+msgid "Proceed with changes?"
+msgstr "გავაგრძელო ცვლილებების შეტანა?"
+
+#. TRANSLATORS: tell the user we didn't do anything
+#: lib/pk-task-text.c:443
+msgid "The transaction did not proceed."
+msgstr "ტრანზაქცია ვერ გაგრძელდა."
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2533,136 +2539,136 @@ msgstr "ინტერნეტგარეშე განახლები�
 msgid "Alias to %s"
 msgstr "%s-ის ფსევდონიმი"
 
-#: src/pk-direct.c:168
+#: src/pk-direct.c:166
 msgid "Command not found, valid commands are:"
 msgstr "ბრძანება ვერ ვიპოვე. სწორი ბრძანებებია:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:408 src/pk-main.c:117
+#: src/pk-direct.c:411 src/pk-main.c:121
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "პაკეტების მართვის უკანაბოლო. მაგ: dummy"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:424
+#: src/pk-direct.c:430
 msgid "Refresh the cache"
 msgstr "კეშის განახლება"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:428
+#: src/pk-direct.c:435
 msgid "Refresh the cache (forced)"
 msgstr "კეშის განახლება (ძალით)"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:432
+#: src/pk-direct.c:440
 msgid "Search by names"
 msgstr "სახელებით ძებნა"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:436
+#: src/pk-direct.c:445
 msgid "Search by details"
 msgstr "დეტალებით ძებნა"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:450
 msgid "Search by files"
 msgstr "ფაილებით ძებნა"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:444
+#: src/pk-direct.c:455
 msgid "Install package"
 msgstr "პაკეტის დაყენება"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:452
+#: src/pk-direct.c:465
 msgid "Set repository options"
 msgstr "რეპოზიტორიის პარამეტრების დაყენება"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:465
+#: src/pk-direct.c:476
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:471
+#: src/pk-direct.c:482
 msgid "Failed to parse arguments"
 msgstr "არგუმენტების დამუშავების შეცდომა"
 
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:482
+#: src/pk-direct.c:492
 msgid "Failed to load the config file"
 msgstr "კონფიგურაციის ფაილის ჩატვირთვის შეცდომა"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:515
+#: src/pk-direct.c:524
 msgid "Failed to load the backend"
 msgstr "უკანაბოლოს ჩატვირთვა ჩავარდა"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:555
+#: src/pk-direct.c:575
 msgid "Failed to unload the backend"
 msgstr "უკანაბოლოს გამოტვირთვა ჩავარდა"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:120
+#: src/pk-main.c:124
 msgid "Disable the idle timer"
 msgstr "უქმეობის ტაიმერის გამორთვა"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:123
+#: src/pk-main.c:127
 msgid "Show version and exit"
 msgstr "ვერსიის ჩვენება და გასვლა"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:126
+#: src/pk-main.c:130
 msgid "Exit after a small delay"
 msgstr "გასვლა მცირე დაყოვნების შემდეგ"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:129
+#: src/pk-main.c:133
 msgid "Exit after the engine has loaded"
 msgstr "გასვლა ძრავის ჩატვირთვის შემდეგ"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:132
+#: src/pk-main.c:136
 msgid "Don't clear environment on startup"
 msgstr "გაშვებისას გარემო არ გასუფთავდება"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:146
+#: src/pk-main.c:151
 msgid "PackageKit service"
 msgstr "PackageKit-ის სერვისი"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:221
+#: src/pk-main.c:224
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "ავტოამოხსნა ჩავარდა: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:245
+#: src/pk-main.c:243
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "უკანაბოლოს ჩატვირთვის შეცდომა: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2688
+#: src/pk-transaction.c:2673
 msgid "The software is not from a trusted source."
 msgstr "პროგრამა სანდო წყაროდან არაა."
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2681
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "არ განაახლოთ ეს პაკეტი, თუ დარწმუნებული არ ბრძანდებით, რომ ამისი გაკეთება უსაფრთხოა."
 
-#: src/pk-transaction.c:2697
+#: src/pk-transaction.c:2683
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "არ განაახლოთ ეს პაკეტები, თუ დარწმუნებული არ ბრძანდებით, რომ ამისი გაკეთება უსაფრთხოა."
 
-#: src/pk-transaction.c:2707
+#: src/pk-transaction.c:2694
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "არ დააყენოთ ეს პაკეტი, თუ დარწმუნებული არ ბრძანდებით, რომ ამისი გაკეთება უსაფრთხოა."
 
-#: src/pk-transaction.c:2708
+#: src/pk-transaction.c:2696
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "არ დააყენოთ ეს პაკეტები, თუ დარწმუნებული არ ბრძანდებით, რომ ამისი გაკეთება უსაფრთხოა."
 
