@@ -34,13 +34,15 @@ dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 {
 	PkInfoEnum update_severity;
 
-	update_severity = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY));
+	update_severity = GPOINTER_TO_UINT (
+	    g_object_get_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY));
 
 	/* detect */
 	if (info == PK_INFO_ENUM_UNKNOWN)
 		info = (PkInfoEnum) dnf_package_get_info (pkg);
 	if (info == PK_INFO_ENUM_UNKNOWN)
-		info = (PkInfoEnum) dnf_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+		info = (PkInfoEnum) dnf_package_installed (pkg) ? PK_INFO_ENUM_INSTALLED
+								: PK_INFO_ENUM_AVAILABLE;
 	pk_backend_job_package_full (job,
 				     info,
 				     dnf_package_get_package_id (pkg),
@@ -49,11 +51,10 @@ dnf_emit_package (PkBackendJob *job, PkInfoEnum info, DnfPackage *pkg)
 }
 
 void
-dnf_emit_package_list (PkBackendJob *job,
-		       PkInfoEnum info,
-		       GPtrArray *pkglist)
+dnf_emit_package_list (PkBackendJob *job, PkInfoEnum info, GPtrArray *pkglist)
 {
-	g_autoptr(GPtrArray) pk_packages = g_ptr_array_new_full (pkglist->len, (GDestroyNotify) g_object_unref);
+	g_autoptr(GPtrArray) pk_packages = g_ptr_array_new_full (pkglist->len,
+								 (GDestroyNotify) g_object_unref);
 
 	for (guint i = 0; i < pkglist->len; i++) {
 		DnfPackage *dnf_package;
@@ -65,19 +66,23 @@ dnf_emit_package_list (PkBackendJob *job,
 
 		dnf_package = g_ptr_array_index (pkglist, i);
 		package_id = dnf_package_get_package_id (dnf_package);
-		update_severity = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (dnf_package), PK_DNF_UPDATE_SEVERITY_KEY));
+		update_severity = GPOINTER_TO_UINT (
+		    g_object_get_data (G_OBJECT (dnf_package), PK_DNF_UPDATE_SEVERITY_KEY));
 
 		package_info = info;
 		if (package_info == PK_INFO_ENUM_UNKNOWN)
 			package_info = (PkInfoEnum) dnf_package_get_info (dnf_package);
 		if (package_info == PK_INFO_ENUM_UNKNOWN)
-			package_info = (PkInfoEnum) dnf_package_installed (dnf_package) ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
+			package_info = (PkInfoEnum) dnf_package_installed (dnf_package)
+					   ? PK_INFO_ENUM_INSTALLED
+					   : PK_INFO_ENUM_AVAILABLE;
 
 		/* check we are valid */
 		pk_package = pk_package_new ();
 		if (!pk_package_set_id (pk_package, package_id, &local_error)) {
 			g_warning ("package_id %s invalid and cannot be processed: %s",
-				   package_id, local_error->message);
+				   package_id,
+				   local_error->message);
 			continue;
 		}
 
@@ -93,17 +98,13 @@ dnf_emit_package_list (PkBackendJob *job,
 }
 
 void
-dnf_emit_package_array (PkBackendJob *job,
-			 PkInfoEnum info,
-			 GPtrArray *array)
+dnf_emit_package_array (PkBackendJob *job, PkInfoEnum info, GPtrArray *array)
 {
 	dnf_emit_package_list (job, info, array);
 }
 
 void
-dnf_emit_package_list_filter (PkBackendJob *job,
-			      PkBitfield filters,
-			      GPtrArray *pkglist)
+dnf_emit_package_list_filter (PkBackendJob *job, PkBitfield filters, GPtrArray *pkglist)
 {
 	DnfPackage *found;
 	DnfPackage *pkg;
@@ -121,8 +122,7 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 			continue;
 
 		/* if the NEVRA does not already exist in the array, just add */
-		found = g_hash_table_lookup (hash_cost,
-					     dnf_package_get_nevra (pkg));
+		found = g_hash_table_lookup (hash_cost, dnf_package_get_nevra (pkg));
 		if (found == NULL) {
 			g_hash_table_insert (hash_cost,
 					     g_strdup (dnf_package_get_nevra (pkg)),
@@ -176,26 +176,30 @@ dnf_emit_package_list_filter (PkBackendJob *job,
 		/* GUI */
 		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_GUI) && !dnf_package_is_gui (pkg))
 			continue;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI) && dnf_package_is_gui (pkg))
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_GUI) &&
+		    dnf_package_is_gui (pkg))
 			continue;
 
 		/* DEVELOPMENT */
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) && !dnf_package_is_devel (pkg))
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) &&
+		    !dnf_package_is_devel (pkg))
 			continue;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) && dnf_package_is_devel (pkg))
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
+		    dnf_package_is_devel (pkg))
 			continue;
 
 		/* DOWNLOADED */
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) && !dnf_package_is_downloaded (pkg))
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DOWNLOADED) &&
+		    !dnf_package_is_downloaded (pkg))
 			continue;
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) && dnf_package_is_downloaded (pkg))
+		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DOWNLOADED) &&
+		    dnf_package_is_downloaded (pkg))
 			continue;
 
 		/* if this package is available and the very same NEVRA is
 		 * installed, skip this package */
 		if (!dnf_package_installed (pkg)) {
-			found = g_hash_table_lookup (hash_installed,
-						     dnf_package_get_nevra (pkg));
+			found = g_hash_table_lookup (hash_installed, dnf_package_get_nevra (pkg));
 			if (found != NULL)
 				continue;
 		}

@@ -27,29 +27,36 @@ dnf_validate_supported_repo (const gchar *id)
 {
 	guint i, j, k, l;
 
+	/* clang-format off */
 	const gchar *valid_sourcesect[] = { "-oss",
-					  "-non-oss",
-					  NULL };
+					    "-non-oss",
+					    NULL };
 
 	const gchar *valid_sourcetype[] = { "",
-					  "-debuginfo",
-					  "-source",
-					  NULL };
+					    "-debuginfo",
+					    "-source",
+					    NULL };
 
 	const gchar *valid_sourcechan[] = { "",
-				      "-update",
-				      NULL };
+					    "-update",
+					    NULL };
 
 	const gchar *valid[] = { "opensuse-tumbleweed",
 				 "opensuse-leap",
 				 NULL };
+	/* clang-format on */
 
 	/* Iterate over the ID arrays to find a matching identifier */
 	for (i = 0; valid[i] != NULL; i++) {
 		for (j = 0; valid_sourcesect[j] != NULL; j++) {
 			for (k = 0; valid_sourcechan[k] != NULL; k++) {
 				for (l = 0; valid_sourcetype[l] != NULL; l++) {
-					g_autofree gchar *source_entry = g_strconcat(valid[i], valid_sourcesect[j], valid_sourcechan[k], valid_sourcetype[l], NULL);
+					g_autofree gchar *source_entry = g_strconcat (
+					    valid[i],
+					    valid_sourcesect[j],
+					    valid_sourcechan[k],
+					    valid_sourcetype[l],
+					    NULL);
 					if (g_strcmp0 (id, source_entry) == 0) {
 						return TRUE;
 					}

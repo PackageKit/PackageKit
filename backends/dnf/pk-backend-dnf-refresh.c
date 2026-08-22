@@ -50,10 +50,7 @@
 #include "pk-backend-dnf-common.h"
 
 static gboolean
-pk_backend_refresh_repo (guint max_cache_age,
-                         DnfRepo *repo,
-                         DnfState *state,
-                         GError **error)
+pk_backend_refresh_repo (guint max_cache_age, DnfRepo *repo, DnfState *state, GError **error)
 {
 	gboolean ret;
 	gboolean repo_okay;
@@ -61,8 +58,9 @@ pk_backend_refresh_repo (guint max_cache_age,
 	GError *error_local = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   2, /* check */
+	ret = dnf_state_set_steps (state,
+				   error,
+				   2,  /* check */
 				   98, /* download */
 				   -1);
 	if (!ret)
@@ -70,13 +68,11 @@ pk_backend_refresh_repo (guint max_cache_age,
 
 	/* is the repo up to date? */
 	state_local = dnf_state_get_child (state);
-	repo_okay = dnf_repo_check (repo,
-	                            max_cache_age,
-	                            state_local,
-	                            &error_local);
+	repo_okay = dnf_repo_check (repo, max_cache_age, state_local, &error_local);
 	if (!repo_okay) {
 		g_debug ("repo %s not okay [%s], refreshing",
-			 dnf_repo_get_id (repo), error_local->message);
+			 dnf_repo_get_id (repo),
+			 error_local->message);
 		g_clear_error (&error_local);
 		if (!dnf_state_finished (state_local, error))
 			return FALSE;
@@ -90,9 +86,9 @@ pk_backend_refresh_repo (guint max_cache_age,
 	if (!repo_okay) {
 		state_local = dnf_state_get_child (state);
 		ret = dnf_repo_update (repo,
-		                       DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
-		                       state_local,
-		                       &error_local);
+				       DNF_REPO_UPDATE_FLAG_IMPORT_PUBKEY,
+				       state_local,
+				       &error_local);
 		if (!ret) {
 			if (g_error_matches (error_local,
 					     DNF_ERROR,
@@ -130,7 +126,7 @@ main (int argc, char *argv[])
 	g_autoptr(GError) error = NULL;
 
 	if (argc != 4) {
-		printf("Use: packagekit-dnf-refresh-repo <age> <repo-id> <release-ver>\n");
+		printf ("Use: packagekit-dnf-refresh-repo <age> <repo-id> <release-ver>\n");
 		return 1;
 	}
 
@@ -140,16 +136,16 @@ main (int argc, char *argv[])
 		g_printerr ("%s\n", _("Config file was not found."));
 		return 1;
 	}
-	ret = g_key_file_load_from_file (conf, conf_filename,
-					 G_KEY_FILE_NONE, &error);
+	ret = g_key_file_load_from_file (conf, conf_filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		/* TRANSLATORS: The placeholder is an error message */
-		g_autofree gchar *message = g_strdup_printf (_("Failed to load config file: %s"), error->message);
+		g_autofree gchar *message = g_strdup_printf (_("Failed to load config file: %s"),
+							       error->message);
 		g_printerr ("%s\n", message);
 		return 1;
 	}
 
-	max_cache_age = atoi(argv[1]);
+	max_cache_age = atoi (argv[1]);
 	context = dnf_context_new ();
 	if (!pk_backend_setup_dnf_context (context, conf, argv[3], &error))
 		return 1;
@@ -157,13 +153,10 @@ main (int argc, char *argv[])
 	if (repos == NULL)
 		return 1;
 	for (i = 0; i < repos->len; i++) {
-                DnfRepo *repo = g_ptr_array_index (repos, i);
-		if (strcmp(dnf_repo_get_id (repo), argv[2]) == 0) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		if (strcmp (dnf_repo_get_id (repo), argv[2]) == 0) {
 			state = dnf_state_new ();
-			pk_backend_refresh_repo (max_cache_age,
-						 repo,
-						 state,
-						 &error);
+			pk_backend_refresh_repo (max_cache_age, repo, state, &error);
 		}
-        }
+	}
 }

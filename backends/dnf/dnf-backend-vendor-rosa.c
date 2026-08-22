@@ -27,16 +27,17 @@ dnf_validate_supported_repo (const gchar *id)
 {
 	guint i, j, k, l;
 
+	/* clang-format off */
 	const gchar *valid_sourcesect[] = { "",
-					  "-main",
-					  "-contrib",
-					  "-non-free",
-					  NULL };
+					    "-main",
+					    "-contrib",
+					    "-non-free",
+					    NULL };
 
 	const gchar *valid_sourcetype[] = { "",
-					  "-debuginfo",
-					  "-source",
-					  NULL };
+					    "-debuginfo",
+					    "-source",
+					    NULL };
 
 	const gchar *valid_arch[] = { "x86_64",
 				      "i686",
@@ -52,13 +53,20 @@ dnf_validate_supported_repo (const gchar *id)
 				 "updates",
 				 "testing",
 				 NULL };
+	/* clang-format on */
 
 	/* Iterate over the ID arrays to find a matching identifier */
 	for (i = 0; valid[i] != NULL; i++) {
 		for (j = 0; valid_arch[j] != NULL; j++) {
 			for (k = 0; valid_sourcesect[k] != NULL; k++) {
 				for (l = 0; valid_sourcetype[l] != NULL; l++) {
-					g_autofree gchar *source_entry = g_strconcat(valid[i], "-", valid_arch[j], valid_sourcesect[k], valid_sourcetype[l], NULL);
+					g_autofree gchar *source_entry = g_strconcat (
+					    valid[i],
+					    "-",
+					    valid_arch[j],
+					    valid_sourcesect[k],
+					    valid_sourcetype[l],
+					    NULL);
 					if (g_strcmp0 (id, source_entry) == 0) {
 						return TRUE;
 					}

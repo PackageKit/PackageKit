@@ -25,10 +25,12 @@
 gboolean
 dnf_validate_supported_repo (const gchar *id)
 {
+	/* clang-format off */
 	const gchar *default_repos[] = { "fedora",
-	                                 "rawhide",
-	                                 "updates",
-	                                 NULL };
+					 "rawhide",
+					 "updates",
+					 NULL };
+	/* clang-format on */
 
 	/* core repos that users shouldn't play with */
 	for (guint i = 0; default_repos[i] != NULL; i++) {

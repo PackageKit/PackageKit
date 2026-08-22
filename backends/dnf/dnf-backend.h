@@ -29,25 +29,25 @@
 
 #include <pk-backend.h>
 
-#define PK_DNF_UPDATE_SEVERITY_KEY	"pk-dnf-update-severity"
+#define PK_DNF_UPDATE_SEVERITY_KEY "pk-dnf-update-severity"
 
 G_BEGIN_DECLS
 
-PkInfoEnum	 dnf_advisory_kind_to_info_enum	(DnfAdvisoryKind	 kind);
-PkInfoEnum	 dnf_update_severity_to_enum	(const gchar		*severity);
-void		 dnf_emit_package		(PkBackendJob		*job,
-						 PkInfoEnum		 info,
-						 DnfPackage		*pkg);
-void		 dnf_emit_package_list		(PkBackendJob		*job,
-						 PkInfoEnum		 info,
-						 GPtrArray		*pkglist);
-void		 dnf_emit_package_array		(PkBackendJob		*job,
-						 PkInfoEnum		 info,
-						 GPtrArray		*array);
-void		 dnf_emit_package_list_filter	(PkBackendJob		*job,
-						 PkBitfield		 filters,
-						 GPtrArray		*pkglist);
-PkBitfield	 dnf_get_filter_for_ids		(gchar			**package_ids);
+PkInfoEnum dnf_advisory_kind_to_info_enum (DnfAdvisoryKind kind);
+PkInfoEnum dnf_update_severity_to_enum (const gchar *severity);
+void	   dnf_emit_package (PkBackendJob *job,
+			     PkInfoEnum	   info,
+			     DnfPackage	  *pkg);
+void	   dnf_emit_package_list (PkBackendJob *job,
+				  PkInfoEnum	info,
+				  GPtrArray    *pkglist);
+void	   dnf_emit_package_array (PkBackendJob *job,
+				   PkInfoEnum	 info,
+				   GPtrArray	*array);
+void	   dnf_emit_package_list_filter (PkBackendJob *job,
+					 PkBitfield    filters,
+					 GPtrArray    *pkglist);
+PkBitfield dnf_get_filter_for_ids (gchar **package_ids);
 
 G_END_DECLS
 

@@ -46,38 +46,41 @@
 #include "dnf-backend.h"
 #include "pk-backend-dnf-common.h"
 
-#define DNF_SACK_MAX_AGE	600 /* seconds */
+#define DNF_SACK_MAX_AGE 600 /* seconds */
 
-typedef struct {
-	DnfSack		*sack;
-	gchar		*key;
-	GTimer		*timer;
+typedef struct
+{
+	DnfSack *sack;
+	gchar *key;
+	GTimer *timer;
 } DnfSackCacheItem;
 
-typedef struct {
-	GKeyFile	*conf;
-	DnfContext	*context;
-	GHashTable	*sack_cache;	/* of DnfSackCacheItem */
-	GMutex		 sack_mutex;
-	GTimer		*repos_timer;
-	gchar		*release_ver;
-	guint		 sack_expire_id;
+typedef struct
+{
+	GKeyFile *conf;
+	DnfContext *context;
+	GHashTable *sack_cache; /* of DnfSackCacheItem */
+	GMutex sack_mutex;
+	GTimer *repos_timer;
+	gchar *release_ver;
+	guint sack_expire_id;
 } PkBackendDnfPrivate;
 
-typedef struct {
-	DnfContext	*context;
-	DnfTransaction	*transaction;
-	DnfState	*state;
-	PkBackend	*backend;
-	PkBitfield	 transaction_flags;
-	HyGoal		 goal;
+typedef struct
+{
+	DnfContext *context;
+	DnfTransaction *transaction;
+	DnfState *state;
+	PkBackend *backend;
+	PkBitfield transaction_flags;
+	HyGoal goal;
 } PkBackendDnfJobData;
 
-static GPtrArray * pk_backend_find_refresh_repos (PkBackendJob *job,
-						  DnfState     *state,
-						  GPtrArray    *repos,
-						  gboolean      force,
-						  GError      **error);
+static GPtrArray *pk_backend_find_refresh_repos (PkBackendJob *job,
+						 DnfState *state,
+						 GPtrArray *repos,
+						 gboolean force,
+						 GError **error);
 
 const gchar *
 pk_backend_get_description (PkBackend *backend)
@@ -102,7 +105,7 @@ pk_backend_check_sack_timer (gpointer key, gpointer value, gpointer user_data)
 {
 	DnfSackCacheItem *cache_item = value;
 	if (g_timer_elapsed (cache_item->timer, NULL) > DNF_SACK_MAX_AGE) {
-		g_debug ("invalidating %s as expired", (char *)key);
+		g_debug ("invalidating %s as expired", (char *) key);
 		return TRUE;
 	}
 	return FALSE;
@@ -114,8 +117,7 @@ pk_backend_sack_expire (gpointer user_data)
 	PkBackendDnfPrivate *priv = user_data;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 
-	g_hash_table_foreach_remove (priv->sack_cache,
-				     pk_backend_check_sack_timer, NULL);
+	g_hash_table_foreach_remove (priv->sack_cache, pk_backend_check_sack_timer, NULL);
 	return TRUE;
 }
 
@@ -147,9 +149,7 @@ dnf_sack_cache_item_free (DnfSackCacheItem *cache_item)
 }
 
 static void
-pk_backend_context_invalidate_cb (DnfContext *context,
-				 const gchar *message,
-				 PkBackend *backend)
+pk_backend_context_invalidate_cb (DnfContext *context, const gchar *message, PkBackend *backend)
 {
 	pk_backend_sack_cache_invalidate (backend, message);
 	pk_backend_installed_db_changed (backend);
@@ -225,10 +225,14 @@ pk_backend_ensure_default_dnf_context (PkBackend *backend, GError **error)
 
 	/* setup succeeded: store in priv and connect signals */
 	priv->context = g_steal_pointer (&context);
-	g_signal_connect (priv->context, "invalidate",
-			  G_CALLBACK (pk_backend_context_invalidate_cb), backend);
-	g_signal_connect (dnf_context_get_repo_loader (priv->context), "changed",
-			  G_CALLBACK (pk_backend_yum_repos_changed_cb), backend);
+	g_signal_connect (priv->context,
+			  "invalidate",
+			  G_CALLBACK (pk_backend_context_invalidate_cb),
+			  backend);
+	g_signal_connect (dnf_context_get_repo_loader (priv->context),
+			  "changed",
+			  G_CALLBACK (pk_backend_yum_repos_changed_cb),
+			  backend);
 
 	return TRUE;
 }
@@ -253,10 +257,7 @@ pk_backend_initialize (GKeyFile *conf, PkBackend *backend)
 		 LIBDNF_MAJOR_VERSION,
 		 LIBDNF_MINOR_VERSION,
 		 LIBDNF_MICRO_VERSION);
-	g_debug ("Using librepo %i.%i.%i",
-		 LR_VERSION_MAJOR,
-		 LR_VERSION_MINOR,
-		 LR_VERSION_PATCH);
+	g_debug ("Using librepo %i.%i.%i", LR_VERSION_MAJOR, LR_VERSION_MINOR, LR_VERSION_PATCH);
 
 	priv->release_ver = pk_get_distro_version_id (&error);
 	if (priv->release_ver == NULL)
@@ -304,17 +305,13 @@ pk_backend_destroy (PkBackend *backend)
 }
 
 static void
-pk_backend_state_percentage_changed_cb (DnfState *state,
-					guint percentage,
-					PkBackendJob *job)
+pk_backend_state_percentage_changed_cb (DnfState *state, guint percentage, PkBackendJob *job)
 {
 	pk_backend_job_set_percentage (job, percentage);
 }
 
 static void
-pk_backend_download_percentage_changed_cb (DnfState *state,
-                                           guint percentage,
-                                           PkBackendJob *job)
+pk_backend_download_percentage_changed_cb (DnfState *state, guint percentage, PkBackendJob *job)
 {
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	GPtrArray *remote_pkgs;
@@ -347,51 +344,33 @@ pk_backend_state_action_changed_cb (DnfState *state,
 	switch (action) {
 	case DNF_STATE_ACTION_DOWNLOAD_PACKAGES:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_DOWNLOADING,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING, action_hint, "");
 		}
 		break;
 	case DNF_STATE_ACTION_INSTALL:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_INSTALLING,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING, action_hint, "");
 		}
 		break;
 	case DNF_STATE_ACTION_REINSTALL:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_REINSTALLING,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_REINSTALLING, action_hint, "");
 		}
 		break;
 	case DNF_STATE_ACTION_REMOVE:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_REMOVING,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, action_hint, "");
 		}
 		break;
 	case DNF_STATE_ACTION_DOWNGRADE:
 	case DNF_STATE_ACTION_UPDATE:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_UPDATING,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, action_hint, "");
 		}
 		break;
 	case DNF_STATE_ACTION_CLEANUP:
 		if (pk_package_id_check (action_hint)) {
-			pk_backend_job_package (job,
-						PK_INFO_ENUM_CLEANUP,
-						action_hint,
-						"");
+			pk_backend_job_package (job, PK_INFO_ENUM_CLEANUP, action_hint, "");
 		}
 		break;
 	default:
@@ -400,17 +379,13 @@ pk_backend_state_action_changed_cb (DnfState *state,
 }
 
 static void
-pk_backend_speed_changed_cb (DnfState *state,
-			     GParamSpec *pspec,
-			     PkBackendJob *job)
+pk_backend_speed_changed_cb (DnfState *state, GParamSpec *pspec, PkBackendJob *job)
 {
 	pk_backend_job_set_speed (job, dnf_state_get_speed (state));
 }
 
 static void
-pk_backend_state_allow_cancel_changed_cb (DnfState *state,
-					  gboolean allow_cancel,
-					  PkBackendJob *job)
+pk_backend_state_allow_cancel_changed_cb (DnfState *state, gboolean allow_cancel, PkBackendJob *job)
 {
 	pk_backend_job_set_allow_cancel (job, allow_cancel);
 }
@@ -435,9 +410,8 @@ pk_backend_job_set_context (PkBackendJob *job, DnfContext *context)
 	g_clear_object (&job_data->transaction);
 	job_data->transaction = dnf_transaction_new (job_data->context);
 	dnf_transaction_set_repos (job_data->transaction,
-	                           dnf_context_get_repos (job_data->context));
-	dnf_transaction_set_uid (job_data->transaction,
-				 pk_backend_job_get_uid (job));
+				   dnf_context_get_repos (job_data->context));
+	dnf_transaction_set_uid (job_data->transaction, pk_backend_job_get_uid (job));
 }
 
 void
@@ -450,18 +424,21 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 
 	/* DnfState */
 	job_data->state = dnf_state_new ();
-	dnf_state_set_cancellable (job_data->state,
-				   pk_backend_job_get_cancellable (job));
-	g_signal_connect (job_data->state, "percentage-changed",
+	dnf_state_set_cancellable (job_data->state, pk_backend_job_get_cancellable (job));
+	g_signal_connect (job_data->state,
+			  "percentage-changed",
 			  G_CALLBACK (pk_backend_state_percentage_changed_cb),
 			  job);
-	g_signal_connect (job_data->state, "action-changed",
+	g_signal_connect (job_data->state,
+			  "action-changed",
 			  G_CALLBACK (pk_backend_state_action_changed_cb),
 			  job);
-	g_signal_connect (job_data->state, "allow-cancel-changed",
+	g_signal_connect (job_data->state,
+			  "allow-cancel-changed",
 			  G_CALLBACK (pk_backend_state_allow_cancel_changed_cb),
 			  job);
-	g_signal_connect (job_data->state, "notify::speed",
+	g_signal_connect (job_data->state,
+			  "notify::speed",
 			  G_CALLBACK (pk_backend_speed_changed_cb),
 			  job);
 
@@ -507,9 +484,10 @@ dnf_utils_add_remote (PkBackendJob *job,
 	g_autoptr(GPtrArray) refresh_repos = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   2, /* load files */
-				   1, /* count */
+	ret = dnf_state_set_steps (state,
+				   error,
+				   2,  /* load files */
+				   1,  /* count */
 				   97, /* add repos */
 				   -1);
 	if (!ret)
@@ -541,11 +519,11 @@ dnf_utils_add_remote (PkBackendJob *job,
 	/* add each repo */
 	state_local = dnf_state_get_child (state);
 	ret = dnf_sack_add_repos (sack,
-	                          repos,
-	                          pk_backend_job_get_cache_age (job),
-	                          flags,
-	                          state_local,
-	                          error);
+				  repos,
+				  pk_backend_job_get_cache_age (job),
+				  flags,
+				  state_local,
+				  error);
 	if (!ret)
 		return FALSE;
 
@@ -669,7 +647,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	}
 
 	/* do we have anything in the cache */
-	cache_key = dnf_utils_create_cache_key (dnf_context_get_release_ver (job_data->context), flags);
+	cache_key = dnf_utils_create_cache_key (dnf_context_get_release_ver (job_data->context),
+						flags);
 	if ((create_flags & DNF_CREATE_SACK_FLAG_USE_CACHE) > 0) {
 		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->sack_mutex);
 		cache_item = g_hash_table_lookup (priv->sack_cache, cache_key);
@@ -685,8 +664,9 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 
 	/* set state */
 	if ((flags & DNF_SACK_ADD_FLAG_REMOTE) > 0) {
-		ret = dnf_state_set_steps (state, error,
-					   8, /* add installed */
+		ret = dnf_state_set_steps (state,
+					   error,
+					   8,  /* add installed */
 					   92, /* add remote */
 					   -1);
 		if (!ret)
@@ -703,7 +683,8 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	dnf_sack_set_rootdir (sack, install_root);
 	ret = dnf_sack_setup (sack, DNF_SACK_SETUP_FLAG_MAKE_CACHE_DIR, error);
 	if (!ret) {
-		g_prefix_error (error, "failed to create sack in %s for %s: ",
+		g_prefix_error (error,
+				"failed to create sack in %s for %s: ",
 				dnf_context_get_solv_dir (job_data->context),
 				dnf_context_get_install_root (job_data->context));
 		return NULL;
@@ -724,8 +705,7 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 	/* add remote packages */
 	if ((flags & DNF_SACK_ADD_FLAG_REMOTE) > 0) {
 		state_local = dnf_state_get_child (state);
-		ret = dnf_utils_add_remote (job, sack, flags,
-					    state_local, error);
+		ret = dnf_utils_add_remote (job, sack, flags, state_local, error);
 		if (!ret)
 			return NULL;
 
@@ -735,7 +715,10 @@ dnf_utils_create_sack_for_filters (PkBackendJob *job,
 			return NULL;
 	}
 
-	dnf_sack_filter_modules (sack, dnf_context_get_repos (job_data->context), install_root, NULL);
+	dnf_sack_filter_modules (sack,
+				 dnf_context_get_repos (job_data->context),
+				 install_root,
+				 NULL);
 
 	/* save in cache */
 	g_mutex_lock (&priv->sack_mutex);
@@ -796,12 +779,14 @@ dnf_utils_force_distupgrade_on_upgrade (DnfSack *sack)
 	g_autoptr(GPtrArray) plist = NULL;
 	gint candidates;
 	const gchar *distroverpkg_names[] = { "system-release", "distribution-release", NULL };
-	const gchar *distupgrade_provides[] = { "system-upgrade(dsync)", "product-upgrade() = dup", NULL };
+	const gchar *distupgrade_provides[] = { "system-upgrade(dsync)",
+						"product-upgrade() = dup",
+						NULL };
 	HyQuery query_tmp = hy_query_create (sack);
 
 	hy_query_filter (query_tmp, HY_PKG_REPONAME, HY_EQ, HY_SYSTEM_REPO_NAME);
-	hy_query_filter_provides_in (query_tmp, (gchar**) distroverpkg_names);
-	hy_query_filter_provides_in (query_tmp, (gchar**) distupgrade_provides);
+	hy_query_filter_provides_in (query_tmp, (gchar **) distroverpkg_names);
+	hy_query_filter_provides_in (query_tmp, (gchar **) distupgrade_provides);
 
 	plist = hy_query_run (query_tmp);
 	candidates = plist->len;
@@ -813,8 +798,10 @@ dnf_utils_force_distupgrade_on_upgrade (DnfSack *sack)
 }
 
 static GPtrArray *
-dnf_utils_run_query_with_filters (PkBackendJob *job, DnfSack *sack,
-				  HyQuery query, PkBitfield filters)
+dnf_utils_run_query_with_filters (PkBackendJob *job,
+				  DnfSack *sack,
+				  HyQuery query,
+				  PkBitfield filters)
 {
 	GPtrArray *results;
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
@@ -822,10 +809,14 @@ dnf_utils_run_query_with_filters (PkBackendJob *job, DnfSack *sack,
 
 	/* arch */
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_ARCH)) {
-		hy_query_filter_in (query, HY_PKG_ARCH, HY_EQ,
+		hy_query_filter_in (query,
+				    HY_PKG_ARCH,
+				    HY_EQ,
 				    dnf_context_get_native_arches (job_data->context));
 	} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_ARCH)) {
-		hy_query_filter_in (query, HY_PKG_ARCH, HY_NEQ,
+		hy_query_filter_in (query,
+				    HY_PKG_ARCH,
+				    HY_NEQ,
 				    dnf_context_get_native_arches (job_data->context));
 	}
 
@@ -888,7 +879,10 @@ pk_backend_dnf_cache_advisories (DnfSack *sack)
 	HyQuery query;
 	guint ii;
 
-	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) dnf_advisory_free);
+	hash = g_hash_table_new_full (g_str_hash,
+				      g_str_equal,
+				      g_free,
+				      (GDestroyNotify) dnf_advisory_free);
 	query = hy_query_create (sack);
 	array = hy_query_get_advisory_pkgs (query, HY_EQ);
 
@@ -897,9 +891,9 @@ pk_backend_dnf_cache_advisories (DnfSack *sack)
 		gchar *id;
 
 		id = g_strdup_printf ("%s;%s;%s",
-			dnf_advisorypkg_get_name (advpkg),
-			dnf_advisorypkg_get_evr (advpkg),
-			dnf_advisorypkg_get_arch (advpkg));
+				      dnf_advisorypkg_get_name (advpkg),
+				      dnf_advisorypkg_get_evr (advpkg),
+				      dnf_advisorypkg_get_arch (advpkg));
 
 		g_hash_table_insert (hash, id, dnf_advisorypkg_get_advisory (advpkg));
 	}
@@ -912,8 +906,7 @@ pk_backend_dnf_cache_advisories (DnfSack *sack)
 }
 
 static DnfAdvisory *
-pk_backend_dnf_get_advisory (GHashTable *advisories_hash,
-			     DnfPackage *pkg)
+pk_backend_dnf_get_advisory (GHashTable *advisories_hash, DnfPackage *pkg)
 {
 #ifdef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 	g_autofree gchar *id = NULL;
@@ -922,9 +915,9 @@ pk_backend_dnf_get_advisory (GHashTable *advisories_hash,
 		return NULL;
 
 	id = g_strdup_printf ("%s;%s;%s",
-		dnf_package_get_name (pkg),
-		dnf_package_get_evr (pkg),
-		dnf_package_get_arch (pkg));
+			      dnf_package_get_name (pkg),
+			      dnf_package_get_evr (pkg),
+			      dnf_package_get_arch (pkg));
 
 	return g_hash_table_lookup (advisories_hash, id);
 #else
@@ -959,12 +952,13 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	g_auto(GStrv) search = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   39, /* add repos */
 				   50, /* query */
-				   1, /* ensure repo list */
-				   1, /* ensure origin */
-				   9, /* emit */
+				   1,  /* ensure repo list */
+				   1,  /* ensure origin */
+				   9,  /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -975,9 +969,7 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		g_variant_get (params, "(t)", &filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
-		g_variant_get (params, "(t^a&s)",
-			       &filters,
-			       &search_tmp);
+		g_variant_get (params, "(t^a&s)", &filters, &search_tmp);
 		search = pk_backend_what_provides_decompose (search_tmp, &error);
 		if (search == NULL) {
 			pk_backend_job_error_code (job, error->code, "%s", error->message);
@@ -1022,11 +1014,17 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_DETAILS:
-		hy_query_filter_in (query, HY_PKG_DESCRIPTION, HY_ICASE | HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query,
+				    HY_PKG_DESCRIPTION,
+				    HY_ICASE | HY_SUBSTR,
+				    (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_SEARCH_NAME:
-		hy_query_filter_in (query, HY_PKG_NAME, HY_ICASE | HY_SUBSTR, (const gchar **) search);
+		hy_query_filter_in (query,
+				    HY_PKG_NAME,
+				    HY_ICASE | HY_SUBSTR,
+				    (const gchar **) search);
 		pkglist = dnf_utils_run_query_with_filters (job, sack, query, filters);
 		break;
 	case PK_ROLE_ENUM_WHAT_PROVIDES:
@@ -1035,8 +1033,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 		break;
 	case PK_ROLE_ENUM_GET_UPDATES:
 		/* set up the sack for packages that should only ever be installed, never updated */
-		dnf_sack_set_installonly (sack, dnf_context_get_installonly_pkgs (job_data->context));
-		dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context));
+		dnf_sack_set_installonly (sack,
+					  dnf_context_get_installonly_pkgs (job_data->context));
+		dnf_sack_set_installonly_limit (
+		    sack,
+		    dnf_context_get_installonly_limit (job_data->context));
 
 		job_data->goal = hy_goal_create (sack);
 		if (dnf_utils_force_distupgrade_on_upgrade (sack)) {
@@ -1112,8 +1113,11 @@ pk_backend_search_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 			advisory = pk_backend_dnf_get_advisory (advisories_hash, pkg);
 			if (advisory != NULL) {
 				kind = dnf_advisory_get_kind (advisory);
-				g_object_set_data (G_OBJECT (pkg), PK_DNF_UPDATE_SEVERITY_KEY,
-					GUINT_TO_POINTER (dnf_update_severity_to_enum (dnf_advisory_get_severity (advisory))));
+				g_object_set_data (
+				    G_OBJECT (pkg),
+					     PK_DNF_UPDATE_SEVERITY_KEY,
+					     GUINT_TO_POINTER (dnf_update_severity_to_enum (
+						 dnf_advisory_get_severity (advisory))));
 #ifndef HAVE_HY_QUERY_GET_ADVISORY_PKGS
 				dnf_advisory_free (advisory);
 #endif
@@ -1140,9 +1144,7 @@ out:
 }
 
 void
-pk_backend_get_packages (PkBackend *backend,
-			 PkBackendJob *job,
-			 PkBitfield filters)
+pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1157,10 +1159,7 @@ pk_backend_get_packages (PkBackend *backend,
 }
 
 void
-pk_backend_resolve (PkBackend *backend,
-		    PkBackendJob *job,
-		    PkBitfield filters,
-		    gchar **package_ids)
+pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1175,10 +1174,7 @@ pk_backend_resolve (PkBackend *backend,
 }
 
 void
-pk_backend_search_names (PkBackend *backend,
-			 PkBackendJob *job,
-			 PkBitfield filters,
-			 gchar **values)
+pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1211,10 +1207,7 @@ pk_backend_search_details (PkBackend *backend,
 }
 
 void
-pk_backend_search_files (PkBackend *backend,
-			 PkBackendJob *job,
-			 PkBitfield filters,
-			 gchar **values)
+pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1229,10 +1222,7 @@ pk_backend_search_files (PkBackend *backend,
 }
 
 void
-pk_backend_what_provides (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield filters,
-			  gchar **values)
+pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1247,9 +1237,7 @@ pk_backend_what_provides (PkBackend *backend,
 }
 
 void
-pk_backend_get_updates (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield filters)
+pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1277,19 +1265,16 @@ static gboolean
 pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 {
 	/* devel and ~devel */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) &&
-	    !dnf_repo_is_devel (repo))
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_DEVELOPMENT) && !dnf_repo_is_devel (repo))
 		return FALSE;
 	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_DEVELOPMENT) &&
 	    dnf_repo_is_devel (repo))
 		return FALSE;
 
 	/* source and ~source */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) &&
-	    !dnf_repo_is_source (repo))
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SOURCE) && !dnf_repo_is_source (repo))
 		return FALSE;
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) &&
-	    dnf_repo_is_source (repo))
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SOURCE) && dnf_repo_is_source (repo))
 		return FALSE;
 
 	/* installed and ~installed == enabled */
@@ -1301,11 +1286,9 @@ pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 		return FALSE;
 
 	/* supported and ~supported == core */
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED) &&
-	    !repo_is_supported (repo))
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_SUPPORTED) && !repo_is_supported (repo))
 		return FALSE;
-	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED) &&
-	    repo_is_supported (repo))
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_SUPPORTED) && repo_is_supported (repo))
 		return FALSE;
 
 	/* not filtered */
@@ -1313,9 +1296,7 @@ pk_backend_repo_filter (DnfRepo *repo, PkBitfield filters)
 }
 
 static void
-pk_backend_get_repo_list_thread (PkBackendJob *job,
-				 GVariant *params,
-				 gpointer user_data)
+pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	gboolean enabled;
 	guint i;
@@ -1334,8 +1315,9 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
 	if (repos == NULL) {
 		pk_backend_job_error_code (job,
-		                           error->code,
-		                           "failed to load repos: %s", error->message);
+					   error->code,
+					   "failed to load repos: %s",
+					   error->message);
 		return;
 	}
 
@@ -1347,16 +1329,12 @@ pk_backend_get_repo_list_thread (PkBackendJob *job,
 			continue;
 		description = dnf_repo_get_description (repo);
 		enabled = (dnf_repo_get_enabled (repo) & DNF_REPO_ENABLED_PACKAGES) > 0;
-		pk_backend_job_repo_detail (job,
-					    dnf_repo_get_id (repo),
-					    description, enabled);
+		pk_backend_job_repo_detail (job, dnf_repo_get_id (repo), description, enabled);
 	}
 }
 
 void
-pk_backend_get_repo_list (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield filters)
+pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1371,9 +1349,7 @@ pk_backend_get_repo_list (PkBackend *backend,
 }
 
 static void
-pk_backend_repo_set_data_thread (PkBackendJob *job,
-				 GVariant *params,
-				 gpointer user_data)
+pk_backend_repo_set_data_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	const gchar *repo_id;
 	const gchar *parameter;
@@ -1385,24 +1361,21 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 
 	/* get arguments */
 	switch (pk_backend_job_get_role (job)) {
-	case PK_ROLE_ENUM_REPO_ENABLE:
-		{
-			gboolean enabled;
+	case PK_ROLE_ENUM_REPO_ENABLE: {
+		gboolean enabled;
 
-		        g_variant_get (params, "(&sb)", &repo_id, &enabled);
-			if (enabled)
-				value = "1";
-			else
-				value = "0";
+		g_variant_get (params, "(&sb)", &repo_id, &enabled);
+		if (enabled)
+			value = "1";
+		else
+			value = "0";
 
-			parameter = "enabled";
-		}
-		break;
+		parameter = "enabled";
+	} break;
 	default:
 		g_variant_get (params, "(&s&s&s)", &repo_id, &parameter, &value);
 		break;
 	}
-
 
 	/* take lock */
 	ret = dnf_state_take_lock (job_data->state,
@@ -1422,11 +1395,11 @@ pk_backend_repo_set_data_thread (PkBackendJob *job,
 	pk_backend_job_set_percentage (job, 0);
 
 	/* find the correct repo */
-	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
+	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
+					       repo_id,
+					       &error);
 	if (repo == NULL) {
-		pk_backend_job_error_code (job,
-					   error->code,
-					   "%s", error->message);
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
 	}
 
@@ -1510,15 +1483,14 @@ pk_backend_repo_enable (PkBackend *backend,
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_FILTER_ENUM_APPLICATION,
-		PK_FILTER_ENUM_ARCH,
-		PK_FILTER_ENUM_DEVELOPMENT,
-		PK_FILTER_ENUM_GUI,
-		PK_FILTER_ENUM_INSTALLED,
-		PK_FILTER_ENUM_SOURCE,
-		PK_FILTER_ENUM_DOWNLOADED,
-		-1);
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_APPLICATION,
+				       PK_FILTER_ENUM_ARCH,
+				       PK_FILTER_ENUM_DEVELOPMENT,
+				       PK_FILTER_ENUM_GUI,
+				       PK_FILTER_ENUM_INSTALLED,
+				       PK_FILTER_ENUM_SOURCE,
+				       PK_FILTER_ENUM_DOWNLOADED,
+				       -1);
 }
 
 gchar **
@@ -1539,13 +1511,22 @@ pk_backend_refresh_subman (PkBackendJob *job)
 
 	if (!g_file_test (argv[0], G_FILE_TEST_EXISTS))
 		return;
-	if (!g_spawn_sync (NULL, (gchar **) argv, NULL, G_SPAWN_DEFAULT,
-			   NULL, NULL,
-			   &out, &err, NULL,
+	if (!g_spawn_sync (NULL,
+			   (gchar **) argv,
+			   NULL,
+			   G_SPAWN_DEFAULT,
+			   NULL,
+			   NULL,
+			   &out,
+			   &err,
+			   NULL,
 			   &error_local)) {
 		g_autofree gchar *cmd = g_strjoinv ("  ", (gchar **) argv);
 		g_warning ("failed to run '%s': %s [stdout:%s, stderr:%s]",
-			   cmd, error_local->message, out, err);
+			   cmd,
+			   error_local->message,
+			   out,
+			   err);
 		return;
 	}
 
@@ -1555,10 +1536,10 @@ pk_backend_refresh_subman (PkBackendJob *job)
 
 static GPtrArray *
 pk_backend_find_refresh_repos (PkBackendJob *job,
-			       DnfState     *state,
-			       GPtrArray    *repos,
-			       gboolean      force,
-			       GError      **error)
+			       DnfState *state,
+			       GPtrArray *repos,
+			       gboolean force,
+			       GError **error)
 {
 	g_autoptr(GPtrArray) refresh_repos = NULL;
 	DnfState *state_local;
@@ -1596,12 +1577,11 @@ pk_backend_find_refresh_repos (PkBackendJob *job,
 		/* is the repo up to date? */
 		state_loop = dnf_state_get_child (state_local);
 		repo_okay = dnf_repo_check (repo,
-		                            pk_backend_job_get_cache_age (job),
-		                            state_loop,
-		                            NULL);
+					    pk_backend_job_get_cache_age (job),
+					    state_loop,
+					    NULL);
 		if (!repo_okay || force)
-			g_ptr_array_add (refresh_repos,
-			                 g_ptr_array_index (repos, i));
+			g_ptr_array_add (refresh_repos, g_ptr_array_index (repos, i));
 
 		/* done */
 		if (!dnf_state_done (state_local, error))
@@ -1616,9 +1596,7 @@ pk_backend_find_refresh_repos (PkBackendJob *job,
 }
 
 static void
-pk_backend_refresh_cache_thread (PkBackendJob *job,
-				 GVariant *params,
-				 gpointer user_data)
+pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	PkBackendDnfJobData *job_data = pk_backend_job_get_user_data (job);
 	PkBackend *backend = pk_backend_job_get_backend (job);
@@ -1635,10 +1613,11 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	g_autofree gchar *max_cache_age = NULL;
 
 	/* set state */
-	dnf_state_set_steps (job_data->state, NULL,
-			     1, /* count */
+	dnf_state_set_steps (job_data->state,
+			     NULL,
+			     1,	 /* count */
 			     95, /* download */
-			     4, /* rebuild SAT */
+			     4,	 /* rebuild SAT */
 			     -1);
 
 	g_variant_get (params, "(b)", &force);
@@ -1650,8 +1629,9 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
 	if (repos == NULL) {
 		pk_backend_job_error_code (job,
-		                           error->code,
-		                           "failed to load repos: %s", error->message);
+					   error->code,
+					   "failed to load repos: %s",
+					   error->message);
 		return;
 	}
 
@@ -1704,7 +1684,10 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 				   NULL,
 				   &wait_status,
 				   &error))
-			pk_backend_job_error_code (job, error->code, "%s", "unkown error in pk_backend_refresh_repo");
+			pk_backend_job_error_code (job,
+						   error->code,
+						   "%s",
+						   "unkown error in pk_backend_refresh_repo");
 
 		/* done */
 		ret = dnf_state_done (state_local, &error);
@@ -1725,13 +1708,15 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 	pk_backend_sack_cache_invalidate (backend, "downloaded new metadata");
 
 	/* We just downloaded our cache, avoid doing so again */
-	pk_backend_job_set_cache_age(job, G_MAXUINT);
+	pk_backend_job_set_cache_age (job, G_MAXUINT);
 
 	/* regenerate the libsolv metadata */
 	state_local = dnf_state_get_child (job_data->state);
-	sack = dnf_utils_create_sack_for_filters (job, 0,
+	sack = dnf_utils_create_sack_for_filters (job,
+						  0,
 						  DNF_CREATE_SACK_FLAG_NONE,
-						  state_local, &error);
+						  state_local,
+						  &error);
 	if (sack == NULL) {
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
@@ -1746,9 +1731,7 @@ pk_backend_refresh_cache_thread (PkBackendJob *job,
 }
 
 void
-pk_backend_refresh_cache (PkBackend *backend,
-			  PkBackendJob *job,
-			  gboolean force)
+pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -1784,8 +1767,10 @@ dnf_utils_find_package_ids (DnfSack *sack, gchar **package_ids, GError **error)
 	HyQuery query = NULL;
 
 	/* run query */
-	hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-				      g_free, (GDestroyNotify) g_object_unref);
+	hash = g_hash_table_new_full (g_str_hash,
+				      g_str_equal,
+				      g_free,
+				      (GDestroyNotify) g_object_unref);
 	query = hy_query_create (sack);
 	for (i = 0; package_ids[i] != NULL; i++) {
 		g_auto(GStrv) split = NULL;
@@ -1815,20 +1800,18 @@ dnf_utils_find_package_ids (DnfSack *sack, gchar **package_ids, GError **error)
 			g_set_error (error,
 				     DNF_ERROR,
 				     PK_ERROR_ENUM_PACKAGE_CONFLICTS,
-				     "Multiple matches of %s", package_ids[i]);
+				     "Multiple matches of %s",
+				     package_ids[i]);
 			for (i = 0; i < pkglist->len; i++) {
 				pkg = g_ptr_array_index (pkglist, i);
-				g_debug ("possible matches: %s",
-					 dnf_package_get_package_id (pkg));
+				g_debug ("possible matches: %s", dnf_package_get_package_id (pkg));
 			}
 			goto out;
 		}
 
 		/* add to results */
 		pkg = g_ptr_array_index (pkglist, 0);
-		g_hash_table_insert (hash,
-				     g_strdup (package_ids[i]),
-				     g_object_ref (pkg));
+		g_hash_table_insert (hash, g_strdup (package_ids[i]), g_object_ref (pkg));
 		g_ptr_array_unref (pkglist);
 	}
 out:
@@ -1894,7 +1877,6 @@ dnf_utils_process_dependency (DnfSack *sack,
 						g_queue_push_tail (queue, g_object_ref (res));
 				}
 			}
-
 		}
 	}
 }
@@ -1912,19 +1894,18 @@ backend_dependency_query_thread (PkBackendJob *job, GVariant *params, gpointer u
 	g_autoptr(DnfSack) sack = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
-	g_autoptr(GHashTable) emitted = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+	g_autoptr(GHashTable)
+		      emitted = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	g_autoptr(GPtrArray) results_array = g_ptr_array_new_with_free_func (g_object_unref);
 	gboolean recursive;
-	g_variant_get (params, "(t^a&sb)",
-		       &filters,
-		       &package_ids,
-		       &recursive);
+	g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* add repos */
 				   49, /* find packages */
-				   1, /* emit */
+				   1,  /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -1968,12 +1949,12 @@ backend_dependency_query_thread (PkBackendJob *job, GVariant *params, gpointer u
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 
-		if (role == PK_ROLE_ENUM_DEPENDS_ON ||
-		    role == PK_ROLE_ENUM_REQUIRED_BY) {
+		if (role == PK_ROLE_ENUM_DEPENDS_ON || role == PK_ROLE_ENUM_REQUIRED_BY) {
 			if (i == 0)
 				g_hash_table_remove_all (emitted);
 			dnf_utils_process_dependency (sack,
@@ -1984,7 +1965,6 @@ backend_dependency_query_thread (PkBackendJob *job, GVariant *params, gpointer u
 						      results_array,
 						      &error);
 		}
-
 	}
 
 	/* emit */
@@ -1996,11 +1976,14 @@ backend_dependency_query_thread (PkBackendJob *job, GVariant *params, gpointer u
 		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		return;
 	}
-
 }
 
 void
-pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend,
+		       PkBackendJob *job,
+		       PkBitfield filters,
+		       gchar **package_ids,
+		       gboolean recursive)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -2015,7 +1998,11 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 }
 
 void
-pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield filters,
+			gchar **package_ids,
+			gboolean recursive)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -2046,10 +2033,11 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	g_variant_get (params, "(^a&s)", &package_ids);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* add repos */
 				   49, /* find packages */
-				   1, /* emit */
+				   1,  /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -2091,7 +2079,9 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		pkg = g_hash_table_lookup (hash, package_ids[i]);
 		if (pkg == NULL)
 			continue;
-		download_size = dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg);
+		download_size = dnf_package_is_downloaded (pkg)
+				    ? 0
+				    : dnf_package_get_downloadsize (pkg);
 		if (pk_backend_job_get_details_with_deps_size (job) &&
 		    !dnf_package_installed (pkg)) {
 			g_autoptr(DnfReldepList) requires = NULL;
@@ -2107,7 +2097,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 					DnfPackage *pkg_req = g_ptr_array_index (pkglist_reqs, j);
 					if (pkg_req && !dnf_package_installed (pkg_req) &&
 					    !dnf_package_is_downloaded (pkg_req))
-						download_size += dnf_package_get_downloadsize (pkg_req);
+						download_size += dnf_package_get_downloadsize (
+						    pkg_req);
 				}
 				hy_query_free (query);
 			}
@@ -2165,7 +2156,8 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* create sack */
 				   50, /* get details */
 				   -1);
@@ -2210,7 +2202,9 @@ backend_get_details_local_thread (PkBackendJob *job, GVariant *params, gpointer 
 						dnf_package_get_description (pkg),
 						dnf_package_get_url (pkg),
 						(gulong) dnf_package_get_installsize (pkg),
-						dnf_package_is_downloaded (pkg) ? 0 : dnf_package_get_downloadsize (pkg));
+						dnf_package_is_downloaded (pkg)
+						    ? 0
+						    : dnf_package_get_downloadsize (pkg));
 		}
 	}
 
@@ -2256,7 +2250,8 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* create sack */
 				   50, /* get details */
 				   -1);
@@ -2293,9 +2288,7 @@ backend_get_files_local_thread (PkBackendJob *job, GVariant *params, gpointer us
 		}
 		/* sort and list according to name */
 		files_array = dnf_package_get_files (pkg);
-		pk_backend_job_files (job,
-				      dnf_package_get_package_id (pkg),
-				      files_array);
+		pk_backend_job_files (job, dnf_package_get_package_id (pkg), files_array);
 		g_strfreev (files_array);
 	}
 
@@ -2340,17 +2333,16 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) files = NULL;
 
-	g_variant_get (params, "(^a&ss)",
-		       &package_ids,
-		       &directory);
+	g_variant_get (params, "(^a&ss)", &package_ids, &directory);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
-				   1, /* ensure repos */
-				   3, /* get sack */
-				   5, /* find packages */
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
+				   1,  /* ensure repos */
+				   3,  /* get sack */
+				   5,  /* find packages */
 				   90, /* download packages */
-				   1, /* emit */
+				   1,  /* emit */
 				   -1);
 	g_assert (ret);
 
@@ -2400,34 +2392,31 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 
 		dnf_emit_package (job, PK_INFO_ENUM_DOWNLOADING, pkg);
 
 		/* get correct package repo */
-		repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-		                                       dnf_package_get_reponame (pkg),
-		                                       &error);
+		repo = dnf_repo_loader_get_repo_by_id (
+		    dnf_context_get_repo_loader (job_data->context),
+		    dnf_package_get_reponame (pkg),
+		    &error);
 		if (repo == NULL) {
-			g_prefix_error (&error, "Not sure where to download %s: ",
+			g_prefix_error (&error,
+					"Not sure where to download %s: ",
 					dnf_package_get_name (pkg));
-			pk_backend_job_error_code (job, error->code,
-						   "%s", error->message);
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			return;
 		}
 
 		/* download */
 		state_loop = dnf_state_get_child (state_local);
-		tmp = dnf_repo_download_package (repo,
-		                                 pkg,
-		                                 directory,
-		                                 state_loop,
-		                                 &error);
+		tmp = dnf_repo_download_package (repo, pkg, directory, state_loop, &error);
 		if (tmp == NULL) {
-			pk_backend_job_error_code (job, error->code,
-						   "%s", error->message);
+			pk_backend_job_error_code (job, error->code, "%s", error->message);
 			return;
 		}
 
@@ -2479,8 +2468,7 @@ pk_backend_download_packages (PkBackend *backend,
 
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
-{
-}
+{}
 
 static GPtrArray *
 pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
@@ -2506,19 +2494,18 @@ pk_backend_transaction_check_untrusted_repos (PkBackendJob *job, GError **error)
 
 		/* this is a standalone file, so by definition is from an
 		 * untrusted repo */
-		if (g_strcmp0 (dnf_package_get_reponame (pkg),
-			       HY_CMDLINE_REPO_NAME) == 0) {
+		if (g_strcmp0 (dnf_package_get_reponame (pkg), HY_CMDLINE_REPO_NAME) == 0) {
 			g_ptr_array_add (array, g_object_ref (pkg));
 			continue;
 		}
 
 		/* find repo */
-		repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
-		                                       dnf_package_get_reponame (pkg),
-		                                       error);
+		repo = dnf_repo_loader_get_repo_by_id (
+		    dnf_context_get_repo_loader (job_data->context),
+		    dnf_package_get_reponame (pkg),
+		    error);
 		if (repo == NULL) {
-			g_prefix_error (error, "Can't GPG check %s: ",
-					dnf_package_get_name (pkg));
+			g_prefix_error (error, "Can't GPG check %s: ", dnf_package_get_name (pkg));
 			ret = FALSE;
 			goto out;
 		}
@@ -2536,9 +2523,7 @@ out:
 }
 
 static gboolean
-pk_backend_transaction_simulate (PkBackendJob *job,
-				 DnfState *state,
-				 GError **error)
+pk_backend_transaction_simulate (PkBackendJob *job, DnfState *state, GError **error)
 {
 	DnfDb *db;
 	GPtrArray *pkglist;
@@ -2547,9 +2532,10 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 	g_autoptr(GPtrArray) untrusted = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
+	ret = dnf_state_set_steps (state,
+				   error,
 				   99, /* check for untrusted repos */
-				   1, /* emit */
+				   1,  /* emit */
 				   -1);
 	if (!ret)
 		return FALSE;
@@ -2608,9 +2594,7 @@ pk_backend_transaction_simulate (PkBackendJob *job,
 }
 
 static gboolean
-pk_backend_transaction_download_commit (PkBackendJob *job,
-					DnfState *state,
-					GError **error)
+pk_backend_transaction_download_commit (PkBackendJob *job, DnfState *state, GError **error)
 {
 	gboolean ret = TRUE;
 	DnfState *state_local;
@@ -2619,39 +2603,37 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	/* nothing to download */
 	if (dnf_transaction_get_remote_pkgs (job_data->transaction)->len == 0) {
 		pk_backend_transaction_inhibit_start (job_data->backend);
-		ret = dnf_transaction_commit (job_data->transaction,
-					      job_data->goal,
-					      state,
-					      error);
+		ret = dnf_transaction_commit (job_data->transaction, job_data->goal, state, error);
 		pk_backend_transaction_inhibit_end (job_data->backend);
 		return ret;
 	}
 
 	/* set state */
 	if (pk_bitfield_contain (job_data->transaction_flags,
-	                         PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-		ret = dnf_state_set_steps (state, error,
-		                           90, /* download */
-		                           10, /* transaction test */
-		                           -1);
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+		ret = dnf_state_set_steps (state,
+					   error,
+					   90, /* download */
+					   10, /* transaction test */
+					   -1);
 	} else {
-		ret = dnf_state_set_steps (state, error,
-		                           50, /* download */
-		                           50, /* install/remove */
-		                           -1);
+		ret = dnf_state_set_steps (state,
+					   error,
+					   50, /* download */
+					   50, /* install/remove */
+					   -1);
 	}
 	if (!ret)
 		return FALSE;
 
 	/* download */
 	state_local = dnf_state_get_child (state);
-	g_signal_connect (state_local, "percentage-changed",
-	                  G_CALLBACK (pk_backend_download_percentage_changed_cb),
-	                  job);
+	g_signal_connect (state_local,
+			  "percentage-changed",
+			  G_CALLBACK (pk_backend_download_percentage_changed_cb),
+			  job);
 	pk_backend_download_percentage_changed_cb (state, 0, job);
-	ret = dnf_transaction_download (job_data->transaction,
-					state_local,
-					error);
+	ret = dnf_transaction_download (job_data->transaction, state_local, error);
 	if (!ret)
 		return FALSE;
 	pk_backend_download_percentage_changed_cb (state, 100, job);
@@ -2663,10 +2645,7 @@ pk_backend_transaction_download_commit (PkBackendJob *job,
 	/* run transaction */
 	state_local = dnf_state_get_child (state);
 	pk_backend_transaction_inhibit_start (job_data->backend);
-	ret = dnf_transaction_commit (job_data->transaction,
-				      job_data->goal,
-				      state_local,
-				      error);
+	ret = dnf_transaction_commit (job_data->transaction, job_data->goal, state_local, error);
 	pk_backend_transaction_inhibit_end (job_data->backend);
 	if (!ret)
 		return FALSE;
@@ -2693,8 +2672,8 @@ pk_backend_clean_cached_rpms (PkBackendJob *job, GPtrArray *keep_rpms)
 	keep_rpms_hash = g_hash_table_new (g_str_hash, g_str_equal);
 	for (guint i = 0; i < keep_rpms->len; i++) {
 		g_hash_table_insert (keep_rpms_hash,
-		                     g_ptr_array_index (keep_rpms, i),
-		                     GINT_TO_POINTER (1));
+				     g_ptr_array_index (keep_rpms, i),
+				     GINT_TO_POINTER (1));
 	}
 
 	cache_dir = dnf_context_get_cache_dir (job_data->context);
@@ -2726,11 +2705,11 @@ pk_backend_get_download_rpms (HyGoal goal)
 	g_autoptr(GPtrArray) packages = NULL;
 
 	packages = dnf_goal_get_packages (goal,
-	                                  DNF_PACKAGE_INFO_INSTALL,
-	                                  DNF_PACKAGE_INFO_REINSTALL,
-	                                  DNF_PACKAGE_INFO_DOWNGRADE,
-	                                  DNF_PACKAGE_INFO_UPDATE,
-	                                  -1);
+					  DNF_PACKAGE_INFO_INSTALL,
+					  DNF_PACKAGE_INFO_REINSTALL,
+					  DNF_PACKAGE_INFO_DOWNGRADE,
+					  DNF_PACKAGE_INFO_UPDATE,
+					  -1);
 
 	for (guint i = 0; i < packages->len; i++) {
 		DnfPackage *pkg = g_ptr_array_index (packages, i);
@@ -2744,9 +2723,7 @@ pk_backend_get_download_rpms (HyGoal goal)
 }
 
 static gboolean
-pk_backend_transaction_run (PkBackendJob *job,
-			    DnfState *state,
-			    GError **error)
+pk_backend_transaction_run (PkBackendJob *job, DnfState *state, GError **error)
 {
 	DnfState *state_local;
 	DnfGoalActions dnf_flags = DNF_ALLOW_UNINSTALL;
@@ -2756,8 +2733,9 @@ pk_backend_transaction_run (PkBackendJob *job,
 	int flags = DNF_TRANSACTION_FLAG_ALLOW_DOWNGRADE;
 
 	/* set state */
-	ret = dnf_state_set_steps (state, error,
-				   5, /* depsolve */
+	ret = dnf_state_set_steps (state,
+				   error,
+				   5,  /* depsolve */
 				   95, /* everything else */
 				   -1);
 	if (!ret)
@@ -2768,7 +2746,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 				 PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED))
 		flags |= DNF_TRANSACTION_FLAG_ONLY_TRUSTED;
 	if (pk_bitfield_contain (job_data->transaction_flags,
-				PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL))
+				 PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL))
 		flags |= DNF_TRANSACTION_FLAG_ALLOW_REINSTALL;
 	/* only download packages and run a transaction test */
 	if (pk_bitfield_contain (job_data->transaction_flags,
@@ -2787,10 +2765,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 	if (!ret)
 		return FALSE;
 
-	ret = dnf_transaction_depsolve (job_data->transaction,
-					job_data->goal,
-					state_local,
-					error);
+	ret = dnf_transaction_depsolve (job_data->transaction, job_data->goal, state_local, error);
 	if (!ret)
 		return FALSE;
 
@@ -2799,12 +2774,9 @@ pk_backend_transaction_run (PkBackendJob *job,
 		return FALSE;
 
 	/* just simulate */
-	if (pk_bitfield_contain (job_data->transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+	if (pk_bitfield_contain (job_data->transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
 		state_local = dnf_state_get_child (state);
-		ret = pk_backend_transaction_simulate (job,
-						       state_local,
-						       error);
+		ret = pk_backend_transaction_simulate (job, state_local, error);
 		if (!ret)
 			return FALSE;
 		return dnf_state_done (state, error);
@@ -2817,7 +2789,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 		return FALSE;
 
 	if (pk_bitfield_contain (job_data->transaction_flags,
-	                         PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
+				 PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 		g_autoptr(GPtrArray) keep_rpms = NULL;
 
 		/* now that an offline update has been fully downloaded, clean up any leftover
@@ -2831,9 +2803,7 @@ pk_backend_transaction_run (PkBackendJob *job,
 }
 
 static void
-pk_backend_repo_remove_thread (PkBackendJob *job,
-			       GVariant *params,
-			       gpointer user_data)
+pk_backend_repo_remove_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
 	DnfDb *db;
 	DnfRepo *repo;
@@ -2861,27 +2831,25 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	g_autoptr(GPtrArray) repos = NULL;
 	g_auto(GStrv) search = NULL;
 
-	g_variant_get (params, "(t&sb)",
-		       &job_data->transaction_flags,
-		       &repo_id,
-		       &autoremove);
+	g_variant_get (params, "(t&sb)", &job_data->transaction_flags, &repo_id, &autoremove);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
-				   1, /* get the .repo filename for @repo_id */
-				   1, /* find any other repos in the same file */
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
+				   1,  /* get the .repo filename for @repo_id */
+				   1,  /* find any other repos in the same file */
 				   10, /* remove any packages from repos */
-				   3, /* remove repo-releases */
+				   3,  /* remove repo-releases */
 				   85, /* run transaction */
 				   -1);
 	g_assert (ret);
 
 	/* find the repo-release package name for @repo_id */
-	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context), repo_id, &error);
+	repo = dnf_repo_loader_get_repo_by_id (dnf_context_get_repo_loader (job_data->context),
+					       repo_id,
+					       &error);
 	if (repo == NULL) {
-		pk_backend_job_error_code (job,
-					   error->code,
-					   "%s", error->message);
+		pk_backend_job_error_code (job, error->code, "%s", error->message);
 		goto out;
 	}
 	repo_filename = dnf_repo_get_filename (repo);
@@ -2896,8 +2864,9 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	repos = dnf_repo_loader_get_repos (dnf_context_get_repo_loader (job_data->context), &error);
 	if (repos == NULL) {
 		pk_backend_job_error_code (job,
-		                           error->code,
-		                           "failed to load repos: %s", error->message);
+					   error->code,
+					   "failed to load repos: %s",
+					   error->message);
 		goto out;
 	}
 
@@ -2981,8 +2950,7 @@ pk_backend_repo_remove_thread (PkBackendJob *job,
 	for (i = 0; i < pkglist_releases->len; i++) {
 		pkg = g_ptr_array_index (pkglist, i);
 		dnf_db_ensure_origin_pkg (db, pkg);
-		g_debug ("removing %s as installed for repo",
-			 dnf_package_get_name (pkg));
+		g_debug ("removing %s as installed for repo", dnf_package_get_name (pkg));
 		hy_goal_erase (job_data->goal, pkg);
 	}
 
@@ -3080,7 +3048,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
-	g_variant_get (params, "(t^a&sbb)",
+	g_variant_get (params,
+		       "(t^a&sbb)",
 		       &job_data->transaction_flags,
 		       &package_ids,
 		       &allow_deps,
@@ -3090,10 +3059,11 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
-				   3, /* add repos */
-				   1, /* check installed */
-				   1, /* find packages */
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
+				   3,  /* add repos */
+				   1,  /* check installed */
+				   1,  /* find packages */
 				   95, /* run transaction */
 				   -1);
 	g_assert (ret);
@@ -3168,7 +3138,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 		if (autoremove) {
@@ -3194,7 +3165,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 }
 
 void
-pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBackendJob *job,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids,
 			    gboolean allow_deps,
@@ -3227,18 +3199,17 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
-	g_variant_get (params, "(t^a&s)",
-		       &job_data->transaction_flags,
-		       &package_ids);
+	g_variant_get (params, "(t^a&s)", &job_data->transaction_flags, &package_ids);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
-				   3, /* add repos */
-				   1, /* check installed */
-				   1, /* find packages */
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
+				   3,  /* add repos */
+				   1,  /* check installed */
+				   1,  /* find packages */
 				   95, /* run transaction */
 				   -1);
 	g_assert (ret);
@@ -3288,7 +3259,9 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 
 		for (pli = 0; pli < pkglist->len; ++pli) {
 			inst_pkg = g_ptr_array_index (pkglist, pli);
-			ret = dnf_sack_evr_cmp (sack, split[PK_PACKAGE_ID_VERSION], dnf_package_get_evr (inst_pkg));
+			ret = dnf_sack_evr_cmp (sack,
+						split[PK_PACKAGE_ID_VERSION],
+						dnf_package_get_evr (inst_pkg));
 			if (relations[i] == 0 && ret > 0) {
 				relations[i] = HY_GT;
 			} else if (relations[i] != HY_EQ && ret < 0) {
@@ -3304,7 +3277,8 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		if (relations[i] == HY_EQ &&
 		    !pk_bitfield_contain (job_data->transaction_flags,
 					  PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL)) {
-			g_autofree gchar *printable_tmp = pk_package_id_to_printable (package_ids[i]);
+			g_autofree gchar *printable_tmp = pk_package_id_to_printable (
+			    package_ids[i]);
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
 						   "%s is already installed",
@@ -3315,20 +3289,23 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		if (relations[i] == HY_LT &&
 		    !pk_bitfield_contain (job_data->transaction_flags,
 					  PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE)) {
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
-						   "higher version \"%s\" of package %s.%s is already installed",
-						   dnf_package_get_evr (latest), split[PK_PACKAGE_ID_NAME],
-						   split[PK_PACKAGE_ID_ARCH]);
+			pk_backend_job_error_code (
+			    job,
+			    PK_ERROR_ENUM_PACKAGE_ALREADY_INSTALLED,
+			    "higher version \"%s\" of package %s.%s is already installed",
+			    dnf_package_get_evr (latest),
+			    split[PK_PACKAGE_ID_NAME],
+			    split[PK_PACKAGE_ID_ARCH]);
 			return;
 		}
 
 		if (relations[i] && relations[i] != HY_EQ &&
 		    pk_bitfield_contain (job_data->transaction_flags,
 					 PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL)) {
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_NOT_AUTHORIZED,
-						   "missing authorization to update or downgrade software");
+			pk_backend_job_error_code (
+			    job,
+			    PK_ERROR_ENUM_NOT_AUTHORIZED,
+			    "missing authorization to update or downgrade software");
 			return;
 		}
 		g_ptr_array_unref (pkglist);
@@ -3360,7 +3337,8 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 		if (relations[i] == HY_EQ) {
@@ -3385,7 +3363,8 @@ pk_backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointe
 }
 
 void
-pk_backend_install_packages (PkBackend *backend, PkBackendJob *job,
+pk_backend_install_packages (PkBackend *backend,
+			     PkBackendJob *job,
 			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
@@ -3416,19 +3395,18 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(GPtrArray) array = NULL;
 
-	g_variant_get (params, "(t^a&s)",
-		       &job_data->transaction_flags,
-		       &full_paths);
+	g_variant_get (params, "(t^a&s)", &job_data->transaction_flags, &full_paths);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* add repos */
 				   25, /* check installed */
 				   24, /* run transaction */
-				   1, /* emit */
+				   1,  /* emit */
 				   -1);
 
 	/* get sack */
@@ -3497,7 +3475,8 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer u
 }
 
 void
-pk_backend_install_files (PkBackend *backend, PkBackendJob *job,
+pk_backend_install_files (PkBackend *backend,
+			  PkBackendJob *job,
 			  PkBitfield transaction_flags,
 			  gchar **full_paths)
 {
@@ -3527,17 +3506,16 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GHashTable) hash = NULL;
 
-	g_variant_get (params, "(t^a&s)",
-		       &job_data->transaction_flags,
-		       &package_ids);
+	g_variant_get (params, "(t^a&s)", &job_data->transaction_flags, &package_ids);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
-				   9, /* add repos */
-				   1, /* find packages */
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
+				   9,  /* add repos */
+				   1,  /* find packages */
 				   90, /* run transaction */
 				   -1);
 	g_assert (ret);
@@ -3557,7 +3535,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 
 	/* set up the sack for packages that should only ever be installed, never updated */
 	dnf_sack_set_installonly (sack, dnf_context_get_installonly_pkgs (job_data->context));
-	dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context));
+	dnf_sack_set_installonly_limit (sack,
+					dnf_context_get_installonly_limit (job_data->context));
 
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {
@@ -3585,7 +3564,8 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 
@@ -3612,8 +3592,10 @@ pk_backend_update_packages_thread (PkBackendJob *job, GVariant *params, gpointer
 }
 
 void
-pk_backend_update_packages (PkBackend *backend, PkBackendJob *job,
-			    PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend,
+			    PkBackendJob *job,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -3640,10 +3622,7 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	g_autoptr(GError) error = NULL;
 
 	/* get arguments */
-	g_variant_get (params, "(t&su)",
-	               &job_data->transaction_flags,
-	               &release_ver,
-	               NULL);
+	g_variant_get (params, "(t&su)", &job_data->transaction_flags, &release_ver, NULL);
 
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	pk_backend_job_set_percentage (job, 0);
@@ -3664,7 +3643,8 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	}
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   10, /* add repos */
 				   90, /* run transaction */
 				   -1);
@@ -3686,7 +3666,8 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 	/* set up the sack for packages that should only ever be installed, never updated */
 	dnf_sack_set_installonly (sack, dnf_context_get_installonly_pkgs (job_data->context));
 	/* set the installonly limit one higher than usual to avoid removing any kernels during system upgrades */
-	dnf_sack_set_installonly_limit (sack, dnf_context_get_installonly_limit (job_data->context) + 1);
+	dnf_sack_set_installonly_limit (sack,
+					dnf_context_get_installonly_limit (job_data->context) + 1);
 
 	/* done */
 	if (!dnf_state_done (job_data->state, &error)) {
@@ -3715,10 +3696,10 @@ pk_backend_upgrade_system_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 void
 pk_backend_upgrade_system (PkBackend *backend,
-                           PkBackendJob *job,
-                           PkBitfield transaction_flags,
-                           const gchar *distro_id,
-                           PkUpgradeKindEnum upgrade_kind)
+			   PkBackendJob *job,
+			   PkBitfield transaction_flags,
+			   const gchar *distro_id,
+			   PkUpgradeKindEnum upgrade_kind)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -3735,30 +3716,29 @@ pk_backend_upgrade_system (PkBackend *backend,
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-			PK_GROUP_ENUM_COLLECTIONS,
-			PK_GROUP_ENUM_NEWEST,
-			PK_GROUP_ENUM_ADMIN_TOOLS,
-			PK_GROUP_ENUM_DESKTOP_GNOME,
-			PK_GROUP_ENUM_DESKTOP_KDE,
-			PK_GROUP_ENUM_DESKTOP_XFCE,
-			PK_GROUP_ENUM_DESKTOP_OTHER,
-			PK_GROUP_ENUM_EDUCATION,
-			PK_GROUP_ENUM_FONTS,
-			PK_GROUP_ENUM_GAMES,
-			PK_GROUP_ENUM_GRAPHICS,
-			PK_GROUP_ENUM_INTERNET,
-			PK_GROUP_ENUM_LEGACY,
-			PK_GROUP_ENUM_LOCALIZATION,
-			PK_GROUP_ENUM_MULTIMEDIA,
-			PK_GROUP_ENUM_OFFICE,
-			PK_GROUP_ENUM_OTHER,
-			PK_GROUP_ENUM_PROGRAMMING,
-			PK_GROUP_ENUM_PUBLISHING,
-			PK_GROUP_ENUM_SERVERS,
-			PK_GROUP_ENUM_SYSTEM,
-			PK_GROUP_ENUM_VIRTUALIZATION,
-			-1);
+	return pk_bitfield_from_enums (PK_GROUP_ENUM_COLLECTIONS,
+				       PK_GROUP_ENUM_NEWEST,
+				       PK_GROUP_ENUM_ADMIN_TOOLS,
+				       PK_GROUP_ENUM_DESKTOP_GNOME,
+				       PK_GROUP_ENUM_DESKTOP_KDE,
+				       PK_GROUP_ENUM_DESKTOP_XFCE,
+				       PK_GROUP_ENUM_DESKTOP_OTHER,
+				       PK_GROUP_ENUM_EDUCATION,
+				       PK_GROUP_ENUM_FONTS,
+				       PK_GROUP_ENUM_GAMES,
+				       PK_GROUP_ENUM_GRAPHICS,
+				       PK_GROUP_ENUM_INTERNET,
+				       PK_GROUP_ENUM_LEGACY,
+				       PK_GROUP_ENUM_LOCALIZATION,
+				       PK_GROUP_ENUM_MULTIMEDIA,
+				       PK_GROUP_ENUM_OFFICE,
+				       PK_GROUP_ENUM_OTHER,
+				       PK_GROUP_ENUM_PROGRAMMING,
+				       PK_GROUP_ENUM_PUBLISHING,
+				       PK_GROUP_ENUM_SERVERS,
+				       PK_GROUP_ENUM_SYSTEM,
+				       PK_GROUP_ENUM_VIRTUALIZATION,
+				       -1);
 }
 
 static gint
@@ -3784,10 +3764,11 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	g_autoptr(GHashTable) hash = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   90, /* add repos */
-				   5, /* find packages */
-				   5, /* emit files */
+				   5,  /* find packages */
+				   5,  /* emit files */
 				   -1);
 	g_assert (ret);
 
@@ -3830,7 +3811,8 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 		if (pkg == NULL) {
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
-						   "Failed to find %s", package_ids[i]);
+						   "Failed to find %s",
+						   package_ids[i]);
 			return;
 		}
 
@@ -3841,16 +3823,11 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 			files = g_ptr_array_new ();
 			for (j = 0; files_array[j] != NULL; j++)
 				g_ptr_array_add (files, files_array[j]);
-			g_ptr_array_sort (files,
-					  (GCompareFunc) pk_backend_sort_string_cb);
+			g_ptr_array_sort (files, (GCompareFunc) pk_backend_sort_string_cb);
 			g_ptr_array_add (files, NULL);
-			pk_backend_job_files (job,
-					      package_ids[i],
-					      (gchar **) files->pdata);
+			pk_backend_job_files (job, package_ids[i], (gchar **) files->pdata);
 		} else {
-			pk_backend_job_files (job,
-					      package_ids[i],
-					      files_array);
+			pk_backend_job_files (job, package_ids[i], files_array);
 		}
 		g_strfreev (files_array);
 	}
@@ -3863,9 +3840,7 @@ pk_backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_
 }
 
 void
-pk_backend_get_files (PkBackend *backend,
-		      PkBackendJob *job,
-		      gchar **package_ids)
+pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -3899,10 +3874,11 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 	g_autoptr(GPtrArray) update_details_array = NULL;
 
 	/* set state */
-	ret = dnf_state_set_steps (job_data->state, NULL,
+	ret = dnf_state_set_steps (job_data->state,
+				   NULL,
 				   50, /* add repos */
 				   49, /* find packages */
-				   1, /* emit update details */
+				   1,  /* emit update details */
 				   -1);
 	g_assert (ret);
 
@@ -3983,7 +3959,6 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 			default:
 				break;
 			}
-
 		}
 		g_ptr_array_add (vendor_urls, NULL);
 		g_ptr_array_add (bugzilla_urls, NULL);
@@ -3992,18 +3967,30 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 		/* form PkUpdateDetail struct */
 		item = pk_update_detail_new ();
 		g_object_set (item,
-			      "package-id", package_ids[i],
-			      "updates", NULL,
-			      "obsoletes", NULL,
-			      "vendor-urls", (gchar **) vendor_urls->pdata,
-			      "bugzilla-urls", (gchar **) bugzilla_urls->pdata,
-			      "cve-urls", (gchar **) cve_urls->pdata,
-			      "restart", PK_RESTART_ENUM_NONE, /* FIXME */
-			      "update-text", dnf_advisory_get_description (advisory),
-			      "changelog", NULL,
-			      "state", PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
-			      "issued", NULL,
-			      "updated", NULL,
+			      "package-id",
+			      package_ids[i],
+			      "updates",
+			      NULL,
+			      "obsoletes",
+			      NULL,
+			      "vendor-urls",
+			      (gchar **) vendor_urls->pdata,
+			      "bugzilla-urls",
+			      (gchar **) bugzilla_urls->pdata,
+			      "cve-urls",
+			      (gchar **) cve_urls->pdata,
+			      "restart",
+			      PK_RESTART_ENUM_NONE, /* FIXME */
+			      "update-text",
+			      dnf_advisory_get_description (advisory),
+			      "changelog",
+			      NULL,
+			      "state",
+			      PK_UPDATE_STATE_ENUM_STABLE, /* FIXME */
+			      "issued",
+			      NULL,
+			      "updated",
+			      NULL,
 			      NULL);
 		g_ptr_array_add (update_details_array, g_steal_pointer (&item));
 
@@ -4024,9 +4011,7 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpoint
 }
 
 void
-pk_backend_get_update_detail (PkBackend *backend,
-			      PkBackendJob *job,
-			      gchar **package_ids)
+pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;
@@ -4064,8 +4049,7 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 	/* don't do anything when simulating */
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	transaction_flags = pk_backend_job_get_transaction_flags (job);
-	if (pk_bitfield_contain (transaction_flags,
-				 PK_TRANSACTION_FLAG_ENUM_SIMULATE))
+	if (pk_bitfield_contain (transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE))
 		return;
 
 	/* open the directory */
@@ -4073,7 +4057,8 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 	if (dir == NULL) {
 		pk_backend_job_error_code (job,
 					   PK_ERROR_ENUM_INSTALL_ROOT_INVALID,
-					   "%s", error->message);
+					   "%s",
+					   error->message);
 		return;
 	}
 
@@ -4087,16 +4072,15 @@ pk_backend_repair_system_thread (PkBackendJob *job, GVariant *params, gpointer u
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_FILE_CONFLICTS,
 						   "Failed to delete %s: %s",
-						   tmp, error->message);
+						   tmp,
+						   error->message);
 			return;
 		}
 	}
 }
 
 void
-pk_backend_repair_system (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield transaction_flags)
+pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	PkBackendDnfPrivate *priv = pk_backend_get_user_data (backend);
 	g_autoptr(GError) error = NULL;

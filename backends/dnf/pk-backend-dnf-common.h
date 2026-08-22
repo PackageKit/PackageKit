@@ -26,11 +26,12 @@
 
 G_BEGIN_DECLS
 
-gboolean	pk_backend_setup_dnf_context (DnfContext *context,
-					      GKeyFile *conf,
-					      const gchar *release_ver,
-					      GError **error);
-gboolean	dnf_utils_refresh_repo_appstream (DnfRepo *repo, GError **error);
+gboolean pk_backend_setup_dnf_context (DnfContext  *context,
+				       GKeyFile	   *conf,
+				       const gchar *release_ver,
+				       GError	  **error);
+gboolean dnf_utils_refresh_repo_appstream (DnfRepo *repo,
+					   GError **error);
 
 G_END_DECLS
 

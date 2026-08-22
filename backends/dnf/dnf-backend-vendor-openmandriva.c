@@ -28,16 +28,17 @@ dnf_validate_supported_repo (const gchar *id)
 {
 	guint i, j, k, l, m;
 
+	/* clang-format off */
 	const gchar *valid_sourcesect[] = { "",
-					  "-extra",
-					  "-restricted",
-					  "-non-free",
-					  NULL };
+					    "-extra",
+					    "-restricted",
+					    "-non-free",
+					    NULL };
 
 	const gchar *valid_sourcetype[] = { "",
-					  "-debuginfo",
-					  "-source",
-					  NULL };
+					    "-debuginfo",
+					    "-source",
+					    NULL };
 
 	const gchar *valid_arch[] = { "znver1",
 				      "x86_64",
@@ -47,10 +48,10 @@ dnf_validate_supported_repo (const gchar *id)
 				      "riscv64",
 				      NULL };
 
-	const gchar *valid_stage[] = {  "",
-					"-updates",
-					"-testing",
-					NULL };
+	const gchar *valid_stage[] = { "",
+				       "-updates",
+				       "-testing",
+				       NULL };
 
 	const gchar *valid[] = { "openmandriva",
 				 "updates",
@@ -60,6 +61,7 @@ dnf_validate_supported_repo (const gchar *id)
 				 "rock",
 				 "release",
 				 NULL };
+	/* clang-format on */
 
 	/* Iterate over the ID arrays to find a matching identifier */
 	for (i = 0; valid[i] != NULL; i++) {
@@ -67,7 +69,14 @@ dnf_validate_supported_repo (const gchar *id)
 			for (k = 0; valid_arch[k] != NULL; k++) {
 				for (l = 0; valid_sourcesect[l] != NULL; l++) {
 					for (m = 0; valid_sourcetype[m] != NULL; m++) {
-						g_autofree gchar *source_entry = g_strconcat(valid[i], valid_stage[j], "-", valid_arch[k], valid_sourcesect[l], valid_sourcetype[m], NULL);
+						g_autofree gchar *source_entry = g_strconcat (
+						    valid[i],
+						    valid_stage[j],
+						    "-",
+						    valid_arch[k],
+						    valid_sourcesect[l],
+						    valid_sourcetype[m],
+						    NULL);
 						if (g_strcmp0 (id, source_entry) == 0) {
 							return TRUE;
 						}

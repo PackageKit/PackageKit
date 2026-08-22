@@ -26,6 +26,7 @@ MIN_BLACK_VERSION = 26
 # Directories (or single files) to format. Paths are relative to the source root.
 INCLUDE_LOCATIONS = [
     'autoformat.py',
+    'backends',
     'client',
     'contrib',
     'data',
@@ -46,6 +47,17 @@ EXCLUDE_MATCH = [
     '*.gen.h',
     # website example snippet, still written in Python 2, so black cannot parse it
     '*/docs/html/files/session.py',
+    # backends that are opted-out of autoformatting
+    '*/backends/alpm/*',
+    '*/backends/dnf5/*',
+    '*/backends/entropy/*',
+    '*/backends/eopkg/*',
+    '*/backends/freebsd/*',
+    '*/backends/nix/*',
+    '*/backends/pisi/*',
+    '*/backends/poldek/*',
+    '*/backends/portage/*',
+    '*/backends/zypp/*',
 ]
 
 C_LIKE_SUFFIXES = ('.c', '.h', '.cpp', '.hpp', '.cc', '.hh')

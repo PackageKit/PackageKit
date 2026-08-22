@@ -1,4 +1,3 @@
-Language: C
 BasedOnStyle: GNU
 
 IndentWidth: 8
@@ -128,3 +127,22 @@ IndentPPDirectives: None
 
 # keep at most one consecutive empty line
 MaxEmptyLinesToKeep: 1
+
+# C++ fallback.
+#
+# PackageKit is C, but a handful of C++ files (the libdnf5 plugin, for one) sit
+# outside the backends that carry their own style, and clang-format refuses to
+# touch C++ at all unless the configuration admits to supporting it. Note that
+# this is also why there is no `Language:` key above: declaring one makes
+# clang-format resolve `.h` to "Cpp" and look for a Cpp section, so the style
+# would have to be spelled out twice.
+NamespaceIndentation: None
+SpaceAfterTemplateKeyword: false
+AlwaysBreakTemplateDeclarations: true
+AllowShortLambdasOnASingleLine: Empty
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+PackConstructorInitializers: Never
+IndentAccessModifiers: false
+AccessModifierOffset: -8
+EmptyLineBeforeAccessModifier: LogicalBlock

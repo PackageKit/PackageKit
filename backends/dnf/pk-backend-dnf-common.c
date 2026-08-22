@@ -30,10 +30,13 @@
 #include "pk-backend-dnf-common.h"
 
 gboolean
-pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *release_ver, GError **error)
+pk_backend_setup_dnf_context (DnfContext *context,
+			      GKeyFile *conf,
+			      const gchar *release_ver,
+			      GError **error)
 {
-	const gchar * const *repo_dirs;
-	const gchar * const *var_dirs;
+	const gchar *const *repo_dirs;
+	const gchar *const *var_dirs;
 	gboolean keep_cache;
 	g_autofree gchar *cache_dir = NULL;
 	g_autofree gchar *destdir = NULL;
@@ -44,7 +47,11 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 	if (destdir == NULL)
 		destdir = g_strdup ("/");
 	dnf_context_set_install_root (context, destdir);
-	cache_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "metadata", NULL);
+	cache_dir = g_build_filename (destdir,
+				      "/var/cache/PackageKit",
+				      release_ver,
+				      "metadata",
+				      NULL);
 	dnf_context_set_cache_dir (context, cache_dir);
 	solv_dir = g_build_filename (destdir, "/var/cache/PackageKit", release_ver, "hawkey", NULL);
 	dnf_context_set_solv_dir (context, solv_dir);
@@ -56,22 +63,22 @@ pk_backend_setup_dnf_context (DnfContext *context, GKeyFile *conf, const gchar *
 	repo_dirs = dnf_context_get_repos_dir (context);
 	if (repo_dirs != NULL && repo_dirs[0] != NULL) {
 		g_auto(GStrv) full_repo_dirs = NULL;
-		guint len = g_strv_length ((gchar **)repo_dirs);
-		full_repo_dirs = g_new0 (gchar*, len + 1);
+		guint len = g_strv_length ((gchar **) repo_dirs);
+		full_repo_dirs = g_new0 (gchar *, len + 1);
 		for (guint i = 0; i < len; i++)
 			full_repo_dirs[i] = g_build_filename (destdir, repo_dirs[i], NULL);
-		dnf_context_set_repos_dir (context, (const gchar * const*)full_repo_dirs);
+		dnf_context_set_repos_dir (context, (const gchar *const *) full_repo_dirs);
 	}
 
 	/* Add prefix to var directories */
 	var_dirs = dnf_context_get_vars_dir (context);
 	if (var_dirs != NULL && var_dirs[0] != NULL) {
 		g_auto(GStrv) full_var_dirs = NULL;
-		guint len = g_strv_length ((gchar **)var_dirs);
-		full_var_dirs = g_new0 (gchar*, len + 1);
+		guint len = g_strv_length ((gchar **) var_dirs);
+		full_var_dirs = g_new0 (gchar *, len + 1);
 		for (guint i = 0; i < len; i++)
 			full_var_dirs[i] = g_build_filename (destdir, var_dirs[i], NULL);
-		dnf_context_set_vars_dir (context, (const gchar * const*)full_var_dirs);
+		dnf_context_set_vars_dir (context, (const gchar *const *) full_var_dirs);
 	}
 
 	/* use this initial data if repos are not present */
