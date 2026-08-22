@@ -3,7 +3,6 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 ColumnLimit: 120
 PointerAlignment: Right
-AlignAfterOpenBracket: AlwaysBreak
 AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakBeforeMultilineStrings: true
 BreakBeforeBinaryOperators: NonAssignment
@@ -19,6 +18,16 @@ AllowAllArgumentsOnNextLine: false
 
 ---
 Language: C
+
+# Break after the opening bracket rather than aligning under it.
+# These have to be repeated in every language section: clang-format 22
+# and 23 drop this option family when they inherit it from the language-less
+# section above, which silently turns it back into plain alignment.
+AlignAfterOpenBracket: true
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+
 AlwaysBreakAfterReturnType: AllDefinitions
 SpaceBeforeParens: Always
 
@@ -27,7 +36,12 @@ SpaceBeforeParens: Always
 WhitespaceSensitiveMacros: ['g_autoptr', 'g_auto', '_', '__attribute__', 'G_DEFINE_QUARK']
 ---
 Language: Cpp
-Standard: C++11
+Standard: c++20
+
+AlignAfterOpenBracket: true
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
 
 # format C++11 braced lists like function calls
 Cpp11BracedListStyle: true
