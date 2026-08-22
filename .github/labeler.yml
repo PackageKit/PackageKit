@@ -12,6 +12,10 @@ library:
 - changed-files:
   - any-glob-to-any-file: lib/**
 
+backend-api:
+- changed-files:
+  - any-glob-to-any-file: python/**
+
 #
 # Backends
 #
