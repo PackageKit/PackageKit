@@ -68,20 +68,12 @@ SpaceAfterCStyleCast: true
 # Macros clang-format must not touch. Besides the g_auto* cleanup attributes
 # (which take no space before their bracket), this preserves the GObject cast
 # and private-data accessors, which the tree writes without a space.
-#
-# CAVEAT for the gettext macros: listing them keeps the tree's _("x") spelling
-# (441 sites, none with a space), but clang-format then mis-measures them --
-# every argument following the first _() in a call is indented two columns too
-# far, and BinPackArguments stops applying to the rest of the argument list.
-# The affected calls are wrapped in clang-format off/on; watch out for new ones.
 WhitespaceSensitiveMacros: [
     'g_autoptr',
     'g_auto',
     'g_autolist',
     'g_autoslist',
     '_',
-    'N_',
-    'C_',
     '__attribute__',
     'G_DEFINE_QUARK',
     'G_DEFINE_AUTOPTR_CLEANUP_FUNC',

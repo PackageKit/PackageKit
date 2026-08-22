@@ -2667,10 +2667,10 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 		string = g_string_new ("");
 
-		g_string_append (
-		    string,
-		    /* TRANSLATORS: is not GPG signed */
-		    g_dgettext (GETTEXT_PACKAGE, N_("The software is not from a trusted source.")));
+		g_string_append (string,
+				 g_dgettext (GETTEXT_PACKAGE,
+					     /* TRANSLATORS: is not GPG signed */
+					     N_ ("The software is not from a trusted source.")));
 		g_string_append (string, "\n");
 
 		/* UpdatePackages */
@@ -2678,9 +2678,11 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
 			text = g_dngettext (GETTEXT_PACKAGE,
-					    N_("Do not update this package unless you are sure it is safe to do so."),
-					       N_("Do not update these packages unless you are sure it is safe to do so."),
-						  g_strv_length (transaction->cached_package_ids));
+					    N_ ("Do not update this package unless you are sure it "
+						"is safe to do so."),
+					    N_ ("Do not update these packages unless you are sure "
+						"it is safe to do so."),
+					    g_strv_length (transaction->cached_package_ids));
 			g_string_append (string, text);
 		}
 
@@ -2689,9 +2691,11 @@ pk_transaction_authorize_actions (PkTransaction *transaction, PkRoleEnum role, G
 
 			/* TRANSLATORS: user has to trust provider -- I know, this sucks */
 			text = g_dngettext (GETTEXT_PACKAGE,
-					    N_("Do not install this package unless you are sure it is safe to do so."),
-					       N_("Do not install these packages unless you are sure it is safe to do so."),
-						  g_strv_length (transaction->cached_package_ids));
+					    N_ ("Do not install this package unless you are sure "
+						"it is safe to do so."),
+					    N_ ("Do not install these packages unless you are sure "
+						"it is safe to do so."),
+					    g_strv_length (transaction->cached_package_ids));
 			g_string_append (string, text);
 		}
 		if (string->len > 0) {
