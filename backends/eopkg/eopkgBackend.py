@@ -110,9 +110,7 @@ class SimplePisiHandler(pisi.ui.UI):
 
                 if pisi.db.packagedb.PackageDB().has_package(pkg_name):
                     pkg = pisi.db.packagedb.PackageDB().get_package(pkg_name)
-                    self.base.item_progress(
-                        self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, percent
-                    )
+                    self.base.item_progress(self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, percent)
 
         elif operation == "extracting":
             if self.cur_pkg and self.cur_status:
@@ -154,16 +152,12 @@ class SimplePisiHandler(pisi.ui.UI):
 
             self.currentpackage += 1
             self.cur_pkg = keywords["package"]
-            self.cur_status = (
-                STATUS_INSTALL if event == pisi.ui.installing else STATUS_UPDATE
-            )
+            self.cur_status = STATUS_INSTALL if event == pisi.ui.installing else STATUS_UPDATE
             info = INFO_INSTALLING if event == pisi.ui.installing else INFO_UPDATING
 
             self.base.status(self.cur_status)
             self.base._set_status(self.cur_pkg, info)
-            self.base.item_progress(
-                self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0
-            )
+            self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0)
 
         elif event == pisi.ui.removing:
             self.is_downloading = False
@@ -174,9 +168,7 @@ class SimplePisiHandler(pisi.ui.UI):
             self.cur_status = STATUS_REMOVE
             self.base.status(self.cur_status)
             self.base._set_status(self.cur_pkg, INFO_REMOVING)
-            self.base.item_progress(
-                self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0
-            )
+            self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0)
 
         elif event == pisi.ui.extracting:
             self.cur_pkg = keywords.get("package", self.cur_pkg)
@@ -325,9 +317,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """Returns package object suitable for other methods"""
 
         installed = (
-            self.installdb.get_package(package)
-            if self.installdb.has_package(package)
-            else None
+            self.installdb.get_package(package) if self.installdb.has_package(package) else None
         )
         available, repo = (
             self.packagedb.get_package_repo(package)
@@ -358,9 +348,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 if installed and available:
                     # Compare versions/releases
                     v_inst = self.installdb.get_version_and_distro_release(package)
-                    v_avail = self.packagedb.get_version_and_distro_release(
-                        package, repo
-                    )
+                    v_avail = self.packagedb.get_version_and_distro_release(package, repo)
 
                     # (version, release, build, distro, distro_release)
                     # If version is different, we should probably compare versions.
@@ -696,7 +684,9 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 # Note: installed pkgs do not record their repo of origin, assume it's the same for now
                 #       we could cross-examine but it's of little benefit
                 version = self.__get_package_version(current_pkg)
-                updates = self.get_package_id(current_pkg.name, version, current_pkg.architecture, data)
+                updates = self.get_package_id(
+                    current_pkg.name, version, current_pkg.architecture, data
+                )
             else:
                 updates = ""
 
@@ -710,8 +700,8 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             updated_date = pkg.history[0].date
 
-            bugURI = "" # we would have to match against #123 which would be too fragile
-            changelog = "" # we do not have an enforced standard for changelogs in commit msgs
+            bugURI = ""  # we would have to match against #123 which would be too fragile
+            changelog = ""  # we do not have an enforced standard for changelogs in commit msgs
 
             cvelist = re.findall(r"(CVE\-[0-9]+\-[0-9]+)", str(update_message))
             cves = ";".join(cvelist)
@@ -723,9 +713,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             # TODO: Eopkg doesn't provide any time
             split_date = updated_date.split("-")
-            updated = "{}-{}-{}T00:00:00Z".format(
-                split_date[0], split_date[1], split_date[2]
-            )
+            updated = "{}-{}-{}T00:00:00Z".format(split_date[0], split_date[1], split_date[2])
             # Note: updates are always fixed
             issued = updated
 
@@ -832,9 +820,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         except IOError as e:
             self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(
-                ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e, exit=False
-            )
+            self.error(ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e, exit=False)
         except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -849,9 +835,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             package = self.get_package_from_id(package_id)[0]
             if self.installdb.has_package(package):
-                self.error(
-                    ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed"
-                )
+                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed")
             packages.append(package)
 
         if TRANSACTION_FLAG_SIMULATE in transaction_flags:
@@ -864,9 +848,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 dep_pkg = self.packagedb.get_package(dep)
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(
-                    dep_pkg.name, version, dep_pkg.architecture, repo[1]
-                )
+                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
                 self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
             return
 
@@ -884,9 +866,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         except IOError as e:
             self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(
-                ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e, exit=False
-            )
+            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e, exit=False)
         except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -931,9 +911,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                     )
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(
-                    dep_pkg.name, version, dep_pkg.architecture, repo[1]
-                )
+                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
                 self.package(pkg_id, INFO_REMOVE, dep_pkg.summary)
             return
 
@@ -951,9 +929,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         except IOError as e:
             self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(
-                ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e, exit=False
-            )
+            self.error(ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e, exit=False)
         except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 
@@ -992,9 +968,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             except pisi.Error:
                 self.error(ERROR_REPO_NOT_FOUND, "Repository does not exist")
         else:
-            self.error(
-                ERROR_NOT_SUPPORTED, "Valid parameters are add-repo and remove-repo"
-            )
+            self.error(ERROR_NOT_SUPPORTED, "Valid parameters are add-repo and remove-repo")
 
     def resolve(self, filters, values):
         """Turns a single package name into a package_id
@@ -1051,9 +1025,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                         pkgs = self.componentdb.get_packages(item, walk=False)
                         packages.extend(pkgs)
                     except:
-                        self.error(
-                            ERROR_GROUP_NOT_FOUND, "Component %s was not found" % value
-                        )
+                        self.error(ERROR_GROUP_NOT_FOUND, "Component %s was not found" % value)
             for pkg in packages:
                 self.__get_package(pkg, filters)
 
@@ -1097,9 +1069,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 dep_pkg = self.packagedb.get_package(dep)
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(
-                    dep_pkg.name, version, dep_pkg.architecture, repo[1]
-                )
+                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
                 self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
             return
 
@@ -1118,9 +1088,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         except IOError as e:
             self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(
-                ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e, exit=False
-            )
+            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e, exit=False)
         except Exception:
             self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
 

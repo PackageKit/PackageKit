@@ -48,13 +48,7 @@ EXCLUDE_MATCH = [
     # backends that are opted-out of autoformatting
     '*/backends/alpm/*',
     '*/backends/dnf5/*',
-    '*/backends/entropy/*',
-    '*/backends/eopkg/*',
     '*/backends/freebsd/*',
-    '*/backends/nix/*',
-    '*/backends/pisi/*',
-    '*/backends/poldek/*',
-    '*/backends/portage/*',
     '*/backends/zypp/*',
 ]
 

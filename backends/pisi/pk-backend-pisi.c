@@ -61,37 +61,33 @@ pk_backend_destroy (PkBackend *backend)
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_ACCESSORIES,
-		PK_GROUP_ENUM_EDUCATION,
-		PK_GROUP_ENUM_GAMES,
-		PK_GROUP_ENUM_INTERNET,
-		PK_GROUP_ENUM_OTHER,
-		PK_GROUP_ENUM_PROGRAMMING,
-		PK_GROUP_ENUM_MULTIMEDIA,
-		PK_GROUP_ENUM_SYSTEM,
-		PK_GROUP_ENUM_DESKTOP_GNOME,
-		PK_GROUP_ENUM_DESKTOP_KDE,
-		PK_GROUP_ENUM_DESKTOP_OTHER,
-		PK_GROUP_ENUM_PUBLISHING,
-		PK_GROUP_ENUM_SERVERS,
-		PK_GROUP_ENUM_FONTS,
-		PK_GROUP_ENUM_ADMIN_TOOLS,
-		PK_GROUP_ENUM_LOCALIZATION,
-		PK_GROUP_ENUM_VIRTUALIZATION,
-		PK_GROUP_ENUM_SECURITY,
-		PK_GROUP_ENUM_POWER_MANAGEMENT,
-		PK_GROUP_ENUM_UNKNOWN,
-		-1);
+	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSORIES,
+				       PK_GROUP_ENUM_EDUCATION,
+				       PK_GROUP_ENUM_GAMES,
+				       PK_GROUP_ENUM_INTERNET,
+				       PK_GROUP_ENUM_OTHER,
+				       PK_GROUP_ENUM_PROGRAMMING,
+				       PK_GROUP_ENUM_MULTIMEDIA,
+				       PK_GROUP_ENUM_SYSTEM,
+				       PK_GROUP_ENUM_DESKTOP_GNOME,
+				       PK_GROUP_ENUM_DESKTOP_KDE,
+				       PK_GROUP_ENUM_DESKTOP_OTHER,
+				       PK_GROUP_ENUM_PUBLISHING,
+				       PK_GROUP_ENUM_SERVERS,
+				       PK_GROUP_ENUM_FONTS,
+				       PK_GROUP_ENUM_ADMIN_TOOLS,
+				       PK_GROUP_ENUM_LOCALIZATION,
+				       PK_GROUP_ENUM_VIRTUALIZATION,
+				       PK_GROUP_ENUM_SECURITY,
+				       PK_GROUP_ENUM_POWER_MANAGEMENT,
+				       PK_GROUP_ENUM_UNKNOWN,
+				       -1);
 }
 
 PkBitfield
 pk_backend_get_filters (PkBackend *backend)
 {
-	return pk_bitfield_from_enums(
-		PK_FILTER_ENUM_GUI,
-		PK_FILTER_ENUM_INSTALLED,
-		-1);
+	return pk_bitfield_from_enums (PK_FILTER_ENUM_GUI, PK_FILTER_ENUM_INSTALLED, -1);
 }
 
 void
@@ -102,24 +98,44 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 }
 
 void
-pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
+pk_backend_download_packages (PkBackend *backend,
+			      PkBackendJob *job,
+			      gchar **package_ids,
+			      const gchar *directory)
 {
 	gchar *package_ids_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "download-packages", directory, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "download-packages",
+				 directory,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
 }
 
 void
-pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_depends_on (PkBackend *backend,
+		       PkBackendJob *job,
+		       PkBitfield filters,
+		       gchar **package_ids,
+		       gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "depends-on", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "depends-on",
+				 filters_text,
+				 package_ids_temp,
+				 pk_backend_bool_to_string (recursive),
+				 NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -129,7 +145,12 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-details", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "get-details",
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
 }
 
@@ -143,13 +164,24 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 }
 
 void
-pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+pk_backend_required_by (PkBackend *backend,
+			PkBackendJob *job,
+			PkBitfield filters,
+			gchar **package_ids,
+			gboolean recursive)
 {
 	gchar *filters_text;
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
 	filters_text = pk_filter_bitfield_to_string (filters);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "required-by", filters_text, package_ids_temp, pk_backend_bool_to_string (recursive), NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "required-by",
+				 filters_text,
+				 package_ids_temp,
+				 pk_backend_bool_to_string (recursive),
+				 NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -168,45 +200,70 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 {
 	gchar *package_ids_temp;
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "get-update-detail", package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "get-update-detail",
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
 }
 
 void
-pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_install_packages (PkBackend *backend,
+			     PkBackendJob *job,
+			     PkBitfield transaction_flags,
+			     gchar **package_ids)
 {
 	gchar *package_ids_temp;
-    gchar *transaction_flags_temp;
+	gchar *transaction_flags_temp;
 
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NO_NETWORK,
+					   "Cannot install when offline");
 		pk_backend_job_finished (job);
 		return;
 	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "install-packages", transaction_flags_temp, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "install-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
 }
 
 void
-pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
+pk_backend_install_files (PkBackend *backend,
+			  PkBackendJob *job,
+			  PkBitfield transaction_flags,
+			  gchar **full_paths)
 {
 	gchar *package_ids_temp;
-    gchar *transaction_flags_temp;
+	gchar *transaction_flags_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = g_strjoinv (PK_BACKEND_SPAWN_FILENAME_DELIM, full_paths);
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "install-files", transaction_flags_temp, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "install-files",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
 }
 
 void
@@ -214,48 +271,66 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot refresh cache whilst offline");
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NO_NETWORK,
+					   "Cannot refresh cache whilst offline");
 		pk_backend_job_finished (job);
 		return;
 	}
 
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "refresh-cache", pk_backend_bool_to_string (force), NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "refresh-cache",
+				 pk_backend_bool_to_string (force),
+				 NULL);
 }
 
 void
-pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
+pk_backend_remove_packages (PkBackend *backend,
+			    PkBackendJob *job,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids,
 			    gboolean allow_deps,
 			    gboolean autoremove)
 {
 	gchar *package_ids_temp;
-    gchar *transaction_flags_temp;
+	gchar *transaction_flags_temp;
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 	pk_backend_spawn_helper (spawn,
-        job, "pisiBackend.py",
-        "remove-packages",
-        transaction_flags_temp,
-        package_ids_temp,
-        pk_backend_bool_to_string (allow_deps),
-        pk_backend_bool_to_string (autoremove),
-        NULL);
+				 job,
+				 "pisiBackend.py",
+				 "remove-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 pk_backend_bool_to_string (allow_deps),
+				 pk_backend_bool_to_string (autoremove),
+				 NULL);
 
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
 	g_free (package_ids_temp);
 }
 
 void
-pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+pk_backend_search_details (PkBackend *backend,
+			   PkBackendJob *job,
+			   PkBitfield filters,
+			   gchar **values)
 {
 	gchar *filters_text;
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "search-details", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "search-details",
+				 filters_text,
+				 search,
+				 NULL);
 	g_free (search);
 	g_free (filters_text);
 }
@@ -267,7 +342,13 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "search-file", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "search-file",
+				 filters_text,
+				 search,
+				 NULL);
 	g_free (search);
 	g_free (filters_text);
 }
@@ -279,7 +360,13 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "search-group", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "search-group",
+				 filters_text,
+				 search,
+				 NULL);
 	g_free (search);
 	g_free (filters_text);
 }
@@ -291,42 +378,64 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	gchar *search;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	search = g_strjoinv ("&", values);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "search-name", filters_text, search, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "search-name",
+				 filters_text,
+				 search,
+				 NULL);
 	g_free (search);
 	g_free (filters_text);
 }
 
 void
-pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
+pk_backend_update_packages (PkBackend *backend,
+			    PkBackendJob *job,
+			    PkBitfield transaction_flags,
+			    gchar **package_ids)
 {
 	gchar *package_ids_temp;
-    gchar *transaction_flags_temp;
+	gchar *transaction_flags_temp;
 
 	/* check network state */
 	if (!pk_backend_is_online (backend)) {
-		pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install when offline");
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NO_NETWORK,
+					   "Cannot install when offline");
 		pk_backend_job_finished (job);
 		return;
 	}
 
 	/* send the complete list as stdin */
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "update-packages", transaction_flags_temp, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "update-packages",
+				 transaction_flags_temp,
+				 package_ids_temp,
+				 NULL);
 	g_free (package_ids_temp);
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
 }
 
 void
 pk_backend_update_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-    gchar *transaction_flags_temp;
-    transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
+	gchar *transaction_flags_temp;
+	transaction_flags_temp = pk_transaction_flag_bitfield_to_string (transaction_flags);
 
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "update-system", transaction_flags_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "update-system",
+				 transaction_flags_temp,
+				 NULL);
 
-    g_free (transaction_flags_temp);
+	g_free (transaction_flags_temp);
 }
 
 void
@@ -336,7 +445,13 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 	gchar *package_ids_temp;
 	filters_text = pk_filter_bitfield_to_string (filters);
 	package_ids_temp = pk_package_ids_to_string (package_ids);
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "resolve", filters_text, package_ids_temp, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "resolve",
+				 filters_text,
+				 package_ids_temp,
+				 NULL);
 	g_free (filters_text);
 	g_free (package_ids_temp);
 }
@@ -351,9 +466,20 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 }
 
 void
-pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *rid, const gchar *parameter, const gchar *value)
+pk_backend_repo_set_data (PkBackend *backend,
+			  PkBackendJob *job,
+			  const gchar *rid,
+			  const gchar *parameter,
+			  const gchar *value)
 {
-	pk_backend_spawn_helper (spawn, job, "pisiBackend.py", "repo-set-data", rid, parameter, value, NULL);
+	pk_backend_spawn_helper (spawn,
+				 job,
+				 "pisiBackend.py",
+				 "repo-set-data",
+				 rid,
+				 parameter,
+				 value,
+				 NULL);
 }
 
 const gchar *
