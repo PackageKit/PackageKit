@@ -32,9 +32,6 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
 ### FreeBSD
  * Gleb Popov <arrowd@FreeBSD.org> | @arrowd
 
-### Pisi (Pisi Linux)
- * Erkan IŞIK <erkanisik@pisilinux.org> | @erkanisik1
-
 ### Poldek (PLD Linux)
  * Marcin Banasiak <megabajt@pld-linux.org>
 

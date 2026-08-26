@@ -22,10 +22,6 @@ Backend: eopkg
 Backend: freebsd
     Gleb Popov <arrowd@FreeBSD.org>
 
-Backend: pisi
-    Pisilinux Team <admin@pisilinux.org>
-    Erkan IŞIK <erkanisik@pisilinux.org>
-
 Backend: poldek
     Marcin Banasiak <megabajt@pld-linux.org>
 
