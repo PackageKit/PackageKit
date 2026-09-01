@@ -4,8 +4,8 @@ from __future__ import print_function
 from re import compile, DOTALL, MULTILINE
 import sys
 
-enum = compile("static const PkEnumMatch enum_([^\]]+)\[\] = {(.*?)};", DOTALL | MULTILINE)
-value = compile("PK_([A-Z_]+)_ENUM_([A-Z0-9_]+),\s+\"([^\"]+)\"")
+enum = compile(r"static const PkEnumMatch enum_([^\]]+)\[\] = {(.*?)};", DOTALL | MULTILINE)
+value = compile(r"PK_([A-Z_]+)_ENUM_([A-Z0-9_]+),\s+\"([^\"]+)\"")
 
 inp = open(sys.argv[1]).read()
 
