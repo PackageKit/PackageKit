@@ -84,7 +84,7 @@ pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p
 	g_variant_get (params, "(t^a&s)",
 				  &flags,
 				  &full_paths);
-	only_trusted = flags & PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED;
+	only_trusted = pk_bitfield_contain (flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 
 	if (!only_trusted && !pk_alpm_disable_signatures (backend, &error))
 		goto out;
