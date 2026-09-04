@@ -154,7 +154,7 @@ pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 	g_autofree gchar *backend_name = NULL;
 	g_autofree gchar *backend_description = NULL;
 	g_autofree gchar *backend_author = NULL;
-	g_autofree gchar *roles_str;
+	g_autofree gchar *roles_str = NULL;
 	PkBitfield roles = 0;
 
 	/* parse options */

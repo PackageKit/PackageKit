@@ -311,15 +311,15 @@ bool AptCacheFile::isRemovingEssentialPackages()
                 continue;
 
             pkgCache::PkgIterator P = D.SmartTargetPkg();
+            if (P.end() || P.Name() == nullptr)
+                continue;
             if (!(*this)[P].Delete())
                 continue;
             if (Added[P->ID])
                 continue;
             Added[P->ID] = true;
 
-            char S[300];
-            snprintf(S, sizeof(S), "%s (due to %s) ", P.Name(), I.Name());
-            List += S;
+            List += std::string(P.Name()) + " (due to " + I.Name() + ") ";
         }
     }
 

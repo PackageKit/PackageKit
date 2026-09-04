@@ -246,7 +246,8 @@ static gboolean
 pk_progress_bar_pulse_bar (PkProgressBar *self)
 {
 	PkProgressBarPrivate *priv = GET_PRIVATE(self);
-	g_autoptr(GString) str = NULL;
+	GString *str = NULL;
+	g_autofree gchar *line = NULL;
 	guint available;
 	guint bar_width;
 	guint text_width;
@@ -293,10 +294,8 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 		display_text = pk_console_strpad (truncated, text_width);
 		g_string_append (str, display_text);
 	} else {
-		gsize old_len = str->len;
-		g_string_set_size (str, old_len + text_width);
-		memset (str->str + old_len, ' ', text_width);
-		str->str[str->len] = '\0';
+		for (guint i = 0; i < text_width; i++)
+			g_string_append_c (str, ' ');
 	}
 
 	g_string_append (str, " [");
@@ -329,7 +328,8 @@ pk_progress_bar_pulse_bar (PkProgressBar *self)
 		g_string_append (str, "     ");
 	}
 
-	pk_progress_bar_console (self, str->str);
+	line = g_string_free_and_steal (str);
+	pk_progress_bar_console (self, line);
 
 	return TRUE;
 }
