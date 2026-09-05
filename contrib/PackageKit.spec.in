@@ -179,8 +179,7 @@ using PackageKit.
 %meson \
         -Dgtk_doc=true \
         -Dlegacy_tools=true \
-        -Dpackaging_backend=dnf,dnf5 \
-        -Dlocal_checkout=false
+        -Dpackaging_backend=dnf,dnf5
 
 %build
 %meson_build

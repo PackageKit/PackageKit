@@ -345,25 +345,36 @@ pk_util_get_config_filename (void)
 {
 	gchar *path;
 
-#if PK_BUILD_LOCAL
-	/* try a local path first */
-	path = g_build_filename ("..", "data", "config", "PackageKit.conf", NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS))
-		goto out;
-	g_debug ("local config file not found '%s'", path);
-	g_free (path);
-#endif
-	/* check the prefix path */
 	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
 	if (g_file_test (path, G_FILE_TEST_EXISTS))
-		goto out;
+		return path;
 
-	/* none found! */
 	g_warning ("config file not found '%s'", path);
 	g_free (path);
-	path = NULL;
-out:
-	return path;
+	return NULL;
+}
+
+/**
+ * pk_util_get_backend_dir:
+ * @conf: the daemon configuration
+ *
+ * Returns the directory backend modules are loaded from: the "BackendDir"
+ * override from the configuration if present (used to run from a build
+ * tree), otherwise the installed module directory.
+ *
+ * Returns: (transfer full): the directory path
+ */
+gchar *
+pk_util_get_backend_dir (GKeyFile *conf)
+{
+	gchar *dir;
+
+	dir = g_key_file_get_string (conf, "Daemon", "BackendDir", NULL);
+	if (dir != NULL && dir[0] != '\0')
+		return dir;
+	g_free (dir);
+
+	return g_build_filename (LIBDIR, "packagekit-backend", NULL);
 }
 
 static gint
@@ -379,8 +390,10 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 	gchar *name_tmp;
 	g_autoptr(GDir) dir = NULL;
 	g_autoptr(GPtrArray) array = NULL;
+	g_autofree gchar *backend_dir = NULL;
 
-	dir = g_dir_open (LIBDIR "/packagekit-backend", 0, error);
+	backend_dir = pk_util_get_backend_dir (conf);
+	dir = g_dir_open (backend_dir, 0, error);
 	if (dir == NULL)
 		return FALSE;
 	array = g_ptr_array_new_with_free_func (g_free);

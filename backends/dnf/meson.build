@@ -50,7 +50,7 @@ install_data(
   install_dir: get_option('sysconfdir') / 'dnf/libdnf5-plugins/'
 )
 
-shared_module(
+pk_backend_modules += shared_module(
   'pk_backend_dnf',
   'dnf-backend-vendor-@0@.c'.format(get_option('dnf_vendor')),
   'dnf-backend-vendor.h',

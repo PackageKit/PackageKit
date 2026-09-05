@@ -1,4 +1,4 @@
-pk_backend_dummy = shared_module(
+pk_backend_modules += shared_module(
   'pk_backend_dummy',
   'pk-backend-dummy.c',
   include_directories: packagekit_src_include,

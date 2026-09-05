@@ -37,11 +37,6 @@ option('packagekit_user',
     value : 'root',
     description : 'User for running the PackageKit daemon'
 )
-option('local_checkout',
-    type : 'boolean',
-    value : false,
-    description : 'Allow running in local checkout'
-)
 option('daemon_tests',
     type : 'boolean',
     value : true,

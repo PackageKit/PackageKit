@@ -379,29 +379,14 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
 	g_autofree gchar *filename = NULL;
-#if PK_BUILD_LOCAL
-	const gchar *directory;
-#endif
+	g_autofree gchar *backend_dir = NULL;
+
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", name);
-#if PK_BUILD_LOCAL
-	/* test_spawn, test_dbus, test_fail, etc. are in the 'test' folder */
-	directory = name;
-	if (g_str_has_prefix (name, "test_"))
-		directory = "test";
-
-	/* prefer the local version */
-	path = g_build_filename ("backends", directory, filename, NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS) == FALSE) {
-		g_debug ("local backend not found '%s'", path);
-		g_free (path);
-		path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
-	}
-#else
-	path = g_build_filename (LIBDIR, "packagekit-backend", filename, NULL);
-#endif
+	backend_dir = pk_util_get_backend_dir (backend->conf);
+	path = g_build_filename (backend_dir, filename, NULL);
 	g_debug ("dlopening '%s'", path);
 
 	return path;

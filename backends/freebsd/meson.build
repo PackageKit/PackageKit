@@ -6,7 +6,7 @@ c_args = [
     '-DG_LOG_DOMAIN="PackageKit-FreeBSD"',
   ]
 
-shared_module(
+pk_backend_modules += shared_module(
   'pk_backend_freebsd',
   sources: [
     'pk-backend-freebsd.cpp'

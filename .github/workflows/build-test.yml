@@ -80,7 +80,6 @@ jobs:
 
           echo "::group::Building"
           meson --auto-features=enabled -Db_colorout=never --buildtype=debug \
-                -Dlocal_checkout=true \
                 -Dlocalstatedir=/var \
                 -Dsystemd=false \
                 -Doffline_update=false \

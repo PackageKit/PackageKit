@@ -189,7 +189,21 @@ def main():
     parser = argparse.ArgumentParser(description='Run the PackageKit daemon test.')
     parser.add_argument('--daemon', required=True, help='path to the packagekitd binary')
     parser.add_argument('--test', required=True, help='path to the pk-test-e2e binary')
+    parser.add_argument(
+        '--config',
+        help='PackageKit.conf to pass to the daemon (defaults to the one generated '
+        'in the build tree, which points at the backend modules built there)',
+    )
     args = parser.parse_args()
+
+    # The daemon knows nothing about the build tree, so hand it the generated
+    # configuration that points at the backend modules built there.
+    config_file = args.config
+    if not config_file:
+        build_root = os.environ.get('MESON_BUILD_ROOT')
+        if not build_root:
+            build_root = os.path.dirname(os.path.dirname(os.path.abspath(args.daemon)))
+        config_file = os.path.join(build_root, 'tests', 'PackageKit.conf')
 
     reasons = check_prerequisites()
     if reasons:
@@ -207,12 +221,6 @@ def main():
             '{!r} on the system bus.'.format(PK_BUS_NAME)
         )
         return EXIT_SKIP
-
-    # The local backend loader (PK_BUILD_LOCAL) resolves the backend module
-    # relative to the build tree root, so launch the daemon from there.
-    build_root = os.environ.get('MESON_BUILD_ROOT')
-    if not build_root:
-        build_root = os.path.dirname(os.path.dirname(os.path.abspath(args.daemon)))
 
     daemon = None
     bus_proc = None
@@ -237,10 +245,18 @@ def main():
         bus_proc, bus_tmpdir = start_system_bus_if_needed(daemon_log)
         polkitd_proc = start_polkitd_if_needed(daemon_log)
 
+        daemon_cmd = [
+            args.daemon,
+            '--verbose',
+            '--disable-timer',
+            '--keep-environment',
+            '--backend=dummy',
+            '--config=' + config_file,
+        ]
+
         print('Launching {} with the dummy backend...'.format(args.daemon))
         daemon = subprocess.Popen(
-            [args.daemon, '--verbose', '--disable-timer', '--keep-environment', '--backend=dummy'],
-            cwd=build_root,
+            daemon_cmd,
             stdout=daemon_log,
             stderr=subprocess.STDOUT,
         )

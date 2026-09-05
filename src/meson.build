@@ -54,7 +54,6 @@ packagekit_direct_exec = executable(
   c_args: [
     '-DG_LOG_DOMAIN="PackageKit"',
     '-DLIBDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libdir'))),
-    '-DSYSCONFDIR="@0@"'.format(get_option('sysconfdir')),
     '-DVERSION="@0@"'.format(meson.project_version()),
     '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
     '-DPACKAGE_LOCALE_DIR="@0@"'.format(package_locale_dir),

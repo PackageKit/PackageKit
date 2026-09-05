@@ -1,4 +1,14 @@
 
+# Configuration for running the daemon and the tests from the build tree
+pk_test_conf_data = configuration_data()
+pk_test_conf_data.set('BACKEND_DIR', join_paths(build_root, 'backends'))
+pk_test_conf = configure_file(
+    input: 'data/PackageKit.conf.in',
+    output: 'PackageKit.conf',
+    configuration: pk_test_conf_data,
+)
+pk_test_conf_file = join_paths(meson.current_build_dir(), 'PackageKit.conf')
+
 pk_test_lib_exe = executable(
     'pk-test-library',
     'pk-test-library.c',
@@ -54,6 +64,7 @@ pk_test_daemon_priv_exe = executable(
         '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
         '-DLOCALSTATEDIR="@0@"'.format(local_state_dir),
         '-DSOURCEROOTDIR="@0@"'.format(source_root),
+        '-DPK_TEST_CONF_FILE="@0@"'.format(pk_test_conf_file),
     ]
 )
 
@@ -90,6 +101,7 @@ if get_option('daemon_tests')
         depends: [
             packagekit_test_py,
             pk_test_daemon_priv_exe,
+            pk_backend_module_links,
         ],
         env: [
             'PYTHONPATH=@0@'.format(join_paths(build_root, 'python')),
@@ -104,11 +116,12 @@ if get_option('daemon_tests')
         args: [
           '--daemon', packagekitd_exec,
           '--test', pk_test_e2e_exe,
+          '--config', pk_test_conf_file,
         ],
         depends: [
             packagekitd_exec,
             pk_test_e2e_exe,
-            pk_backend_dummy
+            pk_backend_module_links,
         ],
         suite: 'e2e',
         is_parallel: false,

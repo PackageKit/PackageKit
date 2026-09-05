@@ -7,7 +7,6 @@ fi
 set -x
 
 meson setup build \
-    -Dlocal_checkout=true \
     $@
 
 DUMMY_DESTDIR=/tmp/install-root/
@@ -24,7 +23,6 @@ if [ -d "build" ]; then
 fi
 
 meson setup build \
-    -Dlocal_checkout=true \
     $@
 
 DUMMY_ORIG_DESTDIR=/tmp/install-root-orig

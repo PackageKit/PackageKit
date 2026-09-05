@@ -1,4 +1,4 @@
-shared_module(
+pk_backend_modules += shared_module(
   'pk_backend_entropy',
   'pk-backend-entropy.c',
   include_directories: packagekit_src_include,

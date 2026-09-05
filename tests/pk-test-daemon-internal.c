@@ -42,6 +42,24 @@
 	"Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image " \
 	"editor.\thttps://www.gimp.org/\t"
 
+/**
+ * pk_test_conf_new:
+ *
+ * Loads the configuration generated for running from the build tree, which
+ * points the backend loader at the modules built here.
+ */
+static GKeyFile *
+pk_test_conf_new (void)
+{
+	GKeyFile *conf = g_key_file_new ();
+	g_autoptr(GError) error = NULL;
+
+	g_key_file_load_from_file (conf, PK_TEST_CONF_FILE, G_KEY_FILE_NONE, &error);
+	g_assert_no_error (error);
+
+	return conf;
+}
+
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
 static guint _test_loop_timeout_id = 0;
@@ -163,7 +181,7 @@ pk_test_backend_func (void)
 	g_autoptr(PkBackendJob) job = NULL;
 
 	/* get an backend */
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	backend = pk_backend_new (conf);
 	g_assert_true (backend != NULL);
 
@@ -341,7 +359,7 @@ pk_test_backend_spawn_func (void)
 	g_autoptr(GError) error = NULL;
 
 	/* get an backend_spawn */
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_spawn");
 	backend_spawn = pk_backend_spawn_new (conf);
 	g_assert_true (backend_spawn != NULL);
@@ -573,7 +591,7 @@ new_spawn_object (PkSpawn **pspawn)
 	g_autoptr(GKeyFile) conf = NULL;
 	if (*pspawn != NULL)
 		g_object_unref (*pspawn);
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	*pspawn = pk_spawn_new (conf);
 	g_signal_connect (*pspawn, "exit", G_CALLBACK (pk_test_exit_cb), NULL);
 	g_signal_connect (*pspawn, "stdout", G_CALLBACK (pk_test_stdout_cb), NULL);
@@ -785,7 +803,7 @@ pk_test_transaction_func (void)
 	g_assert_true (introspection != NULL);
 
 	/* get PkTransaction object */
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	transaction = pk_transaction_new (conf, introspection);
 	g_assert_true (transaction != NULL);
 
@@ -817,14 +835,12 @@ pk_test_transaction_db_func (void)
 	g_autofree gchar *proxy_ftp = NULL;
 
 	/* remove the self check file */
-#if PK_BUILD_LOCAL
 	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* remove old local database */
 		value = g_unlink ("./transactions.db");
 		g_assert_true (value == 0);
 	}
-#endif
 	/* check we created quickly */
 	g_test_timer_start ();
 	db = pk_transaction_db_new ();
@@ -988,7 +1004,6 @@ pk_test_scheduler_func (void)
 	g_autoptr(PkScheduler) tlist = NULL;
 
 	/* remove the self check file */
-#if PK_BUILD_LOCAL
 	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
 	if (ret) {
 		/* remove old local database */
@@ -996,7 +1011,6 @@ pk_test_scheduler_func (void)
 		size = g_unlink ("./transactions.db");
 		g_assert_true (size == 0);
 	}
-#endif
 
 	db = pk_transaction_db_new ();
 	ret = pk_transaction_db_load (db, &error);
@@ -1004,7 +1018,7 @@ pk_test_scheduler_func (void)
 	g_assert_true (ret);
 
 	/* try to load a valid backend */
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	backend = pk_backend_new (conf);
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
@@ -1308,7 +1322,7 @@ pk_test_scheduler_parallel_func (void)
 	g_assert_true (ret);
 
 	/* try to load a valid backend */
-	conf = g_key_file_new ();
+	conf = pk_test_conf_new ();
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	backend = pk_backend_new (conf);
@@ -1502,10 +1516,6 @@ int
 main (int argc, char **argv)
 {
 	g_test_init (&argc, &argv, NULL);
-
-#ifndef PK_BUILD_LOCAL
-	g_warning ("you need to compile with -Dlocal_checkout=true for ninja test support");
-#endif
 
 	/* components */
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);

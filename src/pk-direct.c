@@ -409,6 +409,9 @@ main (int argc, char *argv[])
 		{ "backend", '\0', 0, G_OPTION_ARG_STRING, &backend_name,
 		  /* TRANSLATORS: a backend is the system package tool, e.g. dnf, apt */
 		  _("Packaging backend to use, e.g. dummy"), NULL },
+		{ "config", '\0', 0, G_OPTION_ARG_FILENAME, &conf_filename,
+		  /* TRANSLATORS: path to an alternative configuration file, used for testing */
+		  _("Use this configuration file instead of the default"), N_("FILE") },
 		G_OPTION_ENTRY_NULL
 	};
 	/* clang-format on */
@@ -485,7 +488,13 @@ main (int argc, char *argv[])
 
 	/* get values from the config file */
 	conf = g_key_file_new ();
-	conf_filename = pk_util_get_config_filename ();
+	if (conf_filename == NULL)
+		conf_filename = pk_util_get_config_filename ();
+	if (conf_filename == NULL) {
+		g_print ("%s\n", _("Config file was not found."));
+		retval = EXIT_FAILURE;
+		goto out;
+	}
 	ret = g_key_file_load_from_file (conf, conf_filename, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		/* TRANSLATORS: probably not yet installed */

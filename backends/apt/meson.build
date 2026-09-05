@@ -87,7 +87,7 @@ packagekit_backend_apt_dep = declare_dependency(
     ],
 )
 
-packagekit_backend_apt_module = shared_module(
+pk_backend_modules += shared_module(
   'pk_backend_apt',
   'pk-backend-apt.cpp',
   include_directories: packagekit_src_include,

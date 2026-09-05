@@ -9,7 +9,6 @@ set -x
 meson setup build \
     --buildtype=debugoptimized \
     -Dmaintainer=true \
-    -Dlocal_checkout=true \
     -Dlegacy_tools=true \
     -Ddaemon_tests=true \
     $@

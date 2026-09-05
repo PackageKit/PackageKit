@@ -55,9 +55,6 @@ if get_option('elogind')
   add_project_arguments ('-DHAVE_SYSTEMD_SD_JOURNAL_H=1', language: 'c')
 endif
 
-if get_option('local_checkout')
-  add_project_arguments ('-DPK_BUILD_LOCAL=1', language: 'c')
-endif
 
 # ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
 feature_args = [
@@ -78,7 +75,7 @@ add_project_arguments ('-DPK_COMPILATION', language: ['c', 'cpp'])
 conf = configuration_data()
 conf.set_quoted('DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
 conf.set_quoted('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
-conf.set_quoted('SYSCONFDIR', get_option('sysconfdir'))
+conf.set_quoted('SYSCONFDIR', join_paths(get_option('prefix'), get_option('sysconfdir')))
 
 conf.set_quoted('PROJECT_NAME', meson.project_name())
 conf.set_quoted('PROJECT_VERSION', meson.project_version())

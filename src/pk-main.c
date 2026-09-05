@@ -134,6 +134,9 @@ main (int argc, char *argv[])
 		{ "keep-environment", '\0', 0, G_OPTION_ARG_NONE, &keep_environment,
 		  /* TRANSLATORS: don't unset environment variables, used for debugging */
 		  _("Don't clear environment on startup"), NULL },
+		{ "config", '\0', 0, G_OPTION_ARG_FILENAME, &conf_filename,
+		  /* TRANSLATORS: path to an alternative configuration file, used for testing */
+		  _("Use this configuration file instead of the default"), N_("FILE") },
 		G_OPTION_ENTRY_NULL
 	};
 	/* clang-format on */
@@ -174,7 +177,8 @@ main (int argc, char *argv[])
 
 	/* get values from the config file */
 	conf = g_key_file_new ();
-	conf_filename = pk_util_get_config_filename ();
+	if (conf_filename == NULL)
+		conf_filename = pk_util_get_config_filename ();
 	if (conf_filename == NULL) {
 		g_printerr ("%s\n", _("Config file was not found."));
 		goto out;
