@@ -22,13 +22,14 @@
 #include <vector>
 #include <string>
 
-bool dnf5_validate_supported_repo(const std::string &id)
+bool
+dnf5_validate_supported_repo(const std::string &id)
 {
-	const std::vector<std::string> valid_sourcesect = { "", "-core", "-nonfree", "-tainted" };
-	const std::vector<std::string> valid_sourcetype = { "", "-debuginfo", "-source" };
-	const std::vector<std::string> valid_arch = { "x86_64", "i586", "armv7hl", "aarch64" };
-	const std::vector<std::string> valid_stage = { "", "-updates", "-testing" };
-	const std::vector<std::string> valid = { "mageia", "updates", "testing", "cauldron" };
+	const std::vector<std::string> valid_sourcesect = {"", "-core", "-nonfree", "-tainted"};
+	const std::vector<std::string> valid_sourcetype = {"", "-debuginfo", "-source"};
+	const std::vector<std::string> valid_arch = {"x86_64", "i586", "armv7hl", "aarch64"};
+	const std::vector<std::string> valid_stage = {"", "-updates", "-testing"};
+	const std::vector<std::string> valid = {"mageia", "updates", "testing", "cauldron"};
 
 	for (const auto &v : valid) {
 		for (const auto &s : valid_stage) {

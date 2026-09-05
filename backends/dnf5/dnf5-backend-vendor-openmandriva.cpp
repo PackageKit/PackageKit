@@ -22,13 +22,15 @@
 #include <vector>
 #include <string>
 
-bool dnf5_validate_supported_repo(const std::string &id)
+bool
+dnf5_validate_supported_repo(const std::string &id)
 {
-	const std::vector<std::string> valid_sourcesect = { "", "-extra", "-restricted", "-non-free" };
-	const std::vector<std::string> valid_sourcetype = { "", "-debuginfo", "-source" };
-	const std::vector<std::string> valid_arch = { "znver1", "x86_64", "i686", "aarch64", "armv7hnl", "riscv64" };
-	const std::vector<std::string> valid_stage = { "", "-updates", "-testing" };
-	const std::vector<std::string> valid = { "openmandriva", "updates", "testing", "cooker", "rolling", "rock", "release" };
+	const std::vector<std::string> valid_sourcesect = {"", "-extra", "-restricted", "-non-free"};
+	const std::vector<std::string> valid_sourcetype = {"", "-debuginfo", "-source"};
+	const std::vector<std::string> valid_arch = {"znver1", "x86_64", "i686", "aarch64", "armv7hnl", "riscv64"};
+	const std::vector<std::string> valid_stage = {"", "-updates", "-testing"};
+	const std::vector<std::string> valid =
+		{"openmandriva", "updates", "testing", "cooker", "rolling", "rock", "release"};
 
 	for (const auto &v : valid) {
 		for (const auto &s : valid_stage) {

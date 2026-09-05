@@ -22,12 +22,13 @@
 #include <vector>
 #include <string>
 
-bool dnf5_validate_supported_repo(const std::string &id)
+bool
+dnf5_validate_supported_repo(const std::string &id)
 {
-	const std::vector<std::string> valid_sourcesect = { "-oss", "-non-oss" };
-	const std::vector<std::string> valid_sourcetype = { "", "-debuginfo", "-source" };
-	const std::vector<std::string> valid_sourcechan = { "", "-update" };
-	const std::vector<std::string> valid = { "opensuse-tumbleweed", "opensuse-leap" };
+	const std::vector<std::string> valid_sourcesect = {"-oss", "-non-oss"};
+	const std::vector<std::string> valid_sourcetype = {"", "-debuginfo", "-source"};
+	const std::vector<std::string> valid_sourcechan = {"", "-update"};
+	const std::vector<std::string> valid = {"opensuse-tumbleweed", "opensuse-leap"};
 
 	for (const auto &v : valid) {
 		for (const auto &sec : valid_sourcesect) {

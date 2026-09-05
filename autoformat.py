@@ -47,7 +47,6 @@ EXCLUDE_MATCH = [
     '*.gen.h',
     # backends that are opted-out of autoformatting
     '*/backends/alpm/*',
-    '*/backends/dnf5/*',
     '*/backends/freebsd/*',
     '*/backends/zypp/*',
 ]

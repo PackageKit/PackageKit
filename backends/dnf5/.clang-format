@@ -1,0 +1,120 @@
+---
+BasedOnStyle: LLVM
+ColumnLimit: 120
+PointerAlignment: Right
+AllowAllParametersOfDeclarationOnNextLine: false
+AlwaysBreakBeforeMultilineStrings: true
+BreakBeforeBinaryOperators: NonAssignment
+AlignArrayOfStructures: Left
+BreakBeforeBraces: Linux
+
+IndentWidth: 8
+TabWidth: 8
+UseTab: Always
+ContinuationIndentWidth: 8
+
+# never sort includes, only regroup (in rare cases)
+IncludeBlocks: Regroup
+SortIncludes: Never
+
+# Allow arguments to be on their own lines
+AllowAllArgumentsOnNextLine: false
+
+---
+Language: C
+
+# Break after the opening bracket rather than aligning under it.
+# These have to be repeated in every language section: clang-format 22
+# and 23 drop this option family when they inherit it from the language-less
+# section above, which silently turns it back into plain alignment.
+AlignAfterOpenBracket: true
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+
+AlwaysBreakAfterReturnType: AllDefinitions
+SpaceBeforeParens: Always
+
+WhitespaceSensitiveMacros: [
+    'g_autoptr',
+    'g_auto',
+    'g_autolist',
+    'g_autoslist',
+    '_',
+    '__attribute__',
+    'G_DEFINE_QUARK',
+    'G_DEFINE_AUTOPTR_CLEANUP_FUNC',
+    'G_GNUC_PRINTF'
+]
+
+---
+Language: Cpp
+Standard: c++20
+
+BreakBeforeBraces: Linux
+AlignAfterOpenBracket: true
+BreakAfterOpenBracketBracedList: true
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+
+# format C++11 braced lists like function calls
+Cpp11BracedListStyle: true
+
+# do not put a space before C++11 braced lists
+SpaceBeforeCpp11BracedList: false
+
+# no namespace indentation to keep indent level low
+NamespaceIndentation: None
+
+# we use template< without space.
+SpaceAfterTemplateKeyword: false
+
+# Always break after template declaration
+AlwaysBreakTemplateDeclarations: true
+
+# keep lambda formatting multi-line if not empty
+AllowShortLambdasOnASingleLine: Empty
+
+# sometimes break after the return type
+AlwaysBreakAfterReturnType: TopLevelDefinitions
+
+# Break constructor initializers before the colon and after the commas,
+# and never put the all in one line.
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+PackConstructorInitializers: Never
+
+# Place ternary operators after line breaks
+BreakBeforeTernaryOperators: true
+
+# No own indentation level for access modifiers
+IndentAccessModifiers: false
+AccessModifierOffset: -4
+
+# Add empty line only when access modifier starts a new logical block.
+EmptyLineBeforeAccessModifier: LogicalBlock
+
+# Only merge empty functions.
+AllowShortFunctionsOnASingleLine: Empty
+
+# Don't indent case labels.
+IndentCaseLabels: false
+
+# Space after C-style cast
+SpaceAfterCStyleCast: true
+
+# Never pack arguments or parameters
+BinPackArguments: false
+BinPackParameters: false
+
+# Avoid breaking around an assignment operator
+PenaltyBreakAssignment: 150
+
+# Left-align newline escapes, e.g. in macros
+AlignEscapedNewlines: Left
+
+# Enums should be one entry per line
+AllowShortEnumsOnASingleLine: false
+
+# we want consecutive macros to be aligned
+AlignConsecutiveMacros: true

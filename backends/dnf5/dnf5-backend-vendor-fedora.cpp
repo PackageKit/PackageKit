@@ -23,13 +23,16 @@
 #include <string>
 #include <algorithm>
 
-bool dnf5_validate_supported_repo(const std::string &id)
+bool
+dnf5_validate_supported_repo(const std::string &id)
 {
+	/* clang-format off */
 	const std::vector<std::string> default_repos = {
 		"fedora",
 		"rawhide",
 		"updates"
 	};
+	/* clang-format on */
 
 	return std::find(default_repos.begin(), default_repos.end(), id) != default_repos.end();
 }

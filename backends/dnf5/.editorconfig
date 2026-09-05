@@ -1,0 +1,5 @@
+# See https://editorconfig.org/
+
+[*.{h,cpp}]
+indent_style = tab
+indent_size = 8
