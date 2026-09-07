@@ -36,6 +36,11 @@
  *
  * Sets the action to be done after the offline action has been performed.
  *
+ * %PK_OFFLINE_ACTION_UNSET is not a valid action here: removing the trigger is
+ * a cancellation, so use pk_offline_auth_cancel() for that. Setting it here
+ * used to cancel silently, which made changing the action a way to disarm a
+ * pending update.
+ *
  * Return value: %TRUE for success, else %FALSE and @error set
  *
  * Since: 0.9.6
@@ -48,16 +53,14 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	if (action == PK_OFFLINE_ACTION_UNKNOWN) {
+	if (action == PK_OFFLINE_ACTION_UNKNOWN || action == PK_OFFLINE_ACTION_UNSET) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_INVALID_VALUE,
-			     "Failed to set unknown %i",
+			     "Failed to set invalid action %i",
 			     action);
 		return FALSE;
 	}
-	if (action == PK_OFFLINE_ACTION_UNSET)
-		return pk_offline_auth_cancel (error);
 
 	action_str = pk_offline_action_to_string (action);
 	if (action_str == NULL) {

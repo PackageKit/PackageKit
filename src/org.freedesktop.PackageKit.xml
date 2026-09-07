@@ -679,6 +679,12 @@
           <doc:para>
             Triggers the offline update for next boot.
           </doc:para>
+          <doc:para>
+            If the update is already triggered, only the action is changed,
+            which requires no authorization. If a system upgrade is triggered
+            instead, it is replaced by the update, which requires the same
+            authorization as triggering a system upgrade.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="action" direction="in">
@@ -700,6 +706,11 @@
           <doc:para>
             Triggers the offline system upgrade for next boot.
           </doc:para>
+          <doc:para>
+            If the system upgrade is already triggered, only the action is
+            changed, which requires no authorization. If an offline update is
+            triggered instead, it is replaced by the system upgrade.
+          </doc:para>
         </doc:description>
       </doc:doc>
       <arg type="s" name="action" direction="in">
@@ -720,6 +731,10 @@
         <doc:description>
           <doc:para>
             Cancels the offline update so the next boot procceeds as normal.
+          </doc:para>
+          <doc:para>
+            Removing a triggered system upgrade requires the same
+            authorization as triggering it did.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -748,4 +763,3 @@
   </interface>
 
 </node>
-

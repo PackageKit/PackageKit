@@ -130,9 +130,9 @@ pk_test_offline_func (void)
 {
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *data = NULL;
 	g_autoptr(PkClient) client = NULL;
 	g_auto(GStrv) package_ids = NULL;
+	g_auto(GStrv) prepared_ids = NULL;
 
 	/* set up an offline update */
 	client = pk_client_new ();
@@ -151,10 +151,22 @@ pk_test_offline_func (void)
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* check prepared contents */
-	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &data, NULL, &error);
+	prepared_ids = pk_offline_get_prepared_ids (&error);
 	g_assert_no_error (error);
-	g_assert (ret);
-	g_assert_cmpstr (data, ==, "powertop;1.8-1.fc8;i386;fedora");
+	g_assert_nonnull (prepared_ids);
+	g_assert_cmpuint (g_strv_length (prepared_ids), ==, 1);
+	g_assert_cmpstr (prepared_ids[0], ==, "powertop;1.8-1.fc8;i386;fedora");
+
+	/* "unset" is not a way to arm (or later disarm) the trigger */
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_UNSET,
+					     PK_OFFLINE_FLAGS_INTERACTIVE,
+					     NULL,
+					     &error);
+	g_assert_nonnull (error);
+	g_assert_nonnull (strstr (error->message, "use Cancel"));
+	g_assert (!ret);
+	g_clear_error (&error);
+	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* trigger */
 	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_REBOOT,
@@ -167,14 +179,49 @@ pk_test_offline_func (void)
 	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_REBOOT);
 
-	/* cancel the trigger */
+	/* changing the action of an armed trigger needs no authorization */
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_POWER_OFF,
+					     PK_OFFLINE_FLAGS_NONE,
+					     NULL,
+					     &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_POWER_OFF);
+
+	/* "unset" is not a way to disarm the trigger either */
+	ret = pk_offline_trigger_with_flags (PK_OFFLINE_ACTION_UNSET,
+					     PK_OFFLINE_FLAGS_INTERACTIVE,
+					     NULL,
+					     &error);
+	g_assert_nonnull (error);
+	g_assert_nonnull (strstr (error->message, "use Cancel"));
+	g_assert (!ret);
+	g_clear_error (&error);
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_POWER_OFF);
+
+	/* replacing the update with a system upgrade needs upgrade authorization
+	 * and a prepared upgrade; whichever is missing, the update stays armed */
+	ret = pk_offline_trigger_upgrade_with_flags (PK_OFFLINE_ACTION_REBOOT,
+						     PK_OFFLINE_FLAGS_NONE,
+						     NULL,
+						     &error);
+	g_assert_nonnull (error);
+	g_assert (!ret);
+	g_clear_error (&error);
+	g_assert (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_cmpint (pk_offline_get_action (NULL), ==, PK_OFFLINE_ACTION_POWER_OFF);
+
+	/* cancel the trigger, which also drops the action */
 	ret = pk_offline_cancel_with_flags (PK_OFFLINE_FLAGS_INTERACTIVE, NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 
 	/* ensure a cache update kills the prepared update file */
@@ -182,7 +229,7 @@ pk_test_offline_func (void)
 	_g_test_loop_run_with_timeout (25000);
 	g_assert (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
 	g_assert (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
 }
 
@@ -1663,8 +1710,7 @@ main (int argc, char **argv)
 	g_setenv ("PK_TEST_DATA_DIR", TESTDATADIR, TRUE);
 
 	/* tests go here */
-	if (0)
-		g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
+	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
 	g_test_add_func ("/packagekit-glib2/control", pk_test_control_func);
 	g_test_add_func ("/packagekit-glib2/transaction-list", pk_test_transaction_list_func);
 	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);

@@ -60,6 +60,12 @@ static void pk_engine_set_locked (PkEngine *engine, gboolean is_locked);
 /* how long to wait after the computer has been resumed or any system event */
 #define PK_ENGINE_STATE_CHANGED_TIMEOUT_NORMAL 600 /* s */
 
+/* polkit actions guarding the offline update machinery */
+#define PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPDATE "org.freedesktop.packagekit.trigger-offline-update"
+#define PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPGRADE \
+	"org.freedesktop.packagekit.trigger-offline-upgrade"
+#define PK_POLKIT_ACTION_CLEAR_OFFLINE_UPDATE "org.freedesktop.packagekit.clear-offline-update"
+
 struct _PkEngine
 {
 	GObject parent;
@@ -1537,6 +1543,7 @@ typedef struct
 	PkEngine *engine;
 	PkEngineOfflineRole role;
 	PkOfflineAction action;
+	const gchar *action_id; /* polkit action being authorized */
 } PkEngineOfflineAsyncHelper;
 
 static void
@@ -1545,6 +1552,32 @@ pk_engine_offline_helper_free (PkEngineOfflineAsyncHelper *helper)
 	g_object_unref (helper->engine);
 	g_object_unref (helper->invocation);
 	g_free (helper);
+}
+
+/*
+ * Returns the polkit action a caller needs for @role, given the trigger that
+ * is currently armed. Removing or replacing an armed system upgrade has to
+ * cost as much as arming it did, otherwise an administrator-authorized
+ * upgrade could be thrown away by anyone allowed to trigger a plain offline
+ * update.
+ */
+static const gchar *
+pk_engine_offline_get_action_id_for_role (PkEngineOfflineRole role)
+{
+	switch (role) {
+	case PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS:
+		return PK_POLKIT_ACTION_CLEAR_OFFLINE_UPDATE;
+	case PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE:
+		return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPGRADE;
+	case PK_ENGINE_OFFLINE_ROLE_CANCEL:
+	case PK_ENGINE_OFFLINE_ROLE_TRIGGER:
+		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME))
+			return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPGRADE;
+		return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPDATE;
+	default:
+		g_assert_not_reached ();
+	}
+	return NULL;
 }
 
 static void
@@ -1581,6 +1614,20 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 						       PK_ENGINE_ERROR,
 						       PK_ENGINE_ERROR_DENIED,
 						       "failed to obtain auth");
+		pk_engine_offline_helper_free (helper);
+		return;
+	}
+
+	/* the trigger may have been changed by someone else while polkit was
+	 * being asked, so make sure the authorization we got still covers
+	 * what we are about to do */
+	if (g_strcmp0 (pk_engine_offline_get_action_id_for_role (helper->role),
+		       helper->action_id) != 0) {
+		g_dbus_method_invocation_return_error (
+		    helper->invocation,
+		    PK_ENGINE_ERROR,
+		    PK_ENGINE_ERROR_DENIED,
+		    "the offline trigger changed while waiting for authorization");
 		pk_engine_offline_helper_free (helper);
 		return;
 	}
@@ -1665,10 +1712,11 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CANCEL;
 		helper->invocation = g_object_ref (invocation);
+		helper->action_id = pk_engine_offline_get_action_id_for_role (helper->role);
 		polkit_authority_check_authorization (
 		    engine->authority,
 		    subject,
-		    "org.freedesktop.packagekit.trigger-offline-update",
+		    helper->action_id,
 		    NULL,
 		    get_polkit_flags_for_dbus_invocation (invocation),
 		    NULL,
@@ -1681,10 +1729,11 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 		helper->engine = g_object_ref (engine);
 		helper->role = PK_ENGINE_OFFLINE_ROLE_CLEAR_RESULTS;
 		helper->invocation = g_object_ref (invocation);
+		helper->action_id = pk_engine_offline_get_action_id_for_role (helper->role);
 		polkit_authority_check_authorization (
 		    engine->authority,
 		    subject,
-		    "org.freedesktop.packagekit.clear-offline-update",
+		    helper->action_id,
 		    NULL,
 		    get_polkit_flags_for_dbus_invocation (invocation),
 		    NULL,
@@ -1692,8 +1741,12 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 		    helper);
 		return;
 	}
-	if (g_strcmp0 (method_name, "Trigger") == 0) {
+	if (g_strcmp0 (method_name, "Trigger") == 0 ||
+	    g_strcmp0 (method_name, "TriggerUpgrade") == 0) {
 		const gchar *tmp;
+		gboolean is_upgrade = g_strcmp0 (method_name, "TriggerUpgrade") == 0;
+		PkEngineOfflineRole role = is_upgrade ? PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE
+						      : PK_ENGINE_OFFLINE_ROLE_TRIGGER;
 		PkOfflineAction action;
 		g_variant_get (parameters, "(&s)", &tmp);
 		action = pk_offline_action_from_string (tmp);
@@ -1705,62 +1758,45 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 							       tmp);
 			return;
 		}
-		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_FILENAME)) {
-			/* already triggered, just update the action without authentication */
-			if (pk_offline_auth_set_action (action, &error))
-				g_dbus_method_invocation_return_value (invocation, NULL);
-			else
+		if (action == PK_OFFLINE_ACTION_UNSET) {
+			/* removing the trigger is a cancellation and must not
+			 * be reachable through a mere action change */
+			g_dbus_method_invocation_return_error (
+			    invocation,
+			    PK_ENGINE_ERROR,
+			    PK_ENGINE_ERROR_NOT_SUPPORTED,
+			    "action %s unsupported, use Cancel to remove the trigger",
+			    tmp);
+			return;
+		}
+
+		/* already triggered: only the post-update action changes,
+		 * which needs no authorization */
+		if (pk_engine_offline_is_triggered (is_upgrade
+							? PK_OFFLINE_PREPARED_UPGRADE_FILENAME
+							: PK_OFFLINE_PREPARED_FILENAME)) {
+			if (!pk_offline_auth_set_action (action, &error)) {
 				g_dbus_method_invocation_return_gerror (invocation, error);
+				return;
+			}
+			pk_engine_emit_offline_property_changed (
+			    engine,
+			    "TriggerAction",
+			    g_variant_new_string (pk_offline_action_to_string (action)));
+			g_dbus_method_invocation_return_value (invocation, NULL);
 			return;
 		}
 
 		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
 		helper->engine = g_object_ref (engine);
-		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER;
 		helper->invocation = g_object_ref (invocation);
 		helper->action = action;
+		helper->role = role;
+		helper->action_id = pk_engine_offline_get_action_id_for_role (role);
 		polkit_authority_check_authorization (
 		    engine->authority,
 		    subject,
-		    "org.freedesktop.packagekit.trigger-offline-update",
-		    NULL,
-		    get_polkit_flags_for_dbus_invocation (invocation),
-		    NULL,
-		    pk_engine_offline_helper_cb,
-		    helper);
-		return;
-	}
-	if (g_strcmp0 (method_name, "TriggerUpgrade") == 0) {
-		const gchar *tmp;
-		PkOfflineAction action;
-		g_variant_get (parameters, "(&s)", &tmp);
-		action = pk_offline_action_from_string (tmp);
-		if (action == PK_OFFLINE_ACTION_UNKNOWN) {
-			g_dbus_method_invocation_return_error (invocation,
-							       PK_ENGINE_ERROR,
-							       PK_ENGINE_ERROR_NOT_SUPPORTED,
-							       "action %s unsupported",
-							       tmp);
-			return;
-		}
-		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME)) {
-			/* already triggered, just update the action without authentication */
-			if (pk_offline_auth_set_action (action, &error))
-				g_dbus_method_invocation_return_value (invocation, NULL);
-			else
-				g_dbus_method_invocation_return_gerror (invocation, error);
-			return;
-		}
-
-		helper = g_new0 (PkEngineOfflineAsyncHelper, 1);
-		helper->engine = g_object_ref (engine);
-		helper->role = PK_ENGINE_OFFLINE_ROLE_TRIGGER_UPGRADE;
-		helper->invocation = g_object_ref (invocation);
-		helper->action = action;
-		polkit_authority_check_authorization (
-		    engine->authority,
-		    subject,
-		    "org.freedesktop.packagekit.trigger-offline-upgrade",
+		    helper->action_id,
 		    NULL,
 		    get_polkit_flags_for_dbus_invocation (invocation),
 		    NULL,
