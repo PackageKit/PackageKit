@@ -1,7 +1,26 @@
 
+# A fake root directory the daemon and the tests treat as "/" when run from
+# the build tree: backend modules are linked into the installed module
+# location below it, and all state the daemon writes ends up below it, so a
+# test run never touches the host system.
+pk_test_root_dir = join_paths(meson.current_build_dir(), '_test-root')
+pk_test_root = custom_target(
+    'test-root',
+    input: pk_backend_modules,
+    output: 'test-root.stamp',
+    command: [
+        find_program('runner/setup-test-root.py'),
+        '--root', pk_test_root_dir,
+        '--backend-dir', join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend'),
+        '--stamp', '@OUTPUT@',
+        '@INPUT@',
+    ],
+    build_by_default: true,
+)
+
 # Configuration for running the daemon and the tests from the build tree
 pk_test_conf_data = configuration_data()
-pk_test_conf_data.set('BACKEND_DIR', join_paths(build_root, 'backends'))
+pk_test_conf_data.set('ROOT_DIR', pk_test_root_dir)
 pk_test_conf = configure_file(
     input: 'data/PackageKit.conf.in',
     output: 'PackageKit.conf',
@@ -26,7 +45,6 @@ pk_test_lib_exe = executable(
     c_args: [
         '-DPK_COMPILATION=1',
         '-DG_LOG_DOMAIN="PackageKit"',
-        '-DPK_OFFLINE_DESTDIR="/tmp/PackageKit-self-test"',
         '-DTESTDATADIR="@0@"'.format(test_data_dir),
     ],
     build_by_default: true,
@@ -56,7 +74,7 @@ pk_test_daemon_priv_exe = executable(
     include_directories: [packagekit_src_include],
     c_args: [
         '-DPK_BUILD_DAEMON=1',
-        '-DPK_DB_DIR="."',
+        '-DPK_DB_DIR="@0@"'.format(pk_db_dir),
         '-DLIBDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libdir'))),
         '-DDATADIR="@0@"'.format(join_paths(get_option('prefix'), get_option('datadir'))),
         '-DLIBEXECDIR="@0@"'.format(join_paths(get_option('prefix'), get_option('libexecdir'))),
@@ -83,6 +101,7 @@ pk_test_e2e_exe = executable(
         '-DPK_COMPILATION=1',
         '-DG_LOG_DOMAIN="PackageKit"',
         '-DTESTDATADIR="@0@"'.format(test_data_dir),
+        '-DPK_TEST_CONF_FILE="@0@"'.format(pk_test_conf_file),
     ],
     build_by_default: true,
     install: false,
@@ -101,7 +120,7 @@ if get_option('daemon_tests')
         depends: [
             packagekit_test_py,
             pk_test_daemon_priv_exe,
-            pk_backend_module_links,
+            pk_test_root,
         ],
         env: [
             'PYTHONPATH=@0@'.format(join_paths(build_root, 'python')),
@@ -121,7 +140,7 @@ if get_option('daemon_tests')
         depends: [
             packagekitd_exec,
             pk_test_e2e_exe,
-            pk_backend_module_links,
+            pk_test_root,
         ],
         suite: 'e2e',
         is_parallel: false,

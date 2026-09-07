@@ -43,9 +43,7 @@ pk_backend_setup_dnf_context (DnfContext *context,
 	g_autofree gchar *lock_dir = NULL;
 	g_autofree gchar *solv_dir = NULL;
 
-	destdir = g_key_file_get_string (conf, "Daemon", "DestDir", NULL);
-	if (destdir == NULL)
-		destdir = g_strdup ("/");
+	destdir = pk_util_get_root_dir (conf);
 	dnf_context_set_install_root (context, destdir);
 	cache_dir = g_build_filename (destdir,
 				      "/var/cache/PackageKit",

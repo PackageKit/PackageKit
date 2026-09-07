@@ -36,6 +36,8 @@
 #include <systemd/sd-daemon.h>
 #endif
 
+#include <pk-offline-private.h>
+
 #include "pk-engine.h"
 #include "pk-shared.h"
 #include "pk-transaction.h"
@@ -109,6 +111,7 @@ main (int argc, char *argv[])
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *backend_name = NULL;
 	g_autofree gchar *conf_filename = NULL;
+	g_autofree gchar *root_dir = NULL;
 	g_autoptr(GKeyFile) conf = NULL;
 	g_autoptr(PkEngine) engine = NULL;
 
@@ -192,6 +195,12 @@ main (int argc, char *argv[])
 		goto out;
 	}
 	g_key_file_set_boolean (conf, "Daemon", "KeepEnvironment", keep_environment);
+
+	/* the offline update state is kept below the configured root directory */
+	root_dir = pk_util_get_root_dir (conf);
+	pk_offline_set_root_dir (root_dir);
+	if (g_strcmp0 (root_dir, "/") != 0)
+		g_debug ("using %s as root directory", root_dir);
 
 	/* log the startup */
 	syslog (LOG_DAEMON | LOG_DEBUG, "daemon start");

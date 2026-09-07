@@ -355,26 +355,26 @@ pk_util_get_config_filename (void)
 }
 
 /**
- * pk_util_get_backend_dir:
+ * pk_util_get_root_dir:
  * @conf: the daemon configuration
  *
- * Returns the directory backend modules are loaded from: the "BackendDir"
- * override from the configuration if present (used to run from a build
- * tree), otherwise the installed module directory.
+ * Returns the directory the daemon treats as "/": the "RootDir" override
+ * from the configuration if present (used to run from a build tree without
+ * touching the state of the host system), otherwise the real root.
  *
  * Returns: (transfer full): the directory path
  */
 gchar *
-pk_util_get_backend_dir (GKeyFile *conf)
+pk_util_get_root_dir (GKeyFile *conf)
 {
 	gchar *dir;
 
-	dir = g_key_file_get_string (conf, "Daemon", "BackendDir", NULL);
+	dir = g_key_file_get_string (conf, "Daemon", "RootDir", NULL);
 	if (dir != NULL && dir[0] != '\0')
 		return dir;
 	g_free (dir);
 
-	return g_build_filename (LIBDIR, "packagekit-backend", NULL);
+	return g_strdup ("/");
 }
 
 static gint
@@ -390,9 +390,11 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 	gchar *name_tmp;
 	g_autoptr(GDir) dir = NULL;
 	g_autoptr(GPtrArray) array = NULL;
+	g_autofree gchar *root_dir = NULL;
 	g_autofree gchar *backend_dir = NULL;
 
-	backend_dir = pk_util_get_backend_dir (conf);
+	root_dir = pk_util_get_root_dir (conf);
+	backend_dir = g_build_filename (root_dir, LIBDIR, "packagekit-backend", NULL);
 	dir = g_dir_open (backend_dir, 0, error);
 	if (dir == NULL)
 		return FALSE;

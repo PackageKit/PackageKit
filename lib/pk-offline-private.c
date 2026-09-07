@@ -71,7 +71,10 @@ pk_offline_auth_set_action (PkOfflineAction action, GError **error)
 			     action);
 		return FALSE;
 	}
-	if (!g_file_set_contents (PK_OFFLINE_ACTION_FILENAME, action_str, -1, &error_local)) {
+	if (!g_file_set_contents (pk_offline_get_action_filename (),
+				  action_str,
+				  -1,
+				  &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
@@ -102,7 +105,7 @@ pk_offline_auth_cancel (GError **error)
 
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
-	file1 = g_file_new_for_path (PK_OFFLINE_TRIGGER_FILENAME);
+	file1 = g_file_new_for_path (pk_offline_get_trigger_filename ());
 	if (!g_file_query_exists (file1, NULL))
 		return TRUE;
 	if (!g_file_delete (file1, NULL, &error_local)) {
@@ -110,18 +113,18 @@ pk_offline_auth_cancel (GError **error)
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Cannot delete %s: %s",
-			     PK_OFFLINE_TRIGGER_FILENAME,
+			     pk_offline_get_trigger_filename (),
 			     error_local->message);
 		return FALSE;
 	}
 
-	file2 = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
+	file2 = g_file_new_for_path (pk_offline_get_action_filename ());
 	if (g_file_query_exists (file2, NULL) && !g_file_delete (file2, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Cannot delete %s: %s",
-			     PK_OFFLINE_ACTION_FILENAME,
+			     pk_offline_get_action_filename (),
 			     error_local->message);
 		return FALSE;
 	}
@@ -150,16 +153,16 @@ pk_offline_auth_clear_results (GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* not existing is success */
-	if (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS))
+	if (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS))
 		return TRUE;
 
-	file = g_file_new_for_path (PK_OFFLINE_RESULTS_FILENAME);
+	file = g_file_new_for_path (pk_offline_get_results_filename ());
 	if (!g_file_delete (file, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Cannot delete %s: %s",
-			     PK_OFFLINE_RESULTS_FILENAME,
+			     pk_offline_get_results_filename (),
 			     error_local->message);
 		return FALSE;
 	}
@@ -192,25 +195,25 @@ pk_offline_auth_invalidate (GError **error)
 		return FALSE;
 
 	/* delete the prepared file */
-	file1 = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
+	file1 = g_file_new_for_path (pk_offline_get_prepared_filename ());
 	if (g_file_query_exists (file1, NULL) && !g_file_delete (file1, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Cannot delete %s: %s",
-			     PK_OFFLINE_PREPARED_FILENAME,
+			     pk_offline_get_prepared_filename (),
 			     error_local->message);
 		return FALSE;
 	}
 
 	/* delete the prepared system upgrade file */
-	file2 = g_file_new_for_path (PK_OFFLINE_PREPARED_UPGRADE_FILENAME);
+	file2 = g_file_new_for_path (pk_offline_get_prepared_upgrade_filename ());
 	if (g_file_query_exists (file2, NULL) && !g_file_delete (file2, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Cannot delete %s: %s",
-			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			     pk_offline_get_prepared_upgrade_filename (),
 			     error_local->message);
 		return FALSE;
 	}
@@ -246,10 +249,10 @@ pk_offline_auth_trigger_prepared_file (PkOfflineAction action,
 		return FALSE;
 
 	/* delete any existing triggers we might have */
-	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
+	g_unlink (pk_offline_get_trigger_filename ());
 
 	/* create symlink for the systemd-system-update-generator */
-	rc = symlink (prepared_file, PK_OFFLINE_TRIGGER_FILENAME);
+	rc = symlink (prepared_file, pk_offline_get_trigger_filename ());
 	if (rc < 0) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
@@ -276,7 +279,9 @@ pk_offline_auth_trigger_prepared_file (PkOfflineAction action,
 gboolean
 pk_offline_auth_trigger (PkOfflineAction action, GError **error)
 {
-	return pk_offline_auth_trigger_prepared_file (action, PK_OFFLINE_PREPARED_FILENAME, error);
+	return pk_offline_auth_trigger_prepared_file (action,
+						      pk_offline_get_prepared_filename (),
+						      error);
 }
 
 /*
@@ -295,7 +300,7 @@ gboolean
 pk_offline_auth_trigger_upgrade (PkOfflineAction action, GError **error)
 {
 	return pk_offline_auth_trigger_prepared_file (action,
-						      PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+						      pk_offline_get_prepared_upgrade_filename (),
 						      error);
 }
 
@@ -324,7 +329,7 @@ pk_offline_auth_set_prepared_ids (gchar **package_ids, GError **error)
 				    "prepared_ids",
 				    (const gchar **) package_ids,
 				    g_strv_length (package_ids));
-	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_FILENAME, error);
+	return g_key_file_save_to_file (keyfile, pk_offline_get_prepared_filename (), error);
 }
 
 /*
@@ -349,7 +354,9 @@ pk_offline_auth_set_prepared_upgrade (const gchar *name, const gchar *release_ve
 	keyfile = g_key_file_new ();
 	g_key_file_set_string (keyfile, "update", "name", name);
 	g_key_file_set_string (keyfile, "update", "releasever", release_ver);
-	return g_key_file_save_to_file (keyfile, PK_OFFLINE_PREPARED_UPGRADE_FILENAME, error);
+	return g_key_file_save_to_file (keyfile,
+					pk_offline_get_prepared_upgrade_filename (),
+					error);
 }
 
 /*
@@ -374,7 +381,7 @@ pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **err
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	/* does exist? */
-	if (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
+	if (!g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_NO_DATA,
@@ -383,7 +390,7 @@ pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **err
 	}
 
 	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+	if (!g_file_get_contents (pk_offline_get_prepared_upgrade_filename (),
 				  &data,
 				  NULL,
 				  &error_local)) {
@@ -391,7 +398,7 @@ pk_offline_get_prepared_upgrade (gchar **name, gchar **release_ver, GError **err
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Failed to read %s: %s",
-			     PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			     pk_offline_get_prepared_upgrade_filename (),
 			     error_local->message);
 		return FALSE;
 	}
@@ -506,7 +513,7 @@ pk_offline_auth_set_results (PkResults *results, GError **error)
 			     error_local->message);
 		return FALSE;
 	}
-	if (!g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, data, -1, &error_local)) {
+	if (!g_file_set_contents (pk_offline_get_results_filename (), data, -1, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,

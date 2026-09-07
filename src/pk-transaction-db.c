@@ -56,6 +56,7 @@ struct _PkTransactionDb
 	sqlite3 *db;
 	guint job_count;
 	guint database_save_id;
+	gchar *filename;
 };
 
 G_DEFINE_TYPE (PkTransactionDb, pk_transaction_db, G_TYPE_OBJECT)
@@ -920,9 +921,9 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	if (tdb->loaded)
 		return TRUE;
 
-	g_debug ("trying to open database '%s'", PK_DB_DIR "/transactions.db");
-	pk_transaction_db_ensure_file_directory (PK_DB_DIR "/transactions.db");
-	rc = sqlite3_open (PK_DB_DIR "/transactions.db", &tdb->db);
+	g_debug ("trying to open database '%s'", tdb->filename);
+	pk_transaction_db_ensure_file_directory (tdb->filename);
+	rc = sqlite3_open (tdb->filename, &tdb->db);
 	if (rc != SQLITE_OK) {
 		g_set_error (error,
 			     1,
@@ -1011,7 +1012,7 @@ pk_transaction_db_load (PkTransactionDb *tdb, GError **error)
 	}
 
 	/* try to set correct permissions */
-	g_chmod (PK_DB_DIR "/transactions.db", 0644);
+	g_chmod (tdb->filename, 0644);
 
 	/* success */
 	tdb->loaded = TRUE;
@@ -1038,14 +1039,42 @@ pk_transaction_db_finalize (GObject *object)
 
 	/* close the database */
 	sqlite3_close (tdb->db);
+	g_free (tdb->filename);
 
 	G_OBJECT_CLASS (pk_transaction_db_parent_class)->finalize (object);
 }
 
+/**
+ * pk_transaction_db_get_filename:
+ * @tdb: a #PkTransactionDb
+ *
+ * Returns: the path of the database file, which is only created once the
+ * database has been loaded
+ */
+const gchar *
+pk_transaction_db_get_filename (PkTransactionDb *tdb)
+{
+	g_return_val_if_fail (PK_IS_TRANSACTION_DB (tdb), NULL);
+	return tdb->filename;
+}
+
+/**
+ * pk_transaction_db_new:
+ * @conf: the daemon configuration
+ *
+ * Creates a transaction database object; the database file lives in the
+ * state directory below the configured root directory.
+ */
 PkTransactionDb *
-pk_transaction_db_new (void)
+pk_transaction_db_new (GKeyFile *conf)
 {
 	PkTransactionDb *tdb;
+	g_autofree gchar *root_dir = NULL;
+
+	g_return_val_if_fail (conf != NULL, NULL);
+
 	tdb = g_object_new (PK_TYPE_TRANSACTION_DB, NULL);
+	root_dir = pk_util_get_root_dir (conf);
+	tdb->filename = g_build_filename (root_dir, PK_DB_DIR, "transactions.db", NULL);
 	return PK_TRANSACTION_DB (tdb);
 }

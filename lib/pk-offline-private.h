@@ -36,25 +36,21 @@
 
 G_BEGIN_DECLS
 
-/* this allows us to override for the self tests */
-#ifndef PK_OFFLINE_DESTDIR
-#define PK_OFFLINE_DESTDIR ""
-#endif
+/* the state files below live under the root directory set with
+ * pk_offline_set_root_dir(), which is "/" unless the daemon or the self tests
+ * point it somewhere else */
+void	     pk_offline_set_root_dir (const gchar *root_dir);
 
 /* the state file for regular offline update */
-#define PK_OFFLINE_PREPARED_FILENAME PK_OFFLINE_DESTDIR "/var/lib/PackageKit/prepared-update"
+const gchar *pk_offline_get_prepared_filename (void);
 /* the state file for offline system upgrade */
-#define PK_OFFLINE_PREPARED_UPGRADE_FILENAME \
-	PK_OFFLINE_DESTDIR "/var/lib/PackageKit/prepared-upgrade"
-
+const gchar *pk_offline_get_prepared_upgrade_filename (void);
 /* the trigger file that systemd uses to start a different boot target */
-#define PK_OFFLINE_TRIGGER_FILENAME PK_OFFLINE_DESTDIR "/system-update"
-
+const gchar *pk_offline_get_trigger_filename (void);
 /* the keyfile describing the outcome of the latest offline update */
-#define PK_OFFLINE_RESULTS_FILENAME PK_OFFLINE_DESTDIR "/var/lib/PackageKit/offline-update-competed"
-
+const gchar *pk_offline_get_results_filename (void);
 /* the action to take when the offline update has completed, e.g. restart */
-#define PK_OFFLINE_ACTION_FILENAME PK_OFFLINE_DESTDIR "/var/lib/PackageKit/offline-update-action"
+const gchar *pk_offline_get_action_filename (void);
 
 /* the group name for the offline updates results keyfile */
 #define PK_OFFLINE_RESULTS_GROUP "PackageKit Offline Update Results"

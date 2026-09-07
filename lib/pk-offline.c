@@ -47,6 +47,136 @@
  **/
 G_DEFINE_QUARK (pk-offline-error-quark, pk_offline_error)
 
+typedef enum {
+	PK_OFFLINE_FILE_PREPARED,
+	PK_OFFLINE_FILE_PREPARED_UPGRADE,
+	PK_OFFLINE_FILE_TRIGGER,
+	PK_OFFLINE_FILE_RESULTS,
+	PK_OFFLINE_FILE_ACTION,
+	PK_OFFLINE_FILE_LAST
+} PkOfflineFile;
+
+/* the state files, relative to the root directory; the trigger has to be at
+ * the top level as that is where systemd's system-update-generator looks */
+/* clang-format off */
+static const gchar *pk_offline_file_paths[PK_OFFLINE_FILE_LAST] = {
+	[PK_OFFLINE_FILE_PREPARED]	   = "/var/lib/PackageKit/prepared-update",
+	[PK_OFFLINE_FILE_PREPARED_UPGRADE] = "/var/lib/PackageKit/prepared-upgrade",
+	[PK_OFFLINE_FILE_TRIGGER]	   = "/system-update",
+	[PK_OFFLINE_FILE_RESULTS]	   = "/var/lib/PackageKit/offline-update-competed",
+	[PK_OFFLINE_FILE_ACTION]	   = "/var/lib/PackageKit/offline-update-action",
+};
+/* clang-format on */
+
+G_LOCK_DEFINE_STATIC (pk_offline_root);
+static gchar *pk_offline_root_dir = NULL;
+static gchar *pk_offline_filenames[PK_OFFLINE_FILE_LAST] = { NULL };
+
+/* must be called with the lock held */
+static void
+pk_offline_build_filenames_locked (const gchar *root_dir)
+{
+	g_free (pk_offline_root_dir);
+	pk_offline_root_dir = g_strdup (root_dir);
+	for (guint i = 0; i < PK_OFFLINE_FILE_LAST; i++) {
+		g_free (pk_offline_filenames[i]);
+		pk_offline_filenames[i] = g_build_filename (root_dir,
+							    pk_offline_file_paths[i],
+							    NULL);
+	}
+}
+
+/*
+ * pk_offline_set_root_dir:
+ * @root_dir: the directory to treat as "/", or %NULL for the real root
+ *
+ * Sets the directory the offline update state files are looked up in. The
+ * daemon uses this to honor its RootDir configuration and the self tests use
+ * it to keep the system state untouched.
+ *
+ * Call this before any other pk_offline function: the strings returned by the
+ * filename getters stay valid only until the root directory is changed again.
+ **/
+void
+pk_offline_set_root_dir (const gchar *root_dir)
+{
+	G_LOCK (pk_offline_root);
+	pk_offline_build_filenames_locked (root_dir != NULL && root_dir[0] != '\0' ? root_dir
+										   : "/");
+	G_UNLOCK (pk_offline_root);
+}
+
+static const gchar *
+pk_offline_get_filename (PkOfflineFile file)
+{
+	const gchar *filename;
+
+	G_LOCK (pk_offline_root);
+	if (pk_offline_root_dir == NULL)
+		pk_offline_build_filenames_locked ("/");
+	filename = pk_offline_filenames[file];
+	G_UNLOCK (pk_offline_root);
+	return filename;
+}
+
+/*
+ * pk_offline_get_prepared_filename:
+ *
+ * Return value: the path of the file describing the prepared offline update
+ **/
+const gchar *
+pk_offline_get_prepared_filename (void)
+{
+	return pk_offline_get_filename (PK_OFFLINE_FILE_PREPARED);
+}
+
+/*
+ * pk_offline_get_prepared_upgrade_filename:
+ *
+ * Return value: the path of the file describing the prepared system upgrade
+ **/
+const gchar *
+pk_offline_get_prepared_upgrade_filename (void)
+{
+	return pk_offline_get_filename (PK_OFFLINE_FILE_PREPARED_UPGRADE);
+}
+
+/*
+ * pk_offline_get_trigger_filename:
+ *
+ * Return value: the path of the symlink that makes systemd boot into the
+ * offline update target
+ **/
+const gchar *
+pk_offline_get_trigger_filename (void)
+{
+	return pk_offline_get_filename (PK_OFFLINE_FILE_TRIGGER);
+}
+
+/*
+ * pk_offline_get_results_filename:
+ *
+ * Return value: the path of the keyfile holding the results of the last
+ * offline update
+ **/
+const gchar *
+pk_offline_get_results_filename (void)
+{
+	return pk_offline_get_filename (PK_OFFLINE_FILE_RESULTS);
+}
+
+/*
+ * pk_offline_get_action_filename:
+ *
+ * Return value: the path of the file holding the action to take after the
+ * offline update
+ **/
+const gchar *
+pk_offline_get_action_filename (void)
+{
+	return pk_offline_get_filename (PK_OFFLINE_FILE_ACTION);
+}
+
 /**
  * pk_offline_action_to_string:
  * @action: a #PkOfflineAction, e.g. %PK_OFFLINE_ACTION_REBOOT
@@ -389,17 +519,20 @@ pk_offline_get_action (GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, PK_OFFLINE_ACTION_UNKNOWN);
 
 	/* is the trigger set? */
-	if (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS) ||
-	    !g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS))
+	if (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS) ||
+	    !g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS))
 		return PK_OFFLINE_ACTION_UNSET;
 
 	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &action_data, NULL, &error_local)) {
+	if (!g_file_get_contents (pk_offline_get_action_filename (),
+				  &action_data,
+				  NULL,
+				  &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Failed to open %s: %s",
-			     PK_OFFLINE_ACTION_FILENAME,
+			     pk_offline_get_action_filename (),
 			     error_local->message);
 		return PK_OFFLINE_ACTION_UNKNOWN;
 	}
@@ -467,7 +600,7 @@ pk_offline_get_prepared_ids (GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* does exist? */
-	if (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS)) {
+	if (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_NO_DATA,
@@ -476,12 +609,12 @@ pk_offline_get_prepared_ids (GError **error)
 	}
 
 	/* read data file */
-	if (!g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &data, NULL, &error_local)) {
+	if (!g_file_get_contents (pk_offline_get_prepared_filename (), &data, NULL, &error_local)) {
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Failed to read %s: %s",
-			     PK_OFFLINE_PREPARED_FILENAME,
+			     pk_offline_get_prepared_filename (),
 			     error_local->message);
 		return NULL;
 	}
@@ -567,7 +700,7 @@ pk_offline_get_prepared_monitor (GCancellable *cancellable, GError **error)
 {
 	g_autoptr(GFile) file = NULL;
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-	file = g_file_new_for_path (PK_OFFLINE_PREPARED_FILENAME);
+	file = g_file_new_for_path (pk_offline_get_prepared_filename ());
 	return g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, error);
 }
 
@@ -587,7 +720,7 @@ pk_offline_get_prepared_upgrade_monitor (GCancellable *cancellable, GError **err
 {
 	g_autoptr(GFile) file = NULL;
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-	file = g_file_new_for_path (PK_OFFLINE_PREPARED_UPGRADE_FILENAME);
+	file = g_file_new_for_path (pk_offline_get_prepared_upgrade_filename ());
 	return g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, error);
 }
 
@@ -607,7 +740,7 @@ pk_offline_get_action_monitor (GCancellable *cancellable, GError **error)
 {
 	g_autoptr(GFile) file = NULL;
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-	file = g_file_new_for_path (PK_OFFLINE_ACTION_FILENAME);
+	file = g_file_new_for_path (pk_offline_get_action_filename ());
 	return g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, error);
 }
 
@@ -630,7 +763,7 @@ pk_offline_get_results_mtime (GError **error)
 
 	g_return_val_if_fail (error == NULL || *error == NULL, 0);
 
-	file = g_file_new_for_path (PK_OFFLINE_RESULTS_FILENAME);
+	file = g_file_new_for_path (pk_offline_get_results_filename ());
 	info = g_file_query_info (file,
 				  G_FILE_ATTRIBUTE_TIME_MODIFIED,
 				  G_FILE_QUERY_INFO_NONE,
@@ -642,14 +775,14 @@ pk_offline_get_results_mtime (GError **error)
 				     PK_OFFLINE_ERROR,
 				     PK_OFFLINE_ERROR_NO_DATA,
 				     "%s does not exist",
-				     PK_OFFLINE_RESULTS_FILENAME);
+				     pk_offline_get_results_filename ());
 			return 0;
 		}
 		g_set_error (error,
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "Failed to read %s: %s",
-			     PK_OFFLINE_RESULTS_FILENAME,
+			     pk_offline_get_results_filename (),
 			     error_local->message);
 		return 0;
 	}
@@ -682,7 +815,7 @@ pk_offline_get_results (GError **error)
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* does not exist */
-	if (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS)) {
+	if (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS)) {
 		g_set_error_literal (error,
 				     PK_OFFLINE_ERROR,
 				     PK_OFFLINE_ERROR_NO_DATA,
@@ -694,7 +827,7 @@ pk_offline_get_results (GError **error)
 	file = g_key_file_new ();
 	g_key_file_set_list_separator (file, ',');
 	ret = g_key_file_load_from_file (file,
-					 PK_OFFLINE_RESULTS_FILENAME,
+					 pk_offline_get_results_filename (),
 					 G_KEY_FILE_NONE,
 					 &error_local);
 	if (!ret) {

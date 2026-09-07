@@ -383,7 +383,7 @@ pk_offline_update_do_update (PkTask *task, PkProgressBar *progressbar, GError **
 			     PK_OFFLINE_ERROR,
 			     PK_OFFLINE_ERROR_FAILED,
 			     "failed to read %s",
-			     PK_OFFLINE_PREPARED_FILENAME);
+			     pk_offline_get_prepared_filename ());
 		return FALSE;
 	}
 
@@ -472,14 +472,14 @@ main (int argc, char *argv[])
 	}
 
 	/* verify this is pointing to our cache */
-	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	link = g_file_read_link (pk_offline_get_trigger_filename (), NULL);
 	if (link == NULL) {
 		sd_journal_print (LOG_INFO, "no trigger, exiting");
 		retval = EXIT_SUCCESS;
 		goto out;
 	}
-	if (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) != 0 &&
-	    g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) != 0 &&
+	if (g_strcmp0 (link, pk_offline_get_prepared_filename ()) != 0 &&
+	    g_strcmp0 (link, pk_offline_get_prepared_upgrade_filename ()) != 0 &&
 	    g_strcmp0 (link, "/var/cache/PackageKit") != 0 && g_strcmp0 (link, "/var/cache") != 0) {
 		sd_journal_print (LOG_INFO, "another framework set up the trigger");
 		retval = EXIT_SUCCESS;
@@ -488,10 +488,10 @@ main (int argc, char *argv[])
 
 	/* get the action, and then delete the file */
 	action = pk_offline_update_get_action ();
-	g_unlink (PK_OFFLINE_ACTION_FILENAME);
+	g_unlink (pk_offline_get_action_filename ());
 
 	/* always do this first to avoid a loop if this tool segfaults */
-	g_unlink (PK_OFFLINE_TRIGGER_FILENAME);
+	g_unlink (pk_offline_get_trigger_filename ());
 
 	/* do stuff on ctrl-c */
 	g_unix_signal_add_full (G_PRIORITY_DEFAULT,
@@ -507,8 +507,8 @@ main (int argc, char *argv[])
 	task = pk_task_new ();
 	pk_client_set_interactive (PK_CLIENT (task), FALSE);
 
-	if (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0 &&
-	    g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS)) {
+	if (g_strcmp0 (link, pk_offline_get_prepared_upgrade_filename ()) == 0 &&
+	    g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS)) {
 		/* do system upgrade */
 		if (!pk_offline_update_do_upgrade (task, progressbar, &error)) {
 			retval = EXIT_FAILURE;
@@ -538,7 +538,7 @@ main (int argc, char *argv[])
 		retval = EXIT_FAILURE;
 		sd_journal_print (LOG_WARNING,
 				  "failed to delete %s: %s",
-				  PK_OFFLINE_PREPARED_FILENAME,
+				  pk_offline_get_prepared_filename (),
 				  error->message);
 		goto out;
 	}

@@ -20,6 +20,7 @@
 
 #include "dnf5-backend-utils.hpp"
 #include <pk-common-private.h>
+#include <pk-shared.h>
 #include <pk-update-detail.h>
 #include <libdnf5/conf/config_parser.hpp>
 #include <libdnf5/conf/const.hpp>
@@ -48,9 +49,9 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 
 	auto &config = priv->base->get_config();
 	if (priv->conf != NULL) {
-		g_autofree gchar *destdir = g_key_file_get_string(priv->conf, "Daemon", "DestDir", NULL);
-		if (destdir != NULL) {
-			config.get_installroot_option().set(libdnf5::Option::Priority::COMMANDLINE, destdir);
+		g_autofree gchar *root_dir = pk_util_get_root_dir(priv->conf);
+		if (g_strcmp0(root_dir, "/") != 0) {
+			config.get_installroot_option().set(libdnf5::Option::Priority::COMMANDLINE, root_dir);
 		}
 
 		gboolean keep_cache = g_key_file_get_boolean(priv->conf, "Daemon", "KeepCache", NULL);
@@ -518,9 +519,9 @@ dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver)
 	}
 
 	/* only do cache cleanup for regular installs */
-	g_autofree gchar *destdir = g_key_file_get_string(priv->conf, "Daemon", "DestDir", NULL);
-	if (destdir != NULL) {
-		g_debug("DestDir config option set; skipping old cache directory cleanup");
+	g_autofree gchar *root_dir = pk_util_get_root_dir(priv->conf);
+	if (g_strcmp0(root_dir, "/") != 0) {
+		g_debug("RootDir config option set; skipping old cache directory cleanup");
 		return;
 	}
 

@@ -585,6 +585,35 @@ pk_test_package_func (void)
 	g_object_unref (package);
 }
 
+/* where the offline tests keep their state files instead of /var/lib/PackageKit */
+#define PK_TEST_OFFLINE_ROOT "/tmp/pk-test-ou-root"
+
+/*
+ * pk_test_offline_reset_root:
+ *
+ * Start the offline tests from an empty fake root with the state directory
+ * in place, as on an installed system.
+ */
+static void
+pk_test_offline_reset_root (void)
+{
+	gboolean ret;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *state_dir = NULL;
+
+	if (g_file_test (PK_TEST_OFFLINE_ROOT, G_FILE_TEST_EXISTS)) {
+		ret = g_spawn_command_line_sync ("rm -rf " PK_TEST_OFFLINE_ROOT,
+						 NULL,
+						 NULL,
+						 NULL,
+						 &error);
+		g_assert_no_error (error);
+		g_assert_true (ret);
+	}
+	state_dir = g_build_filename (PK_TEST_OFFLINE_ROOT, "var", "lib", "PackageKit", NULL);
+	g_assert_cmpint (g_mkdir_with_parents (state_dir, 0755), ==, 0);
+}
+
 static void
 pk_test_offline_func (void)
 {
@@ -611,19 +640,7 @@ pk_test_offline_func (void)
 				       "zif;0.3.0-1.fc17;x86_64;updates\n";
 
 	/* cleanup */
-	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
-		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
-						 NULL,
-						 NULL,
-						 NULL,
-						 &error);
-		g_assert_no_error (error);
-		g_assert_true (ret);
-	}
-	g_assert_cmpint (
-	    g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755),
-	    ==,
-	    0);
+	pk_test_offline_reset_root ();
 
 	/* test enums */
 	g_assert_cmpint (pk_offline_action_from_string ("unknown"), ==, PK_OFFLINE_ACTION_UNKNOWN);
@@ -652,10 +669,10 @@ pk_test_offline_func (void)
 	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
 	g_clear_error (&error);
 	g_assert_true (!ret);
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* get empty sack */
 	sack = pk_offline_get_prepared_sack (&error);
@@ -672,7 +689,7 @@ pk_test_offline_func (void)
 	g_assert_cmpint (g_strv_length (package_ids_tmp), ==, 1);
 	g_assert_cmpstr (package_ids_tmp[0], ==, "powertop;0.1.3;i386;fedora");
 	g_strfreev (package_ids_tmp);
-	ret = g_file_get_contents (PK_OFFLINE_PREPARED_FILENAME, &tmp, NULL, &error);
+	ret = g_file_get_contents (pk_offline_get_prepared_filename (), &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp,
@@ -694,16 +711,16 @@ pk_test_offline_func (void)
 	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* test actions */
 	action = pk_offline_get_action (&error);
 	g_assert_no_error (error);
 	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
-	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
+	ret = g_file_get_contents (pk_offline_get_action_filename (), &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp, ==, "reboot");
@@ -713,10 +730,10 @@ pk_test_offline_func (void)
 	ret = pk_offline_auth_cancel (&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* invalidate the update set */
 	ret = pk_offline_auth_trigger (PK_OFFLINE_ACTION_REBOOT, &error);
@@ -725,10 +742,10 @@ pk_test_offline_func (void)
 	ret = pk_offline_auth_invalidate (&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* no results yet */
 	ret = pk_offline_auth_clear_results (&error);
@@ -744,7 +761,7 @@ pk_test_offline_func (void)
 	g_clear_error (&error);
 
 	/* save some dummy success results */
-	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_success, -1, &error);
+	ret = g_file_set_contents (pk_offline_get_results_filename (), results_success, -1, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -765,7 +782,7 @@ pk_test_offline_func (void)
 	g_object_unref (results);
 
 	/* save some dummy failed results */
-	ret = g_file_set_contents (PK_OFFLINE_RESULTS_FILENAME, results_failed, -1, &error);
+	ret = g_file_set_contents (pk_offline_get_results_filename (), results_failed, -1, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -783,16 +800,16 @@ pk_test_offline_func (void)
 	ret = pk_offline_auth_clear_results (&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* re-instate the results file with cached data */
 	ret = pk_offline_auth_set_results (results, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = g_file_get_contents (PK_OFFLINE_RESULTS_FILENAME, &tmp, NULL, &error);
+	ret = g_file_get_contents (pk_offline_get_results_filename (), &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp, ==, results_failed);
@@ -811,30 +828,19 @@ pk_test_offline_upgrade_func (void)
 	g_autoptr(GFileMonitor) monitor = NULL;
 
 	/* cleanup */
-	if (g_file_test ("/tmp/PackageKit-self-test", G_FILE_TEST_EXISTS)) {
-		ret = g_spawn_command_line_sync ("rm -rf /tmp/PackageKit-self-test",
-						 NULL,
-						 NULL,
-						 NULL,
-						 &error);
-		g_assert_no_error (error);
-		g_assert_true (ret);
-	}
-	g_assert_cmpint (
-	    g_mkdir_with_parents ("/tmp/PackageKit-self-test/var/lib/PackageKit/", 0755),
-	    ==,
-	    0);
+	pk_test_offline_reset_root ();
 
 	/* try to trigger without the fake upgrade */
 	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
 	g_assert_error (error, PK_OFFLINE_ERROR, PK_OFFLINE_ERROR_NO_DATA);
 	g_clear_error (&error);
 	g_assert_true (!ret);
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (
+	    !g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* get a non-existent upgrade */
 	ret = pk_offline_get_prepared_upgrade (&name, &version, &error);
@@ -853,7 +859,7 @@ pk_test_offline_upgrade_func (void)
 	g_assert_true (ret);
 	g_assert_cmpstr (name, ==, "Fedora");
 	g_assert_cmpstr (version, ==, "25");
-	ret = g_file_get_contents (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, &tmp, NULL, &error);
+	ret = g_file_get_contents (pk_offline_get_prepared_upgrade_filename (), &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp,
@@ -872,17 +878,18 @@ pk_test_offline_upgrade_func (void)
 	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (
+	    g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* test actions */
 	action = pk_offline_get_action (&error);
 	g_assert_no_error (error);
 	g_assert_cmpint (action, ==, PK_OFFLINE_ACTION_REBOOT);
-	ret = g_file_get_contents (PK_OFFLINE_ACTION_FILENAME, &tmp, NULL, &error);
+	ret = g_file_get_contents (pk_offline_get_action_filename (), &tmp, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_cmpstr (tmp, ==, "reboot");
@@ -892,11 +899,12 @@ pk_test_offline_upgrade_func (void)
 	ret = pk_offline_auth_cancel (&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (
+	    g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 
 	/* invalidate the upgrade */
 	ret = pk_offline_auth_trigger_upgrade (PK_OFFLINE_ACTION_REBOOT, &error);
@@ -905,11 +913,12 @@ pk_test_offline_upgrade_func (void)
 	ret = pk_offline_auth_invalidate (&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_TRIGGER_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_ACTION_FILENAME, G_FILE_TEST_EXISTS));
-	g_assert_true (!g_file_test (PK_OFFLINE_RESULTS_FILENAME, G_FILE_TEST_EXISTS));
+	g_assert_true (
+	    !g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_trigger_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_action_filename (), G_FILE_TEST_EXISTS));
+	g_assert_true (!g_file_test (pk_offline_get_results_filename (), G_FILE_TEST_EXISTS));
 }
 
 static gboolean
@@ -1054,6 +1063,9 @@ main (int argc, char **argv)
 	/* some libraries need to know */
 	g_setenv ("PK_SELF_TEST", "1", TRUE);
 	g_setenv ("PK_TEST_DATA_DIR", TESTDATADIR, TRUE);
+
+	/* keep the offline update state files away from the host system */
+	pk_offline_set_root_dir (PK_TEST_OFFLINE_ROOT);
 
 	/* tests go here */
 	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);

@@ -379,14 +379,14 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 {
 	gchar *path;
 	g_autofree gchar *filename = NULL;
-	g_autofree gchar *backend_dir = NULL;
+	g_autofree gchar *root_dir = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), NULL);
 	g_return_val_if_fail (name != NULL, NULL);
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", name);
-	backend_dir = pk_util_get_backend_dir (backend->conf);
-	path = g_build_filename (backend_dir, filename, NULL);
+	root_dir = pk_util_get_root_dir (backend->conf);
+	path = g_build_filename (root_dir, LIBDIR, "packagekit-backend", filename, NULL);
 	g_debug ("dlopening '%s'", path);
 
 	return path;

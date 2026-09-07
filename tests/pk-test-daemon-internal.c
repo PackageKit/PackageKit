@@ -60,6 +60,26 @@ pk_test_conf_new (void)
 	return conf;
 }
 
+/*
+ * pk_test_remove_transaction_db:
+ *
+ * Deletes the transaction database a previous run may have left behind, so
+ * the tests start from an empty one.
+ */
+static void
+pk_test_remove_transaction_db (void)
+{
+	const gchar *filename;
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(PkTransactionDb) db = pk_transaction_db_new (conf);
+
+	filename = pk_transaction_db_get_filename (db);
+	if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
+		g_debug ("Removing %s", filename);
+		g_assert_cmpint (g_unlink (filename), ==, 0);
+	}
+}
+
 /** ver:1.0 ***********************************************************/
 static GMainLoop *_test_loop = NULL;
 static guint _test_loop_timeout_id = 0;
@@ -831,19 +851,16 @@ pk_test_transaction_db_func (void)
 	gdouble ms;
 	GError *error = NULL;
 	g_autoptr(PkTransactionDb) db = NULL;
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
 	g_autofree gchar *proxy_http = NULL;
 	g_autofree gchar *proxy_ftp = NULL;
 
 	/* remove the self check file */
-	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
-	if (ret) {
-		/* remove old local database */
-		value = g_unlink ("./transactions.db");
-		g_assert_true (value == 0);
-	}
+	pk_test_remove_transaction_db ();
+
 	/* check we created quickly */
 	g_test_timer_start ();
-	db = pk_transaction_db_new ();
+	db = pk_transaction_db_new (conf);
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -853,7 +870,7 @@ pk_test_transaction_db_func (void)
 
 	/* check we opened quickly */
 	g_test_timer_start ();
-	db = pk_transaction_db_new ();
+	db = pk_transaction_db_new (conf);
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -1004,21 +1021,15 @@ pk_test_scheduler_func (void)
 	g_autoptr(PkScheduler) tlist = NULL;
 
 	/* remove the self check file */
-	ret = g_file_test ("./transactions.db", G_FILE_TEST_EXISTS);
-	if (ret) {
-		/* remove old local database */
-		g_debug ("Removing %s", "./transactions.db");
-		size = g_unlink ("./transactions.db");
-		g_assert_true (size == 0);
-	}
+	pk_test_remove_transaction_db ();
 
-	db = pk_transaction_db_new ();
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
 	/* try to load a valid backend */
-	conf = pk_test_conf_new ();
 	backend = pk_backend_new (conf);
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
@@ -1316,13 +1327,13 @@ pk_test_scheduler_parallel_func (void)
 	g_autoptr(PkBackend) backend = NULL;
 	g_autoptr(PkScheduler) tlist = NULL;
 
-	db = pk_transaction_db_new ();
+	conf = pk_test_conf_new ();
+	db = pk_transaction_db_new (conf);
 	ret = pk_transaction_db_load (db, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
 	/* try to load a valid backend */
-	conf = pk_test_conf_new ();
 	g_key_file_set_string (conf, "Daemon", "MaximumPackagesToProcess", "1000");
 	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "dummy");
 	backend = pk_backend_new (conf);

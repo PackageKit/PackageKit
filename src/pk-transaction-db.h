@@ -30,7 +30,8 @@ G_BEGIN_DECLS
 #define PK_TYPE_TRANSACTION_DB (pk_transaction_db_get_type ())
 G_DECLARE_FINAL_TYPE (PkTransactionDb, pk_transaction_db, PK, TRANSACTION_DB, GObject)
 
-PkTransactionDb *pk_transaction_db_new (void);
+PkTransactionDb *pk_transaction_db_new (GKeyFile *conf);
+const gchar	*pk_transaction_db_get_filename (PkTransactionDb *tdb);
 gboolean	 pk_transaction_db_load (PkTransactionDb *tdb,
 					 GError		**error);
 gboolean	 pk_transaction_db_empty (PkTransactionDb *tdb);

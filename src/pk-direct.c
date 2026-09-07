@@ -506,7 +506,7 @@ main (int argc, char *argv[])
 	/* support DESTDIR */
 	destdir = g_getenv ("DESTDIR");
 	if (destdir != NULL)
-		g_key_file_set_string (conf, "Daemon", "DestDir", destdir);
+		g_key_file_set_string (conf, "Daemon", "RootDir", destdir);
 
 	/* override the backend name */
 	if (backend_name != NULL)

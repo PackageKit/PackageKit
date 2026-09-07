@@ -3185,7 +3185,9 @@ pk_transaction_download_packages (PkTransaction *transaction,
 
 	/* create cache directory */
 	if (!store_in_cache) {
-		directory = g_build_filename (LOCALSTATEDIR,
+		g_autofree gchar *root_dir = pk_util_get_root_dir (transaction->conf);
+		directory = g_build_filename (root_dir,
+					      LOCALSTATEDIR,
 					      "cache",
 					      "PackageKit",
 					      "downloads",
@@ -5438,8 +5440,6 @@ pk_transaction_class_init (PkTransactionClass *klass)
 static void
 pk_transaction_init (PkTransaction *transaction)
 {
-	gboolean ret;
-	g_autoptr(GError) error = NULL;
 	transaction->allow_cancel = TRUE;
 	transaction->caller_active = TRUE;
 	transaction->cached_transaction_flags = PK_TRANSACTION_FLAG_ENUM_NONE;
@@ -5454,11 +5454,6 @@ pk_transaction_init (PkTransaction *transaction)
 	transaction->results = pk_results_new ();
 	transaction->supported_content_types = g_ptr_array_new_with_free_func (g_free);
 	transaction->cancellable = g_cancellable_new ();
-
-	transaction->transaction_db = pk_transaction_db_new ();
-	ret = pk_transaction_db_load (transaction->transaction_db, &error);
-	if (!ret)
-		g_error ("PkEngine: failed to load transaction db: %s", error->message);
 }
 
 static void
@@ -5560,9 +5555,16 @@ PkTransaction *
 pk_transaction_new (GKeyFile *conf, GDBusNodeInfo *introspection)
 {
 	PkTransaction *transaction;
+	g_autoptr(GError) error = NULL;
+
 	transaction = g_object_new (PK_TYPE_TRANSACTION, NULL);
 	transaction->conf = g_key_file_ref (conf);
 	transaction->job = pk_backend_job_new (conf);
 	transaction->introspection = g_dbus_node_info_ref (introspection);
+
+	transaction->transaction_db = pk_transaction_db_new (conf);
+	if (!pk_transaction_db_load (transaction->transaction_db, &error))
+		g_error ("PkEngine: failed to load transaction db: %s", error->message);
+
 	return PK_TRANSACTION (transaction);
 }

@@ -29,6 +29,7 @@
 #include <pk-backend.h>
 #include <pk-common-private.h>
 #include <pk-debug.h>
+#include <pk-shared.h>
 
 #include <libdnf/libdnf.h>
 #include <libdnf/dnf-advisory.h>
@@ -175,9 +176,9 @@ remove_old_cache_directories (PkBackend *backend, const gchar *release_ver)
 	}
 
 	/* only do cache cleanup for regular installs */
-	destdir = g_key_file_get_string (priv->conf, "Daemon", "DestDir", NULL);
-	if (destdir != NULL) {
-		g_debug ("DestDir config option set; skipping old cache directory cleanup");
+	destdir = pk_util_get_root_dir (priv->conf);
+	if (g_strcmp0 (destdir, "/") != 0) {
+		g_debug ("RootDir config option set; skipping old cache directory cleanup");
 		return;
 	}
 

@@ -15,7 +15,10 @@ when something goes wrong.
 
 The script reuses a running system bus and polkit authority if present, and
 otherwise starts private ones just for the test run (tearing them down again
-afterwards).
+afterwards). The daemon gets a private copy of the fake root directory laid
+out in the build tree (see the RootDir key of the test configuration), so all
+state it writes ends up in a temporary directory that is removed afterwards
+and neither the host system nor the build tree is touched.
 
 Prerequisites:
   * /usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf  (D-Bus policy)
@@ -37,6 +40,7 @@ import termios
 import argparse
 import tempfile
 import subprocess
+import configparser
 
 from utils import (
     terminate,
@@ -73,6 +77,48 @@ def check_prerequisites():
     if not system_bus_reachable() and shutil.which('dbus-daemon') is None:
         reasons.append('No system bus running and dbus-daemon is not available ' 'to start one.')
     return reasons
+
+
+def prepare_temp_root(config_file):
+    """Give this run a throwaway root directory for the daemon.
+
+    The test configuration points the daemon at a fake root laid out in the
+    build tree (RootDir), below which it keeps its state files.
+
+    Returns (tmpdir, root, derived_config_file); tmpdir holds both and is what
+    to remove afterwards. Raises RuntimeError if the configuration does not
+    set a RootDir to clone.
+    """
+    config = configparser.ConfigParser(interpolation=None)
+    config.optionxform = str  # GKeyFile keys are case-sensitive
+    config.read(config_file)
+    template = config.get('Daemon', 'RootDir', fallback='').strip()
+    if not template or os.path.normpath(template) == '/':
+        raise RuntimeError('{!r} does not set a RootDir'.format(config_file))
+    if not os.path.isdir(template):
+        raise RuntimeError('RootDir {!r} does not exist; build the tests first'.format(template))
+
+    def _skip_state_files(directory, names):
+        # Only the layout and the links to the backend modules are wanted;
+        # regular files are state left behind by other test runs.
+        return [
+            n
+            for n in names
+            if os.path.isfile(os.path.join(directory, n))
+            and not os.path.islink(os.path.join(directory, n))
+        ]
+
+    tmpdir = tempfile.mkdtemp(prefix='pk-test-root-')
+    root = os.path.join(tmpdir, 'root')
+    shutil.copytree(template, root, symlinks=True, ignore=_skip_state_files)
+    os.makedirs(os.path.join(root, 'var', 'lib', 'PackageKit'), exist_ok=True)
+
+    config.set('Daemon', 'RootDir', root)
+    derived_config = os.path.join(tmpdir, 'PackageKit.conf')
+    with open(derived_config, 'w') as f:
+        f.write('# Derived from {} for this test run\n'.format(config_file))
+        config.write(f)
+    return tmpdir, root, derived_config
 
 
 def wait_for_bus_name(timeout=30):
@@ -222,6 +268,19 @@ def main():
         )
         return EXIT_SKIP
 
+    # We may be root here, so never let the daemon under test touch the state of
+    # the host system: insist on a fake root directory, and use a private copy
+    # of it so no root-owned files are left in the build tree.
+    try:
+        root_tmpdir, root_dir, config_file = prepare_temp_root(config_file)
+    except RuntimeError as e:
+        print(
+            'ERROR: {}; refusing to run the daemon against the host system.'.format(e),
+            file=sys.stderr,
+        )
+        return 1
+    print('Daemon state is kept below {}'.format(root_dir))
+
     daemon = None
     bus_proc = None
     bus_tmpdir = None
@@ -279,8 +338,10 @@ def main():
 
         print('Daemon is up; running {}...'.format(args.test))
 
-        # Force a predictable locale so the (otherwise translated) prompt text stays in English
-        test_env = dict(os.environ, LC_ALL='C.UTF-8', LANG='C.UTF-8')
+        # Force a predictable locale so the (otherwise translated) prompt text
+        # stays in English, and let the test read the offline update state from
+        # the same root the daemon was given
+        test_env = dict(os.environ, LC_ALL='C.UTF-8', LANG='C.UTF-8', PK_TEST_CONF_FILE=config_file)
 
         returncode = run_test_with_auto_answers(args.test, test_env)
         if returncode != 0:
@@ -293,6 +354,7 @@ def main():
         terminate(bus_proc)
         if bus_tmpdir is not None:
             shutil.rmtree(bus_tmpdir, ignore_errors=True)
+        shutil.rmtree(root_tmpdir, ignore_errors=True)
         daemon_log.close()
 
 

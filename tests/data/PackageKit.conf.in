@@ -3,5 +3,6 @@
 
 [Daemon]
 
-# Load backend modules from the build tree instead of the installed location
-BackendDir=@BACKEND_DIR@
+# Treat the fake root laid out in the build tree as "/", so backend modules
+# are loaded from there and no state is written to the host system
+RootDir=@ROOT_DIR@

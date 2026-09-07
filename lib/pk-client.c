@@ -926,27 +926,37 @@ pk_client_signal_package (PkClientState *state,
 /*
  * pk_client_copy_finished_remove_old_files:
  *
- * Removes all the files that do not have the prefix destination path.
+ * Removes all the files that are not directly in the destination directory.
  * This should remove all the old /var/cache/PackageKit/$TMP/powertop-1.8-1.fc8.rpm
  * and leave the $DESTDIR/powertop-1.8-1.fc8.rpm files.
+ *
+ * The parent directory is compared rather than a path prefix, as the daemon's
+ * download cache may itself live below the destination directory, e.g. when
+ * downloading to /tmp while the daemon runs with a RootDir under /tmp.
  */
 static void
 pk_client_copy_finished_remove_old_files (PkClientState *state)
 {
 	guint i;
+	g_autoptr(GFile) directory = NULL;
 	g_autoptr(GPtrArray) array = NULL;
 
 	/* get the data */
 	array = pk_results_get_files_array (state->results);
+	directory = g_file_new_for_path (state->directory);
 
-	/* remove any without dest path */
+	/* remove any not in the destination directory */
 	for (i = 0; i < array->len;) {
 		PkFiles *item;
 		gchar **files;
+		g_autoptr(GFile) file = NULL;
+		g_autoptr(GFile) parent = NULL;
 
 		item = g_ptr_array_index (array, i);
 		files = pk_files_get_files (item);
-		if (!g_str_has_prefix (files[0], state->directory))
+		file = g_file_new_for_path (files[0]);
+		parent = g_file_get_parent (file);
+		if (parent == NULL || !g_file_equal (parent, directory))
 			g_ptr_array_remove_index_fast (array, i);
 		else
 			i++;

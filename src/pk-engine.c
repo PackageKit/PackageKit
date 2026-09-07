@@ -842,7 +842,7 @@ pk_engine_offline_file_changed_cb (GFileMonitor *file_monitor,
 	gboolean ret;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	ret = g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS);
+	ret = g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS);
 	pk_engine_emit_offline_property_changed (engine,
 						 "UpdatePrepared",
 						 g_variant_new_boolean (ret));
@@ -877,7 +877,7 @@ pk_engine_offline_upgrade_file_changed_cb (GFileMonitor *file_monitor,
 	gboolean ret;
 	g_return_if_fail (PK_IS_ENGINE (engine));
 
-	ret = g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS);
+	ret = g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS);
 	pk_engine_emit_offline_property_changed (engine,
 						 "UpgradePrepared",
 						 g_variant_new_boolean (ret));
@@ -958,7 +958,7 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 	engine->monitor_offline = pk_offline_get_prepared_monitor (NULL, &error);
 	if (engine->monitor_offline == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
-			   PK_OFFLINE_PREPARED_FILENAME,
+			   pk_offline_get_prepared_filename (),
 			   error->message);
 		return;
 	}
@@ -971,7 +971,7 @@ pk_engine_setup_file_monitors (PkEngine *engine)
 	engine->monitor_offline_upgrade = pk_offline_get_prepared_upgrade_monitor (NULL, &error);
 	if (engine->monitor_offline_upgrade == NULL) {
 		g_warning ("Failed to set watch on %s: %s",
-			   PK_OFFLINE_PREPARED_UPGRADE_FILENAME,
+			   pk_offline_get_prepared_upgrade_filename (),
 			   error->message);
 		return;
 	}
@@ -1019,7 +1019,7 @@ pk_engine_offline_is_triggered (const gchar *filename)
 {
 	/* look at the symlink target */
 	g_autofree gchar *link = NULL;
-	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	link = g_file_read_link (pk_offline_get_trigger_filename (), NULL);
 	return g_strcmp0 (link, filename) == 0;
 }
 
@@ -1045,25 +1045,25 @@ pk_engine_offline_get_property (GDBusConnection *connection_,
 	/* stat the file */
 	if (g_strcmp0 (property_name, "UpdatePrepared") == 0) {
 		gboolean ret;
-		ret = g_file_test (PK_OFFLINE_PREPARED_FILENAME, G_FILE_TEST_EXISTS);
+		ret = g_file_test (pk_offline_get_prepared_filename (), G_FILE_TEST_EXISTS);
 		return g_variant_new_boolean (ret);
 	}
 
 	/* stat the file */
 	if (g_strcmp0 (property_name, "UpgradePrepared") == 0) {
 		gboolean ret;
-		ret = g_file_test (PK_OFFLINE_PREPARED_UPGRADE_FILENAME, G_FILE_TEST_EXISTS);
+		ret = g_file_test (pk_offline_get_prepared_upgrade_filename (), G_FILE_TEST_EXISTS);
 		return g_variant_new_boolean (ret);
 	}
 
 	if (g_strcmp0 (property_name, "UpdateTriggered") == 0) {
 		return g_variant_new_boolean (
-		    pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_FILENAME));
+		    pk_engine_offline_is_triggered (pk_offline_get_prepared_filename ()));
 	}
 
 	if (g_strcmp0 (property_name, "UpgradeTriggered") == 0) {
 		return g_variant_new_boolean (
-		    pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME));
+		    pk_engine_offline_is_triggered (pk_offline_get_prepared_upgrade_filename ()));
 	}
 
 	if (g_strcmp0 (property_name, "PreparedUpgrade") == 0) {
@@ -1571,7 +1571,7 @@ pk_engine_offline_get_action_id_for_role (PkEngineOfflineRole role)
 		return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPGRADE;
 	case PK_ENGINE_OFFLINE_ROLE_CANCEL:
 	case PK_ENGINE_OFFLINE_ROLE_TRIGGER:
-		if (pk_engine_offline_is_triggered (PK_OFFLINE_PREPARED_UPGRADE_FILENAME))
+		if (pk_engine_offline_is_triggered (pk_offline_get_prepared_upgrade_filename ()))
 			return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPGRADE;
 		return PK_POLKIT_ACTION_TRIGGER_OFFLINE_UPDATE;
 	default:
@@ -1665,15 +1665,16 @@ pk_engine_offline_helper_cb (GObject *source, GAsyncResult *res, gpointer user_d
 	    "TriggerAction",
 	    g_variant_new_string (pk_offline_action_to_string (action)));
 
-	link = g_file_read_link (PK_OFFLINE_TRIGGER_FILENAME, NULL);
+	link = g_file_read_link (pk_offline_get_trigger_filename (), NULL);
 	pk_engine_emit_offline_property_changed (
 	    helper->engine,
 	    "UpdateTriggered",
-	    g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_FILENAME) == 0));
+	    g_variant_new_boolean (g_strcmp0 (link, pk_offline_get_prepared_filename ()) == 0));
 	pk_engine_emit_offline_property_changed (
 	    helper->engine,
 	    "UpgradeTriggered",
-	    g_variant_new_boolean (g_strcmp0 (link, PK_OFFLINE_PREPARED_UPGRADE_FILENAME) == 0));
+	    g_variant_new_boolean (g_strcmp0 (link, pk_offline_get_prepared_upgrade_filename ()) ==
+				   0));
 
 	prepared_upgrade = pk_engine_offline_get_prepared_upgrade_property (NULL);
 	pk_engine_emit_offline_property_changed (helper->engine,
@@ -1772,9 +1773,9 @@ pk_engine_offline_method_call (GDBusConnection *connection_,
 
 		/* already triggered: only the post-update action changes,
 		 * which needs no authorization */
-		if (pk_engine_offline_is_triggered (is_upgrade
-							? PK_OFFLINE_PREPARED_UPGRADE_FILENAME
-							: PK_OFFLINE_PREPARED_FILENAME)) {
+		if (pk_engine_offline_is_triggered (
+			is_upgrade ? pk_offline_get_prepared_upgrade_filename ()
+				   : pk_offline_get_prepared_filename ())) {
 			if (!pk_offline_auth_set_action (action, &error)) {
 				g_dbus_method_invocation_return_gerror (invocation, error);
 				return;
@@ -1973,19 +1974,11 @@ static void
 pk_engine_init (PkEngine *engine)
 {
 	g_autoptr(GError) error = NULL;
-	g_autofree gchar *filename = NULL;
 
 	/* load introspection */
 	engine->introspection = pk_load_introspection (PK_DBUS_INTERFACE ".xml", &error);
 	if (engine->introspection == NULL) {
 		g_error ("PkEngine: failed to load daemon introspection: %s", error->message);
-	}
-
-	/* clear the download cache */
-	filename = g_build_filename (LOCALSTATEDIR, "cache", "PackageKit", "downloads", NULL);
-	if (g_file_test (filename, G_FILE_TEST_EXISTS)) {
-		g_debug ("clearing download cache at %s", filename);
-		pk_directory_remove_contents (filename);
 	}
 
 	/* proxy the network state */
@@ -2010,9 +2003,6 @@ pk_engine_init (PkEngine *engine)
 
 	/* setup file watches */
 	pk_engine_setup_file_monitors (engine);
-
-	/* we use a trasaction db to store old transactions */
-	engine->transaction_db = pk_transaction_db_new ();
 
 	/* own the object */
 	engine->owner_id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
@@ -2090,8 +2080,28 @@ PkEngine *
 pk_engine_new (GKeyFile *conf)
 {
 	PkEngine *engine;
+	g_autofree gchar *root_dir = NULL;
+	g_autofree gchar *download_dir = NULL;
+
 	engine = g_object_new (PK_TYPE_ENGINE, NULL);
 	engine->conf = g_key_file_ref (conf);
+
+	/* clear the download cache */
+	root_dir = pk_util_get_root_dir (conf);
+	download_dir = g_build_filename (root_dir,
+					 LOCALSTATEDIR,
+					 "cache",
+					 "PackageKit",
+					 "downloads",
+					 NULL);
+	if (g_file_test (download_dir, G_FILE_TEST_EXISTS)) {
+		g_debug ("clearing download cache at %s", download_dir);
+		pk_directory_remove_contents (download_dir);
+	}
+
+	/* we use a transaction db to store old transactions */
+	engine->transaction_db = pk_transaction_db_new (conf);
+
 	engine->backend = pk_backend_new (engine->conf);
 	g_signal_connect (engine->backend,
 			  "installed-changed",

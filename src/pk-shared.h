@@ -45,7 +45,7 @@ GDBusNodeInfo *pk_load_introspection (const gchar *filename,
 				      GError	 **error);
 
 gchar	      *pk_util_get_config_filename (void);
-gchar	      *pk_util_get_backend_dir (GKeyFile *conf);
+gchar	      *pk_util_get_root_dir (GKeyFile *conf);
 gboolean       pk_util_set_auto_backend (GKeyFile *conf,
 					 GError	 **error);
 
