@@ -67,7 +67,7 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 
 		if (distro_version != NULL) {
 			priv->base->get_vars()->set("releasever", distro_version);
-			const char *root = (destdir != NULL) ? destdir : "/";
+			const char *root = (root_dir != NULL) ? root_dir : "/";
 			g_autofree gchar *cache_dir =
 				g_build_filename(root, "/var/cache/PackageKit", distro_version, "metadata", NULL);
 			g_debug("Using cachedir: %s", cache_dir);
