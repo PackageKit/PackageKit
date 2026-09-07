@@ -40,7 +40,6 @@ G_BEGIN_DECLS
 #define PK_IS_PROGRESS_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PROGRESS))
 #define PK_PROGRESS_GET_CLASS(o) \
 	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PROGRESS, PkProgressClass))
-#define PK_PROGRESS_TYPE_ERROR (pk_progress_error_get_type ())
 
 typedef struct _PkProgressPrivate PkProgressPrivate;
 typedef struct _PkProgress	  PkProgress;

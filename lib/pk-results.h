@@ -51,7 +51,6 @@ G_BEGIN_DECLS
 #define PK_IS_RESULTS(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_RESULTS))
 #define PK_IS_RESULTS_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_RESULTS))
 #define PK_RESULTS_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_RESULTS, PkResultsClass))
-#define PK_RESULTS_TYPE_ERROR	(pk_results_error_get_type ())
 
 typedef struct _PkResultsPrivate PkResultsPrivate;
 typedef struct _PkResults	 PkResults;

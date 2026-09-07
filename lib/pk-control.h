@@ -40,7 +40,6 @@ G_BEGIN_DECLS
 #define PK_IS_CONTROL_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CONTROL))
 #define PK_CONTROL_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CONTROL, PkControlClass))
 #define PK_CONTROL_ERROR	(pk_control_error_quark ())
-#define PK_CONTROL_TYPE_ERROR	(pk_control_error_get_type ())
 
 typedef struct _PkControlPrivate PkControlPrivate;
 typedef struct _PkControl	 PkControl;

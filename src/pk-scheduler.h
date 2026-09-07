@@ -32,9 +32,6 @@ G_BEGIN_DECLS
 #define PK_TYPE_SCHEDULER (pk_scheduler_get_type ())
 G_DECLARE_FINAL_TYPE (PkScheduler, pk_scheduler, PK, SCHEDULER, GObject)
 
-#define PK_SCHEDULER_ERROR	(pk_scheduler_error_quark ())
-#define PK_SCHEDULER_TYPE_ERROR (pk_scheduler_error_get_type ())
-
 PkScheduler   *pk_scheduler_new (GKeyFile *conf);
 
 gboolean       pk_scheduler_create (PkScheduler *scheduler,

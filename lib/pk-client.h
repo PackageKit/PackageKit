@@ -43,7 +43,6 @@ G_BEGIN_DECLS
 #define PK_IS_CLIENT_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_CLIENT))
 #define PK_CLIENT_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_CLIENT, PkClientClass))
 #define PK_CLIENT_ERROR	       (pk_client_error_quark ())
-#define PK_CLIENT_TYPE_ERROR   (pk_client_error_get_type ())
 
 /**
  * PkClientError:

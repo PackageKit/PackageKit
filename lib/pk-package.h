@@ -39,7 +39,6 @@ G_BEGIN_DECLS
 #define PK_IS_PACKAGE(o)	(G_TYPE_CHECK_INSTANCE_TYPE ((o), PK_TYPE_PACKAGE))
 #define PK_IS_PACKAGE_CLASS(k)	(G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PACKAGE))
 #define PK_PACKAGE_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PACKAGE, PkPackageClass))
-#define PK_PACKAGE_TYPE_ERROR	(pk_package_error_get_type ())
 
 typedef struct _PkPackagePrivate PkPackagePrivate;
 typedef struct _PkPackage	 PkPackage;

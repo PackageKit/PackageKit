@@ -50,7 +50,6 @@ pk_category_get_type
 <FILE>pk-client</FILE>
 <TITLE>PkClient</TITLE>
 PK_CLIENT_ERROR
-PK_CLIENT_TYPE_ERROR
 PkClientError
 pk_client_error_quark
 pk_client_new
@@ -196,7 +195,6 @@ pk_console_get_prompt
 <FILE>pk-control</FILE>
 <TITLE>PkControl</TITLE>
 PK_CONTROL_ERROR
-PK_CONTROL_TYPE_ERROR
 PkControlError
 pk_control_error_quark
 pk_control_new
@@ -537,7 +535,6 @@ pk_offline_trigger_upgrade_with_flags
 <SECTION>
 <FILE>pk-package</FILE>
 <TITLE>PkPackage</TITLE>
-PK_PACKAGE_TYPE_ERROR
 pk_package_new
 pk_package_set_id
 pk_package_parse
@@ -593,7 +590,6 @@ pk_package_ids_to_text
 <SECTION>
 <FILE>pk-package-sack</FILE>
 <TITLE>PkPackageSack</TITLE>
-PK_PACKAGE_SACK_TYPE_ERROR
 PkPackageSackSortType
 pk_package_sack_new
 PkPackageSackFilterFunc
@@ -638,7 +634,6 @@ pk_package_sack_get_type
 <SECTION>
 <FILE>pk-progress</FILE>
 <TITLE>PkProgress</TITLE>
-PK_PROGRESS_TYPE_ERROR
 pk_progress_new
 PkProgressType
 PkProgressCallback
@@ -761,7 +756,6 @@ pk_require_restart_get_type
 <SECTION>
 <FILE>pk-results</FILE>
 <TITLE>PkResults</TITLE>
-PK_RESULTS_TYPE_ERROR
 pk_results_new
 pk_results_set_exit_code
 pk_results_set_error_code
@@ -828,7 +822,6 @@ pk_source_get_type
 <SECTION>
 <FILE>pk-task</FILE>
 <TITLE>PkTask</TITLE>
-PK_TASK_TYPE_ERROR
 pk_task_new
 pk_task_generic_finish
 pk_task_install_packages_sync

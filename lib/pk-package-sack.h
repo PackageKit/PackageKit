@@ -41,7 +41,6 @@ G_BEGIN_DECLS
 #define PK_IS_PACKAGE_SACK_CLASS(k) (G_TYPE_CHECK_CLASS_TYPE ((k), PK_TYPE_PACKAGE_SACK))
 #define PK_PACKAGE_SACK_GET_CLASS(o) \
 	(G_TYPE_INSTANCE_GET_CLASS ((o), PK_TYPE_PACKAGE_SACK, PkPackageSackClass))
-#define PK_PACKAGE_SACK_TYPE_ERROR (pk_package_sack_error_get_type ())
 
 typedef struct _PkPackageSackPrivate PkPackageSackPrivate;
 typedef struct _PkPackageSack	     PkPackageSack;

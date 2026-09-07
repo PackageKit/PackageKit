@@ -29,9 +29,6 @@ G_BEGIN_DECLS
 #define PK_TYPE_SPAWN (pk_spawn_get_type ())
 G_DECLARE_FINAL_TYPE (PkSpawn, pk_spawn, PK, SPAWN, GObject)
 
-#define PK_SPAWN_ERROR	    (pk_spawn_error_quark ())
-#define PK_SPAWN_TYPE_ERROR (pk_spawn_error_get_type ())
-
 /**
  * PkSpawnExitType:
  *
