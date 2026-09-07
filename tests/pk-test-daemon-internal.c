@@ -839,6 +839,22 @@ pk_test_transaction_func (void)
 	g_assert_true (ret);
 	g_clear_error (&error);
 
+	/* reject control characters used as the spawn stdin protocol delimiters */
+	ret = pk_transaction_strvalidate ("evil\tsecond", &error);
+	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
+	g_assert_true (!ret);
+	g_clear_error (&error);
+
+	ret = pk_transaction_strvalidate ("evil\ninstall-packages", &error);
+	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
+	g_assert_true (!ret);
+	g_clear_error (&error);
+
+	ret = pk_transaction_strvalidate ("evil\rsecond", &error);
+	g_assert_error (error, PK_TRANSACTION_ERROR, PK_TRANSACTION_ERROR_INPUT_INVALID);
+	g_assert_true (!ret);
+	g_clear_error (&error);
+
 	g_dbus_node_info_unref (introspection);
 }
 

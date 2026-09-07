@@ -524,6 +524,26 @@ pk_spawn_child_setup (gpointer user_data)
 }
 
 /**
+ * pk_spawn_argv_is_reusable:
+ *
+ * A reused (still running) helper is fed its arguments over stdin joined by
+ * tabs and terminated by a newline, so an argument that itself contains a tab
+ * or newline would be misparsed by the helper as a delimiter and could inject
+ * an additional command. Refuse to reuse the instance in that case.
+ *
+ **/
+static gboolean
+pk_spawn_argv_is_reusable (gchar **argv)
+{
+	for (guint i = 1; argv[i] != NULL; i++) {
+		if (strpbrk (argv[i], "\t\n\r") != NULL)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
  * pk_spawn_argv:
  * @argv: Can be generated using g_strsplit (command, " ", 0)
  * if there are no spaces in the filename
@@ -575,6 +595,8 @@ pk_spawn_argv (PkSpawn *spawn, gchar **argv, gchar **envp, PkSpawnArgvFlags flag
 			g_debug ("envp did not match, not reusing");
 		} else if ((flags & PK_SPAWN_ARGV_FLAGS_NEVER_REUSE) > 0) {
 			g_debug ("not re-using instance due to policy");
+		} else if (!pk_spawn_argv_is_reusable (argv)) {
+			g_debug ("argv contains a delimiter, not reusing instance");
 		} else {
 			/* join with tabs, as spaces could be in file name */
 			g_autofree gchar *command = g_strjoinv ("\t", &argv[1]);
