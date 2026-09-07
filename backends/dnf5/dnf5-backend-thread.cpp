@@ -464,6 +464,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 		libdnf5::Goal goal(*priv->base);
 		PkBitfield transaction_flags = 0;
+		// track whether we mutated the shared base config and thus must rebuild the base,
+		// so the change does not leak into later transactions.
+		bool base_config_dirty = false;
 
 		if (role == PK_ROLE_ENUM_INSTALL_PACKAGES || role == PK_ROLE_ENUM_UPDATE_PACKAGES
 		    || role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
@@ -477,8 +480,10 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					&package_ids,
 					&allow_deps,
 					&autoremove);
-				if (autoremove)
+				if (autoremove) {
 					priv->base->get_config().get_clean_requirements_on_remove_option().set(true);
+					base_config_dirty = true;
+				}
 			} else {
 				g_variant_get(params, "(t^as)", &transaction_flags, &package_ids);
 			}
@@ -486,6 +491,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
 			if (pkgs.empty() && role != PK_ROLE_ENUM_UPDATE_PACKAGES) {
 				pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "No packages found");
+				if (base_config_dirty)
+					dnf5_setup_base(priv);
 				pk_backend_job_finished(job);
 				return;
 			}
@@ -561,6 +568,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			for (const auto &p : problems)
 				msg += p + "; ";
 			pk_backend_job_error_code(job, PK_ERROR_ENUM_DEP_RESOLUTION_FAILED, "%s", msg.c_str());
+			if (base_config_dirty)
+				dnf5_setup_base(priv);
 			pk_backend_job_finished(job);
 			return;
 		}
@@ -606,6 +615,10 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				if (info != PK_INFO_ENUM_UNKNOWN)
 					dnf5_emit_pkg(job, item.get_package(), info);
 			}
+			// a simulation must not modify the system: reset the base so the
+			// temporary config does not leak into later transactions
+			if (base_config_dirty)
+				dnf5_setup_base(priv);
 			pk_backend_job_finished(job);
 			return;
 		}
@@ -645,6 +658,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				if (info != PK_INFO_ENUM_UNKNOWN)
 					dnf5_emit_pkg(job, item.get_package(), info);
 			}
+			if (base_config_dirty)
+				dnf5_setup_base(priv);
 			pk_backend_job_finished(job);
 			return;
 		}
@@ -827,37 +842,45 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				return;
 			}
 
-			if (role == PK_ROLE_ENUM_REPO_REMOVE
-			    || !pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
-				pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
-				g_debug("Starting transaction download...");
-				trans.download();
-				pk_backend_job_set_status(job, PK_STATUS_ENUM_RUNNING);
-				g_debug("Starting transaction execution...");
-				trans.set_description("PackageKit: repo-remove " + std::string(repo_id));
-				auto res = trans.run();
-				g_debug("Transaction run result: %s",
-					libdnf5::base::Transaction::transaction_result_to_string(res).c_str());
-				if (res != libdnf5::base::Transaction::TransactionRunResult::SUCCESS) {
-					std::vector<std::string> problems = trans.get_transaction_problems();
-					std::string msg;
-					for (const auto &p : problems)
-						msg += p + "; ";
-					g_warning("Transaction failed: %s", msg.c_str());
-					pk_backend_job_error_code(
-						job,
-						PK_ERROR_ENUM_TRANSACTION_ERROR,
-						"Transaction failed: %s",
-						msg.c_str());
-				} else {
-					g_debug("Transaction completed successfully");
-					// Update timestamp to inhibit notifications from our own transaction
-					priv->last_notification_timestamp = g_get_monotonic_time();
-				}
-				dnf5_setup_base(priv);
-			} else {
+			// The daemon does not require authorization for SIMULATE (and ONLY_DOWNLOAD)
+			// transactions, so we must never modify the system in that case
+			if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)
+			    || pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 				g_debug("Simulation completed, finishing job...");
+				// reset the base so the temporary autoremove config does not leak into
+				// subsequent transactions
+				if (autoremove)
+					dnf5_setup_base(priv);
+				pk_backend_job_finished(job);
+				return;
 			}
+
+			pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
+			g_debug("Starting transaction download...");
+			trans.download();
+			pk_backend_job_set_status(job, PK_STATUS_ENUM_RUNNING);
+			g_debug("Starting transaction execution...");
+			trans.set_description("PackageKit: repo-remove " + std::string(repo_id));
+			auto res = trans.run();
+			g_debug("Transaction run result: %s",
+				libdnf5::base::Transaction::transaction_result_to_string(res).c_str());
+			if (res != libdnf5::base::Transaction::TransactionRunResult::SUCCESS) {
+				std::vector<std::string> problems = trans.get_transaction_problems();
+				std::string msg;
+				for (const auto &p : problems)
+					msg += p + "; ";
+				g_warning("Transaction failed: %s", msg.c_str());
+				pk_backend_job_error_code(
+					job,
+					PK_ERROR_ENUM_TRANSACTION_ERROR,
+					"Transaction failed: %s",
+					msg.c_str());
+			} else {
+				g_debug("Transaction completed successfully");
+				// Update timestamp to inhibit notifications from our own transaction
+				priv->last_notification_timestamp = g_get_monotonic_time();
+			}
+			dnf5_setup_base(priv);
 		}
 	} catch (const std::exception &e) {
 		g_warning("Exception in dnf5_repo_thread: %s", e.what());
