@@ -488,7 +488,11 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				g_variant_get(params, "(t^as)", &transaction_flags, &package_ids);
 			}
 
-			auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
+			// These roles operate on repository packages only. Refuse to address
+			// packages staged in @commandline by an earlier InstallFiles call:
+			// that transaction needed no authorization to run, while this one may
+			// have been authorized as a mere system update.
+			auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids, false);
 			if (pkgs.empty() && role != PK_ROLE_ENUM_UPDATE_PACKAGES) {
 				pk_backend_job_error_code(job, PK_ERROR_ENUM_PACKAGE_NOT_FOUND, "No packages found");
 				if (base_config_dirty)
@@ -518,7 +522,11 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			std::vector<std::string> paths;
 			for (int i = 0; full_paths[i]; i++)
 				paths.push_back(full_paths[i]);
+			// This stages the files into the shared base's @commandline repository,
+			// where they would stay visible to every later transaction of this
+			// daemon. Mark the base dirty so it is rebuilt on every exit path.
 			auto added = priv->base->get_repo_sack()->add_cmdline_packages(paths);
+			base_config_dirty = true;
 			for (const auto &p : added)
 				goal.add_rpm_install(p.second);
 		} else if (role == PK_ROLE_ENUM_UPGRADE_SYSTEM) {
@@ -579,6 +587,44 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			g_debug("Transaction item: %s - %d",
 				item.get_package().get_name().c_str(),
 				(int) item.get_action());
+		}
+
+		// Packages coming from a local file have no repository trust behind them, and
+		// libdnf5 happily installs them unsigned because localpkg_gpgcheck defaults to
+		// false. A client asking for ONLY_TRUSTED must not get them installed: without
+		// that flag the daemon demands the package-install-untrusted authorization,
+		// with it the transaction may have been waved through as a system update.
+		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED)) {
+			std::vector<libdnf5::rpm::Package> untrusted_pkgs;
+			for (const auto &item : trans.get_transaction_packages()) {
+				if (!libdnf5::transaction::transaction_item_action_is_inbound(item.get_action()))
+					continue;
+				if (item.get_package().get_repo_id() == DNF5_CMDLINE_REPO_ID)
+					untrusted_pkgs.push_back(item.get_package());
+			}
+
+			if (!untrusted_pkgs.empty()) {
+				if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
+					// Report them as untrusted rather than failing, so the client
+					// drops ONLY_TRUSTED and re-runs the real transaction under the
+					// package-install-untrusted authorization.
+					for (const auto &pkg : untrusted_pkgs)
+						dnf5_emit_pkg(job, pkg, PK_INFO_ENUM_UNTRUSTED);
+				} else {
+					std::string names;
+					for (const auto &pkg : untrusted_pkgs)
+						names += pkg.get_full_nevra() + "\n";
+					pk_backend_job_error_code(
+						job,
+						PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
+						"The following packages cannot be authenticated:\n%s",
+						names.c_str());
+					if (base_config_dirty)
+						dnf5_setup_base(priv);
+					pk_backend_job_finished(job);
+					return;
+				}
+			}
 		}
 
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_SIMULATE)) {
@@ -688,6 +734,13 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	} catch (const std::exception &e) {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());
+		// we may have been interrupted after mutating the shared base, so rebuild it
+		// rather than leave the leftovers visible to the next transaction
+		try {
+			dnf5_setup_base(priv);
+		} catch (const std::exception &e2) {
+			g_warning("Unable to reset the package base after a failed transaction: %s", e2.what());
+		}
 	}
 	pk_backend_job_finished(job);
 }

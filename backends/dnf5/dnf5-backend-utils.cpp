@@ -423,11 +423,27 @@ dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBit
 }
 
 std::vector<libdnf5::rpm::Package>
-dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
+dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages)
 {
 	std::vector<libdnf5::rpm::Package> pkgs;
 	if (!package_ids)
 		return pkgs;
+
+	// Packages added from local files live in the shared base's @commandline
+	// pseudo-repository, and any client may learn their package IDs from an
+	// InstallFiles simulation. Callers that act on the system must never be able
+	// to address them, or an unauthenticated InstallFiles could stage a package
+	// that a later, differently authorized transaction then installs.
+	auto is_cmdline_package = [&](const libdnf5::rpm::Package &pkg) {
+		if (allow_cmdline_packages)
+			return false;
+		if (pkg.get_repo_id() != DNF5_CMDLINE_REPO_ID)
+			return false;
+		g_warning(
+			"Refusing to resolve command line package %s for this transaction",
+			pkg.get_full_nevra().c_str());
+		return true;
+	};
 
 	for (int i = 0; package_ids[i] != NULL; i++) {
 		// Check if this is a simple package name (no semicolons) or a full package ID
@@ -448,6 +464,8 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 							pkg.get_evr().c_str(),
 							pkg.get_arch().c_str(),
 							pkg.get_repo_id().c_str());
+						if (is_cmdline_package(pkg))
+							continue;
 						pkgs.push_back(pkg);
 						break; // Take the first match
 					}
@@ -496,6 +514,8 @@ dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids)
 			}
 
 			for (auto pkg : query) {
+				if (is_cmdline_package(pkg))
+					continue;
 				pkgs.push_back(pkg);
 				break;
 			}

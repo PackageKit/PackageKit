@@ -32,6 +32,10 @@
 #include <string>
 #include <vector>
 
+// libdnf5's pseudo-repository holding packages that were added from local files.
+// Packages in it carry no repository trust whatsoever.
+inline constexpr const char *DNF5_CMDLINE_REPO_ID = "@commandline";
+
 // Private data structures
 typedef struct {
 	std::unique_ptr<libdnf5::Base> base;
@@ -66,7 +70,8 @@ void dnf5_emit_pkg(
 	PkInfoEnum severity = PK_INFO_ENUM_UNKNOWN);
 void dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs);
 void dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBitfield filters);
-std::vector<libdnf5::rpm::Package> dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids);
+std::vector<libdnf5::rpm::Package>
+dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages = true);
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
 class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks
