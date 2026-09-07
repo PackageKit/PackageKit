@@ -46,6 +46,8 @@ gboolean pk_transaction_filter_check (const gchar *filter,
 				      GError	 **error);
 gboolean pk_transaction_strvalidate (const gchar *textr,
 				     GError	**error);
+gboolean pk_transaction_distro_id_validate (const gchar *distro_id,
+					    GError     **error);
 gboolean pk_transaction_set_tid (PkTransaction *transaction,
 				 const gchar   *tid);
 

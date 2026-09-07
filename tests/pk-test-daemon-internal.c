@@ -815,7 +815,7 @@ pk_test_transaction_func (void)
 {
 	gboolean ret;
 	GError *error = NULL;
-	GDBusNodeInfo *introspection;
+	g_autoptr(GDBusNodeInfo) introspection = NULL;
 	g_autoptr(PkTransaction) transaction = NULL;
 	g_autoptr(GKeyFile) conf = NULL;
 
@@ -855,7 +855,40 @@ pk_test_transaction_func (void)
 	g_assert_true (!ret);
 	g_clear_error (&error);
 
-	g_dbus_node_info_unref (introspection);
+	/* validate distro IDs */
+	{
+		const gchar *valid[] = { "fedora-14", "42",
+					 "rawhide",   "openSUSE-Leap-15.6",
+					 "24.04",     "1.0_alpha+1",
+					 NULL };
+		const gchar *invalid[] = { "",
+					   "..",
+					   "../../../tmp/pwn",
+					   "fedora-14/../../etc",
+					   "fedora\\14",
+					   ".hidden",
+					   "-42",
+					   "fedora 14",
+					   "fedora;14",
+					   "fedora\n14",
+					   "fedora..14",
+					   NULL };
+
+		for (guint i = 0; valid[i] != NULL; i++) {
+			ret = pk_transaction_distro_id_validate (valid[i], &error);
+			g_assert_no_error (error);
+			g_assert_true (ret);
+			g_clear_error (&error);
+		}
+		for (guint i = 0; invalid[i] != NULL; i++) {
+			ret = pk_transaction_distro_id_validate (invalid[i], &error);
+			g_assert_error (error,
+					PK_TRANSACTION_ERROR,
+					PK_TRANSACTION_ERROR_INPUT_INVALID);
+			g_assert_true (!ret);
+			g_clear_error (&error);
+		}
+	}
 }
 
 static void

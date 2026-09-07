@@ -1547,6 +1547,14 @@
             <doc:para>
               The distribution ID to upgrade to, e.g. <doc:tt>fedora-14</doc:tt>.
             </doc:para>
+            <doc:para>
+              Backends may use this as a filename component, so it has to start
+              with an alphanumeric character and may otherwise only contain
+              alphanumeric characters and <doc:tt>.</doc:tt>,
+              <doc:tt>_</doc:tt>, <doc:tt>+</doc:tt> and <doc:tt>-</doc:tt>.
+              Anything else is rejected with
+              <doc:tt>ErrorCode(input-invalid)</doc:tt>.
+            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>

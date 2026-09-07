@@ -38,11 +38,46 @@
 #include <queue>
 #include <filesystem>
 #include <map>
+#include <stdexcept>
+#include <cstring>
 #include "dnf5-backend-vendor.hpp"
+
+/**
+ * A release version becomes a component of the metadata cache directory below
+ * /var/cache/PackageKit, which this backend writes to as root. When it upgrades
+ * the system, the release version is the distribution ID the client asked for,
+ * so it must name a single directory entry and nothing else. The daemon already
+ * rejects anything else, but the backend must not rely on being called through
+ * it.
+ */
+static bool
+dnf5_releasever_is_valid(const char *releasever)
+{
+	if (releasever == nullptr || releasever[0] == '\0')
+		return false;
+
+	// never an option, a relative path or a hidden directory
+	if (!g_ascii_isalnum(releasever[0]))
+		return false;
+
+	for (const char *c = releasever; *c != '\0'; c++) {
+		if (g_ascii_isalnum(*c))
+			continue;
+		if (*c == '.' || *c == '_' || *c == '+' || *c == '-')
+			continue;
+		return false;
+	}
+
+	// no path traversal, even though there is no directory separator left
+	return strstr(releasever, "..") == nullptr;
+}
 
 void
 dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, gboolean online)
 {
+	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
+		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
+
 	priv->base = std::make_unique<libdnf5::Base>();
 
 	priv->base->load_config();

@@ -2451,6 +2451,70 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 	return TRUE;
 }
 
+/**
+ * pk_transaction_distro_id_validate:
+ * @distro_id: The distribution ID to check, e.g. "fedora-14"
+ * @error: The #GError to store any failure, or %NULL
+ *
+ * Tests a distribution ID for validity.
+ *
+ * Backends might build privileged filesystem paths out of this string, yet
+ * it arrives over D-Bus from an unauthenticated caller, as a simulated system
+ * upgrade needs no polkit authorization. Only a conservative set of characters
+ * is therefore allowed, so that the ID can never name anything but a single
+ * directory entry.
+ *
+ * Return value: %TRUE if the distribution ID is valid
+ **/
+gboolean
+pk_transaction_distro_id_validate (const gchar *distro_id, GError **error)
+{
+	/* catch the empty, overlong and non-UTF-8 cases first */
+	if (!pk_transaction_strvalidate (distro_id, error))
+		return FALSE;
+
+	/* has to start with an alphanumeric, so that it can never be read as an
+	 * option, a relative path or a hidden directory */
+	if (!g_ascii_isalnum (distro_id[0])) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid distribution ID passed to daemon: "
+			     "does not start with an alphanumeric character: %s",
+			     distro_id);
+		return FALSE;
+	}
+
+	for (guint i = 0; distro_id[i] != '\0'; i++) {
+		if (g_ascii_isalnum (distro_id[i]))
+			continue;
+		if (distro_id[i] == '.' || distro_id[i] == '_' || distro_id[i] == '+' ||
+		    distro_id[i] == '-')
+			continue;
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid distribution ID passed to daemon: "
+			     "invalid character '%c': %s",
+			     distro_id[i],
+			     distro_id);
+		return FALSE;
+	}
+
+	/* no path traversal, even though there is no directory separator left */
+	if (strstr (distro_id, "..") != NULL) {
+		g_set_error (error,
+			     PK_TRANSACTION_ERROR,
+			     PK_TRANSACTION_ERROR_INPUT_INVALID,
+			     "Invalid distribution ID passed to daemon: "
+			     "contains a path traversal sequence: %s",
+			     distro_id);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 static gboolean
 pk_transaction_search_check_item (const gchar *values, GError **error)
 {
@@ -5046,6 +5110,12 @@ pk_transaction_upgrade_system (PkTransaction *transaction,
 			     PK_TRANSACTION_ERROR,
 			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
 			     "UpgradeSystem not supported by backend");
+		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
+		goto out;
+	}
+
+	/* validate the distro ID and ensure it is sane */
+	if (!pk_transaction_distro_id_validate (distro_id, &error)) {
 		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
 		goto out;
 	}
