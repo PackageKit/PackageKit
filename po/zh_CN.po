@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-08-22 14:06+0200\n"
+"POT-Creation-Date: 2026-09-09 22:26+0200\n"
 "PO-Revision-Date: 2026-08-17 08:51+0000\n"
 "Last-Translator: xiezhihai <xiezhihai7321@outlook.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hans/>\n"
@@ -32,16 +32,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 2026.9.dev0\n"
-
-#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
-msgid "Config file was not found."
-msgstr "未找到配置文件。"
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr "无法加载配置文件：%s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -1804,7 +1794,7 @@ msgstr "接受最终用户许可协议（EULA）需要认证"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
 msgid "Remove package"
 msgstr "移除软件包"
 
@@ -2555,131 +2545,150 @@ msgid "Command not found, valid commands are:"
 msgstr "未找到命令，可用的命令为："
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:121
+#: src/pk-direct.c:411 src/pk-main.c:124
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "要使用的打包后端，例如 dummy"
 
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "FILE"
+msgstr ""
+
+#. TRANSLATORS: path to an alternative configuration file, used for testing
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "Use this configuration file instead of the default"
+msgstr ""
+
 #. TRANSLATORS: command description
-#: src/pk-direct.c:430
+#: src/pk-direct.c:433
 msgid "Refresh the cache"
 msgstr "刷新缓存"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:435
+#: src/pk-direct.c:438
 msgid "Refresh the cache (forced)"
 msgstr "刷新缓存（强制）"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:443
 msgid "Search by names"
 msgstr "按名称搜索"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:445
+#: src/pk-direct.c:448
 msgid "Search by details"
 msgstr "按详细信息搜索"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:450
+#: src/pk-direct.c:453
 msgid "Search by files"
 msgstr "按文件搜索"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:455
+#: src/pk-direct.c:458
 msgid "Install package"
 msgstr "安装软件包"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:465
+#: src/pk-direct.c:468
 msgid "Set repository options"
 msgstr "设置仓库选项"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:476
+#: src/pk-direct.c:479
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:482
+#: src/pk-direct.c:485
 msgid "Failed to parse arguments"
 msgstr "参数解析失败"
 
+#: src/pk-direct.c:494 src/pk-main.c:186
+msgid "Config file was not found."
+msgstr "未找到配置文件。"
+
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:492
+#: src/pk-direct.c:501
 msgid "Failed to load the config file"
 msgstr "配置文件加载失败"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:524
+#: src/pk-direct.c:533
 msgid "Failed to load the backend"
 msgstr "后端加载失败"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:575
+#: src/pk-direct.c:584
 msgid "Failed to unload the backend"
 msgstr "后端卸载失败"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:124
+#: src/pk-main.c:127
 msgid "Disable the idle timer"
 msgstr "禁用空闲计时器"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:127
+#: src/pk-main.c:130
 msgid "Show version and exit"
 msgstr "显示版本并退出"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:130
+#: src/pk-main.c:133
 msgid "Exit after a small delay"
 msgstr "短暂延迟后退出"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
 msgstr "引擎载入后退出"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:136
+#: src/pk-main.c:139
 msgid "Don't clear environment on startup"
 msgstr "启动时不要清除环境变量"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:151
+#: src/pk-main.c:157
 msgid "PackageKit service"
 msgstr "PackageKit 服务"
 
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:192
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "无法加载配置文件：%s"
+
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:224
+#: src/pk-main.c:237
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "无法解析 auto：%s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:243
+#: src/pk-main.c:256
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "无法加载后端：%s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2673
+#: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
 msgstr "此软件不是来自受信任源。"
 
-#: src/pk-transaction.c:2681
+#: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "不要更新这个软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2683
+#: src/pk-transaction.c:2761
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "不要更新这些软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2694
+#: src/pk-transaction.c:2772
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "不要安装这个软件包，除非您确信这么做是安全的。"
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2774
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "不要安装这些软件包，除非您确信这么做是安全的。"
 

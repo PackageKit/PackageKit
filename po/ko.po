@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-08-22 14:06+0200\n"
+"POT-Creation-Date: 2026-09-09 22:26+0200\n"
 "PO-Revision-Date: 2026-02-24 23:09+0000\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/packagekit/translations/ko/>\n"
@@ -21,16 +21,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.16.1-dev\n"
-
-#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
-msgid "Config file was not found."
-msgstr "설정 파일이 없습니다."
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr "설정 파일 불러오기 실패: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -1843,7 +1833,7 @@ msgstr "EULA를 수락하려면 인증해야 합니다"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
 msgid "Remove package"
 msgstr "꾸러미 제거"
 
@@ -2599,131 +2589,150 @@ msgid "Command not found, valid commands are:"
 msgstr "명령이 존재하지 않습니다. 유효한 명령은 다음과 같습니다:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:121
+#: src/pk-direct.c:411 src/pk-main.c:124
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "사용할 백엔드, 예: dummy"
 
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "FILE"
+msgstr ""
+
+#. TRANSLATORS: path to an alternative configuration file, used for testing
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "Use this configuration file instead of the default"
+msgstr ""
+
 #. TRANSLATORS: command description
-#: src/pk-direct.c:430
+#: src/pk-direct.c:433
 msgid "Refresh the cache"
 msgstr "캐시 새로 고침"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:435
+#: src/pk-direct.c:438
 msgid "Refresh the cache (forced)"
 msgstr "캐시 새로 고침(강제)"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:443
 msgid "Search by names"
 msgstr "이름으로 검색"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:445
+#: src/pk-direct.c:448
 msgid "Search by details"
 msgstr "내용으로 검색"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:450
+#: src/pk-direct.c:453
 msgid "Search by files"
 msgstr "파일로 검색"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:455
+#: src/pk-direct.c:458
 msgid "Install package"
 msgstr "패키지 설치"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:465
+#: src/pk-direct.c:468
 msgid "Set repository options"
 msgstr "저장소 옵션 설정"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:476
+#: src/pk-direct.c:479
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:482
+#: src/pk-direct.c:485
 msgid "Failed to parse arguments"
 msgstr "인자 해석에 실패했습니다"
 
+#: src/pk-direct.c:494 src/pk-main.c:186
+msgid "Config file was not found."
+msgstr "설정 파일이 없습니다."
+
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:492
+#: src/pk-direct.c:501
 msgid "Failed to load the config file"
 msgstr "설정 파일 불러오기에 실패했습니다"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:524
+#: src/pk-direct.c:533
 msgid "Failed to load the backend"
 msgstr "백엔드 불러오기에 실패했습니다"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:575
+#: src/pk-direct.c:584
 msgid "Failed to unload the backend"
 msgstr "백엔드 불러오기 취소에 실패했습니다"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:124
+#: src/pk-main.c:127
 msgid "Disable the idle timer"
 msgstr "대기 타이머 비활성화"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:127
+#: src/pk-main.c:130
 msgid "Show version and exit"
 msgstr "버전을 보여 주고 끝내기"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:130
+#: src/pk-main.c:133
 msgid "Exit after a small delay"
 msgstr "약간의 지연 시간 후 끝내기"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
 msgstr "엔진을 불러온 후 끝내기"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:136
+#: src/pk-main.c:139
 msgid "Don't clear environment on startup"
 msgstr "시작할 때 환경 설정 초기화하지 않기"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:151
+#: src/pk-main.c:157
 msgid "PackageKit service"
 msgstr "PackageKit 서비스"
 
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:192
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "설정 파일 불러오기 실패: %s"
+
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:224
+#: src/pk-main.c:237
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "auto 설정 값 해석 실패: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:243
+#: src/pk-main.c:256
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "백엔드 불러오기 실패: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2673
+#: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
 msgstr "신뢰할 수 있는 원본에서 프로그램을 가져오지 않았습니다."
 
-#: src/pk-transaction.c:2681
+#: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단하기 전에는 이 패키지를 업데이트하지 마십시오."
 
-#: src/pk-transaction.c:2683
+#: src/pk-transaction.c:2761
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "안전하다고 판단하기 전에는 이 패키지를 업데이트하지 마십시오."
 
-#: src/pk-transaction.c:2694
+#: src/pk-transaction.c:2772
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "안전하다고 판단하기 전에는 이 패키지를 설치하지 마십시오."
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2774
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "안전하다고 판단하기 전에는 이 패키지를 설치하지 마십시오."
 

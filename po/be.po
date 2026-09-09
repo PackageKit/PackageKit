@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-08-22 14:06+0200\n"
+"POT-Creation-Date: 2026-09-09 22:26+0200\n"
 "PO-Revision-Date: 2026-05-21 23:11+0000\n"
 "Last-Translator: Yauhen <bugomol@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Belarusian <https://hosted.weblate.org/projects/packagekit/translations/be/>\n"
@@ -18,16 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 "X-Generator: Weblate 2026.6.dev0\n"
-
-#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
-msgid "Config file was not found."
-msgstr "Файл канфігурацыі не знойдзены."
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
-#, c-format
-msgid "Failed to load config file: %s"
-msgstr "Не ўдалося загрузіць файл канфігурацыі: %s"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -1790,7 +1780,7 @@ msgstr "Каб прыняць ліцэнзійнае пагадненне, па�
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
 msgid "Remove package"
 msgstr "Выдаліць пакет"
 
@@ -2541,131 +2531,150 @@ msgid "Command not found, valid commands are:"
 msgstr "Каманда не знойдзена, магчымыя каманды:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:121
+#: src/pk-direct.c:411 src/pk-main.c:124
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Унутраны сродак працы з пакетамі, напрыклад «dummy»"
 
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "FILE"
+msgstr ""
+
+#. TRANSLATORS: path to an alternative configuration file, used for testing
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "Use this configuration file instead of the default"
+msgstr ""
+
 #. TRANSLATORS: command description
-#: src/pk-direct.c:430
+#: src/pk-direct.c:433
 msgid "Refresh the cache"
 msgstr "Абнавіць кэш"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:435
+#: src/pk-direct.c:438
 msgid "Refresh the cache (forced)"
 msgstr "Абнавіць кэш (прымусова)"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:443
 msgid "Search by names"
 msgstr "Пошук па назве"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:445
+#: src/pk-direct.c:448
 msgid "Search by details"
 msgstr "Пошук па звестках"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:450
+#: src/pk-direct.c:453
 msgid "Search by files"
 msgstr "Пошук па файлах"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:455
+#: src/pk-direct.c:458
 msgid "Install package"
 msgstr "Усталяваць пакет"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:465
+#: src/pk-direct.c:468
 msgid "Set repository options"
 msgstr "Задаць параметры рэпазіторыя"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:476
+#: src/pk-direct.c:479
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:482
+#: src/pk-direct.c:485
 msgid "Failed to parse arguments"
 msgstr "Не ўдалося разабраць аргументы"
 
+#: src/pk-direct.c:494 src/pk-main.c:186
+msgid "Config file was not found."
+msgstr "Файл канфігурацыі не знойдзены."
+
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:492
+#: src/pk-direct.c:501
 msgid "Failed to load the config file"
 msgstr "Не ўдалося загрузіць файл канфігурацыі"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:524
+#: src/pk-direct.c:533
 msgid "Failed to load the backend"
 msgstr "Не ўдалося загрузіць унутраны сродак"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:575
+#: src/pk-direct.c:584
 msgid "Failed to unload the backend"
 msgstr "Не ўдалося выгрузіць унутраны сродак"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:124
+#: src/pk-main.c:127
 msgid "Disable the idle timer"
 msgstr "Адключыць лічыльнік часу бяздзейнасці"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:127
+#: src/pk-main.c:130
 msgid "Show version and exit"
 msgstr "Паказаць версію і выйсці"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:130
+#: src/pk-main.c:133
 msgid "Exit after a small delay"
 msgstr "Выйсці пасля невялікай затрымкі"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
 msgstr "Выйсці пасля загрузкі рухавіка"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:136
+#: src/pk-main.c:139
 msgid "Don't clear environment on startup"
 msgstr "Не ачышчаць асяроддзе падчас запуску"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:151
+#: src/pk-main.c:157
 msgid "PackageKit service"
 msgstr "Сэрвіс PackageKit"
 
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:192
+#, c-format
+msgid "Failed to load config file: %s"
+msgstr "Не ўдалося загрузіць файл канфігурацыі: %s"
+
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:224
+#: src/pk-main.c:237
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "Не ўдалося выканаць супастаўленне auto: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:243
+#: src/pk-main.c:256
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "Не ўдалося загрузіць унутраны сродак: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2673
+#: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
 msgstr "Праграмнае забеспячэнне не з давернай крыніцы."
 
-#: src/pk-transaction.c:2681
+#: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Не абнаўляйце гэты пакет, калі не ўпэўнены ў яго бяспечнасці."
 
-#: src/pk-transaction.c:2683
+#: src/pk-transaction.c:2761
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Не абнаўляйце гэтыя пакеты, калі не ўпэўнены ў іх бяспечнасці."
 
-#: src/pk-transaction.c:2694
+#: src/pk-transaction.c:2772
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Не ўсталёўвайце гэты пакет, калі не ўпэўнены ў яго бяспечнасці."
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2774
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Не ўсталёўвайце гэтыя пакеты, калі не ўпэўнены ў іх бяспечнасці."
 

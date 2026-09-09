@@ -13,23 +13,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-08-22 14:06+0200\n"
+"POT-Creation-Date: 2026-09-09 22:26+0200\n"
 "Language-Team: Catalan (http://app.transifex.com/freedesktop/packagekit/language/ca/)\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
-msgid "Config file was not found."
-msgstr ""
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
-#, fuzzy, c-format
-msgid "Failed to load config file: %s"
-msgstr "No s'ha pogut carregar el fitxer de configuració"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -1851,7 +1841,7 @@ msgstr "Es requereix autenticació per a acceptar un EULA"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
 msgid "Remove package"
 msgstr "Elimina el paquet"
 
@@ -2607,131 +2597,150 @@ msgid "Command not found, valid commands are:"
 msgstr "No s'ha trobat l'ordre, les ordres vàlides són:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:121
+#: src/pk-direct.c:411 src/pk-main.c:124
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Programari específic d'empaquetament a utilitzar, p. ex. dummy"
 
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "FILE"
+msgstr ""
+
+#. TRANSLATORS: path to an alternative configuration file, used for testing
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "Use this configuration file instead of the default"
+msgstr ""
+
 #. TRANSLATORS: command description
-#: src/pk-direct.c:430
+#: src/pk-direct.c:433
 msgid "Refresh the cache"
 msgstr "Refresca la memòria cau"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:435
+#: src/pk-direct.c:438
 msgid "Refresh the cache (forced)"
 msgstr "Refresca la memòria cau (forçat)"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:443
 msgid "Search by names"
 msgstr "Cerca per nom"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:445
+#: src/pk-direct.c:448
 msgid "Search by details"
 msgstr "Cerca per detall"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:450
+#: src/pk-direct.c:453
 msgid "Search by files"
 msgstr "Cerca per fitxer"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:455
+#: src/pk-direct.c:458
 msgid "Install package"
 msgstr "Instal·la el paquet"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:465
+#: src/pk-direct.c:468
 msgid "Set repository options"
 msgstr "Estableix les opcions del dipòsit"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:476
+#: src/pk-direct.c:479
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:482
+#: src/pk-direct.c:485
 msgid "Failed to parse arguments"
 msgstr "No s'han pogut analitzar els arguments"
 
+#: src/pk-direct.c:494 src/pk-main.c:186
+msgid "Config file was not found."
+msgstr ""
+
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:492
+#: src/pk-direct.c:501
 msgid "Failed to load the config file"
 msgstr "No s'ha pogut carregar el fitxer de configuració"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:524
+#: src/pk-direct.c:533
 msgid "Failed to load the backend"
 msgstr "No s'ha pogut carregar la capa d'accés a les dades"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:575
+#: src/pk-direct.c:584
 msgid "Failed to unload the backend"
 msgstr "No s'ha pogut descarregar la capa d'accés a les dades"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:124
+#: src/pk-main.c:127
 msgid "Disable the idle timer"
 msgstr "Inhabilita el temporitzador de repòs"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:127
+#: src/pk-main.c:130
 msgid "Show version and exit"
 msgstr "Mostra la versió i surt"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:130
+#: src/pk-main.c:133
 msgid "Exit after a small delay"
 msgstr "Surt després d'un breu retard"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
 msgstr "Surt després que el motor s'hagi carregat"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:136
+#: src/pk-main.c:139
 msgid "Don't clear environment on startup"
 msgstr "No netegis l'entorn durant l'inici"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:151
+#: src/pk-main.c:157
 msgid "PackageKit service"
 msgstr "Servei del PackageKit"
 
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:192
+#, fuzzy, c-format
+msgid "Failed to load config file: %s"
+msgstr "No s'ha pogut carregar el fitxer de configuració"
+
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:224
+#: src/pk-main.c:237
 #, fuzzy, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "No s'han pogut analitzar els arguments"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:243
+#: src/pk-main.c:256
 #, fuzzy, c-format
 msgid "Failed to load the backend: %s"
 msgstr "No s'ha pogut carregar la capa d'accés a les dades"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2673
+#: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
 msgstr "El programari no prové d'un origen de confiança."
 
-#: src/pk-transaction.c:2681
+#: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "No actualitzeu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
-#: src/pk-transaction.c:2683
+#: src/pk-transaction.c:2761
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "No actualitzeu aquests paquets a menys que estigueu segur que és segur fer-ho."
 
-#: src/pk-transaction.c:2694
+#: src/pk-transaction.c:2772
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "No instal·leu aquest paquet a menys que estigueu segur que és segur fer-ho."
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2774
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "No instal·leu aquests paquets a menys que estigueu segur que és segur fer-ho."
 

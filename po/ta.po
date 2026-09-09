@@ -8,23 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-08-22 14:06+0200\n"
+"POT-Creation-Date: 2026-09-09 22:26+0200\n"
 "Language-Team: Tamil (http://app.transifex.com/freedesktop/packagekit/language/ta/)\n"
 "Language: ta\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-#: backends/dnf/pk-backend-dnf-refresh.c:136 src/pk-main.c:179
-msgid "Config file was not found."
-msgstr ""
-
-#. TRANSLATORS: The placeholder is an error message
-#: backends/dnf/pk-backend-dnf-refresh.c:142 src/pk-main.c:185
-#, fuzzy, c-format
-msgid "Failed to load config file: %s"
-msgstr "கோப்பிற்காக தேடுவதில் தோல்வி"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -1862,7 +1852,7 @@ msgstr "EULAவை ஏற்பதற்கு அங்கீகாரம் �
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:460
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
 msgid "Remove package"
 msgstr "தொகுப்பினை நீக்கு"
 
@@ -2635,143 +2625,162 @@ msgid "Command not found, valid commands are:"
 msgstr ""
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:121
+#: src/pk-direct.c:411 src/pk-main.c:124
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "பயன்படுத்த வேண்டிய தொகுப்பிடுதல் பின்தளம், எ.கா டம்மி"
 
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "FILE"
+msgstr ""
+
+#. TRANSLATORS: path to an alternative configuration file, used for testing
+#: src/pk-direct.c:414 src/pk-main.c:142
+msgid "Use this configuration file instead of the default"
+msgstr ""
+
 #. TRANSLATORS: command description
-#: src/pk-direct.c:430
+#: src/pk-direct.c:433
 #, fuzzy
 msgid "Refresh the cache"
 msgstr "கேஷை புதுப்பிக்கிறது"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:435
+#: src/pk-direct.c:438
 #, fuzzy
 msgid "Refresh the cache (forced)"
 msgstr "கேஷை புதுப்பிக்கிறது"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:440
+#: src/pk-direct.c:443
 #, fuzzy
 msgid "Search by names"
 msgstr "பெயரால் தேடுகிறது"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:445
+#: src/pk-direct.c:448
 #, fuzzy
 msgid "Search by details"
 msgstr "விவரங்களின் படி தேடுகிறது"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:450
+#: src/pk-direct.c:453
 #, fuzzy
 msgid "Search by files"
 msgstr "கோப்பால் தேடுகிறது"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:455
+#: src/pk-direct.c:458
 #, fuzzy
 msgid "Install package"
 msgstr "நிறுவப்பட்ட தொகுப்புகள்"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:465
+#: src/pk-direct.c:468
 #, fuzzy
 msgid "Set repository options"
 msgstr "தொகுபதிவகங்களை பெறுகிறது"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:476
+#: src/pk-direct.c:479
 #, fuzzy
 msgid "PackageKit"
 msgstr "PackageKit திரை"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:482
+#: src/pk-direct.c:485
 #, fuzzy
 msgid "Failed to parse arguments"
 msgstr "டீமான் நிலையை பெற முடியவில்லை"
 
+#: src/pk-direct.c:494 src/pk-main.c:186
+msgid "Config file was not found."
+msgstr ""
+
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:492
+#: src/pk-direct.c:501
 #, fuzzy
 msgid "Failed to load the config file"
 msgstr "கோப்பிற்காக தேடுவதில் தோல்வி"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:524
+#: src/pk-direct.c:533
 #, fuzzy
 msgid "Failed to load the backend"
 msgstr "PackageKit தொடர்பு கொள்ள முடியவில்லை்வி."
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:575
+#: src/pk-direct.c:584
 #, fuzzy
 msgid "Failed to unload the backend"
 msgstr "PackageKit தொடர்பு கொள்ள முடியவில்லை்வி."
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:124
+#: src/pk-main.c:127
 msgid "Disable the idle timer"
 msgstr "வெற்று நேரங்காட்டியை செயல்நீக்கு"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:127
+#: src/pk-main.c:130
 msgid "Show version and exit"
 msgstr "பதிப்பு மற்றும் வெளியேறுவதைக் காட்டு"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:130
+#: src/pk-main.c:133
 msgid "Exit after a small delay"
 msgstr "ஒரு சிறிய தாமதத்திற்கு பின் வெளியேறு"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
 msgstr "வெளியேறிய பின் எந்திரம் ஏற்றப்பட்டது"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:136
+#: src/pk-main.c:139
 msgid "Don't clear environment on startup"
 msgstr ""
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:151
+#: src/pk-main.c:157
 msgid "PackageKit service"
 msgstr "PackageKit சேவை"
 
+#. TRANSLATORS: The placeholder is an error message
+#: src/pk-main.c:192
+#, fuzzy, c-format
+msgid "Failed to load config file: %s"
+msgstr "கோப்பிற்காக தேடுவதில் தோல்வி"
+
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:224
+#: src/pk-main.c:237
 #, fuzzy, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "கடண்டுபிடிப்பத்தில் தோல்வி:"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:243
+#: src/pk-main.c:256
 #, fuzzy, c-format
 msgid "Failed to load the backend: %s"
 msgstr "PackageKit தொடர்பு கொள்ள முடியவில்லை்வி."
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2673
+#: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
 msgstr "இந்த மென்பொருள் ஒரு நம்பப்பட்ட மூலத்திலிருந்து இல்லை."
 
-#: src/pk-transaction.c:2681
+#: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
 
-#: src/pk-transaction.c:2683
+#: src/pk-transaction.c:2761
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை மேம்படுத்த முடியாது."
 
-#: src/pk-transaction.c:2694
+#: src/pk-transaction.c:2772
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்பை நிறுவ முடியாது."
 
-#: src/pk-transaction.c:2696
+#: src/pk-transaction.c:2774
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "இதை பாதுகாக்க நீங்கள் ஏதாவது செய்யும் வரை இந்த தொகுப்புகளை நிறுவ முடியாது."
 
