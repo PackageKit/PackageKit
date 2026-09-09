@@ -1,3 +1,55 @@
+Version 1.4.0
+~~~~~~~~~~~~~
+Released: 2026-09-09
+
+Notes:
+ * This release fixes multiple security vulnerabilities in the ALPM, DNF5, FreeBSD
+   and Portage backends. It is recommended to upgrade for users of these distributions!
+ * This release drops the older DNF backend, DNF5 is available as its replacement.
+ * The PiSi backend was removed: It was broken and unmaintained for years.
+
+Backends:
+ * alpm: Fix ONLY_TRUSTED check in InstallFiles (Matthias Klumpp)
+ * alpm: fix segfault and abort on invalid-arch error (Peter van der Woude)
+ * alpm: Fetch dependencies for local install under download-only flag (bl4cksku11)
+ * alpm, freebsd, portage: Honor ONLY_DOWNLOAD in alpm install_files/remove, freebsd remove, portage remove (bl4cksku11)
+ * dnf: Drop unmaintained DNF backend (Neal Gompa)
+ * dnf5: Restore repo origin in pkg id data field when installed (Joey Riches)
+ * dnf5: Never execute repo-remove for simulated transactions (Matthias Klumpp)
+ * dnf5: Never install command line packages in a trusted transaction (Matthias Klumpp)
+ * dnf5: Fix thinko in query filter for forcing distrosync on upgrade (Neal Gompa)
+ * eopkg: Adjust percentage callbacks for eopkg v5.0.0 (Joey Riches)
+ * eopkg: Emit release as part of packageid version in _pkg_to_id (Joey Riches)
+ * eopkg: Emit ";" delimited str for cves instead of list (Joey Riches)
+ * eopkg: Correct emit the "updates" param in get_update_detail (Joey Riches)
+ * eopkg: Update comments in get_update_detail() (Joey Riches)
+ * eopkg: Ensure issued == updated in get_update_detail() (Joey Riches)
+ * eopkg: Remove leading space requirement in cve find regex (Joey Riches)
+ * zypp: respect libzypp package locks (Jonathan Kang)
+
+Bugfixes:
+ * pkgcli: Skip blocked updates in full upgrade too (Alessandro Astone)
+ * python: Use a raw string for regex (Jelle van der Waa)
+ * lib: Tighten the pk-client-helper mainloop spin fix (Matthias Klumpp)
+ * lib: Prevent mainloop spin in pk-debconf-helper by dispatching on POLLHUP and POLLERR (Thomas Reinhardt)
+ * lib: Close gaps in the public header include guards (Matthias Klumpp)
+ * ci: Build with optimizations, fix resulting compiler warnings (Matthias Klumpp)
+ * Pass daemon config on the command line, so test binaries are identical to production (Matthias Klumpp)
+ * Refactor, so daemon run in test-mode never touches the host's state (Matthias Klumpp)
+ * offline-update: Never let a Trigger call disarm or replace an armed trigger (Matthias Klumpp)
+ * Drop dead error macros for nonexistent types (Matthias Klumpp)
+ * spawn: Reject stdin-protocol delimiters in caller-supplied strings (Matthias Klumpp)
+ * Validate a distro-ID in UpgradeSystem for invalid characters (Matthias Klumpp)
+
+Miscellaneous:
+ * freebsd: ci: Switch from Cirrus to GitHub Actions (Gleb Popov)
+ * Move the Python backend module to the top level (Matthias Klumpp)
+ * Flatten the client library into lib/ (Matthias Klumpp)
+ * Install headers into $includedir/packagekit (Matthias Klumpp)
+ * Autoformat the source code in (almost) its original style (Matthias Klumpp)
+ * Ignore formatting commits in git blame via .git-blame-ignore-revs (Matthias Klumpp)
+ * Add security policy (Matthias Klumpp)
+
 Version 1.3.6
 ~~~~~~~~~~~~~
 Released: 2026-06-16
