@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-05-18 03:11+0000\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/translations/hr/>\n"
 "Language: hr\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -616,7 +616,7 @@ msgstr "Direktorij nije pronađen"
 #. * users won't see this
 #: client/pkcon/pk-console.c:2140
 msgid "A licence identifier (eula-id) is required"
-msgstr "Potreban je identifikatora licence (eula-id)"
+msgstr "Potreban je identifikator licence (eula-id)"
 
 #. TRANSLATORS: The user did not
 #. * specify a package name
@@ -757,7 +757,7 @@ msgstr "Maksimalna starost predmemorije metapodataka u sekundama (standardno: 3 
 
 #: client/pkgc-manage.c:78
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDE"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:203
@@ -766,12 +766,12 @@ msgstr "Osvježi predmemoriju metapodataka paketa."
 
 #: client/pkgc-manage.c:229
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Metapodaci paketa su osvježeni"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:254
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Instaliraj jedan ili više paketa ili lokalnih datoteka paketa."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -789,7 +789,7 @@ msgstr "Odabrani paketi su možda već instalirani."
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Ukloni jedan ili više paketa iz sustava."
 
 #: client/pkgc-manage.c:393
 #, fuzzy, c-format
@@ -811,7 +811,7 @@ msgstr "Ovaj alat ne može pronaći paket: %s"
 #: client/pkgc-manage.c:456
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Direktorij ne postoji: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:500
@@ -844,7 +844,7 @@ msgstr ""
 #: client/pkgc-manage.c:701
 #, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Neuspjelo čitanje izvanmrežnu radnju aktualiziranja: %s"
+msgstr "Neuspjelo čitanje radnje izvanmrežnog aktualiziranja: %s"
 
 #: client/pkgc-manage.c:711
 msgid "Offline update is not triggered."
@@ -857,34 +857,30 @@ msgstr "Pokrenuta je izvanmrežnu nadopuna. Radnja nakon nadopune: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:731
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Pripremljene nadopune:"
+msgstr "Pripremljene paketi:"
 
 #: client/pkgc-manage.c:745
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Ukloni poruku izvanmrežne nadopune"
+msgstr "Nijedna izvanmrežna nadopuna nije pripremljena."
 
 #: client/pkgc-manage.c:748
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Pokreni izvanmrežnu nadopunu"
+msgstr "Neuspjelo čitanje pripremljenih izvanmrežnih nadopuna: %s"
 
 #: client/pkgc-manage.c:759
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Preuzimanje informacija nadopune"
+msgstr "Nema rezultata od posljednjeg izvanmrežnog aktualiziranja."
 
 #: client/pkgc-manage.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Ukloni poruku izvanmrežne nadopune"
+msgstr "Zadnje izvanmrežno aktualiziranje nije uspjelo: %s: %s"
 
 #: client/pkgc-manage.c:773
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Ukloni poruku izvanmrežne nadopune"
+msgstr "Zadnje izvanmrežno aktualiziranje je uspješno završeno"
 
 #: client/pkgc-manage.c:783
 #, fuzzy, c-format
@@ -930,9 +926,8 @@ msgstr "Ukloni poruku izvanmrežne nadopune"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:935
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Instaliraj paket bez upita potvrde"
+msgstr "Instaliraj potpis paketa za GPG provjeru."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:971
@@ -990,9 +985,8 @@ msgstr "Preuzimanje paketa"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1077
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Nema nadopuna paketa."
+msgstr "Upravljaj izvanmrežnim aktualiziranjima sustava"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1084
@@ -1108,9 +1102,8 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:659
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "Alat ne može pronaći dostupne pakete: %s"
+msgstr "Prikaži popis svih trenutačno dostupnih aktualiziranja paketa."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:692
@@ -1268,9 +1261,8 @@ msgstr ""
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Onemogući mjerenje vremena"
+msgstr "Onemogući navedeni repozitorij."
 
 #: client/pkgc-repo.c:176
 #, c-format
@@ -1284,9 +1276,8 @@ msgstr "Automatski ukloni nekorištene zavisnosti"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:211
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Uklanjanje repozitorija"
+msgstr "Ukloni navedeni repozitorij."
 
 #: client/pkgc-repo.c:231
 #, fuzzy, c-format
@@ -1821,11 +1812,11 @@ msgstr "Potrebna je ovjera za uzimanje u obzir ključa korištenog za potpisivan
 #. be given the option to make legal decisions.
 #: data/policy/org.freedesktop.packagekit.policy.in:128
 msgid "Accept EULA"
-msgstr "Prihvati ugovor licence krajnjeg korisnika (EULA)"
+msgstr "Prihvati licencni ugovor za krajnjeg korisnika (EULA)"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr "Potrebna je ovjera za prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
+msgstr "Za prihvaćanje licencnog ugovora za krajnjeg korisnika (EULA) je potrebna ovjera"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -2399,7 +2390,7 @@ msgstr "Preuzimanje paketa"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1258
 msgid "Accepting EULA"
-msgstr "Prihvaćanje ugovora licence krajnjeg korisnika (EULA)"
+msgstr "Prihvaćanje licencnog ugovora za krajnjeg korisnika (EULA)"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1266
@@ -2485,7 +2476,7 @@ msgstr "Potpis nije prihvaćen."
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
 #: lib/pk-task-text.c:183
 msgid "End user licence agreement required"
-msgstr "Potreban je ugovor licence krajnjeg korisnika (EULA)"
+msgstr "Potreban je licencni ugovor za krajnjeg korisnika (EULA)"
 
 #. TRANSLATORS: the EULA text itself (long and boring)
 #: lib/pk-task-text.c:193
