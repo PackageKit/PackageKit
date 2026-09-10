@@ -40,7 +40,7 @@ static gchar *xfercmd = NULL;
 typedef struct
 {
 	 gboolean		 checkspace, color, disabledownloadtimeout, ilovecandy,
-				noprogressbar, totaldl, usesyslog, verbosepkglists, is_check;
+				noprogressbar, prettyprogressbar, totaldl, usesyslog, verbosepkglists, is_check;
 
 	 gchar			*arch, *cleanmethod, *dbpath, *gpgdir, *logfile,
 				*root, *xfercmd;
@@ -156,6 +156,14 @@ pk_alpm_config_set_noprogressbar (PkAlpmConfig *config)
 }
 
 static void
+pk_alpm_config_set_prettyprogressbar (PkAlpmConfig *config)
+{
+	g_return_if_fail (config != NULL);
+
+	config->prettyprogressbar = TRUE;
+}
+
+static void
 pk_alpm_config_set_totaldl (PkAlpmConfig *config)
 {
 	g_return_if_fail (config != NULL);
@@ -192,6 +200,7 @@ static const PkAlpmConfigBoolean pk_alpm_config_boolean_options[] = {
 	{ "DisableDownloadTimeout", pk_alpm_config_set_disabledownloadtimeout },
 	{ "ILoveCandy", pk_alpm_config_set_ilovecandy },
 	{ "NoProgressBar", pk_alpm_config_set_noprogressbar },
+	{ "PrettyProgressBar", pk_alpm_config_set_prettyprogressbar },
 	{ "TotalDownload", pk_alpm_config_set_totaldl },
 	{ "UseSyslog", pk_alpm_config_set_usesyslog },
 	{ "VerbosePkgLists", pk_alpm_config_set_verbosepkglists },
