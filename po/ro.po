@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-04-20 11:09+0000\n"
+"PO-Revision-Date: 2026-09-10 12:51+0000\n"
 "Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/packagekit/translations/ro/>\n"
 "Language: ro\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -2539,12 +2539,12 @@ msgstr "Sistemul de împachetare de folosit, de exemplu: „dummy”"
 
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "FILE"
-msgstr ""
+msgstr "FIȘIER"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "Use this configuration file instead of the default"
-msgstr ""
+msgstr "Utilizează acest fișier de configurare în locul celui implicit"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:433
