@@ -1,7 +1,7 @@
 
 add_languages('cpp', native: false)
 
-dnf5_dep = dependency('libdnf5', version: '>=5.2.17.0')
+dnf5_dep = dependency('libdnf5', version: '>=5.4.3.0')
 libdnf5_version = dnf5_dep.version().split('.')
 
 pk_backend_modules += shared_module(
