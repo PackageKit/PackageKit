@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-10 12:51+0000\n"
+"PO-Revision-Date: 2026-09-14 18:51+0000\n"
 "Last-Translator: Milo Ivir <mail@milotype.de>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/packagekit/translations/hr/>\n"
 "Language: hr\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.9.1\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -840,6 +840,9 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Nadogradi sve pakete ili izvrši nadogradnju distribucije.\n"
+"\n"
+"Vrste: minimal, default, complete"
 
 #: client/pkgc-manage.c:701
 #, c-format
@@ -973,7 +976,6 @@ msgstr "Nadopuna paketa"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
 #: client/pkgc-manage.c:1063
-#, fuzzy
 msgid "Upgrade the system"
 msgstr "Nadogradi sustav"
 
@@ -1128,29 +1130,27 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:831
 msgid "Filters:"
-msgstr ""
+msgstr "Filtri:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:843
 msgid "Groups:"
-msgstr ""
+msgstr "Grupe:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:855
-#, fuzzy
 msgid "Categories:"
-msgstr "Kategorija"
+msgstr "Kategorije:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:881
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Prikaži nadogradnje verzije distribucijske, ako su dostupne."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:927
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Vrijeme sustava"
+msgstr "Proteklo vrijeme"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:952
