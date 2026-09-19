@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-19 18:43+0000\n"
+"PO-Revision-Date: 2026-09-19 18:52+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -747,7 +747,7 @@ msgstr "Nie usuwa automatycznie nieużywanych zależności"
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:78
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej w sekundach (domyślnie: 3 dni)"
+msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej w sekundach (domyślnie: 3 dni)"
 
 #: client/pkgc-manage.c:78
 msgid "SECONDS"
@@ -782,7 +782,7 @@ msgstr "Wybrany pakiet jest już zainstalowany."
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
-msgstr "Usuwa jeden lub więcej pakietów z systemu."
+msgstr "Usuwa jeden lub więcej pakietów z systemu."
 
 #: client/pkgc-manage.c:393
 #, c-format
@@ -840,16 +840,16 @@ msgstr ""
 #: client/pkgc-manage.c:701
 #, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Odczytanie działania aktualizacji w trybie offline się nie powiodło: %s"
+msgstr "Odczytanie działania aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:711
 msgid "Offline update is not triggered."
-msgstr "Aktualizacja w trybie offline nie jest włączona."
+msgstr "Aktualizacja w trybie offline nie jest włączona."
 
 #: client/pkgc-manage.c:720
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Aktualizacja w trybie offline jest włączona. Działanie po aktualizacji: %s"
+msgstr "Aktualizacja w trybie offline jest włączona. Działanie po aktualizacji: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:731
@@ -858,25 +858,25 @@ msgstr "Przygotowane pakiety:"
 
 #: client/pkgc-manage.c:745
 msgid "No offline update is prepared."
-msgstr "Nie przygotowano żadnej aktualizacji w trybie offline."
+msgstr "Nie przygotowano żadnej aktualizacji w trybie offline."
 
 #: client/pkgc-manage.c:748
 #, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Odczytanie przygotowanych aktualizacji w trybie offline się nie powiodło: %s"
+msgstr "Odczytanie przygotowanych aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:759
 msgid "No results from last offline update available."
-msgstr "Brak dostępnych wyników ostatniej aktualizacji w trybie offline."
+msgstr "Brak dostępnych wyników ostatniej aktualizacji w trybie offline."
 
 #: client/pkgc-manage.c:766
 #, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Ostatnia aktualizacja w trybie offline się nie powiodła: %s: %s"
+msgstr "Ostatnia aktualizacja w trybie offline się nie powiodła: %s: %s"
 
 #: client/pkgc-manage.c:773
 msgid "Last offline update completed successfully"
-msgstr "Ostatnia aktualizacja w trybie offline została pomyślnie ukończona"
+msgstr "Ostatnia aktualizacja w trybie offline została pomyślnie ukończona"
 
 #: client/pkgc-manage.c:783
 #, c-format
@@ -886,11 +886,11 @@ msgstr "Zaktualizowano: %s"
 #: client/pkgc-manage.c:807
 #, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Włączenie aktualizacji w trybie offline się nie powiodło: %s"
+msgstr "Włączenie aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:811
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr "Zaplanowano aktualizację w trybie offline. System zostanie zaktualizowany podczas następnego ponownego uruchomienia."
+msgstr "Zaplanowano aktualizację w trybie offline. System zostanie zaktualizowany podczas następnego ponownego uruchomienia."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -904,27 +904,27 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
-"Włącza aktualizacje systemu w trybie offline i zarządza nimi.\n"
+"Włącza aktualizacje systemu w trybie offline i zarządza nimi.\n"
 "\n"
-"Można wybrać jedno z tych żądań:\n"
-"  prepare - przygotowuje aktualizację w trybie offline i ją włącza (domyślnie)\n"
-"  trigger - włącza (ręcznie przygotowaną) aktualizację w trybie offline\n"
-"  cancel  - anuluje zaplanowaną aktualizację w trybie offline\n"
-"  status  - wyświetla informacje o stanie przygotowanej lub ukończonej aktualizacji w trybie offline"
+"Można wybrać jedno z tych żądań:\n"
+"  prepare - przygotowuje aktualizację w trybie offline i ją włącza (domyślnie)\n"
+"  trigger - włącza (ręcznie przygotowaną) aktualizację w trybie offline\n"
+"  cancel  - anuluje zaplanowaną aktualizację w trybie offline\n"
+"  status  - wyświetla informacje o stanie przygotowanej lub ukończonej aktualizacji w trybie offline"
 
 #: client/pkgc-manage.c:853
 #, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Anulowanie aktualizacji w trybie offline się nie powiodło: %s"
+msgstr "Anulowanie aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:857
 msgid "Offline update cancelled"
-msgstr "Anulowano aktualizację w trybie offline"
+msgstr "Anulowano aktualizację w trybie offline"
 
 #: client/pkgc-manage.c:914
 #, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Nieznane żądanie aktualizacji w trybie offline: %s"
+msgstr "Nieznane żądanie aktualizacji w trybie offline: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:935
@@ -983,7 +983,7 @@ msgstr "Pobiera pakiety"
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1077
 msgid "Manage offline system updates"
-msgstr "Zarządza aktualizacjami systemu w trybie offline"
+msgstr "Zarządza aktualizacjami systemu w trybie offline"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1084
@@ -1013,7 +1013,7 @@ msgstr "Monitoruje zdarzenia magistrali usługi PackageKit"
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr "Wyświetla informacje o module przetwarzającym PackageKit."
+msgstr "Wyświetla informacje o module przetwarzającym PackageKit."
 
 #: client/pkgc-query.c:211
 #, c-format
@@ -1073,7 +1073,7 @@ msgstr "Wyświetla listę wszystkich pakietów lub pasujących do wzorca."
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:420
 msgid "Show information about one or more packages."
-msgstr "Wyświetla informacje o jednym lub więcej pakietach."
+msgstr "Wyświetla informacje o jednym lub więcej pakietach."
 
 #: client/pkgc-query.c:479 client/pkgc-query.c:768
 msgid "Check dependencies recursively"
@@ -1097,7 +1097,7 @@ msgstr "Wyświetla pakiety dostarczające podaną możliwość."
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:563
 msgid "List all files contained in one or more packages."
-msgstr "Wyświetla listę wszystkich plików zawartych w jednym lub więcej pakietach."
+msgstr "Wyświetla listę wszystkich plików zawartych w jednym lub więcej pakietach."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:659
@@ -1107,7 +1107,7 @@ msgstr "Wyświetla listę wszystkich obecnie dostępnych aktualizacji pakietów.
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:692
 msgid "Show detailed information about the specified package update."
-msgstr "Wyświetla szczegółowe informacje o podanej aktualizacji pakietu."
+msgstr "Wyświetla szczegółowe informacje o podanej aktualizacji pakietu."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:731
@@ -1122,7 +1122,7 @@ msgstr "Wyświetla pakiety wymagające podanych pakietów."
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:823
 msgid "List all available filters, groups and categories for package organization."
-msgstr "Wyświetla listę wszystkich dostępnych filtrów, grup i kategorii do porządkowania pakietów."
+msgstr "Wyświetla listę wszystkich dostępnych filtrów, grup i kategorii do porządkowania pakietów."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:831
@@ -1152,12 +1152,12 @@ msgstr "Upłynęło czasu"
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:952
 msgid "Get time in seconds since the last specified action."
-msgstr "Wyświetla czas w sekundach od ostatniego wykonania podanego działania."
+msgstr "Wyświetla czas w sekundach od ostatniego wykonania podanego działania."
 
 #. TRANSLATORS: Description for backend command in pkgcli help
 #: client/pkgc-query.c:995
 msgid "Show backend information"
-msgstr "Wyświetla informacje o module przetwarzającym"
+msgstr "Wyświetla informacje o module przetwarzającym"
 
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:1002
@@ -1177,7 +1177,7 @@ msgstr "Wyświetla listę pakietów"
 #. TRANSLATORS: Description for show command in pkgcli help
 #: client/pkgc-query.c:1023
 msgid "Show package information"
-msgstr "Wyświetla informacje o pakiecie"
+msgstr "Wyświetla informacje o pakiecie"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1030
@@ -1197,7 +1197,7 @@ msgstr "Wyświetla listę pakietów dostarczających daną możliwość"
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1051
 msgid "Show files in package"
-msgstr "Wyświetla pliki w pakiecie"
+msgstr "Wyświetla pliki w pakiecie"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
 #: client/pkgc-query.c:1058
@@ -1207,7 +1207,7 @@ msgstr "Wyświetla dostępne aktualizacje"
 #. TRANSLATORS: Description for show-update command in pkgcli help
 #: client/pkgc-query.c:1065
 msgid "Get update details"
-msgstr "Wyświetla informacje o aktualizacji"
+msgstr "Wyświetla informacje o aktualizacji"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
 #: client/pkgc-query.c:1072
@@ -1217,7 +1217,7 @@ msgstr "Rozwiązuje nazwy pakietów"
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1079
 msgid "List available filters and categories"
-msgstr "Wyświetla listę dostępnych filtrów i kategorii"
+msgstr "Wyświetla listę dostępnych filtrów i kategorii"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1086
@@ -1290,7 +1290,7 @@ msgstr "Usuwa repozytorium"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr "Brak połączenia z usługą PackageKit"
+msgstr "Brak połączenia z usługą PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
@@ -1535,7 +1535,7 @@ msgstr "Wyświetla więcej szczegółów"
 
 #: client/pkgcli.c:87
 msgid "Output in JSON format"
-msgstr "Wyświetla wyniki w formacie JSON"
+msgstr "Wyświetla wyniki w formacie JSON"
 
 #: client/pkgcli.c:89
 msgid "Disable colored output"
@@ -1557,7 +1557,7 @@ msgstr "Filtruje pakiety (installed, available itp.)"
 
 #: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
-msgstr "Nie podano polecenia. Opcja --help wyświetli informacje o użyciu."
+msgstr "Nie podano polecenia. Opcja --help wyświetli informacje o użyciu."
 
 #: client/pkgcli.c:130
 #, c-format
@@ -1567,7 +1567,7 @@ msgstr "Nieznane polecenie: %s"
 #: client/pkgcli.c:140
 #, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Połączenie z usługą PackageKit się nie powiodło: %s"
+msgstr "Połączenie z usługą PackageKit się nie powiodło: %s"
 
 #: client/pkgcli.c:202
 #, c-format
