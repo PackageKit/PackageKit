@@ -688,6 +688,10 @@ pk_cnf_install_package_id (const gchar *package_id)
 						 NULL,
 						 &error);
 	if (results == NULL) {
+		/* the user already said no, so this is not a failure */
+		if (g_error_matches (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_DECLINED_SIMULATION) ||
+		    g_error_matches (error, PK_CLIENT_ERROR, PK_CLIENT_ERROR_DECLINED_INTERACTION))
+			return FALSE;
 		/* TRANSLATORS: we failed to install the package */
 		g_printerr ("%s: %s\n", _("Failed to install packages"), error->message);
 		return FALSE;
