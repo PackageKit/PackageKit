@@ -5,20 +5,21 @@
 # Translators:
 # Piotr Drąg <piotrdrag@gmail.com>, 2011-2018,2022-2023,2025
 # Richard Hughes <richard@hughsie.com>, 2011
+# Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2025-11-23 22:51+0000\n"
-"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"PO-Revision-Date: 2026-09-19 18:43+0000\n"
+"Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Weblate 5.15-dev\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -725,114 +726,104 @@ msgstr "Monitor PackageKit"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:50
-#, fuzzy
 msgid "Allow package downgrades"
-msgstr "Zezwala na instalowanie starszych wersji pakietów podczas transakcji"
+msgstr "Zezwala na instalowanie starszych wersji pakietów"
 
 #. TRANSLATORS: command line argument, do we allow package re-installations
 #: client/pkgc-manage.c:57
-#, fuzzy
 msgid "Allow package re-installations"
-msgstr "Zezwala na ponowne instalowanie pakietów podczas transakcji"
+msgstr "Zezwala na ponowne instalowanie pakietów"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:64
-#, fuzzy
 msgid "Allow installation of untrusted packages"
-msgstr "Instalacja starszej wersji zainstalowanego pakietu"
+msgstr "Zezwala na instalowanie niezaufanych pakietów"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:71
-#, fuzzy
-#| msgid "Automatically remove unused dependencies"
 msgid "Do not automatically remove unused dependencies"
-msgstr "Automatycznie usuwa nieużywane zależności"
+msgstr "Nie usuwa automatycznie nieużywanych zależności"
 
 #. TRANSLATORS: command line argument
 #: client/pkgc-manage.c:78
-#, fuzzy
-#| msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
 msgid "Maximum metadata cache age in seconds (default: 3 days)"
-msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej (w sekundach). Wartość -1 oznacza używanie wyłącznie pamięci podręcznej, wartość 1 spowoduje ponowne wczytanie pamięci podręcznej."
+msgstr "Maksymalny czas przechowywania metadanych w pamięci podręcznej w sekundach (domyślnie: 3 dni)"
 
 #: client/pkgc-manage.c:78
 msgid "SECONDS"
-msgstr ""
+msgstr "SEKUNDY"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:203
-#, fuzzy
 msgid "Refresh the package metadata cache."
-msgstr "Odświeża pamięć podręczną"
+msgstr "Odświeża pamięć podręczną metadanych pakietów."
 
 #: client/pkgc-manage.c:229
 msgid "Package metadata refreshed"
-msgstr ""
+msgstr "Odświeżono metadane pakietów"
 
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:254
 msgid "Install one or more packages or local package files."
-msgstr ""
+msgstr "Instaluje jeden lub więcej pakietów albo lokalnych plików pakietów."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkgc-manage.c:316 client/pkgc-manage.c:330
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find any available package: %s"
-msgstr "To narzędzie nie może odnaleźć dostępnych pakietów: %s"
+msgstr "Nie można odnaleźć żadnego dostępnego pakietu: %s"
 
 #: client/pkgc-manage.c:335
-#, fuzzy
 msgid "The selected package is already installed."
-msgstr "Wybrane pakiety mogą już być zainstalowane."
+msgstr "Wybrany pakiet jest już zainstalowany."
 
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
-msgstr ""
+msgstr "Usuwa jeden lub więcej pakietów z systemu."
 
 #: client/pkgc-manage.c:393
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find installed packages: %s"
-msgstr "To narzędzie nie może odnaleźć pakietu: %s"
+msgstr "Nie można odnaleźć zainstalowanych pakietów: %s"
 
 #. TRANSLATORS: Description for pkgcli download
 #: client/pkgc-manage.c:435
 msgid "Download packages to the specified directory without installing."
-msgstr ""
+msgstr "Pobiera pakiety do podanego katalogu bez instalowania ich."
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
 #: client/pkgc-manage.c:448 client/pkgc-query.c:441 client/pkgc-query.c:788
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages: %s"
-msgstr "To narzędzie nie może odnaleźć pakietu: %s"
+msgstr "Nie można odnaleźć pakietów: %s"
 
 #: client/pkgc-manage.c:456
 #, c-format
 msgid "Directory does not exist: %s"
-msgstr ""
+msgstr "Katalog nie istnieje: %s"
 
 #. TRANSLATORS: Description for pkgcli update
 #: client/pkgc-manage.c:500
 msgid "Update all packages or specific packages to their latest versions."
-msgstr ""
+msgstr "Aktualizuje wszystkie lub wybrane pakiety do najnowszych wersji."
 
 #: client/pkgc-manage.c:522
-#, fuzzy, c-format
+#, c-format
 msgid "Could not find packages to update: %s"
-msgstr "To narzędzie nie może odnaleźć pakietu: %s"
+msgstr "Nie można odnaleźć pakietów do zaktualizowania: %s"
 
 #: client/pkgc-manage.c:552 client/pkgc-manage.c:653 client/pkgc-manage.c:885
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to get updates: %s"
-msgstr "Uzyskanie stanu usługi się nie powiodło"
+msgstr "Uzyskanie aktualizacji się nie powiodło: %s"
 
 #: client/pkgc-manage.c:564 client/pkgc-manage.c:664 client/pkgc-manage.c:893
-#, fuzzy
 msgid "No packages require updating"
-msgstr "Żadne pakiety nie wymagają aktualizacji do nowszych wersji."
+msgstr "Żadne pakiety nie wymagają aktualizacji"
 
 #. TRANSLATORS: Description of pkgcli upgrade.
 #. * No not translate "minimal, default, complete", those are parameters
@@ -842,66 +833,64 @@ msgid ""
 "\n"
 "Types: minimal, default, complete"
 msgstr ""
+"Aktualizuje wszystkie pakiety lub przeprowadza aktualizację dystrybucji do nowszej wersji.\n"
+"\n"
+"Typy: minimal, default, complete"
 
 #: client/pkgc-manage.c:701
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read offline update action: %s"
-msgstr "Włączenie aktualizacji w trybie offline"
+msgstr "Odczytanie działania aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:711
-#, fuzzy
 msgid "Offline update is not triggered."
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Aktualizacja w trybie offline nie jest włączona."
 
 #: client/pkgc-manage.c:720
-#, fuzzy, c-format
+#, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "Włączenie aktualizacji w trybie offline"
+msgstr "Aktualizacja w trybie offline jest włączona. Działanie po aktualizacji: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:731
-#, fuzzy
 msgid "Prepared packages:"
-msgstr "Przygotowane aktualizacje:"
+msgstr "Przygotowane pakiety:"
 
 #: client/pkgc-manage.c:745
-#, fuzzy
 msgid "No offline update is prepared."
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Nie przygotowano żadnej aktualizacji w trybie offline."
 
 #: client/pkgc-manage.c:748
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to read prepared offline updates: %s"
-msgstr "Włączenie aktualizacji w trybie offline"
+msgstr "Odczytanie przygotowanych aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:759
-#, fuzzy
 msgid "No results from last offline update available."
-msgstr "Pobieranie informacji o aktualizacji"
+msgstr "Brak dostępnych wyników ostatniej aktualizacji w trybie offline."
 
 #: client/pkgc-manage.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "Last offline update failed: %s: %s"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Ostatnia aktualizacja w trybie offline się nie powiodła: %s: %s"
 
 #: client/pkgc-manage.c:773
-#, fuzzy
 msgid "Last offline update completed successfully"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Ostatnia aktualizacja w trybie offline została pomyślnie ukończona"
 
 #: client/pkgc-manage.c:783
-#, fuzzy, c-format
+#, c-format
 msgid "Updated: %s"
-msgstr "Zaktualizowano"
+msgstr "Zaktualizowano: %s"
 
 #: client/pkgc-manage.c:807
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to trigger offline update: %s"
-msgstr "Włączenie aktualizacji w trybie offline"
+msgstr "Włączenie aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:811
 msgid "Offline update scheduled. System will update on next reboot."
-msgstr ""
+msgstr "Zaplanowano aktualizację w trybie offline. System zostanie zaktualizowany podczas następnego ponownego uruchomienia."
 
 #. TRANSLATORS: Description of the pkgcli offline-update command.
 #. * The request values (trigger, prepare, etc.) are parameters and MUST NOT be translated.
@@ -915,148 +904,143 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
+"Włącza aktualizacje systemu w trybie offline i zarządza nimi.\n"
+"\n"
+"Można wybrać jedno z tych żądań:\n"
+"  prepare - przygotowuje aktualizację w trybie offline i ją włącza (domyślnie)\n"
+"  trigger - włącza (ręcznie przygotowaną) aktualizację w trybie offline\n"
+"  cancel  - anuluje zaplanowaną aktualizację w trybie offline\n"
+"  status  - wyświetla informacje o stanie przygotowanej lub ukończonej aktualizacji w trybie offline"
 
 #: client/pkgc-manage.c:853
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to cancel offline update: %s"
-msgstr "Rozwiązanie „auto” się nie powiodło: %s"
+msgstr "Anulowanie aktualizacji w trybie offline się nie powiodło: %s"
 
 #: client/pkgc-manage.c:857
-#, fuzzy
 msgid "Offline update cancelled"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Anulowano aktualizację w trybie offline"
 
 #: client/pkgc-manage.c:914
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown offline-update request: %s"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Nieznane żądanie aktualizacji w trybie offline: %s"
 
 #. TRANSLATORS: Description for pkgcli install-sig
 #: client/pkgc-manage.c:935
-#, fuzzy
 msgid "Install a package signature for GPG verification."
-msgstr "Instaluje pakiety bez prośby o potwierdzenie"
+msgstr "Instaluje podpis pakietu do weryfikacji GPG."
 
 #. TRANSLATORS: Description for pkgcli repair
 #: client/pkgc-manage.c:971
 msgid "Attempt to repair the package management system."
-msgstr ""
+msgstr "Próbuje naprawić system zarządzania pakietami."
 
 #: client/pkgc-manage.c:987
 msgid "System repaired successfully"
-msgstr ""
+msgstr "Pomyślnie naprawiono system"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1009
 msgid "Safely terminate the PackageKit daemon."
-msgstr ""
+msgstr "Bezpiecznie kończy działanie usługi PackageKit."
 
 #: client/pkgc-manage.c:1015
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send daemon quit request: %s"
-msgstr "Uzyskanie stanu usługi się nie powiodło"
+msgstr "Wysłanie żądania zakończenia działania usługi się nie powiodło: %s"
 
 #. TRANSLATORS: Description for refresh command in pkgcli help
 #: client/pkgc-manage.c:1035
 msgid "Refresh package metadata"
-msgstr ""
+msgstr "Odświeża metadane pakietów"
 
 #. TRANSLATORS: Description for install command in pkgcli help
 #: client/pkgc-manage.c:1042
-#, fuzzy
 msgid "Install packages"
-msgstr "Instalacja pakietu"
+msgstr "Instaluje pakiety"
 
 #. TRANSLATORS: Description for remove command in pkgcli help
 #: client/pkgc-manage.c:1049
-#, fuzzy
 msgid "Remove packages"
-msgstr "Usunięcie pakietu"
+msgstr "Usuwa pakiety"
 
 #. TRANSLATORS: Description for update command in pkgcli help
 #: client/pkgc-manage.c:1056
-#, fuzzy
 msgid "Update packages"
-msgstr "Aktualizowanie pakietów"
+msgstr "Aktualizuje pakiety"
 
 #. TRANSLATORS: Description for upgrade command in pkgcli help
 #: client/pkgc-manage.c:1063
-#, fuzzy
 msgid "Upgrade the system"
-msgstr "Aktualizacja systemu"
+msgstr "Aktualizuje system"
 
 #. TRANSLATORS: Description for download command in pkgcli help
 #: client/pkgc-manage.c:1070
-#, fuzzy
 msgid "Download packages"
-msgstr "Pobieranie pakietów"
+msgstr "Pobiera pakiety"
 
 #. TRANSLATORS: Description for offline-update command in pkgcli help
 #: client/pkgc-manage.c:1077
-#, fuzzy
 msgid "Manage offline system updates"
-msgstr "Brak pakietów do zaktualizowania."
+msgstr "Zarządza aktualizacjami systemu w trybie offline"
 
 #. TRANSLATORS: Description for install-sig command in pkgcli help
 #: client/pkgc-manage.c:1084
-#, fuzzy
 msgid "Install package signature"
-msgstr "Instalowanie podpisu"
+msgstr "Instaluje podpis pakietu"
 
 #. TRANSLATORS: Description for repair command in pkgcli help
 #: client/pkgc-manage.c:1091
-#, fuzzy
 msgid "Repair package system"
-msgstr "Naprawienie systemu"
+msgstr "Naprawia system pakietów"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
 #: client/pkgc-manage.c:1098
 msgid "Safely stop the PackageKit daemon"
-msgstr ""
+msgstr "Bezpiecznie zatrzymuje usługę PackageKit"
 
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:516
-#, fuzzy
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Usługa PackageKit"
+msgstr "Monitoruje zdarzenia D-Bus usługi PackageKit"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:638
-#, fuzzy
 msgid "Monitor PackageKit bus events"
-msgstr "Usługa PackageKit"
+msgstr "Monitoruje zdarzenia magistrali usługi PackageKit"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
 msgid "Show PackageKit backend information."
-msgstr ""
+msgstr "Wyświetla informacje o module przetwarzającym PackageKit."
 
 #: client/pkgc-query.c:211
 #, c-format
 msgid "Backend: %s"
-msgstr ""
+msgstr "Moduł przetwarzający: %s"
 
 #: client/pkgc-query.c:214
-#, fuzzy, c-format
+#, c-format
 msgid "Description: %s"
-msgstr "Opis"
+msgstr "Opis: %s"
 
 #: client/pkgc-query.c:217
-#, fuzzy, c-format
+#, c-format
 msgid "Author: %s"
-msgstr "Autor"
+msgstr "Autor: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
 #: client/pkgc-query.c:223
-#, fuzzy, c-format
+#, c-format
 msgid "Roles: %s"
-msgstr "Rola"
+msgstr "Role: %s"
 
 #. TRANSLATORS: Description for pkgcli history
 #: client/pkgc-query.c:247
 msgid "Show recent package management transactions."
-msgstr ""
+msgstr "Wyświetla ostatnie transakcje zarządzania pakietami."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
 #: client/pkgc-query.c:286
@@ -1069,576 +1053,534 @@ msgid ""
 "  file    - search by file name\n"
 "  group   - search by package group"
 msgstr ""
+"Wyszukuje pakiety pasujące do podanych wzorców. Jeśli nie podano trybu (MODE),\n"
+"wykonywane jest wyszukiwanie „details”.\n"
+"Możliwe wartości MODE:\n"
+"  name    - wyszukuje według nazwy pakietu\n"
+"  details - wyszukuje według szczegółów pakietu (domyślnie)\n"
+"  file    - wyszukuje według nazwy pliku\n"
+"  group   - wyszukuje według grupy pakietów"
 
 #: client/pkgc-query.c:314
-#, fuzzy
 msgid "No search pattern specified"
-msgstr "Wymagany jest wyszukiwany termin"
+msgstr "Nie podano wzorca wyszukiwania"
 
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:375
 msgid "List all packages or those matching a pattern."
-msgstr ""
+msgstr "Wyświetla listę wszystkich pakietów lub pasujących do wzorca."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:420
 msgid "Show information about one or more packages."
-msgstr ""
+msgstr "Wyświetla informacje o jednym lub więcej pakietach."
 
 #: client/pkgc-query.c:479 client/pkgc-query.c:768
 msgid "Check dependencies recursively"
-msgstr ""
+msgstr "Sprawdza zależności rekurencyjnie"
 
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:490
 msgid "Show dependencies for one or more packages."
-msgstr ""
+msgstr "Wyświetla zależności jednego lub więcej pakietów."
 
 #: client/pkgc-query.c:498 client/pkgc-query.c:582 client/pkgc-query.c:699
-#, fuzzy, c-format
+#, c-format
 msgid "Could not resolve packages: %s"
-msgstr "Rozwiązanie „auto” się nie powiodło: %s"
+msgstr "Nie można rozwiązać nazw pakietów: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:531
 msgid "Show which packages provide the specified capability."
-msgstr ""
+msgstr "Wyświetla pakiety dostarczające podaną możliwość."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:563
 msgid "List all files contained in one or more packages."
-msgstr ""
+msgstr "Wyświetla listę wszystkich plików zawartych w jednym lub więcej pakietach."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:659
-#, fuzzy
 msgid "List all currently available package updates."
-msgstr "To narzędzie nie może odnaleźć dostępnych pakietów: %s"
+msgstr "Wyświetla listę wszystkich obecnie dostępnych aktualizacji pakietów."
 
 #. TRANSLATORS: Description for pkgcli show-update
 #: client/pkgc-query.c:692
 msgid "Show detailed information about the specified package update."
-msgstr ""
+msgstr "Wyświetla szczegółowe informacje o podanej aktualizacji pakietu."
 
 #. TRANSLATORS: Description for pkgcli resolve
 #: client/pkgc-query.c:731
 msgid "Resolve package names to package IDs."
-msgstr ""
+msgstr "Rozwiązuje nazwy pakietów na identyfikatory pakietów."
 
 #. TRANSLATORS: Description for pkgcli required-by
 #: client/pkgc-query.c:779
 msgid "Show which packages require the specified packages."
-msgstr ""
+msgstr "Wyświetla pakiety wymagające podanych pakietów."
 
 #. TRANSLATORS: Description for pkgcli organization
 #: client/pkgc-query.c:823
 msgid "List all available filters, groups and categories for package organization."
-msgstr ""
+msgstr "Wyświetla listę wszystkich dostępnych filtrów, grup i kategorii do porządkowania pakietów."
 
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:831
 msgid "Filters:"
-msgstr ""
+msgstr "Filtry:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:843
 msgid "Groups:"
-msgstr ""
+msgstr "Grupy:"
 
 #. TRANSLATORS: Header for list of available package categories
 #: client/pkgc-query.c:855
-#, fuzzy
 msgid "Categories:"
-msgstr "Kategoria"
+msgstr "Kategorie:"
 
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
 #: client/pkgc-query.c:881
 msgid "Show distribution version upgrades, if any are available."
-msgstr ""
+msgstr "Wyświetla dostępne aktualizacje dystrybucji do nowszej wersji, jeśli istnieją."
 
 #. TRANSLATORS: this is the time since this role was used
 #: client/pkgc-query.c:927
-#, fuzzy
 msgid "Elapsed time"
-msgstr "Czas systemowy"
+msgstr "Upłynęło czasu"
 
 #. TRANSLATORS: Description for pkgcli last-time
 #: client/pkgc-query.c:952
 msgid "Get time in seconds since the last specified action."
-msgstr ""
+msgstr "Wyświetla czas w sekundach od ostatniego wykonania podanego działania."
 
 #. TRANSLATORS: Description for backend command in pkgcli help
 #: client/pkgc-query.c:995
-#, fuzzy
 msgid "Show backend information"
-msgstr "Pobieranie informacji"
+msgstr "Wyświetla informacje o module przetwarzającym"
 
 #. TRANSLATORS: Description for history command in pkgcli help
 #: client/pkgc-query.c:1002
-#, fuzzy
 msgid "Show transaction history"
-msgstr "Transakcja się nie powiodła"
+msgstr "Wyświetla historię transakcji"
 
 #. TRANSLATORS: Description for search command in pkgcli help
 #: client/pkgc-query.c:1009
-#, fuzzy
 msgid "Search for packages"
-msgstr "Wyszukuje według nazw"
+msgstr "Wyszukuje pakiety"
 
 #. TRANSLATORS: Description for list command in pkgcli help
 #: client/pkgc-query.c:1016
-#, fuzzy
 msgid "List packages"
-msgstr "Instalacja pakietu"
+msgstr "Wyświetla listę pakietów"
 
 #. TRANSLATORS: Description for show command in pkgcli help
 #: client/pkgc-query.c:1023
-#, fuzzy
 msgid "Show package information"
-msgstr "Pobieranie informacji o aktualizacji"
+msgstr "Wyświetla informacje o pakiecie"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
 #: client/pkgc-query.c:1030
 msgid "List dependencies of the specified package(s)"
-msgstr ""
+msgstr "Wyświetla listę zależności podanych pakietów"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
 #: client/pkgc-query.c:1037
-#, fuzzy
 msgid "List other packages requiring the specified package(s)"
-msgstr "Pakiet dostarczający ten plik:"
+msgstr "Wyświetla listę pakietów wymagających podanych pakietów"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1044
-#, fuzzy
 msgid "List packages providing a capability"
-msgstr "Pakiet dostarczający ten plik:"
+msgstr "Wyświetla listę pakietów dostarczających daną możliwość"
 
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1051
-#, fuzzy
 msgid "Show files in package"
-msgstr "Zastępowanie pakietów"
+msgstr "Wyświetla pliki w pakiecie"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
 #: client/pkgc-query.c:1058
-#, fuzzy
 msgid "Get available updates"
-msgstr "Pobieranie aktualizacji"
+msgstr "Wyświetla dostępne aktualizacje"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
 #: client/pkgc-query.c:1065
-#, fuzzy
 msgid "Get update details"
-msgstr "Pobieranie informacji o aktualizacji"
+msgstr "Wyświetla informacje o aktualizacji"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
 #: client/pkgc-query.c:1072
-#, fuzzy
 msgid "Resolve package names"
-msgstr "Usunięcie pakietu"
+msgstr "Rozwiązuje nazwy pakietów"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
 #: client/pkgc-query.c:1079
 msgid "List available filters and categories"
-msgstr ""
+msgstr "Wyświetla listę dostępnych filtrów i kategorii"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
 #: client/pkgc-query.c:1086
 msgid "Show available distribution upgrades"
-msgstr ""
+msgstr "Wyświetla dostępne aktualizacje dystrybucji"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
 #: client/pkgc-query.c:1093
-#, fuzzy
 msgid "Get time since last action"
-msgstr "Pobieranie transakcji"
+msgstr "Wyświetla czas od ostatniego działania"
 
 #. TRANSLATORS: Description for pkgcli repo-list
 #: client/pkgc-repo.c:82
 msgid "List all configured package repositories."
-msgstr ""
+msgstr "Wyświetla listę wszystkich skonfigurowanych repozytoriów pakietów."
 
 #. TRANSLATORS: Description for pkgcli repo-enable
 #: client/pkgc-repo.c:116
 msgid "Enable the specified repository."
-msgstr ""
+msgstr "Włącza podane repozytorium."
 
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr ""
+msgstr "Włączono repozytorium „%s”"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
-#, fuzzy
 msgid "Disable the specified repository."
-msgstr "Wyłącza licznik czasu bezczynności"
+msgstr "Wyłącza podane repozytorium."
 
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr ""
+msgstr "Wyłączono repozytorium „%s”"
 
 #: client/pkgc-repo.c:199
-#, fuzzy
 msgid "Automatically remove orphaned packages"
-msgstr "Automatycznie usuwa nieużywane zależności"
+msgstr "Automatycznie usuwa osierocone pakiety"
 
 #. TRANSLATORS: Description for pkgcli repo-remove
 #: client/pkgc-repo.c:211
-#, fuzzy
 msgid "Remove the specified repository."
-msgstr "Usuwanie repozytorium"
+msgstr "Usuwa podane repozytorium."
 
 #: client/pkgc-repo.c:231
-#, fuzzy, c-format
+#, c-format
 msgid "Repository '%s' removed"
-msgstr "Wymagana jest nazwa repozytorium"
+msgstr "Usunięto repozytorium „%s”"
 
 #. TRANSLATORS: Description for repo-list command in pkgcli help
 #: client/pkgc-repo.c:249
-#, fuzzy
 msgid "List repositories"
-msgstr "Pobieranie repozytoriów"
+msgstr "Wyświetla listę repozytoriów"
 
 #. TRANSLATORS: Description for repo-enable command in pkgcli help
 #: client/pkgc-repo.c:256
-#, fuzzy
 msgid "Enable a repository"
-msgstr "Usuwanie repozytorium"
+msgstr "Włącza repozytorium"
 
 #. TRANSLATORS: Description for repo-disable command in pkgcli help
 #: client/pkgc-repo.c:263
-#, fuzzy
 msgid "Disable a repository"
-msgstr "Usuwanie repozytorium"
+msgstr "Wyłącza repozytorium"
 
 #. TRANSLATORS: Description for repo-remove command in pkgcli help
 #: client/pkgc-repo.c:270
-#, fuzzy
 msgid "Remove a repository"
-msgstr "Usuwanie repozytorium"
+msgstr "Usuwa repozytorium"
 
 #: client/pkgc-util.c:97
 msgid "Not connected to PackageKit daemon"
-msgstr ""
+msgstr "Brak połączenia z usługą PackageKit"
 
 #. TRANSLATORS: A duration in seconds
 #: client/pkgc-util.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "%u seconds"
-msgstr "(sekundy)"
+msgstr "%u s"
 
 #. TRANSLATORS: A duration in minutes & seconds
 #: client/pkgc-util.c:140
 #, c-format
 msgid "%u min %u sec"
-msgstr ""
+msgstr "%u min %u s"
 
 #. TRANSLATORS: A duration in minutes
 #: client/pkgc-util.c:143
 #, c-format
 msgid "%u min"
-msgstr ""
+msgstr "%u min"
 
 #. TRANSLATORS: A duration in hours & remaining minutes
 #: client/pkgc-util.c:150
 #, c-format
 msgid "%u h %u min"
-msgstr ""
+msgstr "%u h %u min"
 
 #. TRANSLATORS: A duration in hours
 #: client/pkgc-util.c:153
 #, c-format
 msgid "%u h"
-msgstr ""
+msgstr "%u h"
 
 #. TRANSLATORS: A duration in days & remaining hours
 #: client/pkgc-util.c:160
 #, c-format
 msgid "%u days %u h"
-msgstr ""
+msgstr "%u d %u h"
 
 #. TRANSLATORS: A duration in days
 #: client/pkgc-util.c:163
 #, c-format
 msgid "%u days"
-msgstr ""
+msgstr "%u d"
 
 #: client/pkgc-util.c:279
 msgid "Error"
-msgstr ""
+msgstr "Błąd"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
 #: client/pkgc-util.c:312
 msgid "Warning:"
-msgstr ""
+msgstr "Ostrzeżenie:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
 #: client/pkgc-util.c:436 client/pkgcli.c:194
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to parse options: %s"
-msgstr "Rozwiązanie „auto” się nie powiodło: %s"
+msgstr "Przetworzenie opcji się nie powiodło: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
 #: client/pkgc-util.c:444
 #, c-format
 msgid "Usage: %s %s %s"
-msgstr ""
+msgstr "Użycie: %s %s %s"
 
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
 #: client/pkgc-util.c:639 client/pkgc-util.c:794
-#, fuzzy
 msgid "Package:"
-msgstr "Pakiet"
+msgstr "Pakiet:"
 
 #. TRANSLATORS: Label for the package version in package details
 #: client/pkgc-util.c:643
 msgid "Version:"
-msgstr ""
+msgstr "Wersja:"
 
 #. TRANSLATORS: Label for the package summary in package details
 #: client/pkgc-util.c:649
-#, fuzzy
 msgid "Summary:"
-msgstr "Podsumowanie"
+msgstr "Podsumowanie:"
 
 #. TRANSLATORS: Label for the package description in package details
 #: client/pkgc-util.c:657
-#, fuzzy
 msgid "Description:"
-msgstr "Opis"
+msgstr "Opis:"
 
 #. TRANSLATORS: Label for the package license in package details
 #: client/pkgc-util.c:664
 msgid "License:"
-msgstr ""
+msgstr "Licencja:"
 
 #. TRANSLATORS: Label for the package URL in package details
 #: client/pkgc-util.c:671
 msgid "URL:"
-msgstr ""
+msgstr "Adres URL:"
 
 #. TRANSLATORS: Label for the package group in package details
 #: client/pkgc-util.c:679
 msgid "Group:"
-msgstr ""
+msgstr "Grupa:"
 
 #. TRANSLATORS: Label for the package size in package details
 #: client/pkgc-util.c:687
-#, fuzzy
 msgid "Installed Size:"
-msgstr "Zainstalowana"
+msgstr "Rozmiar po instalacji:"
 
 #. TRANSLATORS: Label for the package download size in package details
 #: client/pkgc-util.c:696
-#, fuzzy
 msgid "Download Size:"
-msgstr "Pobierano"
+msgstr "Rozmiar do pobrania:"
 
 #. TRANSLATORS: Header for the update details section
 #: client/pkgc-util.c:790
-#, fuzzy
 msgid "Update Details:"
-msgstr "Tekst aktualizacji"
+msgstr "Szczegóły aktualizacji:"
 
 #. TRANSLATORS: Label for update details
 #: client/pkgc-util.c:801
-#, fuzzy
 msgid "Updates:"
-msgstr "Aktualizuje"
+msgstr "Aktualizuje:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
 #: client/pkgc-util.c:810
-#, fuzzy
 msgid "Obsoletes:"
-msgstr "Zastępuje"
+msgstr "Zastępuje:"
 
 #. TRANSLATORS: Label for vendor in update details
 #: client/pkgc-util.c:819
-#, fuzzy
 msgid "Vendor:"
-msgstr "Producent"
+msgstr "Producent:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:828
 msgid "Issue Tracker:"
-msgstr ""
+msgstr "System śledzenia błędów:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:837
 msgid "CVE:"
-msgstr ""
+msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
 #: client/pkgc-util.c:845
-#, fuzzy
 msgid "Restart:"
-msgstr "Uruchom ponownie"
+msgstr "Ponowne uruchomienie:"
 
 #. TRANSLATORS: Label for update text in update details
 #: client/pkgc-util.c:854
-#, fuzzy
 msgid "Update text:"
-msgstr "Tekst aktualizacji"
+msgstr "Tekst aktualizacji:"
 
 #. TRANSLATORS: Label for changelog in update details
 #: client/pkgc-util.c:861
-#, fuzzy
 msgid "Changes:"
-msgstr "Zmiany"
+msgstr "Zmiany:"
 
 #. TRANSLATORS: Label for update state in update details
 #: client/pkgc-util.c:868
-#, fuzzy
 msgid "State:"
-msgstr "Stan"
+msgstr "Stan:"
 
 #. TRANSLATORS: Label for issued date in update details
 #: client/pkgc-util.c:877
-#, fuzzy
 msgid "Issued:"
-msgstr "Wydano"
+msgstr "Wydano:"
 
 #. TRANSLATORS: Label for updated date in update details
 #: client/pkgc-util.c:884
-#, fuzzy
 msgid "Updated:"
-msgstr "Zaktualizowano"
+msgstr "Zaktualizowano:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1001
-#, fuzzy
 msgid "Transaction:"
-msgstr "Transakcja"
+msgstr "Transakcja:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:1005
-#, fuzzy
 msgid "System time:"
-msgstr "Czas systemowy"
+msgstr "Czas systemowy:"
 
 #. TRANSLATORS: Label for transaction success status
 #: client/pkgc-util.c:1009
-#, fuzzy
 msgid "Succeeded:"
-msgstr "Powodzenie"
+msgstr "Powodzenie:"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1018
-#, fuzzy
 msgid "Role:"
-msgstr "Rola"
+msgstr "Rola:"
 
 #. TRANSLATORS: Label for transaction duration
 #: client/pkgc-util.c:1025
-#, fuzzy
 msgid "Duration:"
-msgstr "Czas trwania"
+msgstr "Czas trwania:"
 
 #. TRANSLATORS: Label for transaction command line
 #: client/pkgc-util.c:1032
-#, fuzzy
 msgid "Command line:"
-msgstr "Wiersz poleceń"
+msgstr "Wiersz poleceń:"
 
 #. TRANSLATORS: Label for transaction user ID
 #: client/pkgc-util.c:1038
-#, fuzzy
 msgid "User ID:"
-msgstr "Identyfikator użytkownika"
+msgstr "Identyfikator użytkownika:"
 
 #. TRANSLATORS: Label for transaction username
 #: client/pkgc-util.c:1047
-#, fuzzy
 msgid "Username:"
-msgstr "Nazwa użytkownika"
+msgstr "Nazwa użytkownika:"
 
 #. TRANSLATORS: Label for transaction real name
 #: client/pkgc-util.c:1053
-#, fuzzy
 msgid "Real name:"
-msgstr "Imię i nazwisko"
+msgstr "Imię i nazwisko:"
 
 #. TRANSLATORS: No packages were affected by the transaction
 #: client/pkgc-util.c:1085
 msgid "None"
-msgstr ""
+msgstr "Brak"
 
 #: client/pkgc-util.c:1230
-#, fuzzy, c-format
+#, c-format
 msgid "Package not found: %s"
-msgstr "Nie odnaleziono pakietu"
+msgstr "Nie odnaleziono pakietu: %s"
 
 #. TRANSLATORS: command line argument, just show the version string
 #: client/pkgcli.c:79
-#, fuzzy
 msgid "Show pkgcli version"
-msgstr "Wyświetla wersję i kończy działanie"
+msgstr "Wyświetla wersję programu pkgcli"
 
 #: client/pkgcli.c:81
 msgid "Show help"
-msgstr ""
+msgstr "Wyświetla pomoc"
 
 #: client/pkgcli.c:83
 msgid "Only provide minimal output"
-msgstr ""
+msgstr "Wyświetla tylko minimalne informacje"
 
 #: client/pkgcli.c:85
 msgid "Show more detailed output"
-msgstr ""
+msgstr "Wyświetla więcej szczegółów"
 
 #: client/pkgcli.c:87
 msgid "Output in JSON format"
-msgstr ""
+msgstr "Wyświetla wyniki w formacie JSON"
 
 #: client/pkgcli.c:89
 msgid "Disable colored output"
-msgstr ""
+msgstr "Wyłącza kolorowanie wyjścia"
 
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:92
 msgid "Answer 'yes' to all questions"
-msgstr ""
+msgstr "Odpowiada „tak” na wszystkie pytania"
 
 #: client/pkgcli.c:95
 msgid "FILTER"
-msgstr ""
+msgstr "FILTR"
 
 #. TRANSLATORS: command line argument, use a filter to narrow down results
 #: client/pkgcli.c:95
 msgid "Filter packages (installed, available, etc.)"
-msgstr ""
+msgstr "Filtruje pakiety (installed, available itp.)"
 
 #: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
-msgstr ""
+msgstr "Nie podano polecenia. Opcja --help wyświetli informacje o użyciu."
 
 #: client/pkgcli.c:130
 #, c-format
 msgid "Unknown command: %s"
-msgstr ""
+msgstr "Nieznane polecenie: %s"
 
 #: client/pkgcli.c:140
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to connect to PackageKit: %s"
-msgstr "Skontaktowanie się z usługą PackageKit się nie powiodło"
+msgstr "Połączenie z usługą PackageKit się nie powiodło: %s"
 
 #: client/pkgcli.c:202
 #, c-format
 msgid "Version: %s"
-msgstr ""
+msgstr "Wersja: %s"
 
 #: client/pkgcli.c:217
-#, fuzzy
 msgid "Available Commands:"
-msgstr "Dostępna"
+msgstr "Dostępne polecenia:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr ""
+msgstr "Polecenie „pkgcli POLECENIE --help” wyświetli pomoc dla danego polecenia."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:426
@@ -2597,12 +2539,12 @@ msgstr "Używany moduł przetwarzający, np. dummy"
 
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "FILE"
-msgstr ""
+msgstr "PLIK"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "Use this configuration file instead of the default"
-msgstr ""
+msgstr "Używa tego pliku konfiguracji zamiast domyślnego"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:433
