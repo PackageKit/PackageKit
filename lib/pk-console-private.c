@@ -292,6 +292,27 @@ out:
 	return str;
 }
 
+static gboolean
+pk_console_answer_is (const gchar *answer, const gchar *english, const gchar *translated)
+{
+	g_autofree gchar *answer_folded = NULL;
+	g_autofree gchar *translated_folded = NULL;
+	g_autofree gchar *answer_normalized = NULL;
+	g_autofree gchar *translated_normalized = NULL;
+
+	/* always accept the English answer, so scripts keep working */
+	if (strcasecmp (answer, english) == 0)
+		return TRUE;
+
+	if (!g_utf8_validate (answer, -1, NULL))
+		return FALSE;
+	answer_folded = g_utf8_casefold (answer, -1);
+	translated_folded = g_utf8_casefold (translated, -1);
+	answer_normalized = g_utf8_normalize (answer_folded, -1, G_NORMALIZE_DEFAULT);
+	translated_normalized = g_utf8_normalize (translated_folded, -1, G_NORMALIZE_DEFAULT);
+	return g_strcmp0 (answer_normalized, translated_normalized) == 0;
+}
+
 /**
  * pk_console_get_prompt:
  * @question: question to ask user
@@ -309,7 +330,9 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 	gchar *prompt;
 	GString *string;
 
-	prompt = g_strdup_printf ("%s %s ", question, defaultyes ? "[Y/n]" : "[N/y]");
+	/* TRANSLATORS: shown after a yes/no question, the capital letter is the
+	 * default answer; the letters must match the translated "y" and "n" answers */
+	prompt = g_strdup_printf ("%s %s ", question, defaultyes ? _("[Y/n]") : _("[N/y]"));
 	while (!valid) {
 		string = pk_readline_unbuffered (prompt);
 		if (string == NULL)
@@ -323,11 +346,25 @@ pk_console_get_prompt (const gchar *question, gboolean defaultyes)
 				ret = FALSE;
 			}
 		}
-		if (strcasecmp (string->str, "y") == 0 || strcasecmp (string->str, "yes") == 0) {
+		if (pk_console_answer_is (string->str,
+					  "y",
+					  /* TRANSLATORS: short "yes" answer, must match [Y/n] */
+					  C_ ("Answer", "y")) ||
+		    pk_console_answer_is (string->str,
+					  "yes",
+					  /* TRANSLATORS: full "yes" answer */
+					  C_ ("Answer", "yes"))) {
 			valid = TRUE;
 			ret = TRUE;
 		}
-		if (strcasecmp (string->str, "n") == 0 || strcasecmp (string->str, "no") == 0) {
+		if (pk_console_answer_is (string->str,
+					  "n",
+					  /* TRANSLATORS: short "no" answer, must match [N/y] */
+					  C_ ("Answer", "n")) ||
+		    pk_console_answer_is (string->str,
+					  "no",
+					  /* TRANSLATORS: full "no" answer */
+					  C_ ("Answer", "no"))) {
 			valid = TRUE;
 			ret = FALSE;
 		}
