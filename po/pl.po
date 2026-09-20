@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 21:20+0000\n"
+"PO-Revision-Date: 2026-09-20 21:30+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -782,7 +782,7 @@ msgstr "Wybrany pakiet jest już zainstalowany."
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
-msgstr "Usuwa podane pakiety z systemu."
+msgstr "Usuwa podane pakiety z systemu."
 
 #: client/pkgc-manage.c:393
 #, c-format
@@ -1073,7 +1073,7 @@ msgstr "Wyświetla listę wszystkich pakietów lub pasujących do wzorca."
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:420
 msgid "Show information about one or more packages."
-msgstr "Wyświetla informacje o podanych pakietach."
+msgstr "Wyświetla informacje o podanych pakietach."
 
 #: client/pkgc-query.c:479 client/pkgc-query.c:768
 msgid "Check dependencies recursively"
@@ -1082,7 +1082,7 @@ msgstr "Sprawdza zależności rekurencyjnie"
 #. TRANSLATORS: Description for pkgcli depends-on
 #: client/pkgc-query.c:490
 msgid "Show dependencies for one or more packages."
-msgstr "Wyświetla zależności jednego lub więcej pakietów."
+msgstr "Wyświetla zależności podanych pakietów."
 
 #: client/pkgc-query.c:498 client/pkgc-query.c:582 client/pkgc-query.c:699
 #, c-format
@@ -1097,7 +1097,7 @@ msgstr "Wyświetla pakiety dostarczające podaną właściwość."
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:563
 msgid "List all files contained in one or more packages."
-msgstr "Wyświetla listę wszystkich plików zawartych w podanych pakietach."
+msgstr "Wyświetla listę wszystkich plików zawartych w podanych pakietach."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:659
