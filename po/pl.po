@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 01:32+0000\n"
+"PO-Revision-Date: 2026-09-20 01:45+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -42,7 +42,7 @@ msgstr "Instalowanie aktualizacji"
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:207
 msgid "Rebooting after installing updates…"
-msgstr "Ponowne uruchamianie po instalacji aktualizacji…"
+msgstr "Ponowne uruchamianie komputera po zainstalowaniu aktualizacji…"
 
 #. TRANSLATORS: we've finished doing offline updates
 #: client/pk-offline-update.c:246
@@ -224,7 +224,7 @@ msgstr "Ponowne uruchomienie"
 #. * the update
 #: client/pkcon/pk-console.c:376
 msgid "Update text"
-msgstr "Tekst aktualizacji"
+msgstr "Szczegóły aktualizacji"
 
 #. TRANSLATORS: details about the update, the changelog for
 #. * the package
@@ -397,7 +397,7 @@ msgstr "Nie odnaleziono żadnych pakietów"
 #: client/pkcon/pk-console.c:1050
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Oczekiwano nazwy pakietu, otrzymano plik. Proszę zamiast tego spróbować wykonać polecenie „pkcon install-local %s”."
+msgstr "Oczekiwano nazwy pakietu, a podano plik. Użyj polecenia „pkcon install-local %s”."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -455,7 +455,7 @@ msgstr "To narzędzie nie może odnaleźć wszystkich pakietów: %s"
 #. * shit creek without a paddle
 #: client/pkcon/pk-console.c:1507 client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
-msgstr "Usługa zawiesiła się w połowie transakcji."
+msgstr "Usługa uległa awarii w trakcie transakcji."
 
 #. TRANSLATORS: This is the header to the --help menu
 #: client/pkcon/pk-console.c:1539
@@ -526,12 +526,12 @@ msgstr "Automatycznie usuwa nieużywane zależności"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1799 client/pkgcli.c:98
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Wykonuje polecenie za pomocą bezczynnego połączenia sieciowego, a także zużywając mniej energii"
+msgstr "Wykonuje polecenie wykorzystując wolne pasmo sieciowe i mniejszą ilość energii"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1802
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Wyświetla wyjście czytelne dla komputera, zamiast używania animowanych widżetów"
+msgstr "Wyświetla dane w formacie odczytywalnym maszynowo, zamiast animowanych elementów interfejsu"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1805
@@ -637,7 +637,7 @@ msgstr "Wymagana jest nazwa, parametr i wartość repozytorium"
 #. TRANSLATORS: The user didn't provide any data
 #: client/pkcon/pk-console.c:2246
 msgid "A repo id and autoremove required"
-msgstr "Wymagany jest identyfikator i automatyczne usuwanie"
+msgstr "Wymagany jest identyfikator repozytorium i opcja automatycznego usuwania"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
@@ -669,7 +669,7 @@ msgstr "Wymagana jest nazwa pakietu"
 #. * the user didn't specify it
 #: client/pkcon/pk-console.c:2359
 msgid "A package provide string is required"
-msgstr "Wymagany jest łańcuch dostarczania pakietu"
+msgstr "Wymagany jest ciąg właściwości dostarczanej przez pakiet"
 
 #. TRANSLATORS: The user did not provide a package name
 #: client/pkcon/pk-console.c:2392 client/pkcon/pk-console.c:2405
