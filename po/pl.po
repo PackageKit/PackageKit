@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 21:01+0000\n"
+"PO-Revision-Date: 2026-09-20 21:20+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -73,7 +73,7 @@ msgstr "Czas systemowy"
 
 #: client/pkcon/pk-console.c:177 client/pkgc-util.c:1014
 msgid "False"
-msgstr "Fałsz"
+msgstr "Nie"
 
 #. TRANSLATORS: this is if the transaction succeeded or not
 #: client/pkcon/pk-console.c:177
@@ -82,7 +82,7 @@ msgstr "Powodzenie"
 
 #: client/pkcon/pk-console.c:177 client/pkgc-util.c:1013
 msgid "True"
-msgstr "Prawda"
+msgstr "Tak"
 
 #. TRANSLATORS: this is the transactions role, e.g. "update-packages"
 #: client/pkcon/pk-console.c:179
@@ -159,7 +159,7 @@ msgstr "Identyfikator"
 #. TRANSLATORS: this is the parent group
 #: client/pkcon/pk-console.c:270
 msgid "Parent"
-msgstr "Nadrzędna"
+msgstr "Grupa nadrzędna"
 
 #. TRANSLATORS: this is the name of the parent group
 #. TRANSLATORS: this is the name of the backend
@@ -404,12 +404,12 @@ msgstr "Oczekiwano nazwy pakietu, a podano plik. Proszę zamiast tego spróbowa
 #: client/pkcon/pk-console.c:1087
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "To narzędzie nie może odnaleźć dostępnych pakietów: %s"
+msgstr "To narzędzie nie może odnaleźć żadnego dostępnego pakietu: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1105
 msgid "This tool could not find any available package."
-msgstr "To narzędzie nie może odnaleźć dostępnych pakietów."
+msgstr "To narzędzie nie może odnaleźć żadnego dostępnego pakietu."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
@@ -531,7 +531,7 @@ msgstr "Wykonuje polecenie, wykorzystując wolne pasmo sieciowe i mniej energii
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1802
 msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Wyświetla dane w formacie odczytywalnym maszynowo, zamiast animowanych elementów interfejsu"
+msgstr "Wyświetla dane w formacie czytelnym dla maszyn, zamiast animowanych elementów interfejsu"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1805
@@ -572,7 +572,7 @@ msgstr "Wymagany jest typ wyszukiwania, np. name"
 #: client/pkcon/pk-console.c:1958 client/pkcon/pk-console.c:1978
 #: client/pkcon/pk-console.c:1998 client/pkcon/pk-console.c:2018
 msgid "A search term is required"
-msgstr "Wymagany jest wyszukiwany termin"
+msgstr "Wymagana jest fraza wyszukiwania"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to install
@@ -765,7 +765,7 @@ msgstr "Odświeżono metadane pakietów"
 #. TRANSLATORS: Description for pkgcli install
 #: client/pkgc-manage.c:254
 msgid "Install one or more packages or local package files."
-msgstr "Instaluje jeden lub więcej pakietów albo lokalnych plików pakietów."
+msgstr "Instaluje podane pakiety lub lokalne pliki pakietów."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -782,7 +782,7 @@ msgstr "Wybrany pakiet jest już zainstalowany."
 #. TRANSLATORS: Description for pkgcli remove
 #: client/pkgc-manage.c:376
 msgid "Remove one or more packages from the system."
-msgstr "Usuwa jeden lub więcej pakietów z systemu."
+msgstr "Usuwa podane pakiety z systemu."
 
 #: client/pkgc-manage.c:393
 #, c-format
@@ -1073,7 +1073,7 @@ msgstr "Wyświetla listę wszystkich pakietów lub pasujących do wzorca."
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:420
 msgid "Show information about one or more packages."
-msgstr "Wyświetla informacje o jednym lub więcej pakietach."
+msgstr "Wyświetla informacje o podanych pakietach."
 
 #: client/pkgc-query.c:479 client/pkgc-query.c:768
 msgid "Check dependencies recursively"
@@ -1097,7 +1097,7 @@ msgstr "Wyświetla pakiety dostarczające podaną właściwość."
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:563
 msgid "List all files contained in one or more packages."
-msgstr "Wyświetla listę wszystkich plików zawartych w jednym lub więcej pakietach."
+msgstr "Wyświetla listę wszystkich plików zawartych w podanych pakietach."
 
 #. TRANSLATORS: Description for pkgcli list-updates
 #: client/pkgc-query.c:659
@@ -1580,7 +1580,7 @@ msgstr "Dostępne polecenia:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Polecenie „pkgcli POLECENIE --help” wyświetli pomoc dla danego polecenia."
+msgstr "Polecenie „pkgcli COMMAND --help” wyświetli pomoc dla danego polecenia."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:426
@@ -1605,7 +1605,7 @@ msgstr "Wczytywanie listy pakietów."
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
 #: contrib/command-not-found/pk-command-not-found.c:502
 msgid "Failed to search for file"
-msgstr "Odnalezienie pliku się nie powiodło"
+msgstr "Wyszukanie pliku się nie powiodło"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: contrib/command-not-found/pk-command-not-found.c:516
@@ -1856,7 +1856,7 @@ msgstr "Wymagane jest uwierzytelnienie, aby zaktualizować system operacyjny"
 #. applications from working.
 #: data/policy/org.freedesktop.packagekit.policy.in:245
 msgid "Repair System"
-msgstr "Naprawienie systemu"
+msgstr "Naprawa systemu"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
@@ -2014,7 +2014,7 @@ msgstr "Pobieranie list plików"
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:447
 msgid "Downloading lists of changes"
-msgstr "Pobieranie listy zmian"
+msgstr "Pobieranie list zmian"
 
 #. TRANSLATORS: transaction state, downloading metadata
 #: lib/pk-console-private.c:451
@@ -2260,7 +2260,7 @@ msgstr "Pobieranie aktualizacji"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1181
 msgid "Searching by details"
-msgstr "Wyszukiwanie według informacji"
+msgstr "Wyszukiwanie według szczegółów"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1185
@@ -2520,7 +2520,7 @@ msgstr "Kontynuować wprowadzanie zmian?"
 #. TRANSLATORS: tell the user we didn't do anything
 #: lib/pk-task-text.c:443
 msgid "The transaction did not proceed."
-msgstr "Transakcja nie będzie kontynuowana."
+msgstr "Transakcja nie została przeprowadzona."
 
 #. TRANSLATORS: this is a command alias
 #: src/pk-direct.c:99
@@ -2564,7 +2564,7 @@ msgstr "Wyszukuje według nazw"
 #. TRANSLATORS: command description
 #: src/pk-direct.c:448
 msgid "Search by details"
-msgstr "Wyszukuje według informacji"
+msgstr "Wyszukuje według szczegółów"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:453
@@ -2574,7 +2574,7 @@ msgstr "Wyszukuje według plików"
 #. TRANSLATORS: command description
 #: src/pk-direct.c:458
 msgid "Install package"
-msgstr "Instalacja pakietu"
+msgstr "Instaluje pakiet"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:468
@@ -2633,7 +2633,7 @@ msgstr "Kończy działanie po wczytaniu mechanizmu"
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:139
 msgid "Don't clear environment on startup"
-msgstr "Bez czyszczenia środowiska podczas uruchamiania"
+msgstr "Nie czyści środowiska podczas uruchamiania"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:157
