@@ -958,7 +958,7 @@ pk_console_resolve_package (PkConsoleCtx *ctx, const gchar *package_name, GError
 
 	/* TRANSLATORS: more than one package could be found that matched,
 	 * to follow is a list of possible packages  */
-	g_print ("%s\n", _("More than one package matches:"));
+	g_print ("\n%s\n", _("More than one package matches:"));
 	for (i = 0; i < array->len; i++) {
 		g_autofree gchar *printable = NULL;
 		g_auto(GStrv) split = NULL;
