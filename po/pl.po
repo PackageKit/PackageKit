@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 20:47+0000\n"
+"PO-Revision-Date: 2026-09-20 21:01+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -128,7 +128,7 @@ msgstr "Dotyczy pakietów:"
 #. TRANSLATORS: these are packages touched by the transaction
 #: client/pkcon/pk-console.c:212
 msgid "Affected packages: None"
-msgstr "Dotyczy pakietów: żadnych"
+msgstr "Dotyczy pakietów: brak"
 
 #. TRANSLATORS: this is the distro, e.g. Fedora 10
 #: client/pkcon/pk-console.c:234
@@ -322,7 +322,7 @@ msgstr "Wyniki:"
 #. * fatal in my book
 #: client/pkcon/pk-console.c:702 client/pkcon/pk-console.c:866
 msgid "Fatal error"
-msgstr "Krytyczny błąd"
+msgstr "Błąd krytyczny"
 
 #. TRANSLATORS: the user asked to update everything,
 #. * but there is nothing that can be updated
@@ -345,7 +345,7 @@ msgstr "Brak dostępnych aktualizacji w tej chwili."
 
 #: client/pkcon/pk-console.c:783
 msgid "There are no upgrades available at this time."
-msgstr "Brak dostępnych aktualizacji w tej chwili."
+msgstr "Brak dostępnych aktualizacji dystrybucji w tej chwili."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:845
@@ -590,7 +590,7 @@ msgstr "Wymagana jest nazwa pliku do zainstalowania"
 #. * users won't see this
 #: client/pkcon/pk-console.c:2081
 msgid "A type, key_id and package_id are required"
-msgstr "Wymagany jest typ, key_id i package_id"
+msgstr "Wymagane są typ, key_id i package_id"
 
 #. TRANSLATORS: the user did not
 #. * specify what they wanted to remove
@@ -603,7 +603,7 @@ msgstr "Wymagana jest nazwa pakietu do usunięcia"
 #. * download or where
 #: client/pkcon/pk-console.c:2116
 msgid "A destination directory and the package names to download are required"
-msgstr "Wymagany jest katalog docelowy i nazwy pakietów do pobrania"
+msgstr "Wymagane są katalog docelowy i nazwy pakietów do pobrania"
 
 #. TRANSLATORS: the directory does
 #. * not exist, so we can't continue
@@ -632,12 +632,12 @@ msgstr "Wymagana jest nazwa repozytorium"
 #. TRANSLATORS: The user didn't provide any data
 #: client/pkcon/pk-console.c:2226
 msgid "A repo name, parameter and value are required"
-msgstr "Wymagana jest nazwa, parametr i wartość repozytorium"
+msgstr "Wymagana jest nazwa repozytorium, parametr i wartość"
 
 #. TRANSLATORS: The user didn't provide any data
 #: client/pkcon/pk-console.c:2246
 msgid "A repo id and autoremove required"
-msgstr "Wymagany jest identyfikator repozytorium i opcja automatycznego usuwania"
+msgstr "Wymagane są identyfikator repozytorium i opcja automatycznego usuwania"
 
 #. TRANSLATORS: The user didn't specify what action to use
 #. TRANSLATORS: The user didn't
@@ -1092,7 +1092,7 @@ msgstr "Nie można rozwiązać nazw pakietów: %s"
 #. TRANSLATORS: Description for pkgcli what-provides
 #: client/pkgc-query.c:531
 msgid "Show which packages provide the specified capability."
-msgstr "Wyświetla pakiety dostarczające podaną możliwość."
+msgstr "Wyświetla pakiety dostarczające podaną właściwość."
 
 #. TRANSLATORS: Description for pkgcli files
 #: client/pkgc-query.c:563
@@ -1192,7 +1192,7 @@ msgstr "Wyświetla listę pakietów wymagających podanych pakietów"
 #. TRANSLATORS: Description for what-provides command in pkgcli help
 #: client/pkgc-query.c:1044
 msgid "List packages providing a capability"
-msgstr "Wyświetla listę pakietów dostarczających daną możliwość"
+msgstr "Wyświetla listę pakietów dostarczających daną właściwość"
 
 #. TRANSLATORS: Description for files command in pkgcli help
 #: client/pkgc-query.c:1051
@@ -2245,12 +2245,12 @@ msgstr "Pobieranie informacji o aktualizacji"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1169
 msgid "Getting details"
-msgstr "Pobieranie informacji"
+msgstr "Pobieranie szczegółów"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1173
 msgid "Getting requires"
-msgstr "Pobieranie wymagań"
+msgstr "Pobieranie pakietów zależnych"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1177
@@ -2330,7 +2330,7 @@ msgstr "Pobieranie listy plików"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1246
 msgid "Getting provides"
-msgstr "Pobieranie dostarczanych"
+msgstr "Pobieranie pakietów dostarczających właściwość"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1250
@@ -2350,7 +2350,7 @@ msgstr "Akceptowanie licencji"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1266
 msgid "Getting upgrades"
-msgstr "Pobieranie aktualizacji"
+msgstr "Pobieranie aktualizacji wydania"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1270
@@ -2415,7 +2415,7 @@ msgstr "Odcisk klucza"
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
 #: lib/pk-task-text.c:133
 msgid "Key Timestamp"
-msgstr "Czas klucza"
+msgstr "Znacznik czasu klucza"
 
 #. TRANSLATORS: ask the user if they want to import
 #: lib/pk-task-text.c:146
