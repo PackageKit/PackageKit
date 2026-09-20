@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 01:45+0000\n"
+"PO-Revision-Date: 2026-09-20 02:04+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -360,7 +360,7 @@ msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację."
 #. TRANSLATORS: a package needs to restart their system (due to security)
 #: client/pkcon/pk-console.c:853
 msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
+msgstr "Uruchom ponownie komputer, aby zakończyć proces, ponieważ zainstalowano ważne aktualizacje zabezpieczeń."
 
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:857
@@ -397,7 +397,7 @@ msgstr "Nie odnaleziono żadnych pakietów"
 #: client/pkcon/pk-console.c:1050
 #, c-format
 msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Oczekiwano nazwy pakietu, a podano plik. Użyj polecenia „pkcon install-local %s”."
+msgstr "Oczekiwano nazwy pakietu, a podano plik. Zamiast tego spróbuj użyć polecenia „pkcon install-local %s”."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation. The detailed error follows.
@@ -526,7 +526,7 @@ msgstr "Automatycznie usuwa nieużywane zależności"
 #. TRANSLATORS: command line argument, this command is not a priority
 #: client/pkcon/pk-console.c:1799 client/pkgcli.c:98
 msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Wykonuje polecenie wykorzystując wolne pasmo sieciowe i mniejszą ilość energii"
+msgstr "Wykonuje polecenie, wykorzystując wolne pasmo sieciowe i mniejszą ilość energii"
 
 #. TRANSLATORS: command line argument, just output without fancy formatting
 #: client/pkcon/pk-console.c:1802
@@ -904,7 +904,7 @@ msgid ""
 "  cancel  - cancel a planned offline update\n"
 "  status  - show status information about a prepared or finished offline update"
 msgstr ""
-"Włącza aktualizacje systemu w trybie offline i zarządza nimi.\n"
+"Rozpoczyna aktualizacje systemu w trybie offline i zarządza nimi.\n"
 "\n"
 "Można wybrać jedno z tych żądań:\n"
 "  prepare - przygotowuje aktualizację w trybie offline i ją włącza (domyślnie)\n"
@@ -1888,7 +1888,7 @@ msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Wymagane jest uwierzytelnienie, aby wyczyścić komunikat aktualizacji w trybie offline"
+msgstr "Wymagane jest uwierzytelnienie, aby usunąć komunikat o aktualizacjach w trybie offline"
 
 #: lib/pk-console-private.c:228
 #, c-format
@@ -1964,7 +1964,7 @@ msgstr "Zastępowanie pakietów"
 #. TRANSLATORS: transaction state, checking the transaction before we do it
 #: lib/pk-console-private.c:407
 msgid "Resolving dependencies"
-msgstr "Rozwiązywanie zależności"
+msgstr "Lista zależności pakietów"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
 #: lib/pk-console-private.c:411
