@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-19 19:00+0000\n"
+"PO-Revision-Date: 2026-09-20 01:32+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -275,7 +275,7 @@ msgstr "Wymagane jest ponowne uruchomienie sesji:"
 #. * due to a security update
 #: client/pkcon/pk-console.c:457
 msgid "System restart (security) required by:"
-msgstr "Ponowne uruchomienie systemu jest wymagane (z powodu bezpieczeństwa) przez:"
+msgstr "Ponowne uruchomienie systemu jest wymagane (z powodu bezpieczeństwa) przez:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
