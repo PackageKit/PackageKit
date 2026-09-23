@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-19 18:43+0000\n"
+"PO-Revision-Date: 2026-09-23 22:51+0000\n"
 "Last-Translator: taijuin Lee <taijuin@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/projects/packagekit/translations/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -1694,7 +1694,7 @@ msgstr "取消外來工作"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:23
 msgid "Authentication is required to cancel a task that was not started by yourself"
-msgstr "若要取消非您本人啟動的任務，必須進行身分驗證"
+msgstr "若要取消非您本人啟動的任務，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users need authentication to install signed packages
@@ -1707,7 +1707,7 @@ msgstr "安裝已簽署的軟體包"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:40
 msgid "Authentication is required to install software"
-msgstr "若要安裝軟體，必須進行身分驗證"
+msgstr "若要安裝軟體，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to install untrusted or
@@ -1720,7 +1720,7 @@ msgstr "安裝未信任的本地檔案"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:57
 msgid "Authentication is required to install untrusted software"
-msgstr "若要安裝未受信任的軟體，必須進行身分驗證"
+msgstr "若要安裝未受信任的軟體，您需要進行身分驗證"
 
 #. SECURITY
 #. - Normal users require admin authentication to reinstall packages.
@@ -1734,7 +1734,7 @@ msgstr "再次安裝已安裝過的軟體包"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:76
 msgid "Authentication is required to reinstall software"
-msgstr "若要重新安裝軟體，必須進行身分驗證"
+msgstr "若要重新安裝軟體，您需要進行身分驗證"
 
 #. SECURITY
 #. - Normal users require admin authentication to downgrade packages.
@@ -1748,7 +1748,7 @@ msgstr "安裝已安裝軟體包的舊版"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:94
 msgid "Authentication is required to downgrade software"
-msgstr "若要降級軟體，必須進行身分驗證"
+msgstr "若要降級軟體，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to add signing keys.
@@ -1761,7 +1761,7 @@ msgstr "信任用來簽署軟體的金鑰"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:112
 msgid "Authentication is required to consider a key used for signing software as trusted"
-msgstr "若要將用於簽署軟體的金鑰視為可信，必須進行身分驗證"
+msgstr "若要將用於簽署軟體的金鑰視為可信，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to accept new
@@ -1774,7 +1774,7 @@ msgstr "接受終端使用者授權條款合約 (EULA)"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:129
 msgid "Authentication is required to accept a EULA"
-msgstr "若要接受終端使用者授權合約 (EULA)，必須進行身分驗證"
+msgstr "若要接受終端使用者授權合約 (EULA)，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to remove packages as
@@ -1791,7 +1791,7 @@ msgstr "移除軟體包"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:149
 msgid "Authentication is required to remove software"
-msgstr "若要移除軟體，必須進行身分驗證"
+msgstr "若要移除軟體，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to update the
@@ -1805,7 +1805,7 @@ msgstr "更新軟體"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:168
 msgid "Authentication is required to update software"
-msgstr "若要更新軟體，必須進行身分驗證"
+msgstr "若要更新軟體，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to enable or disable
@@ -1817,7 +1817,7 @@ msgstr "變更軟體庫參數"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:184
 msgid "Authentication is required to change software repository parameters"
-msgstr "若要變更軟體庫參數，必須進行身分驗證"
+msgstr "若要變更軟體庫參數，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to refresh the
@@ -1828,7 +1828,7 @@ msgstr "重整系統軟體庫"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:199
 msgid "Authentication is required to refresh the system repositories"
-msgstr "若要更新系統軟體庫資訊，必須進行身分驗證"
+msgstr "若要更新系統軟體庫資訊，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users do not require admin authentication to set the proxy
@@ -1839,7 +1839,7 @@ msgstr "設定網路代理伺服器"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:214
 msgid "Authentication is required to set the network proxy used for downloading software"
-msgstr "若要設定用於下載軟體的網路代理伺服器，必須進行身分驗證"
+msgstr "若要設定用於下載軟體的網路代理伺服器，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to upgrade the disto as
@@ -1851,7 +1851,7 @@ msgstr "升級系統"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:230
 msgid "Authentication is required to upgrade the operating system"
-msgstr "若要升級作業系統，必須進行身分驗證"
+msgstr "若要升級作業系統，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users require admin authentication to repair the system
@@ -1863,7 +1863,7 @@ msgstr "修復系統"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:246
 msgid "Authentication is required to repair the installed software"
-msgstr "若要修復已安裝的軟體，必須進行身分驗證"
+msgstr "若要修復已安裝的軟體，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users are able to ask updates to be installed at
@@ -1880,7 +1880,7 @@ msgstr "觸發離線更新"
 #: data/policy/org.freedesktop.packagekit.policy.in:261
 #: data/policy/org.freedesktop.packagekit.policy.in:277
 msgid "Authentication is required to trigger offline updates"
-msgstr "若要觸發離線更新，必須進行身分驗證"
+msgstr "若要觸發離線更新，您需要進行身分驗證"
 
 #. SECURITY:
 #. - Normal users are able to clear the updates message that is
@@ -1891,7 +1891,7 @@ msgstr "清理離線更新訊息"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "若要清除離線更新訊息，必須進行身分驗證"
+msgstr "若要清除離線更新訊息，您需要進行身分驗證"
 
 #: lib/pk-console-private.c:228
 #, c-format
