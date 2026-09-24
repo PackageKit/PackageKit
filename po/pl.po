@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-24 18:20+0000\n"
+"PO-Revision-Date: 2026-09-24 18:24+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -345,7 +345,7 @@ msgstr "W tej chwili brak dostępnych aktualizacji."
 
 #: client/pkcon/pk-console.c:783
 msgid "There are no upgrades available at this time."
-msgstr "Brak dostępnych aktualizacji dystrybucji w tej chwili."
+msgstr "W tej chwili brak dostępnych aktualizacji dystrybucji."
 
 #. TRANSLATORS: a package needs to restart their system
 #: client/pkcon/pk-console.c:845
@@ -1884,7 +1884,7 @@ msgstr "Wymagane jest uwierzytelnienie, aby włączyć aktualizacje w trybie of
 #. shown after an updates are applied at boot time.
 #: data/policy/org.freedesktop.packagekit.policy.in:291
 msgid "Clear offline update message"
-msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
+msgstr "Wyczyszczenie komunikatu o aktualizacjach w trybie offline"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
@@ -2662,7 +2662,7 @@ msgstr "Wczytanie modułu przetwarzającego się nie powiodło: %s"
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
-msgstr "Oprogramowanie nie pochodzi z zaufanego źródła."
+msgstr "Oprogramowanie nie pochodzi z zaufanego źródła."
 
 #: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
