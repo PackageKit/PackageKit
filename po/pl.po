@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-20 21:30+0000\n"
+"PO-Revision-Date: 2026-09-24 18:20+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -275,13 +275,13 @@ msgstr "Wymagane jest ponowne uruchomienie sesji:"
 #. * due to a security update
 #: client/pkcon/pk-console.c:457
 msgid "System restart (security) required by:"
-msgstr "Ponowne uruchomienie systemu jest wymagane (z powodu bezpieczeństwa) przez:"
+msgstr "Ponowne uruchomienie systemu jest wymagane (ze względów bezpieczeństwa) przez:"
 
 #. TRANSLATORS: a package requires the session to be restarted
 #. * due to a security update
 #: client/pkcon/pk-console.c:461
 msgid "Session restart (security) required:"
-msgstr "Wymagane jest ponowne uruchomienie sesji (z powodu bezpieczeństwa):"
+msgstr "Wymagane jest ponowne uruchomienie sesji (ze względów bezpieczeństwa):"
 
 #. TRANSLATORS: a package requires the application to be restarted
 #: client/pkcon/pk-console.c:464
@@ -341,7 +341,7 @@ msgstr "Transakcja się nie powiodła"
 #. TRANSLATORS: print a message when there are no updates
 #: client/pkcon/pk-console.c:760
 msgid "There are no updates available at this time."
-msgstr "Brak dostępnych aktualizacji w tej chwili."
+msgstr "W tej chwili brak dostępnych aktualizacji."
 
 #: client/pkcon/pk-console.c:783
 msgid "There are no upgrades available at this time."
@@ -365,7 +365,7 @@ msgstr "Proszę uruchomić ponownie komputer, aby zakończyć aktualizację, pon
 #. TRANSLATORS: a package needs to restart the session (due to security)
 #: client/pkcon/pk-console.c:857
 msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ zainstalowano aktualizacje bezpieczeństwa."
+msgstr "Proszę wylogować się i zalogować, aby zakończyć aktualizację, ponieważ zainstalowano ważne aktualizacje zabezpieczeń."
 
 #. TRANSLATORS: more than one package could be found that matched,
 #. * to follow is a list of possible packages
@@ -876,7 +876,7 @@ msgstr "Ostatnia aktualizacja w trybie offline się nie powiodła: %s: %s"
 
 #: client/pkgc-manage.c:773
 msgid "Last offline update completed successfully"
-msgstr "Ostatnia aktualizacja w trybie offline została pomyślnie ukończona"
+msgstr "Ostatnia aktualizacja w trybie offline została ukończona"
 
 #: client/pkgc-manage.c:783
 #, c-format
@@ -938,7 +938,7 @@ msgstr "Próbuje naprawić system zarządzania pakietami."
 
 #: client/pkgc-manage.c:987
 msgid "System repaired successfully"
-msgstr "Pomyślnie naprawiono system"
+msgstr "Naprawiono system"
 
 #. TRANSLATORS: Description for pkgcli quit
 #: client/pkgc-manage.c:1009
@@ -1580,7 +1580,7 @@ msgstr "Dostępne polecenia:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Polecenie „pkgcli COMMAND --help” wyświetli pomoc dla danego polecenia."
+msgstr "Polecenie „pkgcli COMMAND --help” wyświetli pomoc do danego polecenia."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:426
@@ -1888,7 +1888,7 @@ msgstr "Wyczyszczenie komunikatu aktualizacji w trybie offline"
 
 #: data/policy/org.freedesktop.packagekit.policy.in:292
 msgid "Authentication is required to clear the offline updates message"
-msgstr "Wymagane jest uwierzytelnienie, aby usunąć komunikat o aktualizacjach w trybie offline"
+msgstr "Wymagane jest uwierzytelnienie, aby wyczyścić komunikat o aktualizacjach w trybie offline"
 
 #: lib/pk-console-private.c:228
 #, c-format
@@ -2084,7 +2084,7 @@ msgstr "Wykonywanie zaczepów"
 #. TRANSLATORS: turn on all debugging
 #: lib/pk-debug.c:149
 msgid "Show debugging information for all files"
-msgstr "Wyświetla informacje o debugowaniu dla wszystkich plików"
+msgstr "Wyświetla informacje debugowania ze wszystkich plików"
 
 #: lib/pk-debug.c:230
 msgid "Debugging Options"
@@ -2112,7 +2112,7 @@ msgstr "Ważna"
 #. TRANSLATORS: The type of update
 #: lib/pk-enum.c:991
 msgid "Security"
-msgstr "Bezpieczeństwa"
+msgstr "Zabezpieczeń"
 
 #. TRANSLATORS: The type of update
 #: lib/pk-enum.c:995
@@ -2510,7 +2510,7 @@ msgstr "Następujące pakiety muszą zostać zastąpione:"
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
 #: lib/pk-task-text.c:305
 msgid "The following packages are untrusted:"
-msgstr "Poniższe pakiety są niezaufane:"
+msgstr "Następujące pakiety są niezaufane:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
 #: lib/pk-task-text.c:438
@@ -2623,7 +2623,7 @@ msgstr "Wyświetla wersję i kończy działanie"
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: src/pk-main.c:133
 msgid "Exit after a small delay"
-msgstr "Kończy działanie po małej przerwie"
+msgstr "Kończy działanie po krótkim opóźnieniu"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:136
@@ -2662,7 +2662,7 @@ msgstr "Wczytanie modułu przetwarzającego się nie powiodło: %s"
 #. TRANSLATORS: is not GPG signed
 #: src/pk-transaction.c:2751
 msgid "The software is not from a trusted source."
-msgstr "Oprogramowanie nie jest z zaufanego źródła."
+msgstr "Oprogramowanie nie pochodzi z zaufanego źródła."
 
 #: src/pk-transaction.c:2759
 msgid "Do not update this package unless you are sure it is safe to do so."
