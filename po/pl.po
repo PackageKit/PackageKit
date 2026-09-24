@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-24 18:24+0000\n"
+"PO-Revision-Date: 2026-09-24 18:36+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -91,7 +91,7 @@ msgstr "Rola"
 
 #: client/pkcon/pk-console.c:184
 msgid "(seconds)"
-msgstr "(sekundy)"
+msgstr "s"
 
 #. TRANSLATORS: this is The duration of the transaction
 #: client/pkcon/pk-console.c:184
@@ -404,12 +404,12 @@ msgstr "Oczekiwano nazwy pakietu, a podano plik. Proszę zamiast tego spróbowa
 #: client/pkcon/pk-console.c:1087
 #, c-format
 msgid "This tool could not find any available package: %s"
-msgstr "To narzędzie nie może odnaleźć żadnego dostępnego pakietu: %s"
+msgstr "Nie można odnaleźć żadnego dostępnego pakietu: %s"
 
 #. TRANSLATORS: We were unable to find a package for installation.
 #: client/pkcon/pk-console.c:1105
 msgid "This tool could not find any available package."
-msgstr "To narzędzie nie może odnaleźć żadnego dostępnego pakietu."
+msgstr "Nie można odnaleźć żadnego dostępnego pakietu."
 
 #. TRANSLATORS: There was an error finding a package
 #. * for installation, it may already be installed.
@@ -422,14 +422,14 @@ msgstr "Wybrane pakiety mogą już być zainstalowane."
 #: client/pkcon/pk-console.c:1148
 #, c-format
 msgid "This tool could not find the installed package: %s"
-msgstr "To narzędzie nie może odnaleźć zainstalowanego pakietu: %s"
+msgstr "Nie można odnaleźć zainstalowanego pakietu: %s"
 
 #. TRANSLATORS: There was an error getting the list
 #. * of files for the package. The detailed error follows
 #: client/pkcon/pk-console.c:1183 client/pkcon/pk-console.c:1215
 #, c-format
 msgid "This tool could not find the package: %s"
-msgstr "To narzędzie nie może odnaleźć pakietu: %s"
+msgstr "Nie można odnaleźć pakietu: %s"
 
 #. TRANSLATORS: there are no updates, so nothing to do
 #: client/pkcon/pk-console.c:1264
@@ -449,7 +449,7 @@ msgstr "Żadne pakiety nie wymagają aktualizacji do nowszych wersji."
 #: client/pkcon/pk-console.c:1480
 #, c-format
 msgid "This tool could not find all the packages: %s"
-msgstr "To narzędzie nie może odnaleźć wszystkich pakietów: %s"
+msgstr "Nie można odnaleźć wszystkich pakietów: %s"
 
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
@@ -993,7 +993,7 @@ msgstr "Instaluje podpis pakietu"
 #. TRANSLATORS: Description for repair command in pkgcli help
 #: client/pkgc-manage.c:1091
 msgid "Repair package system"
-msgstr "Naprawia system pakietów"
+msgstr "Naprawia system zarządzania pakietami"
 
 #. TRANSLATORS: Description for quit command in pkgcli help
 #: client/pkgc-manage.c:1098
@@ -2133,17 +2133,17 @@ msgstr "Zablokowana"
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1008 lib/pk-enum.c:1115
 msgid "Installed"
-msgstr "Zainstalowana"
+msgstr "Zainstalowany"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/pk-enum.c:1013
 msgid "Available"
-msgstr "Dostępna"
+msgstr "Dostępny"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
 #: lib/pk-enum.c:1017
 msgid "Unavailable"
-msgstr "Niedostępna"
+msgstr "Niedostępny"
 
 #. TRANSLATORS: The state of a package: to be installed with the next action
 #: lib/pk-enum.c:1021
@@ -2350,7 +2350,7 @@ msgstr "Akceptowanie licencji"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1266
 msgid "Getting upgrades"
-msgstr "Pobieranie aktualizacji wydania"
+msgstr "Pobieranie aktualizacji dystrybucji"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1270
