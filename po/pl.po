@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-09 22:26+0200\n"
-"PO-Revision-Date: 2026-09-24 18:40+0000\n"
+"PO-Revision-Date: 2026-09-25 06:51+0000\n"
 "Last-Translator: Tomasz Bojanowski <tbojanowski@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/packagekit/translations/pl/>\n"
 "Language: pl\n"
@@ -1068,7 +1068,7 @@ msgstr "Nie podano wzorca wyszukiwania"
 #. TRANSLATORS: Description for pkgcli list
 #: client/pkgc-query.c:375
 msgid "List all packages or those matching a pattern."
-msgstr "Wyświetla listę wszystkich pakietów lub pasujących do wzorca."
+msgstr "Wyświetla listę wszystkich pakietów lub tylko tych pasujących do wzorca."
 
 #. TRANSLATORS: Description for pkgcli show
 #: client/pkgc-query.c:420
@@ -2375,7 +2375,7 @@ msgstr "Naprawianie systemu"
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
 #: lib/pk-task-text.c:54
 msgid "Do you want to allow installing of unsigned software?"
-msgstr "Pozwolić na instalowanie niepodpisanego oprogramowania?"
+msgstr "Zezwolić na instalowanie niepodpisanego oprogramowania?"
 
 #. TRANSLATORS: tell the user we've not done anything
 #: lib/pk-task-text.c:60
