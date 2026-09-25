@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-09-09 22:26+0200\n"
+"POT-Creation-Date: 2026-09-23 18:22+0200\n"
 "PO-Revision-Date: 2026-02-24 23:09+0000\n"
 "Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/packagekit/translations/ko/>\n"
@@ -335,7 +335,7 @@ msgstr "업데이트할 패키지가 없습니다."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: client/pkcon/pk-console.c:732
-#: contrib/command-not-found/pk-command-not-found.c:701
+#: contrib/command-not-found/pk-command-not-found.c:705
 msgid "The transaction failed"
 msgstr "트랜잭션에 실패했습니다."
 
@@ -1669,66 +1669,66 @@ msgid "Failed to launch:"
 msgstr "실행에 실패했습니다:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:692
+#: contrib/command-not-found/pk-command-not-found.c:696
 msgid "Failed to install packages"
 msgstr "패키지 설치에 실패했습니다"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:817
+#: contrib/command-not-found/pk-command-not-found.c:821
 msgid "command not found"
 msgstr "명령을 찾을 수 없습니다"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:837
+#: contrib/command-not-found/pk-command-not-found.c:841
 msgid "Similar command is:"
 msgstr "유사한 명령:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:850
+#: contrib/command-not-found/pk-command-not-found.c:854
 msgid "Run similar command:"
 msgstr "유사한 명령 실행:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:862
-#: contrib/command-not-found/pk-command-not-found.c:871
+#: contrib/command-not-found/pk-command-not-found.c:866
+#: contrib/command-not-found/pk-command-not-found.c:875
 msgid "Similar commands are:"
 msgstr "유사한 명령:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:878
+#: contrib/command-not-found/pk-command-not-found.c:882
 msgid "Please choose a command to run"
 msgstr "실행할 명령을 선택하십시오"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:900
+#: contrib/command-not-found/pk-command-not-found.c:904
 msgid "The package providing this file is:"
 msgstr "이 파일이 포함된 패키지:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:909
+#: contrib/command-not-found/pk-command-not-found.c:913
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%2$s' 명령을 제공하는 '%1$s' 꾸러미를 설치하시겠습니까?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:936
+#: contrib/command-not-found/pk-command-not-found.c:940
 msgid "Packages providing this file are:"
 msgstr "이 파일이 포함된 패키지:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:946
+#: contrib/command-not-found/pk-command-not-found.c:950
 msgid "Suitable packages are:"
 msgstr "알맞은 패키지:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:954
+#: contrib/command-not-found/pk-command-not-found.c:958
 msgid "Please choose a package to install"
 msgstr "설치할 패키지를 선택하십시오"
 
-#: contrib/command-not-found/pk-command-not-found.c:957
+#: contrib/command-not-found/pk-command-not-found.c:961
 msgid "User aborted selection"
 msgstr "사용자가 선택을 취소했습니다"
 
@@ -1946,189 +1946,223 @@ msgstr "오프라인 업데이트 메시지를 지우려면 인증해야 합니�
 msgid "Please enter a number from 1 to %i: "
 msgstr "1부터 %i까지의 숫자를 입력하여 주십시오:"
 
+#: lib/pk-console-private.c:335
+msgid "[N/y]"
+msgstr ""
+
+#. TRANSLATORS: shown after a yes/no question, the capital letter is the
+#. * default answer; the letters must match the translated "y" and "n" answers
+#: lib/pk-console-private.c:335
+msgid "[Y/n]"
+msgstr ""
+
+#. TRANSLATORS: short "yes" answer, must match [Y/n]
+#: lib/pk-console-private.c:352
+msgctxt "Answer"
+msgid "y"
+msgstr ""
+
+#. TRANSLATORS: full "yes" answer
+#: lib/pk-console-private.c:356
+msgctxt "Answer"
+msgid "yes"
+msgstr ""
+
+#. TRANSLATORS: short "no" answer, must match [N/y]
+#: lib/pk-console-private.c:363
+msgctxt "Answer"
+msgid "n"
+msgstr ""
+
+#. TRANSLATORS: full "no" answer
+#: lib/pk-console-private.c:367
+msgctxt "Answer"
+msgid "no"
+msgstr ""
+
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:355
+#: lib/pk-console-private.c:392
 msgid "Unknown state"
 msgstr "알 수 없는 상태"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:359
+#: lib/pk-console-private.c:396
 msgid "Starting"
 msgstr "시작 중"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:363
+#: lib/pk-console-private.c:400
 msgid "Waiting in queue"
 msgstr "큐 대기 중"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:367
+#: lib/pk-console-private.c:404
 msgid "Running"
 msgstr "실행 중"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:371
+#: lib/pk-console-private.c:408
 msgid "Querying"
 msgstr "요청 중"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:375
+#: lib/pk-console-private.c:412
 msgid "Getting information"
 msgstr "정보 가져오는 중"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:379
+#: lib/pk-console-private.c:416
 msgid "Removing packages"
 msgstr "패키지 제거 중"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:383 lib/pk-enum.c:1262
+#: lib/pk-console-private.c:420 lib/pk-enum.c:1262
 msgid "Downloading packages"
 msgstr "패키지 다운로드 중"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:387
+#: lib/pk-console-private.c:424
 msgid "Installing packages"
 msgstr "패키지 설치 중"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:391
+#: lib/pk-console-private.c:428
 msgid "Refreshing software list"
 msgstr "프로그램 목록 새로 고치는 중"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:395
+#: lib/pk-console-private.c:432
 msgid "Installing updates"
 msgstr "갱신 설치 중"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:399
+#: lib/pk-console-private.c:436
 msgid "Cleaning up packages"
 msgstr "패키지 정리 중"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:403
+#: lib/pk-console-private.c:440
 msgid "Obsoleting packages"
 msgstr "패키지 무효화 중"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:407
+#: lib/pk-console-private.c:444
 msgid "Resolving dependencies"
 msgstr "의존성 확인 중"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:411
+#: lib/pk-console-private.c:448
 msgid "Checking signatures"
 msgstr "서명 확인 중"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:415
+#: lib/pk-console-private.c:452
 msgid "Testing changes"
 msgstr "변경 사항 시험 중"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:419
+#: lib/pk-console-private.c:456
 msgid "Committing changes"
 msgstr "변경 사항 등록 중"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:423
+#: lib/pk-console-private.c:460
 msgid "Requesting data"
 msgstr "데이터 요청 중"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:427
+#: lib/pk-console-private.c:464
 msgid "Finished"
 msgstr "완료됨"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:431
+#: lib/pk-console-private.c:468
 msgid "Cancelling"
 msgstr "취소 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:435
+#: lib/pk-console-private.c:472
 msgid "Downloading repository information"
 msgstr "저장소 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:439
+#: lib/pk-console-private.c:476
 msgid "Downloading list of packages"
 msgstr "패키지 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:443
+#: lib/pk-console-private.c:480
 msgid "Downloading file lists"
 msgstr "파일 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:447
+#: lib/pk-console-private.c:484
 msgid "Downloading lists of changes"
 msgstr "변경 목록 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:451
+#: lib/pk-console-private.c:488
 msgid "Downloading groups"
 msgstr "그룹 다운로드 중"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:455
+#: lib/pk-console-private.c:492
 msgid "Downloading update information"
 msgstr "업데이트 정보 다운로드 중"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:459
+#: lib/pk-console-private.c:496
 msgid "Repackaging files"
 msgstr "파일을 패키지로 다시 만드는 중"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:463
+#: lib/pk-console-private.c:500
 msgid "Loading cache"
 msgstr "캐시 불러오는 중"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/pk-console-private.c:467
+#: lib/pk-console-private.c:504
 msgid "Scanning applications"
 msgstr "프로그램 조사 중"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/pk-console-private.c:471
+#: lib/pk-console-private.c:508
 msgid "Generating package lists"
 msgstr "패키지 목록 생성 중"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:475
+#: lib/pk-console-private.c:512
 msgid "Waiting for package manager lock"
 msgstr "패키지 관리자 잠금 해제 대기 중"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:479
+#: lib/pk-console-private.c:516
 msgid "Waiting for authentication"
 msgstr "인증 대기 중"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/pk-console-private.c:483
+#: lib/pk-console-private.c:520
 msgid "Updating running applications"
 msgstr "사용 중인 프로그램 갱신 중"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/pk-console-private.c:487
+#: lib/pk-console-private.c:524
 msgid "Checking applications in use"
 msgstr "사용 중인 프로그램 점검 중"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/pk-console-private.c:491
+#: lib/pk-console-private.c:528
 msgid "Checking libraries in use"
 msgstr "사용 중인 라이브러리 점검 중"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:495
+#: lib/pk-console-private.c:532
 msgid "Copying files"
 msgstr "파일 복사 중"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:499
+#: lib/pk-console-private.c:536
 msgid "Running hooks"
 msgstr "실행 중인 훅"
 

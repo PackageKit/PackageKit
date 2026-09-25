@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-09-09 22:26+0200\n"
+"POT-Creation-Date: 2026-09-23 18:22+0200\n"
 "Language-Team: Assamese (http://app.transifex.com/freedesktop/packagekit/language/as/)\n"
 "Language: as\n"
 "MIME-Version: 1.0\n"
@@ -335,7 +335,7 @@ msgstr "তলৰ সৰঞ্জামসমূহ উন্নত কৰিব
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: client/pkcon/pk-console.c:732
-#: contrib/command-not-found/pk-command-not-found.c:701
+#: contrib/command-not-found/pk-command-not-found.c:705
 msgid "The transaction failed"
 msgstr "লেন দেন বিফল হৈছে"
 
@@ -1681,67 +1681,67 @@ msgid "Failed to launch:"
 msgstr "আৰম্ভ কৰিবলৈ বিফল:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:692
+#: contrib/command-not-found/pk-command-not-found.c:696
 msgid "Failed to install packages"
 msgstr "সৰঞ্জাম সংস্থাপন কৰা নাযায়: %s"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:817
+#: contrib/command-not-found/pk-command-not-found.c:821
 #, fuzzy
 msgid "command not found"
 msgstr "পঞ্জিকা পোৱা ন'গ'ল"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:837
+#: contrib/command-not-found/pk-command-not-found.c:841
 msgid "Similar command is:"
 msgstr "একে ধৰণৰ আদেশ হ'ল:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:850
+#: contrib/command-not-found/pk-command-not-found.c:854
 msgid "Run similar command:"
 msgstr "একে ধৰণৰ আদেশ চলাওক:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:862
-#: contrib/command-not-found/pk-command-not-found.c:871
+#: contrib/command-not-found/pk-command-not-found.c:866
+#: contrib/command-not-found/pk-command-not-found.c:875
 msgid "Similar commands are:"
 msgstr "একে ধৰণৰ আদেশ হ'ল:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:878
+#: contrib/command-not-found/pk-command-not-found.c:882
 msgid "Please choose a command to run"
 msgstr "চলাবলৈ এটা আদেশ বাচি লওক"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:900
+#: contrib/command-not-found/pk-command-not-found.c:904
 msgid "The package providing this file is:"
 msgstr "এই নথিপত্ৰ দিয়া সৰঞ্জাম হ'ল:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:909
+#: contrib/command-not-found/pk-command-not-found.c:913
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' সৰঞ্জাম সংস্থাপন কৰা যাওক যি '%s' আদেশ দিয়ে ?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:936
+#: contrib/command-not-found/pk-command-not-found.c:940
 msgid "Packages providing this file are:"
 msgstr "এই নথিপত্ৰ দিয়া সৰঞ্জামসমূহ হ'ল:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:946
+#: contrib/command-not-found/pk-command-not-found.c:950
 msgid "Suitable packages are:"
 msgstr "উপযুক্ত সৰঞ্জাম হ'ল:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:954
+#: contrib/command-not-found/pk-command-not-found.c:958
 msgid "Please choose a package to install"
 msgstr "সংস্থাপন কৰিবলৈ এটা সৰঞ্জাম নিৰ্ব্বাচন কৰক"
 
-#: contrib/command-not-found/pk-command-not-found.c:957
+#: contrib/command-not-found/pk-command-not-found.c:961
 msgid "User aborted selection"
 msgstr ""
 
@@ -1977,189 +1977,223 @@ msgstr "এটা EULA গ্ৰহণ কৰিবলৈ প্ৰমাণী�
 msgid "Please enter a number from 1 to %i: "
 msgstr "১ ৰ পৰা %i লৈ এটা সংখ্যা দিয়ক: "
 
+#: lib/pk-console-private.c:335
+msgid "[N/y]"
+msgstr ""
+
+#. TRANSLATORS: shown after a yes/no question, the capital letter is the
+#. * default answer; the letters must match the translated "y" and "n" answers
+#: lib/pk-console-private.c:335
+msgid "[Y/n]"
+msgstr ""
+
+#. TRANSLATORS: short "yes" answer, must match [Y/n]
+#: lib/pk-console-private.c:352
+msgctxt "Answer"
+msgid "y"
+msgstr ""
+
+#. TRANSLATORS: full "yes" answer
+#: lib/pk-console-private.c:356
+msgctxt "Answer"
+msgid "yes"
+msgstr ""
+
+#. TRANSLATORS: short "no" answer, must match [N/y]
+#: lib/pk-console-private.c:363
+msgctxt "Answer"
+msgid "n"
+msgstr ""
+
+#. TRANSLATORS: full "no" answer
+#: lib/pk-console-private.c:367
+msgctxt "Answer"
+msgid "no"
+msgstr ""
+
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:355
+#: lib/pk-console-private.c:392
 msgid "Unknown state"
 msgstr "অজ্ঞাত অৱস্থা"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:359
+#: lib/pk-console-private.c:396
 msgid "Starting"
 msgstr "সংস্থাপন আৰম্ভ কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:363
+#: lib/pk-console-private.c:400
 msgid "Waiting in queue"
 msgstr "শাৰীত অপেক্ষাৰত"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:367
+#: lib/pk-console-private.c:404
 msgid "Running"
 msgstr "চলি থকা"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:371
+#: lib/pk-console-private.c:408
 msgid "Querying"
 msgstr "অনুসন্ধান কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:375
+#: lib/pk-console-private.c:412
 msgid "Getting information"
 msgstr "তথ্য প্ৰাপ্ত কৰা হৈছে..."
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:379
+#: lib/pk-console-private.c:416
 msgid "Removing packages"
 msgstr "সৰঞ্জাম আঁতৰুৱা হৈছে"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:383 lib/pk-enum.c:1262
+#: lib/pk-console-private.c:420 lib/pk-enum.c:1262
 msgid "Downloading packages"
 msgstr "সৰঞ্জাম ডাউন্‌লোড কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:387
+#: lib/pk-console-private.c:424
 msgid "Installing packages"
 msgstr "সৰঞ্জাম সংস্থাপন কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:391
+#: lib/pk-console-private.c:428
 msgid "Refreshing software list"
 msgstr "চালনাজ্ঞানৰ তালিকা নতুনকৈ নিৰ্মাণ কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:395
+#: lib/pk-console-private.c:432
 msgid "Installing updates"
 msgstr "উন্নয়ন সংস্থাপন কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:399
+#: lib/pk-console-private.c:436
 msgid "Cleaning up packages"
 msgstr "সৰঞ্জাম পৰিশ্ৰুত কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:403
+#: lib/pk-console-private.c:440
 msgid "Obsoleting packages"
 msgstr "সৰঞ্জাম অবচিত কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:407
+#: lib/pk-console-private.c:444
 msgid "Resolving dependencies"
 msgstr "নিৰ্ভৰতাৰ মীমাংসা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:411
+#: lib/pk-console-private.c:448
 msgid "Checking signatures"
 msgstr "স্বাক্ষৰ পৰীক্ষা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:415
+#: lib/pk-console-private.c:452
 msgid "Testing changes"
 msgstr "পৰিবৰ্তনসমূহ পৰীক্ষা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:419
+#: lib/pk-console-private.c:456
 msgid "Committing changes"
 msgstr "পৰিবৰ্তনসমূহ সংৰক্ষণ কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:423
+#: lib/pk-console-private.c:460
 msgid "Requesting data"
 msgstr "তথ্য প্ৰাপ্তিৰ অনুৰোধ কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:427
+#: lib/pk-console-private.c:464
 msgid "Finished"
 msgstr "সমাপ্ত"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:431
+#: lib/pk-console-private.c:468
 msgid "Cancelling"
 msgstr "বাতিল কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:435
+#: lib/pk-console-private.c:472
 msgid "Downloading repository information"
 msgstr "সংগ্ৰহস্থল সংক্ৰান্ত তথ্য ডাউনলোড কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:439
+#: lib/pk-console-private.c:476
 msgid "Downloading list of packages"
 msgstr "সৰঞ্জামৰ তালিকা ডাউনলোড কৰা হৈছে ।"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:443
+#: lib/pk-console-private.c:480
 msgid "Downloading file lists"
 msgstr "নথিপত্ৰৰ তালিকা ডাউনলোড কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:447
+#: lib/pk-console-private.c:484
 msgid "Downloading lists of changes"
 msgstr "পৰিবৰ্তনৰ তালিকা ডাউনলোড কৰা হৈছে ।"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:451
+#: lib/pk-console-private.c:488
 msgid "Downloading groups"
 msgstr "দলৰ তথ্য ডাউনলোড কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:455
+#: lib/pk-console-private.c:492
 msgid "Downloading update information"
 msgstr "উন্নয়ন সংক্ৰান্ত তথ্য ডাউনলোড কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:459
+#: lib/pk-console-private.c:496
 msgid "Repackaging files"
 msgstr "নথিপত্ৰক পুনঃ সৰঞ্জামৰ গোটত ভৰোৱা হৈছে"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:463
+#: lib/pk-console-private.c:500
 msgid "Loading cache"
 msgstr "কেশ্বে লোড কৰা হৈছে‌"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/pk-console-private.c:467
+#: lib/pk-console-private.c:504
 msgid "Scanning applications"
 msgstr "অনুপ্ৰয়োগ অনুসন্ধান কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/pk-console-private.c:471
+#: lib/pk-console-private.c:508
 msgid "Generating package lists"
 msgstr "সৰঞ্জামৰ তালিকা নিৰ্মাণ কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:475
+#: lib/pk-console-private.c:512
 msgid "Waiting for package manager lock"
 msgstr "সৰঞ্জাম পৰিচালন ব্যৱস্থাৰ লক প্ৰাপ্ত কৰাৰ অপেক্ষা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:479
+#: lib/pk-console-private.c:516
 msgid "Waiting for authentication"
 msgstr "প্ৰমাণীকৰণৰ অপেক্ষাৰত"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/pk-console-private.c:483
+#: lib/pk-console-private.c:520
 msgid "Updating running applications"
 msgstr "চলমান অনুপ্ৰয়োগৰ তালিকা উন্নয়ন কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/pk-console-private.c:487
+#: lib/pk-console-private.c:524
 msgid "Checking applications in use"
 msgstr "ব্যৱহৃত অনুপ্ৰয়োগ পৰীক্ষা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/pk-console-private.c:491
+#: lib/pk-console-private.c:528
 msgid "Checking libraries in use"
 msgstr "ব্যৱহৃত লাইব্ৰৰিসমূহ পৰীক্ষা কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:495
+#: lib/pk-console-private.c:532
 msgid "Copying files"
 msgstr "নথিপত্ৰ নকল কৰা হৈছে"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:499
+#: lib/pk-console-private.c:536
 #, fuzzy
 msgid "Running hooks"
 msgstr "চলি থকা"

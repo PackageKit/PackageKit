@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-09-09 22:26+0200\n"
+"POT-Creation-Date: 2026-09-23 18:22+0200\n"
 "Language-Team: Malayalam (http://app.transifex.com/freedesktop/packagekit/language/ml/)\n"
 "Language: ml\n"
 "MIME-Version: 1.0\n"
@@ -334,7 +334,7 @@ msgstr "താഴെ പറയുന്ന പാക്കേജുകള്‍ 
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: client/pkcon/pk-console.c:732
-#: contrib/command-not-found/pk-command-not-found.c:701
+#: contrib/command-not-found/pk-command-not-found.c:705
 msgid "The transaction failed"
 msgstr "ഇടപാടു് പരാജയപ്പെട്ടു"
 
@@ -1680,67 +1680,67 @@ msgid "Failed to launch:"
 msgstr "ലഭ്യമാക്കുന്നതില്‍ പരാജയം:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:692
+#: contrib/command-not-found/pk-command-not-found.c:696
 msgid "Failed to install packages"
 msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതില്‍ പരാജയം"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:817
+#: contrib/command-not-found/pk-command-not-found.c:821
 #, fuzzy
 msgid "command not found"
 msgstr "ഡയറക്ടറി ലഭ്യമല്ല"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:837
+#: contrib/command-not-found/pk-command-not-found.c:841
 msgid "Similar command is:"
 msgstr "ഇതു് പോലുള്ള കമാന്‍ഡ്:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:850
+#: contrib/command-not-found/pk-command-not-found.c:854
 msgid "Run similar command:"
 msgstr "ഇതുപോലുള്ള കമാന്‍ഡ് പ്രവര്‍ത്തിക്കുക:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:862
-#: contrib/command-not-found/pk-command-not-found.c:871
+#: contrib/command-not-found/pk-command-not-found.c:866
+#: contrib/command-not-found/pk-command-not-found.c:875
 msgid "Similar commands are:"
 msgstr "ഇതു് പോലുള്ള കമാന്‍ഡുകള്‍:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:878
+#: contrib/command-not-found/pk-command-not-found.c:882
 msgid "Please choose a command to run"
 msgstr "പ്രവര്‍ത്തിപ്പിക്കുന്നതിനുള്ള കമാന്‍ഡ് ദയവായി തെരഞ്ഞെടുക്കുക"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:900
+#: contrib/command-not-found/pk-command-not-found.c:904
 msgid "The package providing this file is:"
 msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജ്:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:909
+#: contrib/command-not-found/pk-command-not-found.c:913
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' പാക്കേജ് ഇന്‍സ്റ്റോള്‍ ചെയ്യുക, ഇതു് '%s' നിര്‍ദ്ദേശം നല്‍കുന്നു?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:936
+#: contrib/command-not-found/pk-command-not-found.c:940
 msgid "Packages providing this file are:"
 msgstr "ഈ ഫയല്‍ ലഭ്യമാക്കുന്ന പാക്കേജുകള്‍:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:946
+#: contrib/command-not-found/pk-command-not-found.c:950
 msgid "Suitable packages are:"
 msgstr "ഉചിതമായ പാക്കേജുകള്‍:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:954
+#: contrib/command-not-found/pk-command-not-found.c:958
 msgid "Please choose a package to install"
 msgstr "ദയവായി ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നതിനായി ഒരു പാക്കേജ് തെരഞ്ഞെടുക്കുക"
 
-#: contrib/command-not-found/pk-command-not-found.c:957
+#: contrib/command-not-found/pk-command-not-found.c:961
 msgid "User aborted selection"
 msgstr ""
 
@@ -1976,189 +1976,223 @@ msgstr "ഒരു EULA സ്വീകരിക്കുന്നതിനായ
 msgid "Please enter a number from 1 to %i: "
 msgstr "ദയവായി 1 മുതല്‍ %i വരെയുള്ള ഒരു അക്കം നല്‍കുക: "
 
+#: lib/pk-console-private.c:335
+msgid "[N/y]"
+msgstr ""
+
+#. TRANSLATORS: shown after a yes/no question, the capital letter is the
+#. * default answer; the letters must match the translated "y" and "n" answers
+#: lib/pk-console-private.c:335
+msgid "[Y/n]"
+msgstr ""
+
+#. TRANSLATORS: short "yes" answer, must match [Y/n]
+#: lib/pk-console-private.c:352
+msgctxt "Answer"
+msgid "y"
+msgstr ""
+
+#. TRANSLATORS: full "yes" answer
+#: lib/pk-console-private.c:356
+msgctxt "Answer"
+msgid "yes"
+msgstr ""
+
+#. TRANSLATORS: short "no" answer, must match [N/y]
+#: lib/pk-console-private.c:363
+msgctxt "Answer"
+msgid "n"
+msgstr ""
+
+#. TRANSLATORS: full "no" answer
+#: lib/pk-console-private.c:367
+msgctxt "Answer"
+msgid "no"
+msgstr ""
+
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:355
+#: lib/pk-console-private.c:392
 msgid "Unknown state"
 msgstr "അപരിചിതമായ അവസ്ഥ"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:359
+#: lib/pk-console-private.c:396
 msgid "Starting"
 msgstr "ആരംഭിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:363
+#: lib/pk-console-private.c:400
 msgid "Waiting in queue"
 msgstr "ക്യൂവില്‍ കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:367
+#: lib/pk-console-private.c:404
 msgid "Running"
 msgstr "പ്രവര്‍ത്തിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:371
+#: lib/pk-console-private.c:408
 msgid "Querying"
 msgstr "ക്വറി ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:375
+#: lib/pk-console-private.c:412
 msgid "Getting information"
 msgstr "വിവരം ലഭ്യമാകുന്നു"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:379
+#: lib/pk-console-private.c:416
 msgid "Removing packages"
 msgstr "പാക്കേജുകള്‍ നീക്കം ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:383 lib/pk-enum.c:1262
+#: lib/pk-console-private.c:420 lib/pk-enum.c:1262
 msgid "Downloading packages"
 msgstr "പാക്കേജുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:387
+#: lib/pk-console-private.c:424
 msgid "Installing packages"
 msgstr "പാക്കേജുകള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:391
+#: lib/pk-console-private.c:428
 msgid "Refreshing software list"
 msgstr "സോഫ്റ്റ്‌വെയര്‍ പട്ടി പുതുക്കുന്നുു"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:395
+#: lib/pk-console-private.c:432
 msgid "Installing updates"
 msgstr "പരിഷ്കാരങ്ങള്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:399
+#: lib/pk-console-private.c:436
 msgid "Cleaning up packages"
 msgstr "പാക്കേജുകള്‍ വെടിപ്പാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:403
+#: lib/pk-console-private.c:440
 msgid "Obsoleting packages"
 msgstr "പാക്കേജുകള്‍ ഇല്ലാതാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:407
+#: lib/pk-console-private.c:444
 msgid "Resolving dependencies"
 msgstr "ഡിപെന്‍ഡന്‍സികള്‍ റിസോള്‍വ് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:411
+#: lib/pk-console-private.c:448
 msgid "Checking signatures"
 msgstr "ഒപ്പുകള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:415
+#: lib/pk-console-private.c:452
 msgid "Testing changes"
 msgstr "മാറ്റങ്ങള്‍ പരീക്ഷിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:419
+#: lib/pk-console-private.c:456
 msgid "Committing changes"
 msgstr "മാറ്റങ്ങള്‍ സമര്‍പ്പിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:423
+#: lib/pk-console-private.c:460
 msgid "Requesting data"
 msgstr "ഡേറ്റാ ആവശ്യപ്പെടുന്നു"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:427
+#: lib/pk-console-private.c:464
 msgid "Finished"
 msgstr "പൂര്‍ത്തിയാക്കി"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:431
+#: lib/pk-console-private.c:468
 msgid "Cancelling"
 msgstr "റദ്ദാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:435
+#: lib/pk-console-private.c:472
 msgid "Downloading repository information"
 msgstr "റിപ്പോസിറ്ററി വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:439
+#: lib/pk-console-private.c:476
 msgid "Downloading list of packages"
 msgstr "പാക്കേജുകളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:443
+#: lib/pk-console-private.c:480
 msgid "Downloading file lists"
 msgstr "ഫയല്‍ പട്ടികകള്‍‌ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:447
+#: lib/pk-console-private.c:484
 msgid "Downloading lists of changes"
 msgstr "മാറ്റങ്ങളുടെ പട്ടിക ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:451
+#: lib/pk-console-private.c:488
 msgid "Downloading groups"
 msgstr "ഗ്രൂപ്പുകള്‍ ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:455
+#: lib/pk-console-private.c:492
 msgid "Downloading update information"
 msgstr "പരിഷ്കരണ വിവരം ഡൌണ്‍ലോട് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:459
+#: lib/pk-console-private.c:496
 msgid "Repackaging files"
 msgstr "ഫയലുകള്‍ വീണ്ടും പാക്കേജ് ചെയ്യുന്നു"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:463
+#: lib/pk-console-private.c:500
 msgid "Loading cache"
 msgstr "കാഷ് ലഭ്യമാക്കുന്നു"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/pk-console-private.c:467
+#: lib/pk-console-private.c:504
 msgid "Scanning applications"
 msgstr "പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/pk-console-private.c:471
+#: lib/pk-console-private.c:508
 msgid "Generating package lists"
 msgstr "പാക്കേജ് പട്ടികകള്‍ ലഭ്യമാകുന്നു"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:475
+#: lib/pk-console-private.c:512
 msgid "Waiting for package manager lock"
 msgstr "പാക്കേജ് മാനേജര്‍ ലോക്കിനായി കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:479
+#: lib/pk-console-private.c:516
 msgid "Waiting for authentication"
 msgstr "ആധികാരികതയ്ക്കായി കാത്തിരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/pk-console-private.c:483
+#: lib/pk-console-private.c:520
 msgid "Updating running applications"
 msgstr "പ്രവര്‍ത്തിക്കുന്ന പ്രയോഗങ്ങള്‍ പരിഷ്കരിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/pk-console-private.c:487
+#: lib/pk-console-private.c:524
 msgid "Checking applications in use"
 msgstr "ഉപയോഗിത്തിലുള്ള പ്രയോഗങ്ങള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/pk-console-private.c:491
+#: lib/pk-console-private.c:528
 msgid "Checking libraries in use"
 msgstr "ഉപയോഗത്തിലുള്ള ലൈബ്രറികള്‍ പരിശോധിക്കുന്നു"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:495
+#: lib/pk-console-private.c:532
 msgid "Copying files"
 msgstr "ഫയലുകള്‍ പകര്‍ത്തുന്നു"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:499
+#: lib/pk-console-private.c:536
 #, fuzzy
 msgid "Running hooks"
 msgstr "പ്രവര്‍ത്തിക്കുന്നു"

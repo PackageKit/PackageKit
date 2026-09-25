@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-09-09 22:26+0200\n"
+"POT-Creation-Date: 2026-09-23 18:22+0200\n"
 "Language-Team: Albanian (http://app.transifex.com/freedesktop/packagekit/language/sq/)\n"
 "Language: sq\n"
 "MIME-Version: 1.0\n"
@@ -328,7 +328,7 @@ msgstr "S’ka paketa për përditësim."
 #. * not expect
 #. TRANSLATORS: the transaction failed in a way we could not expect
 #: client/pkcon/pk-console.c:732
-#: contrib/command-not-found/pk-command-not-found.c:701
+#: contrib/command-not-found/pk-command-not-found.c:705
 msgid "The transaction failed"
 msgstr "Transaksioni dështoi"
 
@@ -1674,66 +1674,66 @@ msgid "Failed to launch:"
 msgstr "S’u arrit të nisej:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:692
+#: contrib/command-not-found/pk-command-not-found.c:696
 msgid "Failed to install packages"
 msgstr "S’u arrit të instalohen paketa"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:817
+#: contrib/command-not-found/pk-command-not-found.c:821
 msgid "command not found"
 msgstr "s’u gjet urdhër"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:837
+#: contrib/command-not-found/pk-command-not-found.c:841
 msgid "Similar command is:"
 msgstr "Urdhër i ngjashëm është:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:850
+#: contrib/command-not-found/pk-command-not-found.c:854
 msgid "Run similar command:"
 msgstr "Xhironi urdhër të ngjashëm:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:862
-#: contrib/command-not-found/pk-command-not-found.c:871
+#: contrib/command-not-found/pk-command-not-found.c:866
+#: contrib/command-not-found/pk-command-not-found.c:875
 msgid "Similar commands are:"
 msgstr "Urdhra të ngjashëm janë:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:878
+#: contrib/command-not-found/pk-command-not-found.c:882
 msgid "Please choose a command to run"
 msgstr "Ju lutemi, zgjidhni një urdhër për xhirim"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:900
+#: contrib/command-not-found/pk-command-not-found.c:904
 msgid "The package providing this file is:"
 msgstr "Paketa që furnizon këtë kartelë është:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:909
+#: contrib/command-not-found/pk-command-not-found.c:913
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "Të instalohet paketë “%s” për të furnizuar urdhrin “%s”?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:936
+#: contrib/command-not-found/pk-command-not-found.c:940
 msgid "Packages providing this file are:"
 msgstr "Paketa që furnizojnë këtë kartelë janë:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:946
+#: contrib/command-not-found/pk-command-not-found.c:950
 msgid "Suitable packages are:"
 msgstr "Paketa të përshtatshme janë:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:954
+#: contrib/command-not-found/pk-command-not-found.c:958
 msgid "Please choose a package to install"
 msgstr "Ju lutemi, zgjidhni një paketë për instalim"
 
-#: contrib/command-not-found/pk-command-not-found.c:957
+#: contrib/command-not-found/pk-command-not-found.c:961
 msgid "User aborted selection"
 msgstr "Përdoruesi ndërpreu përzgjedhjen"
 
@@ -1951,189 +1951,223 @@ msgstr "Që të spastrohen mesazhe përditësimesh pa qenë në linjë, duhet b�
 msgid "Please enter a number from 1 to %i: "
 msgstr "Ju lutemi, jepni një numër nga 1 në %i: "
 
+#: lib/pk-console-private.c:335
+msgid "[N/y]"
+msgstr ""
+
+#. TRANSLATORS: shown after a yes/no question, the capital letter is the
+#. * default answer; the letters must match the translated "y" and "n" answers
+#: lib/pk-console-private.c:335
+msgid "[Y/n]"
+msgstr ""
+
+#. TRANSLATORS: short "yes" answer, must match [Y/n]
+#: lib/pk-console-private.c:352
+msgctxt "Answer"
+msgid "y"
+msgstr ""
+
+#. TRANSLATORS: full "yes" answer
+#: lib/pk-console-private.c:356
+msgctxt "Answer"
+msgid "yes"
+msgstr ""
+
+#. TRANSLATORS: short "no" answer, must match [N/y]
+#: lib/pk-console-private.c:363
+msgctxt "Answer"
+msgid "n"
+msgstr ""
+
+#. TRANSLATORS: full "no" answer
+#: lib/pk-console-private.c:367
+msgctxt "Answer"
+msgid "no"
+msgstr ""
+
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:355
+#: lib/pk-console-private.c:392
 msgid "Unknown state"
 msgstr "Gjendje e panjohur"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:359
+#: lib/pk-console-private.c:396
 msgid "Starting"
 msgstr "Po niset"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:363
+#: lib/pk-console-private.c:400
 msgid "Waiting in queue"
 msgstr "Pritje në radhë"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:367
+#: lib/pk-console-private.c:404
 msgid "Running"
 msgstr "Po xhiron"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:371
+#: lib/pk-console-private.c:408
 msgid "Querying"
 msgstr "Po kërkohet"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:375
+#: lib/pk-console-private.c:412
 msgid "Getting information"
 msgstr "Po merren hollësi"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:379
+#: lib/pk-console-private.c:416
 msgid "Removing packages"
 msgstr "Po hiqen paketa"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:383 lib/pk-enum.c:1262
+#: lib/pk-console-private.c:420 lib/pk-enum.c:1262
 msgid "Downloading packages"
 msgstr "Po shkarkohen paketa"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:387
+#: lib/pk-console-private.c:424
 msgid "Installing packages"
 msgstr "Po instalohen paketa"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:391
+#: lib/pk-console-private.c:428
 msgid "Refreshing software list"
 msgstr "Po rifreskohet listë software-i"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:395
+#: lib/pk-console-private.c:432
 msgid "Installing updates"
 msgstr "Po instalohen përditësime"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:399
+#: lib/pk-console-private.c:436
 msgid "Cleaning up packages"
 msgstr "Po spastrohen paketa"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:403
+#: lib/pk-console-private.c:440
 msgid "Obsoleting packages"
 msgstr "Po kalohen paketa në version më të vjetër"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:407
+#: lib/pk-console-private.c:444
 msgid "Resolving dependencies"
 msgstr "Po zgjidhen varësitë"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:411
+#: lib/pk-console-private.c:448
 msgid "Checking signatures"
 msgstr "Po kontrollohen nënshkrime"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:415
+#: lib/pk-console-private.c:452
 msgid "Testing changes"
 msgstr "Po testohen ndryshimet"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:419
+#: lib/pk-console-private.c:456
 msgid "Committing changes"
 msgstr "Po depozitohen ndryshime"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:423
+#: lib/pk-console-private.c:460
 msgid "Requesting data"
 msgstr "Po kërkohen të dhëna"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:427
+#: lib/pk-console-private.c:464
 msgid "Finished"
 msgstr "U përfundua"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:431
+#: lib/pk-console-private.c:468
 msgid "Cancelling"
 msgstr "Po anulohet"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:435
+#: lib/pk-console-private.c:472
 msgid "Downloading repository information"
 msgstr "Po shkarkohen hollësi depoje"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:439
+#: lib/pk-console-private.c:476
 msgid "Downloading list of packages"
 msgstr "Po shkarkohet listë paketash"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:443
+#: lib/pk-console-private.c:480
 msgid "Downloading file lists"
 msgstr "Po shkarkohem lista kartelash"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:447
+#: lib/pk-console-private.c:484
 msgid "Downloading lists of changes"
 msgstr "Po shkarkohen lista ndryshimesh"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:451
+#: lib/pk-console-private.c:488
 msgid "Downloading groups"
 msgstr "Po shkarkohen grupe"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:455
+#: lib/pk-console-private.c:492
 msgid "Downloading update information"
 msgstr "Po shkarkohen hollësi përditësimi"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:459
+#: lib/pk-console-private.c:496
 msgid "Repackaging files"
 msgstr "Po ripaketohen kartela"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:463
+#: lib/pk-console-private.c:500
 msgid "Loading cache"
 msgstr "Po ngarkohet fshehtinë"
 
 #. TRANSLATORS: transaction state, scanning for running processes
-#: lib/pk-console-private.c:467
+#: lib/pk-console-private.c:504
 msgid "Scanning applications"
 msgstr "Po skanohen aplikacione"
 
 #. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/pk-console-private.c:471
+#: lib/pk-console-private.c:508
 msgid "Generating package lists"
 msgstr "Po prodhohen lista paketash"
 
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:475
+#: lib/pk-console-private.c:512
 msgid "Waiting for package manager lock"
 msgstr "Po pritet për kyçje përgjegjësi paketash"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:479
+#: lib/pk-console-private.c:516
 msgid "Waiting for authentication"
 msgstr "Po pritet për mirëfilltësim"
 
 #. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/pk-console-private.c:483
+#: lib/pk-console-private.c:520
 msgid "Updating running applications"
 msgstr "Po përditësohen aplikacione që xhirojnë"
 
 #. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/pk-console-private.c:487
+#: lib/pk-console-private.c:524
 msgid "Checking applications in use"
 msgstr "Po kontrollohen aplikacione në përdorim"
 
 #. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/pk-console-private.c:491
+#: lib/pk-console-private.c:528
 msgid "Checking libraries in use"
 msgstr "Po kontrollohen biblioteka në përdorim"
 
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:495
+#: lib/pk-console-private.c:532
 msgid "Copying files"
 msgstr "Po kopjohen kartela"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:499
+#: lib/pk-console-private.c:536
 #, fuzzy
 msgid "Running hooks"
 msgstr "Po xhiron"
