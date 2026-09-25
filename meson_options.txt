@@ -55,11 +55,6 @@ option('offline_update',
     value : true,
     description : 'Use systemd offline update'
 )
-option('legacy_tools',
-    type : 'boolean',
-    value : false,
-    description : 'Build the pkcon/pkmon command-line tools'
-)
 option('elogind',
     type : 'boolean',
     value : false,

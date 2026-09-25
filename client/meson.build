@@ -57,7 +57,3 @@ if get_option('man_pages')
     install_dir: join_paths(get_option('datadir'), 'man', 'man1'),
   )
 endif
-
-if get_option('legacy_tools')
-    subdir('pkcon')
-endif

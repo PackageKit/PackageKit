@@ -18,15 +18,6 @@ if get_option('bash_completion')
                     pkgconfig: 'completionsdir',
                     pkgconfig_define: ['prefix', get_option('prefix')])
   )
-
-  if get_option('legacy_tools')
-    install_data(
-        'pkcon',
-        install_dir: bash_completion_dep.get_variable(
-                        pkgconfig: 'completionsdir',
-                        pkgconfig_define: ['prefix', get_option('prefix')])
-    )
-  endif
 endif
 
 if get_option('cron')

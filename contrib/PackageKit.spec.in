@@ -151,7 +151,6 @@ using PackageKit.
 %conf
 %meson \
         -Dgtk_doc=true \
-        -Dlegacy_tools=true \
         -Dpackaging_backend=dnf5
 
 %build
@@ -192,12 +191,9 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %dir %{_localstatedir}/cache/app-info/xmls
 %dir %{_localstatedir}/cache/PackageKit
 %{_datadir}/bash-completion/completions/pkgcli
-%{_datadir}/bash-completion/completions/pkcon
 %dir %{_libdir}/packagekit-backend
 %config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
 %config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
-%{_datadir}/man/man1/pkcon.1*
-%{_datadir}/man/man1/pkmon.1*
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
 %{_datadir}/PackageKit/pk-upgrade-distro.sh
@@ -205,8 +201,6 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_metainfodir}/org.freedesktop.packagekit.metainfo.xml
 %{_libexecdir}/packagekitd
 %{_libexecdir}/packagekit-direct
-%{_bindir}/pkmon
-%{_bindir}/pkcon
 %{_bindir}/pkgcli
 %exclude %{_libdir}/libpackagekit*.so.*
 %{_libdir}/packagekit-backend/libpk_backend_dummy.so
