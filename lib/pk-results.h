@@ -33,7 +33,6 @@
 #include "pk-error.h"
 #include "pk-eula-required.h"
 #include "pk-files.h"
-#include "pk-media-change-required.h"
 #include "pk-package-sack.h"
 #include "pk-repo-detail.h"
 #include "pk-repo-signature-required.h"
@@ -105,8 +104,6 @@ gboolean       pk_results_add_repo_signature_required (PkResults	       *results
 						       PkRepoSignatureRequired *item);
 gboolean       pk_results_add_eula_required (PkResults	    *results,
 					     PkEulaRequired *item);
-gboolean       pk_results_add_media_change_required (PkResults		   *results,
-						     PkMediaChangeRequired *item);
 gboolean       pk_results_add_repo_detail (PkResults	*results,
 					   PkRepoDetail *item);
 
@@ -128,7 +125,6 @@ GPtrArray     *pk_results_get_transaction_array (PkResults *results);
 GPtrArray     *pk_results_get_files_array (PkResults *results);
 GPtrArray     *pk_results_get_repo_signature_required_array (PkResults *results);
 GPtrArray     *pk_results_get_eula_required_array (PkResults *results);
-GPtrArray     *pk_results_get_media_change_required_array (PkResults *results);
 GPtrArray     *pk_results_get_repo_detail_array (PkResults *results);
 
 G_END_DECLS

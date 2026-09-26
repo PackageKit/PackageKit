@@ -22,7 +22,6 @@
 
 #include <glib/gi18n.h>
 #include "pk-eula-required.h"
-#include "pk-media-change-required.h"
 #include "pk-package.h"
 #include "pk-package-id.h"
 #include "pk-repo-signature-required.h"
@@ -199,64 +198,6 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 	} else {
 		/* TRANSLATORS: tell the user we've not done anything */
 		g_print ("%s\n", _("The agreement was not accepted."));
-		pk_task_user_declined (task, request);
-	}
-
-	g_ptr_array_unref (array);
-}
-
-/*
- * pk_task_text_media_change_question:
- **/
-static void
-pk_task_text_media_change_question (PkTask *task, guint request, PkResults *results)
-{
-	guint i;
-	gboolean ret;
-	GPtrArray *array;
-	PkMediaChangeRequired *item;
-	gchar *media_id;
-	PkMediaTypeEnum media_type;
-	gchar *media_text;
-
-	/* clear new line */
-	g_print ("\n");
-
-	/* get data */
-	array = pk_results_get_media_change_required_array (results);
-	for (i = 0; i < array->len; i++) {
-		item = g_ptr_array_index (array, i);
-		g_object_get (item,
-			      "media-id",
-			      &media_id,
-			      "media-type",
-			      &media_type,
-			      "media-text",
-			      &media_text,
-			      NULL);
-
-		/* TRANSLATORS: the user needs to change media inserted into the computer */
-		g_print ("%s\n", _("Media change required"));
-
-		/* TRANSLATORS: the type, e.g. DVD, CD, etc */
-		g_print (" %s: %s\n", _("Media type"), pk_media_type_enum_to_string (media_type));
-
-		/* TRANSLATORS: the media label, usually like 'disk-1of3' */
-		g_print (" %s: %s\n", _("Media label"), media_id);
-
-		/* TRANSLATORS: the media description, usually like 'Fedora 12 disk 5' */
-		g_print (" %s: %s\n", _("Text"), media_text);
-		g_free (media_id);
-		g_free (media_text);
-	}
-
-	/* TRANSLATORS: ask the user to insert the media */
-	ret = pk_console_get_prompt (_("Please insert the correct media"), FALSE);
-	if (ret) {
-		pk_task_user_accepted (task, request);
-	} else {
-		/* TRANSLATORS: tell the user we've not done anything as they are lazy */
-		g_print ("%s\n", _("The correct media was not inserted."));
 		pk_task_user_declined (task, request);
 	}
 
@@ -455,7 +396,6 @@ pk_task_text_class_init (PkTaskTextClass *klass)
 	task_class->untrusted_question = pk_task_text_untrusted_question;
 	task_class->key_question = pk_task_text_key_question;
 	task_class->eula_question = pk_task_text_eula_question;
-	task_class->media_change_question = pk_task_text_media_change_question;
 	task_class->simulate_question = pk_task_text_simulate_question;
 }
 

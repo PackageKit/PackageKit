@@ -45,7 +45,6 @@ static const PkEnumMatch enum_exit[] = {
 	{PK_EXIT_ENUM_CANCELLED,		"cancelled"},
 	{PK_EXIT_ENUM_KEY_REQUIRED,		"key-required"},
 	{PK_EXIT_ENUM_EULA_REQUIRED,		"eula-required"},
-	{PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_EXIT_ENUM_KILLED,			"killed"},
 	{PK_EXIT_ENUM_NEED_UNTRUSTED,		"need-untrusted"},
 	{PK_EXIT_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
@@ -180,7 +179,6 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,	"no-distro-upgrade-data"},
 	{PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,	"incompatible-architecture"},
 	{PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,	"no-space-on-device"},
-	{PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,	"media-change-required"},
 	{PK_ERROR_ENUM_NOT_AUTHORIZED,		"not-authorized"},
 	{PK_ERROR_ENUM_UPDATE_NOT_FOUND,	"update-not-found"},
 	{PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,	"cannot-install-repo-unsigned"},
@@ -351,14 +349,6 @@ static const PkEnumMatch enum_network[] = {
 	{PK_NETWORK_ENUM_WIRED,			"wired"},
 	{PK_NETWORK_ENUM_WIFI,			"wifi"},
 	{PK_NETWORK_ENUM_MOBILE,		"mobile"},
-	{0, NULL}
-};
-
-static const PkEnumMatch enum_media_type[] = {
-	{PK_MEDIA_TYPE_ENUM_UNKNOWN,		"unknown"},	/* fall though value */
-	{PK_MEDIA_TYPE_ENUM_CD,			"cd"},
-	{PK_MEDIA_TYPE_ENUM_DVD,		"dvd"},
-	{PK_MEDIA_TYPE_ENUM_DISC,		"disc"},
 	{0, NULL}
 };
 
@@ -827,38 +817,6 @@ const gchar *
 pk_filter_enum_to_string (PkFilterEnum filter)
 {
 	return pk_enum_find_string (enum_filter, filter);
-}
-
-/**
- * pk_media_type_enum_from_string:
- * @media_type: Text describing the enumerated type
- *
- * Converts a text enumerated type to its unsigned integer representation
- *
- * Return value: the enumerated constant value, e.g. PK_MEDIA_TYPE_ENUM_CD
- *
- * Since: 0.5.0
- **/
-PkMediaTypeEnum
-pk_media_type_enum_from_string (const gchar *media_type)
-{
-	return pk_enum_find_value (enum_media_type, media_type);
-}
-
-/**
- * pk_media_type_enum_to_string:
- * @media_type: The enumerated type value
- *
- * Converts a enumerated type to its text representation
- *
- * Return value: the enumerated constant value, e.g. "dvd"
- *
- * Since: 0.5.0
- **/
-const gchar *
-pk_media_type_enum_to_string (PkMediaTypeEnum media_type)
-{
-	return pk_enum_find_string (enum_media_type, media_type);
 }
 
 /**

@@ -91,7 +91,6 @@ struct _PkTransaction
 	gboolean waiting_for_auth;
 	gboolean emit_eula_required;
 	gboolean emit_signature_required;
-	gboolean emit_media_change_required;
 	gboolean caller_active;
 	gboolean exclusive;
 	guint32 client_uid;
@@ -1085,8 +1084,6 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 		exit_enum = PK_EXIT_ENUM_KEY_REQUIRED;
 	else if (transaction->emit_eula_required)
 		exit_enum = PK_EXIT_ENUM_EULA_REQUIRED;
-	else if (transaction->emit_media_change_required)
-		exit_enum = PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED;
 
 	/* invalidate some caches if we succeeded */
 	if (exit_enum == PK_EXIT_ENUM_SUCCESS)
@@ -1487,49 +1484,6 @@ pk_transaction_eula_required_cb (PkBackend *backend,
 }
 
 static void
-pk_transaction_media_change_required_cb (PkBackend *backend,
-					 PkMediaChangeRequired *item,
-					 PkTransaction *transaction)
-{
-	PkMediaTypeEnum media_type;
-	g_autofree gchar *media_id = NULL;
-	g_autofree gchar *media_text = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	/* add to results */
-	pk_results_add_media_change_required (transaction->results, item);
-
-	/* get data */
-	g_object_get (item,
-		      "media-type",
-		      &media_type,
-		      "media-id",
-		      &media_id,
-		      "media-text",
-		      &media_text,
-		      NULL);
-
-	/* emit */
-	g_debug ("emitting media-change-required %s, %s, %s",
-		 pk_media_type_enum_to_string (media_type),
-		 media_id,
-		 media_text);
-	g_dbus_connection_emit_signal (
-	    transaction->connection,
-	    NULL,
-	    transaction->tid,
-	    PK_DBUS_INTERFACE_TRANSACTION,
-	    "MediaChangeRequired",
-	    g_variant_new ("(uss)", media_type, media_id, media_text != NULL ? media_text : ""),
-	    NULL);
-
-	/* we should mark this transaction so that we finish with a special code */
-	transaction->emit_media_change_required = TRUE;
-}
-
-static void
 pk_transaction_require_restart_cb (PkBackend *backend,
 				   PkRequireRestart *item,
 				   PkTransaction *transaction)
@@ -1902,10 +1856,6 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_job_set_vfunc (transaction->job,
 				  PK_BACKEND_SIGNAL_EULA_REQUIRED,
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_eula_required_cb),
-				  transaction);
-	pk_backend_job_set_vfunc (transaction->job,
-				  PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-				  PK_BACKEND_JOB_VFUNC (pk_transaction_media_change_required_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (transaction->job,
 				  PK_BACKEND_SIGNAL_REQUIRE_RESTART,

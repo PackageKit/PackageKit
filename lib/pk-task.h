@@ -67,9 +67,6 @@ struct _PkTaskClass
 	void (*eula_question) (PkTask	 *task,
 			       guint	  request,
 			       PkResults *results);
-	void (*media_change_question) (PkTask	 *task,
-				       guint	  request,
-				       PkResults *results);
 	void (*simulate_question) (PkTask    *task,
 				   guint      request,
 				   PkResults *results);

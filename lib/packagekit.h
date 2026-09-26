@@ -37,7 +37,6 @@
 #include "pk-error.h"
 #include "pk-eula-required.h"
 #include "pk-files.h"
-#include "pk-media-change-required.h"
 #include "pk-item-progress.h"
 #include "pk-offline.h"
 #include "pk-package-id.h"

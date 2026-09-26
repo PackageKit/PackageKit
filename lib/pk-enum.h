@@ -229,7 +229,6 @@ typedef enum {
  * @PK_EXIT_ENUM_KEY_REQUIRED: A repository encryption key needs installing
  * @PK_EXIT_ENUM_EULA_REQUIRED: A EULA is required to be accepted
  * @PK_EXIT_ENUM_KILLED: Backend was killed
- * @PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED: Media change required
  * @PK_EXIT_ENUM_NEED_UNTRUSTED:
  * @PK_EXIT_ENUM_CANCELLED_PRIORITY: Cancelled due to higher priority task
  * @PK_EXIT_ENUM_SKIP_TRANSACTION:
@@ -246,7 +245,6 @@ typedef enum {
 	PK_EXIT_ENUM_KEY_REQUIRED,
 	PK_EXIT_ENUM_EULA_REQUIRED,
 	PK_EXIT_ENUM_KILLED, /* when we forced the cancel, but had to SIGKILL */
-	PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_EXIT_ENUM_NEED_UNTRUSTED,
 	PK_EXIT_ENUM_CANCELLED_PRIORITY,
 	PK_EXIT_ENUM_SKIP_TRANSACTION,
@@ -415,7 +413,6 @@ typedef enum {
  * @PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA: No distribution upgrade path found
  * @PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE: Incompatible architecture found
  * @PK_ERROR_ENUM_NO_SPACE_ON_DEVICE: Out of required disk space
- * @PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED: Need to change media
  * @PK_ERROR_ENUM_NOT_AUTHORIZED: Authorization failed
  * @PK_ERROR_ENUM_UPDATE_NOT_FOUND: Update not found
  * @PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED: Installation repository missing signature
@@ -489,7 +486,6 @@ typedef enum {
 	PK_ERROR_ENUM_NO_DISTRO_UPGRADE_DATA,
 	PK_ERROR_ENUM_INCOMPATIBLE_ARCHITECTURE,
 	PK_ERROR_ENUM_NO_SPACE_ON_DEVICE,
-	PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
 	PK_ERROR_ENUM_NOT_AUTHORIZED,
 	PK_ERROR_ENUM_UPDATE_NOT_FOUND,
 	PK_ERROR_ENUM_CANNOT_INSTALL_REPO_UNSIGNED,
@@ -718,24 +714,6 @@ typedef enum {
 } PkSigTypeEnum;
 
 /**
- * PkMediaTypeEnum:
- * @PK_MEDIA_TYPE_ENUM_UNKNOWN: Unknown media type
- * @PK_MEDIA_TYPE_ENUM_CD: Media is a CD
- * @PK_MEDIA_TYPE_ENUM_DVD: Media is a DVD
- * @PK_MEDIA_TYPE_ENUM_DISC: Media is a disc (not CD or DVD)
- * @PK_MEDIA_TYPE_ENUM_LAST:
- *
- * The media type
- **/
-typedef enum {
-	PK_MEDIA_TYPE_ENUM_UNKNOWN,
-	PK_MEDIA_TYPE_ENUM_CD,
-	PK_MEDIA_TYPE_ENUM_DVD,
-	PK_MEDIA_TYPE_ENUM_DISC,
-	PK_MEDIA_TYPE_ENUM_LAST
-} PkMediaTypeEnum;
-
-/**
  * PkAuthorizeEnum:
  * @PK_AUTHORIZE_ENUM_UNKNOWN: Unknown authorization status
  * @PK_AUTHORIZE_ENUM_YES: Authorized
@@ -836,9 +814,6 @@ const gchar	     *pk_filter_enum_to_string (PkFilterEnum filter);
 
 PkDistroUpgradeEnum   pk_distro_upgrade_enum_from_string (const gchar *upgrade);
 const gchar	     *pk_distro_upgrade_enum_to_string (PkDistroUpgradeEnum upgrade);
-
-PkMediaTypeEnum	      pk_media_type_enum_from_string (const gchar *media_type);
-const gchar	     *pk_media_type_enum_to_string (PkMediaTypeEnum media_type);
 
 PkAuthorizeEnum	      pk_authorize_type_enum_from_string (const gchar *authorize_type);
 const gchar	     *pk_authorize_type_enum_to_string (PkAuthorizeEnum authorize_type);

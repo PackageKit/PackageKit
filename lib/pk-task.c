@@ -1085,34 +1085,6 @@ pk_task_ready_cb (GObject *source_object, GAsyncResult *res, gpointer user_data)
 		return;
 	}
 
-	/* need media change */
-	if (state->exit_enum == PK_EXIT_ENUM_MEDIA_CHANGE_REQUIRED) {
-
-		/* running non-interactive */
-		if (!interactive) {
-			g_debug ("working non-interactive, so calling accept");
-			pk_task_user_accepted (task, state->request);
-			g_task_return_pointer (gtask,
-					       g_steal_pointer (&state->results),
-					       g_object_unref);
-			return;
-		}
-
-		/* no support */
-		if (klass->media_change_question == NULL) {
-			g_task_return_new_error (
-			    gtask,
-			    PK_CLIENT_ERROR,
-			    PK_CLIENT_ERROR_NOT_SUPPORTED,
-			    "could not do media change question as no klass support");
-			return;
-		}
-
-		/* run the callback */
-		klass->media_change_question (task, state->request, state->results);
-		return;
-	}
-
 	/* just re-run the transaction after a small delay */
 	if (state->exit_enum == PK_EXIT_ENUM_CANCELLED_PRIORITY) {
 		state->retry_id = g_timeout_add (PK_TASK_TRANSACTION_CANCELLED_RETRY_TIMEOUT,

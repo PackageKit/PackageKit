@@ -115,23 +115,6 @@ pkgc_monitor_notify_network_status_cb (PkControl *control, GParamSpec *pspec, gp
 }
 
 static void
-pkgc_monitor_media_change_required_cb (PkMediaChangeRequired *item, const gchar *transaction_id)
-{
-	PkMediaTypeEnum type;
-	g_autofree gchar *id = NULL;
-	g_autofree gchar *text = NULL;
-
-	/* get data */
-	g_object_get (item, "media-type", &type, "media-id", &id, "media-text", &text, NULL);
-
-	g_print ("%s\tmedia-change-required: %s, %s, %s\n",
-		 transaction_id,
-		 pk_media_type_enum_to_string (type),
-		 id,
-		 text);
-}
-
-static void
 pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 {
 	PkgcliContext *ctx = g_context;
@@ -141,7 +124,6 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 	g_autoptr(PkError) error_code = NULL;
 	g_autoptr(PkProgress) progress = NULL;
 	g_autoptr(PkResults) results = NULL;
-	g_autoptr(GPtrArray) media_array = NULL;
 	const gchar *exit_color;
 
 	/* get the results */
@@ -176,12 +158,6 @@ pkgc_monitor_adopt_cb (PkClient *_client, GAsyncResult *res, gpointer user_data)
 		 exit_color,
 		 pk_exit_enum_to_string (exit_enum),
 		 pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
-
-	/* media change required */
-	media_array = pk_results_get_media_change_required_array (results);
-	g_ptr_array_foreach (media_array,
-			     (GFunc) pkgc_monitor_media_change_required_cb,
-			     transaction_id);
 
 	/* check error code */
 	error_code = pk_results_get_error_code (results);

@@ -58,7 +58,6 @@ typedef enum {
 	PK_BACKEND_SIGNAL_REPO_DETAIL,
 	PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED,
 	PK_BACKEND_SIGNAL_EULA_REQUIRED,
-	PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
 	PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 	PK_BACKEND_SIGNAL_STATUS_CHANGED,
 	PK_BACKEND_SIGNAL_LOCKED_CHANGED,
@@ -214,10 +213,6 @@ void	   pk_backend_job_eula_required (PkBackendJob *job,
 					 const gchar  *package_id,
 					 const gchar  *vendor_name,
 					 const gchar  *license_agreement);
-void	   pk_backend_job_media_change_required (PkBackendJob	*job,
-						 PkMediaTypeEnum media_type,
-						 const gchar	*media_id,
-						 const gchar	*media_text);
 void	   pk_backend_job_set_status (PkBackendJob *job,
 				      PkStatusEnum  status);
 void	   pk_backend_job_set_allow_cancel (PkBackendJob *job,

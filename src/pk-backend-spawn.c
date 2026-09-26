@@ -151,7 +151,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	PkRestartEnum restart_enum;
 	PkSigTypeEnum sig_type;
 	PkUpdateStateEnum update_state_enum;
-	PkMediaTypeEnum media_type_enum;
 	PkDistroUpgradeEnum distro_upgrade_enum;
 	g_auto(GStrv) sections = NULL;
 
@@ -556,27 +555,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 					      sections[2],
 					      sections[3],
 					      sections[4]);
-	} else if (g_strcmp0 (command, "media-change-required") == 0) {
-
-		if (size != 4) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-
-		media_type_enum = pk_media_type_enum_from_string (sections[1]);
-		if (media_type_enum == PK_MEDIA_TYPE_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "media type enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-
-		pk_backend_job_media_change_required (job,
-						      media_type_enum,
-						      sections[2],
-						      sections[3]);
 	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
 
 		if (size != 4) {

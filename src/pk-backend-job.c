@@ -609,8 +609,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "RepoSignatureRequired";
 	if (id == PK_BACKEND_SIGNAL_EULA_REQUIRED)
 		return "EulaRequired";
-	if (id == PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED)
-		return "MediaChangeRequired";
 	if (id == PK_BACKEND_SIGNAL_REQUIRE_RESTART)
 		return "RequireRestart";
 	if (id == PK_BACKEND_SIGNAL_STATUS_CHANGED)
@@ -1511,42 +1509,6 @@ pk_backend_job_eula_required (PkBackendJob *job,
 
 	/* success */
 	job->set_eula = TRUE;
-}
-
-void
-pk_backend_job_media_change_required (PkBackendJob *job,
-				      PkMediaTypeEnum media_type,
-				      const gchar *media_id,
-				      const gchar *media_text)
-{
-	g_autoptr(PkMediaChangeRequired) item = NULL;
-
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (media_id != NULL);
-	g_return_if_fail (media_text != NULL);
-
-	/* have we already set an error? */
-	if (job->set_error) {
-		g_warning ("already set error: media change required");
-		return;
-	}
-
-	/* form PkMediaChangeRequired struct */
-	item = pk_media_change_required_new ();
-	g_object_set (item,
-		      "media-type",
-		      media_type,
-		      "media-id",
-		      media_id,
-		      "media-text",
-		      media_text,
-		      NULL);
-
-	/* emit */
-	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_MEDIA_CHANGE_REQUIRED,
-				   g_object_ref (item),
-				   g_object_unref);
 }
 
 void

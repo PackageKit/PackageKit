@@ -52,14 +52,6 @@ PkBitfield pk_backend_job_get_transaction_flags(PkBackendJob *job)
 
 void pk_backend_job_package_status(PkBackendJob *job, const gchar *package_id, PkInfoEnum info) {}
 
-void pk_backend_job_media_change_required(
-    PkBackendJob *job,
-    PkMediaTypeEnum media_type,
-    const gchar *media_id,
-    const gchar *media_text)
-{
-}
-
 void pk_backend_job_set_allow_cancel(PkBackendJob *job, gboolean allow_cancel) {}
 
 gboolean pk_backend_job_get_interactive(PkBackendJob *job)

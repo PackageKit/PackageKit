@@ -66,16 +66,6 @@ pk_task_wrapper_eula_question (PkTask *task, guint request, PkResults *results)
 }
 
 /*
- * pk_task_wrapper_media_change_question:
- **/
-static void
-pk_task_wrapper_media_change_question (PkTask *task, guint request, PkResults *results)
-{
-	/* just accept without asking */
-	pk_task_user_accepted (task, request);
-}
-
-/*
  * pk_task_wrapper_simulate_question:
  **/
 static void
@@ -118,7 +108,6 @@ pk_task_wrapper_class_init (PkTaskWrapperClass *klass)
 	task_class->untrusted_question = pk_task_wrapper_untrusted_question;
 	task_class->key_question = pk_task_wrapper_key_question;
 	task_class->eula_question = pk_task_wrapper_eula_question;
-	task_class->media_change_question = pk_task_wrapper_media_change_question;
 	task_class->simulate_question = pk_task_wrapper_simulate_question;
 }
 

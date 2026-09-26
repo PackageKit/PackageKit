@@ -42,7 +42,6 @@ typedef struct
 	gboolean use_distro_upgrade;
 	gboolean use_eula;
 	gboolean use_gpg;
-	gboolean use_media;
 	gboolean use_trusted;
 	gchar **package_ids;
 	gchar **values;
@@ -787,18 +786,6 @@ pk_backend_install_packages (PkBackend *backend,
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,
 						   "licence not installed so cannot install");
-			pk_backend_job_finished (job);
-			return;
-		}
-		if (priv->use_media) {
-			priv->use_media = FALSE;
-			pk_backend_job_media_change_required (job,
-							      PK_MEDIA_TYPE_ENUM_DVD,
-							      "linux-disk-1of7",
-							      "Linux Disc 1 of 7");
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
-						   "additional media linux-disk-1of7 required");
 			pk_backend_job_finished (job);
 			return;
 		}
@@ -1670,8 +1657,6 @@ pk_backend_repo_set_data (PkBackend *backend,
 		priv->use_blocked = atoi (value);
 	else if (g_strcmp0 (parameter, "use-eula") == 0)
 		priv->use_eula = atoi (value);
-	else if (g_strcmp0 (parameter, "use-media") == 0)
-		priv->use_media = atoi (value);
 	else if (g_strcmp0 (parameter, "use-gpg") == 0)
 		priv->use_gpg = atoi (value);
 	else if (g_strcmp0 (parameter, "use-trusted") == 0)

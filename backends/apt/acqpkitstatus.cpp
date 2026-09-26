@@ -184,12 +184,10 @@ bool AcqPackageKitStatus::Pulse(pkgAcquire *Owner)
 /* Prompt for a media swap */
 bool AcqPackageKitStatus::MediaChange(string Media, string Drive)
 {
-    pk_backend_job_media_change_required(m_job, PK_MEDIA_TYPE_ENUM_DISC, Media.c_str(), Media.c_str());
-
     pk_backend_job_error_code(
         m_job,
-        PK_ERROR_ENUM_MEDIA_CHANGE_REQUIRED,
-        "Media change: please insert the disc labeled '%s' in the drive '%s' and try again.",
+        PK_ERROR_ENUM_REPO_NOT_AVAILABLE,
+        "Media change is not supported: the disc labeled '%s' would be required in the drive '%s'.",
         Media.c_str(),
         Drive.c_str());
 

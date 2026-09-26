@@ -59,7 +59,6 @@ struct _PkResultsPrivate
 	GPtrArray *files_array;
 	GPtrArray *repo_signature_required_array;
 	GPtrArray *eula_required_array;
-	GPtrArray *media_change_required_array;
 	GPtrArray *repo_detail_array;
 	PkPackageSack *package_sack;
 };
@@ -411,31 +410,6 @@ pk_results_add_eula_required (PkResults *results, PkEulaRequired *item)
 
 	/* copy and add to array */
 	g_ptr_array_add (priv->eula_required_array, g_object_ref (item));
-
-	return TRUE;
-}
-
-/**
- * pk_results_add_media_change_required:
- * @results: a valid #PkResults instance
- * @item: the object to add to the array
- *
- * Adds some media change details to the results set.
- *
- * Return value: %TRUE if the value was set
- *
- * Since: 0.5.2
- **/
-gboolean
-pk_results_add_media_change_required (PkResults *results, PkMediaChangeRequired *item)
-{
-	PkResultsPrivate *priv = GET_PRIVATE(results);
-
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
-
-	/* copy and add to array */
-	g_ptr_array_add (priv->media_change_required_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -816,26 +790,6 @@ pk_results_get_eula_required_array (PkResults *results)
 }
 
 /**
- * pk_results_get_media_change_required_array:
- * @results: a valid #PkResults instance
- *
- * Gets the media changes required from the transaction.
- *
- * Return value: (element-type PkMediaChangeRequired) (transfer container): A #GPtrArray array of #PkMediaChangeRequired's, free with g_ptr_array_unref().
- *
- * Since: 0.5.2
- **/
-GPtrArray *
-pk_results_get_media_change_required_array (PkResults *results)
-{
-	PkResultsPrivate *priv = GET_PRIVATE(results);
-
-	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-
-	return g_ptr_array_ref (priv->media_change_required_array);
-}
-
-/**
  * pk_results_get_repo_detail_array:
  * @results: a valid #PkResults instance
  *
@@ -953,8 +907,6 @@ pk_results_init (PkResults *results)
 	    (GDestroyNotify) g_object_unref);
 	priv->eula_required_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
-	priv->media_change_required_array = g_ptr_array_new_with_free_func (
-	    (GDestroyNotify) g_object_unref);
 	priv->repo_detail_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 }
 
@@ -975,7 +927,6 @@ pk_results_finalize (GObject *object)
 	g_clear_pointer (&priv->files_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->repo_signature_required_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->eula_required_array, g_ptr_array_unref);
-	g_clear_pointer (&priv->media_change_required_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->repo_detail_array, g_ptr_array_unref);
 	g_clear_object (&priv->package_sack);
 	g_clear_object (&priv->progress);

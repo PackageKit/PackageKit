@@ -1514,7 +1514,6 @@ pk_test_task_text_func (void)
 	/* For testing, you will need to manually do:
 	pkcon repo-set-data dummy use-gpg 1
 	pkcon repo-set-data dummy use-eula 1
-	pkcon repo-set-data dummy use-media 1
 	*/
 
 	/* install package */

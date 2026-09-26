@@ -286,7 +286,6 @@ PkUpdateStateEnum
 PkInfoEnum
 PkDistroUpgradeEnum
 PkSigTypeEnum
-PkMediaTypeEnum
 PkAuthorizeEnum
 PkUpgradeKindEnum
 PkTransactionFlagEnum
@@ -316,8 +315,6 @@ pk_filter_enum_from_string
 pk_filter_enum_to_string
 pk_distro_upgrade_enum_from_string
 pk_distro_upgrade_enum_to_string
-pk_media_type_enum_from_string
-pk_media_type_enum_to_string
 pk_authorize_type_enum_from_string
 pk_authorize_type_enum_to_string
 pk_upgrade_kind_enum_from_string
@@ -342,7 +339,6 @@ PK_TYPE_EXIT_ENUM
 PK_TYPE_FILTER_ENUM
 PK_TYPE_GROUP_ENUM
 PK_TYPE_INFO_ENUM
-PK_TYPE_MEDIA_TYPE_ENUM
 PK_TYPE_NETWORK_ENUM
 PK_TYPE_OFFLINE_ACTION
 PK_TYPE_OFFLINE_ERROR
@@ -364,7 +360,6 @@ pk_exit_enum_get_type
 pk_filter_enum_get_type
 pk_group_enum_get_type
 pk_info_enum_get_type
-pk_media_type_enum_get_type
 pk_network_enum_get_type
 pk_offline_action_get_type
 pk_offline_error_get_type
@@ -456,23 +451,6 @@ PkItemProgress
 PkItemProgressClass
 PkItemProgressPrivate
 pk_item_progress_get_type
-</SECTION>
-
-<SECTION>
-<FILE>pk-media-change-required</FILE>
-<TITLE>PkMediaChangeRequired</TITLE>
-pk_media_change_required_new
-<SUBSECTION Standard>
-PK_IS_MEDIA_CHANGE_REQUIRED
-PK_IS_MEDIA_CHANGE_REQUIRED_CLASS
-PK_MEDIA_CHANGE_REQUIRED
-PK_MEDIA_CHANGE_REQUIRED_CLASS
-PK_MEDIA_CHANGE_REQUIRED_GET_CLASS
-PK_TYPE_MEDIA_CHANGE_REQUIRED
-PkMediaChangeRequired
-PkMediaChangeRequiredClass
-PkMediaChangeRequiredPrivate
-pk_media_change_required_get_type
 </SECTION>
 
 <SECTION>
@@ -741,7 +719,6 @@ pk_results_add_transaction
 pk_results_add_files
 pk_results_add_repo_signature_required
 pk_results_add_eula_required
-pk_results_add_media_change_required
 pk_results_add_repo_detail
 pk_results_get_exit_code
 pk_results_get_package_sack
@@ -758,7 +735,6 @@ pk_results_get_transaction_array
 pk_results_get_files_array
 pk_results_get_repo_signature_required_array
 pk_results_get_eula_required_array
-pk_results_get_media_change_required_array
 pk_results_get_repo_detail_array
 <SUBSECTION Standard>
 PK_IS_RESULTS

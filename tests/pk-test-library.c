@@ -329,16 +329,6 @@ pk_test_enum_func (void)
 			break;
 		}
 	}
-
-	/* check we convert all the media type bitfield */
-	for (i = 0; i < PK_MEDIA_TYPE_ENUM_LAST; i++) {
-		string = pk_media_type_enum_to_string (i);
-		if (string == NULL) {
-			/* so we get the value of i in the assert text */
-			g_assert_cmpint (0, ==, i);
-			break;
-		}
-	}
 }
 
 static void
@@ -1047,7 +1037,6 @@ pk_test_object_types_func (void)
 	PK_TEST_TYPE (PkFiles, pk_files_new);
 
 	PK_TEST_TYPE (PkItemProgress, pk_item_progress_new);
-	PK_TEST_TYPE (PkMediaChangeRequired, pk_media_change_required_new);
 	PK_TEST_TYPE (PkPackage, pk_package_new);
 	PK_TEST_TYPE (PkPackageSack, pk_package_sack_new);
 	PK_TEST_TYPE (PkProgressBar, pk_progress_bar_new);

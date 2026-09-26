@@ -1557,25 +1557,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		pk_results_set_error_code (state->results, item);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "MediaChangeRequired") == 0) {
-		g_autoptr(PkMediaChangeRequired) item = NULL;
-		g_variant_get (parameters, "(u&s&s)", &tmp_uint, &tmp_str[1], &tmp_str[2]);
-		item = pk_media_change_required_new ();
-		g_object_set (item,
-			      "media-type",
-			      tmp_uint,
-			      "media-id",
-			      tmp_str[1],
-			      "media-text",
-			      tmp_str[2],
-			      "role",
-			      state->role,
-			      "transaction-id",
-			      state->transaction_id,
-			      NULL);
-		pk_results_add_media_change_required (state->results, item);
-		return;
-	}
 	if (g_strcmp0 (signal_name, "ItemProgress") == 0) {
 		g_autoptr(PkItemProgress) item = NULL;
 		g_variant_get (parameters, "(&suu)", &tmp_str[0], &tmp_uint, &tmp_uint2);
