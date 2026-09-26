@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-23 18:22+0200\n"
-"PO-Revision-Date: 2026-09-22 18:29+0000\n"
+"PO-Revision-Date: 2026-09-26 08:55+0000\n"
 "Last-Translator: Roy-Magne Mo <rmo@sunnmore.net>\n"
 "Language-Team: Norwegian Nynorsk <https://hosted.weblate.org/projects/packagekit/translations/nn/>\n"
 "Language: nn\n"
@@ -1895,37 +1895,37 @@ msgstr "Skriv inn eit tal frå 1 til %i: "
 
 #: lib/pk-console-private.c:335
 msgid "[N/y]"
-msgstr ""
+msgstr "[N/j]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
 #: lib/pk-console-private.c:335
 msgid "[Y/n]"
-msgstr ""
+msgstr "[J/n]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
 #: lib/pk-console-private.c:352
 msgctxt "Answer"
 msgid "y"
-msgstr ""
+msgstr "j"
 
 #. TRANSLATORS: full "yes" answer
 #: lib/pk-console-private.c:356
 msgctxt "Answer"
 msgid "yes"
-msgstr ""
+msgstr "ja"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
 #: lib/pk-console-private.c:363
 msgctxt "Answer"
 msgid "n"
-msgstr ""
+msgstr "n"
 
 #. TRANSLATORS: full "no" answer
 #: lib/pk-console-private.c:367
 msgctxt "Answer"
 msgid "no"
-msgstr ""
+msgstr "nei"
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/pk-console-private.c:392
