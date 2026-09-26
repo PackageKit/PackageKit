@@ -110,7 +110,11 @@ pk_package_id_check (const gchar *package_id)
  * Since: 0.5.0
  **/
 gchar *
-pk_package_id_build (const gchar *name, const gchar *version, const gchar *arch, const gchar *origin, const gchar *data)
+pk_package_id_build (const gchar *name,
+		     const gchar *version,
+		     const gchar *arch,
+		     const gchar *origin,
+		     const gchar *data)
 {
 	g_return_val_if_fail (name != NULL, NULL);
 	return g_strjoin (";",

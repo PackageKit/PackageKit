@@ -2390,10 +2390,11 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 	 * needs no authorization) would otherwise be parsed by the helper as an
 	 * additional, unauthorized command. */
 	if (strpbrk (text, "\t\n\r") != NULL) {
-		g_set_error_literal (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "Invalid input passed to daemon: contains a control character");
+		g_set_error_literal (
+		    error,
+		    PK_TRANSACTION_ERROR,
+		    PK_TRANSACTION_ERROR_INPUT_INVALID,
+		    "Invalid input passed to daemon: contains a control character");
 		return FALSE;
 	}
 	return TRUE;

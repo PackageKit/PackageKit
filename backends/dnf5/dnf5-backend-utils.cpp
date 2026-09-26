@@ -390,11 +390,12 @@ dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
 			origin = "local";
 	}
 
-	g_autofree gchar *package_id = pk_package_id_build(pkg.get_name().c_str(),
-							   pkg.get_evr().c_str(),
-							   pkg.get_arch().c_str(),
-							   origin.c_str(),
-							   data);
+	g_autofree gchar *package_id = pk_package_id_build(
+		pkg.get_name().c_str(),
+		pkg.get_evr().c_str(),
+		pkg.get_arch().c_str(),
+		origin.c_str(),
+		data);
 	return std::string(package_id);
 }
 

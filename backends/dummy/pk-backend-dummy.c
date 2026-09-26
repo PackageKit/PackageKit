@@ -926,8 +926,8 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 						"powertop;1.8-1.fc8;i386;fedora;",
 						"Power consumption monitor");
 		else if (g_strcmp0 (search[i], "kernel") == 0 ||
-			 g_strcmp0 (search[i], "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed") ==
-			     0)
+			 g_strcmp0 (search[i],
+				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed") == 0)
 			pk_backend_job_package (
 			    job,
 			    PK_INFO_ENUM_INSTALLED,
@@ -1345,7 +1345,7 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 		if (g_strcmp0 (buffer, "pong\n") == 0) {
 			/* send a marker package so we can verify in the self checks */
 			pk_backend_job_package (job,
-						PK_INFO_ENUM_INSTALLED,
+						PK_INFO_ENUM_INSTALLING,
 						"testsocket-pong;0.1;i386;fedora;",
 						"Frontend socket reply received");
 
@@ -1636,10 +1636,11 @@ pk_backend_what_provides_timeout (gpointer data)
 			if (g_strcmp0 (priv->values[0], "vips-doc") != 0) {
 				if (!pk_bitfield_contain (priv->filters,
 							  PK_FILTER_ENUM_NOT_INSTALLED)) {
-					pk_backend_job_package (job,
-								PK_INFO_ENUM_INSTALLED,
-								"evince;0.9.3-5.fc8;i386;;installed",
-								"PDF Document viewer");
+					pk_backend_job_package (
+					    job,
+					    PK_INFO_ENUM_INSTALLED,
+					    "evince;0.9.3-5.fc8;i386;;installed",
+					    "PDF Document viewer");
 				}
 				if (!pk_bitfield_contain (priv->filters,
 							  PK_FILTER_ENUM_INSTALLED)) {

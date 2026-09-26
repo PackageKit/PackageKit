@@ -391,7 +391,8 @@ pk_test_package_id_func (void)
 	g_free (text);
 
 	/* test on real packageid */
-	sections = pk_package_id_split ("kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;ubuntu-main;auto");
+	sections = pk_package_id_split (
+	    "kde-i18n-csb;4:3.5.8~pre20071001-0ubuntu1;all;ubuntu-main;auto");
 	g_assert_true (sections != NULL);
 	g_assert_cmpstr (sections[0], ==, "kde-i18n-csb");
 	g_assert_cmpstr (sections[1], ==, "4:3.5.8~pre20071001-0ubuntu1");
@@ -559,7 +560,9 @@ pk_test_package_func (void)
 	g_clear_error (&error);
 
 	/* set invalid id (sections) */
-	ret = pk_package_set_id (package, "gnome-power-manager;0.1.2;i386;fedora;auto;dave", &error);
+	ret = pk_package_set_id (package,
+				 "gnome-power-manager;0.1.2;i386;fedora;auto;dave",
+				 &error);
 	g_assert_error (error, 1, 0);
 	g_assert_true (!ret);
 	g_clear_error (&error);

@@ -1432,8 +1432,7 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 	/* when filters contain PK_FILTER_ENUM_NOT_INSTALLED package
 	 * can't be marked as installed */
 	if (g_strcmp0 (repo, "installed") == 0 ||
-	    (repo == NULL &&
-	     !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
+	    (repo == NULL && !pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED) &&
 	     pkg_is_installed (pkg))) {
 		poldek_dir = NULL;
 		data = "installed";

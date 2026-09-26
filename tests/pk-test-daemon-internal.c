@@ -38,7 +38,7 @@
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID 14
 #define GET_DETAILS_TEST_DATA                                            \
-	"details\tgimp;3.0.4-84;x86_64;Solus;\tGNU Image Manipulation "   \
+	"details\tgimp;3.0.4-84;x86_64;Solus;\tGNU Image Manipulation "  \
 	"Program\tGPL-3.0-or-later\tmultimedia\tGIMP is a mature image " \
 	"editor.\thttps://www.gimp.org/\t"
 

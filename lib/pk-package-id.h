@@ -56,7 +56,7 @@ G_BEGIN_DECLS
  *
  * Alias to get the origin field from the result of pk_package_id_split
  */
-#define PK_PACKAGE_ID_ORIGIN	3
+#define PK_PACKAGE_ID_ORIGIN 3
 
 /**
  * PK_PACKAGE_ID_DATA:
