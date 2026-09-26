@@ -482,10 +482,6 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		/* TRANSLATORS: transaction state, downloading metadata */
 		text = _("Downloading lists of changes");
 		break;
-	case PK_STATUS_ENUM_DOWNLOAD_GROUP:
-		/* TRANSLATORS: transaction state, downloading metadata */
-		text = _("Downloading groups");
-		break;
 	case PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO:
 		/* TRANSLATORS: transaction state, downloading metadata */
 		text = _("Downloading update information");
@@ -498,14 +494,6 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 		/* TRANSLATORS: transaction state, loading databases */
 		text = _("Loading cache");
 		break;
-	case PK_STATUS_ENUM_SCAN_APPLICATIONS:
-		/* TRANSLATORS: transaction state, scanning for running processes */
-		text = _("Scanning applications");
-		break;
-	case PK_STATUS_ENUM_GENERATE_PACKAGE_LIST:
-		/* TRANSLATORS: transaction state, generating a list of packages installed on the system */
-		text = _("Generating package lists");
-		break;
 	case PK_STATUS_ENUM_WAITING_FOR_LOCK:
 		/* TRANSLATORS: transaction state, when we're waiting for the native tools to exit */
 		text = _("Waiting for package manager lock");
@@ -513,18 +501,6 @@ pk_status_enum_to_localised_text (PkStatusEnum status)
 	case PK_STATUS_ENUM_WAITING_FOR_AUTH:
 		/* TRANSLATORS: transaction state, waiting for user to type in a password */
 		text = _("Waiting for authentication");
-		break;
-	case PK_STATUS_ENUM_SCAN_PROCESS_LIST:
-		/* TRANSLATORS: transaction state, we are updating the list of processes */
-		text = _("Updating running applications");
-		break;
-	case PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES:
-		/* TRANSLATORS: transaction state, we are checking executable files currently in use */
-		text = _("Checking applications in use");
-		break;
-	case PK_STATUS_ENUM_CHECK_LIBRARIES:
-		/* TRANSLATORS: transaction state, we are checking for libraries currently in use */
-		text = _("Checking libraries in use");
 		break;
 	case PK_STATUS_ENUM_COPY_FILES:
 		/* TRANSLATORS: transaction state, we are copying package files before or after the transaction */

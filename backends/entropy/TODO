@@ -1,7 +1,7 @@
 Entropy PackageKit backend developers' TODO:
 
-    - add support for FILTER_NOT_VISIBLE, FILTER_NOT_DEVELOPMENT,
-        FILTER_DEVELOPMENT, FILTER_VISIBLE
+    - add support for FILTER_NOT_DEVELOPMENT,
+        FILTER_DEVELOPMENT
     - implement security filter (Client.get_security_updates())
     - repo_set_data
     - bind get_distro_upgrades to branch hop?

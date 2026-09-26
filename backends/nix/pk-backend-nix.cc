@@ -401,7 +401,7 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
 void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_GENERATE_PACKAGE_LIST);
+    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
     pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
 }
 

@@ -78,17 +78,11 @@ static const PkEnumMatch enum_status[] = {
 	{PK_STATUS_ENUM_DOWNLOAD_PACKAGELIST,	"download-packagelist"},
 	{PK_STATUS_ENUM_DOWNLOAD_FILELIST,	"download-filelist"},
 	{PK_STATUS_ENUM_DOWNLOAD_CHANGELOG,	"download-changelog"},
-	{PK_STATUS_ENUM_DOWNLOAD_GROUP,		"download-group"},
 	{PK_STATUS_ENUM_DOWNLOAD_UPDATEINFO,	"download-updateinfo"},
 	{PK_STATUS_ENUM_REPACKAGING,		"repackaging"},
 	{PK_STATUS_ENUM_LOADING_CACHE,		"loading-cache"},
-	{PK_STATUS_ENUM_SCAN_APPLICATIONS,	"scan-applications"},
-	{PK_STATUS_ENUM_GENERATE_PACKAGE_LIST,	"generate-package-list"},
 	{PK_STATUS_ENUM_WAITING_FOR_LOCK,	"waiting-for-lock"},
 	{PK_STATUS_ENUM_WAITING_FOR_AUTH,	"waiting-for-auth"},
-	{PK_STATUS_ENUM_SCAN_PROCESS_LIST,	"scan-process-list"},
-	{PK_STATUS_ENUM_CHECK_EXECUTABLE_FILES,	"check-executable-files"},
-	{PK_STATUS_ENUM_CHECK_LIBRARIES,	"check-libraries"},
 	{PK_STATUS_ENUM_COPY_FILES,		"copy-files"},
 	{PK_STATUS_ENUM_RUN_HOOK,		"run-hook"},
 	{0, NULL}
@@ -164,7 +158,6 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,	"local-install-failed"},
 	{PK_ERROR_ENUM_BAD_GPG_SIGNATURE,	"bad-gpg-signature"},
 	{PK_ERROR_ENUM_MISSING_GPG_SIGNATURE,	"missing-gpg-signature"},
-	{PK_ERROR_ENUM_CANNOT_INSTALL_SOURCE_PACKAGE,	"cannot-install-source-package"},
 	{PK_ERROR_ENUM_REPO_CONFIGURATION_ERROR,	"repo-configuration-error"},
 	{PK_ERROR_ENUM_NO_LICENSE_AGREEMENT,	"no-license-agreement"},
 	{PK_ERROR_ENUM_FILE_CONFLICTS,		"file-conflicts"},
@@ -193,8 +186,6 @@ static const PkEnumMatch enum_error[] = {
 	{PK_ERROR_ENUM_PACKAGE_FAILED_TO_REMOVE, "package-failed-to-remove"},
 	{PK_ERROR_ENUM_UPDATE_FAILED_DUE_TO_RUNNING_PROCESS, "failed-due-to-running-process"},
 	{PK_ERROR_ENUM_PACKAGE_DATABASE_CHANGED, "package-database-changed"},
-	{PK_ERROR_ENUM_PROVIDE_TYPE_NOT_SUPPORTED, "provide-type-not-supported"},
-	{PK_ERROR_ENUM_INSTALL_ROOT_INVALID,	"install-root-invalid"},
 	{PK_ERROR_ENUM_CANNOT_FETCH_SOURCES,	"cannot-fetch-sources"},
 	{PK_ERROR_ENUM_CANCELLED_PRIORITY,	"cancelled-priority"},
 	{PK_ERROR_ENUM_UNFINISHED_TRANSACTION,	"unfinished-transaction"},
@@ -209,8 +200,6 @@ static const PkEnumMatch enum_restart[] = {
 	{PK_RESTART_ENUM_SYSTEM,		"system"},
 	{PK_RESTART_ENUM_SESSION,		"session"},
 	{PK_RESTART_ENUM_APPLICATION,		"application"},
-	{PK_RESTART_ENUM_SECURITY_SYSTEM,	"security-system"},
-	{PK_RESTART_ENUM_SECURITY_SESSION,	"security-session"},
 	{0, NULL}
 };
 
@@ -225,8 +214,6 @@ static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_GUI,		"~gui"},
 	{PK_FILTER_ENUM_FREE,			"free"},
 	{PK_FILTER_ENUM_NOT_FREE,		"~free"},
-	{PK_FILTER_ENUM_VISIBLE,		"visible"},
-	{PK_FILTER_ENUM_NOT_VISIBLE,		"~visible"},
 	{PK_FILTER_ENUM_SUPPORTED,		"supported"},
 	{PK_FILTER_ENUM_NOT_SUPPORTED,		"~supported"},
 	{PK_FILTER_ENUM_BASENAME,		"basename"},
@@ -312,8 +299,6 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_REMOVING,			"removing"},
 	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
 	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
-	{PK_INFO_ENUM_COLLECTION_INSTALLED,	"collection-installed"},
-	{PK_INFO_ENUM_COLLECTION_AVAILABLE,	"collection-available"},
 	{PK_INFO_ENUM_FINISHED,			"finished"},
 	{PK_INFO_ENUM_REINSTALLING,		"reinstalling"},
 	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
@@ -959,12 +944,10 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		text = dgettext ("PackageKit", "Blocked");
 		break;
 	case PK_INFO_ENUM_INSTALLED:
-	case PK_INFO_ENUM_COLLECTION_INSTALLED:
 		/* TRANSLATORS: The state of a package */
 		text = dgettext ("PackageKit", "Installed");
 		break;
 	case PK_INFO_ENUM_AVAILABLE:
-	case PK_INFO_ENUM_COLLECTION_AVAILABLE:
 		/* TRANSLATORS: The state of a package, i.e. not installed */
 		text = dgettext ("PackageKit", "Available");
 		break;
