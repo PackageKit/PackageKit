@@ -65,7 +65,9 @@ pk_json_error_quark (void)
  * keeping jansson's message and position information.
  */
 static inline void
-pk_json_set_error (GError **error, PkJsonError code, const json_error_t *json_error)
+pk_json_set_error (GError	     **error,
+		   PkJsonError	       code,
+		   const json_error_t *json_error)
 {
 	g_set_error (error,
 		     PK_JSON_ERROR,
