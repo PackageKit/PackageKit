@@ -1486,24 +1486,12 @@ poldek_backend_package_info (struct pkg *pkg, PkInfoEnum infoenum, PkBitfield fi
 static void
 poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
 {
-	struct pkguinf *pkgu = NULL;
 	gchar *package_id;
 
 	infoenum = poldek_backend_package_info (pkg, infoenum, filters);
 
 	package_id = package_id_from_pkg (pkg, NULL, filters);
-
-	if ((pkgu = pkg_uinf_i18n (job, pkg))) {
-		pk_backend_job_package (job,
-					infoenum,
-					package_id,
-					pkguinf_get (pkgu, PKGUINF_SUMMARY));
-
-		pkguinf_free (pkgu);
-	} else {
-		pk_backend_job_package (job, infoenum, package_id, "");
-	}
-
+	pk_backend_job_package_status (job, package_id, infoenum);
 	g_free (package_id);
 }
 

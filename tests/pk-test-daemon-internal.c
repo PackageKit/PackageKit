@@ -157,14 +157,12 @@ pk_test_backend_func_true (PkBackendJob *job, GVariant *params, gpointer user_da
 	g_assert_cmpint (GPOINTER_TO_INT (user_data), ==, 999);
 	/* trigger duplicate test */
 
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva;",
-				"The vips documentation package.");
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_AVAILABLE,
-				"vips-doc;7.12.4-2.fc8;noarch;linva;",
-				"The vips documentation package.");
+	pk_backend_job_package_status (job,
+				       "vips-doc;7.12.4-2.fc8;noarch;linva;",
+				       PK_INFO_ENUM_AVAILABLE);
+	pk_backend_job_package_status (job,
+				       "vips-doc;7.12.4-2.fc8;noarch;linva;",
+				       PK_INFO_ENUM_AVAILABLE);
 }
 
 static void

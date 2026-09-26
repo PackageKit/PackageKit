@@ -279,13 +279,11 @@ struct InstallResolvableReportReceiver : public zypp::callback::ReceiveReport<zy
 		}
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		MIL << resolvable << " " << _package_id << std::endl;
-		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
 		if (_package_id != NULL) {
 			pk_backend_job_set_status (_job, PK_STATUS_ENUM_INSTALL);
-			pk_backend_job_package (_job, PK_INFO_ENUM_INSTALLING, _package_id, summary);
+			pk_backend_job_package_status (_job, _package_id, PK_INFO_ENUM_INSTALLING);
 			reset_sub_percentage ();
 		}
-		g_free (summary);
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable) {
@@ -321,7 +319,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
 		if (_package_id != NULL) {
 			pk_backend_job_set_status (_job, PK_STATUS_ENUM_REMOVE);
-			pk_backend_job_package (_job, PK_INFO_ENUM_REMOVING, _package_id, "");
+			pk_backend_job_package_status (_job, _package_id, PK_INFO_ENUM_REMOVING);
 			reset_sub_percentage ();
 		}
 	}
@@ -338,7 +336,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason) {
 		if (_package_id != NULL) {
-			pk_backend_job_package (_job, PK_INFO_ENUM_FINISHED, _package_id, "");
+			pk_backend_job_package_status (_job, _package_id, PK_INFO_ENUM_FINISHED);
 			clear_package_id ();
 		}
 	}
@@ -398,16 +396,14 @@ struct DownloadProgressReportReceiver : public zypp::callback::ReceiveReport<zyp
 			_dl_status = PK_INFO_ENUM_DOWNLOADING;
 		}
 		_package_id = zypp_build_package_id_from_resolvable (resolvable->satSolvable ());
-		gchar* summary = g_strdup(zypp::asKind<zypp::ResObject>(resolvable)->summary().c_str ());
 
 		fprintf (stderr, "DownloadProgressReportReceiver::start():%s --%s\n",
 			 g_strdup (file.asString().c_str()),	_package_id);
 		if (_package_id != NULL) {
 			pk_backend_job_set_status (_job, PK_STATUS_ENUM_DOWNLOAD);
-			pk_backend_job_package (_job, PK_INFO_ENUM_DOWNLOADING, _package_id, summary);
+			pk_backend_job_package_status (_job, _package_id, PK_INFO_ENUM_DOWNLOADING);
 			reset_sub_percentage ();
 		}
-		g_free(summary);
 	}
 
 	virtual bool progress (int value, zypp::Resolvable::constPtr resolvable)
@@ -4065,7 +4061,7 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 			const gchar *to_strv[] = { NULL, NULL };
 			to_strv[0] =  target.c_str();
 			pk_backend_job_files (job, package_ids[i],(gchar **) to_strv);
-			pk_backend_job_package (job, PK_INFO_ENUM_DOWNLOADING, package_ids[i], item->summary ().c_str());
+			pk_backend_job_package_status (job, package_ids[i], PK_INFO_ENUM_DOWNLOADING);
 		}
 	} catch (const Exception &ex) {
 		zypp_backend_finished_error (

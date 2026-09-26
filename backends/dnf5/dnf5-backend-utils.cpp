@@ -413,7 +413,7 @@ void
 dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info)
 {
 	std::string package_id = dnf5_build_package_id(pkg);
-	pk_backend_job_package(job, info, package_id.c_str(), pkg.get_summary().c_str());
+	pk_backend_job_package_status(job, package_id.c_str(), info);
 }
 
 void

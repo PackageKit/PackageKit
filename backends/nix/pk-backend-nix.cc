@@ -468,10 +468,6 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
             std::optional<nix::DrvInfo> drv;
             drv = nix::getDerivation(*priv->state, cursor->forceValue(), false);
             if (drv) {
-                auto aMeta = cursor->maybeGetAttr("meta");
-                auto aDescription = aMeta ? aMeta->maybeGetAttr("description") : NULL;
-                auto description = aDescription ? aDescription->getString() : "";
-
                 try {
                     drv->queryDrvPath();
                 } catch (nix::Error &e) {
@@ -479,7 +475,7 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
                     return;
                 }
 
-                pk_backend_job_package(job, PK_INFO_ENUM_INSTALLING, package_ids[i], description.c_str());
+                pk_backend_job_package_status(job, package_ids[i], PK_INFO_ENUM_INSTALLING);
                 newElems.push_back(*drv);
             } else {
                 pk_backend_job_error_code(job, PK_ERROR_ENUM_UNKNOWN, "failed to evaluate %s", attrPath.c_str());
@@ -598,11 +594,7 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
             return;
         }
 
-        auto aMeta = cursor->maybeGetAttr("meta");
-        auto aDescription = aMeta ? aMeta->maybeGetAttr("description") : NULL;
-        auto description = aDescription ? aDescription->getString() : "";
-
-        pk_backend_job_package(job, PK_INFO_ENUM_REMOVING, package_ids[i], description.c_str());
+        pk_backend_job_package_status(job, package_ids[i], PK_INFO_ENUM_REMOVING);
     }
 
     std::optional<nix::PathSet> oldAllowedPaths = priv->state->allowedPaths;

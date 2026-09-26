@@ -159,31 +159,23 @@ gboolean   pk_backend_job_thread_create (PkBackendJob	       *job,
 					 GDestroyNotify		destroy_func);
 
 /* signal helpers */
+void	   pk_backend_job_finished (PkBackendJob *job);
+
 PkPackage *pk_backend_packages_add (GPtrArray	*packages,
 				    PkInfoEnum	 info,
 				    const gchar *package_id,
 				    const gchar *summary,
 				    PkInfoEnum	 update_severity);
-
-void	   pk_backend_job_finished (PkBackendJob *job);
-
-void	   pk_backend_job_package (PkBackendJob *job,
-				   PkInfoEnum	 info,
-				   const gchar	*package_id,
-				   const gchar	*summary);
-void	   pk_backend_job_package_full (PkBackendJob *job,
-					PkInfoEnum    info,
-					const gchar  *package_id,
-					const gchar  *summary,
-					PkInfoEnum    update_severity);
-
 void	   pk_backend_job_packages (PkBackendJob *job,
 				    GPtrArray	 *packages);
+void	   pk_backend_job_package_status (PkBackendJob *job,
+					  const gchar  *package_id,
+					  PkInfoEnum	info);
+
 void	   pk_backend_job_repo_detail (PkBackendJob *job,
 				       const gchar  *repo_id,
 				       const gchar  *description,
 				       gboolean	     enabled);
-
 void	   pk_backend_job_update_details (PkBackendJob *job,
 					  GPtrArray    *update_details);
 void	   pk_backend_job_require_restart (PkBackendJob *job,

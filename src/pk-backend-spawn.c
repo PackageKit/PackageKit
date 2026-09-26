@@ -170,6 +170,7 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 	size = g_strv_length (sections);
 
 	if (g_strcmp0 (command, "package") == 0) {
+		g_autoptr(GPtrArray) packages = NULL;
 		if (size != 4) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
 			return FALSE;
@@ -192,7 +193,15 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[3]);
 			return FALSE;
 		}
-		pk_backend_job_package (job, info, sections[2], sections[3]);
+		/* the line protocol does not tell results and status events apart,
+		 * so everything goes through the plural path to keep the summary */
+		packages = g_ptr_array_new_with_free_func (g_object_unref);
+		pk_backend_packages_add (packages,
+					 info,
+					 sections[2],
+					 sections[3],
+					 PK_INFO_ENUM_UNKNOWN);
+		pk_backend_job_packages (job, packages);
 	} else if (g_strcmp0 (command, "details") == 0) {
 		if (size != 9) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

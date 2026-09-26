@@ -402,7 +402,7 @@ void AptJob::emitPackage(const pkgCache::VerIterator &ver, PkInfoEnum state)
         state = packageStateFromVer(ver);
 
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
-    pk_backend_job_package(m_job, state, package_id, m_cache->getShortDescription(ver).c_str());
+    pk_backend_job_package_status(m_job, package_id, state);
 }
 
 void AptJob::emitPackageProgress(const pkgCache::VerIterator &ver, PkStatusEnum status, uint percentage)

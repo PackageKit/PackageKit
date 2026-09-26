@@ -59,7 +59,7 @@ pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
 	g_return_if_fail (pkg != NULL);
 
 	package = pk_alpm_pkg_build_id (pkg);
-	pk_backend_job_package (job, info, package, alpm_pkg_get_desc (pkg));
+	pk_backend_job_package_status (job, package, info);
 	g_free (package);
 }
 

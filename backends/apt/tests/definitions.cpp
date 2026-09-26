@@ -50,7 +50,7 @@ PkBitfield pk_backend_job_get_transaction_flags(PkBackendJob *job)
     return 0;
 }
 
-void pk_backend_job_package(PkBackendJob *job, PkInfoEnum info, const gchar *package_id, const gchar *summary) {}
+void pk_backend_job_package_status(PkBackendJob *job, const gchar *package_id, PkInfoEnum info) {}
 
 void pk_backend_job_media_change_required(
     PkBackendJob *job,

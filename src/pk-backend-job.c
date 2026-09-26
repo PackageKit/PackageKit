@@ -1005,88 +1005,6 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 }
 
 /**
- * pk_backend_job_package:
- * @job: A #PkBackendJob instance.
- * @info: the #PkInfoEnum of the package
- * @package_id: the package-id
- * @summary: the summary of the package
- *
- * Report a single package progress event (e.g. downloading, installing,
- * removing, finished) as it happens during a transaction.
- */
-void
-pk_backend_job_package (PkBackendJob *job,
-			PkInfoEnum info,
-			const gchar *package_id,
-			const gchar *summary)
-{
-	pk_backend_job_package_full (job, info, package_id, summary, PK_INFO_ENUM_UNKNOWN);
-}
-
-void
-pk_backend_job_package_full (PkBackendJob *job,
-			     PkInfoEnum info,
-			     const gchar *package_id,
-			     const gchar *summary,
-			     PkInfoEnum update_severity)
-{
-	PkPackage *emitted_item;
-	g_autoptr(GError) error = NULL;
-	g_autoptr(PkPackage) item = NULL;
-
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (package_id != NULL);
-
-	/* check we are valid */
-	item = pk_package_new_full (info, package_id, summary, update_severity, &error);
-	if (item == NULL) {
-		g_warning ("package_id %s invalid and cannot be processed: %s",
-			   package_id,
-			   error->message);
-		return;
-	}
-
-	/* already emitted? */
-	emitted_item = g_hash_table_lookup (job->emitted, pk_package_get_id (item));
-	if (emitted_item != NULL && pk_package_equal (emitted_item, item))
-		return;
-
-	/* update the emitted package table */
-	g_hash_table_insert (job->emitted,
-			     g_strdup (pk_package_get_id (item)),
-			     g_object_ref (item));
-
-	/* have we already set an error? */
-	if (job->set_error) {
-		g_warning ("already set error: package %s", package_id);
-		return;
-	}
-
-	/* we automatically set the transaction status  */
-	if (info == PK_INFO_ENUM_DOWNLOADING)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
-	else if (info == PK_INFO_ENUM_UPDATING)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
-	else if (info == PK_INFO_ENUM_INSTALLING)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
-	else if (info == PK_INFO_ENUM_REMOVING)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
-	else if (info == PK_INFO_ENUM_CLEANUP)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
-	else if (info == PK_INFO_ENUM_OBSOLETING)
-		pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
-
-	/* we've sent a package for this transaction */
-	job->has_sent_package = TRUE;
-
-	/* emit */
-	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_PACKAGE,
-				   g_object_ref (item),
-				   g_object_unref);
-}
-
-/**
  * pk_backend_packages_add:
  * @packages: (element-type PkPackage): an array, to be reported with %pk_backend_job_packages()
  * @info: the #PkInfoEnum of the package
@@ -1192,6 +1110,76 @@ pk_backend_job_packages (PkBackendJob *job, GPtrArray *packages)
 					   PK_BACKEND_SIGNAL_PACKAGES,
 					   g_steal_pointer (&to_emit),
 					   (GDestroyNotify) g_ptr_array_unref);
+}
+
+/**
+ * pk_backend_job_package_status:
+ * @job: A #PkBackendJob instance.
+ * @package_id: the package-id
+ * @info: the #PkInfoEnum describing what is happening to the package
+ *
+ * Report the status of a single package as it changes during a transaction,
+ * e.g. downloading, installing, removing or finished.
+ * Query results must be  collected with %pk_backend_packages_add() and reported with
+ * %pk_backend_job_packages() instead.
+ */
+void
+pk_backend_job_package_status (PkBackendJob *job, const gchar *package_id, PkInfoEnum info)
+{
+	PkPackage *emitted_item;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(PkPackage) item = NULL;
+
+	g_return_if_fail (PK_IS_BACKEND_JOB (job));
+	g_return_if_fail (package_id != NULL);
+
+	/* check we are valid */
+	item = pk_package_new_full (info, package_id, NULL, PK_INFO_ENUM_UNKNOWN, &error);
+	if (item == NULL) {
+		g_warning ("package_id %s invalid and cannot be processed: %s",
+			   package_id,
+			   error->message);
+		return;
+	}
+
+	/* already emitted? */
+	emitted_item = g_hash_table_lookup (job->emitted, pk_package_get_id (item));
+	if (emitted_item != NULL && pk_package_equal (emitted_item, item))
+		return;
+
+	/* update the emitted package table */
+	g_hash_table_insert (job->emitted,
+			     g_strdup (pk_package_get_id (item)),
+			     g_object_ref (item));
+
+	/* have we already set an error? */
+	if (job->set_error) {
+		g_warning ("already set error: package %s", package_id);
+		return;
+	}
+
+	/* we automatically set the transaction status  */
+	if (info == PK_INFO_ENUM_DOWNLOADING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
+	else if (info == PK_INFO_ENUM_UPDATING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_UPDATE);
+	else if (info == PK_INFO_ENUM_INSTALLING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_INSTALL);
+	else if (info == PK_INFO_ENUM_REMOVING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_REMOVE);
+	else if (info == PK_INFO_ENUM_CLEANUP)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_CLEANUP);
+	else if (info == PK_INFO_ENUM_OBSOLETING)
+		pk_backend_job_set_status (job, PK_STATUS_ENUM_OBSOLETE);
+
+	/* we've sent a package for this transaction */
+	job->has_sent_package = TRUE;
+
+	/* emit */
+	pk_backend_job_call_vfunc (job,
+				   PK_BACKEND_SIGNAL_PACKAGE,
+				   g_object_ref (item),
+				   g_object_unref);
 }
 
 static void

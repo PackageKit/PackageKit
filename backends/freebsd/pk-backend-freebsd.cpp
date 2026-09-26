@@ -812,14 +812,14 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
             {
                 pkg* pkg = ev->e_install_finished.pkg;
                 PackageView pkgView(pkg);
-                pk_backend_job_package (job, PK_INFO_ENUM_INSTALLING, pkgView.packageKitId(), pkgView.comment());
+                pk_backend_job_package_status (job, pkgView.packageKitId(), PK_INFO_ENUM_INSTALLING);
                 break;
             }
             case PKG_EVENT_UPGRADE_FINISHED:
             {
                 pkg* pkg = ev->e_upgrade_finished.n;
                 PackageView pkgView(pkg);
-                pk_backend_job_package (job, PK_INFO_ENUM_UPDATING, pkgView.packageKitId(), pkgView.comment());
+                pk_backend_job_package_status (job, pkgView.packageKitId(), PK_INFO_ENUM_UPDATING);
                 break;
             }
             case PKG_EVENT_ALREADY_INSTALLED:
@@ -1126,7 +1126,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
             {
                 pkg* pkg = ev->e_deinstall_begin.pkg;
                 PackageView pkgView(pkg);
-                pk_backend_job_package (job, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment());
+                pk_backend_job_package_status (job, pkgView.packageKitId(), PK_INFO_ENUM_REMOVING);
                 pk_backend_job_set_percentage (job, 0);
                 break;
             }
