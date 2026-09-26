@@ -495,24 +495,6 @@ class PackageKitEntropyMixin(object):
             except WebService.WebServiceException:
                 continue
 
-    def _etp_get_category_description(self, category):
-        """
-        Return translated Entropy packages category description.
-        """
-        cat_desc = "No description"
-
-        for repository_id in self._entropy.repositories():
-            repo = self._entropy.open_repository(repository_id)
-            cat_desc_data = repo.retrieveCategoryDescription(category)
-            if cat_desc_data:
-                if _LOCALE in cat_desc_data:
-                    cat_desc = cat_desc_data[_LOCALE]
-                elif 'en' in cat_desc_data:
-                    cat_desc = cat_desc_data['en']
-                break
-
-        return cat_desc
-
     def _execute_etp_pkgs_remove(self, pkgs, allowdep, autoremove, simulate=False):
         """
         Execute effective removal (including dep calculation).
@@ -1253,52 +1235,6 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
             )
 
         self.percentage(100)
-
-    def _etp_get_package_categories(self):
-        categories = set()
-        for repository_id in self._entropy.repositories():
-            repo_db = self._entropy.open_repository(repository_id)
-            try:
-                categories.update(repo_db.listAllCategories())
-            except EntropyRepositoryError:
-                # on broken repos this might cause issues
-                continue
-        return sorted(categories)
-
-    @sharedreslock
-    @sharedinstlock
-    def get_categories(self):
-
-        self._log_message(__name__, "get_categories: called")
-
-        self.status(STATUS_QUERY)
-        self.allow_cancel(True)
-
-        categories = self._etp_get_package_categories()
-        if not categories:
-            self.error(ERROR_GROUP_LIST_INVALID, "no package categories")
-            return
-
-        for name in categories:
-            name = const_convert_to_rawstring(name)
-
-            summary = self._etp_get_category_description(name)
-            summary = const_convert_to_rawstring(summary, "utf-8")
-
-            f_name = "/usr/share/pixmaps/entropy/%s.png" % (name,)
-            if os.path.isfile(f_name) and os.access(f_name, os.R_OK):
-                icon = name
-            else:
-                icon = const_convert_to_rawstring("image-missing")
-
-            nothing = const_convert_to_rawstring("")
-            cat_id = name  # same thing
-
-            self._log_message(
-                __name__, "get_categories: pushing", nothing, cat_id, name, summary, icon
-            )
-
-            self.category(nothing, cat_id, name, summary, icon)
 
     @sharedreslock
     @sharedinstlock

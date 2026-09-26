@@ -63,7 +63,6 @@ typedef struct
 				   PkBackendJob *job,
 				   gchar **package_ids,
 				   const gchar *directory);
-	void (*get_categories) (PkBackend *backend, PkBackendJob *job);
 	void (*depends_on) (PkBackend *backend,
 			    PkBackendJob *job,
 			    PkBitfield filters,
@@ -351,8 +350,6 @@ pk_backend_get_roles (PkBackend *backend)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_REMOVE);
 	if (desc->get_distro_upgrades != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	if (desc->get_categories != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_CATEGORIES);
 	if (desc->upgrade_system != NULL)
 		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
 	if (desc->repair_system != NULL)
@@ -461,7 +458,6 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_cancel", (gpointer *) &desc->cancel);
 		g_module_symbol (handle, "pk_backend_destroy", (gpointer *) &desc->destroy);
 		g_module_symbol (handle, "pk_backend_download_packages", (gpointer *) &desc->download_packages);
-		g_module_symbol (handle, "pk_backend_get_categories", (gpointer *) &desc->get_categories);
 		g_module_symbol (handle, "pk_backend_depends_on", (gpointer *) &desc->depends_on);
 		g_module_symbol (handle, "pk_backend_get_details", (gpointer *) &desc->get_details);
 		g_module_symbol (handle, "pk_backend_get_details_local", (gpointer *) &desc->get_details_local);
@@ -1119,20 +1115,6 @@ pk_backend_download_packages (PkBackend *backend,
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^ass)", package_ids, directory));
 	backend->desc->download_packages (backend, job, package_ids, directory);
-}
-
-void
-pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
-{
-	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_categories != NULL);
-	g_return_if_fail (pk_is_thread_default ());
-
-	/* final pre-flight checks */
-	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
-
-	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_CATEGORIES);
-	backend->desc->get_categories (backend, job);
 }
 
 void

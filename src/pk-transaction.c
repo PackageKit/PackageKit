@@ -655,51 +655,6 @@ pk_transaction_files_cb (PkBackendJob *job, PkFiles *item, PkTransaction *transa
 }
 
 static void
-pk_transaction_category_cb (PkBackendJob *job, PkCategory *item, PkTransaction *transaction)
-{
-	g_autofree gchar *parent_id = NULL;
-	g_autofree gchar *cat_id = NULL;
-	g_autofree gchar *name = NULL;
-	g_autofree gchar *summary = NULL;
-	g_autofree gchar *icon = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	/* add to results */
-	pk_results_add_category (transaction->results, item);
-
-	/* get data */
-	g_object_get (item,
-		      "parent-id",
-		      &parent_id,
-		      "cat-id",
-		      &cat_id,
-		      "name",
-		      &name,
-		      "summary",
-		      &summary,
-		      "icon",
-		      &icon,
-		      NULL);
-
-	/* emit */
-	g_debug ("emitting category %s, %s, %s, %s, %s ", parent_id, cat_id, name, summary, icon);
-	g_dbus_connection_emit_signal (transaction->connection,
-				       NULL,
-				       transaction->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "Category",
-				       g_variant_new ("(sssss)",
-						      parent_id != NULL ? parent_id : "",
-						      cat_id,
-						      name,
-						      summary,
-						      icon != NULL ? icon : ""),
-				       NULL);
-}
-
-static void
 pk_transaction_item_progress_cb (PkBackendJob *job,
 				 PkItemProgress *item_progress,
 				 PkTransaction *transaction)
@@ -2105,10 +2060,6 @@ pk_transaction_run (PkTransaction *transaction)
 				  PK_BACKEND_SIGNAL_UPDATE_DETAILS,
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_update_details_cb),
 				  transaction);
-	pk_backend_job_set_vfunc (transaction->job,
-				  PK_BACKEND_SIGNAL_CATEGORY,
-				  PK_BACKEND_JOB_VFUNC (pk_transaction_category_cb),
-				  transaction);
 
 	/* do the correct action with the cached parameters */
 	switch (transaction->role) {
@@ -2243,9 +2194,6 @@ pk_transaction_run (PkTransaction *transaction)
 					    transaction->job,
 					    transaction->cached_transaction_flags,
 					    transaction->cached_package_ids);
-		break;
-	case PK_ROLE_ENUM_GET_CATEGORIES:
-		pk_backend_get_categories (transaction->backend, transaction->job);
 		break;
 	case PK_ROLE_ENUM_GET_REPO_LIST:
 		pk_backend_get_repo_list (transaction->backend,
@@ -3287,34 +3235,6 @@ pk_transaction_download_packages (PkTransaction *transaction,
 	transaction->cached_package_ids = g_strdupv (package_ids);
 	transaction->cached_directory = g_strdup (directory);
 	pk_transaction_set_role (transaction, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
-	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
-out:
-	pk_transaction_dbus_return (context, error);
-}
-
-static void
-pk_transaction_get_categories (PkTransaction *transaction,
-			       GVariant *params,
-			       GDBusMethodInvocation *context)
-{
-	g_autoptr(GError) error = NULL;
-
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	g_debug ("GetCategories method called");
-
-	/* not implemented yet */
-	if (!pk_backend_is_implemented (transaction->backend, PK_ROLE_ENUM_GET_CATEGORIES)) {
-		g_set_error (&error,
-			     PK_TRANSACTION_ERROR,
-			     PK_TRANSACTION_ERROR_NOT_SUPPORTED,
-			     "GetCategories not supported by backend");
-		pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_ERROR);
-		goto out;
-	}
-
-	pk_transaction_set_role (transaction, PK_ROLE_ENUM_GET_CATEGORIES);
 	pk_transaction_set_state (transaction, PK_TRANSACTION_STATE_READY);
 out:
 	pk_transaction_dbus_return (context, error);
@@ -5305,10 +5225,6 @@ pk_transaction_method_call (GDBusConnection *connection_,
 	}
 	if (g_strcmp0 (method_name, "DownloadPackages") == 0) {
 		pk_transaction_download_packages (transaction, parameters, invocation);
-		return;
-	}
-	if (g_strcmp0 (method_name, "GetCategories") == 0) {
-		pk_transaction_get_categories (transaction, parameters, invocation);
 		return;
 	}
 	if (g_strcmp0 (method_name, "DependsOn") == 0) {

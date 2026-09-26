@@ -167,19 +167,6 @@ class PackageKitFiles:
         self.files = _to_rawstring(files)
 
 
-class PackageKitCategory:
-    '''
-    container class from values from the Category signal
-    '''
-
-    def __init__(self, parent_id, cat_id, name, summary, icon):
-        self.parent_id = _to_rawstring(parent_id)
-        self.cat_id = _to_rawstring(cat_id)
-        self.name = _to_unicode(name)
-        self.summary = _to_unicode(summary)
-        self.icon = _to_rawstring(icon)
-
-
 class PackageKitMessage:
     '''container class from values from the Message signal'''
 

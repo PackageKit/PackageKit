@@ -25,7 +25,6 @@
 
 #define __PACKAGEKIT_H_INSIDE__
 
-#include "pk-category.h"
 #include "pk-client.h"
 #include "pk-client-sync.h"
 #include "pk-common.h"

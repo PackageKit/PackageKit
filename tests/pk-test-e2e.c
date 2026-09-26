@@ -603,16 +603,19 @@ pk_test_client_update_system_socket_test_cb (GObject *object, GAsyncResult *res,
 	PkClient *client = PK_CLIENT (object);
 	GError *error = NULL;
 	g_autoptr(PkResults) results = NULL;
-	g_autoptr(GPtrArray) categories = NULL;
+	g_autoptr(PkPackageSack) sack = NULL;
+	g_autoptr(PkPackage) marker = NULL;
 
 	/* get the results */
 	results = pk_client_generic_finish (client, res, &error);
 	g_assert_no_error (error);
 	g_assert (results != NULL);
 
-	/* make sure we handled the ping/pong frontend-socket thing, which is 5 + 1 */
-	categories = pk_results_get_category_array (results);
-	g_assert_cmpint (categories->len, ==, 1);
+	/* make sure we handled the ping/pong frontend-socket thing: the dummy
+	 * backend emits a marker package once it has received our reply */
+	sack = pk_results_get_package_sack (results);
+	marker = pk_package_sack_find_by_id (sack, "testsocket-pong;0.1;i386;fedora;");
+	g_assert_nonnull (marker);
 	_g_test_loop_quit ();
 }
 

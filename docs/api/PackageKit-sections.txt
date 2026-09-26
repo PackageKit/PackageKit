@@ -20,33 +20,6 @@ pk_transaction_flag_bitfield_to_string
 </SECTION>
 
 <SECTION>
-<FILE>pk-category</FILE>
-<TITLE>PkCategory</TITLE>
-pk_category_new
-pk_category_get_parent_id
-pk_category_set_parent_id
-pk_category_get_id
-pk_category_set_id
-pk_category_get_name
-pk_category_set_name
-pk_category_get_summary
-pk_category_set_summary
-pk_category_get_icon
-pk_category_set_icon
-<SUBSECTION Standard>
-PK_CATEGORY
-PK_CATEGORY_CLASS
-PK_CATEGORY_GET_CLASS
-PK_IS_CATEGORY
-PK_IS_CATEGORY_CLASS
-PK_TYPE_CATEGORY
-PkCategory
-PkCategoryClass
-PkCategoryPrivate
-pk_category_get_type
-</SECTION>
-
-<SECTION>
 <FILE>pk-client</FILE>
 <TITLE>PkClient</TITLE>
 PK_CLIENT_ERROR
@@ -90,8 +63,6 @@ pk_client_get_distro_upgrades
 pk_client_get_distro_upgrades_async
 pk_client_get_files
 pk_client_get_files_async
-pk_client_get_categories
-pk_client_get_categories_async
 pk_client_remove_packages
 pk_client_remove_packages_async
 pk_client_refresh_cache
@@ -763,7 +734,6 @@ pk_results_set_error_code
 pk_results_add_package
 pk_results_add_details
 pk_results_add_update_detail
-pk_results_add_category
 pk_results_add_distro_upgrade
 pk_results_add_require_restart
 pk_results_add_transaction
@@ -781,7 +751,6 @@ pk_results_get_require_restart_worst
 pk_results_get_package_array
 pk_results_get_details_array
 pk_results_get_update_detail_array
-pk_results_get_category_array
 pk_results_get_distro_upgrade_array
 pk_results_get_require_restart_array
 pk_results_get_transaction_array
@@ -861,8 +830,6 @@ pk_task_what_provides_sync
 pk_task_what_provides_async
 pk_task_get_files_sync
 pk_task_get_files_async
-pk_task_get_categories_sync
-pk_task_get_categories_async
 pk_task_refresh_cache_sync
 pk_task_refresh_cache_async
 pk_task_get_repo_list_sync

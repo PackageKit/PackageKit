@@ -980,14 +980,6 @@ void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield f
     pk_backend_job_thread_create(job, backend_get_packages_thread, nullptr, nullptr);
 }
 
-/* TODO
-void
-pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
-{
-    pk_backend_job_thread_create (job, pk_backend_get_categories_thread, nullptr, nullptr);
-}
-*/
-
 PkBitfield pk_backend_get_roles(PkBackend *backend)
 {
     PkBitfield roles;

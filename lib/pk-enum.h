@@ -72,7 +72,6 @@ typedef struct
  * @PK_ROLE_ENUM_ACCEPT_EULA: Accept an EULA
  * @PK_ROLE_ENUM_DOWNLOAD_PACKAGES: Download packages
  * @PK_ROLE_ENUM_GET_DISTRO_UPGRADES: Get available distribution upgrades
- * @PK_ROLE_ENUM_GET_CATEGORIES: Get available categories
  * @PK_ROLE_ENUM_GET_OLD_TRANSACTIONS: Get old transation information
  * @PK_ROLE_ENUM_REPAIR_SYSTEM: Repair system
  * @PK_ROLE_ENUM_GET_DETAILS_LOCAL: Get details on local package
@@ -114,7 +113,6 @@ typedef enum {
 	PK_ROLE_ENUM_ACCEPT_EULA,
 	PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
 	PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
-	PK_ROLE_ENUM_GET_CATEGORIES,
 	PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,
 	PK_ROLE_ENUM_REPAIR_SYSTEM,	/* Since: 0.7.2 */
 	PK_ROLE_ENUM_GET_DETAILS_LOCAL, /* Since: 0.8.17 */

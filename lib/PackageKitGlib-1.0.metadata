@@ -5,7 +5,6 @@ Client
         .adopt_async finish_name="pk_client_generic_finish"
         .depends_on_async finish_name="pk_client_generic_finish"
         .download_packages_async finish_name="pk_client_generic_finish"
-        .get_categories_async finish_name="pk_client_generic_finish"
         .get_details_async finish_name="pk_client_generic_finish"
         .get_details_local_async finish_name="pk_client_generic_finish"
         .get_distro_upgrades_async finish_name="pk_client_generic_finish"
@@ -42,7 +41,6 @@ PackageSack
 Task
         .depends_on_async finish_name="pk_task_generic_finish"
         .download_packages_async finish_name="pk_task_generic_finish"
-        .get_categories_async finish_name="pk_task_generic_finish"
         .get_details_async finish_name="pk_task_generic_finish"
         .get_files_async finish_name="pk_task_generic_finish"
         .get_packages_async finish_name="pk_task_generic_finish"

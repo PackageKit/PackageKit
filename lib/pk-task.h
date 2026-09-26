@@ -230,12 +230,6 @@ void	   pk_task_get_files_async (PkTask	       *task,
 				    gpointer		progress_user_data,
 				    GAsyncReadyCallback callback_ready,
 				    gpointer		user_data);
-void	   pk_task_get_categories_async (PkTask		    *task,
-					 GCancellable	    *cancellable,
-					 PkProgressCallback  progress_callback,
-					 gpointer	     progress_user_data,
-					 GAsyncReadyCallback callback_ready,
-					 gpointer	     user_data);
 void	   pk_task_refresh_cache_async (PkTask		   *task,
 					gboolean	    force,
 					GCancellable	   *cancellable,

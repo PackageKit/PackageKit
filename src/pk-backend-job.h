@@ -64,7 +64,6 @@ typedef enum {
 	PK_BACKEND_SIGNAL_LOCKED_CHANGED,
 	PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 	PK_BACKEND_SIGNAL_UPDATE_DETAILS,
-	PK_BACKEND_SIGNAL_CATEGORY,
 	PK_BACKEND_SIGNAL_LAST
 } PkBackendJobSignal;
 
@@ -232,12 +231,6 @@ void	 pk_backend_job_media_change_required (PkBackendJob   *job,
 					       PkMediaTypeEnum media_type,
 					       const gchar    *media_id,
 					       const gchar    *media_text);
-void	 pk_backend_job_category (PkBackendJob *job,
-				  const gchar  *parent_id,
-				  const gchar  *cat_id,
-				  const gchar  *name,
-				  const gchar  *summary,
-				  const gchar  *icon);
 void	 pk_backend_job_set_status (PkBackendJob *job,
 				    PkStatusEnum  status);
 void	 pk_backend_job_set_allow_cancel (PkBackendJob *job,

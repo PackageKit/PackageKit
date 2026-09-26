@@ -127,7 +127,6 @@ static const PkEnumMatch enum_role[] = {
 	{PK_ROLE_ENUM_ACCEPT_EULA,			"accept-eula"},
 	{PK_ROLE_ENUM_DOWNLOAD_PACKAGES,		"download-packages"},
 	{PK_ROLE_ENUM_GET_DISTRO_UPGRADES,		"get-distro-upgrades"},
-	{PK_ROLE_ENUM_GET_CATEGORIES,			"get-categories"},
 	{PK_ROLE_ENUM_GET_OLD_TRANSACTIONS,		"get-old-transactions"},
 	{PK_ROLE_ENUM_REPAIR_SYSTEM,			"repair-system"},
 	{PK_ROLE_ENUM_UPGRADE_SYSTEM,			"upgrade-system"},
@@ -1264,10 +1263,6 @@ pk_role_enum_to_localised_present (PkRoleEnum role)
 	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
 		/* TRANSLATORS: The role of the transaction, in present tense */
 		text = dgettext ("PackageKit", "Getting upgrades");
-		break;
-	case PK_ROLE_ENUM_GET_CATEGORIES:
-		/* TRANSLATORS: The role of the transaction, in present tense */
-		text = dgettext ("PackageKit", "Getting categories");
 		break;
 	case PK_ROLE_ENUM_GET_OLD_TRANSACTIONS:
 		/* TRANSLATORS: The role of the transaction, in present tense */

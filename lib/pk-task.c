@@ -342,13 +342,6 @@ pk_task_do_async_action (GTask *gtask)
 					   state->progress_user_data,
 					   pk_task_ready_cb,
 					   g_steal_pointer (&gtask));
-	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
-		pk_client_get_categories_async (PK_CLIENT (task),
-						cancellable,
-						state->progress_callback,
-						state->progress_user_data,
-						pk_task_ready_cb,
-						g_steal_pointer (&gtask));
 	} else if (state->role == PK_ROLE_ENUM_REFRESH_CACHE) {
 		pk_client_refresh_cache_async (PK_CLIENT (task),
 					       state->force,
@@ -2167,53 +2160,6 @@ pk_task_get_files_async (PkTask *task,
 	state->progress_user_data = progress_user_data;
 	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->package_ids = g_strdupv (package_ids);
-	state->request = pk_task_generate_request_id ();
-
-	gtask = g_task_new (task, cancellable, callback_ready, user_data);
-	g_task_set_source_tag (gtask, pk_task_install_packages_async);
-	g_debug ("adding state %p", state);
-	g_hash_table_insert (priv->gtasks, GUINT_TO_POINTER (state->request), g_object_ref (gtask));
-	g_task_set_task_data (gtask, g_steal_pointer (&state), pk_task_state_free);
-
-	/* run task with callbacks */
-	pk_task_do_async_action (g_steal_pointer (&gtask));
-}
-
-/**
- * pk_task_get_categories_async: (finish-func pk_task_generic_finish):
- * @task: a valid #PkTask instance
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope notified): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @callback_ready: (scope async): the function to run on completion
- * @user_data: the data to pass to @callback
- *
- * Get the categories available.
- *
- * Since: 0.6.5
- **/
-void
-pk_task_get_categories_async (PkTask *task,
-			      GCancellable *cancellable,
-			      PkProgressCallback progress_callback,
-			      gpointer progress_user_data,
-			      GAsyncReadyCallback callback_ready,
-			      gpointer user_data)
-{
-	PkTaskPrivate *priv = GET_PRIVATE(task);
-	PkTaskState *state;
-	g_autoptr(GTask) gtask = NULL;
-
-	g_return_if_fail (PK_IS_TASK (task));
-	g_return_if_fail (callback_ready != NULL);
-	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-
-	/* save state */
-	state = g_slice_new0 (PkTaskState);
-	state->role = PK_ROLE_ENUM_GET_CATEGORIES;
-	state->progress_callback = progress_callback;
-	state->progress_user_data = progress_user_data;
-	state->transaction_flags = pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_ONLY_TRUSTED);
 	state->request = pk_task_generate_request_id ();
 
 	gtask = g_task_new (task, cancellable, callback_ready, user_data);

@@ -313,29 +313,6 @@
     </method>
 
     <!--*********************************************************************-->
-    <method name="GetCategories">
-      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method return the collection categories
-          </doc:para>
-        </doc:description>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Categories</doc:tt> and <doc:tt>Error</doc:tt>.
-          </doc:para>
-          <doc:para>
-            Note: Categories can be returned that represent groups of
-            packages in a specific repository.
-            These will have a category prefix of <doc:tt>repo:</doc:tt>
-            which should be understood by <doc:tt>SearchGroups</doc:tt>
-            if this feature is used.
-          </doc:para>
-      </doc:doc>
-    </method>
-
-    <!--*********************************************************************-->
     <method name="DependsOn">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
       <doc:doc>
@@ -1151,15 +1128,6 @@
               The package names are case sensitive, so for instance:
               <doc:tt>Resolve('Packagekit')</doc:tt> would not match <doc:tt>PackageKit</doc:tt>.
             </doc:para>
-            <doc:para>
-              As a special case, if <doc:tt>Resolve()</doc:tt> is called
-              with a name prefixed with <doc:tt>@</doc:tt> then
-              this should be treated as a category, for example:
-              <doc:tt>@web-development</doc:tt>.
-              In this instance, a meta-package should be emitted, for example:
-              <doc:tt>web-development;;;meta</doc:tt> with the correct
-              installed status and summary for the category.
-            </doc:para>
           </doc:summary>
         </doc:doc>
       </arg>
@@ -1332,11 +1300,6 @@
               An enumerated group type, or <doc:tt>unknown</doc:tt>. The search
               cannot contain spaces.
               The following recommendations are made below:
-            </doc:para>
-            <doc:para>
-              If the values strings are prefixed with <doc:tt>category:</doc:tt> then
-              the request is treated as a 'category search', for example:
-              <doc:tt>category:web-development</doc:tt>.
             </doc:para>
             <doc:para>
               If the values strings are prefixed with <doc:tt>repo:</doc:tt> then
@@ -1607,74 +1570,6 @@
         </doc:doc>
       </arg>
     </method>
-
-    <!--*********************************************************************-->
-    <signal name="Category">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal send information about a collection category
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="parent_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The parent identifier, e.g. <doc:tt>applications</doc:tt>.
-              If the category is a root entry, use a blank parent.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="cat_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The category identifier, e.g. <doc:tt>applications;system-tools</doc:tt>.
-              The identifier does not have to be related to the <doc:tt>parent_id</doc:tt>
-              in any way.
-              A menu tree is made from multiple Category signals.
-              The tree does not have any depth or bredth limits, although it should be kept
-              to less than about 100 entries as this will be shown to the user in a menu.
-            </doc:para>
-            <doc:para>
-              The <doc:tt>cat_id</doc:tt> will be sent as a parameter to <doc:tt>SearchGroup</doc:tt>
-              so you may have to prefix or otherwise identify the ID to not confuse the search method.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="name" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The localised name of the category, e.g. <doc:tt>System Tools</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="summary" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The localised category summary, e.g. <doc:tt>Tools for mangaing system state</doc:tt>.
-              This is not normally shown in the menus, but may be shown in helper popups.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="icon" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The icon name for the category, e.g. <doc:tt>server-cfg</doc:tt>.
-              If the icon is not known, then it should be set to <doc:tt>image-missing</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
 
     <!--*********************************************************************-->
     <signal name="Details">

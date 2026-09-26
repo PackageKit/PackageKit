@@ -588,47 +588,6 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		}
 
 		pk_backend_job_distro_upgrade (job, distro_upgrade_enum, sections[2], sections[3]);
-	} else if (g_strcmp0 (command, "category") == 0) {
-
-		if (size != 6) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (g_strcmp0 (sections[1], sections[2]) == 0) {
-			g_set_error_literal (error, 1, 0, "cat_id cannot be the same as parent_id");
-			return FALSE;
-		}
-		if (pk_strzero (sections[2])) {
-			g_set_error_literal (error, 1, 0, "cat_id cannot not blank");
-			return FALSE;
-		}
-		if (pk_strzero (sections[3])) {
-			g_set_error_literal (error, 1, 0, "name cannot not blank");
-			return FALSE;
-		}
-		g_strdelimit (sections[4], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[4], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[4]);
-			return FALSE;
-		}
-		if (pk_strzero (sections[5])) {
-			g_set_error_literal (error, 1, 0, "icon cannot not blank");
-			return FALSE;
-		}
-		if (g_str_has_prefix (sections[5], "/")) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "icon '%s' should be a named icon, not a path",
-				     sections[5]);
-			return FALSE;
-		}
-		pk_backend_job_category (job,
-					 sections[1],
-					 sections[2],
-					 sections[3],
-					 sections[4],
-					 sections[5]);
 	} else {
 		g_set_error (error, 1, 0, "invalid command '%s'", command);
 		return FALSE;

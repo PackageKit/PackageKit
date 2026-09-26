@@ -286,20 +286,6 @@ class PackageKitBaseBackend:
         sys.stdout.write(_to_utf8("files\t%s\t%s\n" % (package_id, file_list)))
         sys.stdout.flush()
 
-    def category(self, parent_id, cat_id, name, summary, icon):
-        '''
-        Send 'category' signal
-        parent_id : A parent id, e.g. "admin" or "" if there is no parent
-        cat_id    : a unique category id, e.g. "admin;network"
-        name      : a verbose category name in current locale.
-        summery   : a summary of the category in current locale.
-        icon      : an icon name to represent the category
-        '''
-        sys.stdout.write(
-            _to_utf8("category\t%s\t%s\t%s\t%s\t%s\n" % (parent_id, cat_id, name, summary, icon))
-        )
-        sys.stdout.flush()
-
     def finished(self):
         '''
         Send 'finished' signal
@@ -691,15 +677,6 @@ class PackageKitBaseBackend:
             ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
         )
 
-    def get_categories(self):
-        '''
-        Implement the {backend}-get-categories functionality
-        Needed to be implemented in a sub class
-        '''
-        self.error(
-            ERROR_NOT_SUPPORTED, "This function is not implemented in this backend", exit=False
-        )
-
     def repair_system(self, transaction_flags):
         '''
         Implement the {backend}-repair-system functionality
@@ -859,9 +836,6 @@ class PackageKitBaseBackend:
         elif cmd == 'set-locale':
             code = args[0]
             self.set_locale(code)
-            self.finished()
-        elif cmd == 'get-categories':
-            self.get_categories()
             self.finished()
         elif cmd == 'upgrade-system':
             self.upgrade_system(args[0])

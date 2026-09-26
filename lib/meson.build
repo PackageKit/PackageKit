@@ -3,7 +3,6 @@ packagekit_glib2_includes = include_directories('.')
 packagekit_glib2_headers = files(
   'packagekit.h',
   'pk-bitfield.h',
-  'pk-category.h',
   'pk-client.h',
   'pk-client-helper.h',
   'pk-client-sync.h',
@@ -55,7 +54,6 @@ pk_version_header = configure_file(
 
 packagekit_glib2_sources = files(
   'pk-bitfield.c',
-  'pk-category.c',
   'pk-client.c',
   'pk-client-helper.c',
   'pk-client-sync.c',

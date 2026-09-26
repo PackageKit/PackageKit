@@ -621,8 +621,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "UpdateDetail";
 	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAILS)
 		return "UpdateDetails";
-	if (id == PK_BACKEND_SIGNAL_CATEGORY)
-		return "Category";
 	return NULL;
 }
 
@@ -1573,47 +1571,6 @@ pk_backend_job_repo_detail (PkBackendJob *job,
 	/* emit */
 	pk_backend_job_call_vfunc (job,
 				   PK_BACKEND_SIGNAL_REPO_DETAIL,
-				   g_object_ref (item),
-				   g_object_unref);
-}
-
-void
-pk_backend_job_category (PkBackendJob *job,
-			 const gchar *parent_id,
-			 const gchar *cat_id,
-			 const gchar *name,
-			 const gchar *summary,
-			 const gchar *icon)
-{
-	g_autoptr(PkCategory) item = NULL;
-
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (cat_id != NULL);
-
-	/* have we already set an error? */
-	if (job->set_error) {
-		g_warning ("already set error: category %s", cat_id);
-		return;
-	}
-
-	/* form PkCategory struct */
-	item = pk_category_new ();
-	g_object_set (item,
-		      "parent-id",
-		      parent_id,
-		      "cat-id",
-		      cat_id,
-		      "name",
-		      name,
-		      "summary",
-		      summary,
-		      "icon",
-		      icon,
-		      NULL);
-
-	/* emit */
-	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_CATEGORY,
 				   g_object_ref (item),
 				   g_object_unref);
 }

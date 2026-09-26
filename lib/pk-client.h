@@ -268,13 +268,6 @@ void	     pk_client_get_files_async (PkClient	   *client,
 					GAsyncReadyCallback callback_ready,
 					gpointer	    user_data);
 
-void	     pk_client_get_categories_async (PkClient		*client,
-					     GCancellable	*cancellable,
-					     PkProgressCallback	 progress_callback,
-					     gpointer		 progress_user_data,
-					     GAsyncReadyCallback callback_ready,
-					     gpointer		 user_data);
-
 void	     pk_client_remove_packages_async (PkClient		 *client,
 					      PkBitfield	  transaction_flags,
 					      gchar		**package_ids,

@@ -1455,35 +1455,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		pk_results_add_require_restart (state->results, item);
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Category") == 0) {
-		g_autoptr(PkCategory) item = NULL;
-		g_variant_get (parameters,
-			       "(&s&s&s&s&s)",
-			       &tmp_str[0],
-			       &tmp_str[1],
-			       &tmp_str[2],
-			       &tmp_str[3],
-			       &tmp_str[4]);
-		item = pk_category_new ();
-		g_object_set (item,
-			      "parent-id",
-			      tmp_str[0],
-			      "cat-id",
-			      tmp_str[1],
-			      "name",
-			      tmp_str[2],
-			      "summary",
-			      tmp_str[3],
-			      "icon",
-			      tmp_str[4],
-			      "role",
-			      state->role,
-			      "transaction-id",
-			      state->transaction_id,
-			      NULL);
-		pk_results_add_category (state->results, item);
-		return;
-	}
 	if (g_strcmp0 (signal_name, "Files") == 0) {
 		g_autofree gchar **files = NULL;
 		g_autoptr(PkFiles) item = NULL;
@@ -1966,15 +1937,6 @@ pk_client_set_hints_cb (GObject *source_object, GAsyncResult *res, gpointer user
 				   pk_client_method_cb,
 				   g_object_ref (state));
 		g_object_set (state->results, "inputs", g_strv_length (state->package_ids), NULL);
-	} else if (state->role == PK_ROLE_ENUM_GET_CATEGORIES) {
-		g_dbus_proxy_call (state->proxy,
-				   "GetCategories",
-				   NULL,
-				   G_DBUS_CALL_FLAGS_NONE,
-				   PK_CLIENT_DBUS_METHOD_TIMEOUT,
-				   state->cancellable,
-				   pk_client_method_cb,
-				   g_object_ref (state));
 	} else if (state->role == PK_ROLE_ENUM_REMOVE_PACKAGES) {
 		g_dbus_proxy_call (state->proxy,
 				   "RemovePackages",
@@ -3514,60 +3476,6 @@ pk_client_get_files_async (PkClient *client,
 				     PK_ROLE_ENUM_GET_FILES,
 				     cancellable);
 	state->package_ids = g_strdupv (package_ids);
-	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
-
-	/* check not already cancelled */
-	if (g_cancellable_set_error_if_cancelled (cancellable, &error)) {
-		pk_client_state_finish (state, g_steal_pointer (&error));
-		return;
-	}
-
-	/* identify */
-	pk_client_set_role (state, state->role);
-
-	/* get tid */
-	pk_control_get_tid_async (priv->control,
-				  cancellable,
-				  (GAsyncReadyCallback) pk_client_get_tid_cb,
-				  g_steal_pointer (&state));
-}
-
-/**
- * pk_client_get_categories_async: (finish-func pk_client_generic_finish):
- * @client: a valid #PkClient instance
- * @cancellable: a #GCancellable or %NULL
- * @progress_callback: (scope notified): the function to run when the progress changes
- * @progress_user_data: data to pass to @progress_callback
- * @callback_ready: the function to run on completion
- * @user_data: the data to pass to @callback_ready
- *
- * Get a list of all categories supported.
- *
- * Since: 0.5.2
- **/
-void
-pk_client_get_categories_async (PkClient *client,
-				GCancellable *cancellable,
-				PkProgressCallback progress_callback,
-				gpointer progress_user_data,
-				GAsyncReadyCallback callback_ready,
-				gpointer user_data)
-{
-	PkClientPrivate *priv = GET_PRIVATE(client);
-	g_autoptr(PkClientState) state = NULL;
-	g_autoptr(GError) error = NULL;
-
-	g_return_if_fail (PK_IS_CLIENT (client));
-	g_return_if_fail (callback_ready != NULL);
-	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
-
-	/* save state */
-	state = pk_client_state_new (client,
-				     callback_ready,
-				     user_data,
-				     pk_client_get_categories_async,
-				     PK_ROLE_ENUM_GET_CATEGORIES,
-				     cancellable);
 	state->progress = pk_progress_new_with_callback (progress_callback, progress_user_data);
 
 	/* check not already cancelled */

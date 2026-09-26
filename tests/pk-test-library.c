@@ -1033,7 +1033,6 @@ pk_test_client_helper_func (void)
 static void
 pk_test_object_types_func (void)
 {
-	PK_TEST_TYPE (PkCategory, pk_category_new);
 	PK_TEST_TYPE (PkClient, pk_client_new);
 	PK_TEST_TYPE (PkClientHelper, pk_client_helper_new);
 	PK_TEST_TYPE (PkControl, pk_control_new);

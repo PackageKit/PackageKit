@@ -169,12 +169,6 @@ PkResults  *pk_client_get_files (PkClient	   *client,
 				 gpointer	    progress_user_data,
 				 GError		  **error);
 
-PkResults  *pk_client_get_categories (PkClient		*client,
-				      GCancellable	*cancellable,
-				      PkProgressCallback progress_callback,
-				      gpointer		 progress_user_data,
-				      GError	       **error);
-
 PkResults  *pk_client_remove_packages (PkClient		 *client,
 				       PkBitfield	  transaction_flags,
 				       gchar		**package_ids,

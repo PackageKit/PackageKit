@@ -106,8 +106,6 @@ void	     pk_backend_download_packages (PkBackend	*backend,
 					   PkBackendJob *job,
 					   gchar       **package_ids,
 					   const gchar	*directory);
-void	     pk_backend_get_categories (PkBackend    *backend,
-					PkBackendJob *job);
 void	     pk_backend_depends_on (PkBackend	 *backend,
 				    PkBackendJob *job,
 				    PkBitfield	  filters,

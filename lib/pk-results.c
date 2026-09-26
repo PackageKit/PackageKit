@@ -54,7 +54,6 @@ struct _PkResultsPrivate
 	PkError *error_code;
 	GPtrArray *details_array;
 	GPtrArray *update_detail_array;
-	GPtrArray *category_array;
 	GPtrArray *distro_upgrade_array;
 	GPtrArray *require_restart_array;
 	GPtrArray *transaction_array;
@@ -263,31 +262,6 @@ pk_results_add_update_detail (PkResults *results, PkUpdateDetail *item)
 
 	/* copy and add to array */
 	g_ptr_array_add (priv->update_detail_array, g_object_ref (item));
-
-	return TRUE;
-}
-
-/**
- * pk_results_add_category:
- * @results: a valid #PkResults instance
- * @item: the object to add to the array
- *
- * Adds a category item to the results set.
- *
- * Return value: %TRUE if the value was set
- *
- * Since: 0.5.2
- **/
-gboolean
-pk_results_add_category (PkResults *results, PkCategory *item)
-{
-	PkResultsPrivate *priv = GET_PRIVATE(results);
-
-	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
-	g_return_val_if_fail (item != NULL, FALSE);
-
-	/* copy and add to array */
-	g_ptr_array_add (priv->category_array, g_object_ref (item));
 
 	return TRUE;
 }
@@ -687,26 +661,6 @@ pk_results_get_update_detail_array (PkResults *results)
 }
 
 /**
- * pk_results_get_category_array:
- * @results: a valid #PkResults instance
- *
- * Gets the categories from the transaction.
- *
- * Return value: (element-type PkCategory) (transfer container): A #GPtrArray array of #PkCategory's, free with g_ptr_array_unref().
- *
- * Since: 0.5.2
- **/
-GPtrArray *
-pk_results_get_category_array (PkResults *results)
-{
-	PkResultsPrivate *priv = GET_PRIVATE(results);
-
-	g_return_val_if_fail (PK_IS_RESULTS (results), NULL);
-
-	return g_ptr_array_ref (priv->category_array);
-}
-
-/**
  * pk_results_get_distro_upgrade_array:
  * @results: a valid #PkResults instance
  *
@@ -990,7 +944,6 @@ pk_results_init (PkResults *results)
 	priv->details_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->update_detail_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
-	priv->category_array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->distro_upgrade_array = g_ptr_array_new_with_free_func (
 	    (GDestroyNotify) g_object_unref);
 	priv->require_restart_array = g_ptr_array_new_with_free_func (
@@ -1017,7 +970,6 @@ pk_results_finalize (GObject *object)
 
 	g_clear_pointer (&priv->details_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->update_detail_array, g_ptr_array_unref);
-	g_clear_pointer (&priv->category_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->distro_upgrade_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->require_restart_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->transaction_array, g_ptr_array_unref);

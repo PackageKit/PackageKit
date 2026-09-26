@@ -141,7 +141,6 @@ pk_backend_get_roles (PkBackend *backend)
 					PK_ROLE_ENUM_GET_REPO_LIST,
 					PK_ROLE_ENUM_REPO_ENABLE,
 					//PK_ROLE_ENUM_REPO_SET_DATA,
-					PK_ROLE_ENUM_GET_CATEGORIES,
 					-1);
 
 	return roles;
@@ -197,12 +196,6 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 				 search,
 				 NULL);
 	g_free (filters_text);
-}
-
-void
-pk_backend_get_categories (PkBackend *backend, PkBackendJob *job)
-{
-	pk_backend_spawn_helper (spawn, job, BACKEND_FILE, "get-categories", NULL);
 }
 
 void

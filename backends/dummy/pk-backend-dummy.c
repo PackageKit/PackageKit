@@ -1343,8 +1343,11 @@ pk_backend_socket_has_data_cb (GSocket *socket, GIOCondition condition, PkBacken
 			return TRUE;
 		buffer[len] = '\0';
 		if (g_strcmp0 (buffer, "pong\n") == 0) {
-			/* send a category so we can verify in the self checks */
-			pk_backend_job_category (job, NULL, "test", "Test", buffer, NULL);
+			/* send a marker package so we can verify in the self checks */
+			pk_backend_job_package (job,
+						PK_INFO_ENUM_INSTALLED,
+						"testsocket-pong;0.1;i386;fedora;",
+						"Frontend socket reply received");
 
 			/* verify we can write into the socket */
 			wrote = g_socket_send (job_data->socket, "invalid\n", 8, NULL, &error);

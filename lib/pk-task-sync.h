@@ -172,12 +172,6 @@ PkResults *pk_task_get_files_sync (PkTask	     *task,
 				   gpointer	      progress_user_data,
 				   GError	    **error);
 
-PkResults *pk_task_get_categories_sync (PkTask		  *task,
-					GCancellable	  *cancellable,
-					PkProgressCallback progress_callback,
-					gpointer	   progress_user_data,
-					GError		 **error);
-
 PkResults *pk_task_refresh_cache_sync (PkTask		 *task,
 				       gboolean		  force,
 				       GCancellable	 *cancellable,

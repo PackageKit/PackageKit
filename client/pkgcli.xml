@@ -262,9 +262,9 @@
         <term><command>organization</command></term>
         <listitem>
           <para>
-            Display available package filters (such as installed, available, newest),
-            groups (such as system, development, graphics), and categories that can
-            be used to query packages.
+            Display available package filters (such as installed, available, newest)
+            and groups (such as system, development, graphics) that can be used to
+            query packages.
           </para>
         </listitem>
       </varlistentry>

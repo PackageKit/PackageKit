@@ -820,7 +820,7 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	    cmd,
 	    NULL,
 	    /* TRANSLATORS: Description for pkgcli organization */
-	    _("List all available filters, groups and categories for package organization."));
+	    _("List all available filters and groups for package organization."));
 	if (!pkgc_parse_command_options (ctx, cmd, option_context, &argc, &argv, 1))
 		return PKGC_EXIT_SYNTAX_ERROR;
 
@@ -845,23 +845,8 @@ pkgc_query_organization (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gcha
 	text = pk_group_bitfield_to_string (groups);
 	g_strdelimit (text, ";", '\n');
 	g_print ("%s\n", text);
-	g_clear_pointer (&text, g_free);
 
-	/* print available categories, if we have any */
-	g_print ("\n");
-	g_print ("%s%s%s\n",
-		 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
-		 /* TRANSLATORS: Header for list of available package categories */
-		 _("Categories:"), pkgc_get_ansi_color (ctx, PKGC_COLOR_RESET));
-	pk_task_get_categories_async (PK_TASK (ctx->task),
-				      ctx->cancellable,
-				      pkgc_context_on_progress_cb,
-				      ctx,
-				      pkgc_query_on_task_finished_cb,
-				      ctx);
-
-	g_main_loop_run (ctx->loop);
-	return ctx->exit_code;
+	return PKGC_EXIT_SUCCESS;
 }
 
 /**
@@ -1076,7 +1061,7 @@ pkgc_register_query_commands (PkgcliContext *ctx)
 	    "organization",
 	    pkgc_query_organization,
 	    /* TRANSLATORS: Description for organization command in pkgcli help */
-	    _("List available filters and categories"));
+	    _("List available filters and groups"));
 
 	pkgc_context_register_command (
 	    ctx,
