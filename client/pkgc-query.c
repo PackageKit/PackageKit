@@ -80,10 +80,9 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 		filelist = pk_files_get_files (files);
 
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
-			json_t *root;
+			g_autoptr(json_t) root = json_object ();
 			json_t *files_array;
 
-			root = json_object ();
 			files_array = json_array ();
 
 			json_object_set_new (root, "package", json_string (package_id));
@@ -93,7 +92,7 @@ pkgc_query_on_task_finished_cb (GObject *source_object, GAsyncResult *res, gpoin
 
 			json_object_set_new (root, "files", files_array);
 
-			pkgc_print_json_decref (root);
+			pkgc_print_json (root);
 		} else {
 			for (guint j = 0; filelist && filelist[j] != NULL; j++)
 				g_print ("%s\n", filelist[j]);
@@ -182,10 +181,9 @@ pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 	roles_str = pk_role_bitfield_to_string (roles);
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root;
+		g_autoptr(json_t) root = json_object ();
 		json_t *backend_obj;
 
-		root = json_object ();
 		backend_obj = json_object ();
 
 		json_object_set_new (backend_obj,
@@ -201,7 +199,7 @@ pkgc_backend_info (PkgcliContext *ctx, PkgcliCommand *cmd, gint argc, gchar **ar
 
 		json_object_set_new (root, "roles", json_string (roles_str));
 
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		g_print ("%sStatus:%s\n",
 			 pkgc_get_ansi_color (ctx, PKGC_COLOR_BOLD),
@@ -901,12 +899,11 @@ pkgc_query_get_time_since_action_cb (GObject *object, GAsyncResult *res, gpointe
 	}
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root;
+		g_autoptr(json_t) root = json_object ();
 
-		root = json_object ();
 		json_object_set_new (root, "time_sec", json_integer (time_s));
 
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		/* TRANSLATORS: this is the time since this role was used */
 		g_print ("%s: %is\n", _("Elapsed time"), time_s);

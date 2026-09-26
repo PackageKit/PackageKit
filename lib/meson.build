@@ -74,6 +74,7 @@ packagekit_glib2_sources = files(
   'pk-offline.c',
   'pk-offline-private.c',
   'pk-offline-private.h',
+  'pk-json-private.h',
   'pk-package.c',
   'pk-package-id.c',
   'pk-package-ids.c',

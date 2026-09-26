@@ -22,7 +22,7 @@
 #pragma once
 
 #include <glib.h>
-#include <jansson.h>
+#include <pk-json-private.h>
 
 #include "pkgc-context.h"
 
@@ -52,7 +52,7 @@ gboolean	pkgc_util_check_connection (PkgcliContext *ctx,
 gchar	       *pkgc_util_format_size (guint64 size);
 gchar	       *pkgc_util_format_time (guint seconds);
 
-void		pkgc_print_json_decref (json_t *root);
+void		pkgc_print_json (json_t *root);
 
 const gchar    *pkgc_get_ansi_color (PkgcliContext *ctx,
 				     PkgcColor	    color);

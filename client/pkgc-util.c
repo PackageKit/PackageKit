@@ -24,7 +24,7 @@
 #include <glib.h>
 #include <pwd.h>
 #include <packagekit.h>
-#include <jansson.h>
+#include <pk-json-private.h>
 
 #include "pkgc-util.h"
 
@@ -219,17 +219,16 @@ pkgc_get_ansi_color (PkgcliContext *ctx, PkgcColor color)
 }
 
 /**
- * pkgc_print_json_decref:
+ * pkgc_print_json:
  *
- * Print a JSON object and decrease its reference count.
+ * Print a JSON object as a single compact line.
  */
 void
-pkgc_print_json_decref (json_t *root)
+pkgc_print_json (json_t *root)
 {
 	g_autofree gchar *json_str = json_dumps (root, JSON_COMPACT);
 	if (json_str)
 		g_print ("%s\n", json_str);
-	json_decref (root);
 }
 
 static void
@@ -269,9 +268,9 @@ pkgc_print_error (PkgcliContext *ctx, const gchar *format, ...)
 
 	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "error", json_string (message));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		g_printerr ("%s%s%s:%s %s\n",
 			    get_color (ctx, COLOR_BOLD),
@@ -297,10 +296,9 @@ pkgc_print_warning (PkgcliContext *ctx, const gchar *format, ...)
 
 	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = NULL;
-		root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "warning", json_string (message));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 
 		return;
 	}
@@ -324,16 +322,15 @@ pkgc_print_info (PkgcliContext *ctx, const gchar *format, ...)
 
 	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = NULL;
+		g_autoptr(json_t) root = json_object ();
 		g_autofree gchar *message = NULL;
 
 		va_start (args, format);
 		message = g_strdup_vprintf (format, args);
 		va_end (args);
 
-		root = json_object ();
 		json_object_set_new (root, "info", json_string (message));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 
 		return;
 	}
@@ -360,9 +357,9 @@ pkgc_print_success (PkgcliContext *ctx, const gchar *format, ...)
 
 	pkgc_context_stop_progress_bar (ctx);
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "success", json_string (message));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else if (ctx->output_mode != PKGCLI_MODE_QUIET) {
 		g_print ("%s%s%s %s\n",
 			 get_color (ctx, COLOR_GREEN),
@@ -539,14 +536,14 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 	}
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "name", json_string (name));
 		json_object_set_new (root, "version", json_string (version));
 		json_object_set_new (root, "arch", json_string (arch));
 		json_object_set_new (root, "repo", json_string (origin));
 		json_object_set_new (root, "data", json_string (data));
 		json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 
 		return;
 	}
@@ -616,7 +613,7 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		return;
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "name", json_string (split[PK_PACKAGE_ID_NAME]));
 		json_object_set_new (root, "version", json_string (split[PK_PACKAGE_ID_VERSION]));
 		json_object_set_new (root, "summary", json_string (summary ? summary : ""));
@@ -631,7 +628,7 @@ pkgc_print_package_detail (PkgcliContext *ctx, PkDetails *details)
 		json_object_set_new (root,
 				     "download_size",
 				     json_integer ((json_int_t) download_size));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		g_print ("%s%s%s %s\n",
 			 get_color (ctx, COLOR_BOLD),
@@ -755,7 +752,7 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 	package = pk_package_id_to_printable (package_id);
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "package", json_string (package));
 
 		if (updates && updates[0]) {
@@ -782,7 +779,7 @@ pkgc_print_update_detail (PkgcliContext *ctx, PkUpdateDetail *update)
 					     "restart",
 					     json_string (pk_restart_enum_to_string (restart)));
 
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		g_print ("%s%s%s\n",
 			 get_color (ctx, COLOR_BOLD),
@@ -911,13 +908,13 @@ pkgc_print_repo (PkgcliContext *ctx, PkRepoDetail *repo)
 		      NULL);
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "id", json_string (repo_id));
 		json_object_set_new (root,
 				     "description",
 				     json_string (description ? description : ""));
 		json_object_set_new (root, "enabled", json_boolean (enabled));
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 	} else {
 		const gchar *status_color = enabled ? COLOR_GREEN : COLOR_RED;
 		const gchar *status_text = enabled ? "enabled" : "disabled";
@@ -980,7 +977,7 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 	role_text = pk_role_enum_to_string (role);
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
-		json_t *root = json_object ();
+		g_autoptr(json_t) root = json_object ();
 		json_object_set_new (root, "tid", json_string (tid));
 		json_object_set_new (root, "role", json_string (role_text));
 		json_object_set_new (root, "succeeded", json_boolean (succeeded));
@@ -991,7 +988,7 @@ pkgc_print_transaction (PkgcliContext *ctx, PkTransactionPast *transaction)
 		if (cmdline && cmdline[0] != '\0')
 			json_object_set_new (root, "cmdline", json_string (cmdline));
 
-		pkgc_print_json_decref (root);
+		pkgc_print_json (root);
 
 		return;
 	}

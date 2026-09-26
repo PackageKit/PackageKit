@@ -732,9 +732,9 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 		for (guint i = 0; package_ids[i] != NULL; i++) {
 			g_autofree gchar *printable = pk_package_id_to_printable (package_ids[i]);
 			if (ctx->output_mode == PKGCLI_MODE_JSON) {
-				json_t *root = json_object ();
+				g_autoptr(json_t) root = json_object ();
 				json_object_set_new (root, "pkid", json_string (package_ids[i]));
-				pkgc_print_json_decref (root);
+				pkgc_print_json (root);
 			} else {
 				g_print ("  %s\n", printable);
 			}
@@ -775,9 +775,9 @@ pkgc_print_offline_update_status (PkgcliContext *ctx)
 		PkPackage *pkg = PK_PACKAGE (g_ptr_array_index (packages, i));
 		g_autofree gchar *printable = pk_package_id_to_printable (pk_package_get_id (pkg));
 		if (ctx->output_mode == PKGCLI_MODE_JSON) {
-			json_t *root = json_object ();
+			g_autoptr(json_t) root = json_object ();
 			json_object_set_new (root, "pkid", json_string (pk_package_get_id (pkg)));
-			pkgc_print_json_decref (root);
+			pkgc_print_json (root);
 		} else {
 			g_print ("  ");
 			g_print (_("Updated: %s"), printable);
