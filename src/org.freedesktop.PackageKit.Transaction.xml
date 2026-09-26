@@ -206,17 +206,6 @@
                   Most transactions will not have this value set.
                 </doc:definition>
               </doc:item>
-              <doc:item>
-                <doc:term>supports-plural-signals</doc:term>
-                <doc:definition>
-                  This allows the frontend to tell the daemon that it supports the
-                  new <doc:tt>Packages</doc:tt> signal for receiving information about
-                  multiple packages at once, rather than just the original
-                  <doc:tt>Package</doc:tt> signal.
-                  If this is set, and the daemon supports the signal, it will be used.
-                  If present, this must always be set to <doc:tt>true</doc:tt>.
-                </doc:definition>
-              </doc:item>
             </doc:list>
             <doc:para>
               Other values will cause a verbose warning in the daemon, but will
@@ -325,10 +314,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -513,10 +502,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -571,10 +560,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -622,7 +611,7 @@
           </doc:para>
           <doc:para>
             This method typically emits
-            <doc:tt>UpdateDetail</doc:tt> and
+            <doc:tt>UpdateDetails</doc:tt> and
             <doc:tt>Error</doc:tt>
           </doc:para>
         </doc:description>
@@ -651,10 +640,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>blocked</doc:tt>,
             <doc:tt>low</doc:tt>,
             <doc:tt>normal</doc:tt>,
@@ -728,10 +717,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>downloading</doc:tt>,
             <doc:tt>updating</doc:tt>,
             <doc:tt>installing</doc:tt> or
@@ -783,10 +772,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>downloading</doc:tt>,
             <doc:tt>updating</doc:tt>,
             <doc:tt>installing</doc:tt> or
@@ -912,10 +901,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>downloading</doc:tt>,
             <doc:tt>updating</doc:tt>,
             <doc:tt>installing</doc:tt> or
@@ -1101,10 +1090,10 @@
           <doc:para>
             This method typically emits
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1163,10 +1152,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1216,10 +1205,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1276,10 +1265,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1347,10 +1336,10 @@
             This method typically emits
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1402,7 +1391,7 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
         </doc:description>
         <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
@@ -1447,10 +1436,10 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
           <doc:para>
-            <doc:tt>Package</doc:tt> enumerated types should be
+            <doc:tt>Packages</doc:tt> info enumerated types should be
             <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
           </doc:para>
         </doc:description>
@@ -1490,7 +1479,7 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1551,7 +1540,7 @@
             <doc:tt>Progress</doc:tt>,
             <doc:tt>Status</doc:tt> and
             <doc:tt>Error</doc:tt> and
-            <doc:tt>Package</doc:tt>.
+            <doc:tt>Packages</doc:tt>.
           </doc:para>
         </doc:description>
       </doc:doc>
@@ -1712,8 +1701,9 @@
       </arg>
     </signal>
 
+
     <!--*********************************************************************-->
-    <signal name="Package">
+    <signal name="Packages">
       <doc:doc>
         <doc:description>
           <doc:para>
@@ -1728,94 +1718,71 @@
             <doc:tt>installed</doc:tt> before <doc:tt>available</doc:tt> for
             the same package name.
           </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="info" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid <doc:tt>info</doc:tt> enumerated type
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              This identifier is of the form <doc:tt>name;version;arch;origin;data</doc:tt>
-              in a single string and is meant to represent a single package
-              unique across all local and remote data stores.
-            </doc:para>
-            <doc:para>
-              The origin field should be set to the repository identifier or
-              repository name the package is available from. For an installed
-              package, it should be set to the repository the package was
-              originally installed from, if the package manager tracks this
-              information, and left empty otherwise.
-            </doc:para>
-            <doc:para>
-              The origin field for a non-installed local package must be
-              <doc:tt>local</doc:tt> as this signifies a repository name is
-              not available and that package resides locally on the
-              client system rather than in any specific repository.
-            </doc:para>
-            <doc:para>
-              The data field is free for the backend to use for additional information
-              it needs, for example whether a package was installed automatically or manually.
-              Its contents are backend-specific and it is usually empty. Frontends
-              must not parse it and should rely on the <doc:tt>info</doc:tt>
-              enumerated type for state information instead.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="summary" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The one line package summary, e.g. Clipart for OpenOffice
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
-
-    <!--*********************************************************************-->
-    <signal name="Packages">
-      <doc:doc>
-        <doc:description>
           <doc:para>
-            This signal allows the backend to communicate multiple packages to the session.
+            The daemon may split the packages of a transaction into multiple
+            emissions of this signal to stay within the D-Bus message size
+            limits. The content of one signal will never duplicate the content
+            of another, and a single emission may contain only one package.
           </doc:para>
           <doc:para>
-            If updating, as packages are updated then emit them to the screen.
-            This allows a summary to be presented after the transaction.
+            Each array element describes one package and consists of the
+            following fields:
           </doc:para>
-          <doc:para>
-            When returning results from a search always return
-            <doc:tt>installed</doc:tt> before <doc:tt>available</doc:tt> for
-            the same package name.
-          </doc:para>
-          <doc:para>
-            This signal was added to the API in PackageKit 1.2.6. It will only be emitted
-            by the daemon if the client sets the <doc:tt>supports-plural-signals=true</doc:tt>
-            hint on the transaction using <doc:tt>SetHints()</doc:tt>.
-          </doc:para>
-          <doc:para>
-            Even if this signal is used by the transaction, it may also still emit
-            <doc:tt>Package</doc:tt> signals at other times. The content of one signal will
-            never duplicate the content of another. Clients must be prepared to handle both
-            signals within the same transaction.
-          </doc:para>
+          <doc:list>
+            <doc:item>
+              <doc:term>info</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A valid <doc:tt>info</doc:tt> enumerated type [<doc:tt>u</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>package_id</doc:term>
+              <doc:definition>
+                <doc:para>
+                  This identifier is of the form
+                  <doc:tt>name;version;arch;origin;data</doc:tt> in a single string and is
+                  meant to represent a single package unique across all local and remote data
+                  stores.
+                </doc:para>
+                <doc:para>
+                  The origin field should be set to the repository identifier or repository
+                  name the package is available from. For an installed package, it should be
+                  set to the repository the package was originally installed from, if the
+                  package manager tracks this information, and left empty otherwise.
+                </doc:para>
+                <doc:para>
+                  The origin field for a non-installed local package must be
+                  <doc:tt>local</doc:tt> as this signifies a repository name is not available
+                  and that package resides locally on the client system rather than in any
+                  specific repository.
+                </doc:para>
+                <doc:para>
+                  The data field is free for the backend to use for additional information it
+                  needs, for example whether a package was installed automatically or
+                  manually. Its contents are backend-specific and it is usually empty.
+                  Frontends must not parse it and should rely on the <doc:tt>info</doc:tt>
+                  enumerated type for state information instead. [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>summary</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The one line package summary, e.g. Clipart for OpenOffice [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+          </doc:list>
         </doc:description>
       </doc:doc>
       <arg type="a(uss)" name="packages" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An array of package details. Each array element is one package,
-              as documented for the <doc:tt>Package</doc:tt> signal.
+              An array of package details, each array element is one package.
             </doc:para>
           </doc:summary>
         </doc:doc>
@@ -2181,160 +2148,137 @@
       </arg>
     </signal>
 
-    <!--*********************************************************************-->
-    <signal name="UpdateDetail">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when more details are required about a specific update.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The package ID
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="updates" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of package_id's that are to be updated.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="obsoletes" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of package_id's that are to be obsoleted.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="vendor_urls" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of URLs with more details on the update, e.g. a page with more
-              information on the update.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="bugzilla_urls" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of bugzilla URL with more details on the update.
-              If no URLs are available then this field should be left empty.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="cve_urls" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of CVE URLs with more details on the security advisory.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="restart" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid restart type, e.g. <doc:tt>system</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="update_text" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The update text describing the update.
-            </doc:para>
-            <doc:para>
-              If formatting is required, then markdown syntax should be used,
-              e.g. <doc:tt>This is **critically** important</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="changelog" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The ChangeLog text describing the changes since the last version.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="state" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The state of the update, e.g. <doc:tt>stable</doc:tt> or
-              <doc:tt>testing</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="issued" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The ISO8601 encoded date that the update was issued.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="updated" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The ISO8601 encoded date that the update was updated.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-    </signal>
 
     <!--*********************************************************************-->
     <signal name="UpdateDetails">
       <doc:doc>
         <doc:description>
           <doc:para>
-            This signal allows the backend to communicate specific details for
-            multiple updates to the session. It is equivalent to the sequential
-            emission of N <doc:tt>UpdateDetail</doc:tt> signals.
+            This signal is sent when more details are required about specific updates.
           </doc:para>
           <doc:para>
-            This signal was added to the API in PackageKit 1.2.6. It will only be emitted
-            by the daemon if the client sets the <doc:tt>supports-plural-signals=true</doc:tt>
-            hint on the transaction using <doc:tt>SetHints()</doc:tt>.
+            The daemon may split the update details of a transaction into
+            multiple emissions of this signal to stay within the D-Bus message
+            size limits. The content of one signal will never duplicate the
+            content of another, and a single emission may contain only one
+            update.
           </doc:para>
           <doc:para>
-            Even if this signal is used by the transaction, it may also still emit
-            <doc:tt>UpdateDetail</doc:tt> signals at other times. The content of one signal will
-            never duplicate the content of another. Clients must be prepared to handle both
-            signals within the same transaction.
+            Each array element describes one update and consists of the
+            following fields:
           </doc:para>
+          <doc:list>
+            <doc:item>
+              <doc:term>package_id</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The package ID [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>updates</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A list of package_id's that are to be updated. [<doc:tt>as</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>obsoletes</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A list of package_id's that are to be obsoleted. [<doc:tt>as</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>vendor_urls</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A list of URLs with more details on the update, e.g. a page with more
+                  information on the update. [<doc:tt>as</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>bugzilla_urls</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A list of bugzilla URL with more details on the update. If no URLs are
+                  available then this field should be left empty. [<doc:tt>as</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>cve_urls</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A list of CVE URLs with more details on the security advisory. [<doc:tt>as</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>restart</doc:term>
+              <doc:definition>
+                <doc:para>
+                  A valid restart type, e.g. <doc:tt>system</doc:tt>. [<doc:tt>u</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>update_text</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The update text describing the update.
+                </doc:para>
+                <doc:para>
+                  If formatting is required, then markdown syntax should be used, e.g.
+                  <doc:tt>This is **critically** important</doc:tt> [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>changelog</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The ChangeLog text describing the changes since the last version. [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>state</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The state of the update, e.g. <doc:tt>stable</doc:tt> or
+                  <doc:tt>testing</doc:tt>. [<doc:tt>u</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>issued</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The ISO8601 encoded date that the update was issued. [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>updated</doc:term>
+              <doc:definition>
+                <doc:para>
+                  The ISO8601 encoded date that the update was updated. [<doc:tt>s</doc:tt>]
+                </doc:para>
+              </doc:definition>
+            </doc:item>
+          </doc:list>
         </doc:description>
       </doc:doc>
       <arg type="a(sasasasasasussuss)" name="details" direction="out">
         <doc:doc>
           <doc:summary>
             <doc:para>
-              An array of update details. Each array element is one update,
-              as documented for the <doc:tt>UpdateDetail</doc:tt> signal.
+              An array of update details, each array element is one update.
             </doc:para>
           </doc:summary>
         </doc:doc>

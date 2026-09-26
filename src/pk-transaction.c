@@ -106,7 +106,6 @@ struct _PkTransaction
 	PolkitSubject *subject;
 	GCancellable *cancellable;
 	gboolean skip_auth_check;
-	gboolean client_supports_plural_signals;
 
 	/* Rate limiting of progress reporting */
 	gboolean progress_changed;
@@ -1186,97 +1185,53 @@ pk_transaction_finished_cb (PkBackendJob *job, PkExitEnum exit_enum, PkTransacti
 	pk_transaction_finished_emit (transaction, exit_enum, time_ms);
 }
 
+/* Maximum number of items to put into a single Packages signal emission.
+ *
+ * Grouping multiple packages into a single signal reduces the number of
+ * signals and hence the amount of context switching between packagekitd,
+ * dbus-daemon and the client process, which results in much improved
+ * performance compared to emitting one signal per package.
+ *
+ * A single D-Bus message must stay below the D-Bus limits (maximum array
+ * size of 64MB, maximum message size of 128MB) though, so large result sets
+ * are split into batches of this size. */
+#define PK_TRANSACTION_PACKAGES_BATCH_SIZE 1000
+
+/* Maximum number of items to put into a single UpdateDetails signal emission.
+ * Update details may carry large changelogs, so batches are kept smaller
+ * than for packages. */
+#define PK_TRANSACTION_UPDATE_DETAILS_BATCH_SIZE 100
+
 static void
-pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *transaction)
+pk_transaction_emit_packages_batch (PkTransaction *transaction, GVariantBuilder *builder)
 {
-	const gchar *role_text;
-	PkInfoEnum info;
-	PkInfoEnum update_severity;
-	const gchar *package_id;
-	const gchar *summary = NULL;
-	guint encoded_value;
+	g_autoptr(GError) error = NULL;
 
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	/* have we already been marked as finished? */
-	if (transaction->finished) {
-		g_warning ("Already finished");
-		return;
-	}
-
-	/* check the backend is doing the right thing */
-	info = pk_package_get_info (item);
-	if (transaction->role == PK_ROLE_ENUM_INSTALL_PACKAGES ||
-	    transaction->role == PK_ROLE_ENUM_UPDATE_PACKAGES) {
-		if (info == PK_INFO_ENUM_INSTALLED) {
-			role_text = pk_role_enum_to_string (transaction->role);
-			g_warning ("%s emitted 'installed' rather than 'installing'", role_text);
-			return;
-		}
-	}
-
-	/* check we are respecting the filters */
-	if (pk_bitfield_contain (transaction->cached_filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-		if (info == PK_INFO_ENUM_INSTALLED) {
-			role_text = pk_role_enum_to_string (transaction->role);
-			g_warning ("%s emitted package that was installed when "
-				   "the ~installed filter is in place",
-				   role_text);
-			return;
-		}
-	}
-	if (pk_bitfield_contain (transaction->cached_filters, PK_FILTER_ENUM_INSTALLED)) {
-		if (info == PK_INFO_ENUM_AVAILABLE) {
-			role_text = pk_role_enum_to_string (transaction->role);
-			g_warning ("%s emitted package that was ~installed when "
-				   "the installed filter is in place",
-				   role_text);
-			return;
-		}
-	}
-
-	/* add to results even if we already got a result */
-	if (info != PK_INFO_ENUM_FINISHED)
-		pk_results_add_package (transaction->results, item);
-
-	/* emit */
-	package_id = pk_package_get_id (item);
-	g_free (transaction->last_package_id);
-	transaction->last_package_id = g_strdup (package_id);
-	summary = pk_package_get_summary (item);
-	if (transaction->role != PK_ROLE_ENUM_GET_PACKAGES) {
-		g_debug ("emit package %s, %s, %s",
-			 pk_info_enum_to_string (info),
-			 package_id,
-			 summary);
-	}
-
-	/* Safety checks, that the two values do not interleave, neither overflow */
-	g_assert ((PK_INFO_ENUM_LAST & (~0xFFFF)) == 0);
-
-	update_severity = pk_package_get_update_severity (item);
-	encoded_value = info | (((guint32) update_severity) << 16);
-
-	g_dbus_connection_emit_signal (
-	    transaction->connection,
-	    NULL,
-	    transaction->tid,
-	    PK_DBUS_INTERFACE_TRANSACTION,
-	    "Package",
-	    g_variant_new ("(uss)", encoded_value, package_id, summary ? summary : ""),
-	    NULL);
+	/* this consumes @builder, which has to be re-initialized to be used again */
+	if (!g_dbus_connection_emit_signal (transaction->connection,
+					    NULL,
+					    transaction->tid,
+					    PK_DBUS_INTERFACE_TRANSACTION,
+					    "Packages",
+					    g_variant_new ("(a(uss))", builder),
+					    &error))
+		g_warning ("Failed to emit Packages signal: %s", error->message);
 }
 
+/**
+ * pk_transaction_packages_cb:
+ * @backend: a #PkBackend
+ * @package_array: (element-type PkPackage): a #GPtrArray of #PkPackage
+ * @transaction: a #PkTransaction
+ */
 static void
 pk_transaction_packages_cb (PkBackend *backend,
 			    GPtrArray *package_array,
 			    PkTransaction *transaction)
 {
 	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(uss)"));
-	g_autoptr(GVariant) package_array_variant = NULL;
 	guint n_added_packages = 0;
-	gboolean emitted = FALSE;
+	guint n_in_batch = 0;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
@@ -1287,7 +1242,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 		return;
 	}
 
-	/* Loop through the packages and build a signal emission. */
+	/* Loop through the packages and build the signal emissions. */
 	for (guint i = 0; i < package_array->len; i++) {
 		PkPackage *item = g_ptr_array_index (package_array, i);
 		const gchar *role_text;
@@ -1358,6 +1313,14 @@ pk_transaction_packages_cb (PkBackend *backend,
 				       package_id,
 				       summary ? summary : "");
 		n_added_packages++;
+		n_in_batch++;
+
+		/* emit a full batch and start a new one */
+		if (n_in_batch >= PK_TRANSACTION_PACKAGES_BATCH_SIZE) {
+			pk_transaction_emit_packages_batch (transaction, &builder);
+			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uss)"));
+			n_in_batch = 0;
+		}
 	}
 
 	if (n_added_packages == 0) {
@@ -1365,45 +1328,19 @@ pk_transaction_packages_cb (PkBackend *backend,
 		return;
 	}
 
-	package_array_variant = g_variant_ref_sink (g_variant_builder_end (&builder));
+	/* emit the remaining packages */
+	if (n_in_batch > 0)
+		pk_transaction_emit_packages_batch (transaction, &builder);
+}
 
-	/* Emit the signal. Grouping multiple package details into a single
-	 * signal reduces the number of signals and hence the amount of context
-	 * switching between packagekitd, dbus-daemon and the client process.
-	 * This results in much improved performance compared to emitting one
-	 * signal per package.
-	 *
-	 * This should not hit the D-Bus limits (maximum array size of 64MB,
-	 * maximum message size of 128MB) until it’s listing on the order of
-	 * 100000 packages. If it does, we fall back below. */
-	if (transaction->client_supports_plural_signals &&
-	    g_dbus_connection_emit_signal (transaction->connection,
-					   NULL,
-					   transaction->tid,
-					   PK_DBUS_INTERFACE_TRANSACTION,
-					   "Packages",
-					   g_variant_new ("(@a(uss))", package_array_variant),
-					   NULL))
-		emitted = TRUE;
+static void
+pk_transaction_package_cb (PkBackend *backend, PkPackage *item, PkTransaction *transaction)
+{
+	g_autoptr(GPtrArray) package_array = NULL;
 
-	if (!emitted) {
-		GVariantIter iter;
-		g_autoptr(GVariant) child = NULL;
-
-		/* Fall back to one signal per package. */
-		g_variant_iter_init (&iter, package_array_variant);
-
-		while ((child = g_variant_iter_next_value (&iter))) {
-			g_dbus_connection_emit_signal (transaction->connection,
-						       NULL,
-						       transaction->tid,
-						       PK_DBUS_INTERFACE_TRANSACTION,
-						       "Package",
-						       child,
-						       NULL);
-			g_clear_pointer (&child, g_variant_unref);
-		}
-	}
+	package_array = g_ptr_array_new_with_free_func (g_object_unref);
+	g_ptr_array_add (package_array, g_object_ref (item));
+	pk_transaction_packages_cb (backend, package_array, transaction);
 }
 
 static void
@@ -1670,59 +1607,19 @@ pk_transaction_status_changed_cb (PkBackendJob *job,
 }
 
 static void
-pk_transaction_update_detail_cb (PkBackend *backend,
-				 PkUpdateDetail *item,
-				 PkTransaction *transaction)
+pk_transaction_emit_update_details_batch (PkTransaction *transaction, GVariantBuilder *builder)
 {
-	const gchar *changelog;
-	const gchar *issued;
-	const gchar *package_id;
-	const gchar *updated;
-	const gchar *update_text;
-	gchar **bugzilla_urls;
-	gchar **cve_urls;
-	gchar *empty[] = { NULL };
-	gchar **obsoletes;
-	gchar **updates;
-	gchar **vendor_urls;
+	g_autoptr(GError) error = NULL;
 
-	g_return_if_fail (PK_IS_TRANSACTION (transaction));
-	g_return_if_fail (transaction->tid != NULL);
-
-	/* add to results */
-	pk_results_add_update_detail (transaction->results, item);
-
-	/* emit */
-	package_id = pk_update_detail_get_package_id (item);
-	updates = pk_update_detail_get_updates (item);
-	obsoletes = pk_update_detail_get_obsoletes (item);
-	vendor_urls = pk_update_detail_get_vendor_urls (item);
-	bugzilla_urls = pk_update_detail_get_bugzilla_urls (item);
-	cve_urls = pk_update_detail_get_cve_urls (item);
-	update_text = pk_update_detail_get_update_text (item);
-	changelog = pk_update_detail_get_changelog (item);
-	issued = pk_update_detail_get_issued (item);
-	updated = pk_update_detail_get_updated (item);
-	g_debug ("emitting update-detail for %s", package_id);
-	g_dbus_connection_emit_signal (transaction->connection,
-				       NULL,
-				       transaction->tid,
-				       PK_DBUS_INTERFACE_TRANSACTION,
-				       "UpdateDetail",
-				       g_variant_new ("(s^as^as^as^as^asussuss)",
-						      package_id,
-						      updates != NULL ? updates : empty,
-						      obsoletes != NULL ? obsoletes : empty,
-						      vendor_urls != NULL ? vendor_urls : empty,
-						      bugzilla_urls != NULL ? bugzilla_urls : empty,
-						      cve_urls != NULL ? cve_urls : empty,
-						      pk_update_detail_get_restart (item),
-						      update_text != NULL ? update_text : "",
-						      changelog != NULL ? changelog : "",
-						      pk_update_detail_get_state (item),
-						      issued != NULL ? issued : "",
-						      updated != NULL ? updated : ""),
-				       NULL);
+	/* this consumes @builder, which has to be re-initialized to be used again */
+	if (!g_dbus_connection_emit_signal (transaction->connection,
+					    NULL,
+					    transaction->tid,
+					    PK_DBUS_INTERFACE_TRANSACTION,
+					    "UpdateDetails",
+					    g_variant_new ("(a(sasasasasasussuss))", builder),
+					    &error))
+		g_warning ("Failed to emit UpdateDetails signal: %s", error->message);
 }
 
 static void
@@ -1733,14 +1630,17 @@ pk_transaction_update_details_cb (
 {
 	g_auto(GVariantBuilder)
 		   builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(sasasasasasussuss)"));
-	g_autoptr(GVariant) update_details_array_variant = NULL;
-	guint n_update_details = 0;
-	gboolean emitted = FALSE;
+	guint n_in_batch = 0;
 
 	g_return_if_fail (PK_IS_TRANSACTION (transaction));
 	g_return_if_fail (transaction->tid != NULL);
 
-	/* Loop through the packages and build a signal emission. */
+	if (update_details_array->len == 0) {
+		g_debug ("Empty update details array");
+		return;
+	}
+
+	/* Loop through the update details and build the signal emissions. */
 	for (guint i = 0; i < update_details_array->len; i++) {
 		PkUpdateDetail *item = g_ptr_array_index (update_details_array, i);
 		const gchar *changelog;
@@ -1785,55 +1685,31 @@ pk_transaction_update_details_cb (
 				       pk_update_detail_get_state (item),
 				       issued != NULL ? issued : "",
 				       updated != NULL ? updated : "");
-		n_update_details++;
-	}
+		n_in_batch++;
 
-	if (n_update_details == 0) {
-		g_debug ("Empty update details array");
-		return;
-	}
-
-	update_details_array_variant = g_variant_ref_sink (g_variant_builder_end (&builder));
-
-	/* Emit the signal. Grouping multiple update details into a single
-	 * signal reduces the number of signals and hence the amount of context
-	 * switching between packagekitd, dbus-daemon and the client process.
-	 * This results in much improved performance compared to emitting one
-	 * signal per update details.
-	 *
-	 * This should not hit the D-Bus limits (maximum array size of 64MB,
-	 * maximum message size of 128MB) until it’s listing on the order of
-	 * 6400 updates, if we assume 10KB of changelog/details per update.
-	 * If it does hit the limits, we fall back to the old code below. */
-	if (transaction->client_supports_plural_signals &&
-	    g_dbus_connection_emit_signal (
-		transaction->connection,
-		NULL,
-		transaction->tid,
-		PK_DBUS_INTERFACE_TRANSACTION,
-		"UpdateDetails",
-		g_variant_new ("(@a(sasasasasasussuss))", update_details_array_variant),
-		NULL))
-		emitted = TRUE;
-
-	if (!emitted) {
-		GVariantIter iter;
-		g_autoptr(GVariant) child = NULL;
-
-		/* Fall back to one signal per update details. */
-		g_variant_iter_init (&iter, update_details_array_variant);
-
-		while ((child = g_variant_iter_next_value (&iter))) {
-			g_dbus_connection_emit_signal (transaction->connection,
-						       NULL,
-						       transaction->tid,
-						       PK_DBUS_INTERFACE_TRANSACTION,
-						       "UpdateDetail",
-						       child,
-						       NULL);
-			g_clear_pointer (&child, g_variant_unref);
+		/* emit a full batch and start a new one */
+		if (n_in_batch >= PK_TRANSACTION_UPDATE_DETAILS_BATCH_SIZE) {
+			pk_transaction_emit_update_details_batch (transaction, &builder);
+			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(sasasasasasussuss)"));
+			n_in_batch = 0;
 		}
 	}
+
+	/* emit the remaining update details */
+	if (n_in_batch > 0)
+		pk_transaction_emit_update_details_batch (transaction, &builder);
+}
+
+static void
+pk_transaction_update_detail_cb (PkBackend *backend,
+				 PkUpdateDetail *item,
+				 PkTransaction *transaction)
+{
+	g_autoptr(GPtrArray) update_details_array = NULL;
+
+	update_details_array = g_ptr_array_new_with_free_func (g_object_unref);
+	g_ptr_array_add (update_details_array, g_object_ref (item));
+	pk_transaction_update_details_cb (backend, update_details_array, transaction);
 }
 
 static gboolean
@@ -4824,23 +4700,6 @@ pk_transaction_set_hint (PkTransaction *transaction,
 				     value);
 			return FALSE;
 		}
-		return TRUE;
-	}
-
-	/* Is the plural Packages signal supported? The key’s value is ignored,
-	 * as clients will only send it if it’s true. */
-	if (g_strcmp0 (key, "supports-plural-signals") == 0) {
-		if (g_strcmp0 (value, "true") != 0) {
-			g_set_error (error,
-				     PK_TRANSACTION_ERROR,
-				     PK_TRANSACTION_ERROR_INPUT_INVALID,
-				     "supports-plural-signals hint expects true only, not %s",
-				     value);
-			return FALSE;
-		}
-
-		g_debug ("Client has set supports-plural-signals=true");
-		transaction->client_supports_plural_signals = TRUE;
 		return TRUE;
 	}
 

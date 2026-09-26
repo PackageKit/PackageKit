@@ -62,7 +62,7 @@ def _to_rawstring(obj, from_encoding="utf-8"):
 
 class PackageKitPackage:
     '''
-    container class from values from the Package signal
+    container class from values from the Packages signal
     '''
 
     def __init__(self, info, package_id, summary):
@@ -114,7 +114,7 @@ class PackageKitDetails:
 
 class PackageKitUpdateDetails:
     '''
-    container class from values from the UpdateDetail signal
+    container class from values from the UpdateDetails signal
     '''
 
     def __init__(

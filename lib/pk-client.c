@@ -1269,14 +1269,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 		}
 		return;
 	}
-	if (g_strcmp0 (signal_name, "Package") == 0) {
-		g_variant_get (parameters, "(u&s&s)", &tmp_uint, &tmp_str[1], &tmp_str[2]);
-		/* The 'info' and 'update-severity' are encoded in the single value */
-		tmp_uint2 = tmp_uint & 0xFFFF;
-		tmp_uint3 = (tmp_uint >> 16) & 0xFFFF;
-		pk_client_signal_package (state, tmp_uint2, tmp_uint3, tmp_str[1], tmp_str[2]);
-		return;
-	}
 	if (g_strcmp0 (signal_name, "Packages") == 0) {
 		g_autoptr(GVariantIter) iter = NULL;
 		guint flags;
@@ -1356,13 +1348,6 @@ pk_client_signal_cb (GDBusProxy *proxy,
 				      NULL);
 		}
 		pk_results_add_details (state->results, item);
-		return;
-	}
-	if (g_strcmp0 (signal_name, "UpdateDetail") == 0) {
-		results_add_update_detail_from_variant (state->results,
-							parameters,
-							state->role,
-							state->transaction_id);
 		return;
 	}
 	if (g_strcmp0 (signal_name, "UpdateDetails") == 0) {
@@ -2321,9 +2306,6 @@ pk_client_get_proxy_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 		hint = g_strdup_printf ("cache-age=%u", priv->cache_age);
 		g_ptr_array_add (array, hint);
 	}
-
-	/* Always set the supports-plural-signals hint to get higher performance signals */
-	g_ptr_array_add (array, g_strdup ("supports-plural-signals=true"));
 
 	/* create socket for roles that need interaction */
 	if (state->role == PK_ROLE_ENUM_INSTALL_FILES ||
