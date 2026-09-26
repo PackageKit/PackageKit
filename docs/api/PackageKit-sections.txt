@@ -205,29 +205,6 @@ pk_control_get_type
 </SECTION>
 
 <SECTION>
-<FILE>pk-desktop</FILE>
-<TITLE>PkDesktop</TITLE>
-PK_DESKTOP_DEFAULT_DATABASE
-PK_DESKTOP_DEFAULT_APPLICATION_DIR
-pk_desktop_new
-pk_desktop_open_database
-pk_desktop_get_files_for_package
-pk_desktop_get_shown_for_package
-pk_desktop_get_package_for_file
-<SUBSECTION Standard>
-PK_DESKTOP
-PK_DESKTOP_CLASS
-PK_DESKTOP_GET_CLASS
-PK_IS_DESKTOP
-PK_IS_DESKTOP_CLASS
-PK_TYPE_DESKTOP
-PkDesktop
-PkDesktopClass
-PkDesktopPrivate
-pk_desktop_get_type
-</SECTION>
-
-<SECTION>
 <FILE>pk-details</FILE>
 <TITLE>PkDetails</TITLE>
 pk_details_new

@@ -29,7 +29,6 @@
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-debug.h"
-#include "pk-desktop.h"
 #include "pk-enum.h"
 #include "pk-offline.h"
 #include "pk-offline-private.h"
@@ -1028,7 +1027,6 @@ pk_test_object_types_func (void)
 	PK_TEST_TYPE (PkClient, pk_client_new);
 	PK_TEST_TYPE (PkClientHelper, pk_client_helper_new);
 	PK_TEST_TYPE (PkControl, pk_control_new);
-	PK_TEST_TYPE (PkDesktop, pk_desktop_new);
 
 	PK_TEST_TYPE (PkDetails, pk_details_new);
 	PK_TEST_TYPE (PkDistroUpgrade, pk_distro_upgrade_new);

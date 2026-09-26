@@ -29,7 +29,6 @@
 #include "pk-common.h"
 #include "pk-control.h"
 #include "pk-control-sync.h"
-#include "pk-desktop.h"
 #include "pk-details.h"
 #include "pk-distro-upgrade.h"
 #include "pk-enum.h"
