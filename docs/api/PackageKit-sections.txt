@@ -507,6 +507,7 @@ pk_offline_trigger_upgrade_with_flags
 <FILE>pk-package</FILE>
 <TITLE>PkPackage</TITLE>
 pk_package_new
+pk_package_new_full
 pk_package_set_id
 pk_package_parse
 pk_package_print
@@ -948,6 +949,7 @@ pk_transaction_past_get_type
 <FILE>pk-update-detail</FILE>
 <TITLE>PkUpdateDetail</TITLE>
 pk_update_detail_new
+pk_update_detail_new_full
 pk_update_detail_get_package_id
 pk_update_detail_get_updates
 pk_update_detail_get_obsoletes

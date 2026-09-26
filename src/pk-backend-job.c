@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2012-2021 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -617,8 +618,6 @@ pk_backend_job_signal_to_string (PkBackendJobSignal id)
 		return "StatusChanged";
 	if (id == PK_BACKEND_SIGNAL_LOCKED_CHANGED)
 		return "LockedChanged";
-	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAIL)
-		return "UpdateDetail";
 	if (id == PK_BACKEND_SIGNAL_UPDATE_DETAILS)
 		return "UpdateDetails";
 	return NULL;
@@ -1005,6 +1004,16 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 				   NULL);
 }
 
+/**
+ * pk_backend_job_package:
+ * @job: A #PkBackendJob instance.
+ * @info: the #PkInfoEnum of the package
+ * @package_id: the package-id
+ * @summary: the summary of the package
+ *
+ * Report a single package progress event (e.g. downloading, installing,
+ * removing, finished) as it happens during a transaction.
+ */
 void
 pk_backend_job_package (PkBackendJob *job,
 			PkInfoEnum info,
@@ -1022,7 +1031,6 @@ pk_backend_job_package_full (PkBackendJob *job,
 			     PkInfoEnum update_severity)
 {
 	PkPackage *emitted_item;
-	gboolean ret;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(PkPackage) item = NULL;
 
@@ -1030,17 +1038,13 @@ pk_backend_job_package_full (PkBackendJob *job,
 	g_return_if_fail (package_id != NULL);
 
 	/* check we are valid */
-	item = pk_package_new ();
-	ret = pk_package_set_id (item, package_id, &error);
-	if (!ret) {
+	item = pk_package_new_full (info, package_id, summary, update_severity, &error);
+	if (item == NULL) {
 		g_warning ("package_id %s invalid and cannot be processed: %s",
 			   package_id,
 			   error->message);
 		return;
 	}
-	pk_package_set_info (item, info);
-	pk_package_set_update_severity (item, update_severity);
-	pk_package_set_summary (item, summary);
 
 	/* already emitted? */
 	emitted_item = g_hash_table_lookup (job->emitted, pk_package_get_id (item));
@@ -1082,11 +1086,70 @@ pk_backend_job_package_full (PkBackendJob *job,
 				   g_object_unref);
 }
 
-void
-pk_backend_job_packages (PkBackendJob *job, GPtrArray *packages /* (element-type PkPackage) */)
+/**
+ * pk_backend_packages_add:
+ * @packages: (element-type PkPackage): an array, to be reported with %pk_backend_job_packages()
+ * @info: the #PkInfoEnum of the package
+ * @package_id: the package-id
+ * @summary: (nullable): the one-line package summary
+ * @update_severity: the update severity, or %PK_INFO_ENUM_UNKNOWN
+ *
+ * Adds a package to @packages. Packages with an invalid @package_id are
+ * skipped with a warning.
+ *
+ * Returns: (transfer none) (nullable): the staged package, owned by
+ *   @packages, or %NULL if @package_id is not valid
+ **/
+PkPackage *
+pk_backend_packages_add (GPtrArray *packages,
+			 PkInfoEnum info,
+			 const gchar *package_id,
+			 const gchar *summary,
+			 PkInfoEnum update_severity)
 {
+	g_autoptr(GError) error = NULL;
+	PkPackage *package;
+
+	g_return_val_if_fail (packages != NULL, NULL);
+	g_return_val_if_fail (package_id != NULL, NULL);
+
+	package = pk_package_new_full (info, package_id, summary, update_severity, &error);
+	if (package == NULL) {
+		g_warning ("package_id %s invalid and cannot be processed: %s",
+			   package_id,
+			   error->message);
+		return NULL;
+	}
+	g_ptr_array_add (packages, package);
+
+	return package;
+}
+
+/**
+ * pk_backend_job_packages:
+ * @job: A #PkBackendJob instance.
+ * @packages: (element-type PkPackage): The packages.
+ *
+ * Report a set of packages, e.g. the results of a query. The array is copied,
+ * so the caller may free or reuse it right away.
+ */
+void
+pk_backend_job_packages (PkBackendJob *job, GPtrArray *packages)
+{
+	g_autoptr(GPtrArray) to_emit = NULL;
+
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (packages != NULL);
+
+	/* have we already set an error? */
+	if (job->set_error) {
+		g_warning ("already set error: packages");
+		return;
+	}
+
+	/* the job is asynchronous, so the packages are copied into an array
+	 * owned by the emission itself */
+	to_emit = g_ptr_array_new_full (packages->len, g_object_unref);
 
 	for (guint i = 0; i < packages->len; i++) {
 		PkPackage *item = g_ptr_array_index (packages, i);
@@ -1102,12 +1165,6 @@ pk_backend_job_packages (PkBackendJob *job, GPtrArray *packages /* (element-type
 		g_hash_table_insert (job->emitted,
 				     g_strdup (pk_package_get_id (item)),
 				     g_object_ref (item));
-
-		/* have we already set an error? */
-		if (job->set_error) {
-			g_warning ("already set error: package %s", pk_package_get_id (item));
-			continue;
-		}
 
 		/* we automatically set the transaction status  */
 		if (info == PK_INFO_ENUM_DOWNLOADING)
@@ -1125,105 +1182,62 @@ pk_backend_job_packages (PkBackendJob *job, GPtrArray *packages /* (element-type
 
 		/* we've sent a package for this transaction */
 		job->has_sent_package = TRUE;
+
+		g_ptr_array_add (to_emit, g_object_ref (item));
 	}
 
-	/* emit; this relies on the @packages array having ownership of all its
-	 * elements, as the job is asynchronous so they may be freed in their
-	 * original calling context */
-	if (packages->len > 0)
+	/* emit */
+	if (to_emit->len > 0)
 		pk_backend_job_call_vfunc (job,
 					   PK_BACKEND_SIGNAL_PACKAGES,
-					   g_ptr_array_ref (packages),
+					   g_steal_pointer (&to_emit),
 					   (GDestroyNotify) g_ptr_array_unref);
 }
 
-void
-pk_backend_job_update_detail (PkBackendJob *job,
-			      const gchar *package_id,
-			      gchar **updates,
-			      gchar **obsoletes,
-			      gchar **vendor_urls,
-			      gchar **bugzilla_urls,
-			      gchar **cve_urls,
-			      PkRestartEnum restart,
-			      const gchar *update_text,
-			      const gchar *changelog,
-			      PkUpdateStateEnum state,
-			      const gchar *issued_text,
-			      const gchar *updated_text)
+static void
+pk_backend_job_update_detail_validate (PkUpdateDetail *item)
 {
+	g_autofree gchar *issued = NULL;
+	g_autofree gchar *updated = NULL;
 	g_autoptr(GDateTime) datetime = NULL;
-	g_autoptr(PkUpdateDetail) item = NULL;
 
-	g_return_if_fail (PK_IS_BACKEND_JOB (job));
-	g_return_if_fail (package_id != NULL);
-
-	/* have we already set an error? */
-	if (job->set_error) {
-		g_warning ("already set error: update_detail %s", package_id);
-		return;
-	}
+	g_object_get (item, "issued", &issued, "updated", &updated, NULL);
 
 	/* check the dates are not empty */
-	if (issued_text != NULL && issued_text[0] == '\0')
-		issued_text = NULL;
-	if (updated_text != NULL && updated_text[0] == '\0')
-		updated_text = NULL;
+	if (issued != NULL && issued[0] == '\0')
+		g_object_set (item, "issued", NULL, NULL);
+	if (updated != NULL && updated[0] == '\0')
+		g_object_set (item, "updated", NULL, NULL);
 
-	/* check the issued dates are valid */
-	if (issued_text != NULL) {
-		datetime = g_date_time_new_from_iso8601 (issued_text, NULL);
+	/* check the dates are valid */
+	if (issued != NULL && issued[0] != '\0') {
+		datetime = g_date_time_new_from_iso8601 (issued, NULL);
 		if (!datetime)
-			g_warning ("failed to parse issued '%s'", issued_text);
+			g_warning ("failed to parse issued '%s'", issued);
 		g_clear_pointer (&datetime, g_date_time_unref);
 	}
-	if (updated_text != NULL) {
-		datetime = g_date_time_new_from_iso8601 (updated_text, NULL);
+	if (updated != NULL && updated[0] != '\0') {
+		datetime = g_date_time_new_from_iso8601 (updated, NULL);
 		if (!datetime)
-			g_warning ("failed to parse updated '%s'", updated_text);
+			g_warning ("failed to parse updated '%s'", updated);
 		g_clear_pointer (&datetime, g_date_time_unref);
 	}
-
-	/* form PkUpdateDetail struct */
-	item = pk_update_detail_new ();
-	g_object_set (item,
-		      "package-id",
-		      package_id,
-		      "updates",
-		      updates,
-		      "obsoletes",
-		      obsoletes,
-		      "vendor-urls",
-		      vendor_urls,
-		      "bugzilla-urls",
-		      bugzilla_urls,
-		      "cve-urls",
-		      cve_urls,
-		      "restart",
-		      restart,
-		      "update-text",
-		      update_text,
-		      "changelog",
-		      changelog,
-		      "state",
-		      state,
-		      "issued",
-		      issued_text,
-		      "updated",
-		      updated_text,
-		      NULL);
-
-	/* emit */
-	pk_backend_job_call_vfunc (job,
-				   PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-				   g_object_ref (item),
-				   g_object_unref);
 }
 
+/**
+ * pk_backend_job_update_details:
+ * @job: A #PkBackendJob instance.
+ * @update_details: (element-type PkUpdateDetail): The update details.
+ *
+ * Report update details, e.g. the results of GetUpdateDetail. The
+ * @update_details array is copied, so the caller may free or reuse
+ * it right away.
+ */
 void
-pk_backend_job_update_details (PkBackendJob *job,
-			       GPtrArray *update_details /* (element-type PkUpdateDetail) */)
+pk_backend_job_update_details (PkBackendJob *job, GPtrArray *update_details)
 {
+	g_autoptr(GPtrArray) to_emit = NULL;
+
 	g_return_if_fail (PK_IS_BACKEND_JOB (job));
 	g_return_if_fail (update_details != NULL);
 
@@ -1233,13 +1247,21 @@ pk_backend_job_update_details (PkBackendJob *job,
 		return;
 	}
 
-	/* emit; this relies on the @update_details array having ownership of
-	 * all its elements, as the job is asynchronous so they may be freed in
-	 * their original calling context */
-	if (update_details->len > 0)
+	/* The job is asynchronous, so the update details are copied into an
+	 * array owned by the emission itself */
+	to_emit = g_ptr_array_new_full (update_details->len, g_object_unref);
+	for (guint i = 0; i < update_details->len; i++) {
+		PkUpdateDetail *item = g_ptr_array_index (update_details, i);
+
+		pk_backend_job_update_detail_validate (item);
+		g_ptr_array_add (to_emit, g_object_ref (item));
+	}
+
+	/* emit */
+	if (to_emit->len > 0)
 		pk_backend_job_call_vfunc (job,
 					   PK_BACKEND_SIGNAL_UPDATE_DETAILS,
-					   g_ptr_array_ref (update_details),
+					   g_steal_pointer (&to_emit),
 					   (GDestroyNotify) g_ptr_array_unref);
 }
 

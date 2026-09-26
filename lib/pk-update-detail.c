@@ -640,3 +640,69 @@ pk_update_detail_new (void)
 	update_detail = g_object_new (PK_TYPE_UPDATE_DETAIL, NULL);
 	return PK_UPDATE_DETAIL (update_detail);
 }
+
+/**
+ * pk_update_detail_new_full:
+ * @package_id: the package-id of the update
+ * @updates: (nullable) (array zero-terminated=1): the package-ids that are updated
+ * @obsoletes: (nullable) (array zero-terminated=1): the package-ids that are obsoleted
+ * @vendor_urls: (nullable) (array zero-terminated=1): the vendor URLs for this update
+ * @bugzilla_urls: (nullable) (array zero-terminated=1): the bug tracker URLs for this update
+ * @cve_urls: (nullable) (array zero-terminated=1): the CVE URLs for this update
+ * @restart: the #PkRestartEnum required by this update
+ * @update_text: (nullable): a description of the update
+ * @changelog: (nullable): the changelog of the update
+ * @state: the #PkUpdateStateEnum of the update
+ * @issued: (nullable): the ISO 8601 date the update was issued
+ * @updated: (nullable): the ISO 8601 date the update was last updated
+ *
+ * Creates a new #PkUpdateDetail with all its properties set.
+ * Empty and %NULL values are treated the same.
+ *
+ * Returns: (transfer full): a new #PkUpdateDetail object.
+ *
+ * Since: 2.0.0
+ **/
+PkUpdateDetail *
+pk_update_detail_new_full (const gchar *package_id,
+			   gchar **updates,
+			   gchar **obsoletes,
+			   gchar **vendor_urls,
+			   gchar **bugzilla_urls,
+			   gchar **cve_urls,
+			   PkRestartEnum restart,
+			   const gchar *update_text,
+			   const gchar *changelog,
+			   PkUpdateStateEnum state,
+			   const gchar *issued,
+			   const gchar *updated)
+{
+	g_return_val_if_fail (package_id != NULL, NULL);
+
+	return g_object_new (PK_TYPE_UPDATE_DETAIL,
+			     "package-id",
+			     package_id,
+			     "updates",
+			     updates,
+			     "obsoletes",
+			     obsoletes,
+			     "vendor-urls",
+			     vendor_urls,
+			     "bugzilla-urls",
+			     bugzilla_urls,
+			     "cve-urls",
+			     cve_urls,
+			     "restart",
+			     restart,
+			     "update-text",
+			     update_text,
+			     "changelog",
+			     changelog,
+			     "state",
+			     state,
+			     "issued",
+			     issued,
+			     "updated",
+			     updated,
+			     NULL);
+}

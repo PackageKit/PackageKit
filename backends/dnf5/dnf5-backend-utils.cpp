@@ -399,22 +399,33 @@ dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
 	return std::string(package_id);
 }
 
-void
-dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
+static PkInfoEnum
+dnf5_package_default_info(const libdnf5::rpm::Package &pkg, PkInfoEnum info)
 {
-	if (info == PK_INFO_ENUM_UNKNOWN) {
-		info = PK_INFO_ENUM_AVAILABLE;
-		if (pkg.get_install_time() > 0) {
-			info = PK_INFO_ENUM_INSTALLED;
-		}
-	}
+	if (info != PK_INFO_ENUM_UNKNOWN)
+		return info;
+	if (pkg.get_install_time() > 0)
+		return PK_INFO_ENUM_INSTALLED;
+	return PK_INFO_ENUM_AVAILABLE;
+}
 
+void
+dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info)
+{
 	std::string package_id = dnf5_build_package_id(pkg);
-	if (severity != PK_INFO_ENUM_UNKNOWN) {
-		pk_backend_job_package_full(job, info, package_id.c_str(), pkg.get_summary().c_str(), severity);
-	} else {
-		pk_backend_job_package(job, info, package_id.c_str(), pkg.get_summary().c_str());
-	}
+	pk_backend_job_package(job, info, package_id.c_str(), pkg.get_summary().c_str());
+}
+
+void
+dnf5_stage_pkg(GPtrArray *packages, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
+{
+	std::string package_id = dnf5_build_package_id(pkg);
+	pk_backend_packages_add(
+		packages,
+		dnf5_package_default_info(pkg, info),
+		package_id.c_str(),
+		pkg.get_summary().c_str(),
+		severity);
 }
 
 void
@@ -432,14 +443,16 @@ dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs)
 		return a.get_evr() < b.get_evr();
 	});
 
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 	std::set<std::string> seen_nevras;
 	for (auto &pkg : pkgs) {
 		std::string nevra = pkg.get_name() + ";" + pkg.get_evr() + ";" + pkg.get_arch();
 		if (seen_nevras.find(nevra) == seen_nevras.end()) {
-			dnf5_emit_pkg(job, pkg);
+			dnf5_stage_pkg(packages, pkg);
 			seen_nevras.insert(nevra);
 		}
 	}
+	pk_backend_job_packages(job, packages);
 }
 
 void

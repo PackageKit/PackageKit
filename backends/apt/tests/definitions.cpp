@@ -23,6 +23,16 @@ void pk_backend_job_update_details(PkBackendJob *job, GPtrArray *update_details)
 
 void pk_backend_job_packages(PkBackendJob *job, GPtrArray *packages) {}
 
+PkPackage *pk_backend_packages_add(
+    GPtrArray *packages,
+    PkInfoEnum info,
+    const gchar *package_id,
+    const gchar *summary,
+    PkInfoEnum update_severity)
+{
+    return NULL;
+}
+
 void pk_backend_job_set_download_size_remaining(PkBackendJob *job, guint64 download_size_remaining) {}
 
 void pk_backend_job_error_code(PkBackendJob *job, PkErrorEnum error_code, const gchar *format, ...) {}

@@ -997,8 +997,11 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	const alpm_list_t *i;
 	PkInfoEnum info;
+	g_autoptr(GPtrArray) packages = NULL;
 
-	/* emit packages that would have been installed */
+	packages = g_ptr_array_new_with_free_func (g_object_unref);
+
+	/* stage packages that would have been installed */
 	for (i = alpm_trans_get_add (priv->alpm); i != NULL; i = i->next) {
 		const gchar *name;
 		if (pk_backend_job_is_cancelled (job))
@@ -1012,7 +1015,7 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 			info = PK_INFO_ENUM_INSTALLING;
 		}
 
-		pk_alpm_pkg_emit (job, i->data, info);
+		pk_alpm_pkg_stage (packages, i->data, info);
 	}
 
 	switch (pk_backend_job_get_role (job)) {
@@ -1025,12 +1028,14 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 		break;
 	}
 
-	/* emit packages that would have been removed */
+	/* stage packages that would have been removed */
 	for (i = alpm_trans_get_remove (priv->alpm); i != NULL; i = i->next) {
 		if (pk_backend_job_is_cancelled (job))
 			break;
-		pk_alpm_pkg_emit (job, i->data, info);
+		pk_alpm_pkg_stage (packages, i->data, info);
 	}
+
+	pk_backend_job_packages (job, packages);
 }
 
 gboolean

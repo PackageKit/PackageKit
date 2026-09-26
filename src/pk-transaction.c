@@ -1700,18 +1700,6 @@ pk_transaction_update_details_cb (
 		pk_transaction_emit_update_details_batch (transaction, &builder);
 }
 
-static void
-pk_transaction_update_detail_cb (PkBackend *backend,
-				 PkUpdateDetail *item,
-				 PkTransaction *transaction)
-{
-	g_autoptr(GPtrArray) update_details_array = NULL;
-
-	update_details_array = g_ptr_array_new_with_free_func (g_object_unref);
-	g_ptr_array_add (update_details_array, g_object_ref (item));
-	pk_transaction_update_details_cb (backend, update_details_array, transaction);
-}
-
 static gboolean
 pk_transaction_set_session_state (PkTransaction *transaction, GError **error)
 {
@@ -1927,10 +1915,6 @@ pk_transaction_run (PkTransaction *transaction)
 	pk_backend_job_set_vfunc (transaction->job,
 				  PK_BACKEND_SIGNAL_STATUS_CHANGED,
 				  PK_BACKEND_JOB_VFUNC (pk_transaction_status_changed_cb),
-				  transaction);
-	pk_backend_job_set_vfunc (transaction->job,
-				  PK_BACKEND_SIGNAL_UPDATE_DETAIL,
-				  PK_BACKEND_JOB_VFUNC (pk_transaction_update_detail_cb),
 				  transaction);
 	pk_backend_job_set_vfunc (transaction->job,
 				  PK_BACKEND_SIGNAL_UPDATE_DETAILS,

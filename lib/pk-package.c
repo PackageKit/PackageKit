@@ -1005,6 +1005,45 @@ pk_package_new (void)
 }
 
 /**
+ * pk_package_new_full:
+ * @info: the #PkInfoEnum
+ * @package_id: the package-id, e.g. "gnome-power-manager;2.30.1;i386;fedora"
+ * @summary: (nullable): the one-line package summary
+ * @update_severity: the #PkInfoEnum describing the update severity, or
+ *   %PK_INFO_ENUM_UNKNOWN if not known or not applicable
+ * @error: a #GError, or %NULL
+ *
+ * Creates a new #PkPackage with all its main properties set. The @package_id
+ * has to be a valid package-id, as checked by pk_package_set_id().
+ *
+ * Returns: (transfer full) (nullable): a new #PkPackage, or %NULL if the
+ *   @package_id is not valid.
+ *
+ * Since: 2.0.0
+ **/
+PkPackage *
+pk_package_new_full (PkInfoEnum info,
+		     const gchar *package_id,
+		     const gchar *summary,
+		     PkInfoEnum update_severity,
+		     GError **error)
+{
+	g_autoptr(PkPackage) package = NULL;
+
+	g_return_val_if_fail (package_id != NULL, NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	package = pk_package_new ();
+	if (!pk_package_set_id (package, package_id, error))
+		return NULL;
+	pk_package_set_info (package, info);
+	pk_package_set_summary (package, summary);
+	pk_package_set_update_severity (package, update_severity);
+
+	return g_steal_pointer (&package);
+}
+
+/**
  * pk_package_get_update_severity:
  * @package: a #PkPackage
  *

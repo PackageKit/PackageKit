@@ -47,17 +47,22 @@ pk_backend_destroy (PkBackend *backend)
 static void
 pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
+
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 
 	/* emit */
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_INSTALLED,
-				"glib2;2.14.0;i386;fedora;",
-				"The GLib library");
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_INSTALLED,
-				"gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
-				"GTK+ Libraries for GIMP");
+	pk_backend_packages_add (packages,
+				 PK_INFO_ENUM_INSTALLED,
+				 "glib2;2.14.0;i386;fedora;",
+				 "The GLib library",
+				 PK_INFO_ENUM_UNKNOWN);
+	pk_backend_packages_add (packages,
+				 PK_INFO_ENUM_INSTALLED,
+				 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
+				 "GTK+ Libraries for GIMP",
+				 PK_INFO_ENUM_UNKNOWN);
+	pk_backend_job_packages (job, packages);
 }
 
 void
@@ -74,6 +79,7 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	PkBitfield filters;
 	gchar *filters_text;
 	g_autofree gchar **search = NULL;
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 
 	g_variant_get (params, "(t^a&s)", &filters, &search);
 
@@ -99,14 +105,17 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 	pk_backend_job_set_percentage (job, 100);
 	g_debug ("exited task (%p)", job);
 
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_INSTALLED,
-				"glib2;2.14.0;i386;fedora;",
-				"The GLib library");
-	pk_backend_job_package (job,
-				PK_INFO_ENUM_INSTALLED,
-				"gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
-				"GTK+ Libraries for GIMP");
+	pk_backend_packages_add (packages,
+				 PK_INFO_ENUM_INSTALLED,
+				 "glib2;2.14.0;i386;fedora;",
+				 "The GLib library",
+				 PK_INFO_ENUM_UNKNOWN);
+	pk_backend_packages_add (packages,
+				 PK_INFO_ENUM_INSTALLED,
+				 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
+				 "GTK+ Libraries for GIMP",
+				 PK_INFO_ENUM_UNKNOWN);
+	pk_backend_job_packages (job, packages);
 }
 
 void

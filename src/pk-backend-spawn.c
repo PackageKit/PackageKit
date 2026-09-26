@@ -279,6 +279,8 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		g_auto(GStrv) vendor_urls = NULL;
 		g_auto(GStrv) bugzilla_urls = NULL;
 		g_auto(GStrv) cve_urls = NULL;
+		g_autoptr(PkUpdateDetail) item = NULL;
+		g_autoptr(GPtrArray) update_details = NULL;
 		if (size != 13) {
 			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
 			return FALSE;
@@ -306,19 +308,21 @@ pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
 		vendor_urls = g_strsplit (sections[4], ";", -1);
 		bugzilla_urls = g_strsplit (sections[5], ";", -1);
 		cve_urls = g_strsplit (sections[6], ";", -1);
-		pk_backend_job_update_detail (job,
-					      sections[1],
-					      updates,
-					      obsoletes,
-					      vendor_urls,
-					      bugzilla_urls,
-					      cve_urls,
-					      restart,
-					      sections[8],
-					      sections[9],
-					      update_state_enum,
-					      sections[11],
-					      sections[12]);
+		item = pk_update_detail_new_full (sections[1],
+						  updates,
+						  obsoletes,
+						  vendor_urls,
+						  bugzilla_urls,
+						  cve_urls,
+						  restart,
+						  sections[8],
+						  sections[9],
+						  update_state_enum,
+						  sections[11],
+						  sections[12]);
+		update_details = g_ptr_array_new_with_free_func (g_object_unref);
+		g_ptr_array_add (update_details, g_steal_pointer (&item));
+		pk_backend_job_update_details (job, update_details);
 	} else if (g_strcmp0 (command, "percentage") == 0) {
 		if (size != 2) {
 			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);

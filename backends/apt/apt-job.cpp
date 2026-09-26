@@ -417,25 +417,13 @@ void AptJob::stagePackageForEmit(
     PkInfoEnum state,
     PkInfoEnum updateSeverity) const
 {
-    g_autoptr(PkPackage) pk_package = pk_package_new();
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
-    g_autoptr(GError) local_error = nullptr;
-
-    if (!pk_package_set_id(pk_package, package_id, &local_error)) {
-        g_warning("package_id %s invalid and cannot be processed: %s", package_id, local_error->message);
-        return;
-    }
 
     // get state from the cache if it was not set explicitly
     if (state == PK_INFO_ENUM_UNKNOWN)
         state = packageStateFromVer(ver);
-    pk_package_set_info(pk_package, state);
 
-    if (updateSeverity != PK_INFO_ENUM_UNKNOWN)
-        pk_package_set_update_severity(pk_package, updateSeverity);
-
-    pk_package_set_summary(pk_package, m_cache->getShortDescription(ver).c_str());
-    g_ptr_array_add(array, g_steal_pointer(&pk_package));
+    pk_backend_packages_add(array, state, package_id, m_cache->getShortDescription(ver).c_str(), updateSeverity);
 }
 
 void AptJob::emitPackages(PkgList &output, PkBitfield filters, PkInfoEnum state, bool multiversion)
@@ -882,34 +870,19 @@ void AptJob::stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterat
     g_ptr_array_add(obsoletes, nullptr);
 
     // construct the update item with out newly gathered data
-    PkUpdateDetail *item = pk_update_detail_new();
-    g_object_set(
-        item,
-        "package-id",
+    PkUpdateDetail *item = pk_update_detail_new_full(
         package_id,
-        "updates",
-        updates, // const gchar *updates
-        "obsoletes",
-        (gchar **)obsoletes->pdata, // const gchar *obsoletes
-        "vendor-urls",
-        nullptr, // const gchar *vendor_url
-        "bugzilla-urls",
-        (gchar **)bugzilla_urls->pdata, // gchar **bugzilla_urls
-        "cve-urls",
-        (gchar **)cve_urls->pdata, // gchar **cve_urls
-        "restart",
-        restart, // PkRestartEnum restart
-        "update-text",
-        update_text.c_str(), // const gchar *update_text
-        "changelog",
-        changelog.c_str(), // const gchar *changelog
-        "state",
-        updateState, // PkUpdateStateEnum state
-        "issued",
-        issued.c_str(), // const gchar *issued_text
-        "updated",
-        updated.c_str(), // const gchar *updated_text
-        nullptr);
+        updates,
+        (gchar **)obsoletes->pdata,
+        nullptr, // vendor urls
+        (gchar **)bugzilla_urls->pdata,
+        (gchar **)cve_urls->pdata,
+        restart,
+        update_text.c_str(),
+        changelog.c_str(),
+        updateState,
+        issued.c_str(),
+        updated.c_str());
     g_ptr_array_add(updateArray, item);
 }
 

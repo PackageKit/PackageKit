@@ -1227,25 +1227,28 @@ zypp_filter_solvable (PkBitfield filters, const sat::Solvable &item)
 }
 
 /**
-  * helper to emit pk package signals for a backend for a zypp solvable
+  * helper to stage a zypp solvable as PkPackage into an array of packages
+  * to be emitted later with pk_backend_job_packages()
   */
 static void
-zypp_backend_package (PkBackendJob *job, PkInfoEnum info,
-		      const sat::Solvable &pkg,
-		      const char *opt_summary)
+zypp_backend_stage_package (GPtrArray *packages, PkInfoEnum info,
+			    const sat::Solvable &pkg,
+			    const char *opt_summary,
+			    PkInfoEnum update_severity = PK_INFO_ENUM_UNKNOWN)
 {
 	gchar *id = zypp_build_package_id_from_resolvable (pkg);
-	pk_backend_job_package (job, info, id, opt_summary);
+
+	pk_backend_packages_add (packages, info, id, opt_summary, update_severity);
 	g_free (id);
 }
 
 /*
- * Emit signals for the packages, -but- if we have an installed package
+ * Stage the packages for emission, -but- if we have an installed package
  * we don't notify the client that the package is also available, since
  * PK doesn't handle re-installs (by some quirk).
  */
 static void
-zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, const vector<sat::Solvable> &v)
+zypp_stage_filtered_packages_in_list (GPtrArray *packages, PkBitfield filters, const vector<sat::Solvable> &v)
 {
 	typedef vector<sat::Solvable>::const_iterator sat_it_t;
 
@@ -1257,8 +1260,8 @@ zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, cons
 		    zypp_filter_solvable (filters, *it))
 			continue;
 
-		zypp_backend_package (job, PK_INFO_ENUM_INSTALLED, *it,
-				      make<ResObject>(*it)->summary().c_str());
+		zypp_backend_stage_package (packages, PK_INFO_ENUM_INSTALLED, *it,
+					    make<ResObject>(*it)->summary().c_str());
 		installed.push_back (*it);
 	}
 
@@ -1277,10 +1280,22 @@ zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, cons
 				  !isKind<SrcPackage>(*i));
 		}
 		if (!match) {
-			zypp_backend_package (job, PK_INFO_ENUM_AVAILABLE, *it,
-					      make<ResObject>(*it)->summary().c_str());
+			zypp_backend_stage_package (packages, PK_INFO_ENUM_AVAILABLE, *it,
+						    make<ResObject>(*it)->summary().c_str());
 		}
 	}
+}
+
+/*
+ * Emit the filtered packages in the list in one go.
+ */
+static void
+zypp_emit_filtered_packages_in_list (PkBackendJob *job, PkBitfield filters, const vector<sat::Solvable> &v)
+{
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
+
+	zypp_stage_filtered_packages_in_list (packages, filters, v);
+	pk_backend_job_packages (job, packages);
 }
 
 static gboolean
@@ -1480,10 +1495,12 @@ zypp_check_restart (PkRestartEnum *restart, Patch::constPtr patch)
 }
 
 /**
-  * helper to emit pk package status signals based on a ResPool object
+  * helper to stage pk package status information based on a ResPool object;
+  * the staged packages have to be emitted with pk_backend_job_packages() by the caller
   */
 static bool
 zypp_backend_pool_item_notify (PkBackendJob  *job,
+			       GPtrArray      *packages,
 			       const PoolItem &item,
 			       gboolean sanity_check = FALSE)
 {
@@ -1503,6 +1520,9 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 		const string &name = item.satSolvable().name();
 		if (name == "glibc" || name == "PackageKit" ||
 		    name == "rpm" || name == "libzypp") {
+			// emit what we have so far, so the error code follows the packages
+			pk_backend_job_packages (job, packages);
+			g_ptr_array_set_size (packages, 0);
 			pk_backend_job_error_code (job, PK_ERROR_ENUM_CANNOT_REMOVE_SYSTEM_PACKAGE,
 					       "The package %s is essential to correct operation and cannot be removed using this tool.",
 					       name.c_str());
@@ -1514,7 +1534,7 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 	// Summary.cc (readPool) to generate _DOWNGRADING types ?
 	if (status != PK_INFO_ENUM_UNKNOWN) {
 		const string &summary = item.resolvable ()->summary ();
-		zypp_backend_package (job, status, item.resolvable()->satSolvable(), summary.c_str ());
+		zypp_backend_stage_package (packages, status, item.resolvable()->satSolvable(), summary.c_str ());
 	}
 	return true;
 }
@@ -1596,6 +1616,7 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 
 			MIL << "simulating" << endl;
 
+			GPtrArray *packages = g_ptr_array_new_with_free_func (g_object_unref);
 			for (ResPool::const_iterator it = pool.begin (); it != pool.end (); ++it) {
 				switch (type) {
 				case REMOVE:
@@ -1615,10 +1636,12 @@ zypp_perform_execution (PkBackendJob *job, ZYpp::Ptr zypp, PerformType type, gbo
 					break;
 				}
 
-				if (!zypp_backend_pool_item_notify (job, *it, TRUE))
+				if (!zypp_backend_pool_item_notify (job, packages, *it, TRUE))
 					ret = FALSE;
 				it->statusReinit ();
 			}
+			pk_backend_job_packages (job, packages);
+			g_ptr_array_unref (packages);
 			goto exit;
 		}
 
@@ -1971,6 +1994,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	ResPool pool = zypp_build_pool (zypp, true);
 	PoolStatusSaver saver;
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 
@@ -2014,11 +2038,13 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 				it != pool.byKindEnd (ResKind::package); ++it) {
 
 			if (!error && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
-				error = !zypp_backend_pool_item_notify (job, *it);
+				error = !zypp_backend_pool_item_notify (job, packages, *it);
 		}
 
 		solver.setForceResolve (false);
 	}
+
+	pk_backend_job_packages (job, packages);
 }
 
 /**
@@ -2098,6 +2124,7 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 
 	MIL << package_ids[0] << " " << pk_filter_bitfield_to_string (_filters) << endl;
 
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	try
 	{
 		sat::Solvable solvable = zypp_get_package_by_id(package_ids[0]);
@@ -2193,11 +2220,12 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 				 zypp_filter_solvable (_filters, it->second) ? "don't add" : "add" );
 
 			if (!zypp_filter_solvable (_filters, it->second)) {
-				zypp_backend_package (job, info, it->second,
-						      item->summary ().c_str());
+				zypp_backend_stage_package (packages, info, it->second,
+							    item->summary ().c_str());
 			}
 		}
 
+		pk_backend_job_packages (job, packages);
 		pk_backend_job_set_percentage (job, 100);
 	} catch (const repo::RepoNotFoundException &ex) {
 		zypp_backend_finished_error (
@@ -2554,6 +2582,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 	pk_backend_job_set_percentage (job, 80);
 
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	pi_it_t cb = candidates.begin (), ce = candidates.end (), ci;
 	for (ci = cb; ci != ce; ++ci) {
 		ResObject::constPtr res = ci->resolvable();
@@ -2582,11 +2611,12 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			// causing the update to show empty package lines, comment for now
 			// res->summary ().c_str ());
 			// Test if this still happens!
-			zypp_backend_package (job, infoEnum, res->satSolvable (),
-					      res->summary ().c_str ());
+			zypp_backend_stage_package (packages, infoEnum, res->satSolvable (),
+						    res->summary ().c_str (), infoEnum);
 		}
 	}
 
+	pk_backend_job_packages (job, packages);
 	pk_backend_job_set_percentage (job, 100);
 }
 
@@ -2727,6 +2757,7 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 	zypp_build_pool (zypp, TRUE);
 
+	g_autoptr(GPtrArray) update_details = g_ptr_array_new_with_free_func (g_object_unref);
 	for (uint i = 0; package_ids[i]; i++) {
 		sat::Solvable solvable = zypp_get_package_by_id (package_ids[i]);
 		MIL << package_ids[i] << " " << solvable << endl;
@@ -2774,25 +2805,28 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 		g_ptr_array_add(obsoletes, NULL);
 		g_ptr_array_add(vendor_urls, NULL);
 
-		pk_backend_job_update_detail (job,
-					  package_ids[i],
-					  NULL,		// updates TODO with Resolver.installs
-					  (gchar **)obsoletes->pdata,
-					  (gchar **)vendor_urls->pdata,
-					  (gchar **)bugzilla->pdata,	// bugzilla
-					  (gchar **)cve->pdata,		// cve
-					  restart,	// restart -flag
-					  make<ResObject>(solvable)->description().c_str (),	// update-text
-					  NULL,		// ChangeLog text
-					  PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
-					  NULL, // date that the update was issued
-					  NULL);	// date that the update was updated
+		PkUpdateDetail *item = pk_update_detail_new_full (
+			package_ids[i],
+			NULL,		// updates TODO with Resolver.installs
+			(gchar **)obsoletes->pdata,
+			(gchar **)vendor_urls->pdata,
+			(gchar **)bugzilla->pdata,	// bugzilla
+			(gchar **)cve->pdata,		// cve
+			restart,	// restart -flag
+			make<ResObject>(solvable)->description().c_str (),	// update-text
+			NULL,		// ChangeLog text
+			PK_UPDATE_STATE_ENUM_UNKNOWN,		// state of the update
+			NULL, // date that the update was issued
+			NULL);	// date that the update was updated
+		g_ptr_array_add (update_details, item);
 
 		g_ptr_array_unref(obsoletes);
 		g_ptr_array_unref(vendor_urls);
 		g_ptr_array_unref(bugzilla);
 		g_ptr_array_unref(cve);
 	}
+
+	pk_backend_job_update_details (job, update_details);
 }
 
 /**
@@ -3096,6 +3130,7 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 
 	zypp_build_pool (zypp, TRUE);
 
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	for (uint i = 0; search[i]; i++) {
 		MIL << search[i] << " " << pk_filter_bitfield_to_string(_filters) << endl;
 		vector<sat::Solvable> v;
@@ -3164,8 +3199,10 @@ backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			}
 		}
 
-		zypp_emit_filtered_packages_in_list (job, _filters, pkgs);
+		zypp_stage_filtered_packages_in_list (packages, _filters, pkgs);
 	}
+
+	pk_backend_job_packages (job, packages);
 }
 
 void
@@ -3866,6 +3903,7 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 
 	ResPool pool = zypp_build_pool (zypp, true);
 
+	g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 	if(g_ascii_strcasecmp("drivers_for_attached_hardware", values[0]) == 0) {
 		// solver run
 		Resolver solver(pool);
@@ -3895,8 +3933,8 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 			}
 
 			if (hit && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable())) {
-				zypp_backend_package (job, status, it->resolvable()->satSolvable(),
-						      it->resolvable ()->summary ().c_str ());
+				zypp_backend_stage_package (packages, status, it->resolvable()->satSolvable(),
+							    it->resolvable ()->summary ().c_str ());
 			}
 			it->statusReinit ();
 		}
@@ -3930,12 +3968,14 @@ backend_what_provides_thread (PkBackendJob *job, GVariant *params, gpointer user
 					continue;
 
 				PkInfoEnum info = it->isSystem () ? PK_INFO_ENUM_INSTALLED : PK_INFO_ENUM_AVAILABLE;
-				zypp_backend_package (job, info, *it,  make<ResObject>(*it)->summary().c_str ());
+				zypp_backend_stage_package (packages, info, *it,  make<ResObject>(*it)->summary().c_str ());
 			}
 		}
 
 		g_hash_table_unref (installed_hash);
 	}
+
+	pk_backend_job_packages (job, packages);
 }
 
 /**

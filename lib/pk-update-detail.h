@@ -70,6 +70,18 @@ struct _PkUpdateDetailClass
 
 GType		  pk_update_detail_get_type (void);
 PkUpdateDetail	 *pk_update_detail_new (void);
+PkUpdateDetail	 *pk_update_detail_new_full (const gchar      *package_id,
+					     gchar	     **updates,
+					     gchar	     **obsoletes,
+					     gchar	     **vendor_urls,
+					     gchar	     **bugzilla_urls,
+					     gchar	     **cve_urls,
+					     PkRestartEnum     restart,
+					     const gchar      *update_text,
+					     const gchar      *changelog,
+					     PkUpdateStateEnum state,
+					     const gchar      *issued,
+					     const gchar      *updated);
 
 const gchar	 *pk_update_detail_get_package_id (PkUpdateDetail *update_detail);
 gchar		**pk_update_detail_get_updates (PkUpdateDetail *update_detail);

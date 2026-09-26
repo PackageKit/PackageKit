@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2012-2021 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -62,7 +63,6 @@ typedef enum {
 	PK_BACKEND_SIGNAL_REQUIRE_RESTART,
 	PK_BACKEND_SIGNAL_STATUS_CHANGED,
 	PK_BACKEND_SIGNAL_LOCKED_CHANGED,
-	PK_BACKEND_SIGNAL_UPDATE_DETAIL,
 	PK_BACKEND_SIGNAL_UPDATE_DETAILS,
 	PK_BACKEND_SIGNAL_LAST
 } PkBackendJobSignal;
@@ -153,101 +153,97 @@ gboolean pk_backend_job_get_vfunc_enabled (PkBackendJob	     *job,
 typedef void (*PkBackendJobThreadFunc) (PkBackendJob *job,
 					GVariant     *params,
 					gpointer      user_data);
-gboolean pk_backend_job_thread_create (PkBackendJob	     *job,
-				       PkBackendJobThreadFunc func,
-				       gpointer		      user_data,
-				       GDestroyNotify	      destroy_func);
+gboolean   pk_backend_job_thread_create (PkBackendJob	       *job,
+					 PkBackendJobThreadFunc func,
+					 gpointer		user_data,
+					 GDestroyNotify		destroy_func);
 
 /* signal helpers */
-void	 pk_backend_job_finished (PkBackendJob *job);
-void	 pk_backend_job_package (PkBackendJob *job,
-				 PkInfoEnum    info,
+PkPackage *pk_backend_packages_add (GPtrArray	*packages,
+				    PkInfoEnum	 info,
+				    const gchar *package_id,
+				    const gchar *summary,
+				    PkInfoEnum	 update_severity);
+
+void	   pk_backend_job_finished (PkBackendJob *job);
+
+void	   pk_backend_job_package (PkBackendJob *job,
+				   PkInfoEnum	 info,
+				   const gchar	*package_id,
+				   const gchar	*summary);
+void	   pk_backend_job_package_full (PkBackendJob *job,
+					PkInfoEnum    info,
+					const gchar  *package_id,
+					const gchar  *summary,
+					PkInfoEnum    update_severity);
+
+void	   pk_backend_job_packages (PkBackendJob *job,
+				    GPtrArray	 *packages);
+void	   pk_backend_job_repo_detail (PkBackendJob *job,
+				       const gchar  *repo_id,
+				       const gchar  *description,
+				       gboolean	     enabled);
+
+void	   pk_backend_job_update_details (PkBackendJob *job,
+					  GPtrArray    *update_details);
+void	   pk_backend_job_require_restart (PkBackendJob *job,
+					   PkRestartEnum restart,
+					   const gchar	*package_id);
+void	   pk_backend_job_details (PkBackendJob *job,
+				   const gchar	*package_id,
+				   const gchar	*summary,
+				   const gchar	*license,
+				   PkGroupEnum	 group,
+				   const gchar	*description,
+				   const gchar	*url,
+				   gulong	 size,
+				   guint64	 download_size);
+void	   pk_backend_job_files (PkBackendJob *job,
 				 const gchar  *package_id,
-				 const gchar  *summary);
-void	 pk_backend_job_package_full (PkBackendJob *job,
-				      PkInfoEnum    info,
-				      const gchar  *package_id,
-				      const gchar  *summary,
-				      PkInfoEnum    update_severity);
-void	 pk_backend_job_packages (PkBackendJob *job,
-				  GPtrArray    *packages);
-void	 pk_backend_job_repo_detail (PkBackendJob *job,
-				     const gchar  *repo_id,
-				     const gchar  *description,
-				     gboolean	   enabled);
-void	 pk_backend_job_update_detail (PkBackendJob	*job,
-				       const gchar	*package_id,
-				       gchar	       **updates,
-				       gchar	       **obsoletes,
-				       gchar	       **vendor_urls,
-				       gchar	       **bugzilla_urls,
-				       gchar	       **cve_urls,
-				       PkRestartEnum	 restart,
-				       const gchar	*update_text,
-				       const gchar	*changelog,
-				       PkUpdateStateEnum state,
-				       const gchar	*issued,
-				       const gchar	*updated);
-void	 pk_backend_job_update_details (PkBackendJob *job,
-					GPtrArray    *update_details);
-void	 pk_backend_job_require_restart (PkBackendJob *job,
-					 PkRestartEnum restart,
-					 const gchar  *package_id);
-void	 pk_backend_job_details (PkBackendJob *job,
-				 const gchar  *package_id,
-				 const gchar  *summary,
-				 const gchar  *license,
-				 PkGroupEnum   group,
-				 const gchar  *description,
-				 const gchar  *url,
-				 gulong	       size,
-				 guint64       download_size);
-void	 pk_backend_job_files (PkBackendJob *job,
-			       const gchar  *package_id,
-			       gchar	   **files);
-void	 pk_backend_job_distro_upgrade (PkBackendJob	   *job,
-					PkDistroUpgradeEnum type,
-					const gchar	   *name,
-					const gchar	   *summary);
-void	 pk_backend_job_error_code (PkBackendJob *job,
-				    PkErrorEnum	  code,
-				    const gchar	 *details,
-				    ...) G_GNUC_PRINTF(3,4);
-void	 pk_backend_job_repo_signature_required (PkBackendJob *job,
-						 const gchar  *package_id,
-						 const gchar  *repository_name,
-						 const gchar  *key_url,
-						 const gchar  *key_userid,
-						 const gchar  *key_id,
-						 const gchar  *key_fingerprint,
-						 const gchar  *key_timestamp,
-						 PkSigTypeEnum type);
-void	 pk_backend_job_eula_required (PkBackendJob *job,
-				       const gchar  *eula_id,
-				       const gchar  *package_id,
-				       const gchar  *vendor_name,
-				       const gchar  *license_agreement);
-void	 pk_backend_job_media_change_required (PkBackendJob   *job,
-					       PkMediaTypeEnum media_type,
-					       const gchar    *media_id,
-					       const gchar    *media_text);
-void	 pk_backend_job_set_status (PkBackendJob *job,
-				    PkStatusEnum  status);
-void	 pk_backend_job_set_allow_cancel (PkBackendJob *job,
-					  gboolean	allow_cancel);
-void	 pk_backend_job_set_percentage (PkBackendJob *job,
-					guint	      percentage);
-void	 pk_backend_job_set_item_progress (PkBackendJob *job,
-					   const gchar	*package_id,
-					   PkStatusEnum	 status,
-					   guint	 percentage);
-void	 pk_backend_job_set_speed (PkBackendJob *job,
-				   guint	 speed);
-void	 pk_backend_job_set_download_size_remaining (PkBackendJob *job,
-						     guint64	   download_size_remaining);
-void	 pk_backend_job_set_started (PkBackendJob *job,
-				     gboolean	   started);
-gboolean pk_backend_job_get_started (PkBackendJob *job);
+				 gchar	     **files);
+void	   pk_backend_job_distro_upgrade (PkBackendJob	     *job,
+					  PkDistroUpgradeEnum type,
+					  const gchar	     *name,
+					  const gchar	     *summary);
+void	   pk_backend_job_error_code (PkBackendJob *job,
+				      PkErrorEnum   code,
+				      const gchar  *details,
+				      ...) G_GNUC_PRINTF(3,4);
+void	   pk_backend_job_repo_signature_required (PkBackendJob *job,
+						   const gchar	*package_id,
+						   const gchar	*repository_name,
+						   const gchar	*key_url,
+						   const gchar	*key_userid,
+						   const gchar	*key_id,
+						   const gchar	*key_fingerprint,
+						   const gchar	*key_timestamp,
+						   PkSigTypeEnum type);
+void	   pk_backend_job_eula_required (PkBackendJob *job,
+					 const gchar  *eula_id,
+					 const gchar  *package_id,
+					 const gchar  *vendor_name,
+					 const gchar  *license_agreement);
+void	   pk_backend_job_media_change_required (PkBackendJob	*job,
+						 PkMediaTypeEnum media_type,
+						 const gchar	*media_id,
+						 const gchar	*media_text);
+void	   pk_backend_job_set_status (PkBackendJob *job,
+				      PkStatusEnum  status);
+void	   pk_backend_job_set_allow_cancel (PkBackendJob *job,
+					    gboolean	  allow_cancel);
+void	   pk_backend_job_set_percentage (PkBackendJob *job,
+					  guint		percentage);
+void	   pk_backend_job_set_item_progress (PkBackendJob *job,
+					     const gchar  *package_id,
+					     PkStatusEnum  status,
+					     guint	   percentage);
+void	   pk_backend_job_set_speed (PkBackendJob *job,
+				     guint	   speed);
+void	   pk_backend_job_set_download_size_remaining (PkBackendJob *job,
+						       guint64	     download_size_remaining);
+void	   pk_backend_job_set_started (PkBackendJob *job,
+				       gboolean	     started);
+gboolean   pk_backend_job_get_started (PkBackendJob *job);
 
 G_END_DECLS
 

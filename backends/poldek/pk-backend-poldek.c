@@ -43,6 +43,11 @@ static void poldek_backend_package (PkBackendJob *job,
 				    struct pkg *pkg,
 				    PkInfoEnum infoenum,
 				    PkBitfield filters);
+static void poldek_backend_stage_package (PkBackendJob *job,
+					  GPtrArray *packages,
+					  struct pkg *pkg,
+					  PkInfoEnum infoenum,
+					  PkBitfield filters);
 static long do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
 static void pb_load_packages (PkBackendJob *job);
@@ -1452,25 +1457,39 @@ package_id_from_pkg (struct pkg *pkg, const gchar *repo, PkBitfield filters)
 	return package_id;
 }
 
+static PkInfoEnum
+poldek_backend_package_info (struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
+{
+	if (infoenum != PK_INFO_ENUM_UNKNOWN)
+		return infoenum;
+
+	if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
+		return PK_INFO_ENUM_INSTALLED;
+	} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
+		return PK_INFO_ENUM_AVAILABLE;
+	} else {
+		if (pkg_is_installed (pkg)) {
+			return PK_INFO_ENUM_INSTALLED;
+		} else {
+			return PK_INFO_ENUM_AVAILABLE;
+		}
+	}
+}
+
+/**
+ * poldek_backend_package:
+ *
+ * Emit a single package progress event (downloading, installing, removing, ...).
+ * Query results must be staged with poldek_backend_stage_package() and emitted
+ * with pk_backend_job_packages() instead.
+ */
 static void
 poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum, PkBitfield filters)
 {
 	struct pkguinf *pkgu = NULL;
 	gchar *package_id;
 
-	if (infoenum == PK_INFO_ENUM_UNKNOWN) {
-		if (pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
-			infoenum = PK_INFO_ENUM_INSTALLED;
-		} else if (pk_bitfield_contain (filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-			infoenum = PK_INFO_ENUM_AVAILABLE;
-		} else {
-			if (pkg_is_installed (pkg)) {
-				infoenum = PK_INFO_ENUM_INSTALLED;
-			} else {
-				infoenum = PK_INFO_ENUM_AVAILABLE;
-			}
-		}
-	}
+	infoenum = poldek_backend_package_info (pkg, infoenum, filters);
 
 	package_id = package_id_from_pkg (pkg, NULL, filters);
 
@@ -1485,6 +1504,38 @@ poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum,
 		pk_backend_job_package (job, infoenum, package_id, "");
 	}
 
+	g_free (package_id);
+}
+
+/**
+ * poldek_backend_stage_package:
+ *
+ * Append a #PkPackage built from @pkg to @packages, which must own its
+ * elements (created with g_ptr_array_new_with_free_func (g_object_unref)).
+ * The array is emitted later with pk_backend_job_packages().
+ */
+static void
+poldek_backend_stage_package (PkBackendJob *job,
+			      GPtrArray *packages,
+			      struct pkg *pkg,
+			      PkInfoEnum infoenum,
+			      PkBitfield filters)
+{
+	struct pkguinf *pkgu = NULL;
+	gchar *package_id;
+	const gchar *summary = "";
+
+	infoenum = poldek_backend_package_info (pkg, infoenum, filters);
+
+	package_id = package_id_from_pkg (pkg, NULL, filters);
+
+	if ((pkgu = pkg_uinf_i18n (job, pkg)))
+		summary = pkguinf_get (pkgu, PKGUINF_SUMMARY);
+
+	pk_backend_packages_add (packages, infoenum, package_id, summary, PK_INFO_ENUM_UNKNOWN);
+
+	if (pkgu != NULL)
+		pkguinf_free (pkgu);
 	g_free (package_id);
 }
 
@@ -1773,6 +1824,7 @@ search_package_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 	do_filtering (pkgs, filters);
 
 	if (pkgs && n_array_size (pkgs) > 0) {
+		GPtrArray *packages = g_ptr_array_new_with_free_func (g_object_unref);
 		guint i;
 
 		for (i = 0; i < n_array_size (pkgs); i++) {
@@ -1781,8 +1833,16 @@ search_package_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 			if (sigint_reached ())
 				break;
 
-			poldek_backend_package (job, pkg, PK_INFO_ENUM_UNKNOWN, filters);
+			poldek_backend_stage_package (job,
+						      packages,
+						      pkg,
+						      PK_INFO_ENUM_UNKNOWN,
+						      filters);
 		}
+
+		pk_backend_job_packages (job, packages);
+		g_ptr_array_unref (packages);
+
 		n_array_free (pkgs);
 	} else {
 		pk_backend_job_error_code (job,
@@ -1927,6 +1987,7 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 	if (poclidek_rcmd_execline (rcmd, cmd)) {
 		tn_array *ipkgs = NULL, *dpkgs = NULL, *rpkgs = NULL;
 		tn_array *install_pkgs = NULL, *update_pkgs = NULL, *remove_pkgs = NULL;
+		GPtrArray *packages = g_ptr_array_new_with_free_func (g_object_unref);
 
 		ipkgs = poldek_ts_get_summary (ts, "I");
 		dpkgs = poldek_ts_get_summary (ts, "D");
@@ -1944,10 +2005,11 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 			for (i = 0; i < n_array_size (install_pkgs); i++) {
 				struct pkg *pkg = n_array_nth (install_pkgs, i);
 
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_INSTALLING,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      packages,
+							      pkg,
+							      PK_INFO_ENUM_INSTALLING,
+							      PK_FILTER_ENUM_NONE);
 			}
 
 			n_array_free (install_pkgs);
@@ -1957,10 +2019,11 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 			for (i = 0; i < n_array_size (update_pkgs); i++) {
 				struct pkg *pkg = n_array_nth (update_pkgs, i);
 
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_UPDATING,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      packages,
+							      pkg,
+							      PK_INFO_ENUM_UPDATING,
+							      PK_FILTER_ENUM_NONE);
 			}
 
 			n_array_free (update_pkgs);
@@ -1970,14 +2033,18 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 			for (i = 0; i < n_array_size (remove_pkgs); i++) {
 				struct pkg *pkg = n_array_nth (remove_pkgs, i);
 
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_REMOVING,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      packages,
+							      pkg,
+							      PK_INFO_ENUM_REMOVING,
+							      PK_FILTER_ENUM_NONE);
 			}
 
 			n_array_free (remove_pkgs);
 		}
+
+		pk_backend_job_packages (job, packages);
+		g_ptr_array_unref (packages);
 	}
 
 	g_free (cmd);
@@ -2539,6 +2606,7 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	gchar **package_ids;
 	struct pkg *pkg;
 	tn_array *deppkgs, *available, *installed;
+	GPtrArray *packages;
 	size_t i;
 
 	g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
@@ -2556,11 +2624,16 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 
 	n_array_sort_ex (deppkgs, (tn_fn_cmp) pkg_cmp_name_evr_rev);
 
+	packages = g_ptr_array_new_with_free_func (g_object_unref);
+
 	for (i = 0; i < n_array_size (deppkgs); i++) {
 		struct pkg *p = n_array_nth (deppkgs, i);
 
-		poldek_backend_package (job, p, PK_INFO_ENUM_UNKNOWN, filters);
+		poldek_backend_stage_package (job, packages, p, PK_INFO_ENUM_UNKNOWN, filters);
 	}
+
+	pk_backend_job_packages (job, packages);
+	g_ptr_array_unref (packages);
 
 	pkg_free (pkg);
 
@@ -2739,6 +2812,8 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	pk_backend_job_set_percentage (job, 10);
 
 	if (packages != NULL) {
+		GPtrArray *pk_packages = g_ptr_array_new_with_free_func (g_object_unref);
+
 		for (i = 0; i < n_array_size (packages); i++) {
 			struct pkg *pkg = n_array_nth (packages, i);
 
@@ -2749,8 +2824,15 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 			    job,
 			    (guint) (10 + (90 * (float) (i + 1) / n_array_size (packages))));
 
-			poldek_backend_package (job, pkg, PK_INFO_ENUM_UNKNOWN, filters);
+			poldek_backend_stage_package (job,
+						      pk_packages,
+						      pkg,
+						      PK_INFO_ENUM_UNKNOWN,
+						      filters);
 		}
+
+		pk_backend_job_packages (job, pk_packages);
+		g_ptr_array_unref (pk_packages);
 	}
 
 	if (sigint_reached ())
@@ -2780,6 +2862,7 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 {
 	struct pkg *pkg;
 	tn_array *reqpkgs, *available, *installed;
+	GPtrArray *packages;
 	size_t i;
 	gchar **package_ids;
 	PkBitfield filters;
@@ -2800,11 +2883,16 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	/* sort output */
 	n_array_sort_ex (reqpkgs, (tn_fn_cmp) pkg_cmp_name_evr_rev);
 
+	packages = g_ptr_array_new_with_free_func (g_object_unref);
+
 	for (i = 0; i < n_array_size (reqpkgs); i++) {
 		struct pkg *p = n_array_nth (reqpkgs, i);
 
-		poldek_backend_package (job, p, PK_INFO_ENUM_UNKNOWN, filters);
+		poldek_backend_stage_package (job, packages, p, PK_INFO_ENUM_UNKNOWN, filters);
 	}
+
+	pk_backend_job_packages (job, packages);
+	g_ptr_array_unref (packages);
 
 	n_array_free (reqpkgs);
 	n_array_free (installed);
@@ -2858,12 +2946,15 @@ get_obsoletedby_pkg (struct pkg *pkg)
 static void
 backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
+	GPtrArray *update_details = NULL;
 	gchar **package_ids = NULL;
 	guint n;
 
 	g_variant_get (params, "(^a&s)", &package_ids);
 
 	pb_load_packages (job);
+
+	update_details = g_ptr_array_new_with_free_func (g_object_unref);
 
 	for (n = 0; n < g_strv_length (package_ids); n++) {
 		tn_array *packages = NULL;
@@ -2887,6 +2978,7 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 				const gchar *changes = NULL;
 				tn_array *cves = NULL;
 				struct pkguinf *upkg_uinf = NULL;
+				PkUpdateDetail *item = NULL;
 
 				upkg = poldek_get_pkg_from_package_id (package_ids[n]);
 
@@ -2920,19 +3012,19 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 				g_ptr_array_add (obsoletes, NULL);
 				g_ptr_array_add (cve_urls, NULL);
 
-				pk_backend_job_update_detail (job,
-							      package_ids[n],
-							      (gchar **) updates->pdata,
-							      (gchar **) obsoletes->pdata,
-							      NULL, // vendor urls
-							      NULL, // bugzilla urls
-							      (gchar **) cve_urls->pdata,
-							      PK_RESTART_ENUM_NONE,
-							      "", // update text
-							      changes,
-							      PK_UPDATE_STATE_ENUM_UNKNOWN,
-							      NULL,  // issued
-							      NULL); // updated
+				item = pk_update_detail_new_full (package_ids[n],
+								  (gchar **) updates->pdata,
+								  (gchar **) obsoletes->pdata,
+								  NULL, // vendor urls
+								  NULL, // bugzilla urls
+								  (gchar **) cve_urls->pdata,
+								  PK_RESTART_ENUM_NONE,
+								  "", // update text
+								  changes,
+								  PK_UPDATE_STATE_ENUM_UNKNOWN,
+								  NULL,	 // issued
+								  NULL); // updated
+				g_ptr_array_add (update_details, item);
 
 				g_ptr_array_unref (updates);
 				g_ptr_array_unref (obsoletes);
@@ -2943,6 +3035,11 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 			n_array_free (packages);
 		} else {
+			/* the daemon drops results reported after an error,
+			 * so emit what we have collected so far first */
+			pk_backend_job_update_details (job, update_details);
+			g_ptr_array_set_size (update_details, 0);
+
 			pk_backend_job_error_code (job,
 						   PK_ERROR_ENUM_PACKAGE_NOT_FOUND,
 						   "failed to find package %s",
@@ -2951,6 +3048,9 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 
 		g_strfreev (parts);
 	}
+
+	pk_backend_job_update_details (job, update_details);
+	g_ptr_array_unref (update_details);
 }
 
 void
@@ -2971,6 +3071,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	pb_load_packages (job);
 
 	if ((packages = execute_packages_command ("cd /all-avail; ls -q -u")) != NULL) {
+		GPtrArray *pk_packages = g_ptr_array_new_with_free_func (g_object_unref);
 		tn_array *secupgrades = NULL;
 		guint i;
 
@@ -2987,23 +3088,29 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 
 			/* mark held packages as blocked */
 			if (pkg->flags & PKG_HELD)
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_BLOCKED,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      pk_packages,
+							      pkg,
+							      PK_INFO_ENUM_BLOCKED,
+							      PK_FILTER_ENUM_NONE);
 			else if (poldek_pkg_in_array (pkg,
 						      secupgrades,
 						      (tn_fn_cmp) pkg_cmp_name_evr))
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_SECURITY,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      pk_packages,
+							      pkg,
+							      PK_INFO_ENUM_SECURITY,
+							      PK_FILTER_ENUM_NONE);
 			else
-				poldek_backend_package (job,
-							pkg,
-							PK_INFO_ENUM_NORMAL,
-							PK_FILTER_ENUM_NONE);
+				poldek_backend_stage_package (job,
+							      pk_packages,
+							      pkg,
+							      PK_INFO_ENUM_NORMAL,
+							      PK_FILTER_ENUM_NONE);
 		}
+
+		pk_backend_job_packages (job, pk_packages);
+		g_ptr_array_unref (pk_packages);
 
 		n_array_cfree (&secupgrades);
 		n_array_free (packages);

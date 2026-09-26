@@ -37,8 +37,12 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
+	g_autoptr(GPtrArray) blocked = NULL;
+	gboolean ret = FALSE;
 
 	g_return_val_if_fail (packages != NULL, FALSE);
+
+	blocked = g_ptr_array_new_with_free_func (g_object_unref);
 
 	for (; *packages != NULL; ++packages) {
 		g_auto(GStrv) package = pk_package_id_split (*packages);
@@ -58,7 +62,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 			alpm_errno_t alpm_err = ALPM_ERR_DB_NOT_FOUND;
 			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s/%s: %s",
 				     repo, name, alpm_strerror (alpm_err));
-			return FALSE;
+			goto out;
 		}
 
 		pkg = alpm_db_get_pkg (i->data, name);
@@ -73,14 +77,14 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 
 			ignorepkgs = alpm_option_get_ignorepkgs (priv->alpm);
 			if (alpm_list_find_str (ignorepkgs, alpm_pkg_get_name (pkg)) != NULL) {
-				pk_alpm_pkg_emit(job, pkg, PK_INFO_ENUM_BLOCKED);
+				pk_alpm_pkg_stage (blocked, pkg, PK_INFO_ENUM_BLOCKED);
 				goto cont;
 			}
 
 			ignoregroups = alpm_option_get_ignoregroups (priv->alpm);
 			for (group_iter = alpm_pkg_get_groups (pkg); group_iter != NULL; group_iter = group_iter->next) {
 				if (alpm_list_find_str (ignoregroups, i->data) != NULL) {
-					pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_BLOCKED);
+					pk_alpm_pkg_stage (blocked, pkg, PK_INFO_ENUM_BLOCKED);
 					goto cont;
 				}
 			}
@@ -90,7 +94,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 			alpm_errno_t alpm_err = alpm_errno (priv->alpm);
 			g_set_error (error, PK_ALPM_ERROR, alpm_err, "%s/%s: %s",
 				     repo, name, alpm_strerror (alpm_err));
-			return FALSE;
+			goto out;
 		}
 
 		if (alpm_add_pkg (priv->alpm, pkg) < 0) {
@@ -100,7 +104,7 @@ pk_alpm_transaction_sync_targets (PkBackendJob *job, const gchar **packages, gbo
 				g_set_error (error, PK_ALPM_ERROR, alpm_err,
 					     "%s/%s: %s", repo, name,
 					     alpm_strerror (alpm_err));
-				return FALSE;
+				goto out;
 			}
 		}
 
@@ -108,7 +112,11 @@ cont:
 		continue;
 	}
 
-	return TRUE;
+	ret = TRUE;
+out:
+	/* report the packages that were skipped because they are ignored */
+	pk_backend_job_packages (job, blocked);
+	return ret;
 }
 
 static void

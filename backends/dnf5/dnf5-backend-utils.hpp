@@ -65,8 +65,15 @@ std::vector<libdnf5::rpm::Package>
 dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, PkRoleEnum role, gboolean recursive);
 std::string dnf5_build_package_id(const libdnf5::rpm::Package &pkg);
 
-void dnf5_emit_pkg(
-	PkBackendJob *job,
+// Report a single package progress event (downloading, installing, ...) as it
+// happens during a transaction. Query results must be staged with
+// dnf5_stage_pkg() and reported in one go with pk_backend_job_packages().
+void dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info);
+// Append a PkPackage for @pkg to @packages, an array created with
+// g_ptr_array_new_with_free_func (g_object_unref). Packages with an invalid
+// package-id are skipped with a warning.
+void dnf5_stage_pkg(
+	GPtrArray *packages,
 	const libdnf5::rpm::Package &pkg,
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN,
 	PkInfoEnum severity = PK_INFO_ENUM_UNKNOWN);

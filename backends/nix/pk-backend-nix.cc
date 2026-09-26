@@ -277,6 +277,8 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
     int totalDrvs = 0;
     int foundDrvs = 0;
 
+    g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
+
     std::function<void(nix::eval_cache::AttrCursor & cursor, const std::vector<nix::Symbol> &attrPath)> visit;
     visit = [&](nix::eval_cache::AttrCursor &cursor, const std::vector<nix::Symbol> &attrPath) {
         try {
@@ -371,16 +373,13 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
                     if (totalDrvs > 0)
                         pk_backend_job_set_percentage(job, 100 * foundDrvs / totalDrvs);
 
-                    pk_backend_job_package(
-                        job,
-                        info,
-                        pk_package_id_build(
-                            attrPath2.c_str(),
-                            name.version.c_str(),
-                            system.c_str(),
-                            priv->defaultFlake.c_str(),
-                            NULL),
-                        description.c_str());
+                    g_autofree gchar *package_id = pk_package_id_build(
+                        attrPath2.c_str(),
+                        name.version.c_str(),
+                        system.c_str(),
+                        priv->defaultFlake.c_str(),
+                        NULL);
+                    pk_backend_packages_add(packages, info, package_id, description.c_str(), PK_INFO_ENUM_UNKNOWN);
                 }
             }
 
@@ -396,6 +395,8 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
         }
     };
     visit(*cursor, {});
+
+    pk_backend_job_packages(job, packages);
     pk_backend_job_set_percentage(job, 100);
 }
 
@@ -542,8 +543,10 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
     priv->state->allowedPaths = oldAllowedPaths;
 
+    g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
-        pk_backend_job_package(job, PK_INFO_ENUM_INSTALLED, package_ids[i], NULL);
+        pk_backend_packages_add(packages, PK_INFO_ENUM_INSTALLED, package_ids[i], NULL, PK_INFO_ENUM_UNKNOWN);
+    pk_backend_job_packages(job, packages);
 
     pk_backend_job_set_percentage(job, 100);
 }
@@ -636,8 +639,10 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
     priv->state->allowedPaths = oldAllowedPaths;
 
+    g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
-        pk_backend_job_package(job, PK_INFO_ENUM_AVAILABLE, package_ids[i], NULL);
+        pk_backend_packages_add(packages, PK_INFO_ENUM_AVAILABLE, package_ids[i], NULL, PK_INFO_ENUM_UNKNOWN);
+    pk_backend_job_packages(job, packages);
 
     pk_backend_job_set_percentage(job, 100);
 }
@@ -675,6 +680,8 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
 
     priv->state->allowedPaths = oldAllowedPaths;
 
+    g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
+
     int progress = 0;
     for (auto &i : installedElems) {
         pk_backend_job_set_percentage(job, 100 * progress++ / installedElems.size());
@@ -688,20 +695,23 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
             auto drv = nix::getDerivation(*priv->state, cursor->forceValue(), false);
             if (drv && drv->queryDrvPath() != i.queryDrvPath()) {
                 nix::DrvName name(drv->queryName());
-                pk_backend_job_package(
-                    job,
+                g_autofree gchar *package_id = pk_package_id_build(
+                    drv->attrPath.c_str(),
+                    name.version.c_str(),
+                    drv->querySystem().c_str(),
+                    priv->defaultFlake.c_str(),
+                    NULL);
+                pk_backend_packages_add(
+                    packages,
                     PK_INFO_ENUM_NORMAL,
-                    pk_package_id_build(
-                        drv->attrPath.c_str(),
-                        name.version.c_str(),
-                        drv->querySystem().c_str(),
-                        priv->defaultFlake.c_str(),
-                        NULL),
-                    drv->queryMetaString("description").c_str());
+                    package_id,
+                    drv->queryMetaString("description").c_str(),
+                    PK_INFO_ENUM_UNKNOWN);
             }
         }
     }
 
+    pk_backend_job_packages(job, packages);
     pk_backend_job_set_percentage(job, 100);
 }
 

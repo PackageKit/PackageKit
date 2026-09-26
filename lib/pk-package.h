@@ -70,6 +70,11 @@ struct _PkPackageClass
 
 GType	     pk_package_get_type (void);
 PkPackage   *pk_package_new (void);
+PkPackage   *pk_package_new_full (PkInfoEnum   info,
+				  const gchar *package_id,
+				  const gchar *summary,
+				  PkInfoEnum   update_severity,
+				  GError     **error);
 
 gboolean     pk_package_set_id (PkPackage   *package,
 				const gchar *package_id,

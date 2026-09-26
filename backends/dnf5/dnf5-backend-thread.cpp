@@ -180,6 +180,8 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					pkg_to_advisory.emplace(key, adv_pkg.get_advisory());
 				}
 
+				g_autoptr(GPtrArray)
+					packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 				for (const auto &pkg : update_pkgs) {
 					if (dnf5_package_filter(pkg, filters)) {
 						PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
@@ -193,9 +195,10 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 							severity = dnf5_update_severity_to_enum(
 								it->second.get_severity());
 						}
-						dnf5_emit_pkg(job, pkg, info, severity);
+						dnf5_stage_pkg(packages, pkg, info, severity);
 					}
 				}
+				pk_backend_job_packages(job, packages);
 			} else {
 				std::vector<libdnf5::rpm::Package> results;
 				for (auto p : query) {
@@ -265,7 +268,6 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					auto it = pkg_to_adv_pkg.find(key);
 					if (it != pkg_to_adv_pkg.end()) {
 						auto advisory = it->second.get_advisory();
-						g_autoptr(PkUpdateDetail) item = pk_update_detail_new();
 
 						std::vector<std::string> bugzilla_urls, cve_urls, vendor_urls;
 						for (const auto &ref : advisory.get_references()) {
@@ -306,28 +308,21 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 						for (size_t i = 0; i < vendor_urls.size(); i++)
 							vendor_strv[i] = g_strdup(vendor_urls[i].c_str());
 
-						g_object_set(
-							item,
-							"package-id",
-							pid.c_str(),
-							"bugzilla-urls",
-							bugzilla_strv,
-							"cve-urls",
-							cve_strv,
-							"vendor-urls",
-							vendor_strv,
-							"update-text",
-							advisory.get_description().c_str(),
-							"restart",
-							restart,
-							"state",
-							PK_UPDATE_STATE_ENUM_STABLE,
-							"issued",
-							date_str,
-							"updated",
-							date_str,
-							NULL);
-						g_ptr_array_add(update_details, g_steal_pointer(&item));
+						g_ptr_array_add(
+							update_details,
+							pk_update_detail_new_full(
+								pid.c_str(),
+								NULL,
+								NULL,
+								vendor_strv,
+								bugzilla_strv,
+								cve_strv,
+								restart,
+								advisory.get_description().c_str(),
+								NULL,
+								PK_UPDATE_STATE_ENUM_STABLE,
+								date_str,
+								date_str));
 					}
 				}
 				pk_backend_job_update_details(job, update_details);
@@ -600,8 +595,11 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					// Report them as untrusted rather than failing, so the client
 					// drops ONLY_TRUSTED and re-runs the real transaction under the
 					// package-install-untrusted authorization.
+					g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(
+						(GDestroyNotify) g_object_unref);
 					for (const auto &pkg : untrusted_pkgs)
-						dnf5_emit_pkg(job, pkg, PK_INFO_ENUM_UNTRUSTED);
+						dnf5_stage_pkg(packages, pkg, PK_INFO_ENUM_UNTRUSTED);
+					pk_backend_job_packages(job, packages);
 				} else {
 					std::string names;
 					for (const auto &pkg : untrusted_pkgs)
@@ -630,6 +628,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				}
 			}
 
+			g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 			for (const auto &item : trans.get_transaction_packages()) {
 				auto action = item.get_action();
 				PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
@@ -651,8 +650,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				}
 
 				if (info != PK_INFO_ENUM_UNKNOWN)
-					dnf5_emit_pkg(job, item.get_package(), info);
+					dnf5_stage_pkg(packages, item.get_package(), info);
 			}
+			pk_backend_job_packages(job, packages);
 			// a simulation must not modify the system: reset the base so the
 			// temporary config does not leak into later transactions
 			if (base_config_dirty)
@@ -678,6 +678,7 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 			// Iterate over transaction items and report them as if they were being processed
+			g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 			for (const auto &item : trans.get_transaction_packages()) {
 				auto action = item.get_action();
 				PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
@@ -694,8 +695,9 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					info = PK_INFO_ENUM_DOWNGRADING;
 
 				if (info != PK_INFO_ENUM_UNKNOWN)
-					dnf5_emit_pkg(job, item.get_package(), info);
+					dnf5_stage_pkg(packages, item.get_package(), info);
 			}
+			pk_backend_job_packages(job, packages);
 			if (base_config_dirty)
 				dnf5_setup_base(priv);
 			pk_backend_job_finished(job);
@@ -882,6 +884,8 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			auto trans = goal.resolve();
 			g_debug("Transaction has %zu packages", trans.get_transaction_packages().size());
 			if (!trans.get_transaction_packages().empty()) {
+				g_autoptr(GPtrArray)
+					packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 				for (const auto &item : trans.get_transaction_packages()) {
 					auto action = item.get_action();
 					PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
@@ -897,8 +901,9 @@ dnf5_repo_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					else if (action == libdnf5::transaction::TransactionItemAction::DOWNGRADE)
 						info = PK_INFO_ENUM_DOWNGRADING;
 
-					dnf5_emit_pkg(job, item.get_package(), info);
+					dnf5_stage_pkg(packages, item.get_package(), info);
 				}
+				pk_backend_job_packages(job, packages);
 			}
 
 			if (!trans.get_transaction_problems().empty()) {
