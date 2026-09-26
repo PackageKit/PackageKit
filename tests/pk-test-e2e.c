@@ -1478,9 +1478,11 @@ pk_test_task_text_install_packages_cb (GObject *object, GAsyncResult *res, gpoin
 	exit_enum = pk_results_get_exit_code (results);
 	g_assert_cmpint (exit_enum, ==, PK_EXIT_ENUM_SUCCESS);
 
+	/* downloading gtkhtml2, installing gtkhtml2, installing gtkhtml2-devel;
+	 * the duplicate emission of gtkhtml2-devel is dropped by the daemon */
 	packages = pk_results_get_package_array (results);
 	g_assert (packages != NULL);
-	g_assert_cmpint (packages->len, ==, 4);
+	g_assert_cmpint (packages->len, ==, 3);
 
 	g_ptr_array_unref (packages);
 
@@ -1549,9 +1551,11 @@ pk_test_task_wrapper_install_packages_cb (GObject *object, GAsyncResult *res, gp
 	exit_enum = pk_results_get_exit_code (results);
 	g_assert_cmpint (exit_enum, ==, PK_EXIT_ENUM_SUCCESS);
 
+	/* downloading gtkhtml2, installing gtkhtml2, installing gtkhtml2-devel;
+	 * the duplicate emission of gtkhtml2-devel is dropped by the daemon */
 	packages = pk_results_get_package_array (results);
 	g_assert (packages != NULL);
-	g_assert_cmpint (packages->len, ==, 4);
+	g_assert_cmpint (packages->len, ==, 3);
 
 	g_ptr_array_unref (packages);
 
