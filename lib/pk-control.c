@@ -1908,7 +1908,7 @@ pk_control_class_init (PkControlClass *klass)
 								NULL,
 								NULL,
 								PK_TYPE_NETWORK_ENUM,
-								PK_NETWORK_ENUM_LAST,
+								PK_NETWORK_ENUM_UNKNOWN,
 								G_PARAM_READWRITE |
 								    G_PARAM_STATIC_STRINGS);
 

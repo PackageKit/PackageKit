@@ -65,20 +65,29 @@ static void InitAdvertisedGroups()
             PK_GROUP_ENUM_COMMUNICATION, //comms
             PK_GROUP_ENUM_DESKTOP_GNOME, //gnome-* ports
             PK_GROUP_ENUM_DESKTOP_KDE, //plasma5-* ports
-            PK_GROUP_ENUM_DESKTOP_OTHER, //budgie, enlightenment, etc.
-            PK_GROUP_ENUM_DESKTOP_XFCE, //xfce-* ports
+            PK_GROUP_ENUM_DESKTOP_OTHER, //xfce, budgie, enlightenment, etc.
+            PK_GROUP_ENUM_DATABASES, //databases
             PK_GROUP_ENUM_EDUCATION, //edu
             PK_GROUP_ENUM_FONTS, //x11-fonts
             PK_GROUP_ENUM_GAMES, //games
             PK_GROUP_ENUM_GRAPHICS, //graphics
             PK_GROUP_ENUM_INTERNET, //www
             PK_GROUP_ENUM_NETWORK, //net
-            PK_GROUP_ENUM_PROGRAMMING, //devel
-            PK_GROUP_ENUM_MULTIMEDIA, //multimedia
+            PK_GROUP_ENUM_PROGRAMMING, //devel, lang
+            PK_GROUP_ENUM_EDITORS, //editors
             PK_GROUP_ENUM_SECURITY, //security
+            PK_GROUP_ENUM_LANG_HASKELL, //haskell
+            PK_GROUP_ENUM_LANG_JAVA, //java
+            PK_GROUP_ENUM_LANG_LISP, //lisp, scheme
+            PK_GROUP_ENUM_LANG_PERL, //perl5
+            PK_GROUP_ENUM_LANG_PYTHON, //python
+            PK_GROUP_ENUM_LANG_RUBY, //ruby, rubygems
+            PK_GROUP_ENUM_MULTIMEDIA, //multimedia
+            PK_GROUP_ENUM_PUBLISHING, //print
+            PK_GROUP_ENUM_SHELLS, //shells
             PK_GROUP_ENUM_SYSTEM, //sysutils
             PK_GROUP_ENUM_SCIENCE, //science
-            PK_GROUP_ENUM_MAPS, //geography
+            PK_GROUP_ENUM_GEOGRAPHY, //geography
             PK_GROUP_ENUM_VIRTUALIZATION, // emulators
             -1);
 }
@@ -199,7 +208,6 @@ static const char* unmappedPrimaryCategoriesData[] = {
     "cad",
     "chinese",
     "converters",
-    "databases",
     "distfiles",
     "dns",
     "finance",
@@ -212,14 +220,11 @@ static const char* unmappedPrimaryCategoriesData[] = {
     "irc",
     "japanese",
     "korean",
-    "lang",
-    "java",
     "net-im",
     "news",
     "polish",
     "portuguese",
     "russian",
-    "shells",
     "ports-mgmt",
     "textproc",
     "ukrainian",
@@ -293,22 +298,31 @@ static std::unordered_set<const char*> PKGroupToPortsCategories(PkGroupEnum pk_g
         case PK_GROUP_ENUM_INTERNET:
             CHECKED_INSERT("mail");
             CHECKED_INSERT_BREAK("www");
-        case PK_GROUP_ENUM_OFFICE:
-            CHECKED_INSERT("editors");
-            CHECKED_INSERT_BREAK("print");
+        case PK_GROUP_ENUM_EDITORS: CHECKED_INSERT_BREAK("editors");
+        case PK_GROUP_ENUM_SECURITY: CHECKED_INSERT_BREAK("security");
+        case PK_GROUP_ENUM_LANG_HASKELL: CHECKED_INSERT_BREAK("haskell");
+        case PK_GROUP_ENUM_LANG_JAVA: CHECKED_INSERT_BREAK("java");
+        case PK_GROUP_ENUM_LANG_LISP:
+            CHECKED_INSERT("lisp");
+            CHECKED_INSERT_BREAK("scheme");
+        case PK_GROUP_ENUM_LANG_PERL: CHECKED_INSERT_BREAK("perl5");
+        case PK_GROUP_ENUM_LANG_PYTHON: CHECKED_INSERT_BREAK("python");
+        case PK_GROUP_ENUM_LANG_RUBY:
+            CHECKED_INSERT("ruby");
+            CHECKED_INSERT_BREAK("rubygems");
+        case PK_GROUP_ENUM_PUBLISHING: CHECKED_INSERT_BREAK("print");
+        case PK_GROUP_ENUM_DATABASES: CHECKED_INSERT_BREAK("databases");
         case PK_GROUP_ENUM_OTHER: CHECKED_INSERT_BREAK("misc");
         case PK_GROUP_ENUM_PROGRAMMING:
             CHECKED_INSERT("devel");
-            CHECKED_INSERT("haskell");
-            CHECKED_INSERT("ruby");
-            CHECKED_INSERT("lisp");
-            CHECKED_INSERT_BREAK("python");
+            CHECKED_INSERT_BREAK("lang");
         case PK_GROUP_ENUM_MULTIMEDIA: CHECKED_INSERT_BREAK("multimedia");
+        case PK_GROUP_ENUM_SHELLS: CHECKED_INSERT_BREAK("shells");
         case PK_GROUP_ENUM_SYSTEM: CHECKED_INSERT_BREAK("sysutils");
         case PK_GROUP_ENUM_DESKTOP_GNOME: CHECKED_INSERT_BREAK("gnome");
         case PK_GROUP_ENUM_DESKTOP_KDE: CHECKED_INSERT_BREAK("kde");
-        case PK_GROUP_ENUM_DESKTOP_XFCE: CHECKED_INSERT_BREAK("xfce");
         case PK_GROUP_ENUM_DESKTOP_OTHER:
+            CHECKED_INSERT("xfce");
             CHECKED_INSERT("budgie");
             CHECKED_INSERT("enlightenment");
             CHECKED_INSERT_BREAK("mate");
@@ -316,14 +330,13 @@ static std::unordered_set<const char*> PKGroupToPortsCategories(PkGroupEnum pk_g
         case PK_GROUP_ENUM_VIRTUALIZATION:
             CHECKED_INSERT("linux");
             CHECKED_INSERT_BREAK("emulators");
-        case PK_GROUP_ENUM_SECURITY: CHECKED_INSERT_BREAK("security");
         case PK_GROUP_ENUM_COMMUNICATION: CHECKED_INSERT_BREAK("comms");
         case PK_GROUP_ENUM_NETWORK:
             CHECKED_INSERT("net");
             CHECKED_INSERT("net-mgmt");
             CHECKED_INSERT("net-vpn");
             CHECKED_INSERT_BREAK("net-p2p");
-        case PK_GROUP_ENUM_MAPS: CHECKED_INSERT_BREAK("geography");
+        case PK_GROUP_ENUM_GEOGRAPHY: CHECKED_INSERT_BREAK("geography");
         case PK_GROUP_ENUM_SCIENCE:
             CHECKED_INSERT("biology");
             CHECKED_INSERT("math");
@@ -361,18 +374,30 @@ static PkGroupEnum PortsCategoriesToPKGroup(gchar** categories)
         RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_GNOME);
     if (cats.count("kde"))
         RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_KDE);
-    if (cats.count("xfce"))
-        RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_XFCE);
-    if (cats.count("budgie") || cats.count("enlightenment")
-        || cats.count("mate"))
+    if (cats.count("xfce") || cats.count("budgie")
+        || cats.count("enlightenment") || cats.count("mate"))
         RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_OTHER);
     // Packages with "afterstep" category that also don't fall into advertised_groups
     if (cats.count("afterstep") && !isPrimaryCategoryMapped)
         RETURN_CHECKED(PK_GROUP_ENUM_DESKTOP_OTHER);
     // Programming language packages with "devel" are probably libraries
-    if (cats.count("devel") && (cats.count("java")
-        || cats.count("haskell") || cats.count("python")
-        || cats.count("ruby") || cats.count("lisp")))
+    if (cats.count("java"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_JAVA);
+    if (cats.count("haskell"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_HASKELL);
+    if (cats.count("python"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_PYTHON);
+    if (cats.count("ruby") || cats.count("rubygems"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_RUBY);
+    if (cats.count("lisp") || cats.count("scheme"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_LISP);
+    if (cats.count("perl5"))
+        RETURN_CHECKED(PK_GROUP_ENUM_LANG_PERL);
+    if (cats.count("editors"))
+        RETURN_CHECKED(PK_GROUP_ENUM_EDITORS);
+    if (cats.count("security"))
+        RETURN_CHECKED(PK_GROUP_ENUM_SECURITY);
+    if (cats.count("lang"))
         RETURN_CHECKED(PK_GROUP_ENUM_PROGRAMMING);
     // Linux packages without a primary category known to us go to generic VIRTUALIZATION
     if (cats.count("linux") && !isPrimaryCategoryMapped)
@@ -399,7 +424,11 @@ static PkGroupEnum PortsCategoriesToPKGroup(gchar** categories)
         || cats.count("net-vpn") || cats.count("net-p2p"))
         RETURN_CHECKED(PK_GROUP_ENUM_NETWORK);
     if (cats.count("geography"))
-        RETURN_CHECKED(PK_GROUP_ENUM_MAPS);
+        RETURN_CHECKED(PK_GROUP_ENUM_GEOGRAPHY);
+    if (cats.count("databases"))
+        RETURN_CHECKED(PK_GROUP_ENUM_DATABASES);
+    if (cats.count("shells"))
+        RETURN_CHECKED(PK_GROUP_ENUM_SHELLS);
     if (cats.count("biology") || cats.count("math")
         || cats.count("science"))
         RETURN_CHECKED(PK_GROUP_ENUM_SCIENCE);

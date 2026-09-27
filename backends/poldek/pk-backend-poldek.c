@@ -103,8 +103,25 @@ typedef struct
 } PLDGroupRegex;
 
 static PLDGroupRegex group_perlre[] = {
-	{ PK_GROUP_ENUM_ACCESSORIES, ".*Archiving\\|.*Dictionaries" },
-	{ PK_GROUP_ENUM_ADMIN_TOOLS, ".*Databases.*\\|.*Admin" },
+	{ PK_GROUP_ENUM_UTILITIES, ".*Archiving\\|.*Dictionaries" },
+	{ PK_GROUP_ENUM_ADMIN, ".*Admin" },
+	{ PK_GROUP_ENUM_EDITORS, ".*Editors.*" },
+	{ PK_GROUP_ENUM_LANG_GO, ".*Languages/Go.*" },
+	{ PK_GROUP_ENUM_LANG_HASKELL, ".*Languages/Haskell.*" },
+	{ PK_GROUP_ENUM_LANG_JAVA, ".*Languages/Java.*" },
+	{ PK_GROUP_ENUM_LANG_JAVASCRIPT, ".*Languages/JavaScript.*" },
+	{ PK_GROUP_ENUM_LANG_LISP, ".*Languages/Lisp.*\\|.*Languages/Scheme.*" },
+	{ PK_GROUP_ENUM_LANG_OCAML, ".*Languages/OCaml.*" },
+	{ PK_GROUP_ENUM_LANG_PERL, ".*Languages/Perl.*" },
+	{ PK_GROUP_ENUM_LANG_PHP, ".*Languages/PHP.*" },
+	{ PK_GROUP_ENUM_LANG_PYTHON, ".*Languages/Python.*" },
+	{ PK_GROUP_ENUM_LANG_RUBY, ".*Languages/Ruby.*" },
+	{ PK_GROUP_ENUM_LANG_RUST, ".*Languages/Rust.*" },
+	{ PK_GROUP_ENUM_DEBUG, ".*Development/Debug.*" },
+	{ PK_GROUP_ENUM_DEVEL, ".*Development/Libraries.*" },
+	{ PK_GROUP_ENUM_LIBRARIES, "^Libraries.*\\|^X11\\/Libraries$" },
+	{ PK_GROUP_ENUM_SHELLS, ".*Shells" },
+	{ PK_GROUP_ENUM_DATABASES, ".*Databases.*" },
 	{ PK_GROUP_ENUM_COMMUNICATION, ".*Communications" },
 	{ PK_GROUP_ENUM_DOCUMENTATION, "Documentation" },
 	{ PK_GROUP_ENUM_EDUCATION, ".*Engineering\\|.*Math\\|.*Science" },
@@ -114,15 +131,14 @@ static PLDGroupRegex group_perlre[] = {
 	{ PK_GROUP_ENUM_LOCALIZATION, "I18n" },
 	{ PK_GROUP_ENUM_MULTIMEDIA, ".*Multimedia\\|.*Sound" },
 	{ PK_GROUP_ENUM_NETWORK, ".*Networking.*\\|/.*Mail\\|.*News\\|.*WWW" },
-	{ PK_GROUP_ENUM_OFFICE, ".*Editors.*\\|.*Spreadsheets" },
+	{ PK_GROUP_ENUM_OFFICE, ".*Spreadsheets" },
 	{ PK_GROUP_ENUM_OTHER,
-	  "^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|^"
-	  "Libraries.*\\|^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|^X11\\/"
-	  "Libraries$\\|.*Window\\ Managers.*" },
+	  "^Applications$\\|.*Console\\|.*Emulators\\|.*File\\|.*Printing\\|.*Terminal\\|.*Text\\|"
+	  "^Themes.*\\|^X11$\\|.*Amusements\\|^X11\\/Applications$\\|.*Window\\ Managers.*" },
 	{ PK_GROUP_ENUM_PROGRAMMING, ".*Development.*" },
 	{ PK_GROUP_ENUM_PUBLISHING, ".*Publishing.*" },
 	{ PK_GROUP_ENUM_SERVERS, "Daemons\\|.*Servers" },
-	{ PK_GROUP_ENUM_SYSTEM, ".*Shells\\|.*System\\|Base.*" },
+	{ PK_GROUP_ENUM_SYSTEM, ".*System\\|Base.*" },
 	{ 0, NULL }
 };
 
@@ -914,9 +930,11 @@ pld_group_to_enum (const gchar *group)
 	g_return_val_if_fail (group != NULL, PK_GROUP_ENUM_OTHER);
 
 	if (strstr (group, "Archiving") != NULL || strstr (group, "Dictionaries") != NULL)
-		return PK_GROUP_ENUM_ACCESSORIES;
-	else if (strstr (group, "Databases") != NULL || strstr (group, "Admin") != NULL)
-		return PK_GROUP_ENUM_ADMIN_TOOLS;
+		return PK_GROUP_ENUM_UTILITIES;
+	else if (strstr (group, "Databases") != NULL)
+		return PK_GROUP_ENUM_DATABASES;
+	else if (strstr (group, "Admin") != NULL)
+		return PK_GROUP_ENUM_ADMIN;
 	else if (strstr (group, "Communications") != NULL)
 		return PK_GROUP_ENUM_COMMUNICATION;
 	else if (strstr (group, "Engineering") != NULL || strstr (group, "Math") != NULL ||
@@ -937,16 +955,49 @@ pld_group_to_enum (const gchar *group)
 	else if (strstr (group, "Networking") != NULL || strstr (group, "Mail") != NULL ||
 		 strstr (group, "News") != NULL || strstr (group, "WWW") != NULL)
 		return PK_GROUP_ENUM_NETWORK;
-	else if (strstr (group, "Editors") != NULL || strstr (group, "Spreadsheets") != NULL)
+	else if (strstr (group, "Editors") != NULL)
+		return PK_GROUP_ENUM_EDITORS;
+	else if (strstr (group, "Spreadsheets") != NULL)
 		return PK_GROUP_ENUM_OFFICE;
+	else if (strstr (group, "Languages/Go") != NULL)
+		return PK_GROUP_ENUM_LANG_GO;
+	else if (strstr (group, "Languages/Haskell") != NULL)
+		return PK_GROUP_ENUM_LANG_HASKELL;
+	else if (strstr (group, "Languages/Java") != NULL)
+		return PK_GROUP_ENUM_LANG_JAVA;
+	else if (strstr (group, "Languages/JavaScript") != NULL)
+		return PK_GROUP_ENUM_LANG_JAVASCRIPT;
+	else if (strstr (group, "Languages/Lisp") != NULL)
+		return PK_GROUP_ENUM_LANG_LISP;
+	else if (strstr (group, "Languages/Scheme") != NULL)
+		return PK_GROUP_ENUM_LANG_LISP;
+	else if (strstr (group, "Languages/OCaml") != NULL)
+		return PK_GROUP_ENUM_LANG_OCAML;
+	else if (strstr (group, "Languages/Perl") != NULL)
+		return PK_GROUP_ENUM_LANG_PERL;
+	else if (strstr (group, "Languages/PHP") != NULL)
+		return PK_GROUP_ENUM_LANG_PHP;
+	else if (strstr (group, "Languages/Python") != NULL)
+		return PK_GROUP_ENUM_LANG_PYTHON;
+	else if (strstr (group, "Languages/Ruby") != NULL)
+		return PK_GROUP_ENUM_LANG_RUBY;
+	else if (strstr (group, "Languages/Rust") != NULL)
+		return PK_GROUP_ENUM_LANG_RUST;
+	else if (strstr (group, "Development/Debug") != NULL)
+		return PK_GROUP_ENUM_DEBUG;
+	else if (strstr (group, "Development/Libraries") != NULL)
+		return PK_GROUP_ENUM_DEVEL;
 	else if (strstr (group, "Development") != NULL)
 		return PK_GROUP_ENUM_PROGRAMMING;
+	else if (strstr (group, "Libraries") != NULL)
+		return PK_GROUP_ENUM_LIBRARIES;
+	else if (strstr (group, "Shells") != NULL)
+		return PK_GROUP_ENUM_SHELLS;
 	else if (strstr (group, "Publishing") != NULL)
 		return PK_GROUP_ENUM_PUBLISHING;
 	else if (strstr (group, "Daemons") != NULL || strstr (group, "Servers") != NULL)
 		return PK_GROUP_ENUM_SERVERS;
-	else if (strstr (group, "Shells") != NULL || strstr (group, "System") != NULL ||
-		 strstr (group, "Base") != NULL)
+	else if (strstr (group, "System") != NULL || strstr (group, "Base") != NULL)
 		return PK_GROUP_ENUM_SYSTEM;
 	else
 		return PK_GROUP_ENUM_OTHER;
@@ -2470,9 +2521,26 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSORIES,
-				       PK_GROUP_ENUM_ADMIN_TOOLS,
+	return pk_bitfield_from_enums (PK_GROUP_ENUM_UTILITIES,
+				       PK_GROUP_ENUM_ADMIN,
+				       PK_GROUP_ENUM_DEBUG,
+				       PK_GROUP_ENUM_DEVEL,
+				       PK_GROUP_ENUM_EDITORS,
+				       PK_GROUP_ENUM_LANG_GO,
+				       PK_GROUP_ENUM_LANG_HASKELL,
+				       PK_GROUP_ENUM_LANG_JAVA,
+				       PK_GROUP_ENUM_LANG_JAVASCRIPT,
+				       PK_GROUP_ENUM_LANG_LISP,
+				       PK_GROUP_ENUM_LANG_OCAML,
+				       PK_GROUP_ENUM_LANG_PERL,
+				       PK_GROUP_ENUM_LANG_PHP,
+				       PK_GROUP_ENUM_LANG_PYTHON,
+				       PK_GROUP_ENUM_LANG_RUBY,
+				       PK_GROUP_ENUM_LANG_RUST,
+				       PK_GROUP_ENUM_LIBRARIES,
+				       PK_GROUP_ENUM_SHELLS,
 				       PK_GROUP_ENUM_COMMUNICATION,
+				       PK_GROUP_ENUM_DATABASES,
 				       PK_GROUP_ENUM_DOCUMENTATION,
 				       PK_GROUP_ENUM_EDUCATION,
 				       PK_GROUP_ENUM_FONTS,

@@ -31,129 +31,80 @@
 #include <iomanip>
 #include <regex>
 
+/* Debian archive sections (https://packages.debian.org/unstable/) mapped
+ * onto PackageKit groups. Sections not listed here (virtual,
+ * debian-installer) are reported as unknown. */
+static const struct {
+    const char *section;
+    PkGroupEnum group;
+} section_groups[] = {
+    {"admin",         PK_GROUP_ENUM_ADMIN         },
+    {"cli-mono",      PK_GROUP_ENUM_PROGRAMMING   },
+    {"comm",          PK_GROUP_ENUM_COMMUNICATION },
+    {"database",      PK_GROUP_ENUM_DATABASES     },
+    {"debug",         PK_GROUP_ENUM_DEBUG         },
+    {"devel",         PK_GROUP_ENUM_PROGRAMMING   },
+    {"doc",           PK_GROUP_ENUM_DOCUMENTATION },
+    {"editors",       PK_GROUP_ENUM_EDITORS       },
+    {"education",     PK_GROUP_ENUM_EDUCATION     },
+    {"electronics",   PK_GROUP_ENUM_ELECTRONICS   },
+    {"embedded",      PK_GROUP_ENUM_ELECTRONICS   },
+    {"fonts",         PK_GROUP_ENUM_FONTS         },
+    {"games",         PK_GROUP_ENUM_GAMES         },
+    {"gnome",         PK_GROUP_ENUM_DESKTOP_GNOME },
+    {"gnu-r",         PK_GROUP_ENUM_PROGRAMMING   },
+    {"gnustep",       PK_GROUP_ENUM_DESKTOP_OTHER },
+    {"golang",        PK_GROUP_ENUM_LANG_GO       },
+    {"graphics",      PK_GROUP_ENUM_GRAPHICS      },
+    {"hamradio",      PK_GROUP_ENUM_COMMUNICATION },
+    {"haskell",       PK_GROUP_ENUM_LANG_HASKELL  },
+    {"httpd",         PK_GROUP_ENUM_SERVERS       },
+    {"interpreters",  PK_GROUP_ENUM_PROGRAMMING   },
+    {"introspection", PK_GROUP_ENUM_DEVEL         },
+    {"java",          PK_GROUP_ENUM_LANG_JAVA     },
+    {"javascript",    PK_GROUP_ENUM_LANG_JAVASCRIPT},
+    {"kde",           PK_GROUP_ENUM_DESKTOP_KDE   },
+    {"kernel",        PK_GROUP_ENUM_SYSTEM        },
+    {"libdevel",      PK_GROUP_ENUM_DEVEL         },
+    {"libs",          PK_GROUP_ENUM_LIBRARIES     },
+    {"lisp",          PK_GROUP_ENUM_LANG_LISP     },
+    {"localization",  PK_GROUP_ENUM_LOCALIZATION  },
+    {"mail",          PK_GROUP_ENUM_INTERNET      },
+    {"math",          PK_GROUP_ENUM_SCIENCE       },
+    {"metapackages",  PK_GROUP_ENUM_META          },
+    {"misc",          PK_GROUP_ENUM_OTHER         },
+    {"net",           PK_GROUP_ENUM_NETWORK       },
+    {"news",          PK_GROUP_ENUM_INTERNET      },
+    {"ocaml",         PK_GROUP_ENUM_LANG_OCAML    },
+    {"oldlibs",       PK_GROUP_ENUM_LEGACY        },
+    {"otherosfs",     PK_GROUP_ENUM_VIRTUALIZATION},
+    {"perl",          PK_GROUP_ENUM_LANG_PERL     },
+    {"php",           PK_GROUP_ENUM_LANG_PHP      },
+    {"python",        PK_GROUP_ENUM_LANG_PYTHON   },
+    {"ruby",          PK_GROUP_ENUM_LANG_RUBY     },
+    {"rust",          PK_GROUP_ENUM_LANG_RUST     },
+    {"science",       PK_GROUP_ENUM_SCIENCE       },
+    {"shells",        PK_GROUP_ENUM_SHELLS        },
+    {"sound",         PK_GROUP_ENUM_MULTIMEDIA    },
+    {"tasks",         PK_GROUP_ENUM_META          },
+    {"tex",           PK_GROUP_ENUM_PUBLISHING    },
+    {"text",          PK_GROUP_ENUM_PUBLISHING    },
+    {"utils",         PK_GROUP_ENUM_UTILITIES     },
+    {"vcs",           PK_GROUP_ENUM_PROGRAMMING   },
+    {"video",         PK_GROUP_ENUM_MULTIMEDIA    },
+    {"web",           PK_GROUP_ENUM_INTERNET      },
+    {"x11",           PK_GROUP_ENUM_DESKTOP_OTHER },
+    {"xfce",          PK_GROUP_ENUM_DESKTOP_OTHER },
+    {"zope",          PK_GROUP_ENUM_LANG_PYTHON   },
+};
+
 PkGroupEnum get_enum_group(std::string group)
 {
-    if (group.compare("admin") == 0) {
-        return PK_GROUP_ENUM_ADMIN_TOOLS;
-    } else if (group.compare("base") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("cli-mono") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("comm") == 0) {
-        return PK_GROUP_ENUM_COMMUNICATION;
-    } else if (group.compare("database") == 0) {
-        return PK_GROUP_ENUM_ADMIN_TOOLS;
-    } else if (group.compare("debug") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("devel") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("doc") == 0) {
-        return PK_GROUP_ENUM_DOCUMENTATION;
-    } else if (group.compare("editors") == 0) {
-        return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare("education") == 0) {
-        return PK_GROUP_ENUM_EDUCATION;
-    } else if (group.compare("electronics") == 0) {
-        return PK_GROUP_ENUM_ELECTRONICS;
-    } else if (group.compare("embedded") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("fonts") == 0) {
-        return PK_GROUP_ENUM_FONTS;
-    } else if (group.compare("games") == 0) {
-        return PK_GROUP_ENUM_GAMES;
-    } else if (group.compare("gnome") == 0) {
-        return PK_GROUP_ENUM_DESKTOP_GNOME;
-    } else if (group.compare("gnu-r") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("gnustep") == 0) {
-        return PK_GROUP_ENUM_DESKTOP_OTHER;
-    } else if (group.compare("golang") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("graphics") == 0) {
-        return PK_GROUP_ENUM_GRAPHICS;
-    } else if (group.compare("hamradio") == 0) {
-        return PK_GROUP_ENUM_COMMUNICATION;
-    } else if (group.compare("haskell") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("httpd") == 0) {
-        return PK_GROUP_ENUM_SERVERS;
-    } else if (group.compare("interpreters") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("introspection") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("java") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("javascript") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("kde") == 0) {
-        return PK_GROUP_ENUM_DESKTOP_KDE;
-    } else if (group.compare("kernel") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("libdevel") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("libs") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("lisp") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("mail") == 0) {
-        return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare("math") == 0) {
-        return PK_GROUP_ENUM_SCIENCE;
-    } else if (group.compare("misc") == 0) {
-        return PK_GROUP_ENUM_OTHER;
-    } else if (group.compare("net") == 0) {
-        return PK_GROUP_ENUM_NETWORK;
-    } else if (group.compare("news") == 0) {
-        return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare("ocaml") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("oldlibs") == 0) {
-        return PK_GROUP_ENUM_LEGACY;
-    } else if (group.compare("otherosfs") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("perl") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("php") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("python") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("ruby") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("rust") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("science") == 0) {
-        return PK_GROUP_ENUM_SCIENCE;
-    } else if (group.compare("shells") == 0) {
-        return PK_GROUP_ENUM_SYSTEM;
-    } else if (group.compare("sound") == 0) {
-        return PK_GROUP_ENUM_MULTIMEDIA;
-    } else if (group.compare("tex") == 0) {
-        return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare("text") == 0) {
-        return PK_GROUP_ENUM_PUBLISHING;
-    } else if (group.compare("utils") == 0) {
-        return PK_GROUP_ENUM_ACCESSORIES;
-    } else if (group.compare("vcs") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("video") == 0) {
-        return PK_GROUP_ENUM_MULTIMEDIA;
-    } else if (group.compare("web") == 0) {
-        return PK_GROUP_ENUM_INTERNET;
-    } else if (group.compare("x11") == 0) {
-        return PK_GROUP_ENUM_DESKTOP_OTHER;
-    } else if (group.compare("xfce") == 0) {
-        return PK_GROUP_ENUM_DESKTOP_XFCE;
-    } else if (group.compare("zope") == 0) {
-        return PK_GROUP_ENUM_PROGRAMMING;
-    } else if (group.compare("alien") == 0) {
-        return PK_GROUP_ENUM_UNKNOWN; // FIXME alien is an unknown group?
-    } else if (group.compare("translations") == 0) {
-        return PK_GROUP_ENUM_LOCALIZATION;
-    } else if (group.compare("metapackages") == 0) {
-        return PK_GROUP_ENUM_COLLECTIONS;
-    } else {
-        return PK_GROUP_ENUM_UNKNOWN;
+    for (const auto &entry : section_groups) {
+        if (group == entry.section)
+            return entry.group;
     }
+    return PK_GROUP_ENUM_UNKNOWN;
 }
 
 std::string fetchChangelogData(

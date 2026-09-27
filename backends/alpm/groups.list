@@ -11,8 +11,8 @@ compiz-fusion-kde	desktop-kde
 compiz-gnome		desktop-gnome
 compiz-gtk		desktop-gnome
 compiz-kde		desktop-kde
-deepin			desktop-dde
-deepin-extra		desktop-dde
+deepin			desktop-other
+deepin-extra		desktop-other
 e17-extra-svn		desktop-other
 e17-libs-svn		desktop-other
 e17-svn			desktop-other
@@ -57,8 +57,8 @@ texlive-most-doc	other
 thunderbird-i18n	other
 thunderbird-spell-i18n	other
 vim-plugins		other
-xfce4			desktop-xfce
-xfce4-goodies		desktop-xfce
+xfce4			desktop-other
+xfce4-goodies		desktop-other
 xmms-effect-plugins	multimedia
 xmms-io-plugins		multimedia
 xmms-plugins		multimedia

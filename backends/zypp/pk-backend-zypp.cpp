@@ -860,8 +860,44 @@ get_enum_group (const string &group_)
 
 	if (group.find ("amusements") != string::npos) {
 		return PK_GROUP_ENUM_GAMES;
+	} else if (group.find ("development/debug") != string::npos) {
+		return PK_GROUP_ENUM_DEBUG;
+	} else if (group.find ("development/libraries") != string::npos) {
+		return PK_GROUP_ENUM_DEVEL;
+	} else if (group.find ("languages/c and c++") != string::npos) {
+		return PK_GROUP_ENUM_LANG_C;
+	} else if (group.find ("languages/go") != string::npos) {
+		return PK_GROUP_ENUM_LANG_GO;
+	} else if (group.find ("languages/haskell") != string::npos) {
+		return PK_GROUP_ENUM_LANG_HASKELL;
+	} else if (group.find ("languages/java") != string::npos) {
+		return PK_GROUP_ENUM_LANG_JAVA;
+	} else if (group.find ("languages/javascript") != string::npos) {
+		return PK_GROUP_ENUM_LANG_JAVASCRIPT;
+	} else if (group.find ("languages/nodejs") != string::npos) {
+		return PK_GROUP_ENUM_LANG_JAVASCRIPT;
+	} else if (group.find ("languages/lisp") != string::npos) {
+		return PK_GROUP_ENUM_LANG_LISP;
+	} else if (group.find ("languages/scheme") != string::npos) {
+		return PK_GROUP_ENUM_LANG_LISP;
+	} else if (group.find ("languages/ocaml") != string::npos) {
+		return PK_GROUP_ENUM_LANG_OCAML;
+	} else if (group.find ("languages/perl") != string::npos) {
+		return PK_GROUP_ENUM_LANG_PERL;
+	} else if (group.find ("languages/php") != string::npos) {
+		return PK_GROUP_ENUM_LANG_PHP;
+	} else if (group.find ("languages/python") != string::npos) {
+		return PK_GROUP_ENUM_LANG_PYTHON;
+	} else if (group.find ("languages/ruby") != string::npos) {
+		return PK_GROUP_ENUM_LANG_RUBY;
+	} else if (group.find ("languages/rust") != string::npos) {
+		return PK_GROUP_ENUM_LANG_RUST;
 	} else if (group.find ("development") != string::npos) {
 		return PK_GROUP_ENUM_PROGRAMMING;
+	} else if (group.find ("system/libraries") != string::npos) {
+		return PK_GROUP_ENUM_LIBRARIES;
+	} else if (group.find ("system/shells") != string::npos) {
+		return PK_GROUP_ENUM_SHELLS;
 	} else if (group.find ("hardware") != string::npos) {
 		return PK_GROUP_ENUM_SYSTEM;
 	} else if (group.find ("archiving") != string::npos
@@ -869,16 +905,17 @@ get_enum_group (const string &group_)
 		  || group.find("system/monitoring") != string::npos
 		  || group.find("databases") != string::npos
 		  || group.find("system/management") != string::npos) {
-		return PK_GROUP_ENUM_ADMIN_TOOLS;
+		return PK_GROUP_ENUM_ADMIN;
 	} else if (group.find ("graphics") != string::npos) {
 		return PK_GROUP_ENUM_GRAPHICS;
 	} else if (group.find ("multimedia") != string::npos) {
 		return PK_GROUP_ENUM_MULTIMEDIA;
 	} else if (group.find ("network") != string::npos) {
 		return PK_GROUP_ENUM_NETWORK;
+	} else if (group.find ("editors") != string::npos) {
+		return PK_GROUP_ENUM_EDITORS;
 	} else if (group.find ("office") != string::npos
-		  || group.find("text") != string::npos
-		  || group.find("editors") != string::npos) {
+		  || group.find("text") != string::npos) {
 		return PK_GROUP_ENUM_OFFICE;
 	} else if (group.find ("publishing") != string::npos) {
 		return PK_GROUP_ENUM_PUBLISHING;
@@ -890,9 +927,8 @@ get_enum_group (const string &group_)
 		return PK_GROUP_ENUM_DESKTOP_GNOME;
 	} else if (group.find ("kde") != string::npos) {
 		return PK_GROUP_ENUM_DESKTOP_KDE;
-	} else if (group.find ("xfce") != string::npos) {
-		return PK_GROUP_ENUM_DESKTOP_XFCE;
-	} else if (group.find ("gui/other") != string::npos) {
+	} else if (group.find ("xfce") != string::npos
+		  || group.find ("gui/other") != string::npos) {
 		return PK_GROUP_ENUM_DESKTOP_OTHER;
 	} else if (group.find ("localization") != string::npos) {
 		return PK_GROUP_ENUM_LOCALIZATION;
@@ -2058,15 +2094,30 @@ PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
 	return pk_bitfield_from_enums (
-		PK_GROUP_ENUM_ADMIN_TOOLS,
+		PK_GROUP_ENUM_ADMIN,
 		PK_GROUP_ENUM_COMMUNICATION,
+		PK_GROUP_ENUM_DEBUG,
+		PK_GROUP_ENUM_DEVEL,
+		PK_GROUP_ENUM_EDITORS,
 		PK_GROUP_ENUM_DESKTOP_GNOME,
 		PK_GROUP_ENUM_DESKTOP_KDE,
 		PK_GROUP_ENUM_DESKTOP_OTHER,
-		PK_GROUP_ENUM_DESKTOP_XFCE,
 		PK_GROUP_ENUM_EDUCATION,
 		PK_GROUP_ENUM_GAMES,
 		PK_GROUP_ENUM_GRAPHICS,
+		PK_GROUP_ENUM_LANG_C,
+		PK_GROUP_ENUM_LANG_GO,
+		PK_GROUP_ENUM_LANG_HASKELL,
+		PK_GROUP_ENUM_LANG_JAVA,
+		PK_GROUP_ENUM_LANG_JAVASCRIPT,
+		PK_GROUP_ENUM_LANG_LISP,
+		PK_GROUP_ENUM_LANG_OCAML,
+		PK_GROUP_ENUM_LANG_PERL,
+		PK_GROUP_ENUM_LANG_PHP,
+		PK_GROUP_ENUM_LANG_PYTHON,
+		PK_GROUP_ENUM_LANG_RUBY,
+		PK_GROUP_ENUM_LANG_RUST,
+		PK_GROUP_ENUM_LIBRARIES,
 		PK_GROUP_ENUM_LOCALIZATION,
 		PK_GROUP_ENUM_MULTIMEDIA,
 		PK_GROUP_ENUM_NETWORK,
@@ -2074,6 +2125,7 @@ pk_backend_get_groups (PkBackend *backend)
 		PK_GROUP_ENUM_PROGRAMMING,
 		PK_GROUP_ENUM_PUBLISHING,
 		PK_GROUP_ENUM_SECURITY,
+		PK_GROUP_ENUM_SHELLS,
 		PK_GROUP_ENUM_SYSTEM,
 		-1);
 }

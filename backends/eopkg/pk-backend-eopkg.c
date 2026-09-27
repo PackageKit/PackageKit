@@ -80,7 +80,7 @@ pk_backend_supports_parallelization (PkBackend *backend)
 PkBitfield
 pk_backend_get_groups (PkBackend *backend)
 {
-	return pk_bitfield_from_enums (PK_GROUP_ENUM_ACCESSORIES,
+	return pk_bitfield_from_enums (PK_GROUP_ENUM_UTILITIES,
 				       PK_GROUP_ENUM_EDUCATION,
 				       PK_GROUP_ENUM_GAMES,
 				       PK_GROUP_ENUM_INTERNET,
@@ -94,11 +94,16 @@ pk_backend_get_groups (PkBackend *backend)
 				       PK_GROUP_ENUM_PUBLISHING,
 				       PK_GROUP_ENUM_SERVERS,
 				       PK_GROUP_ENUM_FONTS,
-				       PK_GROUP_ENUM_ADMIN_TOOLS,
+				       PK_GROUP_ENUM_ADMIN,
+				       PK_GROUP_ENUM_EDITORS,
+				       PK_GROUP_ENUM_SECURITY,
+				       PK_GROUP_ENUM_LANG_HASKELL,
+				       PK_GROUP_ENUM_LANG_JAVA,
+				       PK_GROUP_ENUM_LANG_PERL,
+				       PK_GROUP_ENUM_LANG_PYTHON,
+				       PK_GROUP_ENUM_LANG_RUBY,
 				       PK_GROUP_ENUM_LOCALIZATION,
 				       PK_GROUP_ENUM_VIRTUALIZATION,
-				       PK_GROUP_ENUM_SECURITY,
-				       PK_GROUP_ENUM_POWER_MANAGEMENT,
 				       PK_GROUP_ENUM_UNKNOWN,
 				       -1);
 }

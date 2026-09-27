@@ -960,9 +960,9 @@ class PackageKitEntropyBackend(PackageKitBaseBackend, PackageKitEntropyMixin):
         'office': GROUP_OFFICE,
         'science': GROUP_SCIENCE,
         'system': GROUP_SYSTEM,
-        'security': GROUP_SECURITY,
+        'security': GROUP_SYSTEM,
         'x11': GROUP_OTHER,
-        'xfce': GROUP_DESKTOP_XFCE,
+        'xfce': GROUP_DESKTOP_OTHER,
         'unknown': GROUP_UNKNOWN,
     }
 

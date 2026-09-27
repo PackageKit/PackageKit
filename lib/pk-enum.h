@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2025-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -77,7 +78,6 @@ typedef struct
  * @PK_ROLE_ENUM_GET_FILES_LOCAL: Get files provided by local package
  * @PK_ROLE_ENUM_REPO_REMOVE: Remove repository
  * @PK_ROLE_ENUM_UPGRADE_SYSTEM: Upgrade system
- * @PK_ROLE_ENUM_LAST:
  *
  * What we were asked to do, this never changes for the lifetime of the
  * transaction.
@@ -118,6 +118,7 @@ typedef enum {
 	PK_ROLE_ENUM_GET_FILES_LOCAL,	/* Since: 0.9.1 */
 	PK_ROLE_ENUM_REPO_REMOVE,	/* Since: 0.9.1 */
 	PK_ROLE_ENUM_UPGRADE_SYSTEM,	/* Since: 1.0.10 */
+	/*< private >*/
 	PK_ROLE_ENUM_LAST
 } PkRoleEnum;
 
@@ -154,7 +155,6 @@ typedef enum {
  * @PK_STATUS_ENUM_WAITING_FOR_AUTH: Waiting for authentication/authorization
  * @PK_STATUS_ENUM_COPY_FILES: Copying files
  * @PK_STATUS_ENUM_RUN_HOOK: Running package hook
- * @PK_STATUS_ENUM_LAST:
  *
  * What status we are now; this can change for each transaction giving a
  * status of what sort of thing is happening
@@ -205,6 +205,7 @@ typedef enum {
 	PK_STATUS_ENUM_WAITING_FOR_AUTH,
 	PK_STATUS_ENUM_COPY_FILES,
 	PK_STATUS_ENUM_RUN_HOOK,
+	/*< private >*/
 	PK_STATUS_ENUM_LAST
 } PkStatusEnum;
 
@@ -221,7 +222,6 @@ typedef enum {
  * @PK_EXIT_ENUM_CANCELLED_PRIORITY: Cancelled due to higher priority task
  * @PK_EXIT_ENUM_SKIP_TRANSACTION:
  * @PK_EXIT_ENUM_REPAIR_REQUIRED: Package database requires repairing
- * @PK_EXIT_ENUM_LAST:
  *
  * How the backend exited
  **/
@@ -237,6 +237,7 @@ typedef enum {
 	PK_EXIT_ENUM_CANCELLED_PRIORITY,
 	PK_EXIT_ENUM_SKIP_TRANSACTION,
 	PK_EXIT_ENUM_REPAIR_REQUIRED,
+	/*< private >*/
 	PK_EXIT_ENUM_LAST
 } PkExitEnum;
 
@@ -248,7 +249,6 @@ typedef enum {
  * @PK_NETWORK_ENUM_WIRED: Wired network
  * @PK_NETWORK_ENUM_WIFI: WiFi network
  * @PK_NETWORK_ENUM_MOBILE: Mobile network
- * @PK_NETWORK_ENUM_LAST:
  *
  * Network type
  **/
@@ -259,6 +259,7 @@ typedef enum {
 	PK_NETWORK_ENUM_WIRED,
 	PK_NETWORK_ENUM_WIFI,
 	PK_NETWORK_ENUM_MOBILE,
+	/*< private >*/
 	PK_NETWORK_ENUM_LAST
 } PkNetworkEnum;
 
@@ -290,7 +291,6 @@ typedef enum {
  * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for non-application packages
  * @PK_FILTER_ENUM_DOWNLOADED: Filter for downloaded packages
  * @PK_FILTER_ENUM_NOT_DOWNLOADED: Filter for not downloaded packages
- * @PK_FILTER_ENUM_LAST:
  *
  * The filter types
  **/
@@ -321,6 +321,7 @@ typedef enum {
 	PK_FILTER_ENUM_NOT_APPLICATION,
 	PK_FILTER_ENUM_DOWNLOADED,     /* Since: 0.8.10 */
 	PK_FILTER_ENUM_NOT_DOWNLOADED, /* Since: 0.8.10 */
+	/*< private >*/
 	PK_FILTER_ENUM_LAST,
 } PkFilterEnum;
 
@@ -331,7 +332,6 @@ typedef enum {
  * @PK_RESTART_ENUM_APPLICATION: Need to restart the application
  * @PK_RESTART_ENUM_SESSION: Need to restart the session
  * @PK_RESTART_ENUM_SYSTEM: Need to restart the system
- * @PK_RESTART_ENUM_LAST:
  *
  * What restart we need to after a transaction, ordered by severity
  **/
@@ -341,6 +341,7 @@ typedef enum {
 	PK_RESTART_ENUM_APPLICATION,
 	PK_RESTART_ENUM_SESSION,
 	PK_RESTART_ENUM_SYSTEM,
+	/*< private >*/
 	PK_RESTART_ENUM_LAST
 } PkRestartEnum;
 
@@ -411,7 +412,6 @@ typedef enum {
  * @PK_ERROR_ENUM_UNFINISHED_TRANSACTION: Transaction unfinished
  * @PK_ERROR_ENUM_LOCK_REQUIRED: Required lock not available
  * @PK_ERROR_ENUM_REPO_ALREADY_SET:
- * @PK_ERROR_ENUM_LAST:
  *
  * The error type
  **/
@@ -481,88 +481,117 @@ typedef enum {
 	PK_ERROR_ENUM_UNFINISHED_TRANSACTION,
 	PK_ERROR_ENUM_LOCK_REQUIRED,
 	PK_ERROR_ENUM_REPO_ALREADY_SET,
+	/*< private >*/
 	PK_ERROR_ENUM_LAST
 } PkErrorEnum;
 
 /**
  * PkGroupEnum:
  * @PK_GROUP_ENUM_UNKNOWN: Unknown group
- * @PK_GROUP_ENUM_ACCESSIBILITY: Accessibility related packages
- * @PK_GROUP_ENUM_ACCESSORIES: Accessory packages
- * @PK_GROUP_ENUM_ADMIN_TOOLS: Administration tools packages
- * @PK_GROUP_ENUM_COMMUNICATION: Communication packages
- * @PK_GROUP_ENUM_DESKTOP_GNOME: GNOME packages
- * @PK_GROUP_ENUM_DESKTOP_KDE: KDE packages
- * @PK_GROUP_ENUM_DESKTOP_OTHER: Other desktop packages
- * @PK_GROUP_ENUM_DESKTOP_XFCE: XFCE packages
- * @PK_GROUP_ENUM_EDUCATION: Education packages
- * @PK_GROUP_ENUM_FONTS: Fonts
- * @PK_GROUP_ENUM_GAMES: Games
- * @PK_GROUP_ENUM_GRAPHICS: Graphics related packages
- * @PK_GROUP_ENUM_INTERNET: Internet related packages
- * @PK_GROUP_ENUM_LEGACY: Legacy packages
- * @PK_GROUP_ENUM_LOCALIZATION: Localization related packages
- * @PK_GROUP_ENUM_MAPS: Map related packages
- * @PK_GROUP_ENUM_MULTIMEDIA: Multimedia packages
- * @PK_GROUP_ENUM_NETWORK: Network related packages
- * @PK_GROUP_ENUM_OFFICE: Office packages
- * @PK_GROUP_ENUM_OTHER:
- * @PK_GROUP_ENUM_POWER_MANAGEMENT: Power-management related packages
- * @PK_GROUP_ENUM_PROGRAMMING: Programming packages
- * @PK_GROUP_ENUM_PUBLISHING: Publishing related packages
- * @PK_GROUP_ENUM_REPOS:
- * @PK_GROUP_ENUM_SECURITY: Security packages
- * @PK_GROUP_ENUM_SERVERS: Server related packages
- * @PK_GROUP_ENUM_SYSTEM: System packages
- * @PK_GROUP_ENUM_VIRTUALIZATION: Virtualization packages
- * @PK_GROUP_ENUM_SCIENCE: Science related packages
+ * @PK_GROUP_ENUM_ACCESSIBILITY: Accessibility tools and assistive technology
+ * @PK_GROUP_ENUM_ADMIN: System administration and management tools
+ * @PK_GROUP_ENUM_COMMUNICATION: Communication: telephony, modems, ham radio, dial-up
+ * @PK_GROUP_ENUM_DATABASES: Database servers, clients and libraries
+ * @PK_GROUP_ENUM_DEBUG: Debug symbols and debugging data
+ * @PK_GROUP_ENUM_DESKTOP_GNOME: GNOME desktop and applications
+ * @PK_GROUP_ENUM_DESKTOP_KDE: KDE desktop and applications
+ * @PK_GROUP_ENUM_DESKTOP_OTHER: Other desktops, window managers and X11/Wayland components
+ * @PK_GROUP_ENUM_DEVEL: Development files: headers, static libraries and build-time dependencies
  * @PK_GROUP_ENUM_DOCUMENTATION: Documentation
- * @PK_GROUP_ENUM_ELECTRONICS: Electronics package
- * @PK_GROUP_ENUM_COLLECTIONS:
+ * @PK_GROUP_ENUM_EDITORS: Text editors and integrated development environments
+ * @PK_GROUP_ENUM_EDUCATION: Educational software
+ * @PK_GROUP_ENUM_ELECTRONICS: Electronics, embedded systems and engineering tools
+ * @PK_GROUP_ENUM_FONTS: Fonts
+ * @PK_GROUP_ENUM_GAMES: Games and entertainment
+ * @PK_GROUP_ENUM_GEOGRAPHY: Geography, maps and GIS
+ * @PK_GROUP_ENUM_GRAPHICS: Graphics and design
+ * @PK_GROUP_ENUM_INTERNET: Internet applications: browsers, mail and news clients
+ * @PK_GROUP_ENUM_LANG_C: C and C++ language libraries and tooling
+ * @PK_GROUP_ENUM_LANG_GO: Go language modules and tooling
+ * @PK_GROUP_ENUM_LANG_HASKELL: Haskell language modules and tooling
+ * @PK_GROUP_ENUM_LANG_JAVA: Java language libraries and tooling
+ * @PK_GROUP_ENUM_LANG_JAVASCRIPT: JavaScript and Node.js modules and tooling
+ * @PK_GROUP_ENUM_LANG_LISP: Lisp and Scheme language modules and tooling
+ * @PK_GROUP_ENUM_LANG_OCAML: OCaml language modules and tooling
+ * @PK_GROUP_ENUM_LANG_PERL: Perl language modules and tooling
+ * @PK_GROUP_ENUM_LANG_PHP: PHP language modules and tooling
+ * @PK_GROUP_ENUM_LANG_PYTHON: Python language modules and tooling
+ * @PK_GROUP_ENUM_LANG_RUBY: Ruby language modules and tooling
+ * @PK_GROUP_ENUM_LANG_RUST: Rust language crates and tooling
+ * @PK_GROUP_ENUM_LEGACY: Legacy and compatibility packages
+ * @PK_GROUP_ENUM_LIBRARIES: Shared libraries and runtime support
+ * @PK_GROUP_ENUM_LOCALIZATION: Localization: translations and input methods
+ * @PK_GROUP_ENUM_META: Metapackages, tasks and package collections
+ * @PK_GROUP_ENUM_MULTIMEDIA: Sound and video
+ * @PK_GROUP_ENUM_NETWORK: Networking tools and infrastructure
+ * @PK_GROUP_ENUM_OFFICE: Office and productivity
+ * @PK_GROUP_ENUM_OTHER: Packages that fit no other group
+ * @PK_GROUP_ENUM_PROGRAMMING: Development tools and programming languages without a dedicated group
+ * @PK_GROUP_ENUM_PUBLISHING: Publishing, typesetting, text processing and printing
+ * @PK_GROUP_ENUM_REPOS: Packages that add software repositories
+ * @PK_GROUP_ENUM_SCIENCE: Science and mathematics
+ * @PK_GROUP_ENUM_SECURITY: Security tools, cryptography and auditing
+ * @PK_GROUP_ENUM_SERVERS: Server software
+ * @PK_GROUP_ENUM_SHELLS: Command shells
+ * @PK_GROUP_ENUM_SYSTEM: Base system: kernel, core components and hardware support
+ * @PK_GROUP_ENUM_UTILITIES: General utilities
  * @PK_GROUP_ENUM_VENDOR: Vendor defined group
- * @PK_GROUP_ENUM_NEWEST: Special group for recently updated packages
- * @PK_GROUP_ENUM_DESKTOP_DDE: DDE packages
- * @PK_GROUP_ENUM_LAST:
+ * @PK_GROUP_ENUM_VIRTUALIZATION: Virtualization, emulation, containers and cloud
  *
- * The group type
+ * The group a package belongs to.
  **/
 typedef enum {
 	PK_GROUP_ENUM_UNKNOWN,
 	PK_GROUP_ENUM_ACCESSIBILITY,
-	PK_GROUP_ENUM_ACCESSORIES,
-	PK_GROUP_ENUM_ADMIN_TOOLS,
+	PK_GROUP_ENUM_ADMIN,
 	PK_GROUP_ENUM_COMMUNICATION,
+	PK_GROUP_ENUM_DATABASES,
+	PK_GROUP_ENUM_DEBUG,
 	PK_GROUP_ENUM_DESKTOP_GNOME,
 	PK_GROUP_ENUM_DESKTOP_KDE,
 	PK_GROUP_ENUM_DESKTOP_OTHER,
-	PK_GROUP_ENUM_DESKTOP_XFCE,
+	PK_GROUP_ENUM_DEVEL,
+	PK_GROUP_ENUM_DOCUMENTATION,
+	PK_GROUP_ENUM_EDITORS,
 	PK_GROUP_ENUM_EDUCATION,
+	PK_GROUP_ENUM_ELECTRONICS,
 	PK_GROUP_ENUM_FONTS,
 	PK_GROUP_ENUM_GAMES,
+	PK_GROUP_ENUM_GEOGRAPHY,
 	PK_GROUP_ENUM_GRAPHICS,
 	PK_GROUP_ENUM_INTERNET,
+	PK_GROUP_ENUM_LANG_C,
+	PK_GROUP_ENUM_LANG_GO,
+	PK_GROUP_ENUM_LANG_HASKELL,
+	PK_GROUP_ENUM_LANG_JAVA,
+	PK_GROUP_ENUM_LANG_JAVASCRIPT,
+	PK_GROUP_ENUM_LANG_LISP,
+	PK_GROUP_ENUM_LANG_OCAML,
+	PK_GROUP_ENUM_LANG_PERL,
+	PK_GROUP_ENUM_LANG_PHP,
+	PK_GROUP_ENUM_LANG_PYTHON,
+	PK_GROUP_ENUM_LANG_RUBY,
+	PK_GROUP_ENUM_LANG_RUST,
 	PK_GROUP_ENUM_LEGACY,
+	PK_GROUP_ENUM_LIBRARIES,
 	PK_GROUP_ENUM_LOCALIZATION,
-	PK_GROUP_ENUM_MAPS,
+	PK_GROUP_ENUM_META,
 	PK_GROUP_ENUM_MULTIMEDIA,
 	PK_GROUP_ENUM_NETWORK,
 	PK_GROUP_ENUM_OFFICE,
 	PK_GROUP_ENUM_OTHER,
-	PK_GROUP_ENUM_POWER_MANAGEMENT,
 	PK_GROUP_ENUM_PROGRAMMING,
 	PK_GROUP_ENUM_PUBLISHING,
 	PK_GROUP_ENUM_REPOS,
+	PK_GROUP_ENUM_SCIENCE,
 	PK_GROUP_ENUM_SECURITY,
 	PK_GROUP_ENUM_SERVERS,
+	PK_GROUP_ENUM_SHELLS,
 	PK_GROUP_ENUM_SYSTEM,
-	PK_GROUP_ENUM_VIRTUALIZATION,
-	PK_GROUP_ENUM_SCIENCE,
-	PK_GROUP_ENUM_DOCUMENTATION,
-	PK_GROUP_ENUM_ELECTRONICS,
-	PK_GROUP_ENUM_COLLECTIONS,
+	PK_GROUP_ENUM_UTILITIES,
 	PK_GROUP_ENUM_VENDOR,
-	PK_GROUP_ENUM_NEWEST,
-	PK_GROUP_ENUM_DESKTOP_DDE,
+	PK_GROUP_ENUM_VIRTUALIZATION,
+	/*< private >*/
 	PK_GROUP_ENUM_LAST
 } PkGroupEnum;
 
@@ -572,7 +601,6 @@ typedef enum {
  * @PK_UPDATE_STATE_ENUM_STABLE: Update is a stable release
  * @PK_UPDATE_STATE_ENUM_UNSTABLE: Update is an unstable release
  * @PK_UPDATE_STATE_ENUM_TESTING: Update is a testing release
- * @PK_UPDATE_STATE_ENUM_LAST:
  *
  * What state the update is in
  **/
@@ -581,6 +609,7 @@ typedef enum {
 	PK_UPDATE_STATE_ENUM_STABLE,
 	PK_UPDATE_STATE_ENUM_UNSTABLE,
 	PK_UPDATE_STATE_ENUM_TESTING,
+	/*< private >*/
 	PK_UPDATE_STATE_ENUM_LAST
 } PkUpdateStateEnum;
 
@@ -615,7 +644,6 @@ typedef enum {
  * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
  * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
  * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
- * @PK_INFO_ENUM_LAST:
  *
  * The enumerated types used in Package() - these have to refer to a specific
  * package action, rather than a general state
@@ -650,6 +678,7 @@ typedef enum {
 	PK_INFO_ENUM_REMOVE,
 	PK_INFO_ENUM_OBSOLETE,
 	PK_INFO_ENUM_DOWNGRADE,
+	/*< private >*/
 	PK_INFO_ENUM_LAST
 } PkInfoEnum;
 
@@ -658,7 +687,6 @@ typedef enum {
  * @PK_DISTRO_UPGRADE_ENUM_UNKNOWN: Unknown disto upgrade state
  * @PK_DISTRO_UPGRADE_ENUM_STABLE: Upgraded to stable release
  * @PK_DISTRO_UPGRADE_ENUM_UNSTABLE: Upgraded to unstable release
- * @PK_DISTRO_UPGRADE_ENUM_LAST:
  *
  * The distro upgrade status
  **/
@@ -666,6 +694,7 @@ typedef enum {
 	PK_DISTRO_UPGRADE_ENUM_UNKNOWN,
 	PK_DISTRO_UPGRADE_ENUM_STABLE,
 	PK_DISTRO_UPGRADE_ENUM_UNSTABLE,
+	/*< private >*/
 	PK_DISTRO_UPGRADE_ENUM_LAST
 } PkDistroUpgradeEnum;
 
@@ -673,13 +702,13 @@ typedef enum {
  * PkSigTypeEnum:
  * @PK_SIGTYPE_ENUM_UNKNOWN: Unkwown signature type
  * @PK_SIGTYPE_ENUM_GPG: GPG signature
- * @PK_SIGTYPE_ENUM_LAST:
  *
  * The signature type type
  **/
 typedef enum {
 	PK_SIGTYPE_ENUM_UNKNOWN,
 	PK_SIGTYPE_ENUM_GPG,
+	/*< private >*/
 	PK_SIGTYPE_ENUM_LAST
 } PkSigTypeEnum;
 
@@ -689,7 +718,6 @@ typedef enum {
  * @PK_AUTHORIZE_ENUM_YES: Authorized
  * @PK_AUTHORIZE_ENUM_NO: Not authorized
  * @PK_AUTHORIZE_ENUM_INTERACTIVE: Interaction required for authorization
- * @PK_AUTHORIZE_ENUM_LAST:
  *
  * The authorization result
  **/
@@ -698,6 +726,7 @@ typedef enum {
 	PK_AUTHORIZE_ENUM_YES,
 	PK_AUTHORIZE_ENUM_NO,
 	PK_AUTHORIZE_ENUM_INTERACTIVE,
+	/*< private >*/
 	PK_AUTHORIZE_ENUM_LAST
 } PkAuthorizeEnum;
 
@@ -707,7 +736,6 @@ typedef enum {
  * @PK_UPGRADE_KIND_ENUM_MINIMAL: Perform minimal upgrade
  * @PK_UPGRADE_KIND_ENUM_DEFAULT: Perform default upgrade
  * @PK_UPGRADE_KIND_ENUM_COMPLETE: Perform complete upgrade
- * @PK_UPGRADE_KIND_ENUM_LAST:
  *
  * The type of distribution upgrade to perform
  **/
@@ -716,6 +744,7 @@ typedef enum {
 	PK_UPGRADE_KIND_ENUM_MINIMAL,
 	PK_UPGRADE_KIND_ENUM_DEFAULT,
 	PK_UPGRADE_KIND_ENUM_COMPLETE,
+	/*< private >*/
 	PK_UPGRADE_KIND_ENUM_LAST
 } PkUpgradeKindEnum;
 
@@ -728,7 +757,6 @@ typedef enum {
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL: Allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL: Only allow package reinstallation
  * @PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE: Allow packages to be downgraded
- * @PK_TRANSACTION_FLAG_ENUM_LAST:
  *
  * The transaction flags that alter how the transaction is handled
  **/
@@ -740,6 +768,7 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_REINSTALL, /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */
+	/*< private >*/
 	PK_TRANSACTION_FLAG_ENUM_LAST		  /* Since: 0.8.1 */
 } PkTransactionFlagEnum;
 
