@@ -16,9 +16,6 @@ Please remove yourself from the maintainer list if your backend is unmaintained.
 ### DNF5 (Fedora)
  * Neal Gompa <neal@gompa.dev> | @Conan-Kudo
 
-### Entropy (Sabayon)
- * Fabio Erculiani <lxnay@sabayon.org>
-
 ### Eopkg (Solus)
  * Joey Riches <joey@getsol.us> <josephriches@gmail.com> | @joebonrichie
 
