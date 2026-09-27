@@ -285,8 +285,6 @@ typedef enum {
  * @PK_FILTER_ENUM_NOT_ARCH: Filter for packages that don't match architecture
  * @PK_FILTER_ENUM_SOURCE: Filter for source packages
  * @PK_FILTER_ENUM_NOT_SOURCE: Filter for non-source packages
- * @PK_FILTER_ENUM_COLLECTIONS: Filter for collections
- * @PK_FILTER_ENUM_NOT_COLLECTIONS: Filter for not collections
  * @PK_FILTER_ENUM_APPLICATION: Filter for application packages
  * @PK_FILTER_ENUM_NOT_APPLICATION: Filter for non-application packages
  * @PK_FILTER_ENUM_DOWNLOADED: Filter for downloaded packages
@@ -315,8 +313,6 @@ typedef enum {
 	PK_FILTER_ENUM_NOT_ARCH,
 	PK_FILTER_ENUM_SOURCE,
 	PK_FILTER_ENUM_NOT_SOURCE,
-	PK_FILTER_ENUM_COLLECTIONS,
-	PK_FILTER_ENUM_NOT_COLLECTIONS,
 	PK_FILTER_ENUM_APPLICATION,
 	PK_FILTER_ENUM_NOT_APPLICATION,
 	PK_FILTER_ENUM_DOWNLOADED,     /* Since: 0.8.10 */

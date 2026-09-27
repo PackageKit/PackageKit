@@ -225,8 +225,6 @@ static const PkEnumMatch enum_filter[] = {
 	{PK_FILTER_ENUM_NOT_ARCH,		"~arch"},
 	{PK_FILTER_ENUM_SOURCE,			"source"},
 	{PK_FILTER_ENUM_NOT_SOURCE,		"~source"},
-	{PK_FILTER_ENUM_COLLECTIONS,		"collections"},
-	{PK_FILTER_ENUM_NOT_COLLECTIONS,	"~collections"},
 	{PK_FILTER_ENUM_APPLICATION,		"application"},
 	{PK_FILTER_ENUM_NOT_APPLICATION,	"~application"},
 	{PK_FILTER_ENUM_DOWNLOADED,		"downloaded"},

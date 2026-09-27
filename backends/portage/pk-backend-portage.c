@@ -106,7 +106,6 @@ pk_backend_get_filters (PkBackend *backend)
 	 * PK_FILTER_ENUM_GUI	(need new PROPERTIES entry)
 	 * PK_FILTER_ENUM_ARCH (need some work, see ML)
 	 * PK_FILTER_ENUM_SOURCE (need some work/support, see ML)
-	 * PK_FILTER_ENUM_COLLECTIONS (need new PROPERTIES entry)
 	 * PK_FILTER_ENUM_APPLICATION (need new PROPERTIES entry)
 	 */
 }
