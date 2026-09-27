@@ -150,7 +150,8 @@ packagekit_glib2_library = shared_library(
     config_dep,
   ],
   include_directories: packagekit_glib2_includes,
-  version: '18.1.3',
+  soversion: pk_api_level,
+  version: meson.project_version(),
   c_args: [
     '-DPK_COMPILATION=1',
     '-DG_LOG_DOMAIN="PackageKit"',

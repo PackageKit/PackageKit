@@ -6,14 +6,16 @@ project('PackageKit', 'c',
   version : '1.99.0',
 )
 
+source_root = meson.project_source_root()
+build_root = meson.project_build_root()
+pk_version = meson.project_version()
+pk_api_level = '19'
+
 gnome = import('gnome')
 i18n = import('i18n')
 pkg = import('pkgconfig')
 
-source_root = meson.project_source_root()
-build_root = meson.project_build_root()
-
-glib_req_version = '2.76'
+glib_req_version = '2.80'
 glib_req = '>= @0@'.format(glib_req_version)
 glib_major = glib_req_version.split('.')[0].to_int()
 glib_minor = glib_req_version.split('.')[1].to_int()

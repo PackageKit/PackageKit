@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 env:
-  LAST_ABI_BREAK: c6cf3ae8dcfad21b987c0b4305ceb892ce2bb19a
+  LAST_ABI_BREAK: f0c1bbcf695de0d7c89dd87032ce2a09474d922f
 
 jobs:
   check-abi:
