@@ -210,8 +210,6 @@ pk_backend_upgrade_system (PkBackend *backend,
 			   const gchar *distro_id,
 			   PkUpgradeKindEnum upgrade_kind)
 {
-	pk_backend_job_error_code (job,
-				   PK_ERROR_ENUM_INTERNAL_ERROR,
-				   "Cannot find boot partition");
+	pk_backend_job_error_code (job, PK_ERROR_ENUM_INTERNAL_ERROR, "Cannot find boot partition");
 	pk_backend_job_finished (job);
 }

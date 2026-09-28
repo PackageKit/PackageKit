@@ -765,7 +765,7 @@ typedef enum {
 	PK_TRANSACTION_FLAG_ENUM_JUST_REINSTALL,  /* Since: 1.0.2 */
 	PK_TRANSACTION_FLAG_ENUM_ALLOW_DOWNGRADE, /* Since: 1.0.2 */
 	/*< private >*/
-	PK_TRANSACTION_FLAG_ENUM_LAST		  /* Since: 0.8.1 */
+	PK_TRANSACTION_FLAG_ENUM_LAST /* Since: 0.8.1 */
 } PkTransactionFlagEnum;
 
 /* general */
