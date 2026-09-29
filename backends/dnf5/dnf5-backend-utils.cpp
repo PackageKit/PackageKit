@@ -374,16 +374,9 @@ dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, P
 	return results;
 }
 
-void
-dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
+std::string
+dnf5_build_package_id(const libdnf5::rpm::Package &pkg)
 {
-	if (info == PK_INFO_ENUM_UNKNOWN) {
-		info = PK_INFO_ENUM_AVAILABLE;
-		if (pkg.get_install_time() > 0) {
-			info = PK_INFO_ENUM_INSTALLED;
-		}
-	}
-
 	std::string evr = pkg.get_evr();
 	std::string repo_id = pkg.get_repo_id();
 	if (pkg.get_install_time() > 0) {
@@ -395,7 +388,20 @@ dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum in
 		}
 	}
 
-	std::string package_id = pkg.get_name() + ";" + evr + ";" + pkg.get_arch() + ";" + repo_id;
+	return pkg.get_name() + ";" + evr + ";" + pkg.get_arch() + ";" + repo_id;
+}
+
+void
+dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
+{
+	if (info == PK_INFO_ENUM_UNKNOWN) {
+		info = PK_INFO_ENUM_AVAILABLE;
+		if (pkg.get_install_time() > 0) {
+			info = PK_INFO_ENUM_INSTALLED;
+		}
+	}
+
+	std::string package_id = dnf5_build_package_id(pkg);
 	if (severity != PK_INFO_ENUM_UNKNOWN) {
 		pk_backend_job_package_full(job, info, package_id.c_str(), pkg.get_summary().c_str(), severity);
 	} else {
@@ -605,12 +611,36 @@ dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver)
 	}
 }
 
-Dnf5DownloadCallbacks::Dnf5DownloadCallbacks(PkBackendJob *job, uint64_t total_size)
+Dnf5DownloadCallbacks::Dnf5DownloadCallbacks(PkBackendJob *job)
     : job(job),
-      total_size(total_size),
-      finished_size(0),
+      total_size(0),
+      downloaded_size(0),
+      transferred_size(0),
+      percentage(-1),
+      speed_timestamp(0),
+      speed_transferred_size(0),
       next_id(1)
 {
+}
+
+void
+Dnf5DownloadCallbacks::add_package(const libdnf5::rpm::Package &pkg)
+{
+	// libdnf5 describes package downloads by their full NEVRA
+	add_package(pkg.get_full_nevra(), dnf5_build_package_id(pkg), pkg.get_download_size(), pkg.get_summary());
+}
+
+void
+Dnf5DownloadCallbacks::add_package(
+	const std::string &description,
+	const std::string &package_id,
+	uint64_t download_size,
+	const std::string &summary)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+	package_ids[description] = package_id;
+	summaries[package_id] = summary;
+	total_size += download_size;
 }
 
 void *
@@ -618,33 +648,157 @@ Dnf5DownloadCallbacks::add_new_download(void *user_data, const char *description
 {
 	std::lock_guard<std::mutex> lock(mutex);
 	void *id = reinterpret_cast<void *>(next_id++);
-	item_progress[id] = 0;
+	Item item = {};
+	item.total_size = total_to_download > 0 ? total_to_download : 0;
+
+	// packages that are already available locally are not registered and
+	// do not count towards the download size
+	auto it = package_ids.find(description != nullptr ? description : "");
+	if (it != package_ids.end())
+		item.package_id = it->second;
+	items[id] = item;
 	return id;
+}
+
+double
+Dnf5DownloadCallbacks::item_fraction(const Item &item) const
+{
+	double fraction = 0;
+	if (item.total_size > 0)
+		fraction = std::clamp(item.downloaded / item.total_size, 0.0, 1.0);
+
+	guint completed = item.failed ? item.ends - 1 : item.ends;
+	return completed > 0 ? 1.0 : fraction;
+}
+
+void
+Dnf5DownloadCallbacks::announce(Item &item)
+{
+	if (item.announced || item.package_id.empty())
+		return;
+	item.announced = true;
+	pk_backend_job_package(
+		job,
+		PK_INFO_ENUM_DOWNLOADING,
+		item.package_id.c_str(),
+		summaries[item.package_id].c_str());
+}
+
+void
+Dnf5DownloadCallbacks::update_item_progress(Item &item)
+{
+	if (item.package_id.empty())
+		return;
+
+	guint item_percentage = (guint) (item_fraction(item) * 100);
+	if (item_percentage == item.percentage)
+		return;
+	item.percentage = item_percentage;
+	pk_backend_job_set_item_progress(job, item.package_id.c_str(), PK_STATUS_ENUM_DOWNLOAD, item_percentage);
+}
+
+void
+Dnf5DownloadCallbacks::update_progress()
+{
+	if (total_size > 0) {
+		gint new_percentage = (gint) (std::min(downloaded_size, (double) total_size) * 100 / total_size);
+		// the daemon refuses a percentage going down, which happens when a
+		// download restarts on another mirror
+		if (new_percentage > percentage) {
+			percentage = new_percentage;
+			pk_backend_job_set_percentage(job, (guint) percentage);
+		}
+
+		double remaining = std::max((double) total_size - downloaded_size, 0.0);
+		pk_backend_job_set_download_size_remaining(job, (guint64) remaining);
+	}
+
+	// start measuring with the first data, as connecting to the mirrors
+	// would otherwise be averaged into the rate
+	gint64 now = g_get_monotonic_time();
+	if (speed_timestamp == 0) {
+		if (transferred_size > 0) {
+			speed_timestamp = now;
+			speed_transferred_size = transferred_size;
+		}
+		return;
+	}
+
+	// average over at least a second so the rate does not jump around
+	gint64 elapsed = now - speed_timestamp;
+	if (elapsed >= G_USEC_PER_SEC) {
+		double speed = (transferred_size - speed_transferred_size) * G_USEC_PER_SEC / elapsed;
+		pk_backend_job_set_speed(job, (guint) std::max(speed, 0.0));
+		speed_timestamp = now;
+		speed_transferred_size = transferred_size;
+	}
 }
 
 int
 Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, double downloaded)
 {
 	std::lock_guard<std::mutex> lock(mutex);
-	item_progress[user_cb_data] = downloaded;
+	auto it = items.find(user_cb_data);
+	if (it == items.end())
+		return OK;
+	Item &item = it->second;
 
-	if (total_size > 0) {
-		double current_total = finished_size;
-		for (auto const &[id, prog] : item_progress) {
-			current_total += prog;
-		}
-		pk_backend_job_set_percentage(job, (uint) (current_total * 100 / total_size));
+	// only registered packages count towards the download size
+	if (!item.package_id.empty()) {
+		downloaded_size += downloaded - item.downloaded;
+		transferred_size += downloaded - item.downloaded;
 	}
-	return 0;
+
+	if (total_to_download > 0)
+		item.total_size = total_to_download;
+	item.downloaded = downloaded;
+
+	announce(item);
+	update_item_progress(item);
+	update_progress();
+	return OK;
 }
 
 int
 Dnf5DownloadCallbacks::end(void *user_cb_data, TransferStatus status, const char *msg)
 {
 	std::lock_guard<std::mutex> lock(mutex);
-	finished_size += item_progress[user_cb_data];
-	item_progress.erase(user_cb_data);
-	return 0;
+	auto it = items.find(user_cb_data);
+	if (it == items.end())
+		return OK;
+	Item &item = it->second;
+
+	if (status != TransferStatus::ERROR && !item.package_id.empty()) {
+		// packages that already exist report no progress at all
+		downloaded_size += item.total_size - item.downloaded;
+		item.downloaded = item.total_size;
+	}
+	item.ends++;
+	item.failed = status == TransferStatus::ERROR;
+
+	announce(item);
+	update_item_progress(item);
+	update_progress();
+
+	bool finished = std::all_of(items.begin(), items.end(), [](const auto &entry) {
+		return entry.second.ends > 0;
+	});
+	if (finished)
+		pk_backend_job_set_speed(job, 0);
+	return OK;
+}
+
+Dnf5ScopedDownloadCallbacks::Dnf5ScopedDownloadCallbacks(
+	libdnf5::Base &base,
+	std::unique_ptr<Dnf5DownloadCallbacks> callbacks)
+    : base(base)
+{
+	base.set_download_callbacks(std::move(callbacks));
+}
+
+Dnf5ScopedDownloadCallbacks::~Dnf5ScopedDownloadCallbacks()
+{
+	base.set_download_callbacks(nullptr);
 }
 
 Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)

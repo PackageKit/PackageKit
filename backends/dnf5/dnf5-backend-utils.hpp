@@ -27,6 +27,7 @@
 #include <libdnf5/repo/download_callbacks.hpp>
 #include <libdnf5/rpm/transaction_callbacks.hpp>
 #include <glib.h>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -63,6 +64,7 @@ bool dnf5_package_is_gui(const libdnf5::rpm::Package &pkg);
 bool dnf5_package_filter(const libdnf5::rpm::Package &pkg, PkBitfield filters);
 std::vector<libdnf5::rpm::Package>
 dnf5_process_dependency(libdnf5::Base &base, const libdnf5::rpm::Package &pkg, PkRoleEnum role, gboolean recursive);
+std::string dnf5_build_package_id(const libdnf5::rpm::Package &pkg);
 void dnf5_emit_pkg(
 	PkBackendJob *job,
 	const libdnf5::rpm::Package &pkg,
@@ -74,21 +76,70 @@ std::vector<libdnf5::rpm::Package>
 dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages = true);
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
+// Reports package download progress to a job. Packages registered with
+// add_package() are reported by package-id with item progress, and count
+// towards the percentage, speed and remaining download size. Downloads of
+// packages that were not registered, like local ones, are not reported.
 class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks
 {
     public:
-	explicit Dnf5DownloadCallbacks(PkBackendJob *job, uint64_t total_size = 0);
+	explicit Dnf5DownloadCallbacks(PkBackendJob *job);
+	void add_package(const libdnf5::rpm::Package &pkg);
+	// Register a download libdnf5 announces as @description, which is the
+	// full NEVRA for packages.
+	void add_package(
+		const std::string &description,
+		const std::string &package_id,
+		uint64_t download_size,
+		const std::string &summary = "");
 	void *add_new_download(void *user_data, const char *description, double total_to_download) override;
 	int progress(void *user_cb_data, double total_to_download, double downloaded) override;
 	int end(void *user_cb_data, TransferStatus status, const char *msg) override;
 
     private:
+	struct Item {
+		std::string package_id;
+		double total_size;
+		double downloaded;
+		guint percentage;
+		guint ends;
+		// whether the last end was a failure, which does not complete anything
+		bool failed;
+		bool announced;
+	};
+
+	double item_fraction(const Item &item) const;
+	void announce(Item &item);
+	void update_item_progress(Item &item);
+	void update_progress();
+
 	PkBackendJob *job;
+	std::map<std::string, std::string> package_ids;
+	std::map<std::string, std::string> summaries;
 	uint64_t total_size;
-	double finished_size;
-	std::map<void *, double> item_progress;
+	std::map<void *, Item> items;
+	double downloaded_size;
+	// only what came over the network, unlike packages that already exist
+	double transferred_size;
+	gint percentage;
+	gint64 speed_timestamp;
+	double speed_transferred_size;
 	std::mutex mutex;
 	uint64_t next_id;
+};
+
+// Installs download callbacks on a base for as long as it is in scope. The base
+// outlives the job the callbacks report to, so they must never stay behind.
+class Dnf5ScopedDownloadCallbacks
+{
+    public:
+	Dnf5ScopedDownloadCallbacks(libdnf5::Base &base, std::unique_ptr<Dnf5DownloadCallbacks> callbacks);
+	~Dnf5ScopedDownloadCallbacks();
+	Dnf5ScopedDownloadCallbacks(const Dnf5ScopedDownloadCallbacks &) = delete;
+	Dnf5ScopedDownloadCallbacks &operator=(const Dnf5ScopedDownloadCallbacks &) = delete;
+
+    private:
+	libdnf5::Base &base;
 };
 
 class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
