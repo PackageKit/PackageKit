@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-09-23 18:22+0200\n"
-"PO-Revision-Date: 2026-04-20 11:09+0000\n"
+"PO-Revision-Date: 2026-09-29 12:51+0000\n"
 "Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/packagekit/translations/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:166
@@ -196,7 +196,7 @@ msgstr "Pacote"
 #. * this update updates
 #: client/pkcon/pk-console.c:340
 msgid "Updates"
-msgstr "Atualiza"
+msgstr "Atualizações"
 
 #. TRANSLATORS: details about the update, any packages that
 #. * this update obsoletes
@@ -762,7 +762,7 @@ msgstr "SEGUNDOS"
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:203
 msgid "Refresh the package metadata cache."
-msgstr "Atualize o cache de metadados do pacote."
+msgstr "Atualiza o cache de metadados do pacote."
 
 #: client/pkgc-manage.c:229
 msgid "Package metadata refreshed"
@@ -855,7 +855,7 @@ msgstr "A atualização offline não foi acionada."
 #: client/pkgc-manage.c:720
 #, c-format
 msgid "Offline update is triggered. Action after update: %s"
-msgstr "A atualização offline é acionada. Ação após a atualização:%s"
+msgstr "A atualização offline é acionada. Ação após a atualização: %s"
 
 #. TRANSLATORS: Packages that were prepared for an offline update
 #: client/pkgc-manage.c:731
@@ -1009,12 +1009,12 @@ msgstr "Encerra o daemon do PackageKit com segurança"
 #. TRANSLATORS: Description for pkgcli monitor
 #: client/pkgc-monitor.c:516
 msgid "Monitor PackageKit D-Bus events"
-msgstr "Monitor de eventos D-Bus do PackageKit"
+msgstr "Monitora eventos D-Bus do PackageKit"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
 #: client/pkgc-monitor.c:638
 msgid "Monitor PackageKit bus events"
-msgstr "Monitor de eventos de barramento do PackageKit"
+msgstr "Monitora eventos de barramento do PackageKit"
 
 #. TRANSLATORS: Description for pkgcli backend
 #: client/pkgc-query.c:166
@@ -1060,8 +1060,8 @@ msgid ""
 "  group   - search by package group"
 msgstr ""
 "Procure pacotes que correspondam aos padrões fornecidos. Se MODO for omitido,\n"
-"A busca por 'details' é realizada.\n"
-"Possível MODOS de pesquisa são:\n"
+"A busca por \"details\" é realizada.\n"
+"Possível MODOs de pesquisa são:\n"
 "  name    - pesquisa pelo nome do pacote\n"
 "  details - pesquisa por detalhes do pacote (padrão)\n"
 "  file    - pesquisa pelo nome do arquivo\n"
@@ -1248,7 +1248,7 @@ msgstr "Ativa o repositório específico."
 #: client/pkgc-repo.c:135
 #, c-format
 msgid "Repository '%s' enabled"
-msgstr "Repositório '%s' ativado"
+msgstr "Repositório \"%s\" ativado"
 
 #. TRANSLATORS: Description for pkgcli repo-disable
 #: client/pkgc-repo.c:157
@@ -1258,7 +1258,7 @@ msgstr "Desabilita o repositório especificado."
 #: client/pkgc-repo.c:176
 #, c-format
 msgid "Repository '%s' disabled"
-msgstr "Repositório '%s' desativado"
+msgstr "Repositório \"%s\" desativado"
 
 #: client/pkgc-repo.c:199
 msgid "Automatically remove orphaned packages"
@@ -1430,7 +1430,7 @@ msgstr "Fornecedor:"
 #. TRANSLATORS: Label for issue-tracker in update details
 #: client/pkgc-util.c:828
 msgid "Issue Tracker:"
-msgstr "Emissor rastreador:"
+msgstr "Rastreador de problemas:"
 
 #. TRANSLATORS: Label for CVE information in update details
 #: client/pkgc-util.c:837
@@ -1550,7 +1550,7 @@ msgstr "Desativa saída colorida"
 #. TRANSLATORS: command line argument, do we ask questions
 #: client/pkgcli.c:92
 msgid "Answer 'yes' to all questions"
-msgstr "Responde 'sim' para todas a solicitações"
+msgstr "Responde \"sim\" para todas a solicitações"
 
 #: client/pkgcli.c:95
 msgid "FILTER"
@@ -1586,7 +1586,7 @@ msgstr "Comandos disponíveis:"
 
 #: client/pkgcli.c:223
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
-msgstr "Use 'pkgcli COMANDO --help' para ajuda no comando especificado."
+msgstr "Use \"pkgcli COMANDO --help\" para ajuda no comando especificado."
 
 #. TRANSLATORS: downloading repo data so we can search
 #: contrib/command-not-found/pk-command-not-found.c:426
@@ -1903,37 +1903,37 @@ msgstr "Por favor, insira um número entre 1 e %i: "
 
 #: lib/pk-console-private.c:335
 msgid "[N/y]"
-msgstr ""
+msgstr "[N/s]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
 #: lib/pk-console-private.c:335
 msgid "[Y/n]"
-msgstr ""
+msgstr "[S/n]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
 #: lib/pk-console-private.c:352
 msgctxt "Answer"
 msgid "y"
-msgstr ""
+msgstr "s"
 
 #. TRANSLATORS: full "yes" answer
 #: lib/pk-console-private.c:356
 msgctxt "Answer"
 msgid "yes"
-msgstr ""
+msgstr "sim"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
 #: lib/pk-console-private.c:363
 msgctxt "Answer"
 msgid "n"
-msgstr ""
+msgstr "n"
 
 #. TRANSLATORS: full "no" answer
 #: lib/pk-console-private.c:367
 msgctxt "Answer"
 msgid "no"
-msgstr ""
+msgstr "não"
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/pk-console-private.c:392
@@ -2270,7 +2270,7 @@ msgstr "Reinstalado"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1156
 msgid "Unknown role type"
-msgstr "Tipo de papel desconhecido"
+msgstr "Tipo de função desconhecida"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1160
@@ -2345,7 +2345,7 @@ msgstr "Obtendo repositórios"
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1225
 msgid "Modifying repository"
-msgstr "Modificação de repositório"
+msgstr "Modificando repositório"
 
 #. TRANSLATORS: The role of the transaction, in present tense
 #: lib/pk-enum.c:1229
@@ -2579,47 +2579,47 @@ msgstr "O backend de empacotamento a ser utilizado, p. ex.: dummy"
 
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "FILE"
-msgstr ""
+msgstr "ARQUIVO"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:414 src/pk-main.c:142
 msgid "Use this configuration file instead of the default"
-msgstr ""
+msgstr "Usa este arquivo de configuração em vez do padrão"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:433
 msgid "Refresh the cache"
-msgstr "Renovar o cache"
+msgstr "Renova o cache"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:438
 msgid "Refresh the cache (forced)"
-msgstr "Renovar o cache (forçado)"
+msgstr "Renova o cache (forçado)"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:443
 msgid "Search by names"
-msgstr "Pesquisar por nomes"
+msgstr "Pesquisa por nomes"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:448
 msgid "Search by details"
-msgstr "Pesquisar por detalhes"
+msgstr "Pesquisa por detalhes"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:453
 msgid "Search by files"
-msgstr "Pesquisar por arquivos"
+msgstr "Pesquisa por arquivos"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:458
 msgid "Install package"
-msgstr "Instalar pacote"
+msgstr "Instala pacote"
 
 #. TRANSLATORS: command description
 #: src/pk-direct.c:468
 msgid "Set repository options"
-msgstr "Definir opções do repositório"
+msgstr "Define opções do repositório"
 
 #. TRANSLATORS: program name
 #: src/pk-direct.c:479
@@ -2653,27 +2653,27 @@ msgstr "Falha ao descarregar o backend"
 #. TRANSLATORS: if we should not monitor how long we are inactive for
 #: src/pk-main.c:127
 msgid "Disable the idle timer"
-msgstr "Desabilitar o tempo de ociosidade"
+msgstr "Desabilita o tempo de ociosidade"
 
 #. TRANSLATORS: show version
 #: src/pk-main.c:130
 msgid "Show version and exit"
-msgstr "Mostrar a versão e sair"
+msgstr "Mostra a versão e sai"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
 #: src/pk-main.c:133
 msgid "Exit after a small delay"
-msgstr "Sair após um pequeno atraso"
+msgstr "Sai após um pequeno atraso"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
 #: src/pk-main.c:136
 msgid "Exit after the engine has loaded"
-msgstr "Sair após o carregamento do mecanismo"
+msgstr "Sai após o carregamento do mecanismo"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
 #: src/pk-main.c:139
 msgid "Don't clear environment on startup"
-msgstr "Não limpe o ambiente no início"
+msgstr "Não limpa o ambiente no início"
 
 #. TRANSLATORS: describing the service that is running
 #: src/pk-main.c:157
