@@ -73,7 +73,13 @@ dnf5_releasever_is_valid(const char *releasever)
 }
 
 void
-dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, gboolean online)
+dnf5_setup_base(
+	PkBackendDnf5Private *priv,
+	gboolean refresh,
+	gboolean force,
+	const char *releasever,
+	gboolean online,
+	PkBackendJob *job)
 {
 	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
 		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
@@ -173,7 +179,13 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 	}
 
 	g_debug("Loading repositories");
-	repo_sack->load_repos();
+	if (job != nullptr) {
+		// report repository metadata downloads
+		Dnf5ScopedDownloadCallbacks callbacks(*priv->base, std::make_unique<Dnf5DownloadCallbacks>(job));
+		repo_sack->load_repos();
+	} else {
+		repo_sack->load_repos();
+	}
 
 	libdnf5::repo::RepoQuery query(*priv->base);
 	query.filter_enabled(true);
@@ -196,9 +208,9 @@ dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online)
 }
 
 void
-dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force)
+dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force)
 {
-	dnf5_setup_base(priv, TRUE, force);
+	dnf5_setup_base(priv, TRUE, force, nullptr, TRUE, job);
 }
 
 PkInfoEnum
@@ -651,11 +663,13 @@ Dnf5DownloadCallbacks::add_new_download(void *user_data, const char *description
 	Item item = {};
 	item.total_size = total_to_download > 0 ? total_to_download : 0;
 
-	// packages that are already available locally are not registered and
-	// do not count towards the download size
-	auto it = package_ids.find(description != nullptr ? description : "");
-	if (it != package_ids.end())
-		item.package_id = it->second;
+	if (!package_ids.empty()) {
+		// packages that are already available locally are not registered
+		// and do not count towards the download size
+		auto it = package_ids.find(description != nullptr ? description : "");
+		if (it != package_ids.end())
+			item.package_id = it->second;
+	}
 	items[id] = item;
 	return id;
 }
@@ -668,7 +682,20 @@ Dnf5DownloadCallbacks::item_fraction(const Item &item) const
 		fraction = std::clamp(item.downloaded / item.total_size, 0.0, 1.0);
 
 	guint completed = item.failed ? item.ends - 1 : item.ends;
-	return completed > 0 ? 1.0 : fraction;
+	if (!package_ids.empty())
+		return completed > 0 ? 1.0 : fraction;
+
+	// Repository metadata is downloaded in two stages: first repomd.xml or the
+	// metalink is fetched to check whether the cache is still in sync, then
+	// the remaining metadata only for repositories that are not. Both stages
+	// end the same download, and which repositories need the second stage is
+	// only known once it starts, so each stage accounts for half of a
+	// repository to keep the overall percentage from going backwards.
+	if (completed > 1)
+		return 1.0;
+	if (completed == 1)
+		return item.reopened ? 0.5 + fraction / 2 : 0.5;
+	return fraction / 2;
 }
 
 void
@@ -700,15 +727,25 @@ Dnf5DownloadCallbacks::update_item_progress(Item &item)
 void
 Dnf5DownloadCallbacks::update_progress()
 {
-	if (total_size > 0) {
-		gint new_percentage = (gint) (std::min(downloaded_size, (double) total_size) * 100 / total_size);
-		// the daemon refuses a percentage going down, which happens when a
-		// download restarts on another mirror
+	if (!items.empty()) {
+		gint new_percentage = -1;
+		if (package_ids.empty()) {
+			double sum = 0;
+			for (auto const &[id, item] : items)
+				sum += item_fraction(item);
+			new_percentage = (gint) (sum * 100 / items.size());
+		} else if (total_size > 0) {
+			new_percentage = (gint) (std::min(downloaded_size, (double) total_size) * 100 / total_size);
+		}
+		// the daemon refuses a percentage going down, and the metadata sizes
+		// are only learned while downloading
 		if (new_percentage > percentage) {
 			percentage = new_percentage;
 			pk_backend_job_set_percentage(job, (guint) percentage);
 		}
+	}
 
+	if (total_size > 0) {
 		double remaining = std::max((double) total_size - downloaded_size, 0.0);
 		pk_backend_job_set_download_size_remaining(job, (guint64) remaining);
 	}
@@ -744,11 +781,14 @@ Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, do
 	Item &item = it->second;
 
 	// only registered packages count towards the download size
-	if (!item.package_id.empty()) {
+	if (package_ids.empty() || !item.package_id.empty()) {
 		downloaded_size += downloaded - item.downloaded;
 		transferred_size += downloaded - item.downloaded;
 	}
 
+	// the second stage of a repository metadata download
+	if (item.ends > 0)
+		item.reopened = true;
 	if (total_to_download > 0)
 		item.total_size = total_to_download;
 	item.downloaded = downloaded;
@@ -768,7 +808,7 @@ Dnf5DownloadCallbacks::end(void *user_cb_data, TransferStatus status, const char
 		return OK;
 	Item &item = it->second;
 
-	if (status != TransferStatus::ERROR && !item.package_id.empty()) {
+	if (status != TransferStatus::ERROR && !package_ids.empty() && !item.package_id.empty()) {
 		// packages that already exist report no progress at all
 		downloaded_size += item.total_size - item.downloaded;
 		item.downloaded = item.total_size;
