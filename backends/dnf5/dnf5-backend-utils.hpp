@@ -149,6 +149,9 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
     public:
 	explicit Dnf5TransactionCallbacks(PkBackendJob *job);
 	void before_begin(uint64_t total) override;
+	void verify_start(uint64_t total) override;
+	void verify_progress(uint64_t amount, uint64_t total) override;
+	void transaction_start(uint64_t total) override;
 	void elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
