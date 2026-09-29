@@ -312,6 +312,144 @@ dnf5_test_transaction_phases(void)
 }
 
 static void
+dnf5_test_transaction_weighted(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, true, 1000);
+	cb.add_package(BAR_NEVRA, true, 9000);
+	cb.before_begin(2);
+
+	// a small package moves the percentage only a little
+	cb.start_element(FOO_NEVRA, true);
+	cb.element_progress(0, 100);
+	cb.element_progress(100, 100);
+	cb.stop_element();
+	dnf5_test_assert_percentages({0, 10});
+
+	cb.start_element(BAR_NEVRA, true);
+	cb.element_progress(50, 100);
+	cb.element_progress(100, 100);
+	cb.stop_element();
+	dnf5_test_assert_percentages({0, 10, 55, 100});
+}
+
+static void
+dnf5_test_transaction_removal(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	// removing a large package is not slower than removing a small one
+	cb.add_package(FOO_NEVRA, false, 1000000);
+	cb.add_package(BAR_NEVRA, false, 10);
+	cb.before_begin(2);
+
+	cb.start_element(FOO_NEVRA, false);
+	cb.element_progress(10, 10);
+	cb.stop_element();
+	dnf5_test_assert_percentages({50});
+}
+
+static void
+dnf5_test_transaction_complete(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	std::vector<std::string> nevras;
+	for (int i = 0; i < 7; i++)
+		nevras.push_back("pkg" + std::to_string(i) + "-0:1.0-1.x86_64");
+	for (const auto &nevra : nevras)
+		cb.add_package(nevra, false, 100);
+	cb.before_begin(nevras.size());
+
+	// the shares must add up to all of it, despite rounding
+	for (const auto &nevra : nevras) {
+		cb.start_element(nevra, false);
+		cb.element_progress(1, 1);
+		cb.stop_element();
+	}
+	g_assert_cmpuint(dnf5_test_job.percentages.back(), ==, 100);
+}
+
+static void
+dnf5_test_transaction_upgrade(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.add_package("foo-0:2.0-1.x86_64", true, 300);
+	cb.add_package("bar-0:3.0-1.noarch", true, 100);
+	cb.add_package(FOO_NEVRA, false, 280);
+	cb.add_package(BAR_NEVRA, false, 90);
+	cb.before_begin(4);
+
+	// the new versions split their half by size, the old ones are removed
+	// one after the other
+	cb.start_element("foo-0:2.0-1.x86_64", true);
+	cb.element_progress(1, 1);
+	cb.stop_element();
+	cb.start_element("bar-0:3.0-1.noarch", true);
+	cb.element_progress(1, 1);
+	cb.stop_element();
+	cb.start_element(FOO_NEVRA, false);
+	cb.element_progress(1, 1);
+	cb.stop_element();
+	cb.start_element(BAR_NEVRA, false);
+	cb.element_progress(1, 1);
+	cb.stop_element();
+	dnf5_test_assert_percentages({37, 50, 75, 100});
+}
+
+static void
+dnf5_test_transaction_reinstall(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	// a reinstalled package is installed and removed in the same transaction
+	cb.add_package(FOO_NEVRA, true, 100);
+	cb.add_package(FOO_NEVRA, false, 100);
+	cb.before_begin(2);
+
+	cb.start_element(FOO_NEVRA, true);
+	cb.element_progress(10, 10);
+	cb.stop_element();
+	cb.start_element(FOO_NEVRA, false);
+	cb.element_progress(10, 10);
+	dnf5_test_assert_percentages({50, 100});
+}
+
+static void
+dnf5_test_transaction_unregistered(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.before_begin(4);
+
+	// without registered packages, every element weighs the same
+	cb.start_element(FOO_NEVRA, true);
+	cb.element_progress(1, 2);
+	cb.stop_element();
+	cb.start_element(BAR_NEVRA, false);
+	cb.element_progress(2, 2);
+	dnf5_test_assert_percentages({12, 50});
+}
+
+static void
+dnf5_test_transaction_unknown_element(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, true, 100);
+	cb.before_begin(2);
+
+	cb.start_element(BAR_NEVRA, true);
+	cb.element_progress(10, 10);
+	cb.stop_element();
+	cb.start_element(FOO_NEVRA, true);
+	cb.element_progress(10, 10);
+	dnf5_test_assert_percentages({0, 100});
+}
+
+static void
 dnf5_test_transaction_hooks(void)
 {
 	dnf5_test_job.reset();
@@ -372,6 +510,13 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/speed-starts-with-data", dnf5_test_download_speed_starts_with_data);
 	g_test_add_func("/dnf5/download/speed-ignores-existing", dnf5_test_download_speed_ignores_existing);
 	g_test_add_func("/dnf5/transaction/phases", dnf5_test_transaction_phases);
+	g_test_add_func("/dnf5/transaction/weighted", dnf5_test_transaction_weighted);
+	g_test_add_func("/dnf5/transaction/removal", dnf5_test_transaction_removal);
+	g_test_add_func("/dnf5/transaction/upgrade", dnf5_test_transaction_upgrade);
+	g_test_add_func("/dnf5/transaction/complete", dnf5_test_transaction_complete);
+	g_test_add_func("/dnf5/transaction/reinstall", dnf5_test_transaction_reinstall);
+	g_test_add_func("/dnf5/transaction/unregistered", dnf5_test_transaction_unregistered);
+	g_test_add_func("/dnf5/transaction/unknown-element", dnf5_test_transaction_unknown_element);
 	g_test_add_func("/dnf5/transaction/hooks", dnf5_test_transaction_hooks);
 	g_test_add_func("/dnf5/download/scoped-callbacks", dnf5_test_scoped_download_callbacks);
 

@@ -863,16 +863,80 @@ Dnf5ScopedDownloadCallbacks::~Dnf5ScopedDownloadCallbacks()
 Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)
     : job(job),
       total_items(0),
-      current_item_index(0),
       processed_items(0),
+      processed_share(0),
+      current_share(0),
       running_hooks(false)
 {
+}
+
+void
+Dnf5TransactionCallbacks::add_package(const libdnf5::base::TransactionPackage &item)
+{
+	auto pkg = item.get_package();
+	bool inbound = libdnf5::transaction::transaction_item_action_is_inbound(item.get_action());
+	add_package(pkg.get_full_nevra(), inbound, pkg.get_install_size());
+}
+
+void
+Dnf5TransactionCallbacks::add_package(const std::string &full_nevra, bool inbound, uint64_t installed_size)
+{
+	elements[{full_nevra, inbound}] = {inbound, installed_size};
+}
+
+double
+Dnf5TransactionCallbacks::element_share(const std::string &full_nevra, bool inbound) const
+{
+	if (elements.empty())
+		return total_items > 0 ? 1.0 / total_items : 0;
+
+	// elements that were not registered do not move the percentage
+	auto it = elements.find({full_nevra, inbound});
+	if (it == elements.end())
+		return 0;
+	if (!inbound)
+		return 1.0 / elements.size();
+
+	// removing a package takes about as long whatever its size, but
+	// installing one mostly depends on how much there is to write
+	uint64_t inbound_count = 0;
+	uint64_t inbound_size = 0;
+	for (const auto &[key, element] : elements) {
+		if (element.inbound) {
+			inbound_count++;
+			inbound_size += element.installed_size;
+		}
+	}
+	double inbound_share = (double) inbound_count / elements.size();
+	if (inbound_size == 0)
+		return inbound_share / inbound_count;
+	return inbound_share * it->second.installed_size / inbound_size;
+}
+
+void
+Dnf5TransactionCallbacks::start_element(const std::string &full_nevra, bool inbound)
+{
+	current_share = element_share(full_nevra, inbound);
+}
+
+void
+Dnf5TransactionCallbacks::element_progress(uint64_t amount, uint64_t total)
+{
+	if (total == 0)
+		return;
+
+	double fraction = std::min((double) amount / total, 1.0);
+	// the shares add up with rounding errors, which must not cut off 100%
+	double done = processed_share + fraction * current_share;
+	pk_backend_job_set_percentage(job, (guint) std::min(done * 100 + 1e-6, 100.0));
 }
 
 void
 Dnf5TransactionCallbacks::stop_element()
 {
 	processed_items++;
+	processed_share += current_share;
+	current_share = 0;
 }
 
 void
@@ -916,24 +980,6 @@ Dnf5TransactionCallbacks::transaction_start(uint64_t total)
 }
 
 void
-Dnf5TransactionCallbacks::elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
-{
-	current_item_index = amount;
-}
-
-void
-Dnf5TransactionCallbacks::install_progress(
-	const libdnf5::base::TransactionPackage &item,
-	uint64_t amount,
-	uint64_t total)
-{
-	if (total_items > 0 && total > 0) {
-		double item_frac = (double) amount / total;
-		pk_backend_job_set_percentage(job, (uint) ((current_item_index + item_frac) * 100 / total_items));
-	}
-}
-
-void
 Dnf5TransactionCallbacks::install_start(const libdnf5::base::TransactionPackage &item, uint64_t total)
 {
 	auto action = item.get_action();
@@ -943,24 +989,22 @@ Dnf5TransactionCallbacks::install_start(const libdnf5::base::TransactionPackage 
 		info = PK_INFO_ENUM_UPDATING;
 	}
 	dnf5_emit_pkg(job, item.get_package(), info);
+	start_element(item.get_package().get_full_nevra(), true);
+}
+
+void
+Dnf5TransactionCallbacks::install_progress(
+	const libdnf5::base::TransactionPackage &item,
+	uint64_t amount,
+	uint64_t total)
+{
+	element_progress(amount, total);
 }
 
 void
 Dnf5TransactionCallbacks::install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
 {
 	stop_element();
-}
-
-void
-Dnf5TransactionCallbacks::uninstall_progress(
-	const libdnf5::base::TransactionPackage &item,
-	uint64_t amount,
-	uint64_t total)
-{
-	if (total_items > 0 && total > 0) {
-		double item_frac = (double) amount / total;
-		pk_backend_job_set_percentage(job, (uint) ((current_item_index + item_frac) * 100 / total_items));
-	}
 }
 
 void
@@ -972,6 +1016,16 @@ Dnf5TransactionCallbacks::uninstall_start(const libdnf5::base::TransactionPackag
 		info = PK_INFO_ENUM_CLEANUP;
 	}
 	dnf5_emit_pkg(job, item.get_package(), info);
+	start_element(item.get_package().get_full_nevra(), false);
+}
+
+void
+Dnf5TransactionCallbacks::uninstall_progress(
+	const libdnf5::base::TransactionPackage &item,
+	uint64_t amount,
+	uint64_t total)
+{
+	element_progress(amount, total);
 }
 
 void
