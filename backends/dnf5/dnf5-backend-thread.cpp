@@ -733,6 +733,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		}
 
 		// Post-transaction base re-initialization to ensure state consistency
+		pk_backend_job_set_status(job, PK_STATUS_ENUM_LOADING_CACHE);
+		pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 		dnf5_setup_base(priv);
 
 	} catch (const std::exception &e) {
