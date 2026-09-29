@@ -312,6 +312,30 @@ dnf5_test_transaction_phases(void)
 }
 
 static void
+dnf5_test_transaction_hooks(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.before_begin(2);
+
+	// %pretrans and the scriptlets of each package are part of their elements
+	cb.start_scriptlet();
+	cb.stop_element();
+	cb.start_scriptlet();
+	cb.stop_element();
+	g_assert_true(dnf5_test_job.statuses.empty());
+
+	// %posttrans and file triggers only run once everything is processed
+	cb.start_scriptlet();
+	g_assert_cmpuint(dnf5_test_job.statuses.size(), ==, 1);
+	g_assert_cmpint(dnf5_test_job.statuses.back(), ==, PK_STATUS_ENUM_RUN_HOOK);
+	g_assert_cmpuint(dnf5_test_job.percentages.back(), ==, PK_BACKEND_PERCENTAGE_INVALID);
+
+	cb.start_scriptlet();
+	g_assert_cmpuint(dnf5_test_job.statuses.size(), ==, 1);
+}
+
+static void
 dnf5_test_scoped_download_callbacks(void)
 {
 	libdnf5::Base base;
@@ -348,6 +372,7 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/speed-starts-with-data", dnf5_test_download_speed_starts_with_data);
 	g_test_add_func("/dnf5/download/speed-ignores-existing", dnf5_test_download_speed_ignores_existing);
 	g_test_add_func("/dnf5/transaction/phases", dnf5_test_transaction_phases);
+	g_test_add_func("/dnf5/transaction/hooks", dnf5_test_transaction_hooks);
 	g_test_add_func("/dnf5/download/scoped-callbacks", dnf5_test_scoped_download_callbacks);
 
 	return g_test_run();

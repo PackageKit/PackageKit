@@ -863,8 +863,28 @@ Dnf5ScopedDownloadCallbacks::~Dnf5ScopedDownloadCallbacks()
 Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)
     : job(job),
       total_items(0),
-      current_item_index(0)
+      current_item_index(0),
+      processed_items(0),
+      running_hooks(false)
 {
+}
+
+void
+Dnf5TransactionCallbacks::stop_element()
+{
+	processed_items++;
+}
+
+void
+Dnf5TransactionCallbacks::start_scriptlet()
+{
+	// %posttrans scriptlets and file triggers run once every element has been
+	// processed, and can take a while without any other progress
+	if (running_hooks || total_items == 0 || processed_items < total_items)
+		return;
+	running_hooks = true;
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_RUN_HOOK);
+	pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 }
 
 void
@@ -926,6 +946,12 @@ Dnf5TransactionCallbacks::install_start(const libdnf5::base::TransactionPackage 
 }
 
 void
+Dnf5TransactionCallbacks::install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
+{
+	stop_element();
+}
+
+void
 Dnf5TransactionCallbacks::uninstall_progress(
 	const libdnf5::base::TransactionPackage &item,
 	uint64_t amount,
@@ -946,4 +972,19 @@ Dnf5TransactionCallbacks::uninstall_start(const libdnf5::base::TransactionPackag
 		info = PK_INFO_ENUM_CLEANUP;
 	}
 	dnf5_emit_pkg(job, item.get_package(), info);
+}
+
+void
+Dnf5TransactionCallbacks::uninstall_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
+{
+	stop_element();
+}
+
+void
+Dnf5TransactionCallbacks::script_start(
+	const libdnf5::base::TransactionPackage *item,
+	libdnf5::rpm::Nevra nevra,
+	ScriptType type)
+{
+	start_scriptlet();
 }
