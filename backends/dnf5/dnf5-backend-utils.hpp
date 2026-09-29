@@ -144,12 +144,21 @@ class Dnf5ScopedDownloadCallbacks
 	libdnf5::Base &base;
 };
 
+// Reports the progress of an rpm transaction to a job. Every transaction
+// element registered with add_package() gets the same share of the
+// percentage, except that the packages being installed split their shares by
+// their installed size, as writing their files takes most of the time.
+// Without any registered package, every element weighs the same.
 class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 {
     public:
 	explicit Dnf5TransactionCallbacks(PkBackendJob *job);
+	void add_package(const libdnf5::base::TransactionPackage &item);
+	void add_package(const std::string &full_nevra, bool inbound, uint64_t installed_size);
 
 	// The progress of the transaction elements, as reported by rpm.
+	void start_element(const std::string &full_nevra, bool inbound);
+	void element_progress(uint64_t amount, uint64_t total);
 	void stop_element();
 	void start_scriptlet();
 
@@ -157,21 +166,30 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 	void verify_start(uint64_t total) override;
 	void verify_progress(uint64_t amount, uint64_t total) override;
 	void transaction_start(uint64_t total) override;
-	void elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
-	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
+	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void uninstall_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
 	void
 	uninstall_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
-	void uninstall_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
 	void uninstall_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void script_start(const libdnf5::base::TransactionPackage *item, libdnf5::rpm::Nevra nevra, ScriptType type)
 		override;
 
     private:
+	struct Element {
+		bool inbound;
+		uint64_t installed_size;
+	};
+
+	double element_share(const std::string &full_nevra, bool inbound) const;
+
 	PkBackendJob *job;
+	// a reinstalled package is both installed and removed
+	std::map<std::pair<std::string, bool>, Element> elements;
 	uint64_t total_items;
-	uint64_t current_item_index;
 	uint64_t processed_items;
+	double processed_share;
+	double current_share;
 	bool running_hooks;
 };
