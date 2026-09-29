@@ -216,17 +216,17 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				g_variant_get(params, "(^as&s)", &package_ids, &directory);
 				auto pkgs = dnf5_resolve_package_ids(*priv->base, package_ids);
 				libdnf5::repo::PackageDownloader downloader(*priv->base);
-				uint64_t total_download_size = 0;
-				for (const auto &pkg : pkgs)
-					total_download_size += pkg.get_download_size();
-
-				priv->base->set_download_callbacks(
-					std::make_unique<Dnf5DownloadCallbacks>(job, total_download_size));
+				auto callbacks = std::make_unique<Dnf5DownloadCallbacks>(job);
 				for (auto &pkg : pkgs) {
-					dnf5_emit_pkg(job, pkg, PK_INFO_ENUM_DOWNLOADING);
+					callbacks->add_package(pkg);
 					downloader.add(pkg, directory);
 				}
-				downloader.download();
+
+				pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
+				{
+					Dnf5ScopedDownloadCallbacks scoped(*priv->base, std::move(callbacks));
+					downloader.download();
+				}
 
 				std::vector<char *> files_c;
 				for (auto &pkg : pkgs) {
@@ -661,20 +661,25 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			return;
 		}
 
-		pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
-
-		uint64_t total_download_size = 0;
+		auto callbacks = std::make_unique<Dnf5DownloadCallbacks>(job);
+		bool need_download = false;
 		for (const auto &item : trans.get_transaction_packages()) {
 			if (libdnf5::transaction::transaction_item_action_is_inbound(item.get_action())) {
 				auto pkg = item.get_package();
 				if (!pkg.is_available_locally()) {
-					total_download_size += pkg.get_download_size();
+					callbacks->add_package(pkg);
+					need_download = true;
 				}
 			}
 		}
 
-		priv->base->set_download_callbacks(std::make_unique<Dnf5DownloadCallbacks>(job, total_download_size));
-		trans.download();
+		// removals and local packages have nothing to download
+		if (need_download)
+			pk_backend_job_set_status(job, PK_STATUS_ENUM_DOWNLOAD);
+		{
+			Dnf5ScopedDownloadCallbacks scoped(*priv->base, std::move(callbacks));
+			trans.download();
+		}
 
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
 			// Iterate over transaction items and report them as if they were being processed
