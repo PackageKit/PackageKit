@@ -411,18 +411,29 @@ pk_backend_repo_remove(
 	pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
 }
 
-void
-pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
+static void
+pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
-	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
+	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend(job);
 	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
+	gboolean force = FALSE;
+	g_variant_get(params, "(b)", &force);
+
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
 	try {
-		dnf5_refresh_cache(priv, force);
+		dnf5_refresh_cache(priv, job, force);
 	} catch (const std::exception &e) {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
 	}
-	pk_backend_job_finished(job);
+}
+
+void
+pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
+{
+	g_autoptr(GVariant) params = g_variant_new("(b)", force);
+	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
+	pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, NULL, NULL);
 }
 
 void

@@ -50,9 +50,10 @@ void dnf5_setup_base(
 	gboolean refresh = FALSE,
 	gboolean force = FALSE,
 	const char *releasever = nullptr,
-	gboolean online = TRUE);
+	gboolean online = TRUE,
+	PkBackendJob *job = nullptr);
 void dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online);
-void dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force);
+void dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force);
 PkInfoEnum dnf5_advisory_kind_to_info_enum(const std::string &type);
 PkInfoEnum dnf5_update_severity_to_enum(const std::string &severity);
 bool dnf5_force_distupgrade_on_upgrade(libdnf5::Base &base);
@@ -84,10 +85,10 @@ std::vector<libdnf5::rpm::Package>
 dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages = true);
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
-// Reports package download progress to a job. Packages registered with
-// add_package() are reported by package-id with item progress, and count
-// towards the percentage, speed and remaining download size. Downloads of
-// packages that were not registered, like local ones, are not reported.
+// Reports download progress to a job. Packages registered with add_package()
+// are reported by package-id with item progress and the remaining download
+// size. Without any registered package, every download is treated as
+// repository metadata and only the overall percentage and speed are reported.
 class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks
 {
     public:
@@ -109,6 +110,7 @@ class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks
 		guint ends;
 		// whether the last end was a failure, which does not complete anything
 		bool failed;
+		bool reopened;
 		bool announced;
 	};
 

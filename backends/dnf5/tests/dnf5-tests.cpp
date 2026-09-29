@@ -158,6 +158,72 @@ dnf5_test_download_unknown_data(void)
 }
 
 static void
+dnf5_test_download_metadata(void)
+{
+	dnf5_test_job.reset();
+	Dnf5DownloadCallbacks cb(test_job);
+
+	// repositories are described by name and have no known size
+	void *fedora = cb.add_new_download(nullptr, "Fedora 44 - x86_64", -1);
+	void *updates = cb.add_new_download(nullptr, "Fedora 44 - x86_64 - Updates", -1);
+
+	// first stage: repomd.xml
+	cb.progress(fedora, 100, 50);
+	dnf5_test_assert_percentages({12});
+	cb.end(fedora, TransferStatus::SUCCESSFUL, nullptr);
+	dnf5_test_assert_percentages({12, 25});
+	cb.end(updates, TransferStatus::SUCCESSFUL, nullptr);
+	dnf5_test_assert_percentages({12, 25, 50});
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), ==, 0);
+
+	// second stage: the rest of the metadata of an out of sync repository
+	cb.progress(fedora, 200, 100);
+	dnf5_test_assert_percentages({12, 25, 50, 62});
+	cb.end(fedora, TransferStatus::SUCCESSFUL, nullptr);
+	dnf5_test_assert_percentages({12, 25, 50, 62, 75});
+
+	// repositories are no packages
+	g_assert_true(dnf5_test_job.item_progress.empty());
+	g_assert_true(dnf5_test_job.package_statuses.empty());
+	g_assert_true(dnf5_test_job.download_size_remaining.empty());
+}
+
+static void
+dnf5_test_download_metadata_failed(void)
+{
+	dnf5_test_job.reset();
+	Dnf5DownloadCallbacks cb(test_job);
+	void *fedora = cb.add_new_download(nullptr, "Fedora 44 - x86_64", -1);
+	void *updates = cb.add_new_download(nullptr, "Fedora 44 - x86_64 - Updates", -1);
+
+	cb.progress(fedora, 100, 50);
+	dnf5_test_assert_percentages({12});
+
+	// a repository that could not be downloaded is not complete
+	cb.end(fedora, TransferStatus::ERROR, "Cannot download repomd.xml");
+	dnf5_test_assert_percentages({12});
+	cb.end(updates, TransferStatus::SUCCESSFUL, nullptr);
+	dnf5_test_assert_percentages({12, 37});
+
+	// but it is no longer transferring anything
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), ==, 0);
+}
+
+static void
+dnf5_test_download_metadata_unknown_size(void)
+{
+	dnf5_test_job.reset();
+	Dnf5DownloadCallbacks cb(test_job);
+	void *repo = cb.add_new_download(nullptr, "Fedora 44 - x86_64", -1);
+
+	// librepo does not know the size yet
+	cb.progress(repo, 0, 0);
+	dnf5_test_assert_percentages({0});
+	cb.end(repo, TransferStatus::SUCCESSFUL, nullptr);
+	dnf5_test_assert_percentages({0, 50});
+}
+
+static void
 dnf5_test_download_speed(void)
 {
 	dnf5_test_job.reset();
@@ -254,6 +320,9 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/percentage-monotonic", dnf5_test_download_percentage_monotonic);
 	g_test_add_func("/dnf5/download/failed", dnf5_test_download_failed);
 	g_test_add_func("/dnf5/download/unknown-data", dnf5_test_download_unknown_data);
+	g_test_add_func("/dnf5/download/metadata", dnf5_test_download_metadata);
+	g_test_add_func("/dnf5/download/metadata-failed", dnf5_test_download_metadata_failed);
+	g_test_add_func("/dnf5/download/metadata-unknown-size", dnf5_test_download_metadata_unknown_size);
 	g_test_add_func("/dnf5/download/speed", dnf5_test_download_speed);
 	g_test_add_func("/dnf5/download/speed-starts-with-data", dnf5_test_download_speed_starts_with_data);
 	g_test_add_func("/dnf5/download/speed-ignores-existing", dnf5_test_download_speed_ignores_existing);
