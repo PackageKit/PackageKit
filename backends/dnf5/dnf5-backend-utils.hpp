@@ -148,6 +148,11 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 {
     public:
 	explicit Dnf5TransactionCallbacks(PkBackendJob *job);
+
+	// The progress of the transaction elements, as reported by rpm.
+	void stop_element();
+	void start_scriptlet();
+
 	void before_begin(uint64_t total) override;
 	void verify_start(uint64_t total) override;
 	void verify_progress(uint64_t amount, uint64_t total) override;
@@ -155,12 +160,18 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 	void elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void install_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
+	void install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void
 	uninstall_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
 	void uninstall_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
+	void uninstall_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void script_start(const libdnf5::base::TransactionPackage *item, libdnf5::rpm::Nevra nevra, ScriptType type)
+		override;
 
     private:
 	PkBackendJob *job;
 	uint64_t total_items;
 	uint64_t current_item_index;
+	uint64_t processed_items;
+	bool running_hooks;
 };
