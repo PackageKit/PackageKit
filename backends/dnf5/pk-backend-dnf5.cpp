@@ -180,6 +180,23 @@ pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 {
 }
 
+static void
+pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
+{
+	PkBackend *backend = (PkBackend *) pk_backend_job_get_backend(job);
+	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
+	gboolean force = FALSE;
+	g_variant_get(params, "(b)", &force);
+
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
+	try {
+		dnf5_refresh_cache(priv, job, force);
+	} catch (const std::exception &e) {
+		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
+	}
+}
+
 void
 pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 {
@@ -217,20 +234,9 @@ pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 	case PK_ROLE_ENUM_REPO_REMOVE:
 		pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
 		break;
-	case PK_ROLE_ENUM_REFRESH_CACHE: {
-		gboolean force;
-		g_variant_get(pk_backend_job_get_parameters(job), "(b)", &force);
-		pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-		PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
-		g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
-		try {
-			dnf5_refresh_cache(priv, force);
-		} catch (const std::exception &e) {
-			pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
-		}
-		pk_backend_job_finished(job);
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, NULL, NULL);
 		break;
-	}
 	default:
 		pk_backend_job_error_code(
 			job,
