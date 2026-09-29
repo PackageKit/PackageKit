@@ -717,7 +717,10 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 			return;
 		}
 
-		pk_backend_job_set_status(job, PK_STATUS_ENUM_RUNNING);
+		// libdnf5 checks the signatures and runs an rpm test transaction
+		// before any transaction callback is called
+		pk_backend_job_set_status(job, PK_STATUS_ENUM_TEST_COMMIT);
+		pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 		trans.set_callbacks(std::make_unique<Dnf5TransactionCallbacks>(job));
 		auto res = trans.run();
 		g_debug("Transaction run result: %s",

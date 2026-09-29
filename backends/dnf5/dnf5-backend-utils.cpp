@@ -855,6 +855,28 @@ Dnf5TransactionCallbacks::before_begin(uint64_t total)
 }
 
 void
+Dnf5TransactionCallbacks::verify_start(uint64_t total)
+{
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_SIG_CHECK);
+	pk_backend_job_set_percentage(job, 0);
+}
+
+void
+Dnf5TransactionCallbacks::verify_progress(uint64_t amount, uint64_t total)
+{
+	if (total > 0)
+		pk_backend_job_set_percentage(job, (uint) (amount * 100 / total));
+}
+
+void
+Dnf5TransactionCallbacks::transaction_start(uint64_t total)
+{
+	// rpm is preparing the transaction, there is no progress to report
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_COMMIT);
+	pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
+}
+
+void
 Dnf5TransactionCallbacks::elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
 {
 	current_item_index = amount;
