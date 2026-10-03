@@ -73,7 +73,13 @@ dnf5_releasever_is_valid(const char *releasever)
 }
 
 void
-dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, const char *releasever, gboolean online)
+dnf5_setup_base(
+	PkBackendDnf5Private *priv,
+	gboolean refresh,
+	gboolean force,
+	const char *releasever,
+	gboolean online,
+	PkBackendJob *job)
 {
 	if (releasever != nullptr && !dnf5_releasever_is_valid(releasever))
 		throw std::invalid_argument(std::string("Invalid release version: ") + releasever);
@@ -173,7 +179,13 @@ dnf5_setup_base(PkBackendDnf5Private *priv, gboolean refresh, gboolean force, co
 	}
 
 	g_debug("Loading repositories");
-	repo_sack->load_repos();
+	if (job != nullptr) {
+		// report repository metadata downloads
+		Dnf5ScopedDownloadCallbacks callbacks(*priv->base, std::make_unique<Dnf5DownloadCallbacks>(job));
+		repo_sack->load_repos();
+	} else {
+		repo_sack->load_repos();
+	}
 
 	libdnf5::repo::RepoQuery query(*priv->base);
 	query.filter_enabled(true);
@@ -196,9 +208,9 @@ dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online)
 }
 
 void
-dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force)
+dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force)
 {
-	dnf5_setup_base(priv, TRUE, force);
+	dnf5_setup_base(priv, TRUE, force, nullptr, TRUE, job);
 }
 
 PkInfoEnum
@@ -636,12 +648,34 @@ dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver)
 	}
 }
 
-Dnf5DownloadCallbacks::Dnf5DownloadCallbacks(PkBackendJob *job, uint64_t total_size)
+Dnf5DownloadCallbacks::Dnf5DownloadCallbacks(PkBackendJob *job)
     : job(job),
-      total_size(total_size),
-      finished_size(0),
+      total_size(0),
+      downloaded_size(0),
+      transferred_size(0),
+      percentage(-1),
+      speed_timestamp(0),
+      speed_transferred_size(0),
       next_id(1)
 {
+}
+
+void
+Dnf5DownloadCallbacks::add_package(const libdnf5::rpm::Package &pkg)
+{
+	// libdnf5 describes package downloads by their full NEVRA
+	add_package(pkg.get_full_nevra(), dnf5_build_package_id(pkg), pkg.get_download_size());
+}
+
+void
+Dnf5DownloadCallbacks::add_package(
+	const std::string &description,
+	const std::string &package_id,
+	uint64_t download_size)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+	package_ids[description] = package_id;
+	total_size += download_size;
 }
 
 void *
@@ -649,40 +683,272 @@ Dnf5DownloadCallbacks::add_new_download(void *user_data, const char *description
 {
 	std::lock_guard<std::mutex> lock(mutex);
 	void *id = reinterpret_cast<void *>(next_id++);
-	item_progress[id] = 0;
+	Item item = {};
+	item.total_size = total_to_download > 0 ? total_to_download : 0;
+
+	if (!package_ids.empty()) {
+		// packages that are already available locally are not registered
+		// and do not count towards the download size
+		auto it = package_ids.find(description != nullptr ? description : "");
+		if (it != package_ids.end())
+			item.package_id = it->second;
+	}
+	items[id] = item;
 	return id;
+}
+
+double
+Dnf5DownloadCallbacks::item_fraction(const Item &item) const
+{
+	double fraction = 0;
+	if (item.total_size > 0)
+		fraction = std::clamp(item.downloaded / item.total_size, 0.0, 1.0);
+
+	guint completed = item.failed ? item.ends - 1 : item.ends;
+	if (!package_ids.empty())
+		return completed > 0 ? 1.0 : fraction;
+
+	// Repository metadata is downloaded in two stages: first repomd.xml or the
+	// metalink is fetched to check whether the cache is still in sync, then
+	// the remaining metadata only for repositories that are not. Both stages
+	// end the same download, and which repositories need the second stage is
+	// only known once it starts, so each stage accounts for half of a
+	// repository to keep the overall percentage from going backwards.
+	if (completed > 1)
+		return 1.0;
+	if (completed == 1)
+		return item.reopened ? 0.5 + fraction / 2 : 0.5;
+	return fraction / 2;
+}
+
+void
+Dnf5DownloadCallbacks::announce(Item &item)
+{
+	if (item.announced || item.package_id.empty())
+		return;
+	item.announced = true;
+	pk_backend_job_package_status(job, item.package_id.c_str(), PK_INFO_ENUM_DOWNLOADING);
+}
+
+void
+Dnf5DownloadCallbacks::update_item_progress(Item &item)
+{
+	if (item.package_id.empty())
+		return;
+
+	guint item_percentage = (guint) (item_fraction(item) * 100);
+	if (item_percentage == item.percentage)
+		return;
+	item.percentage = item_percentage;
+	pk_backend_job_set_item_progress(job, item.package_id.c_str(), PK_STATUS_ENUM_DOWNLOAD, item_percentage);
+}
+
+void
+Dnf5DownloadCallbacks::update_progress()
+{
+	if (!items.empty()) {
+		gint new_percentage = -1;
+		if (package_ids.empty()) {
+			double sum = 0;
+			for (auto const &[id, item] : items)
+				sum += item_fraction(item);
+			new_percentage = (gint) (sum * 100 / items.size());
+		} else if (total_size > 0) {
+			new_percentage = (gint) (std::min(downloaded_size, (double) total_size) * 100 / total_size);
+		}
+		// the daemon refuses a percentage going down, and the metadata sizes
+		// are only learned while downloading
+		if (new_percentage > percentage) {
+			percentage = new_percentage;
+			pk_backend_job_set_percentage(job, (guint) percentage);
+		}
+	}
+
+	if (total_size > 0) {
+		double remaining = std::max((double) total_size - downloaded_size, 0.0);
+		pk_backend_job_set_download_size_remaining(job, (guint64) remaining);
+	}
+
+	// start measuring with the first data, as connecting to the mirrors
+	// would otherwise be averaged into the rate
+	gint64 now = g_get_monotonic_time();
+	if (speed_timestamp == 0) {
+		if (transferred_size > 0) {
+			speed_timestamp = now;
+			speed_transferred_size = transferred_size;
+		}
+		return;
+	}
+
+	// average over at least a second so the rate does not jump around
+	gint64 elapsed = now - speed_timestamp;
+	if (elapsed >= G_USEC_PER_SEC) {
+		double speed = (transferred_size - speed_transferred_size) * G_USEC_PER_SEC / elapsed;
+		pk_backend_job_set_speed(job, (guint) std::max(speed, 0.0));
+		speed_timestamp = now;
+		speed_transferred_size = transferred_size;
+	}
 }
 
 int
 Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, double downloaded)
 {
 	std::lock_guard<std::mutex> lock(mutex);
-	item_progress[user_cb_data] = downloaded;
+	auto it = items.find(user_cb_data);
+	if (it == items.end())
+		return OK;
+	Item &item = it->second;
 
-	if (total_size > 0) {
-		double current_total = finished_size;
-		for (auto const &[id, prog] : item_progress) {
-			current_total += prog;
-		}
-		pk_backend_job_set_percentage(job, (uint) (current_total * 100 / total_size));
+	// only registered packages count towards the download size
+	if (package_ids.empty() || !item.package_id.empty()) {
+		downloaded_size += downloaded - item.downloaded;
+		transferred_size += downloaded - item.downloaded;
 	}
-	return 0;
+
+	// the second stage of a repository metadata download
+	if (item.ends > 0)
+		item.reopened = true;
+	if (total_to_download > 0)
+		item.total_size = total_to_download;
+	item.downloaded = downloaded;
+
+	announce(item);
+	update_item_progress(item);
+	update_progress();
+	return OK;
 }
 
 int
 Dnf5DownloadCallbacks::end(void *user_cb_data, TransferStatus status, const char *msg)
 {
 	std::lock_guard<std::mutex> lock(mutex);
-	finished_size += item_progress[user_cb_data];
-	item_progress.erase(user_cb_data);
-	return 0;
+	auto it = items.find(user_cb_data);
+	if (it == items.end())
+		return OK;
+	Item &item = it->second;
+
+	if (status != TransferStatus::ERROR && !package_ids.empty() && !item.package_id.empty()) {
+		// packages that already exist report no progress at all
+		downloaded_size += item.total_size - item.downloaded;
+		item.downloaded = item.total_size;
+	}
+	item.ends++;
+	item.failed = status == TransferStatus::ERROR;
+
+	announce(item);
+	update_item_progress(item);
+	update_progress();
+
+	bool finished = std::all_of(items.begin(), items.end(), [](const auto &entry) {
+		return entry.second.ends > 0;
+	});
+	if (finished)
+		pk_backend_job_set_speed(job, 0);
+	return OK;
+}
+
+Dnf5ScopedDownloadCallbacks::Dnf5ScopedDownloadCallbacks(
+	libdnf5::Base &base,
+	std::unique_ptr<Dnf5DownloadCallbacks> callbacks)
+    : base(base)
+{
+	base.set_download_callbacks(std::move(callbacks));
+}
+
+Dnf5ScopedDownloadCallbacks::~Dnf5ScopedDownloadCallbacks()
+{
+	base.set_download_callbacks(nullptr);
 }
 
 Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)
     : job(job),
       total_items(0),
-      current_item_index(0)
+      processed_items(0),
+      processed_share(0),
+      current_share(0),
+      running_hooks(false)
 {
+}
+
+void
+Dnf5TransactionCallbacks::add_package(const libdnf5::base::TransactionPackage &item)
+{
+	auto pkg = item.get_package();
+	bool inbound = libdnf5::transaction::transaction_item_action_is_inbound(item.get_action());
+	add_package(pkg.get_full_nevra(), inbound, pkg.get_install_size());
+}
+
+void
+Dnf5TransactionCallbacks::add_package(const std::string &full_nevra, bool inbound, uint64_t installed_size)
+{
+	elements[{full_nevra, inbound}] = {inbound, installed_size};
+}
+
+double
+Dnf5TransactionCallbacks::element_share(const std::string &full_nevra, bool inbound) const
+{
+	if (elements.empty())
+		return total_items > 0 ? 1.0 / total_items : 0;
+
+	// elements that were not registered do not move the percentage
+	auto it = elements.find({full_nevra, inbound});
+	if (it == elements.end())
+		return 0;
+	if (!inbound)
+		return 1.0 / elements.size();
+
+	// removing a package takes about as long whatever its size, but
+	// installing one mostly depends on how much there is to write
+	uint64_t inbound_count = 0;
+	uint64_t inbound_size = 0;
+	for (const auto &[key, element] : elements) {
+		if (element.inbound) {
+			inbound_count++;
+			inbound_size += element.installed_size;
+		}
+	}
+	double inbound_share = (double) inbound_count / elements.size();
+	if (inbound_size == 0)
+		return inbound_share / inbound_count;
+	return inbound_share * it->second.installed_size / inbound_size;
+}
+
+void
+Dnf5TransactionCallbacks::start_element(const std::string &full_nevra, bool inbound)
+{
+	current_share = element_share(full_nevra, inbound);
+}
+
+void
+Dnf5TransactionCallbacks::element_progress(uint64_t amount, uint64_t total)
+{
+	if (total == 0)
+		return;
+
+	double fraction = std::min((double) amount / total, 1.0);
+	// the shares add up with rounding errors, which must not cut off 100%
+	double done = processed_share + fraction * current_share;
+	pk_backend_job_set_percentage(job, (guint) std::min(done * 100 + 1e-6, 100.0));
+}
+
+void
+Dnf5TransactionCallbacks::stop_element()
+{
+	processed_items++;
+	processed_share += current_share;
+	current_share = 0;
+}
+
+void
+Dnf5TransactionCallbacks::start_scriptlet()
+{
+	// %posttrans scriptlets and file triggers run once every element has been
+	// processed, and can take a while without any other progress
+	if (running_hooks || total_items == 0 || processed_items < total_items)
+		return;
+	running_hooks = true;
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_RUN_HOOK);
+	pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 }
 
 void
@@ -692,21 +958,25 @@ Dnf5TransactionCallbacks::before_begin(uint64_t total)
 }
 
 void
-Dnf5TransactionCallbacks::elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
+Dnf5TransactionCallbacks::verify_start(uint64_t total)
 {
-	current_item_index = amount;
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_SIG_CHECK);
+	pk_backend_job_set_percentage(job, 0);
 }
 
 void
-Dnf5TransactionCallbacks::install_progress(
-	const libdnf5::base::TransactionPackage &item,
-	uint64_t amount,
-	uint64_t total)
+Dnf5TransactionCallbacks::verify_progress(uint64_t amount, uint64_t total)
 {
-	if (total_items > 0 && total > 0) {
-		double item_frac = (double) amount / total;
-		pk_backend_job_set_percentage(job, (uint) ((current_item_index + item_frac) * 100 / total_items));
-	}
+	if (total > 0)
+		pk_backend_job_set_percentage(job, (uint) (amount * 100 / total));
+}
+
+void
+Dnf5TransactionCallbacks::transaction_start(uint64_t total)
+{
+	// rpm is preparing the transaction, there is no progress to report
+	pk_backend_job_set_status(job, PK_STATUS_ENUM_COMMIT);
+	pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 }
 
 void
@@ -719,18 +989,22 @@ Dnf5TransactionCallbacks::install_start(const libdnf5::base::TransactionPackage 
 		info = PK_INFO_ENUM_UPDATING;
 	}
 	dnf5_emit_pkg(job, item.get_package(), info);
+	start_element(item.get_package().get_full_nevra(), true);
 }
 
 void
-Dnf5TransactionCallbacks::uninstall_progress(
+Dnf5TransactionCallbacks::install_progress(
 	const libdnf5::base::TransactionPackage &item,
 	uint64_t amount,
 	uint64_t total)
 {
-	if (total_items > 0 && total > 0) {
-		double item_frac = (double) amount / total;
-		pk_backend_job_set_percentage(job, (uint) ((current_item_index + item_frac) * 100 / total_items));
-	}
+	element_progress(amount, total);
+}
+
+void
+Dnf5TransactionCallbacks::install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
+{
+	stop_element();
 }
 
 void
@@ -742,4 +1016,29 @@ Dnf5TransactionCallbacks::uninstall_start(const libdnf5::base::TransactionPackag
 		info = PK_INFO_ENUM_CLEANUP;
 	}
 	dnf5_emit_pkg(job, item.get_package(), info);
+	start_element(item.get_package().get_full_nevra(), false);
+}
+
+void
+Dnf5TransactionCallbacks::uninstall_progress(
+	const libdnf5::base::TransactionPackage &item,
+	uint64_t amount,
+	uint64_t total)
+{
+	element_progress(amount, total);
+}
+
+void
+Dnf5TransactionCallbacks::uninstall_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total)
+{
+	stop_element();
+}
+
+void
+Dnf5TransactionCallbacks::script_start(
+	const libdnf5::base::TransactionPackage *item,
+	libdnf5::rpm::Nevra nevra,
+	ScriptType type)
+{
+	start_scriptlet();
 }

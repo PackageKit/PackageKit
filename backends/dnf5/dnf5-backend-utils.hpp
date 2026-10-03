@@ -27,6 +27,7 @@
 #include <libdnf5/repo/download_callbacks.hpp>
 #include <libdnf5/rpm/transaction_callbacks.hpp>
 #include <glib.h>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -49,9 +50,10 @@ void dnf5_setup_base(
 	gboolean refresh = FALSE,
 	gboolean force = FALSE,
 	const char *releasever = nullptr,
-	gboolean online = TRUE);
+	gboolean online = TRUE,
+	PkBackendJob *job = nullptr);
 void dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online);
-void dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force);
+void dnf5_refresh_cache(PkBackendDnf5Private *priv, PkBackendJob *job, gboolean force);
 PkInfoEnum dnf5_advisory_kind_to_info_enum(const std::string &type);
 PkInfoEnum dnf5_update_severity_to_enum(const std::string &severity);
 bool dnf5_force_distupgrade_on_upgrade(libdnf5::Base &base);
@@ -83,37 +85,114 @@ std::vector<libdnf5::rpm::Package>
 dnf5_resolve_package_ids(libdnf5::Base &base, gchar **package_ids, bool allow_cmdline_packages = true);
 void dnf5_remove_old_cache_directories(PkBackend *backend, const gchar *release_ver);
 
+// Reports download progress to a job. Packages registered with add_package()
+// are reported by package-id with item progress and the remaining download
+// size. Without any registered package, every download is treated as
+// repository metadata and only the overall percentage and speed are reported.
 class Dnf5DownloadCallbacks : public libdnf5::repo::DownloadCallbacks
 {
     public:
-	explicit Dnf5DownloadCallbacks(PkBackendJob *job, uint64_t total_size = 0);
+	explicit Dnf5DownloadCallbacks(PkBackendJob *job);
+	void add_package(const libdnf5::rpm::Package &pkg);
+	// Register a download libdnf5 announces as @description, which is the
+	// full NEVRA for packages.
+	void add_package(const std::string &description, const std::string &package_id, uint64_t download_size);
 	void *add_new_download(void *user_data, const char *description, double total_to_download) override;
 	int progress(void *user_cb_data, double total_to_download, double downloaded) override;
 	int end(void *user_cb_data, TransferStatus status, const char *msg) override;
 
     private:
+	struct Item {
+		std::string package_id;
+		double total_size;
+		double downloaded;
+		guint percentage;
+		guint ends;
+		// whether the last end was a failure, which does not complete anything
+		bool failed;
+		bool reopened;
+		bool announced;
+	};
+
+	double item_fraction(const Item &item) const;
+	void announce(Item &item);
+	void update_item_progress(Item &item);
+	void update_progress();
+
 	PkBackendJob *job;
+	std::map<std::string, std::string> package_ids;
 	uint64_t total_size;
-	double finished_size;
-	std::map<void *, double> item_progress;
+	std::map<void *, Item> items;
+	double downloaded_size;
+	// only what came over the network, unlike packages that already exist
+	double transferred_size;
+	gint percentage;
+	gint64 speed_timestamp;
+	double speed_transferred_size;
 	std::mutex mutex;
 	uint64_t next_id;
 };
 
+// Installs download callbacks on a base for as long as it is in scope. The base
+// outlives the job the callbacks report to, so they must never stay behind.
+class Dnf5ScopedDownloadCallbacks
+{
+    public:
+	Dnf5ScopedDownloadCallbacks(libdnf5::Base &base, std::unique_ptr<Dnf5DownloadCallbacks> callbacks);
+	~Dnf5ScopedDownloadCallbacks();
+	Dnf5ScopedDownloadCallbacks(const Dnf5ScopedDownloadCallbacks &) = delete;
+	Dnf5ScopedDownloadCallbacks &operator=(const Dnf5ScopedDownloadCallbacks &) = delete;
+
+    private:
+	libdnf5::Base &base;
+};
+
+// Reports the progress of an rpm transaction to a job. Every transaction
+// element registered with add_package() gets the same share of the
+// percentage, except that the packages being installed split their shares by
+// their installed size, as writing their files takes most of the time.
+// Without any registered package, every element weighs the same.
 class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 {
     public:
 	explicit Dnf5TransactionCallbacks(PkBackendJob *job);
+	void add_package(const libdnf5::base::TransactionPackage &item);
+	void add_package(const std::string &full_nevra, bool inbound, uint64_t installed_size);
+
+	// The progress of the transaction elements, as reported by rpm.
+	void start_element(const std::string &full_nevra, bool inbound);
+	void element_progress(uint64_t amount, uint64_t total);
+	void stop_element();
+	void start_scriptlet();
+
 	void before_begin(uint64_t total) override;
-	void elem_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
-	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void verify_start(uint64_t total) override;
+	void verify_progress(uint64_t amount, uint64_t total) override;
+	void transaction_start(uint64_t total) override;
 	void install_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
+	void install_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void install_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void uninstall_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
 	void
 	uninstall_progress(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
-	void uninstall_start(const libdnf5::base::TransactionPackage &item, uint64_t total) override;
+	void uninstall_stop(const libdnf5::base::TransactionPackage &item, uint64_t amount, uint64_t total) override;
+	void script_start(const libdnf5::base::TransactionPackage *item, libdnf5::rpm::Nevra nevra, ScriptType type)
+		override;
 
     private:
+	struct Element {
+		bool inbound;
+		uint64_t installed_size;
+	};
+
+	double element_share(const std::string &full_nevra, bool inbound) const;
+
 	PkBackendJob *job;
+	// a reinstalled package is both installed and removed
+	std::map<std::pair<std::string, bool>, Element> elements;
 	uint64_t total_items;
-	uint64_t current_item_index;
+	uint64_t processed_items;
+	double processed_share;
+	double current_share;
+	bool running_hooks;
 };
