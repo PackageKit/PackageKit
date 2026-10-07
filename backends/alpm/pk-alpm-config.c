@@ -385,7 +385,7 @@ static const PkAlpmConfigList pk_alpm_config_list_options[] = {
 static alpm_list_t *
 pk_alpm_list_add_words (alpm_list_t *list, const gchar *words)
 {
-	gchar *str;
+	const gchar *str;
 
 	while ((str = strchr (words, ' ')) != NULL) {
 		/* allocate normally */
