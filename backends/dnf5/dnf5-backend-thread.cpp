@@ -746,6 +746,8 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		pk_backend_job_set_status(job, PK_STATUS_ENUM_LOADING_CACHE);
 		pk_backend_job_set_percentage(job, PK_BACKEND_PERCENTAGE_INVALID);
 		dnf5_setup_base(priv);
+		if (res == libdnf5::base::Transaction::TransactionRunResult::SUCCESS)
+			pk_backend_job_set_percentage(job, 100);
 
 	} catch (const std::exception &e) {
 		pk_backend_job_error_code(job, PK_ERROR_ENUM_TRANSACTION_ERROR, "%s", e.what());

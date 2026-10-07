@@ -40,12 +40,16 @@ dnf5_test_assert_percentages(const std::vector<guint> &expected)
 }
 
 static void
-dnf5_test_assert_item_progress(size_t index, const char *package_id, guint percentage)
+dnf5_test_assert_item_progress(
+	size_t index,
+	const char *package_id,
+	guint percentage,
+	PkStatusEnum status = PK_STATUS_ENUM_DOWNLOAD)
 {
 	g_assert_cmpuint(dnf5_test_job.item_progress.size(), >, index);
 	const auto &item = dnf5_test_job.item_progress[index];
 	g_assert_cmpstr(item.package_id.c_str(), ==, package_id);
-	g_assert_cmpint(item.status, ==, PK_STATUS_ENUM_DOWNLOAD);
+	g_assert_cmpint(item.status, ==, status);
 	g_assert_cmpuint(item.percentage, ==, percentage);
 }
 
@@ -430,7 +434,63 @@ dnf5_test_transaction_unregistered(void)
 	cb.stop_element();
 	cb.start_element(BAR_NEVRA, false);
 	cb.element_progress(2, 2);
-	dnf5_test_assert_percentages({12, 50});
+	dnf5_test_assert_percentages({12, 25, 50});
+}
+
+static void
+dnf5_test_transaction_item_completion(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, true, 100);
+	cb.add_package(BAR_NEVRA, true, 300);
+	cb.before_begin(2);
+	cb.start_element(FOO_NEVRA, true, FOO_ID, PK_INFO_ENUM_UPDATING);
+	cb.element_progress(50, 100);
+	// The stop callback must complete both the item and its weighted share,
+	// even if rpm never reported the last byte.
+	cb.stop_element();
+	cb.start_element(BAR_NEVRA, true, BAR_ID, PK_INFO_ENUM_INSTALLING);
+	cb.element_progress(300, 300);
+	cb.stop_element();
+
+	dnf5_test_assert_percentages({12, 25, 100});
+	dnf5_test_assert_item_progress(0, FOO_ID, 0, PK_STATUS_ENUM_UPDATE);
+	dnf5_test_assert_item_progress(1, FOO_ID, 50, PK_STATUS_ENUM_UPDATE);
+	dnf5_test_assert_item_progress(2, FOO_ID, 100, PK_STATUS_ENUM_UPDATE);
+	dnf5_test_assert_item_progress(3, FOO_ID, 100, PK_STATUS_ENUM_FINISHED);
+	dnf5_test_assert_item_progress(4, BAR_ID, 0, PK_STATUS_ENUM_INSTALL);
+	dnf5_test_assert_item_progress(5, BAR_ID, 100, PK_STATUS_ENUM_INSTALL);
+	dnf5_test_assert_item_progress(6, BAR_ID, 100, PK_STATUS_ENUM_FINISHED);
+	g_assert_cmpuint(dnf5_test_job.package_statuses.size(), ==, 4);
+	g_assert_cmpint(dnf5_test_job.package_statuses[1].info, ==, PK_INFO_ENUM_FINISHED);
+	g_assert_cmpstr(dnf5_test_job.package_statuses[1].package_id.c_str(), ==, FOO_ID);
+	g_assert_cmpint(dnf5_test_job.package_statuses[3].info, ==, PK_INFO_ENUM_FINISHED);
+	g_assert_cmpstr(dnf5_test_job.package_statuses[3].package_id.c_str(), ==, BAR_ID);
+}
+
+static void
+dnf5_test_transaction_removal_without_progress(void)
+{
+	dnf5_test_job.reset();
+	Dnf5TransactionCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, false, 1000000);
+	cb.add_package(BAR_NEVRA, false, 10);
+	cb.before_begin(2);
+	cb.start_element(FOO_NEVRA, false, FOO_ID, PK_INFO_ENUM_REMOVING);
+	cb.stop_element();
+	cb.start_element(BAR_NEVRA, false, BAR_ID, PK_INFO_ENUM_CLEANUP);
+	cb.element_progress(0, 0);
+	cb.stop_element();
+
+	dnf5_test_assert_percentages({50, 100});
+	dnf5_test_assert_item_progress(0, FOO_ID, 0, PK_STATUS_ENUM_REMOVE);
+	dnf5_test_assert_item_progress(2, FOO_ID, 100, PK_STATUS_ENUM_FINISHED);
+	dnf5_test_assert_item_progress(3, BAR_ID, 0, PK_STATUS_ENUM_CLEANUP);
+	dnf5_test_assert_item_progress(4, BAR_ID, PK_BACKEND_PERCENTAGE_INVALID, PK_STATUS_ENUM_CLEANUP);
+	dnf5_test_assert_item_progress(6, BAR_ID, 100, PK_STATUS_ENUM_FINISHED);
+	g_assert_cmpuint(dnf5_test_job.package_statuses.size(), ==, 4);
+	g_assert_cmpint(dnf5_test_job.package_statuses.back().info, ==, PK_INFO_ENUM_FINISHED);
 }
 
 static void
@@ -516,6 +576,8 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/transaction/complete", dnf5_test_transaction_complete);
 	g_test_add_func("/dnf5/transaction/reinstall", dnf5_test_transaction_reinstall);
 	g_test_add_func("/dnf5/transaction/unregistered", dnf5_test_transaction_unregistered);
+	g_test_add_func("/dnf5/transaction/item-completion", dnf5_test_transaction_item_completion);
+	g_test_add_func("/dnf5/transaction/removal-without-progress", dnf5_test_transaction_removal_without_progress);
 	g_test_add_func("/dnf5/transaction/unknown-element", dnf5_test_transaction_unknown_element);
 	g_test_add_func("/dnf5/transaction/hooks", dnf5_test_transaction_hooks);
 	g_test_add_func("/dnf5/download/scoped-callbacks", dnf5_test_scoped_download_callbacks);
