@@ -12,7 +12,7 @@ pk_backend_modules += shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Test"',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 pk_backend_modules += shared_module(
@@ -27,7 +27,7 @@ pk_backend_modules += shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Test"',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 pk_backend_modules += shared_module(
@@ -42,7 +42,7 @@ pk_backend_modules += shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Test"',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 pk_backend_modules += shared_module(
@@ -57,7 +57,7 @@ pk_backend_modules += shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Test"',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 pk_backend_modules += shared_module(
@@ -72,5 +72,5 @@ pk_backend_modules += shared_module(
     '-DG_LOG_DOMAIN="PackageKit-Test"',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )

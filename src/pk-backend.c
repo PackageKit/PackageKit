@@ -382,7 +382,7 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 
 	filename = g_strdup_printf ("libpk_backend_%s.so", name);
 	root_dir = pk_util_get_root_dir (backend->conf);
-	path = g_build_filename (root_dir, LIBDIR, "packagekit-backend", filename, NULL);
+	path = g_build_filename (root_dir, PK_BACKENDS_DIR, filename, NULL);
 	g_debug ("dlopening '%s'", path);
 
 	return path;

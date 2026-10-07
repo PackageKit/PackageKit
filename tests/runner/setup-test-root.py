@@ -27,7 +27,7 @@ def main():
     parser.add_argument(
         '--backend-dir',
         required=True,
-        help='the installed backend module directory, e.g. /usr/lib/packagekit-backend',
+        help='the installed backend module directory, e.g. /usr/lib/packagekit/backends',
     )
     parser.add_argument('--stamp', required=True, help='stamp file to touch when done')
     parser.add_argument('modules', nargs='*', help='backend modules to link into the root')

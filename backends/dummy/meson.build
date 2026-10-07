@@ -11,5 +11,5 @@ pk_backend_modules += shared_module(
   ],
   override_options: ['cpp_std=c++0x'],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )

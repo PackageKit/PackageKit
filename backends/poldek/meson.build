@@ -18,5 +18,5 @@ pk_backend_modules += shared_module(
     '-I/usr/include/poldek'
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )

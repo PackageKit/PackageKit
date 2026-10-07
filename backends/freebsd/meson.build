@@ -23,5 +23,5 @@ pk_backend_modules += shared_module(
   c_args: c_args,
   cpp_args: c_args,
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )

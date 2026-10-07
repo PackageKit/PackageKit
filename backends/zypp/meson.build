@@ -29,5 +29,5 @@ pk_backend_modules += shared_module(
     '-D_FILE_OFFSET_BITS=64',
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )

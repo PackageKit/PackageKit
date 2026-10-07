@@ -23,7 +23,7 @@ pk_backend_modules += shared_module(
   ],
   include_directories: packagekit_src_include,
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 # Build rpm plugin for notifying PackageKit

@@ -74,10 +74,18 @@ add_project_arguments (feature_args, language: 'c')
 # allow the daemon to include library files directly
 add_project_arguments ('-DPK_COMPILATION', language: ['c', 'cpp'])
 
+pk_db_dir = join_paths(get_option('localstatedir'), 'lib', 'PackageKit')
+local_state_dir = get_option('localstatedir')
+test_data_dir = join_paths(source_root, 'tests', 'data')
+package_data_dir = get_option('datadir')
+package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
+pk_backends_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit', 'backends')
+
 conf = configuration_data()
 conf.set_quoted('DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
 conf.set_quoted('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 conf.set_quoted('SYSCONFDIR', join_paths(get_option('prefix'), get_option('sysconfdir')))
+conf.set_quoted('PK_BACKENDS_DIR', pk_backends_dir)
 
 conf.set_quoted('PROJECT_NAME', meson.project_name())
 conf.set_quoted('PROJECT_VERSION', meson.project_version())
@@ -102,13 +110,6 @@ config_dep = declare_dependency(
   sources: config_header,
   include_directories: include_directories('.')
 )
-
-pk_db_dir = join_paths(get_option('localstatedir'), 'lib', 'PackageKit')
-local_state_dir = get_option('localstatedir')
-test_data_dir = join_paths(source_root, 'tests', 'data')
-package_data_dir = get_option('datadir')
-package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
-pk_plugin_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend')
 
 # enable strict checks and make warnings errors in maintainer mode
 if get_option('maintainer')

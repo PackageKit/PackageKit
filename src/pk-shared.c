@@ -393,7 +393,7 @@ pk_util_set_auto_backend (GKeyFile *conf, GError **error)
 	g_autofree gchar *backend_dir = NULL;
 
 	root_dir = pk_util_get_root_dir (conf);
-	backend_dir = g_build_filename (root_dir, LIBDIR, "packagekit-backend", NULL);
+	backend_dir = g_build_filename (root_dir, PK_BACKENDS_DIR, NULL);
 	dir = g_dir_open (backend_dir, 0, error);
 	if (dir == NULL)
 		return FALSE;

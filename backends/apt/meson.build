@@ -106,7 +106,7 @@ pk_backend_modules += shared_module(
     'cpp_std=c++17'
   ],
   install: true,
-  install_dir: pk_plugin_dir,
+  install_dir: pk_backends_dir,
 )
 
 install_data(

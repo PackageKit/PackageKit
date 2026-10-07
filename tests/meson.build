@@ -1,3 +1,4 @@
+# Testsuite for PackageKit
 
 # A fake root directory the daemon and the tests treat as "/" when run from
 # the build tree: backend modules are linked into the installed module
@@ -11,7 +12,7 @@ pk_test_root = custom_target(
     command: [
         find_program('runner/setup-test-root.py'),
         '--root', pk_test_root_dir,
-        '--backend-dir', join_paths(get_option('prefix'), get_option('libdir'), 'packagekit-backend'),
+        '--backend-dir', pk_backends_dir,
         '--stamp', '@OUTPUT@',
         '@INPUT@',
     ],
