@@ -847,6 +847,9 @@ Dnf5TransactionCallbacks::Dnf5TransactionCallbacks(PkBackendJob *job)
       processed_items(0),
       processed_share(0),
       current_share(0),
+      current_status(PK_STATUS_ENUM_UNKNOWN),
+      current_percentage(-1),
+      current_complete(false),
       running_hooks(false)
 {
 }
@@ -895,18 +898,40 @@ Dnf5TransactionCallbacks::element_share(const std::string &full_nevra, bool inbo
 }
 
 void
-Dnf5TransactionCallbacks::start_element(const std::string &full_nevra, bool inbound)
+Dnf5TransactionCallbacks::start_element(
+	const std::string &full_nevra,
+	bool inbound,
+	const std::string &package_id,
+	PkInfoEnum info)
 {
 	current_share = element_share(full_nevra, inbound);
+	current_package_id = package_id;
+	current_percentage = -1;
+	current_complete = false;
+	current_status = inbound ? PK_STATUS_ENUM_INSTALL : PK_STATUS_ENUM_REMOVE;
+	if (info == PK_INFO_ENUM_UPDATING)
+		current_status = PK_STATUS_ENUM_UPDATE;
+	else if (info == PK_INFO_ENUM_CLEANUP)
+		current_status = PK_STATUS_ENUM_CLEANUP;
+	if (!current_package_id.empty()) {
+		pk_backend_job_package(job, info, current_package_id.c_str(), nullptr);
+		pk_backend_job_set_item_progress(job, current_package_id.c_str(), current_status, 0);
+		current_percentage = 0;
+	}
 }
 
 void
 Dnf5TransactionCallbacks::element_progress(uint64_t amount, uint64_t total)
 {
+	double fraction = total > 0 ? std::min((double) amount / total, 1.0) : 0;
+	guint percentage = total > 0 ? (guint) (fraction * 100) : PK_BACKEND_PERCENTAGE_INVALID;
+	if (!current_package_id.empty() && current_percentage != (gint) percentage) {
+		pk_backend_job_set_item_progress(job, current_package_id.c_str(), current_status, percentage);
+		current_percentage = (gint) percentage;
+	}
 	if (total == 0)
 		return;
-
-	double fraction = std::min((double) amount / total, 1.0);
+	current_complete = amount >= total;
 	// the shares add up with rounding errors, which must not cut off 100%
 	double done = processed_share + fraction * current_share;
 	pk_backend_job_set_percentage(job, (guint) std::min(done * 100 + 1e-6, 100.0));
@@ -915,6 +940,14 @@ Dnf5TransactionCallbacks::element_progress(uint64_t amount, uint64_t total)
 void
 Dnf5TransactionCallbacks::stop_element()
 {
+	// rpm can omit the last progress callback, especially for removals.
+	if (!current_complete)
+		element_progress(1, 1);
+	if (!current_package_id.empty()) {
+		pk_backend_job_set_item_progress(job, current_package_id.c_str(), PK_STATUS_ENUM_FINISHED, 100);
+		pk_backend_job_package(job, PK_INFO_ENUM_FINISHED, current_package_id.c_str(), nullptr);
+		current_package_id.clear();
+	}
 	processed_items++;
 	processed_share += current_share;
 	current_share = 0;
@@ -969,8 +1002,8 @@ Dnf5TransactionCallbacks::install_start(const libdnf5::base::TransactionPackage 
 	    || action == libdnf5::transaction::TransactionItemAction::DOWNGRADE) {
 		info = PK_INFO_ENUM_UPDATING;
 	}
-	dnf5_emit_pkg(job, item.get_package(), info);
-	start_element(item.get_package().get_full_nevra(), true);
+	auto pkg = item.get_package();
+	start_element(pkg.get_full_nevra(), true, dnf5_build_package_id(pkg), info);
 }
 
 void
@@ -996,8 +1029,8 @@ Dnf5TransactionCallbacks::uninstall_start(const libdnf5::base::TransactionPackag
 	if (action == libdnf5::transaction::TransactionItemAction::REPLACED) {
 		info = PK_INFO_ENUM_CLEANUP;
 	}
-	dnf5_emit_pkg(job, item.get_package(), info);
-	start_element(item.get_package().get_full_nevra(), false);
+	auto pkg = item.get_package();
+	start_element(pkg.get_full_nevra(), false, dnf5_build_package_id(pkg), info);
 }
 
 void
