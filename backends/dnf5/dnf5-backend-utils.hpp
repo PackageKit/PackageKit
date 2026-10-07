@@ -160,7 +160,11 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 	void add_package(const std::string &full_nevra, bool inbound, uint64_t installed_size);
 
 	// The progress of the transaction elements, as reported by rpm.
-	void start_element(const std::string &full_nevra, bool inbound);
+	void start_element(
+		const std::string &full_nevra,
+		bool inbound,
+		const std::string &package_id = {},
+		PkInfoEnum info = PK_INFO_ENUM_UNKNOWN);
 	void element_progress(uint64_t amount, uint64_t total);
 	void stop_element();
 	void start_scriptlet();
@@ -194,5 +198,9 @@ class Dnf5TransactionCallbacks : public libdnf5::rpm::TransactionCallbacks
 	uint64_t processed_items;
 	double processed_share;
 	double current_share;
+	std::string current_package_id;
+	PkStatusEnum current_status;
+	gint current_percentage;
+	bool current_complete;
 	bool running_hooks;
 };
