@@ -1088,10 +1088,22 @@ static PkBackendJob *
 pk_test_backend_protocol_job_new (GKeyFile *conf)
 {
 	PkBackendJob *job = pk_backend_job_new (conf);
-	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_PACKAGES, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_packages_cb), NULL);
-	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_PERCENTAGE, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_percentage_cb), NULL);
-	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_ERROR_CODE, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_error_cb), NULL);
-	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_FINISHED, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_finished_cb), NULL);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PACKAGES,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_packages_cb),
+				  NULL);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_PERCENTAGE,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_percentage_cb),
+				  NULL);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_ERROR_CODE,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_error_cb),
+				  NULL);
+	pk_backend_job_set_vfunc (job,
+				  PK_BACKEND_SIGNAL_FINISHED,
+				  PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_finished_cb),
+				  NULL);
 	proto_packages = 0;
 	proto_percentage = 0;
 	proto_error = -1;
@@ -1116,10 +1128,13 @@ pk_test_backend_protocol_func (void)
 	/* request: search-name carries filters, values and the context */
 	job = pk_test_backend_protocol_job_new (conf);
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_NAME);
-	pk_backend_job_set_parameters (job,
-				       g_variant_new ("(t^as)",
-						      pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NOT_DEVELOPMENT, -1),
-						      values));
+	pk_backend_job_set_parameters (
+	    job,
+	    g_variant_new ("(t^as)",
+			   pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED,
+						   PK_FILTER_ENUM_NOT_DEVELOPMENT,
+						   -1),
+			   values));
 	pk_backend_job_set_locale (job, "de_DE.UTF-8");
 	pk_backend_job_set_uid (job, 1000);
 	pk_backend_job_set_proxy (job, "http://proxy:3128", NULL, NULL, NULL, "localhost", NULL);
@@ -1132,13 +1147,28 @@ pk_test_backend_protocol_func (void)
 	g_assert_cmpstr (json_string_value (json_object_get (root, "job")), ==, "7");
 	g_assert_cmpstr (json_string_value (json_object_get (root, "role")), ==, "search-name");
 	g_assert_cmpuint (json_array_size (json_object_get (root, "filters")), ==, 2);
-	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "filters"), 1)), ==, "~devel");
-	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "values"), 0)), ==, "power manager");
-	g_assert_cmpstr (json_string_value (json_object_get (json_object_get (root, "ctx"), "locale")), ==, "de_DE.UTF-8");
-	g_assert_cmpint (json_integer_value (json_object_get (json_object_get (root, "ctx"), "uid")), ==, 1000);
+	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "filters"), 1)),
+			 ==,
+			 "~devel");
+	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "values"), 0)),
+			 ==,
+			 "power manager");
+	g_assert_cmpstr (
+	    json_string_value (json_object_get (json_object_get (root, "ctx"), "locale")),
+	    ==,
+	    "de_DE.UTF-8");
+	g_assert_cmpint (
+	    json_integer_value (json_object_get (json_object_get (root, "ctx"), "uid")),
+	    ==,
+	    1000);
 	g_assert_true (json_is_null (json_object_get (json_object_get (root, "ctx"), "cache_age")));
-	g_assert_cmpstr (json_string_value (json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "http")), ==, "http://proxy:3128");
-	g_assert_null (json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "https"));
+	g_assert_cmpstr (
+	    json_string_value (
+		json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "http")),
+	    ==,
+	    "http://proxy:3128");
+	g_assert_null (
+	    json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "https"));
 	g_clear_pointer (&line, g_free);
 	g_clear_pointer (&root, json_decref);
 
@@ -1146,7 +1176,9 @@ pk_test_backend_protocol_func (void)
 	g_clear_object (&job);
 	job = pk_test_backend_protocol_job_new (conf);
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
-	pk_backend_job_set_parameters (job, g_variant_new ("(uss)", PK_SIGTYPE_ENUM_GPG, "ABCD", "foo;1;x86_64;main;"));
+	pk_backend_job_set_parameters (
+	    job,
+	    g_variant_new ("(uss)", PK_SIGTYPE_ENUM_GPG, "ABCD", "foo;1;x86_64;main;"));
 	line = pk_backend_protocol_build_run (job, "8", &error);
 	g_assert_no_error (error);
 	g_assert_nonnull (strstr (line, "\"sig_type\":\"gpg\""));
@@ -1173,11 +1205,12 @@ pk_test_backend_protocol_func (void)
 	g_clear_pointer (&line, g_free);
 
 	/* hello: good */
-	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"name\":\"test\","
-						 "\"roles\":[\"search-name\",\"install-packages\"],"
-						 "\"filters\":[\"installed\"],\"groups\":[\"games\"],"
-						 "\"mime_types\":[\"application/x-tar\"],\"parallel\":false}",
-						 &error);
+	hello = pk_backend_protocol_parse_hello (
+	    "{\"ev\":\"hello\",\"protocol\":1,\"name\":\"test\","
+	    "\"roles\":[\"search-name\",\"install-packages\"],"
+	    "\"filters\":[\"installed\"],\"groups\":[\"games\"],"
+	    "\"mime_types\":[\"application/x-tar\"],\"parallel\":false}",
+	    &error);
 	g_assert_no_error (error);
 	g_assert_nonnull (hello);
 	g_assert_cmpstr (hello->name, ==, "test");
@@ -1191,14 +1224,20 @@ pk_test_backend_protocol_func (void)
 	g_clear_pointer (&hello, pk_backend_hello_free);
 
 	/* hello: wrong version, parallel, unknown role, not a hello */
-	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":2,\"roles\":[],\"parallel\":false}", &error);
+	hello = pk_backend_protocol_parse_hello (
+	    "{\"ev\":\"hello\",\"protocol\":2,\"roles\":[],\"parallel\":false}",
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_null (hello);
 	g_clear_error (&error);
-	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"roles\":[],\"parallel\":true}", &error);
+	hello = pk_backend_protocol_parse_hello (
+	    "{\"ev\":\"hello\",\"protocol\":1,\"roles\":[],\"parallel\":true}",
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_clear_error (&error);
-	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"roles\":[\"fly\"],\"parallel\":false}", &error);
+	hello = pk_backend_protocol_parse_hello (
+	    "{\"ev\":\"hello\",\"protocol\":1,\"roles\":[\"fly\"],\"parallel\":false}",
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_clear_error (&error);
 	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"status\",\"job\":\"1\"}", &error);
@@ -1220,66 +1259,135 @@ pk_test_backend_protocol_func (void)
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"status\",\"job\":\"1\",\"status\":\"dancing\"}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"status\",\"job\":\"1\",\"status\":\"dancing\"}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":\"50\"}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":\"50\"}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"packages\",\"job\":\"1\",\"items\":[{\"package_id\":\"broken\",\"info\":\"installed\"}]}",
-						"1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"packages\",\"job\":\"1\",\"items\":[{\"package_id\":\"broken\",\"info\":"
+	    "\"installed\"}]}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
 
 	/* events: ignored ones */
-	g_test_expect_message (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ignoring unknown event 'dance' from helper");
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"dance\",\"job\":\"1\"}", "1", job, &finished, &error);
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "ignoring unknown event 'dance' from helper");
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"dance\",\"job\":\"1\"}",
+						"1",
+						job,
+						&finished,
+						&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_test_assert_expected_messages ();
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"2\",\"value\":99}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"percentage\",\"job\":\"2\",\"value\":99}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":99}", NULL, NULL, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":99}",
+	    NULL,
+	    NULL,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"log\",\"job\":null,\"level\":\"debug\",\"message\":\"hi\"}", NULL, NULL, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"log\",\"job\":null,\"level\":\"debug\",\"message\":\"hi\"}",
+	    NULL,
+	    NULL,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_wait (10);
 	g_assert_cmpuint (proto_percentage, ==, 0);
 
 	/* events: the happy path of a job */
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"status\",\"job\":\"1\",\"status\":\"query\"}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"status\",\"job\":\"1\",\"status\":\"query\"}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":null}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":null}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_wait (10);
 	g_assert_cmpuint (proto_percentage, ==, PK_BACKEND_PERCENTAGE_INVALID);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":42}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":42}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"packages\",\"job\":\"1\",\"items\":["
-						"{\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installed\",\"summary\":\"A foo\"},"
-						"{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"available\",\"summary\":\"A bar\",\"severity\":\"security\"}]}",
-						"1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"packages\",\"job\":\"1\",\"items\":["
+	    "{\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installed\",\"summary\":\"A foo\"},"
+	    "{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"available\",\"summary\":\"A "
+	    "bar\",\"severity\":\"security\"}]}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"package-status\",\"job\":\"1\",\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installing\"}",
-						"1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (
+	    "{\"ev\":\"package-status\",\"job\":\"1\",\"package_id\":\"foo;1;x86_64;main;\","
+	    "\"info\":\"installing\"}",
+	    "1",
+	    job,
+	    &finished,
+	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"error\",\"job\":\"1\",\"code\":\"package-not-found\",\"details\":\"no\\nsuch\"}",
-						"1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"error\",\"job\":\"1\",\"code\":"
+						"\"package-not-found\",\"details\":\"no\\nsuch\"}",
+						"1",
+						job,
+						&finished,
+						&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_false (finished);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"finished\",\"job\":\"1\"}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"finished\",\"job\":\"1\"}",
+						"1",
+						job,
+						&finished,
+						&error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_true (finished);

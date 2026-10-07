@@ -33,30 +33,33 @@ G_BEGIN_DECLS
 
 typedef struct
 {
-	gchar *name;
-	gchar *description;
-	gchar *author;
+	gchar	  *name;
+	gchar	  *description;
+	gchar	  *author;
 	PkBitfield roles;
 	PkBitfield filters;
 	PkBitfield groups;
-	gchar **mime_types;
+	gchar	 **mime_types;
 } PkBackendHello;
 
 void pk_backend_hello_free (PkBackendHello *hello);
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (PkBackendHello, pk_backend_hello_free)
 
 /* requests: daemon -> helper, one line each without the trailing newline */
-gchar *pk_backend_protocol_build_hello (void);
-gchar *pk_backend_protocol_build_run (PkBackendJob *job, const gchar *job_id, GError **error);
-gchar *pk_backend_protocol_build_cancel (const gchar *job_id);
-gchar *pk_backend_protocol_build_exit (void);
+gchar	       *pk_backend_protocol_build_hello (void);
+gchar	       *pk_backend_protocol_build_run (PkBackendJob *job,
+					       const gchar  *job_id,
+					       GError	   **error);
+gchar	       *pk_backend_protocol_build_cancel (const gchar *job_id);
+gchar	       *pk_backend_protocol_build_exit (void);
 
 /* events: helper -> daemon */
-PkBackendHello *pk_backend_protocol_parse_hello (const gchar *line, GError **error);
-gboolean pk_backend_protocol_handle_event (const gchar *line,
-					   const gchar *job_id,
-					   PkBackendJob *job,
-					   gboolean *finished,
-					   GError **error);
+PkBackendHello *pk_backend_protocol_parse_hello (const gchar *line,
+						 GError	    **error);
+gboolean	pk_backend_protocol_handle_event (const gchar  *line,
+						  const gchar  *job_id,
+						  PkBackendJob *job,
+						  gboolean     *finished,
+						  GError      **error);
 
 G_END_DECLS
