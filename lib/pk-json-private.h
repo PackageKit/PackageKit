@@ -39,13 +39,13 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (json_t, json_decref)
 
 /**
  * PkJsonError:
- * @PK_JSON_ERROR_PARSE: the text is not valid JSON
+ * @PK_JSON_ERROR_PARSE_FAILED: the text is not valid JSON
  * @PK_JSON_ERROR_INVALID: well-formed JSON with an unexpected shape or type
  *
  * Error codes in the %PK_JSON_ERROR domain.
  */
 typedef enum {
-	PK_JSON_ERROR_PARSE,
+	PK_JSON_ERROR_PARSE_FAILED,
 	PK_JSON_ERROR_INVALID,
 } PkJsonError;
 

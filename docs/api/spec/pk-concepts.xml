@@ -893,20 +893,27 @@
       the thread.
     </para>
     <para>
-      For spawned backends, there are two staggered signals send to allow
-      locks to be released or for the backend to clean up after itself:
+      For spawned backends, cancellation is staggered to give the helper a
+      chance to release locks and clean up after itself:
     </para>
     <itemizedlist>
       <listitem>
-        <para>Send the process <literal>SIGQUIT</literal>.</para>
-      </listitem>
-      <listitem>
-        <para>Wait 500ms</para>
+        <para>
+          Send a <literal>cancel</literal> request over the protocol socket.
+          The helper is expected to stop at the next safe point and end the
+          job with the error <literal>transaction-cancelled</literal>.
+        </para>
       </listitem>
       <listitem>
         <para>
-          If the process has not already quit, send the process
-          <literal>SIGKILL</literal> to terminate it.
+          If the job has not finished after 5 seconds, send the process
+          <literal>SIGTERM</literal>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          If the backend manifest allows it and the process is still alive
+          5 seconds later, send the process <literal>SIGKILL</literal>.
         </para>
       </listitem>
     </itemizedlist>

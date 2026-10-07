@@ -1293,7 +1293,7 @@ pk_backend_install_signature (PkBackend *backend,
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
-	pk_backend_job_set_parameters (job, g_variant_new ("(ss)", key_id, package_id));
+	pk_backend_job_set_parameters (job, g_variant_new ("(uss)", type, key_id, package_id));
 	backend->desc->install_signature (backend, job, type, key_id, package_id);
 }
 

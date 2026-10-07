@@ -18,6 +18,8 @@ shared_sources = files(
   'pk-backend-job.h',
   'pk-backend-process.c',
   'pk-backend-process.h',
+  'pk-backend-protocol.c',
+  'pk-backend-protocol.h',
   'pk-shared.c',
   'pk-shared.h',
   'pk-spawn.c',
@@ -40,6 +42,8 @@ packagekit_direct_exec = executable(
   'pk-backend-job.h',
   'pk-backend-process.c',
   'pk-backend-process.h',
+  'pk-backend-protocol.c',
+  'pk-backend-protocol.h',
   'pk-direct.c',
   'pk-shared.c',
   'pk-shared.h',
@@ -49,6 +53,7 @@ packagekit_direct_exec = executable(
   'pk-backend-spawn.c',
   dependencies: [
     packagekit_glib2_dep,
+    jansson_dep,
     libsystemd,
     elogind,
     gmodule_dep,
@@ -71,6 +76,7 @@ packagekitd_exec = executable(
   pk_resources,
   dependencies: [
     packagekit_glib2_dep,
+    jansson_dep,
     libsystemd,
     elogind,
     polkit_dep,

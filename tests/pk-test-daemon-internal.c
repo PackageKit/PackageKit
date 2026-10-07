@@ -27,6 +27,7 @@
 
 #include "pk-backend.h"
 #include "pk-backend-process.h"
+#include "pk-backend-protocol.h"
 #include "pk-backend-spawn.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
@@ -35,6 +36,8 @@
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
 #include "pk-scheduler.h"
+
+#include <pk-json-private.h>
 
 #define PK_TRANSACTION_ERROR_INPUT_INVALID 14
 #define GET_DETAILS_TEST_DATA                                            \
@@ -1050,6 +1053,243 @@ pk_test_backend_process_func (void)
 	g_clear_pointer (&bp_lines, g_ptr_array_unref);
 }
 
+/* ---- PkBackendProtocol ---- */
+
+static guint proto_packages = 0;
+static guint proto_percentage = 0;
+static gint proto_error = -1;
+static gint proto_exit = -1;
+
+static void
+pk_test_backend_protocol_packages_cb (PkBackendJob *job, GPtrArray *packages, gpointer user_data)
+{
+	proto_packages += packages->len;
+}
+
+static void
+pk_test_backend_protocol_percentage_cb (PkBackendJob *job, guint percentage, gpointer user_data)
+{
+	proto_percentage = percentage;
+}
+
+static void
+pk_test_backend_protocol_error_cb (PkBackendJob *job, PkError *item, gpointer user_data)
+{
+	proto_error = pk_error_get_code (item);
+}
+
+static void
+pk_test_backend_protocol_finished_cb (PkBackendJob *job, PkExitEnum exit, gpointer user_data)
+{
+	proto_exit = exit;
+}
+
+static PkBackendJob *
+pk_test_backend_protocol_job_new (GKeyFile *conf)
+{
+	PkBackendJob *job = pk_backend_job_new (conf);
+	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_PACKAGES, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_packages_cb), NULL);
+	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_PERCENTAGE, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_percentage_cb), NULL);
+	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_ERROR_CODE, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_error_cb), NULL);
+	pk_backend_job_set_vfunc (job, PK_BACKEND_SIGNAL_FINISHED, PK_BACKEND_JOB_VFUNC (pk_test_backend_protocol_finished_cb), NULL);
+	proto_packages = 0;
+	proto_percentage = 0;
+	proto_error = -1;
+	proto_exit = -1;
+	return job;
+}
+
+static void
+pk_test_backend_protocol_func (void)
+{
+	g_autoptr(GKeyFile) conf = pk_test_conf_new ();
+	g_autoptr(PkBackendJob) job = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *line = NULL;
+	g_autoptr(json_t) root = NULL;
+	g_autoptr(PkBackendHello) hello = NULL;
+	const gchar *values[] = { "power manager", "foo", NULL };
+	gboolean finished = FALSE;
+	gboolean ret;
+	json_error_t jerr;
+
+	/* request: search-name carries filters, values and the context */
+	job = pk_test_backend_protocol_job_new (conf);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_NAME);
+	pk_backend_job_set_parameters (job,
+				       g_variant_new ("(t^as)",
+						      pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, PK_FILTER_ENUM_NOT_DEVELOPMENT, -1),
+						      values));
+	pk_backend_job_set_locale (job, "de_DE.UTF-8");
+	pk_backend_job_set_uid (job, 1000);
+	pk_backend_job_set_proxy (job, "http://proxy:3128", NULL, NULL, NULL, "localhost", NULL);
+	line = pk_backend_protocol_build_run (job, "7", &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (line);
+	root = json_loads (line, 0, &jerr);
+	g_assert_nonnull (root);
+	g_assert_cmpstr (json_string_value (json_object_get (root, "op")), ==, "run");
+	g_assert_cmpstr (json_string_value (json_object_get (root, "job")), ==, "7");
+	g_assert_cmpstr (json_string_value (json_object_get (root, "role")), ==, "search-name");
+	g_assert_cmpuint (json_array_size (json_object_get (root, "filters")), ==, 2);
+	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "filters"), 1)), ==, "~devel");
+	g_assert_cmpstr (json_string_value (json_array_get (json_object_get (root, "values"), 0)), ==, "power manager");
+	g_assert_cmpstr (json_string_value (json_object_get (json_object_get (root, "ctx"), "locale")), ==, "de_DE.UTF-8");
+	g_assert_cmpint (json_integer_value (json_object_get (json_object_get (root, "ctx"), "uid")), ==, 1000);
+	g_assert_true (json_is_null (json_object_get (json_object_get (root, "ctx"), "cache_age")));
+	g_assert_cmpstr (json_string_value (json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "http")), ==, "http://proxy:3128");
+	g_assert_null (json_object_get (json_object_get (json_object_get (root, "ctx"), "proxy"), "https"));
+	g_clear_pointer (&line, g_free);
+	g_clear_pointer (&root, json_decref);
+
+	/* request: install-signature gets its type from the parameters */
+	g_clear_object (&job);
+	job = pk_test_backend_protocol_job_new (conf);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
+	pk_backend_job_set_parameters (job, g_variant_new ("(uss)", PK_SIGTYPE_ENUM_GPG, "ABCD", "foo;1;x86_64;main;"));
+	line = pk_backend_protocol_build_run (job, "8", &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (strstr (line, "\"sig_type\":\"gpg\""));
+	g_clear_pointer (&line, g_free);
+
+	/* request: a role without wire representation is refused */
+	g_clear_object (&job);
+	job = pk_test_backend_protocol_job_new (conf);
+	pk_backend_job_set_role (job, PK_ROLE_ENUM_CANCEL);
+	line = pk_backend_protocol_build_run (job, "9", &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_null (line);
+	g_clear_error (&error);
+
+	/* the fixed requests */
+	line = pk_backend_protocol_build_hello ();
+	g_assert_nonnull (strstr (line, "\"protocol\":1"));
+	g_clear_pointer (&line, g_free);
+	line = pk_backend_protocol_build_cancel ("7");
+	g_assert_cmpstr (line, ==, "{\"op\":\"cancel\",\"job\":\"7\"}");
+	g_clear_pointer (&line, g_free);
+	line = pk_backend_protocol_build_exit ();
+	g_assert_cmpstr (line, ==, "{\"op\":\"exit\"}");
+	g_clear_pointer (&line, g_free);
+
+	/* hello: good */
+	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"name\":\"test\","
+						 "\"roles\":[\"search-name\",\"install-packages\"],"
+						 "\"filters\":[\"installed\"],\"groups\":[\"games\"],"
+						 "\"mime_types\":[\"application/x-tar\"],\"parallel\":false}",
+						 &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (hello);
+	g_assert_cmpstr (hello->name, ==, "test");
+	g_assert_null (hello->description);
+	g_assert_true (pk_bitfield_contain (hello->roles, PK_ROLE_ENUM_SEARCH_NAME));
+	g_assert_true (pk_bitfield_contain (hello->roles, PK_ROLE_ENUM_INSTALL_PACKAGES));
+	g_assert_false (pk_bitfield_contain (hello->roles, PK_ROLE_ENUM_REMOVE_PACKAGES));
+	g_assert_true (pk_bitfield_contain (hello->filters, PK_FILTER_ENUM_INSTALLED));
+	g_assert_true (pk_bitfield_contain (hello->groups, PK_GROUP_ENUM_GAMES));
+	g_assert_cmpstr (hello->mime_types[0], ==, "application/x-tar");
+	g_clear_pointer (&hello, pk_backend_hello_free);
+
+	/* hello: wrong version, parallel, unknown role, not a hello */
+	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":2,\"roles\":[],\"parallel\":false}", &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_null (hello);
+	g_clear_error (&error);
+	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"roles\":[],\"parallel\":true}", &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_clear_error (&error);
+	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"hello\",\"protocol\":1,\"roles\":[\"fly\"],\"parallel\":false}", &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_clear_error (&error);
+	hello = pk_backend_protocol_parse_hello ("{\"ev\":\"status\",\"job\":\"1\"}", &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_clear_error (&error);
+
+	/* events: fatal protocol errors */
+	g_clear_object (&job);
+	job = pk_test_backend_protocol_job_new (conf);
+	ret = pk_backend_protocol_handle_event ("this is not json", "1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_PARSE_FAILED);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_protocol_handle_event ("[1,2]", "1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_protocol_handle_event ("{\"job\":\"1\"}", "1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"status\",\"job\":\"1\",\"status\":\"dancing\"}", "1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":\"50\"}", "1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"packages\",\"job\":\"1\",\"items\":[{\"package_id\":\"broken\",\"info\":\"installed\"}]}",
+						"1", job, &finished, &error);
+	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
+	g_assert_false (ret);
+	g_clear_error (&error);
+
+	/* events: ignored ones */
+	g_test_expect_message (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING, "ignoring unknown event 'dance' from helper");
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"dance\",\"job\":\"1\"}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_test_assert_expected_messages ();
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"2\",\"value\":99}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":99}", NULL, NULL, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"log\",\"job\":null,\"level\":\"debug\",\"message\":\"hi\"}", NULL, NULL, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_wait (10);
+	g_assert_cmpuint (proto_percentage, ==, 0);
+
+	/* events: the happy path of a job */
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"status\",\"job\":\"1\",\"status\":\"query\"}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":null}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_wait (10);
+	g_assert_cmpuint (proto_percentage, ==, PK_BACKEND_PERCENTAGE_INVALID);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"percentage\",\"job\":\"1\",\"value\":42}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"packages\",\"job\":\"1\",\"items\":["
+						"{\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installed\",\"summary\":\"A foo\"},"
+						"{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"available\",\"summary\":\"A bar\",\"severity\":\"security\"}]}",
+						"1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"package-status\",\"job\":\"1\",\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installing\"}",
+						"1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"error\",\"job\":\"1\",\"code\":\"package-not-found\",\"details\":\"no\\nsuch\"}",
+						"1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_false (finished);
+	ret = pk_backend_protocol_handle_event ("{\"ev\":\"finished\",\"job\":\"1\"}", "1", job, &finished, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_true (finished);
+	_g_test_loop_wait (50);
+	g_assert_cmpuint (proto_percentage, ==, 42);
+	g_assert_cmpuint (proto_packages, ==, 2);
+	g_assert_cmpint (proto_error, ==, PK_ERROR_ENUM_PACKAGE_NOT_FOUND);
+	g_assert_cmpint (proto_exit, ==, PK_EXIT_ENUM_FAILED);
+}
+
 static void
 pk_test_transaction_func (void)
 {
@@ -1822,6 +2062,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/backend-process", pk_test_backend_process_func);
+	g_test_add_func ("/packagekit/backend-protocol", pk_test_backend_protocol_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);

@@ -66,6 +66,7 @@ pk_test_daemon_priv_exe = executable(
     pk_resources,
     dependencies: [
         packagekit_glib2_dep,
+        jansson_dep,
         libsystemd,
         elogind,
         polkit_dep,
