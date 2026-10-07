@@ -26,6 +26,7 @@
 #include <glib/gstdio.h>
 
 #include "pk-backend.h"
+#include "pk-backend-process.h"
 #include "pk-backend-spawn.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
@@ -807,6 +808,248 @@ pk_test_spawn_func (void)
 	g_assert_true (!ret);
 }
 
+/* ---- PkBackendProcess ---- */
+
+static GPtrArray *bp_lines = NULL;
+static gint bp_exit_type = -1;
+static gint bp_exit_status = -1;
+static guint bp_exited_count = 0;
+
+static void
+pk_test_backend_process_line_cb (PkBackendProcess *process, const gchar *line, gpointer user_data)
+{
+	g_debug ("protocol line '%s'", line);
+	g_ptr_array_add (bp_lines, g_strdup (line));
+	if (g_str_has_prefix (line, "echo:") || g_strcmp0 (line, "ready") == 0)
+		_g_test_loop_quit ();
+}
+
+static void
+pk_test_backend_process_exited_cb (PkBackendProcess *process,
+				   gint exit_type,
+				   gint status,
+				   gpointer user_data)
+{
+	bp_exit_type = exit_type;
+	bp_exit_status = status;
+	bp_exited_count++;
+	g_assert_false (pk_backend_process_is_running (process));
+	_g_test_loop_quit ();
+}
+
+static PkBackendProcess *
+pk_test_backend_process_new (void)
+{
+	PkBackendProcess *process = pk_backend_process_new ("test");
+	g_signal_connect (process, "line", G_CALLBACK (pk_test_backend_process_line_cb), NULL);
+	g_signal_connect (process, "exited", G_CALLBACK (pk_test_backend_process_exited_cb), NULL);
+	g_clear_pointer (&bp_lines, g_ptr_array_unref);
+	bp_lines = g_ptr_array_new_with_free_func (g_free);
+	bp_exit_type = -1;
+	bp_exit_status = -1;
+	bp_exited_count = 0;
+	return process;
+}
+
+static gboolean
+pk_test_backend_process_kill_cb (gpointer user_data)
+{
+	pk_backend_process_kill (PK_BACKEND_PROCESS (user_data));
+	return G_SOURCE_REMOVE;
+}
+
+static void
+pk_test_backend_process_func (void)
+{
+	g_autoptr(PkBackendProcess) process = NULL;
+	g_autoptr(GError) error = NULL;
+	const gchar *extra_env[] = { "PK_TEST_EXTRA=yes", NULL };
+	gboolean ret;
+
+	/* a missing executable fails synchronously and never emits ::exited */
+	process = pk_test_backend_process_new ();
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-does-not-exist.sh",
+					NULL,
+					&error);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND);
+	g_assert_false (ret);
+	g_assert_false (pk_backend_process_is_running (process));
+	g_clear_error (&error);
+	ret = pk_backend_process_send_line (process, "hello", &error);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_CONNECTED);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	_g_test_loop_wait (100);
+	g_assert_cmpuint (bp_exited_count, ==, 0);
+
+	/* protocol round trip on fd 3, stdout noise ignored, stderr logged as a warning */
+	g_clear_object (&process);
+	process = pk_test_backend_process_new ();
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*stderr: helper started, PATH=*");
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-echo.py",
+					extra_env,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_true (pk_backend_process_is_running (process));
+
+	ret = pk_backend_process_send_line (process, "hello world", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_lines->len, ==, 1);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "echo:hello world");
+
+	/* second request on the same instance */
+	ret = pk_backend_process_send_line (process, "again", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_lines->len, ==, 2);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 1), ==, "echo:again");
+
+	/* a deadline that is cleared in time does nothing */
+	pk_backend_process_set_exit_deadline (process, 100);
+	pk_backend_process_clear_exit_deadline (process);
+	_g_test_loop_wait (300);
+	g_assert_true (pk_backend_process_is_running (process));
+	g_assert_cmpuint (bp_exited_count, ==, 0);
+
+	/* clean exit on request */
+	ret = pk_backend_process_send_line (process, "exit", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SUCCESS);
+	g_assert_cmpint (bp_exit_status, ==, 0);
+	g_assert_false (pk_backend_process_is_running (process));
+	g_test_assert_expected_messages ();
+
+	/* the same object can be started again; a non-zero exit is reported as failed */
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*stderr: helper started, PATH=*");
+	bp_exited_count = 0;
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-echo.py",
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-echo.py",
+					NULL,
+					&error);
+	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_BUSY);
+	g_assert_false (ret);
+	g_clear_error (&error);
+	ret = pk_backend_process_send_line (process, "die", &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_FAILED);
+	g_assert_cmpint (bp_exit_status, ==, 3);
+	g_test_assert_expected_messages ();
+
+	/* a helper that handles SIGTERM gets to say goodbye and exits cleanly */
+	g_clear_object (&process);
+	process = pk_test_backend_process_new ();
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-sigterm.py",
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_lines->len, ==, 1);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
+	pk_backend_process_set_exit_deadline (process, 200);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SUCCESS);
+	/* the goodbye line was delivered before ::exited */
+	g_assert_cmpuint (bp_lines->len, ==, 2);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 1), ==, "bye");
+
+	/* a helper without a SIGTERM handler dies from it */
+	g_clear_object (&process);
+	process = pk_test_backend_process_new ();
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*stderr: helper started, PATH=*");
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-echo.py",
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_timeout_add (200, pk_test_backend_process_kill_cb, process);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGTERM);
+	g_assert_cmpint (bp_exit_status, ==, SIGTERM);
+	g_test_assert_expected_messages ();
+
+	/* a helper that ignores SIGTERM is SIGKILLed after the escalation delay */
+	g_clear_object (&process);
+	process = pk_test_backend_process_new ();
+	g_object_set (process, "allow-sigkill", TRUE, NULL);
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*ignored SIGTERM, sending SIGKILL*");
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-ignore-term.sh",
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	/* wait until the helper has installed its trap */
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
+	pk_backend_process_set_exit_deadline (process, 200);
+	_g_test_loop_run_with_timeout (10000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGKILL);
+	g_assert_cmpint (bp_exit_status, ==, SIGKILL);
+	g_test_assert_expected_messages ();
+
+	/* without allow-sigkill the same helper survives SIGTERM well beyond the
+	 * escalation delay; a second kill with allow-sigkill enabled then ends it
+	 * immediately */
+	g_clear_object (&process);
+	process = pk_test_backend_process_new ();
+	ret = pk_backend_process_start (process,
+					TESTDATADIR "/pk-backend-process-ignore-term.sh",
+					NULL,
+					&error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
+	pk_backend_process_kill (process);
+	_g_test_loop_wait (6000);
+	g_assert_true (pk_backend_process_is_running (process));
+	g_assert_cmpuint (bp_exited_count, ==, 0);
+	g_object_set (process, "allow-sigkill", TRUE, NULL);
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*ignored SIGTERM, sending SIGKILL*");
+	pk_backend_process_kill (process);
+	_g_test_loop_run_with_timeout (5000);
+	g_assert_cmpuint (bp_exited_count, ==, 1);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGKILL);
+	g_test_assert_expected_messages ();
+
+	g_clear_object (&process);
+	g_clear_pointer (&bp_lines, g_ptr_array_unref);
+}
+
 static void
 pk_test_transaction_func (void)
 {
@@ -1578,6 +1821,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
+	g_test_add_func ("/packagekit/backend-process", pk_test_backend_process_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);

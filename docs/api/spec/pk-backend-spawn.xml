@@ -6,11 +6,12 @@
   <sect1 id="backends-spawn-intro">
     <title>Introduction</title>
     <para>
-      If you do not have a C or C++ language binding, PackageKit executes
-      helper scripts written in pretty much any language.
-      It then watches the standard out and standard error and parses the
-      output into compiled backend commands.
-      This means a python library can be interfaced easily with a C backend.
+      If there is no C or C++ binding for a package manager, PackageKit can
+      run the backend as a separate helper process written in any language.
+      The daemon starts the helper, keeps it running between transactions,
+      and exchanges JSONL messages with it over a dedicated socket.
+      The helper's standard output and standard error are captured as log
+      output and are never interpreted as protocol data.
     </para>
     <para>
       Even when using helpers, a compiled backend stub is still used for
