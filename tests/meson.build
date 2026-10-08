@@ -109,6 +109,18 @@ pk_test_e2e_exe = executable(
     install: false,
 )
 
+if get_option('python_backend')
+    test('pk-test-python-backend',
+        find_program('pk-test-python-backend.py'),
+        depends: pk_backend_py,
+        env: [
+            'PYTHONPATH=@0@'.format(join_paths(build_root, 'src', 'python')),
+        ],
+        suite: 'main',
+        timeout: 120,
+    )
+endif
+
 # Integration test that drives a live packagekitd (dummy backend) over D-Bus. It
 # needs the D-Bus/polkit policy installed to system paths, so we allow it to auto-SKIP
 # in case those are not installed.

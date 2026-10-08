@@ -100,6 +100,10 @@ packagekitd_exec = executable(
   ]
 )
 
+if get_option('python_backend')
+  subdir('python/packagekit_backend')
+endif
+
 install_data(
   'org.freedesktop.PackageKit.xml',
   'org.freedesktop.PackageKit.Transaction.xml',

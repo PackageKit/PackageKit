@@ -14,6 +14,7 @@ pk_api_level = '19'
 gnome = import('gnome')
 i18n = import('i18n')
 pkg = import('pkgconfig')
+fs = import('fs')
 
 glib_req_version = '2.80'
 glib_req = '>= @0@'.format(glib_req_version)
@@ -80,12 +81,14 @@ test_data_dir = join_paths(source_root, 'tests', 'data')
 package_data_dir = get_option('datadir')
 package_locale_dir = join_paths(get_option('prefix'), get_option('datadir'), 'locale')
 pk_backends_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit', 'backends')
+pk_python_dir = join_paths(get_option('prefix'), get_option('libdir'), 'packagekit', 'python')
 
 conf = configuration_data()
 conf.set_quoted('DATADIR', join_paths(get_option('prefix'), get_option('datadir')))
 conf.set_quoted('LIBDIR', join_paths(get_option('prefix'), get_option('libdir')))
 conf.set_quoted('SYSCONFDIR', join_paths(get_option('prefix'), get_option('sysconfdir')))
 conf.set_quoted('PK_BACKENDS_DIR', pk_backends_dir)
+conf.set_quoted('PK_PYTHON_DIR', pk_python_dir)
 
 conf.set_quoted('PROJECT_NAME', meson.project_name())
 conf.set_quoted('PROJECT_VERSION', meson.project_version())

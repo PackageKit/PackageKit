@@ -1,7 +1,7 @@
 python = import('python')
 python_exec = python.find_installation()
 
-enum_convertor = files('enum-convertor.py')
+enum_convertor = files('../src/python/enum-converter.py')
 
 python_package_dir = get_option('pythonpackagedir')
 if python_package_dir == ''
