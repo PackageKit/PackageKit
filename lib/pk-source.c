@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-source
- * @short_description: Source object
+ * PkSource:
+ *
+ * Source object
  *
  * This GObject holds details about the source of the transaction object, and
  * are therefore shared properties that all data objects have.

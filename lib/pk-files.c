@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-files
- * @short_description: Files object
+ * PkFiles:
+ *
+ * Files object
  *
  * This GObject represents a files from a transaction.
  * These objects represent single items of data from the transaction, and are

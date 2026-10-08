@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-results
- * @short_description: Transaction results
+ * PkResults:
+ *
+ * Transaction results
  *
  * This GObject allows a client program to query the results sent from
  * PackageKit. This will include Package(), ErrorCode() and all the other types

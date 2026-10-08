@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-package-sack
- * @short_description: A sack of packages that can be manipulated
+ * PkPackageSack:
+ *
+ * A sack of packages that can be manipulated
  *
  * A package sack is a set of packages that can have operations done on them
  * in parallel. This might be adding summary text for bare package ID's, or

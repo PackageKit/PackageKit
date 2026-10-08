@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-task
- * @short_description: An abstract package task GObject, dealing with unsigned
+ * PkTask:
+ *
+ * An abstract package task GObject, dealing with unsigned
  * transactions, GPG keys and EULA requests.
  */
 

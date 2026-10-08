@@ -3,761 +3,473 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
   <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit.Denied">
 ]>
-<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+<node name="/">
+  <!--
+    org.freedesktop.PackageKit:
+
+    The root interface is used for interacting with the daemon.
+  -->
   <interface name="org.freedesktop.PackageKit">
-    <doc:doc>
-      <doc:description>
-        <doc:para>
-          The root interface is used for interacting with the daemon.
-        </doc:para>
-      </doc:description>
-    </doc:doc>
 
     <!--*********************************************************************-->
-    <property name="VersionMajor" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The major version number.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="VersionMinor" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The minor version number.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="VersionMicro" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The micro version number.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      VersionMajor:
+
+      The major version number.
+    -->
+    <property name="VersionMajor" type="u" access="read"/>
+    <!--
+      VersionMinor:
+
+      The minor version number.
+    -->
+    <property name="VersionMinor" type="u" access="read"/>
+    <!--
+      VersionMicro:
+
+      The micro version number.
+    -->
+    <property name="VersionMicro" type="u" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="BackendName" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The backend name, e.g. <doc:tt>"dnf"</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      BackendName:
+
+      The backend name, e.g. `"dnf"`.
+    -->
+    <property name="BackendName" type="s" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="BackendDescription" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The backend description, e.g. <doc:tt>"Yellow Dog Update Modifier"</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      BackendDescription:
+
+      The backend description, e.g. `"Yellow Dog Update Modifier"`.
+    -->
+    <property name="BackendDescription" type="s" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="BackendAuthor" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The backend author, e.g. <doc:tt>"Joe Bloggs &lt;joe&amp;blogs.com&gt;"</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      BackendAuthor:
+
+      The backend author, e.g. `"Joe Bloggs <joe&blogs.com>"`.
+    -->
+    <property name="BackendAuthor" type="s" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="Roles" type="t" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The roles the backend supports, e.g. <doc:tt>search-name|refresh-cache</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      Roles:
+
+      The roles the backend supports, e.g. `search-name|refresh-cache`.
+    -->
+    <property name="Roles" type="t" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="Groups" type="t" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The groups the backend supports, e.g. <doc:tt>accessories|games</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      Groups:
+
+      The groups the backend supports, e.g. `accessories|games`.
+    -->
+    <property name="Groups" type="t" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="Filters" type="t" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The filters the backend supports, e.g. <doc:tt>installed|newest</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      Filters:
+
+      The filters the backend supports, e.g. `installed|newest`.
+    -->
+    <property name="Filters" type="t" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="MimeTypes" type="as" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The mime-types the backend supports, e.g.
-            <doc:tt>['application/x-rpm;', 'application/x-deb']</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      MimeTypes:
+
+      The mime-types the backend supports, e.g. `['application/x-rpm;',
+      'application/x-deb']`.
+    -->
+    <property name="MimeTypes" type="as" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="Locked" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Set when the backend is locked and native tools would fail.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      Locked:
+
+      Set when the backend is locked and native tools would fail.
+    -->
+    <property name="Locked" type="b" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="NetworkState" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Gets the network state from the daemon. This is provided as some clients may not want
-            to use NetworkManager if the system daemon is configured to use something else.
-          </doc:para>
-          <doc:para>
-            If the system is managed using NetworkManager then the following
-            states are supported:
-            <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt>, <doc:tt>online</doc:tt>,
-            <doc:tt>wifi</doc:tt>, <doc:tt>mobile</doc:tt> or <doc:tt>wired</doc:tt>.
-            If the system is configured for legacy UNIX network fallback, or NetworkManager
-            is not running then the folowing states are supported:
-            <doc:tt>unknown</doc:tt>, <doc:tt>offline</doc:tt> or <doc:tt>online</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      NetworkState:
+
+      Gets the network state from the daemon. This is provided as some clients
+      may not want to use NetworkManager if the system daemon is configured to
+      use something else.
+
+      If the system is managed using NetworkManager then the following states
+      are supported: `unknown`, `offline`, `online`, `wifi`, `mobile` or
+      `wired`. If the system is configured for legacy UNIX network fallback,
+      or NetworkManager is not running then the folowing states are supported:
+      `unknown`, `offline` or `online`.
+    -->
+    <property name="NetworkState" type="u" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="DistroId" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The distribution identification, in the
-            distro;version;arch form e.g.
-            <doc:tt>"debian;squeeze/sid;x86_64"</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      DistroId:
+
+      The distribution identification, in the distro;version;arch form e.g.
+      `"debian;squeeze/sid;x86_64"`.
+    -->
+    <property name="DistroId" type="s" access="read"/>
 
     <!--*********************************************************************-->
+    <!--
+      CanAuthorize:
+      @action_id: The action ID, e.g. `org.freedesktop.packagekit.system-network-proxy-configure`
+
+      Allows a client to find out if it would be allowed to authorize an
+      action.
+
+      Returns:
+
+      - `result`: The result, either `yes`, `no` or `interactive`.
+    -->
     <method name="CanAuthorize">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Allows a client to find out if it would be allowed to authorize an action.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="action_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The action ID, e.g. <doc:tt>org.freedesktop.packagekit.system-network-proxy-configure</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="result" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The result, either <doc:tt>yes</doc:tt>, <doc:tt>no</doc:tt> or <doc:tt>interactive</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="action_id" direction="in"/>
+      <arg type="u" name="result" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      CreateTransaction:
+
+      Creates a new transaction that can have operations done on it. Note: The
+      dameon will automatically destroy this transaction if it is not used
+      after a few minutes.
+
+      Returns:
+
+      - `object_path`: The object_path, e.g. `/45_dafeca`
+    -->
     <method name="CreateTransaction">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Creates a new transaction that can have operations done on
-            it.
-            Note: The dameon will automatically destroy this transaction
-            if it is not used after a few minutes.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="o" name="object_path" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The object_path, e.g. <doc:tt>/45_dafeca</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="o" name="object_path" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetTimeSinceAction:
+      @role: The role enum, e.g. `update-system`
+
+      This method allows us to query how long since an action has successfully
+      completed.
+
+      Returns:
+
+      - `seconds`: The amount of time in seconds
+    -->
     <method name="GetTimeSinceAction">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows us to query how long since an action has successfully completed.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="role" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The role enum, e.g. <doc:tt>update-system</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="seconds" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The amount of time in seconds
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="role" direction="in"/>
+      <arg type="u" name="seconds" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetTransactionList:
+
+      Gets the transaction list of any transactions that are in progress
+
+      Returns:
+
+      - `transactions`: A list of transaction ID's
+    -->
     <method name="GetTransactionList">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Gets the transaction list of any transactions that are in progress
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="ao" name="transactions" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of transaction ID's
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="ao" name="transactions" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      StateHasChanged:
+      @reason: The reason of the state change. Valid reasons are `resume` or `posttrans`. Resume is given a lower priority than posttrans.
+
+      This method suggests to PackageKit that the package backend state may
+      have changed. This allows plugins to the native package manager to
+      suggest that PackageKit drops it's caches.
+    -->
     <method name="StateHasChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method suggests to PackageKit that the package backend state may have changed.
-            This allows plugins to the native package manager to suggest that PackageKit drops
-            it's caches.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="reason" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The reason of the state change. Valid reasons are <doc:tt>resume</doc:tt> or
-              <doc:tt>posttrans</doc:tt>.
-              Resume is given a lower priority than posttrans.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="reason" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
-    <method name="SuggestDaemonQuit">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Suggests to the daemon that it should quit as soon as possible, for instance if a native
-            package management tool is waiting to be used.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </method>
+    <!--
+      SuggestDaemonQuit:
+
+      Suggests to the daemon that it should quit as soon as possible, for
+      instance if a native package management tool is waiting to be used.
+    -->
+    <method name="SuggestDaemonQuit"/>
 
     <!--*********************************************************************-->
+    <!--
+      GetPackageHistory:
+      @names: The package names to return history for, e.g. `[ colord ]`.
+      @count: The maximum number of past transactions to return, or 0 for no limit.
+
+      Gets the history for a given package name. This uses the internal
+      PackageKit history database and will not return transactions done
+      outside of PackageKit using a distribution native tool.
+
+      Returns:
+
+      - `history`: The list of actions performed on this package. The array
+        may contain the following keys of types: `info[uint]`,
+        `user-id[uint]`, `version[string]`, `source[string]`,
+        `timestamp[uint64]`. Other keys and values may be added in the future.
+    -->
     <method name="GetPackageHistory">
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariant"/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Gets the history for a given package name.
-            This uses the internal PackageKit history database and will not
-            return transactions done outside of PackageKit using a distribution
-            native tool.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="names" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The package names to return history for, e.g. <doc:tt>[ colord ]</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="count" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The maximum number of past transactions to return, or 0 for no limit.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="a{saa{sv}}" name="history" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The list of actions performed on this package. The array may contain
-              the following keys of types:
-              <doc:tt>info[uint]</doc:tt>,
-              <doc:tt>user-id[uint]</doc:tt>,
-              <doc:tt>version[string]</doc:tt>,
-              <doc:tt>source[string]</doc:tt>,
-              <doc:tt>timestamp[uint64]</doc:tt>.
-              Other keys and values may be added in the future.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="names" direction="in"/>
+      <arg type="u" name="count" direction="in"/>
+      <arg type="a{saa{sv}}" name="history" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetDaemonState:
+
+      Gets the debugging state from the daemon. No secure state will be shown,
+      and all information is for reference only.
+
+      Returns:
+
+      - `state`: The state of the dameon at this specific moment.
+    -->
     <method name="GetDaemonState">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Gets the debugging state from the daemon.
-            No secure state will be shown, and all information is for reference only.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="state" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The state of the dameon at this specific moment.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="state" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      SetProxy:
+      @proxy_http: The HTTP proxy, e.g. `username:password@server:port`.
+      @proxy_https: The HTTPS proxy, e.g. `username:password@server:port`.
+      @proxy_ftp: The FTP proxy, e.g. `username:password@server:port`.
+      @proxy_socks: The SOCKS proxy, e.g. `username:password@server:port`.
+      @no_proxy: The comma seporated list of sites to not use the proxy for, e.g. `127.0.0.1,localmirror.org`.
+      @pac: The PAC file for the proxy, e.g. `/etc/network/school.pac`. Note: Most backends will not be able to use a PAC file.
+
+      Sets the proxy used by the dameon.
+
+      Callers need the org.freedesktop.packagekit.set-proxy permission.
+    -->
     <method name="SetProxy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Sets the proxy used by the dameon.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.set-proxy</doc:permission>
-      </doc:doc>
-      <arg type="s" name="proxy_http" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The HTTP proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="proxy_https" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The HTTPS proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="proxy_ftp" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The FTP proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="proxy_socks" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The SOCKS proxy, e.g. <doc:tt>username:password@server:port</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="no_proxy" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The comma seporated list of sites to not use the proxy for, e.g.
-              <doc:tt>127.0.0.1,localmirror.org</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="pac" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The PAC file for the proxy, e.g.
-              <doc:tt>/etc/network/school.pac</doc:tt>.
-              Note: Most backends will not be able to use a PAC file.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="proxy_http" direction="in"/>
+      <arg type="s" name="proxy_https" direction="in"/>
+      <arg type="s" name="proxy_ftp" direction="in"/>
+      <arg type="s" name="proxy_socks" direction="in"/>
+      <arg type="s" name="no_proxy" direction="in"/>
+      <arg type="s" name="pac" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      TransactionListChanged:
+      @transactions: A list of transaction ID's.
+
+      The transaction list has changed, because either a transaction has
+      finished or a new transaction created.
+    -->
     <signal name="TransactionListChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The transaction list has changed, because either a transaction has finished or a new
-            transaction created.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="transactions" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A list of transaction ID's.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="transactions" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
-    <signal name="RestartSchedule">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            A system restart has been sceduled
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
+    <!--
+      RestartSchedule:
+
+      A system restart has been sceduled
+    -->
+    <signal name="RestartSchedule"/>
 
     <!--*********************************************************************-->
-    <signal name="InstalledChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when the set of installed apps has potentially changed.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
+    <!--
+      InstalledChanged:
+
+      This signal is emitted when the set of installed apps has potentially
+      changed.
+    -->
+    <signal name="InstalledChanged"/>
 
     <!--*********************************************************************-->
-    <signal name="RepoListChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when the repository list has changed
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
+    <!--
+      RepoListChanged:
+
+      This signal is emitted when the repository list has changed
+    -->
+    <signal name="RepoListChanged"/>
 
     <!--*********************************************************************-->
-    <signal name="UpdatesChanged">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when the number of updates has changed
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
+    <!--
+      UpdatesChanged:
+
+      This signal is emitted when the number of updates has changed
+    -->
+    <signal name="UpdatesChanged"/>
 
   </interface>
 
   <!--*********************************************************************-->
+  <!--
+    org.freedesktop.PackageKit.Offline:
+
+    The interface used for interacting with offline actions.
+  -->
   <interface name="org.freedesktop.PackageKit.Offline">
-    <doc:doc>
-      <doc:description>
-        <doc:para>
-          The interface used for interacting with offline actions.
-        </doc:para>
-      </doc:description>
-    </doc:doc>
 
     <!--*********************************************************************-->
-    <property name="UpdatePrepared" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If an update has been prepared and is ready to be triggered.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      UpdatePrepared:
+
+      If an update has been prepared and is ready to be triggered.
+    -->
+    <property name="UpdatePrepared" type="b" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="UpdateTriggered" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If an update has been triggered.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      UpdateTriggered:
+
+      If an update has been triggered.
+    -->
+    <property name="UpdateTriggered" type="b" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="UpgradePrepared" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If a system upgrade has been prepared and is ready to be triggered.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      UpgradePrepared:
+
+      If a system upgrade has been prepared and is ready to be triggered.
+    -->
+    <property name="UpgradePrepared" type="b" access="read"/>
 
     <!--*********************************************************************-->
-    <property name="UpgradeTriggered" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If a system upgrade has been triggered.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      UpgradeTriggered:
+
+      If a system upgrade has been triggered.
+    -->
+    <property name="UpgradeTriggered" type="b" access="read"/>
 
     <!--*********************************************************************-->
+    <!--
+      PreparedUpgrade:
+
+      Details about a prepared system upgrade. Currently recognized keys are
+      `"name"` and `"version"`.
+    -->
     <property name="PreparedUpgrade" type="a{sv}" access="read">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="QVariantMap"/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Details about a prepared system upgrade. Currently recognized keys
-            are <doc:tt>"name"</doc:tt> and <doc:tt>"version"</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
     </property>
 
     <!--*********************************************************************-->
-    <property name="TriggerAction" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The action to take when finished applying updates, known values
-            are <doc:tt>power-off</doc:tt>, <doc:tt>reboot</doc:tt> or
-            <doc:tt>unset</doc:tt> if no offline update is scheduled.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      TriggerAction:
+
+      The action to take when finished applying updates, known values are
+      `power-off`, `reboot` or `unset` if no offline update is scheduled.
+    -->
+    <property name="TriggerAction" type="s" access="read"/>
 
     <!--*********************************************************************-->
+    <!--
+      GetResults:
+
+      If the last offline action was completed successfully, returns a list of
+      packages that were processed, a type of the action done and the unix
+      timestamp when the action was finished. Otherwise returns an error code
+      and error description.
+
+      Returns:
+
+      - `success`: A boolean value representing success.
+      - `package_ids`: An array of package IDs.
+      - `role`: The role enum, e.g. `update-system`
+      - `time_finished`: The unix timestamp when the operation was completed.
+      - `error_code`: A PackageKit error code. The value of this argument is
+        undefined if the "success" argument returned true.
+      - `error_description`: A detailed error description. The value of this
+        argument is undefined if the "success" argument returned true.
+    -->
     <method name="GetResults">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If the last offline action was completed successfully, returns a list
-            of packages that were processed, a type of the action done and the
-            unix timestamp when the action was finished.
-            Otherwise returns an error code and error description.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="b" name="success" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A boolean value representing success.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="role" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The role enum, e.g. <doc:tt>update-system</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="t" name="time_finished" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The unix timestamp when the operation was completed.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="error_code" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A PackageKit error code. The value of this argument is undefined
-              if the "success" argument returned true.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="error_description" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A detailed error description. The value of this argument is undefined
-              if the "success" argument returned true.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="b" name="success" direction="out"/>
+      <arg type="as" name="package_ids" direction="out"/>
+      <arg type="u" name="role" direction="out"/>
+      <arg type="t" name="time_finished" direction="out"/>
+      <arg type="u" name="error_code" direction="out"/>
+      <arg type="s" name="error_description" direction="out"/>
     </method>
 
     <!--*********************************************************************-->
-    <method name="ClearResults">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Clears the offline update results store.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </method>
+    <!--
+      ClearResults:
+
+      Clears the offline update results store.
+    -->
+    <method name="ClearResults"/>
 
     <!--*********************************************************************-->
+    <!--
+      Trigger:
+      @action: The action to take when finished applying updates, known values are `power-off` and `reboot`.
+
+      Triggers the offline update for next boot.
+
+      If the update is already triggered, only the action is changed, which
+      requires no authorization. If a system upgrade is triggered instead, it
+      is replaced by the update, which requires the same authorization as
+      triggering a system upgrade.
+    -->
     <method name="Trigger">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Triggers the offline update for next boot.
-          </doc:para>
-          <doc:para>
-            If the update is already triggered, only the action is changed,
-            which requires no authorization. If a system upgrade is triggered
-            instead, it is replaced by the update, which requires the same
-            authorization as triggering a system upgrade.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="action" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The action to take when finished applying updates, known values
-              are <doc:tt>power-off</doc:tt> and <doc:tt>reboot</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="action" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      TriggerUpgrade:
+      @action: The action to take when finished installing the system upgrade, known values are `power-off` and `reboot`.
+
+      Triggers the offline system upgrade for next boot.
+
+      If the system upgrade is already triggered, only the action is changed,
+      which requires no authorization. If an offline update is triggered
+      instead, it is replaced by the system upgrade.
+    -->
     <method name="TriggerUpgrade">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Triggers the offline system upgrade for next boot.
-          </doc:para>
-          <doc:para>
-            If the system upgrade is already triggered, only the action is
-            changed, which requires no authorization. If an offline update is
-            triggered instead, it is replaced by the system upgrade.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="action" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The action to take when finished installing the system upgrade, known values
-              are <doc:tt>power-off</doc:tt> and <doc:tt>reboot</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="action" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
-    <method name="Cancel">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Cancels the offline update so the next boot procceeds as normal.
-          </doc:para>
-          <doc:para>
-            Removing a triggered system upgrade requires the same
-            authorization as triggering it did.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </method>
+    <!--
+      Cancel:
+
+      Cancels the offline update so the next boot procceeds as normal.
+
+      Removing a triggered system upgrade requires the same authorization as
+      triggering it did.
+    -->
+    <method name="Cancel"/>
 
     <!--*********************************************************************-->
+    <!--
+      GetPrepared:
+
+      Returns the list of prepared updates.
+
+      Returns:
+
+      - `package_ids`: An array of package IDs.
+    -->
     <method name="GetPrepared">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            Returns the list of prepared updates.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="package_ids" direction="out"/>
     </method>
 
   </interface>

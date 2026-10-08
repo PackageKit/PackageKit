@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-control
- * @short_description: For querying data about PackageKit
+ * PkControl:
+ *
+ * For querying data about PackageKit
  *
  * A GObject to use for accessing PackageKit asynchronously.
  */

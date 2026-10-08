@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-transaction-list
- * @short_description: A nice way to keep a list of the jobs being processed
+ * PkTransactionList:
+ *
+ * A nice way to keep a list of the jobs being processed
  *
  * These provide a good way to keep a list of the jobs being processed so we
  * can see what type of jobs and thier status easily.

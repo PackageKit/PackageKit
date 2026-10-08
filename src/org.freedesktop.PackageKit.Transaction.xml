@@ -3,2336 +3,1172 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
   <!ENTITY ERROR_GENERAL "org.freedesktop.PackageKit.Denied">
 ]>
-<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+<node name="/">
+  <!--
+    org.freedesktop.PackageKit.Transaction:
+
+    The transaction interface is used for interacting with individual
+    transactions.
+  -->
   <interface name="org.freedesktop.PackageKit.Transaction">
-    <doc:doc>
-      <doc:description>
-        <doc:para>
-          The transaction interface is used for interacting with individual transactions.
-        </doc:para>
-      </doc:description>
-    </doc:doc>
 
     <!--*********************************************************************-->
-    <property name="Role" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The transaction role enum, e.g. <doc:tt>update-system</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="Status" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The transaction status enum, e.g. <doc:tt>downloading</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="LastPackage" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The last package_id that was processed, e.g. <doc:tt>hal;0.1.2;i386;fedora;</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="Uid" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The uid of the user that started the transaction.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="Sender" type="s" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The D-Bus name of the process that started the transaction.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="Percentage" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The percentage complete of the transaction.
-          </doc:para>
-          <doc:para>
-            Backends should set this value to 101 if the amount complete cannot be calculated.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="AllowCancel" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If the transaction can be cancelled.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="CallerActive" type="b" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            If the original caller of the method is still connected to the system bus.
-            This is usually an indication that the client can handle it's own error handling and
-            EULA callbacks rather than another program taking over.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="ElapsedTime" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The amount of time elapsed during the transaction in seconds.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="RemainingTime" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The estimated time remaining of the transaction in seconds, or 0 if not known.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="Speed" type="u" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The estimated speed of the transaction (copying, downloading, etc.) in bits per second, or 0 if not known.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="DownloadSizeRemaining" type="t" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The number of bytes remaining to download, 0 if nothing is left to download.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
-    <property name="TransactionFlags" type="t" access="read">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            The flags set for this transaction, e.g. SIMULATE or ONLY_DOWNLOAD.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </property>
+    <!--
+      Role:
+
+      The transaction role enum, e.g. `update-system`.
+    -->
+    <property name="Role" type="u" access="read"/>
+    <!--
+      Status:
+
+      The transaction status enum, e.g. `downloading`.
+    -->
+    <property name="Status" type="u" access="read"/>
+    <!--
+      LastPackage:
+
+      The last package_id that was processed, e.g. `hal;0.1.2;i386;fedora;`.
+    -->
+    <property name="LastPackage" type="s" access="read"/>
+    <!--
+      Uid:
+
+      The uid of the user that started the transaction.
+    -->
+    <property name="Uid" type="u" access="read"/>
+    <!--
+      Sender:
+
+      The D-Bus name of the process that started the transaction.
+    -->
+    <property name="Sender" type="s" access="read"/>
+    <!--
+      Percentage:
+
+      The percentage complete of the transaction.
+
+      Backends should set this value to 101 if the amount complete cannot be
+      calculated.
+    -->
+    <property name="Percentage" type="u" access="read"/>
+    <!--
+      AllowCancel:
+
+      If the transaction can be cancelled.
+    -->
+    <property name="AllowCancel" type="b" access="read"/>
+    <!--
+      CallerActive:
+
+      If the original caller of the method is still connected to the system
+      bus. This is usually an indication that the client can handle it's own
+      error handling and EULA callbacks rather than another program taking
+      over.
+    -->
+    <property name="CallerActive" type="b" access="read"/>
+    <!--
+      ElapsedTime:
+
+      The amount of time elapsed during the transaction in seconds.
+    -->
+    <property name="ElapsedTime" type="u" access="read"/>
+    <!--
+      RemainingTime:
+
+      The estimated time remaining of the transaction in seconds, or 0 if not
+      known.
+    -->
+    <property name="RemainingTime" type="u" access="read"/>
+    <!--
+      Speed:
+
+      The estimated speed of the transaction (copying, downloading, etc.) in
+      bits per second, or 0 if not known.
+    -->
+    <property name="Speed" type="u" access="read"/>
+    <!--
+      DownloadSizeRemaining:
+
+      The number of bytes remaining to download, 0 if nothing is left to
+      download.
+    -->
+    <property name="DownloadSizeRemaining" type="t" access="read"/>
+    <!--
+      TransactionFlags:
+
+      The flags set for this transaction, e.g. SIMULATE or ONLY_DOWNLOAD.
+    -->
+    <property name="TransactionFlags" type="t" access="read"/>
 
     <!--*********************************************************************-->
+    <!--
+      SetHints:
+      @hints: The values as an array of strings, for example `['locale=en_GB.utf8','idle=true','interactive=false','cache-age=3600']`.
+
+      This method allows the calling session to set transaction hints for the
+      package manager which can change as the transaction runs.
+
+      This method can be sent before the transaction has been run or whilst it
+      is running. There is no limit to the number of times this method can be
+      sent, although some backends may only use the values that were set
+      before the transaction was started.
+
+      Each parameter value is optional.
+
+      Notes on `hints`:
+
+      The following parameter values are understood:
+
+      - `locale`: The locale code, for example `en_GB`.
+      - `background`: If the method should be executed as a background task,
+        valid values are `true` and `false`, and other values will result in
+        an error. Background tasks are normally treated with a low priority
+        than regular tasks, and normally only use idle CPU and network.
+      - `interactive`: If the method can ask interactive questions whilst
+        running, valid values are `true` and `false`, and other values will
+        result in an error.
+      - `cache-age`: This allows the frontend to set how fresh it needs the
+        metadata used in the transaction. This allows fine control of the age
+        of the returned results, but means the frontend probably has to query
+        the updates check value and pass it this value for `GetUpdates`, and
+        choose something sane otherwise. Most interactive clients will set
+        this to `intmax` which means "never download new metadata, unless
+        required to return results". Most transactions will not have this
+        value set.
+
+      Other values will cause a verbose warning in the daemon, but will not
+      cause the method to fail. This will preserve forward and backwards
+      compatibility for future API versions.
+    -->
     <method name="SetHints">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows the calling session to set transaction hints for
-            the package manager which can change as the transaction runs.
-          </doc:para>
-          <doc:para>
-            This method can be sent before the transaction has been run or
-            whilst it is running. There is no limit to the number of times this
-            method can be sent, although some backends may only use the values
-            that were set before the transaction was started.
-          </doc:para>
-          <doc:para>
-            Each parameter value is optional.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="hints" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The values as an array of strings, for example
-              <doc:tt>['locale=en_GB.utf8','idle=true','interactive=false','cache-age=3600']</doc:tt>.
-            </doc:para>
-            <doc:para>
-              The following parameter values are understood:
-            </doc:para>
-            <doc:list>
-              <doc:item>
-                <doc:term>locale</doc:term>
-                <doc:definition>
-                  The locale code, for example <doc:tt>en_GB</doc:tt>.
-                </doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>background</doc:term>
-                <doc:definition>
-                  If the method should be executed as a background task, valid
-                  values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
-                  and other values will result in an error.
-                  Background tasks are normally treated with a low priority than
-                  regular tasks, and normally only use idle CPU and network.
-                </doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>interactive</doc:term>
-                <doc:definition>
-                  If the method can ask interactive questions whilst running,
-                  valid values are <doc:tt>true</doc:tt> and <doc:tt>false</doc:tt>,
-                  and other values will result in an error.
-                </doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>cache-age</doc:term>
-                <doc:definition>
-                  This allows the frontend to set how fresh it needs the
-                  metadata used in the transaction.
-                  This allows fine control of the age of the returned results,
-                  but means the frontend probably has to query the updates
-                  check value and pass it this value for <doc:tt>GetUpdates</doc:tt>,
-                  and choose something sane otherwise.
-                  Most interactive clients will set this to <doc:tt>intmax</doc:tt>
-                  which means "never download new metadata, unless required to return results".
-                  Most transactions will not have this value set.
-                </doc:definition>
-              </doc:item>
-            </doc:list>
-            <doc:para>
-              Other values will cause a verbose warning in the daemon, but will
-              not cause the method to fail. This will preserve forward and
-              backwards compatibility for future API versions.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="hints" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      AcceptEula:
+      @eula_id: A valid EULA ID
+
+      This method allows the user to accept a end user licence agreement.
+
+      Callers need the org.freedesktop.packagekit.accept-eula permission.
+    -->
     <method name="AcceptEula">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows the user to accept a end user licence agreement.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.accept-eula</doc:permission>
-      </doc:doc>
-      <arg type="s" name="eula_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid EULA ID
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="eula_id" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      Cancel:
+
+      This method cancels a transaction that is already running
+    -->
     <method name="Cancel">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method cancels a transaction that is already running
-          </doc:para>
-        </doc:description>
-      </doc:doc>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      DownloadPackages:
+      @store_in_cache: If the downloaded files should be stored in the system package cache rather than copied into a newly created directory.
+      @package_ids: An array of package IDs.
+
+      This method downloads packages into a temporary directory.
+
+      This method should emit one `Files` signal for each package that is
+      downloaded, with the file list set as the name of the complete
+      downloaded file and directory, so for example:
+
+      `DownloadPackages('hal;0.1.2;i386;fedora;','hal-info;2009-09-07;no-arch;updates;')`
+      should send two signals, e.g. `Files('hal;0.1.2;i386;fedora;',
+      '/tmp/hal-0.1.2.i386.rpm')` and
+      `Files('hal-info;2009-09-07;no-arch;updates;',
+      '/tmp/hal-info-2009-09-07.noarch.rpm')`.
+
+      Notes on `store_in_cache`:
+
+      See [the developer
+      docs](https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html)
+      for more details on how this is supposed to work.
+    -->
     <method name="DownloadPackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method downloads packages into a temporary directory.
-          </doc:para>
-          <doc:para>
-            This method should emit one
-            <doc:tt>Files</doc:tt> signal for each package that is downloaded,
-            with the file list set as the name of the complete downloaded file
-            and directory, so for example:
-          </doc:para>
-          <doc:para>
-            <doc:tt>DownloadPackages('hal;0.1.2;i386;fedora;','hal-info;2009-09-07;no-arch;updates;')</doc:tt>
-            should send two signals, e.g.
-            <doc:tt>Files('hal;0.1.2;i386;fedora;', '/tmp/hal-0.1.2.i386.rpm')</doc:tt>
-            and
-            <doc:tt>Files('hal-info;2009-09-07;no-arch;updates;', '/tmp/hal-info-2009-09-07.noarch.rpm')</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="b" name="store_in_cache" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the downloaded files should be stored in the system
-              package cache rather than copied into a newly created
-              directory.
-            </doc:para>
-            <doc:para>
-              See <doc:ulink url="https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html">
-              the developer docs</doc:ulink> for more details on how
-              this is supposed to work.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="b" name="store_in_cache" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      DependsOn:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @package_ids: An array of package IDs.
+      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then DependsOn on gnome-power-manager should return both HAL and NetworkManager.
+
+      This method returns packages that this package depends on.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+    -->
     <method name="DependsOn">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns packages that this package depends on.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="recursive" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>. If yes then the requirements should be
-              returned for all packages returned.
-              This means if gnome-power-manager depends on NetworkManager
-              and NetworkManager depends on HAL, then DependsOn on
-              gnome-power-manager should return both HAL and NetworkManager.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetDetails:
+      @package_ids: An array of package IDs.
+
+      This method should return all the details about a specific `package_id`.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Details`.
+    -->
     <method name="GetDetails">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return all the details about a specific
-            <doc:tt>package_id</doc:tt>.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Details</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetDetailsLocal:
+      @files: An array of filenames.
+
+      This method should return all the details about a specific local file.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Details`.
+    -->
     <method name="GetDetailsLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return all the details about a specific
-            local file.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Details</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="files" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of filenames.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="files" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetFilesLocal:
+      @files: An array of filenames.
+
+      This method should return all the file lists for a specific local file.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Details`.
+    -->
     <method name="GetFilesLocal">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return all the file lists for a specific
-            local file.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Details</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="files" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of filenames.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="files" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetFiles:
+      @package_ids: An array of package IDs.
+
+      This method should return the file list of the `package_id`.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Files`.
+    -->
     <method name="GetFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return the file list of the <doc:tt>package_id</doc:tt>.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Files</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetOldTransactions:
+      @number: The number of past transactions, or 0 for all known transactions.
+
+      This method allows a client to view details for old transactions.
+    -->
     <method name="GetOldTransactions">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows a client to view details for old transactions.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="number" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The number of past transactions, or 0 for all known transactions.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="number" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetPackages:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+
+      This method returns all the packages without a search term.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+    -->
     <method name="GetPackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns all the packages without a search term.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetRepoList:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+
+      This method returns the list of repositories used in the system.
+
+      This method should emit `RepoDetail`.
+    -->
     <method name="GetRepoList">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns the list of repositories used in the system.
-          </doc:para>
-          <doc:para>
-            This method should emit <doc:tt>RepoDetail</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RequiredBy:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @package_ids: An array of package IDs.
+      @recursive: Either `true` or `false`. If yes then the requirements should be returned for all packages returned. This means if gnome-power-manager depends on NetworkManager and NetworkManager depends on HAL, then GetRequires on HAL should return both gnome-power-manager and NetworkManager.
+
+      This method returns packages that depend on this package. This is useful
+      to know, as if `package_id` is being removed, we can warn the user what
+      else would be removed.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+    -->
     <method name="RequiredBy">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns packages that depend on this package.
-            This is useful to know, as if <doc:tt>package_id</doc:tt> is being
-            removed, we can warn the user what else would be removed.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="recursive" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>. If yes then the requirements should be
-              returned for all packages returned.
-              This means if gnome-power-manager depends on NetworkManager
-              and NetworkManager depends on HAL, then GetRequires on
-              HAL should return both gnome-power-manager and NetworkManager.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
+      <arg type="b" name="recursive" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetUpdateDetail:
+      @package_ids: An array of package IDs.
+
+      This method returns details about a specific update.
+
+      This method typically emits `UpdateDetails` and `Error`
+    -->
     <method name="GetUpdateDetail">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns details about a specific update.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>UpdateDetails</doc:tt> and
-            <doc:tt>Error</doc:tt>
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetUpdates:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+
+      This method should return a list of packages that are installed and are
+      upgradable. It should only return the newest update for each installed
+      package.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `blocked`, `low`, `normal`,
+      `important` or `security`.
+
+      The status `blocked` signifies the package cannot be updated, probably
+      due to other dependencies not being met. This type allows the GUI tools
+      to show to the user that an update exists, but cannot be installed. The
+      reason for it not being installed should be put into the update
+      description when doing GetUpdateDetail.
+
+      A filter such as `basename` or `gui` is also useful if you want to do
+      filtering on the method to only show the main packages rather than the
+      complete list. The complete list is available but specifying `none` as
+      the filter. Using no filter which may be useful in advanced tools or
+      when using libpackagekit and searching for an update of a specific name.
+      Other filter types may be present, but can be safely ignored of the
+      backend does not support them.
+    -->
     <method name="GetUpdates">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return a list of packages that are installed and are upgradable.
-            It should only return the newest update for each installed package.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>blocked</doc:tt>,
-            <doc:tt>low</doc:tt>,
-            <doc:tt>normal</doc:tt>,
-            <doc:tt>important</doc:tt> or
-            <doc:tt>security</doc:tt>.
-          </doc:para>
-          <doc:para>
-            The status <doc:tt>blocked</doc:tt> signifies the package cannot be
-            updated, probably due to other dependencies not being met.
-            This type allows the GUI tools to show to the user that an update
-            exists, but cannot be installed.
-            The reason for it not being installed should be put into the update
-            description when doing GetUpdateDetail.
-          </doc:para>
-          <doc:para>
-            A filter such as <doc:tt>basename</doc:tt> or <doc:tt>gui</doc:tt>
-            is also useful if you want to do filtering on the method to only show
-            the main packages rather than the complete list.
-            The complete list is available but specifying <doc:tt>none</doc:tt>
-            as the filter.
-            Using no filter which may be useful in advanced tools or when using
-            libpackagekit and searching for an update of a specific name.
-            Other filter types may be present, but can be safely ignored of the
-            backend does not support them.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      GetDistroUpgrades:
+
+      This method should return a list of distribution upgrades that are
+      available. It should not return updates, only major upgrades.
+
+      This method typically emits `DistroUpgrade`, `Error` and
+    -->
     <method name="GetDistroUpgrades">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should return a list of distribution upgrades that are
-            available.
-            It should not return updates, only major upgrades.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>DistroUpgrade</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-          </doc:para>
-        </doc:description>
-      </doc:doc>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      InstallFiles:
+      @transaction_flags: If the transaction is only allowed to install trusted files. Unsigned files should not be installed if this parameter is `TRUE`.
+      @full_paths: An array of full path and filenames to packages.
+
+      This method installs local package files onto the local system.
+
+      The installer should always install extra dependant packages
+      automatically.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `downloading`, `updating`,
+      `installing` or `removing`.
+
+      Callers need the org.freedesktop.packagekit.localinstall-untrusted
+      permission.
+
+      Notes on `transaction_flags`:
+
+      If this method is can only install trusted files, and the files are
+      unsigned, then the backend will send a
+      `ErrorCode(missing-gpg-signature)`.
+    -->
     <method name="InstallFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method installs local package files onto the local system.
-          </doc:para>
-          <doc:para>
-            The installer should always install extra dependant packages automatically.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>downloading</doc:tt>,
-            <doc:tt>updating</doc:tt>,
-            <doc:tt>installing</doc:tt> or
-            <doc:tt>removing</doc:tt>.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.localinstall-untrusted</doc:permission>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction is only allowed to install trusted files.
-              Unsigned files should not be installed if this parameter is <doc:tt>TRUE</doc:tt>.
-            </doc:para>
-            <doc:para>
-              If this method is can only install trusted files, and the files are unsigned, then
-              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="full_paths" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of full path and filenames to packages.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="as" name="full_paths" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      InstallPackages:
+      @transaction_flags: If the transaction is only allowed to install trusted packages. Unsigned packages should not be installed if this transaction_flags has `ONLY_TRUSTED`.
+      @package_ids: An array of package IDs.
+
+      This method installs new packages on the local system.
+
+      The installer should always install extra packages automatically as the
+      use could call DependsOn prior to the install if a confirmation is
+      required in the UI.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `downloading`, `updating`,
+      `installing` or `removing`.
+
+      Callers need the org.freedesktop.packagekit.install-untrusted
+      permission.
+
+      Notes on `transaction_flags`:
+
+      If this method is can only install trusted packages, and the packages
+      are unsigned, then the backend will send a
+      `ErrorCode(missing-gpg-signature)`.
+    -->
     <method name="InstallPackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method installs new packages on the local system.
-          </doc:para>
-          <doc:para>
-            The installer should always install extra packages automatically
-            as the use could call DependsOn prior to the install if a confirmation
-            is required in the UI.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>downloading</doc:tt>,
-            <doc:tt>updating</doc:tt>,
-            <doc:tt>installing</doc:tt> or
-            <doc:tt>removing</doc:tt>.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.install-untrusted</doc:permission>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction is only allowed to install trusted packages.
-              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
-            </doc:para>
-            <doc:para>
-              If this method is can only install trusted packages, and the packages are unsigned, then
-              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      InstallSignature:
+      @sig_type: A key type enum, e.g. `gpg`
+      @key_id: A key ID, e.g. `BB7576AC`
+      @package_id: A PackageID for the package that the user is trying to install
+
+      This method allows us to install new security keys.
+
+      Callers need the org.freedesktop.packagekit.install-signature
+      permission.
+    -->
     <method name="InstallSignature">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows us to install new security keys.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.install-signature</doc:permission>
-      </doc:doc>
-      <arg type="u" name="sig_type" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A key type enum, e.g. <doc:tt>gpg</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A key ID, e.g. <doc:tt>BB7576AC</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="package_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A PackageID for the package that the user is trying to install
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="sig_type" direction="in"/>
+      <arg type="s" name="key_id" direction="in"/>
+      <arg type="s" name="package_id" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RefreshCache:
+      @force: If the caches should be cleaned and reloaded even if there is valid, up to date data.
+
+      This method should fetch updated meta-data for all enabled repositories.
+      This operation should be only scheduled when the computer is idle as the
+      network connection will be very active, and will the computer will have
+      have non-trivial levels of hard disk and processor activity. For these
+      reasons, it should not be done automatically when on battery power.
+
+      When fetching each software repository, ensure to emit RepoDetail for
+      the current repository to give the user interface some extra details. Be
+      sure to have the "enabled" field set to true, otherwise you wouldn't be
+      fetching that repository.
+
+      This method typically emits `Progress`, `Error` and `RepoDetail`.
+
+      Callers need the org.freedesktop.packagekit.refresh-cache permission.
+    -->
     <method name="RefreshCache">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method should fetch updated meta-data for all enabled repositories.
-            This operation should be only scheduled when the computer is idle as
-            the network connection will be very active, and will the computer will
-            have have non-trivial levels of hard disk and processor activity.
-            For these reasons, it should not be done automatically when on battery
-            power.
-          </doc:para>
-          <doc:para>
-            When fetching each software repository, ensure to emit RepoDetail for the
-            current repository to give the user interface some extra details. Be sure to
-            have the "enabled" field set to true, otherwise you wouldn't be fetching
-            that repository.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>RepoDetail</doc:tt>.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.refresh-cache</doc:permission>
-      </doc:doc>
-      <arg type="b" name="force" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the caches should be cleaned and reloaded even if there is valid, up to date data.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="b" name="force" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RemovePackages:
+      @transaction_flags: If the transaction should be simulated or prepared.
+      @package_ids: An array of package IDs.
+      @allow_deps: Either `true` or `false`. If `true` allow other packages to be removed with the package, but `false` should cause the script to abort if other packages are dependant on the package.
+      @autoremove: Either `true` or `false`. This option is only really interesting on embedded devices with a limited amount of flash storage. It suggests to the packagekit backend that dependencies installed at the same time as the package should also be removed if they are not required by anything else. For instance, if you install OpenOffice, it might download libneon as a dependency. When `auto_remove` is set to true, and you remove OpenOffice then libneon will also get removed automatically.
+
+      This method removes packages from the local system.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `downloading`, `updating`,
+      `installing` or `removing`.
+
+      Callers need the org.freedesktop.packagekit.remove permission.
+    -->
     <method name="RemovePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method removes packages from the local system.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>downloading</doc:tt>,
-            <doc:tt>updating</doc:tt>,
-            <doc:tt>installing</doc:tt> or
-            <doc:tt>removing</doc:tt>.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.remove</doc:permission>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction should be simulated or prepared.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="allow_deps" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
-              If <doc:tt>true</doc:tt> allow other packages to be removed with the package,
-              but <doc:tt>false</doc:tt> should cause the script to abort if other packages
-              are dependant on the package.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="autoremove" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Either <doc:tt>true</doc:tt> or <doc:tt>false</doc:tt>.
-              This option is only really interesting on embedded devices with a limited amount of
-              flash storage.
-              It suggests to the packagekit backend that dependencies installed at the same time as
-              the package should also be removed if they are not required by anything else.
-              For instance, if you install OpenOffice, it might download libneon as a dependency.
-              When <doc:tt>auto_remove</doc:tt> is set to true, and you remove OpenOffice then
-              libneon will also get removed automatically.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
+      <arg type="b" name="allow_deps" direction="in"/>
+      <arg type="b" name="autoremove" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RepoEnable:
+      @repo_id: A repository identifier, e.g. `fedora-development-debuginfo`
+      @enabled: `true` if enabled, `false` if disabled.
+
+      This method enables the repository specified.
+
+      Callers need the org.freedesktop.packagekit.repo-change permission.
+    -->
     <method name="RepoEnable">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method enables the repository specified.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
-      </doc:doc>
-      <arg type="s" name="repo_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A repository identifier, e.g. <doc:tt>fedora-development-debuginfo</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="enabled" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              <doc:tt>true</doc:tt> if enabled, <doc:tt>false</doc:tt> if disabled.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="repo_id" direction="in"/>
+      <arg type="b" name="enabled" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RepoSetData:
+      @repo_id: A repository identifier, e.g. `fedora-development-debuginfo`
+      @parameter: The backend specific value, e.g. `set-download-url`.
+      @value: The backend specific value, e.g. `http://foo.bar.org/baz`.
+
+      This method allows arbitary data to be passed to the repository handler.
+
+      Callers need the org.freedesktop.packagekit.repo-change permission.
+    -->
     <method name="RepoSetData">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows arbitary data to be passed to the repository handler.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.repo-change</doc:permission>
-      </doc:doc>
-      <arg type="s" name="repo_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A repository identifier, e.g. <doc:tt>fedora-development-debuginfo</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="parameter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The backend specific value, e.g. <doc:tt>set-download-url</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="value" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The backend specific value, e.g. <doc:tt>http://foo.bar.org/baz</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="repo_id" direction="in"/>
+      <arg type="s" name="parameter" direction="in"/>
+      <arg type="s" name="value" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RepoRemove:
+      @transaction_flags: If the transaction should be simulated.
+      @repo_id: A repository identifier, e.g. `updates-testing`
+      @autoremove: Packages installed from the repo are automatically removed.
+
+      This method removes the repo and optionally removes all the packages
+      installed from the repo.
+
+      Callers need org.freedesktop.packagekit.repo-change permission.
+    -->
     <method name="RepoRemove">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method removes the repo and optionally removes all the packages
-            installed from the repo.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need org.freedesktop.packagekit.repo-change</doc:permission>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction should be simulated.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="repo_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A repository identifier, e.g. <doc:tt>updates-testing</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="autoremove" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Packages installed from the repo are automatically removed.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="s" name="repo_id" direction="in"/>
+      <arg type="b" name="autoremove" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      Resolve:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @packages: An array of package names, e.g. `scribus-clipart`.
+
+      This method turns a single package name into a package_id suitable for
+      the other methods.
+
+      If the package is a fully formed package_id, then this should be treated
+      as an exact package match. This is useful to find the summary or
+      installed status of a package_id returned from other methods.
+
+      This method typically emits `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+
+      Notes on `packages`:
+
+      The package names are case sensitive, so for instance:
+      `Resolve('Packagekit')` would not match `PackageKit`.
+    -->
     <method name="Resolve">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method turns a single package name into a package_id suitable for the
-            other methods.
-          </doc:para>
-          <doc:para>
-            If the package is a fully formed package_id, then this should be treated
-            as an exact package match. This is useful to find the summary or installed
-            status of a package_id returned from other methods.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="packages" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package names, e.g. <doc:tt>scribus-clipart</doc:tt>.
-            </doc:para>
-            <doc:para>
-              The package names are case sensitive, so for instance:
-              <doc:tt>Resolve('Packagekit')</doc:tt> would not match <doc:tt>PackageKit</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="packages" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      SearchDetails:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @values: A single word search term with no wildcard chars. The search can contain many words separated by spaces. In this case, the search operator is `AND` and the words can be found in any details section/field. For example, search of `GPL games` should returns every games with a GPL license.
+
+      This method allows deeper searching than SearchName().
+
+      Do not refresh the package cache. This should be fast. This is very
+      similar to search-name. This should search as much data as possible,
+      including, if possible repo names, package summaries, descriptions,
+      licenses and URLs.
+
+      Try to emit `installed` before `available` packages first, as it allows
+      the client program to perform the GUI filtering and matching whilst the
+      daemon is running the transaction.
+
+      If the backend includes `installed` and `available` versions of the same
+      package when searching then the `available` version will have to be
+      filtered in the backend.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+
+      Notes on `values`:
+
+      The search should not be treated as case sensitive.
+    -->
     <method name="SearchDetails">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method allows deeper searching than SearchName().
-          </doc:para>
-          <doc:para>
-            Do not refresh the package cache. This should be fast.
-            This is very similar to search-name.
-            This should search as much data as possible, including, if possible
-            repo names, package summaries, descriptions, licenses and URLs.
-          </doc:para>
-          <doc:para>
-            Try to emit <doc:tt>installed</doc:tt> before
-            <doc:tt>available</doc:tt> packages first, as it allows the client
-            program to perform the GUI filtering and matching whilst the daemon is
-            running the transaction.
-          </doc:para>
-          <doc:para>
-            If the backend includes <doc:tt>installed</doc:tt> and
-            <doc:tt>available</doc:tt> versions of the same package when searching
-            then the <doc:tt>available</doc:tt> version will have to be filtered
-            in the backend.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="values" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A single word search term with no wildcard chars. The search can
-              contain many words separated by spaces. In this case, the
-              search operator is <doc:tt>AND</doc:tt> and the words can be found
-              in any details section/field. For example, search of
-              <doc:tt>GPL games</doc:tt> should returns every games with a GPL
-              license.
-            </doc:para>
-            <doc:para>
-              The search should not be treated as case sensitive.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="values" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      SearchFiles:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @values: A filename or fully qualified path and filename on the system. If the search term begins with a `/` it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned. If the search term does not start with `/` then it should be treated as a single filename, which can be in any directory.
+
+      This method searches for files on the local system and files in
+      available packages.
+
+      This should search for files. This should allow an application to find
+      out what package owns a file on the system.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+
+      Notes on `values`:
+
+      The search is case sensitive, and should not be escaped or surrounded in
+      quotes.
+    -->
     <method name="SearchFiles">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method searches for files on the local system and files in available packages.
-          </doc:para>
-          <doc:para>
-            This should search for files.
-            This should allow an application to find out what package owns
-            a file on the system.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="values" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A filename or fully qualified path and filename on the system.
-              If the search term begins with a <doc:tt>/</doc:tt> it will be assumed the entire path has been given and only packages that contain this exact path and filename will be returned.
-              If the search term does not start with <doc:tt>/</doc:tt> then it should be treated as a single filename, which can be in any directory.
-            </doc:para>
-            <doc:para>
-              The search is case sensitive, and should not be escaped or surrounded in quotes.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="values" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      SearchGroups:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @values: An enumerated group type, or `unknown`. The search cannot contain spaces. The following recommendations are made below:
+
+      This method returns packages from a given group enumerated type.
+
+      Do not refresh the package cache. This should be fast.
+
+      Try to emit `installed` before `available` packages first, as it allows
+      the client program to perform the GUI filtering and matching whilst the
+      daemon is running the transaction.
+
+      If the backend includes `installed` and `available` versions of the same
+      package when searching then the `available` version will have to be
+      filtered in the backend.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+
+      Notes on `values`:
+
+      If the values strings are prefixed with `repo:` then the request is
+      treated as a 'repository search', for example: `repo:fedora-debuginfo`.
+      In this instance all packages that were either installed from, or can be
+      installed from the `fedora-debuginfo` repository would be returned.
+    -->
     <method name="SearchGroups">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns packages from a given group enumerated type.
-          </doc:para>
-          <doc:para>
-            Do not refresh the package cache. This should be fast.
-          </doc:para>
-          <doc:para>
-            Try to emit <doc:tt>installed</doc:tt> before
-            <doc:tt>available</doc:tt> packages first, as it allows the client
-            program to perform the GUI filtering and matching whilst the daemon is
-            running the transaction.
-          </doc:para>
-          <doc:para>
-            If the backend includes <doc:tt>installed</doc:tt> and
-            <doc:tt>available</doc:tt> versions of the same package when searching
-            then the <doc:tt>available</doc:tt> version will have to be filtered
-            in the backend.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="values" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An enumerated group type, or <doc:tt>unknown</doc:tt>. The search
-              cannot contain spaces.
-              The following recommendations are made below:
-            </doc:para>
-            <doc:para>
-              If the values strings are prefixed with <doc:tt>repo:</doc:tt> then
-              the request is treated as a 'repository search', for example:
-              <doc:tt>repo:fedora-debuginfo</doc:tt>.
-              In this instance all packages that were either installed
-              from, or can be installed from the <doc:tt>fedora-debuginfo</doc:tt>
-              repository would be returned.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="values" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      SearchNames:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @values: A single word search term with no wildcard chars. The search term can contain many words separated by spaces. In this case, the search operator is `AND`. For example, search of `gnome power` should returns `gnome-power-manager` but not `gnomesword` or `powertop`.
+
+      This method searches the package database by package name.
+
+      Do not refresh the package cache. This should be fast.
+
+      Try to emit `installed` before `available` packages first, as it allows
+      the client program to perform the GUI filtering and matching whilst the
+      daemon is running the transaction.
+
+      If the backend includes `installed` and `available` versions of the same
+      package when searching then the `available` version will have to be
+      filtered in the backend.
+
+      The search methods should return all results in all repositories. This
+      may mean that multiple versions of package are returned. If this is not
+      what is wanted by the client program, then the `newest` filter should be
+      used.
+
+      This method typically emits `Progress`, `Error` and `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+
+      Notes on `values`:
+
+      The search should not be treated as case sensitive.
+    -->
     <method name="SearchNames">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method searches the package database by package name.
-          </doc:para>
-          <doc:para>
-            Do not refresh the package cache. This should be fast.
-          </doc:para>
-          <doc:para>
-            Try to emit <doc:tt>installed</doc:tt> before
-            <doc:tt>available</doc:tt> packages first, as it allows the client
-            program to perform the GUI filtering and matching whilst the daemon is
-            running the transaction.
-          </doc:para>
-          <doc:para>
-            If the backend includes <doc:tt>installed</doc:tt> and
-            <doc:tt>available</doc:tt> versions of the same package when searching
-            then the <doc:tt>available</doc:tt> version will have to be filtered
-            in the backend.
-          </doc:para>
-          <doc:para>
-            The search methods should return all results in all repositories.
-            This may mean that multiple versions of package are returned.
-            If this is not what is wanted by the client program, then the
-            <doc:tt>newest</doc:tt> filter should be used.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="values" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A single word search term with no wildcard chars. The search term
-              can contain many words separated by spaces. In this case, the
-              search operator is <doc:tt>AND</doc:tt>. For example, search of
-              <doc:tt>gnome power</doc:tt> should returns
-              <doc:tt>gnome-power-manager</doc:tt> but not
-              <doc:tt>gnomesword</doc:tt> or <doc:tt>powertop</doc:tt>.
-            </doc:para>
-            <doc:para>
-              The search should not be treated as case sensitive.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="values" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      UpdatePackages:
+      @transaction_flags: If the transaction is only allowed to update to trusted packages. Unsigned packages should not be installed if this transaction_flags has `ONLY_TRUSTED`.
+      @package_ids: An array of package IDs.
+
+      This method updates existing packages on the local system.
+
+      The installer should always update extra packages automatically to
+      fulfil dependencies.
+
+      This should allow an application to find out what package owns a file on
+      the system.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      Callers need the org.freedesktop.packagekit.update-package permission.
+
+      Notes on `transaction_flags`:
+
+      If this method is can only update trusted packages, and the packages are
+      unsigned, then the backend will send a
+      `ErrorCode(missing-gpg-signature)`.
+    -->
     <method name="UpdatePackages">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method updates existing packages on the local system.
-          </doc:para>
-          <doc:para>
-            The installer should always update extra packages automatically to fulfil dependencies.
-          </doc:para>
-          <doc:para>
-            This should allow an application to find out what package owns a file on the system.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-        </doc:description>
-        <doc:permission>Callers need the org.freedesktop.packagekit.update-package</doc:permission>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction is only allowed to update to trusted packages.
-              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
-            </doc:para>
-            <doc:para>
-              If this method is can only update trusted packages, and the packages are unsigned, then
-              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="package_ids" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package IDs.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="as" name="package_ids" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      WhatProvides:
+      @filter: A correct filter bitfield, e.g. `none` or `installed;~devel`
+      @values: The data to send to the backend to get the packages. Note: This is backend specific.
+
+      This method returns packages that provide the supplied attributes. This
+      method is useful for finding out what package(s) provide a modalias or
+      GStreamer codec string.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      `Packages` info enumerated types should be `available` or `installed`.
+    -->
     <method name="WhatProvides">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method returns packages that provide the supplied attributes.
-            This method is useful for finding out what package(s) provide a modalias
-            or GStreamer codec string.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-          <doc:para>
-            <doc:tt>Packages</doc:tt> info enumerated types should be
-            <doc:tt>available</doc:tt> or <doc:tt>installed</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="filter" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A correct filter bitfield, e.g. <doc:tt>none</doc:tt> or <doc:tt>installed;~devel</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="values" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The data to send to the backend to get the packages.
-              Note: This is backend specific.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="filter" direction="in"/>
+      <arg type="as" name="values" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      UpgradeSystem:
+      @transaction_flags: If this method is can only install trusted files, and the files are unsigned, then the backend will send a `ErrorCode(missing-gpg-signature)`.
+      @distro_id: The distribution ID to upgrade to, e.g. `fedora-14`.
+      @upgrade_kind: The type of upgrade, e.g. `minimal`, `default` or `complete`. Minimal upgrades will download the smallest amount of data before launching a installer. The default is to download enough data to launch a full graphical installer, but a complete upgrade will be required if there is no internet access during install time.
+
+      This method perfoms a distribution upgrade to the specified version.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      Notes on `distro_id`:
+
+      Backends may use this as a filename component, so it has to start with
+      an alphanumeric character and may otherwise only contain alphanumeric
+      characters and `.`, `_`, `+` and `-`. Anything else is rejected with
+      `ErrorCode(input-invalid)`.
+    -->
     <method name="UpgradeSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method perfoms a distribution upgrade to the specified
-            version.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If this method is can only install trusted files, and the files are unsigned, then
-              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="distro_id" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The distribution ID to upgrade to, e.g. <doc:tt>fedora-14</doc:tt>.
-            </doc:para>
-            <doc:para>
-              Backends may use this as a filename component, so it has to start
-              with an alphanumeric character and may otherwise only contain
-              alphanumeric characters and <doc:tt>.</doc:tt>,
-              <doc:tt>_</doc:tt>, <doc:tt>+</doc:tt> and <doc:tt>-</doc:tt>.
-              Anything else is rejected with
-              <doc:tt>ErrorCode(input-invalid)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="upgrade_kind" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The type of upgrade, e.g. <doc:tt>minimal</doc:tt>, <doc:tt>default</doc:tt> or <doc:tt>complete</doc:tt>.
-              Minimal upgrades will download the smallest amount of data
-              before launching a installer.
-              The default is to download enough data to launch a full
-              graphical installer, but a complete upgrade will be
-              required if there is no internet access during install time.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
+      <arg type="s" name="distro_id" direction="in"/>
+      <arg type="u" name="upgrade_kind" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      RepairSystem:
+      @transaction_flags: If the transaction is only allowed to install trusted packages. Unsigned packages should not be installed if this transaction_flags has `ONLY_TRUSTED`.
+
+      This method recovers the package management system from e.g. unsatisfied
+      dependencies of installed packages.
+
+      This method typically emits `Progress`, `Status` and `Error` and
+      `Packages`.
+
+      Notes on `transaction_flags`:
+
+      If this method is can only install trusted packages, and the packages
+      are unsigned, then the backend will send a
+      `ErrorCode(missing-gpg-signature)`.
+    -->
     <method name="RepairSystem">
       <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This method recovers the package management system from e.g.
-            unsatisfied dependencies of installed packages.
-          </doc:para>
-          <doc:para>
-            This method typically emits
-            <doc:tt>Progress</doc:tt>,
-            <doc:tt>Status</doc:tt> and
-            <doc:tt>Error</doc:tt> and
-            <doc:tt>Packages</doc:tt>.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="t" name="transaction_flags" direction="in">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction is only allowed to install trusted packages.
-              Unsigned packages should not be installed if this transaction_flags has <doc:tt>ONLY_TRUSTED</doc:tt>.
-            </doc:para>
-            <doc:para>
-              If this method is can only install trusted packages, and the packages are unsigned, then
-              the backend will send a <doc:tt>ErrorCode(missing-gpg-signature)</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="t" name="transaction_flags" direction="in"/>
     </method>
 
     <!--*********************************************************************-->
+    <!--
+      Details:
+      @data: The details about a specific package. The available keys are here:
+
+      This signal allows the backend to convey more details about the package.
+
+      Notes on `data`:
+
+      - `package_id`: The package ID [`s`]
+      - `license`: The license string, e.g. `GPLv2+` [`s`]
+      - `group`: The enumerated package group description [`u`]
+      - `detail`: The multi-line package description in markdown syntax.[`s`]
+      - `url`: The upstream project homepage [`s`]
+      - `size`: The size of the package in bytes [`t`]
+      - `summary`: The one line package summary, e.g. Clipart for OpenOffice
+        [`s`]
+    -->
     <signal name="Details">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal allows the backend to convey more details about the package.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantMap"/>
-      <arg type="a{sv}" name="data" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The details about a specific package. The available keys are here:
-            </doc:para>
-            <doc:list>
-              <doc:item>
-                <doc:term>package_id</doc:term>
-                <doc:definition>The package ID [<doc:tt>s</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>license</doc:term>
-                <doc:definition>The license string, e.g. <doc:tt>GPLv2+</doc:tt> [<doc:tt>s</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>group</doc:term>
-                <doc:definition>The enumerated package group description [<doc:tt>u</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>detail</doc:term>
-                <doc:definition>The multi-line package description in markdown syntax.[<doc:tt>s</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>url</doc:term>
-                <doc:definition>The upstream project homepage [<doc:tt>s</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>size</doc:term>
-                <doc:definition>The size of the package in bytes [<doc:tt>t</doc:tt>]</doc:definition>
-              </doc:item>
-              <doc:item>
-                <doc:term>summary</doc:term>
-                <doc:definition>The one line package summary, e.g. Clipart for OpenOffice [<doc:tt>s</doc:tt>]</doc:definition>
-              </doc:item>
-            </doc:list>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="a{sv}" name="data" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      ErrorCode:
+      @code: Enumerated type, e.g. `no-network`.
+      @details: Long description or error, e.g. `failed to connect to mytry.xml`
+
+      This signal is used to report errors back to the session program.
+
+      Errors should only be send on fatal abort.
+    -->
     <signal name="ErrorCode">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is used to report errors back to the session program.
-          </doc:para>
-          <doc:para>
-            Errors should only be send on fatal abort.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="code" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Enumerated type, e.g. <doc:tt>no-network</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="details" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Long description or error, e.g. <doc:tt>failed to connect to mytry.xml</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="code" direction="out"/>
+      <arg type="s" name="details" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      Files:
+      @package_id: The Package ID that called the method.
+      @file_list: The file list as an array.
+
+      This signal is used to push file lists from the backend to the session.
+    -->
     <signal name="Files">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is used to push file lists from the backend to the session.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The Package ID that called the method.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="as" name="file_list" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The file list as an array.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="as" name="file_list" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      Finished:
+      @exit: The PkExitEnum describing the exit status of the transaction.
+      @runtime: The amount of time in milliseconds that the transaction ran for.
+
+      This signal is used to signal that the transaction has finished.
+    -->
     <signal name="Finished">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is used to signal that the transaction has finished.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="exit" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The PkExitEnum describing the exit status of the transaction.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="runtime" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The amount of time in milliseconds that the transaction ran for.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="exit" direction="out"/>
+      <arg type="u" name="runtime" direction="out"/>
     </signal>
 
 
     <!--*********************************************************************-->
+    <!--
+      Packages:
+      @packages: An array of package details, each array element is one package.
+
+      This signal allows the backend to communicate packages to the session.
+
+      If updating, as packages are updated then emit them to the screen. This
+      allows a summary to be presented after the transaction.
+
+      When returning results from a search always return `installed` before
+      `available` for the same package name.
+
+      The daemon may split the packages of a transaction into multiple
+      emissions of this signal to stay within the D-Bus message size limits.
+      The content of one signal will never duplicate the content of another,
+      and a single emission may contain only one package.
+
+      Each array element describes one package and consists of the following
+      fields:
+
+      - `info`: A valid `info` enumerated type [`u`]
+      - `package_id`: This identifier is of the form
+        `name;version;arch;origin;data` in a single string and is meant to
+        represent a single package unique across all local and remote data
+        stores. The origin field should be set to the repository identifier or
+        repository name the package is available from. For an installed
+        package, it should be set to the repository the package was originally
+        installed from, if the package manager tracks this information, and
+        left empty otherwise. The origin field for a non-installed local
+        package must be `local` as this signifies a repository name is not
+        available and that package resides locally on the client system rather
+        than in any specific repository. The data field is free for the
+        backend to use for additional information it needs, for example
+        whether a package was installed automatically or manually. Its
+        contents are backend-specific and it is usually empty. Frontends must
+        not parse it and should rely on the `info` enumerated type for state
+        information instead. [`s`]
+      - `summary`: The one line package summary, e.g. Clipart for OpenOffice
+        [`s`]
+    -->
     <signal name="Packages">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal allows the backend to communicate packages to the session.
-          </doc:para>
-          <doc:para>
-            If updating, as packages are updated then emit them to the screen.
-            This allows a summary to be presented after the transaction.
-          </doc:para>
-          <doc:para>
-            When returning results from a search always return
-            <doc:tt>installed</doc:tt> before <doc:tt>available</doc:tt> for
-            the same package name.
-          </doc:para>
-          <doc:para>
-            The daemon may split the packages of a transaction into multiple
-            emissions of this signal to stay within the D-Bus message size
-            limits. The content of one signal will never duplicate the content
-            of another, and a single emission may contain only one package.
-          </doc:para>
-          <doc:para>
-            Each array element describes one package and consists of the
-            following fields:
-          </doc:para>
-          <doc:list>
-            <doc:item>
-              <doc:term>info</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A valid <doc:tt>info</doc:tt> enumerated type [<doc:tt>u</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>package_id</doc:term>
-              <doc:definition>
-                <doc:para>
-                  This identifier is of the form
-                  <doc:tt>name;version;arch;origin;data</doc:tt> in a single string and is
-                  meant to represent a single package unique across all local and remote data
-                  stores.
-                </doc:para>
-                <doc:para>
-                  The origin field should be set to the repository identifier or repository
-                  name the package is available from. For an installed package, it should be
-                  set to the repository the package was originally installed from, if the
-                  package manager tracks this information, and left empty otherwise.
-                </doc:para>
-                <doc:para>
-                  The origin field for a non-installed local package must be
-                  <doc:tt>local</doc:tt> as this signifies a repository name is not available
-                  and that package resides locally on the client system rather than in any
-                  specific repository.
-                </doc:para>
-                <doc:para>
-                  The data field is free for the backend to use for additional information it
-                  needs, for example whether a package was installed automatically or
-                  manually. Its contents are backend-specific and it is usually empty.
-                  Frontends must not parse it and should rely on the <doc:tt>info</doc:tt>
-                  enumerated type for state information instead. [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>summary</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The one line package summary, e.g. Clipart for OpenOffice [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-          </doc:list>
-        </doc:description>
-      </doc:doc>
-      <arg type="a(uss)" name="packages" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of package details, each array element is one package.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="a(uss)" name="packages" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      RepoDetail:
+      @repo_id: The repository ID.
+      @description: A description of the repository.
+      @enabled: If the repository is enabled and in use.
+
+      This signal describes a repository on the system.
+    -->
     <signal name="RepoDetail">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal describes a repository on the system.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="repo_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The repository ID.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="description" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A description of the repository.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="enabled" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the repository is enabled and in use.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="repo_id" direction="out"/>
+      <arg type="s" name="description" direction="out"/>
+      <arg type="b" name="enabled" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      RepoSignatureRequired:
+      @package_id: A package ID for the package that is trying to be installed
+      @repository_name: The name of the repository associated with the provided key.
+      @key_url: The URL provided with the key.
+      @key_userid: The user id associated with the key.
+      @key_id: A unique identifier for the key.
+      @key_fingerprint: The hashed fingerprint of the key.
+      @key_timestamp: The date the key was created.
+      @type: The type of signature used. `gpg`, for example.
+
+      This signal is emitted when a transaction is not possible due to a
+      missing security certificate.
+
+      Some backends support repositories which use a cryptographic signature,
+      such as GPG. If a package cannot be installed because it is signed with
+      a key that has not been verified, this signal is generated so the user
+      can choose to accept or decline the key.
+
+      This signal includes information that can be used to verify that the key
+      should be trusted, such as a URL for the company or person who owns the
+      key, the key's ID, the userid of the key creator, and the date the key
+      was generated.
+    -->
     <signal name="RepoSignatureRequired">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when a transaction is not possible due to a missing security
-            certificate.
-          </doc:para>
-          <doc:para>
-            Some backends support repositories which use a cryptographic
-            signature, such as GPG. If a package cannot be installed
-            because it is signed with a key that has not been verified,
-            this signal is generated so the user can choose to accept or
-            decline the key.
-          </doc:para>
-          <doc:para>
-            This signal includes information that can be used to verify
-            that the key should be trusted, such as a URL for the company
-            or person who owns the key, the key's ID, the userid of
-            the key creator, and the date the key was generated.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A package ID for the package that is trying to be installed
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="repository_name" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The name of the repository associated with the provided key.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_url" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The URL provided with the key.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_userid" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The user id associated with the key.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A unique identifier for the key.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_fingerprint" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The hashed fingerprint of the key.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="key_timestamp" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The date the key was created.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="type" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The type of signature used. <doc:tt>gpg</doc:tt>, for example.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="repository_name" direction="out"/>
+      <arg type="s" name="key_url" direction="out"/>
+      <arg type="s" name="key_userid" direction="out"/>
+      <arg type="s" name="key_id" direction="out"/>
+      <arg type="s" name="key_fingerprint" direction="out"/>
+      <arg type="s" name="key_timestamp" direction="out"/>
+      <arg type="u" name="type" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      EulaRequired:
+      @eula_id: The `eula_id` which identifies the EULA - this is provided so that if a specific EULA has previously agreed to a EULA from Acme Corp it is not asked again. An example `eula_id`'s is `vmware5_single_user`.
+      @package_id: A package ID for the package that is trying to be installed.
+      @vendor_name: The vendor that is providing the EULA.
+      @license_agreement: The full text EULA.
+
+      This signal is emitted when a transaction is not possible due to a EULA
+      that needs to be agreed to at install time.
+
+      Some backends support EULAs, which have to be agreed to before the
+      install can proceed.
+    -->
     <signal name="EulaRequired">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is emitted when a transaction is not possible due to a EULA that needs to
-            be agreed to at install time.
-          </doc:para>
-          <doc:para>
-            Some backends support EULAs, which have to be agreed to before the install can proceed.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="eula_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The <doc:tt>eula_id</doc:tt> which identifies the EULA - this is provided
-              so that if a specific EULA has previously agreed to a EULA from Acme Corp it is
-              not asked again.
-              An example <doc:tt>eula_id</doc:tt>'s is <doc:tt>vmware5_single_user</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A package ID for the package that is trying to be installed.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="vendor_name" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The vendor that is providing the EULA.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="license_agreement" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The full text EULA.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="eula_id" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
+      <arg type="s" name="vendor_name" direction="out"/>
+      <arg type="s" name="license_agreement" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      RequireRestart:
+      @type: One of `system`, `application` or `session`.
+      @package_id: The package ID that caused the restart notifier.
+
+      This signal is sent when the session program should notify the user that
+      a restart is required.
+
+      This is optional, but highly recommended.
+
+      This can be sent as many times as needed by the backend script.
+      PackageKit will always choose the 'worst' method in the UI notification.
+    -->
     <signal name="RequireRestart">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when the session program should notify the user that a restart is
-            required.
-          </doc:para>
-          <doc:para>
-            This is optional, but highly recommended.
-          </doc:para>
-          <doc:para>
-            This can be sent as many times as needed by the backend script.
-            PackageKit will always choose the 'worst' method in the UI notification.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="type" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              One of <doc:tt>system</doc:tt>, <doc:tt>application</doc:tt> or
-              <doc:tt>session</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="package_id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The package ID that caused the restart notifier.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="type" direction="out"/>
+      <arg type="s" name="package_id" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      Transaction:
+      @object_path: The transaction ID of the old transaction.
+      @timespec: The timespec of the old transaction in ISO8601 format.
+      @succeeded: If the transaction succeeded.
+      @role: The role enumerated type.
+      @duration: The duration of the transaction in milliseconds.
+      @data: Any data associated with the transaction.
+      @uid: The user ID of the user that scheduled the action.
+      @cmdline: The command line of the tool that scheduled the action, e.g. `/usr/bin/gpk-application`.
+
+      This signal is sent when more details are required about a specific
+      transaction.
+    -->
     <signal name="Transaction">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when more details are required about a specific transaction.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="o" name="object_path" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The transaction ID of the old transaction.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="timespec" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The timespec of the old transaction in ISO8601 format.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="b" name="succeeded" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              If the transaction succeeded.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="role" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The role enumerated type.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="duration" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The duration of the transaction in milliseconds.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="data" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              Any data associated with the transaction.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="uid" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The user ID of the user that scheduled the action.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="cmdline" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The command line of the tool that scheduled the action, e.g.
-              <doc:tt>/usr/bin/gpk-application</doc:tt>.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="o" name="object_path" direction="out"/>
+      <arg type="s" name="timespec" direction="out"/>
+      <arg type="b" name="succeeded" direction="out"/>
+      <arg type="u" name="role" direction="out"/>
+      <arg type="u" name="duration" direction="out"/>
+      <arg type="s" name="data" direction="out"/>
+      <arg type="u" name="uid" direction="out"/>
+      <arg type="s" name="cmdline" direction="out"/>
     </signal>
 
 
     <!--*********************************************************************-->
+    <!--
+      UpdateDetails:
+      @details: An array of update details, each array element is one update.
+
+      This signal is sent when more details are required about specific
+      updates.
+
+      The daemon may split the update details of a transaction into multiple
+      emissions of this signal to stay within the D-Bus message size limits.
+      The content of one signal will never duplicate the content of another,
+      and a single emission may contain only one update.
+
+      Each array element describes one update and consists of the following
+      fields:
+
+      - `package_id`: The package ID [`s`]
+      - `updates`: A list of package_id's that are to be updated. [`as`]
+      - `obsoletes`: A list of package_id's that are to be obsoleted. [`as`]
+      - `vendor_urls`: A list of URLs with more details on the update, e.g. a
+        page with more information on the update. [`as`]
+      - `bugzilla_urls`: A list of bugzilla URL with more details on the
+        update. If no URLs are available then this field should be left empty.
+        [`as`]
+      - `cve_urls`: A list of CVE URLs with more details on the security
+        advisory. [`as`]
+      - `restart`: A valid restart type, e.g. `system`. [`u`]
+      - `update_text`: The update text describing the update. If formatting is
+        required, then markdown syntax should be used, e.g. `This is
+        **critically** important` [`s`]
+      - `changelog`: The ChangeLog text describing the changes since the last
+        version. [`s`]
+      - `state`: The state of the update, e.g. `stable` or `testing`. [`u`]
+      - `issued`: The ISO8601 encoded date that the update was issued. [`s`]
+      - `updated`: The ISO8601 encoded date that the update was updated. [`s`]
+    -->
     <signal name="UpdateDetails">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when more details are required about specific updates.
-          </doc:para>
-          <doc:para>
-            The daemon may split the update details of a transaction into
-            multiple emissions of this signal to stay within the D-Bus message
-            size limits. The content of one signal will never duplicate the
-            content of another, and a single emission may contain only one
-            update.
-          </doc:para>
-          <doc:para>
-            Each array element describes one update and consists of the
-            following fields:
-          </doc:para>
-          <doc:list>
-            <doc:item>
-              <doc:term>package_id</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The package ID [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>updates</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A list of package_id's that are to be updated. [<doc:tt>as</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>obsoletes</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A list of package_id's that are to be obsoleted. [<doc:tt>as</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>vendor_urls</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A list of URLs with more details on the update, e.g. a page with more
-                  information on the update. [<doc:tt>as</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>bugzilla_urls</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A list of bugzilla URL with more details on the update. If no URLs are
-                  available then this field should be left empty. [<doc:tt>as</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>cve_urls</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A list of CVE URLs with more details on the security advisory. [<doc:tt>as</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>restart</doc:term>
-              <doc:definition>
-                <doc:para>
-                  A valid restart type, e.g. <doc:tt>system</doc:tt>. [<doc:tt>u</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>update_text</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The update text describing the update.
-                </doc:para>
-                <doc:para>
-                  If formatting is required, then markdown syntax should be used, e.g.
-                  <doc:tt>This is **critically** important</doc:tt> [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>changelog</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The ChangeLog text describing the changes since the last version. [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>state</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The state of the update, e.g. <doc:tt>stable</doc:tt> or
-                  <doc:tt>testing</doc:tt>. [<doc:tt>u</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>issued</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The ISO8601 encoded date that the update was issued. [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-            <doc:item>
-              <doc:term>updated</doc:term>
-              <doc:definition>
-                <doc:para>
-                  The ISO8601 encoded date that the update was updated. [<doc:tt>s</doc:tt>]
-                </doc:para>
-              </doc:definition>
-            </doc:item>
-          </doc:list>
-        </doc:description>
-      </doc:doc>
-      <arg type="a(sasasasasasussuss)" name="details" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              An array of update details, each array element is one update.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="a(sasasasasasussuss)" name="details" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      DistroUpgrade:
+      @type: A valid upgrade enumerated type, e.g. `stable` or `unstable`
+      @name: The short name of the distribution, e.g. `Fedora Core 10 RC1`
+      @summary: The multi-line description of the release.
+
+      This signal allows the backend to communicate distribution upgrades to
+      the session.
+    -->
     <signal name="DistroUpgrade">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal allows the backend to communicate distribution
-            upgrades to the session.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="u" name="type" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid upgrade enumerated type, e.g. <doc:tt>stable</doc:tt>
-              or <doc:tt>unstable</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="name" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The short name of the distribution, e.g. <doc:tt>Fedora Core 10 RC1</doc:tt>
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="s" name="summary" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The multi-line description of the release.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="u" name="type" direction="out"/>
+      <arg type="s" name="name" direction="out"/>
+      <arg type="s" name="summary" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
+    <!--
+      ItemProgress:
+      @id: A valid package_id, e.g. `hal;0.1.0;i386;fedora;` or a repo_id.
+      @status: The status enumerated value that is being completed.
+      @percentage: The percentage of this package action is completed.
+
+      This signal allows the backend to send infomation about package or
+      repository progress when using Simultanous mode.
+
+      Notes on `id`:
+
+      A repo_id may only be used when running RefreshCache.
+    -->
     <signal name="ItemProgress">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal allows the backend to send infomation about
-            package or repository progress when using Simultanous mode.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-      <arg type="s" name="id" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              A valid package_id, e.g. <doc:tt>hal;0.1.0;i386;fedora;</doc:tt>
-              or a repo_id.
-            </doc:para>
-            <doc:para>
-              A repo_id may only be used when running RefreshCache.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="status" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The status enumerated value that is being completed.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
-      <arg type="u" name="percentage" direction="out">
-        <doc:doc>
-          <doc:summary>
-            <doc:para>
-              The percentage of this package action is completed.
-            </doc:para>
-          </doc:summary>
-        </doc:doc>
-      </arg>
+      <arg type="s" name="id" direction="out"/>
+      <arg type="u" name="status" direction="out"/>
+      <arg type="u" name="percentage" direction="out"/>
     </signal>
 
     <!--*********************************************************************-->
-    <signal name="Destroy">
-      <doc:doc>
-        <doc:description>
-          <doc:para>
-            This signal is sent when the transaction has been destroyed and is
-            no longer available for use.
-          </doc:para>
-        </doc:description>
-      </doc:doc>
-    </signal>
+    <!--
+      Destroy:
+
+      This signal is sent when the transaction has been destroyed and is no
+      longer available for use.
+    -->
+    <signal name="Destroy"/>
 
   </interface>
 </node>

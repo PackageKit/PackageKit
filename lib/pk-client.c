@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-client
- * @short_description: For creating new transactions
+ * PkClient:
+ *
+ * For creating new transactions
  *
  * A GObject to use for accessing PackageKit asynchronously. If you're
  * using #PkClient to install, remove, or update packages, be prepared that
@@ -3936,7 +3937,7 @@ pk_client_install_files_async (PkClient *client,
 /**
  * pk_client_accept_eula_async: (finish-func pk_client_generic_finish):
  * @client: a valid #PkClient instance
- * @eula_id: the <literal>eula_id</literal> we are agreeing to
+ * @eula_id: the `eula_id` we are agreeing to
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope notified): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

@@ -20,8 +20,9 @@
  */
 
 /**
- * SECTION:pk-package
- * @short_description: Package object
+ * PkPackage:
+ *
+ * Package object
  *
  * This GObject represents a package from a transaction.
  * These objects represent single items of data from the transaction, and are

@@ -14,7 +14,7 @@ BuildRequires: docbook-utils
 BuildRequires: gcc
 BuildRequires: gcc-c++
 BuildRequires: gettext
-BuildRequires: gtk-doc
+BuildRequires: gi-docgen
 BuildRequires: meson
 BuildRequires: vala
 BuildRequires: xmlto
@@ -150,7 +150,7 @@ using PackageKit.
 
 %conf
 %meson \
-        -Dgtk_doc=true \
+        -Ddocs=true \
         -Dpackaging_backend=dnf5
 
 %build
@@ -249,7 +249,7 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %dir %{_includedir}/packagekit/packagekit-glib2
 %{_includedir}/packagekit/packagekit-glib*/*.h
 %{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
-%{_datadir}/gtk-doc/html/PackageKit
+%{_datadir}/doc/packagekit
 %{_datadir}/vala/vapi/packagekit-glib2.vapi
 %{_datadir}/vala/vapi/packagekit-glib2.deps
 

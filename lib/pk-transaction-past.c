@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-transaction-past
- * @short_description: TransactionPast object
+ * PkTransactionPast:
+ *
+ * TransactionPast object
  *
  * This GObject represents a transaction_past from a transaction_past.
  * These objects represent single items of data from the transaction, and are

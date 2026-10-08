@@ -1617,7 +1617,7 @@ pk_client_install_files (PkClient *client,
 /**
  * pk_client_accept_eula:
  * @client: a valid #PkClient instance
- * @eula_id: the <literal>eula_id</literal> we are agreeing to
+ * @eula_id: the `eula_id` we are agreeing to
  * @cancellable: a #GCancellable or %NULL
  * @progress_callback: (scope call): the function to run when the progress changes
  * @progress_user_data: data to pass to @progress_callback

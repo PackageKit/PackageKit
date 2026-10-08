@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-update-detail
- * @short_description: UpdateDetail object
+ * PkUpdateDetail:
+ *
+ * UpdateDetail object
  *
  * This GObject represents a update_detail from a transaction.
  * These objects represent single items of data from the transaction, and are

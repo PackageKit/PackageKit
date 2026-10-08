@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-progress
- * @short_description: Transaction progress information
+ * PkProgress:
+ *
+ * Transaction progress information
  *
  * This GObject is available to clients to be able to query details about
  * the transaction. All of the details on this object are stored as properties.

@@ -99,15 +99,15 @@ option('python_backend',
 # Documentation
 #
 
-option('man_pages',
+option('man',
     type : 'boolean',
     value : true,
     description : 'Generate man pages'
 )
-option('gtk_doc',
+option('docs',
     type : 'boolean',
     value : false,
-    description : 'Generate API reference'
+    description : 'Generate the reference manual'
 )
 
 #

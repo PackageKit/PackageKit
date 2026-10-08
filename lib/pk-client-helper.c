@@ -23,8 +23,9 @@
  */
 
 /**
- * SECTION:pk-client-helper
- * @short_description: helper object to run a helper session process for the lifetime of a transaction
+ * PkClientHelper:
+ *
+ * helper object to run a helper session process for the lifetime of a transaction
  *
  * This GObject can be used to run a session helper program out of band
  * with the normal PackageKit transaction. This allows an external program

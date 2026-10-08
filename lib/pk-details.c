@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-details
- * @short_description: Details object
+ * PkDetails:
+ *
+ * Details object
  *
  * This GObject represents a details from a transaction.
  * These objects represent single items of data from the transaction, and are

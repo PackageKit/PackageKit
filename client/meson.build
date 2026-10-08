@@ -40,7 +40,7 @@ executable(
   ]
 )
 
-if get_option('man_pages')
+if get_option('man')
   xsltproc = find_program('xsltproc')
   custom_target(
     'pkgcli.1',

@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-eula-required
- * @short_description: EulaRequired object
+ * PkEulaRequired:
+ *
+ * EulaRequired object
  *
  * This GObject represents a eula_required from a transaction.
  * These objects represent single items of data from the transaction, and are

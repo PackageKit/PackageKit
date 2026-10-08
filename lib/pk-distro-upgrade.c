@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-distro-upgrade
- * @short_description: DistroUpgrade object
+ * PkDistroUpgrade:
+ *
+ * DistroUpgrade object
  *
  * This GObject represents a distro_upgrade from a transaction.
  * These objects represent single items of data from the transaction, and are

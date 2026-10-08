@@ -1,0 +1,46 @@
+[library]
+version = "@VERSION@"
+description = "PackageKit reference manual: specification, D-Bus API and the packagekit-glib2 library"
+authors = "The PackageKit Authors"
+license = "LGPL-2.1-or-later"
+website_url = "https://packagekit.freedesktop.org/"
+browse_url = "https://github.com/PackageKit/PackageKit"
+repository_url = "https://github.com/PackageKit/PackageKit.git"
+dependencies = ["GObject-2.0", "Gio-2.0"]
+devhelp = true
+search_index = true
+
+[dependencies."GObject-2.0"]
+name = "GObject"
+description = "The base type system library"
+docs_url = "https://docs.gtk.org/gobject/"
+
+[dependencies."Gio-2.0"]
+name = "Gio"
+description = "GObject interfaces and objects, networking, IPC, and I/O"
+docs_url = "https://docs.gtk.org/gio/"
+
+[source-location]
+base_url = "https://github.com/PackageKit/PackageKit/blob/main/"
+
+[extra]
+content_files = [
+  "introduction.md",
+  "concepts.md",
+  "backend-compiled.md",
+  "backend-spawn.md",
+  "dbus-org.freedesktop.PackageKit.md",
+  "dbus-org.freedesktop.PackageKit.Transaction.md",
+  "dbus-org.freedesktop.PackageKit.Offline.md",
+]
+content_images = [
+  "pk-structure.png",
+  "pk-transactions-auto-untrusted.png",
+  "pk-transactions-download.png",
+  "pk-transactions-failure.png",
+  "pk-transactions-repair-required.png",
+  "pk-transactions-set-locale.png",
+  "pk-transactions-sig-install.png",
+  "pk-transactions-success.png",
+  "pk-transactions-trusted.png",
+]

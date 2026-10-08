@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-repo-signature-required
- * @short_description: RepoSignatureRequired object
+ * PkRepoSignatureRequired:
+ *
+ * RepoSignatureRequired object
  *
  * This GObject represents a repo_signature_required from a transaction.
  * These objects represent single items of data from the transaction, and are

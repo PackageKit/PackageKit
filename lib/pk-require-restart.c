@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-require-restart
- * @short_description: RequireRestart object
+ * PkRequireRestart:
+ *
+ * RequireRestart object
  *
  * This GObject represents a requirement of restart from a transaction.
  * These objects represent single items of data from the transaction, and are

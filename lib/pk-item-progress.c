@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-item-progress
- * @short_description: ItemProgress object
+ * PkItemProgress:
+ *
+ * ItemProgress object
  *
  * This GObject represents a item_progress from a transaction.
  * These objects represent single items of data from the transaction, and are

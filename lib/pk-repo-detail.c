@@ -19,8 +19,9 @@
  */
 
 /**
- * SECTION:pk-repo-detail
- * @short_description: RepoDetail object
+ * PkRepoDetail:
+ *
+ * RepoDetail object
  *
  * This GObject represents a repo_detail from a transaction.
  * These objects represent single items of data from the transaction, and are
