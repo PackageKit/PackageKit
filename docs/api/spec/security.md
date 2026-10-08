@@ -1,4 +1,4 @@
-			Security and PackageKit
+Title: Security and PackageKit
 
 This document is a brief overview of security policies and notes about security
 in the PackageKit project. It has been written by the PackageKit authors, and
@@ -9,13 +9,15 @@ untrusted input from the client, which means the daemon is security sensitive.
 
 First, a high level overview, in this case using the hif backend as an example:
 
-  gpk-update-icon      gpk-application
-        |                 ___/
-     [D-Bus]  __[D-Bus]__/
-        |    /
-   packagekitd -- [D-Bus] -- polkitd-1
-        |
-      thread using libhif (using librepo, hawkey, etc)
+```
+gpk-update-icon      gpk-application
+      |                 ___/
+   [D-Bus]  __[D-Bus]__/
+      |    /
+ packagekitd -- [D-Bus] -- polkitd-1
+      |
+    thread using libhif (using librepo, hawkey, etc)
+```
 
 packagekitd does not expose itself remotely over XMLRPC or other remote
 interface, and so a remote denial of service or exploit is impossible without a
@@ -41,8 +43,8 @@ requires root privileges to inject code into it.
 A typical transaction would be for the client to request a TID (transaction ID)
 to which the server responds by creating a transaction instance and exposing
 this on the system bus. The client then connects to this interface, and executes
-the chosen method. This method will emit signals such as ::Package(), then
-::Finished() and then after a number of seconds ::Destroy() which will remove
+the chosen method. This method will emit signals such as `::Package()`, then
+`::Finished()` and then after a number of seconds `::Destroy()` which will remove
 the interface from the bus.
 
 There is a concern that a session service can be written to automatically
@@ -61,50 +63,50 @@ this is just over 300 lines of code and only depends on PAM (which is supposed
 to be secure) up until we have decided that the user successfully authenticated.
 Only when that is done, we initialize other libraries to send the message.
 
-Possible attack vectors:
+## Possible attack vectors
 
- * A client could cause a local DoS (denial of service) by repeatedly calling
- CreateTransaction without then calling a method to use this TID. This is mitigated by
- timing out Tid request after a present number of seconds, and the effect can be
- limited with a config variable (SimultaneousTransactionsForUid).
+- A client could cause a local DoS (denial of service) by repeatedly calling
+  CreateTransaction without then calling a method to use this TID. This is mitigated by
+  timing out Tid request after a present number of seconds, and the effect can be
+  limited with a config variable (SimultaneousTransactionsForUid).
 
- * Local DoS by repeatedly calling non-privileged methods such as Resolve and
- SearchName. This could be mitigated by limiting the number of requests per
- second for a certain seat, although no code has been written to do this at
- present.
+- Local DoS by repeatedly calling non-privileged methods such as Resolve and
+  SearchName. This could be mitigated by limiting the number of requests per
+  second for a certain seat, although no code has been written to do this at
+  present.
 
- * A privileged method could be requested and then ignored or hidden by the
- window manager. This is mitigated by not blocking the daemon when processing
- authentication, and timing-out the authentication after a number of seconds if
- authentication credentials are not supplied.
+- A privileged method could be requested and then ignored or hidden by the
+  window manager. This is mitigated by not blocking the daemon when processing
+  authentication, and timing-out the authentication after a number of seconds if
+  authentication credentials are not supplied.
 
- * Passing untrusted input to the backend which could be used to crash and
- exploit the underlying package system. This is mitigated by rejecting invalid
- input to methods, and testing filenames for existence before they are passed
- to the backend.
+- Passing untrusted input to the backend which could be used to crash and
+  exploit the underlying package system. This is mitigated by rejecting invalid
+  input to methods, and testing filenames for existence before they are passed
+  to the backend.
 
- * Issuing a large amount of data to a method to cause a local denial of
- service, for instance calling Resolve with millions of parameters. This is
- mitigated in the daemon by checking for a sane number of requests
- (MaximumPackagesToProcess) for each method, and also limiting the total length
- of the data.
+- Issuing a large amount of data to a method to cause a local denial of
+  service, for instance calling Resolve with millions of parameters. This is
+  mitigated in the daemon by checking for a sane number of requests
+  (MaximumPackagesToProcess) for each method, and also limiting the total length
+  of the data.
 
- * The HTTP and FTP proxies that are sent by the session may contain embedded
- usernames and passwords. Whilst these are sent in plain text over the system
- D-Bus (FIXME?), the database is not be readable by users (mode 0640).
+- The HTTP and FTP proxies that are sent by the session may contain embedded
+  usernames and passwords. Whilst these are sent in plain text over the system
+  D-Bus (FIXME?), the database is not be readable by users (mode 0640).
 
- * The matching of UID and session to proxies assumes that the user cannot
- modify the login UID, and cannot spoof a session in ConsoleKit. If a user were
- able to change the apparent UID, then this would allow them to use proxy
- settings set from another user.
- This is manifested when a graphical application is run using sudo (which you
- should never do, but I digress) and different proxy settings may be used from
- the user settings. It also allows applications run using sudo to use the proxy
- specified by root, which may be different.
+- The matching of UID and session to proxies assumes that the user cannot
+  modify the login UID, and cannot spoof a session in ConsoleKit. If a user were
+  able to change the apparent UID, then this would allow them to use proxy
+  settings set from another user.
+  This is manifested when a graphical application is run using sudo (which you
+  should never do, but I digress) and different proxy settings may be used from
+  the user settings. It also allows applications run using sudo to use the proxy
+  specified by root, which may be different.
 
- * We save the UID and session to a database to get the proxy state for each
- transaction. If the user is able to create a large number of different sessions
- then this will add many entries to the database. Some rate-limiting could be
- added to ConsoleKit or PackageKit to solve this, but has not been done at this
- time.
+- We save the UID and session to a database to get the proxy state for each
+  transaction. If the user is able to create a large number of different sessions
+  then this will add many entries to the database. Some rate-limiting could be
+  added to ConsoleKit or PackageKit to solve this, but has not been done at this
+  time.
 

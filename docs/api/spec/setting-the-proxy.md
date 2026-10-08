@@ -1,4 +1,4 @@
-Setting the proxy:
+Title: Setting the proxy
 
 The packagekitd daemon sets the network proxy for the packaging backend so that
 packages can be downloaded when on a corporate or managed network.
