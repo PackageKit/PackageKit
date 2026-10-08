@@ -33,7 +33,8 @@ RUN eatmydata apt-get install -yq --no-install-recommends \
 	pkgconf \
 	polkitd \
 	systemd-dev \
-	valac
+	valac \
+	xsltproc
 
 # finish
 RUN mkdir /build
