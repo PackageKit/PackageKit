@@ -202,4 +202,6 @@ subdir('python')
 subdir('backends')
 subdir('tests')
 subdir('contrib')
-subdir('docs')
+if get_option('docs')
+    subdir('docs')
+endif

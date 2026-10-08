@@ -19,13 +19,13 @@ SERVER="annarchy.freedesktop.org"
 LOCATION="/srv/www.freedesktop.org/www/software/PackageKit"
 
 SRCDIR="$(dirname "$0")"
-MANUAL="$BUILDDIR/docs/api/packagekit"
+MANUAL="$BUILDDIR/docs/packagekit"
 
 if [ ! -f "$MANUAL/index.html" ]; then
 	echo "No reference manual in $MANUAL, build with -Ddocs=true first." >&2
 	exit 1
 fi
 
-scp -r "$SRCDIR"/html/* "$SSH_USER@$SERVER:$LOCATION/"
+scp -r "$SRCDIR"/web/* "$SSH_USER@$SERVER:$LOCATION/"
 ssh "$SSH_USER@$SERVER" mkdir -p "$LOCATION/doc"
 scp -r "$MANUAL"/* "$SSH_USER@$SERVER:$LOCATION/doc/"
