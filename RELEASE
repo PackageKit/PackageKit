@@ -45,9 +45,9 @@ git push --tags git+ssh://mak@git.freedesktop.org/git/packagekit
 rm -r meson-dist ; meson dist
 gpg -b -a meson-dist/PackageKit-${NEW_VERSION}.tar.xz
 
-7. Upload website changes
+7. Ensure manual was (re)built, then upload it together with any website changes
 
-scp -r ../docs/html/* mak@annarchy.freedesktop.org:/srv/www.freedesktop.org/www/software/PackageKit/
+../docs/upload.sh .
 
 8. Upload tarball to:
 

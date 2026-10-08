@@ -191,7 +191,7 @@
       Notes on `store_in_cache`:
 
       See [the developer
-      docs](https://www.freedesktop.org/software/PackageKit/gtk-doc/introduction-ideas-transactions.html)
+      docs](https://packagekit.freedesktop.org/doc/concepts.html#transactions)
       for more details on how this is supposed to work.
     -->
     <method name="DownloadPackages">
