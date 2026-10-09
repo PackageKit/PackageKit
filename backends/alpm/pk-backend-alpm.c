@@ -226,3 +226,95 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 {
 	pk_alpm_environment_initialize (job);
 }
+
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (PK_ROLE_ENUM_GET_REPO_LIST,
+				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+				       PK_ROLE_ENUM_GET_UPDATES,
+				       PK_ROLE_ENUM_REFRESH_CACHE,
+				       PK_ROLE_ENUM_REMOVE_PACKAGES,
+				       PK_ROLE_ENUM_RESOLVE,
+				       PK_ROLE_ENUM_GET_DETAILS,
+				       PK_ROLE_ENUM_GET_FILES,
+				       PK_ROLE_ENUM_INSTALL_FILES,
+				       PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+				       PK_ROLE_ENUM_UPDATE_PACKAGES,
+				       PK_ROLE_ENUM_INSTALL_PACKAGES,
+				       PK_ROLE_ENUM_GET_PACKAGES,
+				       PK_ROLE_ENUM_SEARCH_DETAILS,
+				       PK_ROLE_ENUM_SEARCH_FILE,
+				       PK_ROLE_ENUM_SEARCH_GROUP,
+				       PK_ROLE_ENUM_SEARCH_NAME,
+				       PK_ROLE_ENUM_WHAT_PROVIDES,
+				       -1);
+}
+
+void
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
+{
+	PkRoleEnum role = pk_backend_job_get_role (job);
+
+	switch (role) {
+	case PK_ROLE_ENUM_GET_REPO_LIST:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_repo_list_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_DEPENDS_ON:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_depends_on_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_REQUIRED_BY:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_required_by_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_update_detail_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATES:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_updates_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_refresh_cache_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_remove_packages_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_RESOLVE:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_resolve_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_details_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_GET_FILES:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_get_files_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_INSTALL_FILES:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_install_files_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_download_packages_thread, NULL);
+		break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_sync_thread, (void *) TRUE);
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_alpm_sync_thread, FALSE);
+		break;
+	case PK_ROLE_ENUM_GET_PACKAGES:
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+	case PK_ROLE_ENUM_SEARCH_FILE:
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+	case PK_ROLE_ENUM_SEARCH_NAME:
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+		pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_alpm_search_thread, NULL);
+		break;
+	default:
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "role %s is not supported",
+					   pk_role_enum_to_string (role));
+		pk_backend_job_finished (job);
+		break;
+	}
+}

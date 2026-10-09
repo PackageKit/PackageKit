@@ -118,8 +118,8 @@ out:
 	return ret;
 }
 
-static void
-pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpointer p)
+void
+pk_alpm_download_packages_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -161,17 +161,6 @@ pk_backend_download_packages_thread (PkBackendJob* job, GVariant* params, gpoint
 	pk_alpm_transaction_finish (job, error);
 }
 
-void
-pk_backend_download_packages (PkBackend *self,
-			      PkBackendJob *job,
-			      gchar **package_ids,
-			      const gchar *directory)
-{
-	g_return_if_fail (directory != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_download_packages_thread, NULL);
-}
-
 static gboolean
 pk_alpm_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 {
@@ -198,8 +187,8 @@ pk_alpm_replaces_dependencies (PkBackendJob *job, alpm_pkg_t *pkg)
 	return TRUE;
 }
 
-static void
-pk_backend_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
+void
+pk_alpm_sync_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -293,22 +282,4 @@ out:
 	alpm_list_free (asexplicit);
 
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_update_packages (PkBackend *self,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, (void *)TRUE);
-}
-
-void
-pk_backend_install_packages (PkBackend  *self,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     gchar **package_ids)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_sync_thread, FALSE);
 }

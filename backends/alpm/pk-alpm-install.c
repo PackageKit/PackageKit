@@ -71,8 +71,8 @@ pk_alpm_transaction_add_targets (PkBackendJob *job, gchar** paths, GError **erro
 	return TRUE;
 }
 
-static void
-pk_backend_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
+void
+pk_alpm_install_files_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	gboolean only_trusted;
@@ -115,15 +115,4 @@ out:
 	}
 
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_install_files (PkBackend *self,
-			  PkBackendJob *job,
-			  PkBitfield transaction_flags,
-			  gchar      **full_paths)
-{
-	g_return_if_fail (full_paths != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_install_files_thread, NULL);
 }

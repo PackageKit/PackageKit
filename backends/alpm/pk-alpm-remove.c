@@ -74,8 +74,8 @@ pk_alpm_transaction_remove_simulate (PkBackendJob *job, GError **error)
 	return TRUE;
 }
 
-static void
-pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
+void
+pk_alpm_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	alpm_transflag_t flags = 0;
 	g_autoptr(GError) error = NULL;
@@ -110,15 +110,4 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant* params, gpointer
 	}
 
 	pk_alpm_transaction_finish (job, error);
-}
-
-void
-pk_backend_remove_packages (PkBackend *self,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids,
-			    gboolean    allow_deps,
-			    gboolean    autoremove)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_remove_packages_thread, NULL);
 }

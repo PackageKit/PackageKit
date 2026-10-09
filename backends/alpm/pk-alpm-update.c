@@ -123,16 +123,18 @@ pk_alpm_time_to_iso8601 (alpm_time_t time)
 	return result;
 }
 
-static void
-pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer p)
+void
+pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
 	gchar **packages;
+	g_autofree gchar **package_ids = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) update_details = NULL;
 
-	packages = (gchar**) p;
+	g_variant_get (params, "(^a&s)", &package_ids);
+	packages = package_ids;
 	update_details = g_ptr_array_new_with_free_func (g_object_unref);
 
 	/* collect details about updates */
@@ -208,14 +210,6 @@ pk_backend_get_update_detail_thread (PkBackendJob *job, GVariant* params, gpoint
 
 	pk_backend_job_update_details (job, update_details);
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_get_update_detail (PkBackend * self,
-			      PkBackendJob *job,
-			      gchar **package_ids)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_update_detail_thread, package_ids);
 }
 
 static gchar *
@@ -418,8 +412,8 @@ pk_alpm_update_is_pkg_downloaded (alpm_pkg_t *pkg)
 	return g_file_test (filename, G_FILE_TEST_IS_REGULAR);
 }
 
-static void
-pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
+void
+pk_alpm_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -507,15 +501,7 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 }
 
 void
-pk_backend_get_updates (PkBackend *self,
-			PkBackendJob *job,
-			PkBitfield filters)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_updates_thread, NULL);
-}
-
-static void
-pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p)
+pk_alpm_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	gint force;
 	g_autoptr(GError) error = NULL;
@@ -527,12 +513,4 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant* params, gpointer p
 
 	pk_alpm_update_databases (job, force, &error);
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_refresh_cache (PkBackend *self,
-			  PkBackendJob *job,
-			  gboolean force)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_SETUP, pk_backend_refresh_cache_thread, NULL);
 }

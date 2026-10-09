@@ -323,8 +323,8 @@ pk_backend_search_db (PkBackendJob *job, GPtrArray *packages, alpm_db_t *db, Mat
 	}
 }
 
-static void
-pk_backend_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
+void
+pk_alpm_search_thread (PkBackendJob *job, GVariant* params, gpointer p)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -429,71 +429,4 @@ out:
 	alpm_list_free (patterns);
 	pk_backend_job_packages (job, packages);
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_get_packages (PkBackend  *self,
-			 PkBackendJob *job,
-			 PkBitfield filters)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
-}
-
-void
-pk_backend_search_details (PkBackend    *self,
-			   PkBackendJob *job,
-			   PkBitfield filters,
-			   gchar      **search)
-{
-	g_return_if_fail (search != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
-}
-
-void
-pk_backend_search_files (PkBackend  *self,
-			 PkBackendJob *job,
-			 PkBitfield filters,
-			 gchar      **search)
-{
-	g_return_if_fail (search != NULL);
-
-// 	/* speed up search by restricting it to local database */
-// 	pk_bitfield_add (filters, PK_FILTER_ENUM_INSTALLED);
-// 	pk_backend_set_uint (self, "filters", filters);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
-}
-
-void
-pk_backend_search_groups (PkBackend *self,
-			  PkBackendJob *job,
-			  PkBitfield filters,
-			  gchar      **search)
-{
-	g_return_if_fail (search != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
-}
-
-void
-pk_backend_search_names (PkBackend  *self,
-			 PkBackendJob *job,
-			 PkBitfield filters,
-			 gchar      **search)
-{
-	g_return_if_fail (search != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
-}
-
-void
-pk_backend_what_provides (PkBackend *self,
-			  PkBackendJob *job,
-			  PkBitfield filters,
-			  gchar      **search)
-{
-	g_return_if_fail (search != NULL);
-
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_search_thread, NULL);
 }

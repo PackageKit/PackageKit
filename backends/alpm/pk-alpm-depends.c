@@ -126,8 +126,8 @@ pk_backend_find_requirer (PkBackendJob *job, GPtrArray *packages, alpm_list_t *p
 	return pkgs;
 }
 
-static void
-pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
+void
+pk_alpm_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
@@ -178,8 +178,8 @@ pk_backend_depends_on_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	pk_backend_job_packages (job, results);
 }
 
-static void
-pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
+void
+pk_alpm_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 {
 	gchar **packages;
 	alpm_list_t *i, *pkgs = NULL;
@@ -229,24 +229,4 @@ pk_backend_required_by_thread (PkBackendJob* job, GVariant* params, gpointer p)
 	alpm_list_free (pkgs);
 	pk_backend_job_packages (job, results);
 	pk_alpm_finish (job, error);
-}
-
-void
-pk_backend_depends_on (PkBackend    *self,
-		       PkBackendJob *job,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean    recursive)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_depends_on_thread, NULL);
-}
-
-void
-pk_backend_required_by (PkBackend *self,
-			PkBackendJob *job,
-			PkBitfield filters,
-			gchar **package_ids,
-			gboolean    recursive)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_required_by_thread, NULL);
 }

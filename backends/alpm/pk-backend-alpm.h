@@ -39,3 +39,18 @@ void		 pk_alpm_run		(PkBackendJob *job, PkStatusEnum status,
 					 PkBackendJobThreadFunc func, gpointer data);
 
 gboolean	 pk_alpm_finish		(PkBackendJob *job, GError *error);
+
+void		 pk_alpm_get_repo_list_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_depends_on_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_required_by_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_updates_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_refresh_cache_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_remove_packages_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_resolve_thread		(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_details_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_get_files_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_install_files_thread	(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_sync_thread		(PkBackendJob *job, GVariant *params, gpointer data);
+void		 pk_alpm_search_thread		(PkBackendJob *job, GVariant *params, gpointer data);

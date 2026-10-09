@@ -131,8 +131,8 @@ pk_backend_repo_info (PkBackendJob *job, const gchar *repo, gboolean enabled)
 	return TRUE;
 }
 
-static void
-pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer data)
+void
+pk_alpm_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer data)
 {
 	PkBackend *backend = pk_backend_job_get_backend (job);
 	PkBackendAlpmPrivate *priv = pk_backend_get_user_data (backend);
@@ -146,12 +146,4 @@ pk_backend_get_repo_list_thread (PkBackendJob *job, GVariant *params, gpointer d
 			return;
 		pk_backend_repo_info (job, repo, TRUE);
 	}
-}
-
-void
-pk_backend_get_repo_list (PkBackend *self,
-			  PkBackendJob *job,
-			  PkBitfield filters)
-{
-	pk_alpm_run (job, PK_STATUS_ENUM_QUERY, pk_backend_get_repo_list_thread, NULL);
 }
