@@ -2640,11 +2640,8 @@ backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpointer 
 	poldek_ts_free (ts);
 }
 
-void
-pk_backend_download_packages (PkBackend *backend,
-			      PkBackendJob *job,
-			      gchar **package_ids,
-			      const gchar *directory)
+static void
+backend_download_packages (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_DOWNLOAD);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -2697,12 +2694,8 @@ backend_depends_on_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 	n_array_free (installed);
 }
 
-void
-pk_backend_depends_on (PkBackend *backend,
-		       PkBackendJob *job,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean recursive)
+static void
+backend_depends_on (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -2758,8 +2751,8 @@ backend_get_details_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	}
 }
 
-void
-pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+static void
+backend_get_details (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -2827,8 +2820,8 @@ backend_get_files_thread (PkBackendJob *job, GVariant *params, gpointer user_dat
 	}
 }
 
-void
-pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+static void
+backend_get_files (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -2902,8 +2895,8 @@ backend_get_packages_thread (PkBackendJob *job, GVariant *params, gpointer user_
 	n_array_cfree (&packages);
 }
 
-void
-pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+static void
+backend_get_packages (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
@@ -2954,12 +2947,8 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 	n_array_free (available);
 }
 
-void
-pk_backend_required_by (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield filters,
-			gchar **package_ids,
-			gboolean recursive)
+static void
+backend_required_by (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -3108,8 +3097,8 @@ backend_get_update_detail_thread (PkBackendJob *job, GVariant *params, gpointer 
 	g_ptr_array_unref (update_details);
 }
 
-void
-pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+static void
+backend_get_update_detail (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
@@ -3177,8 +3166,8 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 					   "Action cancelled.");
 }
 
-void
-pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+static void
+backend_get_updates (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
@@ -3232,11 +3221,8 @@ backend_install_packages_thread (PkBackendJob *job, GVariant *params, gpointer u
 	g_free (command);
 }
 
-void
-pk_backend_install_packages (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     gchar **package_ids)
+static void
+backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_job_error_code (job,
@@ -3305,8 +3291,8 @@ backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user
 	pk_backend_job_set_percentage (job, 100);
 }
 
-void
-pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
+static void
+backend_refresh_cache (PkBackend *backend, PkBackendJob *job)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_job_error_code (job,
@@ -3368,13 +3354,8 @@ backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer us
 	g_free (command);
 }
 
-void
-pk_backend_remove_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids,
-			    gboolean allow_deps,
-			    gboolean autoremove)
+static void
+backend_remove_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	poldek_backend_set_allow_cancel (job, FALSE, TRUE);
 	pb_error_clean ();
@@ -3386,8 +3367,8 @@ pk_backend_remove_packages (PkBackend *backend,
 	}
 }
 
-void
-pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
+static void
+backend_resolve (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
@@ -3395,20 +3376,8 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-void
-pk_backend_search_details (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield filters,
-			   gchar **search)
-{
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
-	pb_error_clean ();
-	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
-}
-
-void
-pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
+static void
+backend_search (PkBackend *backend, PkBackendJob *job)
 {
 	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
 	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
@@ -3416,29 +3385,8 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
 }
 
-void
-pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
-{
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
-	pb_error_clean ();
-	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
-}
-
-void
-pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
-{
-	pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-	poldek_backend_set_allow_cancel (job, TRUE, TRUE);
-	pb_error_clean ();
-	pk_backend_job_thread_create (job, search_package_thread, NULL, NULL);
-}
-
-void
-pk_backend_update_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids)
+static void
+backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	if (!pk_backend_is_online (backend)) {
 		pk_backend_job_error_code (job,
@@ -3458,8 +3406,8 @@ pk_backend_update_packages (PkBackend *backend,
 	}
 }
 
-void
-pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+static void
+backend_get_repo_list (PkBackend *backend, PkBackendJob *job)
 {
 	tn_array *sources = NULL;
 
@@ -3488,8 +3436,8 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	pk_backend_job_finished (job);
 }
 
-void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+static void
+backend_what_provides (PkBackend *backend, PkBackendJob *job, gchar **values)
 {
 	GPtrArray *array = NULL;
 	guint i;
@@ -3508,4 +3456,105 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 	}
 
 	pk_backend_job_thread_create (job, search_package_thread, array, NULL);
+}
+
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
+				       PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_GET_DETAILS,
+				       PK_ROLE_ENUM_GET_FILES,
+				       PK_ROLE_ENUM_GET_PACKAGES,
+				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+				       PK_ROLE_ENUM_GET_UPDATES,
+				       PK_ROLE_ENUM_INSTALL_PACKAGES,
+				       PK_ROLE_ENUM_REFRESH_CACHE,
+				       PK_ROLE_ENUM_REMOVE_PACKAGES,
+				       PK_ROLE_ENUM_RESOLVE,
+				       PK_ROLE_ENUM_SEARCH_DETAILS,
+				       PK_ROLE_ENUM_SEARCH_FILE,
+				       PK_ROLE_ENUM_SEARCH_GROUP,
+				       PK_ROLE_ENUM_SEARCH_NAME,
+				       PK_ROLE_ENUM_UPDATE_PACKAGES,
+				       PK_ROLE_ENUM_GET_REPO_LIST,
+				       PK_ROLE_ENUM_WHAT_PROVIDES,
+				       -1);
+}
+
+void
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
+{
+	PkRoleEnum role = pk_backend_job_get_role (job);
+	GVariant *params = pk_backend_job_get_parameters (job);
+	PkBitfield transaction_flags;
+	gchar **values;
+
+	switch (role) {
+	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+		backend_download_packages (backend, job);
+		break;
+	case PK_ROLE_ENUM_DEPENDS_ON:
+		backend_depends_on (backend, job);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS:
+		backend_get_details (backend, job);
+		break;
+	case PK_ROLE_ENUM_GET_FILES:
+		backend_get_files (backend, job);
+		break;
+	case PK_ROLE_ENUM_GET_PACKAGES:
+		backend_get_packages (backend, job);
+		break;
+	case PK_ROLE_ENUM_REQUIRED_BY:
+		backend_required_by (backend, job);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+		backend_get_update_detail (backend, job);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATES:
+		backend_get_updates (backend, job);
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		g_variant_get_child (params, 0, "t", &transaction_flags);
+		backend_install_packages (backend, job, transaction_flags);
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		backend_refresh_cache (backend, job);
+		break;
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		g_variant_get_child (params, 0, "t", &transaction_flags);
+		backend_remove_packages (backend, job, transaction_flags);
+		break;
+	case PK_ROLE_ENUM_RESOLVE:
+		backend_resolve (backend, job);
+		break;
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+	case PK_ROLE_ENUM_SEARCH_FILE:
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+	case PK_ROLE_ENUM_SEARCH_NAME:
+		backend_search (backend, job);
+		break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		g_variant_get_child (params, 0, "t", &transaction_flags);
+		backend_update_packages (backend, job, transaction_flags);
+		break;
+	case PK_ROLE_ENUM_GET_REPO_LIST:
+		backend_get_repo_list (backend, job);
+		break;
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+		g_variant_get (params, "(t^a&s)", NULL, &values);
+		backend_what_provides (backend, job, values);
+		g_free (values);
+		break;
+	default:
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "role %s is not supported",
+					   pk_role_enum_to_string (role));
+		pk_backend_job_finished (job);
+		break;
+	}
 }
