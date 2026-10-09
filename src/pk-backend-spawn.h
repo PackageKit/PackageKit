@@ -64,22 +64,24 @@ typedef enum {
 
 PkBackendSpawn *pk_backend_spawn_new (const gchar *name);
 
-const gchar *pk_backend_spawn_exit_type_to_string (PkBackendSpawnExitType exit_type);
+const gchar    *pk_backend_spawn_exit_type_to_string (PkBackendSpawnExitType exit_type);
 
-gboolean pk_backend_spawn_start (PkBackendSpawn *self,
-				 const gchar *executable,
-				 const gchar *const *extra_env,
-				 GError **error) G_GNUC_WARN_UNUSED_RESULT;
-gboolean pk_backend_spawn_is_running (PkBackendSpawn *self);
-gboolean pk_backend_spawn_send_line (PkBackendSpawn *self,
-				     const gchar *line,
-				     GError **error) G_GNUC_WARN_UNUSED_RESULT;
+gboolean	pk_backend_spawn_start (PkBackendSpawn	   *self,
+					const gchar	   *executable,
+					const gchar *const *extra_env,
+					GError		  **error) G_GNUC_WARN_UNUSED_RESULT;
+gboolean	pk_backend_spawn_is_running (PkBackendSpawn *self);
+gboolean	pk_backend_spawn_send_line (PkBackendSpawn *self,
+					    const gchar	   *line,
+					    GError	  **error) G_GNUC_WARN_UNUSED_RESULT;
 
-void pk_backend_spawn_kill (PkBackendSpawn *self);
-void pk_backend_spawn_set_exit_deadline (PkBackendSpawn *self, guint timeout_ms);
-void pk_backend_spawn_clear_exit_deadline (PkBackendSpawn *self);
+void		pk_backend_spawn_kill (PkBackendSpawn *self);
+void		pk_backend_spawn_set_exit_deadline (PkBackendSpawn *self,
+						    guint	    timeout_ms);
+void		pk_backend_spawn_clear_exit_deadline (PkBackendSpawn *self);
 
-const gchar *pk_backend_spawn_get_log_domain (PkBackendSpawn *self);
-void pk_backend_spawn_set_log_context (PkBackendSpawn *self, const gchar *context);
+const gchar    *pk_backend_spawn_get_log_domain (PkBackendSpawn *self);
+void		pk_backend_spawn_set_log_context (PkBackendSpawn *self,
+						  const gchar	 *context);
 
 G_END_DECLS
