@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -18,46 +18,68 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PK_BACKEND_SPAWN_H
-#define __PK_BACKEND_SPAWN_H
+#pragma once
 
 #include <glib-object.h>
-#include "pk-backend-job.h"
 
 G_BEGIN_DECLS
 
 #define PK_TYPE_BACKEND_SPAWN (pk_backend_spawn_get_type ())
 G_DECLARE_FINAL_TYPE (PkBackendSpawn, pk_backend_spawn, PK, BACKEND_SPAWN, GObject)
 
-#define PK_BACKEND_SPAWN_FILENAME_DELIM "|"
+/**
+ * PK_BACKEND_SPAWN_PROTOCOL_FD:
+ *
+ * File descriptor number the protocol socket is mapped to in the helper.
+ */
+#define PK_BACKEND_SPAWN_PROTOCOL_FD 3
 
-/* general */
-PkBackendSpawn *pk_backend_spawn_new (GKeyFile *conf);
-gboolean	pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
-					 PkBackendJob	*job,
-					 const gchar	*first_element,
-					 ...) G_GNUC_NULL_TERMINATED;
-gboolean	pk_backend_spawn_is_busy (PkBackendSpawn *backend_spawn);
-gboolean	pk_backend_spawn_kill (PkBackendSpawn *backend_spawn);
-gboolean	pk_backend_spawn_exit (PkBackendSpawn *backend_spawn);
-const gchar    *pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn);
-gboolean	pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn,
-					   const gchar	  *name);
-void		pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn,
-						    gboolean	    allow_sigkill);
-gboolean	pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
-					      PkBackendJob   *job,
-					      const gchar    *line,
-					      GError	    **error);
+/**
+ * PK_BACKEND_SPAWN_PROTOCOL_FD_ENV:
+ *
+ * Environment variable telling the helper which descriptor carries the
+ * protocol socket.
+ */
+#define PK_BACKEND_SPAWN_PROTOCOL_FD_ENV "PK_BACKEND_PROTOCOL_FD"
 
-/* filtering */
-typedef gboolean (*PkBackendSpawnFilterFunc) (PkBackendJob *job,
-					      const gchar  *data);
-gboolean pk_backend_spawn_set_filter_stderr (PkBackendSpawn	     *backend_spawn,
-					     PkBackendSpawnFilterFunc func);
-gboolean pk_backend_spawn_set_filter_stdout (PkBackendSpawn	     *backend_spawn,
-					     PkBackendSpawnFilterFunc func);
+/**
+ * PkBackendSpawnExitType:
+ * @PK_BACKEND_SPAWN_EXIT_UNKNOWN: not started yet, or still running
+ * @PK_BACKEND_SPAWN_EXIT_SUCCESS: exited with status 0
+ * @PK_BACKEND_SPAWN_EXIT_FAILED: exited with a non-zero status
+ * @PK_BACKEND_SPAWN_EXIT_SIGTERM: terminated by the SIGTERM we sent
+ * @PK_BACKEND_SPAWN_EXIT_SIGKILL: terminated by the SIGKILL we sent
+ * @PK_BACKEND_SPAWN_EXIT_SIGNAL: terminated by a signal we did not send
+ *
+ * How the spawned backend process ended.
+ */
+typedef enum {
+	PK_BACKEND_SPAWN_EXIT_UNKNOWN,
+	PK_BACKEND_SPAWN_EXIT_SUCCESS,
+	PK_BACKEND_SPAWN_EXIT_FAILED,
+	PK_BACKEND_SPAWN_EXIT_SIGTERM,
+	PK_BACKEND_SPAWN_EXIT_SIGKILL,
+	PK_BACKEND_SPAWN_EXIT_SIGNAL,
+} PkBackendSpawnExitType;
+
+PkBackendSpawn *pk_backend_spawn_new (const gchar *name);
+
+const gchar *pk_backend_spawn_exit_type_to_string (PkBackendSpawnExitType exit_type);
+
+gboolean pk_backend_spawn_start (PkBackendSpawn *self,
+				 const gchar *executable,
+				 const gchar *const *extra_env,
+				 GError **error) G_GNUC_WARN_UNUSED_RESULT;
+gboolean pk_backend_spawn_is_running (PkBackendSpawn *self);
+gboolean pk_backend_spawn_send_line (PkBackendSpawn *self,
+				     const gchar *line,
+				     GError **error) G_GNUC_WARN_UNUSED_RESULT;
+
+void pk_backend_spawn_kill (PkBackendSpawn *self);
+void pk_backend_spawn_set_exit_deadline (PkBackendSpawn *self, guint timeout_ms);
+void pk_backend_spawn_clear_exit_deadline (PkBackendSpawn *self);
+
+const gchar *pk_backend_spawn_get_log_domain (PkBackendSpawn *self);
+void pk_backend_spawn_set_log_context (PkBackendSpawn *self, const gchar *context);
 
 G_END_DECLS
-
-#endif /* __PK_BACKEND_SPAWN_H */

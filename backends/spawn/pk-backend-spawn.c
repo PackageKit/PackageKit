@@ -31,15 +31,15 @@
 
 #include <pk-backend.h>
 #include <pk-backend-job.h>
-#include <pk-backend-process.h>
+#include <pk-backend-spawn.h>
 #include <pk-backend-protocol.h>
 #include <pk-shared.h>
 
 /* timeouts */
-#define PK_BACKEND_SPAWN_HELLO_TIMEOUT	   10000
-#define PK_BACKEND_SPAWN_CANCEL_TIMEOUT	   5000
-#define PK_BACKEND_SPAWN_EXIT_TIMEOUT	   5000
-#define PK_BACKEND_SPAWN_DEFAULT_IDLE_TIME 5
+#define PK_SPAWN_MODULE_HELLO_TIMEOUT	  10000
+#define PK_SPAWN_MODULE_CANCEL_TIMEOUT	  5000
+#define PK_SPAWN_MODULE_EXIT_TIMEOUT	  5000
+#define PK_SPAWN_MODULE_DEFAULT_IDLE_TIME 5
 
 typedef struct
 {
@@ -50,7 +50,7 @@ typedef struct
 	gchar **env;
 	guint idle_time;
 
-	PkBackendProcess *process;
+	PkBackendSpawn *process;
 	const gchar *log_domain;
 	PkBackendHello *hello;
 	gboolean awaiting_hello;
@@ -65,26 +65,26 @@ typedef struct
 	guint job_serial;
 	gboolean job_finished;
 	guint cancel_id;
-} PkBackendSpawnPrivate;
+} PkSpawnModulePrivate;
 
-static PkBackendSpawnPrivate *priv = NULL;
+static PkSpawnModulePrivate *priv = NULL;
 
-static gboolean pk_backend_spawn_start (GError **error);
+static gboolean pk_spawn_module_start (GError **error);
 
 /* ---- job bookkeeping ---- */
 
 static void
-pk_backend_spawn_job_done (void)
+pk_spawn_module_job_done (void)
 {
 	priv->job_finished = TRUE;
 	g_clear_handle_id (&priv->cancel_id, g_source_remove);
 }
 
-static void pk_backend_spawn_fail_job (PkErrorEnum code, const gchar *format, ...)
+static void pk_spawn_module_fail_job (PkErrorEnum code, const gchar *format, ...)
     G_GNUC_PRINTF (2, 3);
 
 static void
-pk_backend_spawn_fail_job (PkErrorEnum code, const gchar *format, ...)
+pk_spawn_module_fail_job (PkErrorEnum code, const gchar *format, ...)
 {
 	g_autofree gchar *message = NULL;
 	va_list args;
@@ -96,28 +96,28 @@ pk_backend_spawn_fail_job (PkErrorEnum code, const gchar *format, ...)
 	va_end (args);
 	if (!pk_backend_job_has_set_error_code (priv->job))
 		pk_backend_job_error_code (priv->job, code, "%s", message);
-	pk_backend_spawn_job_done ();
+	pk_spawn_module_job_done ();
 	pk_backend_job_finished (priv->job);
 }
 
 static void
-pk_backend_spawn_send_run (void)
+pk_spawn_module_send_run (void)
 {
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *line = NULL;
 
 	line = pk_backend_protocol_build_run (priv->job, priv->job_id, &error);
-	if (line == NULL || !pk_backend_process_send_line (priv->process, line, &error)) {
-		pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "failed to send the request to the helper: %s",
-					   error->message);
+	if (line == NULL || !pk_backend_spawn_send_line (priv->process, line, &error)) {
+		pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+					  "failed to send the request to the helper: %s",
+					  error->message);
 	}
 }
 
 /* ---- handshake ---- */
 
 static void
-pk_backend_spawn_handshake_failed (const gchar *reason)
+pk_spawn_module_handshake_failed (const gchar *reason)
 {
 	priv->awaiting_hello = FALSE;
 	g_clear_handle_id (&priv->hello_id, g_source_remove);
@@ -131,29 +131,29 @@ pk_backend_spawn_handshake_failed (const gchar *reason)
 		g_set_error_literal (&priv->hello_error, G_IO_ERROR, G_IO_ERROR_FAILED, reason);
 		g_main_loop_quit (priv->hello_loop);
 	}
-	pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-				   "helper handshake failed: %s",
-				   reason);
-	pk_backend_process_kill (priv->process);
+	pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+				  "helper handshake failed: %s",
+				  reason);
+	pk_backend_spawn_kill (priv->process);
 }
 
 static gboolean
-pk_backend_spawn_hello_timeout_cb (gpointer user_data)
+pk_spawn_module_hello_timeout_cb (gpointer user_data)
 {
 	priv->hello_id = 0;
-	pk_backend_spawn_handshake_failed ("no hello received in time");
+	pk_spawn_module_handshake_failed ("no hello received in time");
 	return G_SOURCE_REMOVE;
 }
 
 static void
-pk_backend_spawn_hello_received (const gchar *line)
+pk_spawn_module_hello_received (const gchar *line)
 {
 	g_autoptr(GError) error = NULL;
 	PkBackendHello *hello;
 
 	hello = pk_backend_protocol_parse_hello (line, &error);
 	if (hello == NULL) {
-		pk_backend_spawn_handshake_failed (error->message);
+		pk_spawn_module_handshake_failed (error->message);
 		return;
 	}
 	g_clear_pointer (&priv->hello, pk_backend_hello_free);
@@ -165,20 +165,20 @@ pk_backend_spawn_hello_received (const gchar *line)
 	if (priv->hello_loop != NULL)
 		g_main_loop_quit (priv->hello_loop);
 	else if (priv->job != NULL && !priv->job_finished)
-		pk_backend_spawn_send_run ();
+		pk_spawn_module_send_run ();
 }
 
 /* ---- process callbacks ---- */
 
 static void
-pk_backend_spawn_line_cb (PkBackendProcess *process, const gchar *line, gpointer user_data)
+pk_spawn_module_line_cb (PkBackendSpawn *process, const gchar *line, gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
 	gboolean finished = FALSE;
 	gboolean in_job = priv->job != NULL && !priv->job_finished;
 
 	if (priv->awaiting_hello) {
-		pk_backend_spawn_hello_received (line);
+		pk_spawn_module_hello_received (line);
 		return;
 	}
 	if (!pk_backend_protocol_handle_event (priv->log_domain,
@@ -192,23 +192,20 @@ pk_backend_spawn_line_cb (PkBackendProcess *process, const gchar *line, gpointer
 		       "%s: protocol error, terminating the helper: %s",
 		       priv->name,
 		       error->message);
-		pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "protocol error from the helper: %s",
-					   error->message);
-		pk_backend_process_kill (priv->process);
+		pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+					  "protocol error from the helper: %s",
+					  error->message);
+		pk_backend_spawn_kill (priv->process);
 		return;
 	}
 	if (finished)
-		pk_backend_spawn_job_done ();
+		pk_spawn_module_job_done ();
 }
 
 static void
-pk_backend_spawn_exited_cb (PkBackendProcess *process,
-			    gint exit_type,
-			    gint status,
-			    gpointer user_data)
+pk_spawn_module_exited_cb (PkBackendSpawn *process, gint exit_type, gint status, gpointer user_data)
 {
-	const gchar *how = pk_backend_process_exit_type_to_string (exit_type);
+	const gchar *how = pk_backend_spawn_exit_type_to_string (exit_type);
 	gboolean exit_requested = priv->exit_requested;
 
 	priv->exit_requested = FALSE;
@@ -217,11 +214,11 @@ pk_backend_spawn_exited_cb (PkBackendProcess *process,
 		reason = g_strdup_printf ("helper exited before saying hello (%s, status %d)",
 					  how,
 					  status);
-		pk_backend_spawn_handshake_failed (reason);
+		pk_spawn_module_handshake_failed (reason);
 		return;
 	}
 	if (priv->job == NULL || priv->job_finished) {
-		if (exit_type == PK_BACKEND_PROCESS_EXIT_SUCCESS && exit_requested)
+		if (exit_type == PK_BACKEND_SPAWN_EXIT_SUCCESS && exit_requested)
 			g_log (priv->log_domain,
 			       G_LOG_LEVEL_DEBUG,
 			       "%s: helper exited",
@@ -238,16 +235,16 @@ pk_backend_spawn_exited_cb (PkBackendProcess *process,
 	if (exit_requested) {
 		/* a job arrived while the helper was shutting down: start over */
 		g_autoptr(GError) error = NULL;
-		if (!pk_backend_spawn_start (&error)) {
-			pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-						   "failed to start the helper: %s",
-						   error->message);
+		if (!pk_spawn_module_start (&error)) {
+			pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+						  "failed to start the helper: %s",
+						  error->message);
 		}
 		return;
 	}
-	if (exit_type == PK_BACKEND_PROCESS_EXIT_SIGTERM ||
-	    exit_type == PK_BACKEND_PROCESS_EXIT_SIGKILL) {
-		pk_backend_spawn_fail_job (
+	if (exit_type == PK_BACKEND_SPAWN_EXIT_SIGTERM ||
+	    exit_type == PK_BACKEND_SPAWN_EXIT_SIGKILL) {
+		pk_spawn_module_fail_job (
 		    PK_ERROR_ENUM_PROCESS_KILL,
 		    "the helper was killed after it ignored the cancel request");
 	} else {
@@ -258,17 +255,17 @@ pk_backend_spawn_exited_cb (PkBackendProcess *process,
 		       priv->job_id,
 		       how,
 		       status);
-		pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "the helper exited during the job (%s, status %d)",
-					   how,
-					   status);
+		pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+					  "the helper exited during the job (%s, status %d)",
+					  how,
+					  status);
 	}
 }
 
 /* ---- lifecycle ---- */
 
 static gboolean
-pk_backend_spawn_start (GError **error)
+pk_spawn_module_start (GError **error)
 {
 	g_autofree gchar *hello = NULL;
 
@@ -276,52 +273,52 @@ pk_backend_spawn_start (GError **error)
 		      "background",
 		      priv->job != NULL && pk_backend_job_get_background (priv->job),
 		      NULL);
-	if (!pk_backend_process_start (priv->process,
-				       priv->exec,
-				       (const gchar *const *) priv->env,
-				       error))
+	if (!pk_backend_spawn_start (priv->process,
+				     priv->exec,
+				     (const gchar *const *) priv->env,
+				     error))
 		return FALSE;
 	priv->awaiting_hello = TRUE;
 	priv->exit_requested = FALSE;
 	hello = pk_backend_protocol_build_hello ();
-	if (!pk_backend_process_send_line (priv->process, hello, error)) {
+	if (!pk_backend_spawn_send_line (priv->process, hello, error)) {
 		priv->awaiting_hello = FALSE;
-		pk_backend_process_kill (priv->process);
+		pk_backend_spawn_kill (priv->process);
 		return FALSE;
 	}
-	priv->hello_id = g_timeout_add (PK_BACKEND_SPAWN_HELLO_TIMEOUT,
-					pk_backend_spawn_hello_timeout_cb,
+	priv->hello_id = g_timeout_add (PK_SPAWN_MODULE_HELLO_TIMEOUT,
+					pk_spawn_module_hello_timeout_cb,
 					NULL);
-	g_source_set_name_by_id (priv->hello_id, "[PkBackendSpawn] hello timeout");
+	g_source_set_name_by_id (priv->hello_id, "[PkSpawnModule] hello timeout");
 	return TRUE;
 }
 
 static gboolean
-pk_backend_spawn_idle_cb (gpointer user_data)
+pk_spawn_module_idle_cb (gpointer user_data)
 {
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *line = NULL;
 
 	priv->idle_id = 0;
-	if (priv->job != NULL || !pk_backend_process_is_running (priv->process))
+	if (priv->job != NULL || !pk_backend_spawn_is_running (priv->process))
 		return G_SOURCE_REMOVE;
 	g_log (priv->log_domain,
 	       G_LOG_LEVEL_DEBUG,
 	       "%s: helper is idle, asking it to exit",
 	       priv->name);
 	line = pk_backend_protocol_build_exit ();
-	if (!pk_backend_process_send_line (priv->process, line, &error)) {
+	if (!pk_backend_spawn_send_line (priv->process, line, &error)) {
 		g_log (priv->log_domain, G_LOG_LEVEL_WARNING, "%s: %s", priv->name, error->message);
-		pk_backend_process_kill (priv->process);
+		pk_backend_spawn_kill (priv->process);
 		return G_SOURCE_REMOVE;
 	}
 	priv->exit_requested = TRUE;
-	pk_backend_process_set_exit_deadline (priv->process, PK_BACKEND_SPAWN_EXIT_TIMEOUT);
+	pk_backend_spawn_set_exit_deadline (priv->process, PK_SPAWN_MODULE_EXIT_TIMEOUT);
 	return G_SOURCE_REMOVE;
 }
 
 static gboolean
-pk_backend_spawn_cancel_timeout_cb (gpointer user_data)
+pk_spawn_module_cancel_timeout_cb (gpointer user_data)
 {
 	priv->cancel_id = 0;
 	if (priv->job != NULL && !priv->job_finished) {
@@ -330,13 +327,13 @@ pk_backend_spawn_cancel_timeout_cb (gpointer user_data)
 		       "%s: helper did not finish job %s after cancel, terminating it",
 		       priv->name,
 		       priv->job_id);
-		pk_backend_process_kill (priv->process);
+		pk_backend_spawn_kill (priv->process);
 	}
 	return G_SOURCE_REMOVE;
 }
 
 static void
-pk_backend_spawn_run (PkBackendJob *job)
+pk_spawn_module_run (PkBackendJob *job)
 {
 	g_autoptr(GError) error = NULL;
 
@@ -348,19 +345,19 @@ pk_backend_spawn_run (PkBackendJob *job)
 		pk_backend_job_finished (job);
 		return;
 	}
-	if (!pk_backend_process_is_running (priv->process)) {
+	if (!pk_backend_spawn_is_running (priv->process)) {
 		/* the request is sent once the new helper has said hello */
-		if (!pk_backend_spawn_start (&error)) {
-			pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-						   "failed to start the helper: %s",
-						   error->message);
+		if (!pk_spawn_module_start (&error)) {
+			pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+						  "failed to start the helper: %s",
+						  error->message);
 		}
 		return;
 	}
 	/* a helper that is still shutting down is restarted from the exited callback */
 	if (priv->awaiting_hello || priv->exit_requested)
 		return;
-	pk_backend_spawn_send_run ();
+	pk_spawn_module_send_run ();
 }
 
 /* ---- module interface ---- */
@@ -379,16 +376,14 @@ pk_backend_destroy (PkBackend *backend)
 	g_clear_handle_id (&priv->cancel_id, g_source_remove);
 	g_clear_handle_id (&priv->hello_id, g_source_remove);
 	if (priv->process != NULL) {
+		g_signal_handlers_disconnect_by_func (priv->process, pk_spawn_module_line_cb, NULL);
 		g_signal_handlers_disconnect_by_func (priv->process,
-						      pk_backend_spawn_line_cb,
+						      pk_spawn_module_exited_cb,
 						      NULL);
-		g_signal_handlers_disconnect_by_func (priv->process,
-						      pk_backend_spawn_exited_cb,
-						      NULL);
-		if (pk_backend_process_is_running (priv->process)) {
+		if (pk_backend_spawn_is_running (priv->process)) {
 			g_autofree gchar *line = pk_backend_protocol_build_exit ();
-			if (!pk_backend_process_send_line (priv->process, line, NULL))
-				pk_backend_process_kill (priv->process);
+			if (!pk_backend_spawn_send_line (priv->process, line, NULL))
+				pk_backend_spawn_kill (priv->process);
 		}
 		g_object_unref (priv->process);
 	}
@@ -430,31 +425,31 @@ pk_backend_initialize_manifest (GKeyFile *conf,
 		return FALSE;
 	}
 
-	priv = g_new0 (PkBackendSpawnPrivate, 1);
+	priv = g_new0 (PkSpawnModulePrivate, 1);
 	priv->name = g_path_get_basename (dir);
 	priv->exec = g_path_is_absolute (exec) ? g_steal_pointer (&exec)
 					       : g_build_filename (dir, exec, NULL);
 	priv->description = g_key_file_get_string (manifest, "Backend", "Description", NULL);
 	priv->author = g_key_file_get_string (manifest, "Backend", "Author", NULL);
 	idle_time = g_key_file_get_integer (conf, "Daemon", "BackendShutdownTimeout", NULL);
-	priv->idle_time = idle_time > 0 ? idle_time : PK_BACKEND_SPAWN_DEFAULT_IDLE_TIME;
+	priv->idle_time = idle_time > 0 ? idle_time : PK_SPAWN_MODULE_DEFAULT_IDLE_TIME;
 	python_dir = g_build_filename (root_dir, PK_PYTHON_DIR, NULL);
 	priv->env = g_new0 (gchar *, 2);
 	priv->env[0] = g_strconcat ("PYTHONPATH=", python_dir, NULL);
 
-	priv->process = pk_backend_process_new (priv->name);
-	priv->log_domain = pk_backend_process_get_log_domain (priv->process);
+	priv->process = pk_backend_spawn_new (priv->name);
+	priv->log_domain = pk_backend_spawn_get_log_domain (priv->process);
 	g_object_set (priv->process,
 		      "allow-sigkill",
 		      g_key_file_get_boolean (manifest, "Backend", "AllowSigkill", NULL),
 		      "inherit-environment",
 		      g_key_file_get_boolean (conf, "Daemon", "KeepEnvironment", NULL),
 		      NULL);
-	g_signal_connect (priv->process, "line", G_CALLBACK (pk_backend_spawn_line_cb), NULL);
-	g_signal_connect (priv->process, "exited", G_CALLBACK (pk_backend_spawn_exited_cb), NULL);
+	g_signal_connect (priv->process, "line", G_CALLBACK (pk_spawn_module_line_cb), NULL);
+	g_signal_connect (priv->process, "exited", G_CALLBACK (pk_spawn_module_exited_cb), NULL);
 
 	/* say hello now, so roles and filters are known before the first transaction */
-	if (pk_backend_spawn_start (&local_error)) {
+	if (pk_spawn_module_start (&local_error)) {
 		priv->hello_loop = g_main_loop_new (NULL, FALSE);
 		g_main_loop_run (priv->hello_loop);
 		g_clear_pointer (&priv->hello_loop, g_main_loop_unref);
@@ -468,8 +463,8 @@ pk_backend_initialize_manifest (GKeyFile *conf,
 		pk_backend_destroy (backend);
 		return FALSE;
 	}
-	priv->idle_id = g_timeout_add_seconds (priv->idle_time, pk_backend_spawn_idle_cb, NULL);
-	g_source_set_name_by_id (priv->idle_id, "[PkBackendSpawn] idle exit");
+	priv->idle_id = g_timeout_add_seconds (priv->idle_time, pk_spawn_module_idle_cb, NULL);
+	g_source_set_name_by_id (priv->idle_id, "[PkSpawnModule] idle exit");
 	return TRUE;
 }
 
@@ -535,7 +530,7 @@ pk_backend_start_job (PkBackend *backend, PkBackendJob *job)
 	g_free (priv->job_id);
 	priv->job_id = g_strdup_printf ("%u", ++priv->job_serial);
 	context = g_strdup_printf ("%s job %s", priv->name, priv->job_id);
-	pk_backend_process_set_log_context (priv->process, context);
+	pk_backend_spawn_set_log_context (priv->process, context);
 }
 
 void
@@ -546,12 +541,12 @@ pk_backend_stop_job (PkBackend *backend, PkBackendJob *job)
 	g_clear_handle_id (&priv->cancel_id, g_source_remove);
 	priv->job = NULL;
 	priv->job_finished = FALSE;
-	pk_backend_process_set_log_context (priv->process, NULL);
-	if (pk_backend_process_is_running (priv->process)) {
+	pk_backend_spawn_set_log_context (priv->process, NULL);
+	if (pk_backend_spawn_is_running (priv->process)) {
 		priv->idle_id = g_timeout_add_seconds (priv->idle_time,
-						       pk_backend_spawn_idle_cb,
+						       pk_spawn_module_idle_cb,
 						       NULL);
-		g_source_set_name_by_id (priv->idle_id, "[PkBackendSpawn] idle exit");
+		g_source_set_name_by_id (priv->idle_id, "[PkSpawnModule] idle exit");
 	}
 }
 
@@ -561,20 +556,19 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	g_autoptr(GError) error = NULL;
 	g_autofree gchar *line = NULL;
 
-	if (job != priv->job || priv->job_finished ||
-	    !pk_backend_process_is_running (priv->process))
+	if (job != priv->job || priv->job_finished || !pk_backend_spawn_is_running (priv->process))
 		return;
 	line = pk_backend_protocol_build_cancel (priv->job_id);
-	if (!pk_backend_process_send_line (priv->process, line, &error)) {
+	if (!pk_backend_spawn_send_line (priv->process, line, &error)) {
 		g_log (priv->log_domain, G_LOG_LEVEL_WARNING, "%s: %s", priv->name, error->message);
-		pk_backend_process_kill (priv->process);
+		pk_backend_spawn_kill (priv->process);
 		return;
 	}
 	if (priv->cancel_id == 0) {
-		priv->cancel_id = g_timeout_add (PK_BACKEND_SPAWN_CANCEL_TIMEOUT,
-						 pk_backend_spawn_cancel_timeout_cb,
+		priv->cancel_id = g_timeout_add (PK_SPAWN_MODULE_CANCEL_TIMEOUT,
+						 pk_spawn_module_cancel_timeout_cb,
 						 NULL);
-		g_source_set_name_by_id (priv->cancel_id, "[PkBackendSpawn] cancel timeout");
+		g_source_set_name_by_id (priv->cancel_id, "[PkSpawnModule] cancel timeout");
 	}
 }
 
@@ -583,7 +577,7 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -592,49 +586,49 @@ pk_backend_search_details (PkBackend *backend,
 			   PkBitfield filters,
 			   gchar **values)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -644,7 +638,7 @@ pk_backend_depends_on (PkBackend *backend,
 		       gchar **package_ids,
 		       gboolean recursive)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -654,43 +648,43 @@ pk_backend_required_by (PkBackend *backend,
 			gchar **package_ids,
 			gboolean recursive)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -699,7 +693,7 @@ pk_backend_download_packages (PkBackend *backend,
 			      gchar **package_ids,
 			      const gchar *directory)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -708,7 +702,7 @@ pk_backend_install_packages (PkBackend *backend,
 			     PkBitfield transaction_flags,
 			     gchar **package_ids)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -717,7 +711,7 @@ pk_backend_update_packages (PkBackend *backend,
 			    PkBitfield transaction_flags,
 			    gchar **package_ids)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -726,7 +720,7 @@ pk_backend_install_files (PkBackend *backend,
 			  PkBitfield transaction_flags,
 			  gchar **full_paths)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -737,7 +731,7 @@ pk_backend_remove_packages (PkBackend *backend,
 			    gboolean allow_deps,
 			    gboolean autoremove)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -747,13 +741,13 @@ pk_backend_install_signature (PkBackend *backend,
 			      const gchar *key_id,
 			      const gchar *package_id)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -762,7 +756,7 @@ pk_backend_repo_enable (PkBackend *backend,
 			const gchar *repo_id,
 			gboolean enabled)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -772,7 +766,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 			  const gchar *parameter,
 			  const gchar *value)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -782,7 +776,7 @@ pk_backend_repo_remove (PkBackend *backend,
 			const gchar *repo_id,
 			gboolean autoremove)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
@@ -792,11 +786,11 @@ pk_backend_upgrade_system (PkBackend *backend,
 			   const gchar *distro_id,
 			   PkUpgradeKindEnum upgrade_kind)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }
 
 void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
-	pk_backend_spawn_run (job);
+	pk_spawn_module_run (job);
 }

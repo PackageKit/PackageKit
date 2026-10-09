@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# Test helper for PkBackendProcess: echoes every line received on the
+# Test helper for PkBackendSpawn: echoes every line received on the
 # protocol socket back with an "echo:" prefix, exits cleanly on "exit",
 # and writes to stdout and stderr to prove those are kept apart from the
 # protocol channel.

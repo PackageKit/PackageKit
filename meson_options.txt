@@ -134,8 +134,3 @@ option('dbus_services',
     value : '',
     description : 'D-BUS system-services directory'
 )
-option('pythonpackagedir',
-    type : 'string',
-    value : '',
-    description : 'Location for Python modules'
-)

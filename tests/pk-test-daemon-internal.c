@@ -26,12 +26,10 @@
 #include <glib/gstdio.h>
 
 #include "pk-backend.h"
-#include "pk-backend-process.h"
-#include "pk-backend-protocol.h"
 #include "pk-backend-spawn.h"
+#include "pk-backend-protocol.h"
 #include "pk-dbus.h"
 #include "pk-engine.h"
-#include "pk-spawn.h"
 #include "pk-transaction-db.h"
 #include "pk-transaction.h"
 #include "pk-transaction-private.h"
@@ -339,236 +337,6 @@ pk_test_backend_func (void)
 	g_assert_cmpint (pk_backend_job_get_exit_code (job), ==, PK_EXIT_ENUM_NEED_UNTRUSTED);
 }
 
-static guint _backend_spawn_number_packages = 0;
-
-static void
-pk_test_backend_spawn_finished_cb (PkBackendJob *job,
-				   PkExitEnum exit,
-				   PkBackendSpawn *backend_spawn)
-{
-	_g_test_loop_quit ();
-}
-
-static void
-pk_test_backend_spawn_package_cb (PkBackend *backend,
-				  PkInfoEnum info,
-				  const gchar *package_id,
-				  const gchar *summary,
-				  PkBackendSpawn *backend_spawn)
-{
-	_backend_spawn_number_packages++;
-}
-
-static void
-pk_test_backend_spawn_packages_cb (PkBackend *backend,
-				   GPtrArray *package_array,
-				   PkBackendSpawn *backend_spawn)
-{
-	_backend_spawn_number_packages += package_array->len;
-}
-
-static void
-pk_test_backend_spawn_func (void)
-{
-	PkBackendSpawn *backend_spawn;
-	const gchar *text;
-	gboolean ret;
-	gchar *uri;
-	g_autoptr(GKeyFile) conf = NULL;
-	g_autoptr(PkBackend) backend = NULL;
-	g_autoptr(PkBackendJob) job = NULL;
-	g_autoptr(GError) error = NULL;
-
-	/* get an backend_spawn */
-	conf = pk_test_conf_new ();
-	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_spawn");
-	backend_spawn = pk_backend_spawn_new (conf);
-	g_assert_true (backend_spawn != NULL);
-
-	/* private copy for unref testing */
-	backend = pk_backend_new (conf);
-	job = pk_backend_job_new (conf);
-	pk_backend_job_set_backend (job, backend);
-
-	/* get backend name */
-	text = pk_backend_spawn_get_name (backend_spawn);
-	g_assert_cmpstr (text, ==, NULL);
-
-	/* set backend name */
-	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	g_assert_true (ret);
-
-	/* get backend name */
-	text = pk_backend_spawn_get_name (backend_spawn);
-	g_assert_cmpstr (text, ==, "test_spawn");
-
-	/* test pk_backend_spawn_inject_data Percentage1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t0", &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data Percentage2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\tbrian", NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data Percentage3 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t12345", NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data Percentage4 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage\t", NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data Percentage5 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "percentage", NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data NoPercentageUpdates */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "no-percentage-updates", NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data failure */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    "error\tnot-present-woohoo\tdescription text",
-					    NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data Status */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "status\tquery", NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data RequireRestart */
-	ret = pk_backend_spawn_inject_data (
-	    backend_spawn,
-	    job,
-	    "requirerestart\tsystem\tgnome-power-manager;0.0.1;i386;origin;data",
-	    NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data RequireRestart invalid enum */
-	ret = pk_backend_spawn_inject_data (
-	    backend_spawn,
-	    job,
-	    "requirerestart\tmooville\tgnome-power-manager;0.0.1;i386;origin;data",
-	    NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data RequireRestart invalid PackageId */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    "requirerestart\tsystem\tdetails about the restart",
-					    NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data AllowUpdate1 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\ttrue", NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data AllowUpdate2 */
-	ret = pk_backend_spawn_inject_data (backend_spawn, job, "allow-cancel\tbrian", NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data details - valid (install size, download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    GET_DETAILS_TEST_DATA "145158504\t20920696",
-					    NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data details - valid (huge install size, huge download size) - actual sizes from "0ad-data;0.27.0-11;x86_64;Solus" */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    GET_DETAILS_TEST_DATA "3526938164\t1368603575",
-					    NULL);
-	g_assert_true (ret);
-
-	/* test pk_backend_spawn_inject_data details - invalid (invalid size, valid download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    GET_DETAILS_TEST_DATA "INVALID-SIZE\t1368603575",
-					    NULL);
-	g_assert_true (!ret);
-
-	/* test pk_backend_spawn_inject_data details - invalid (valid size, invalid download size) */
-	ret = pk_backend_spawn_inject_data (backend_spawn,
-					    job,
-					    GET_DETAILS_TEST_DATA
-					    "145158504\tINVALID-DOWNLOAD-SIZE",
-					    NULL);
-	g_assert_true (!ret);
-
-	/* convert proxy uri (bare) */
-	uri = pk_backend_convert_uri ("username:password@server:port");
-	g_assert_cmpstr (uri, ==, "http://username:password@server:port/");
-	g_free (uri);
-
-	/* convert proxy uri (full) */
-	uri = pk_backend_convert_uri ("http://username:password@server:port/");
-	g_assert_cmpstr (uri, ==, "http://username:password@server:port/");
-	g_free (uri);
-
-	/* convert proxy uri (partial) */
-	uri = pk_backend_convert_uri ("ftp://username:password@server:port");
-	g_assert_cmpstr (uri, ==, "ftp://username:password@server:port/");
-	g_free (uri);
-
-	/* test pk_backend_spawn_parse_common_out Package */
-	ret = pk_backend_spawn_inject_data (
-	    backend_spawn,
-	    job,
-	    "package\tinstalled\tgnome-power-manager;0.0.1;i386;origin;data\tMore useless software",
-	    NULL);
-	g_assert_true (ret);
-
-	/* manually unlock as we have no engine */
-	ret = pk_backend_unload (backend);
-	g_assert_true (ret);
-
-	/* reset */
-	g_object_unref (backend_spawn);
-
-	/* new */
-	backend_spawn = pk_backend_spawn_new (conf);
-
-	/* set backend name */
-	ret = pk_backend_spawn_set_name (backend_spawn, "test_spawn");
-	g_assert_true (ret);
-
-	/* so we can spin until we finish */
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_FINISHED,
-				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_finished_cb),
-				  backend_spawn);
-
-	/* so we can count the returned packages */
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_PACKAGE,
-				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_package_cb),
-				  backend_spawn);
-	pk_backend_job_set_vfunc (job,
-				  PK_BACKEND_SIGNAL_PACKAGES,
-				  PK_BACKEND_JOB_VFUNC (pk_test_backend_spawn_packages_cb),
-				  backend_spawn);
-
-	/* test search-name.sh running */
-	ret = pk_backend_spawn_helper (backend_spawn, job, "search-name.sh", "none", "bar", NULL);
-	g_assert_true (ret);
-
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (10000);
-
-	/* test number of packages */
-	g_assert_cmpint (_backend_spawn_number_packages, ==, 2);
-
-	/* manually unlock as we have no engine */
-	ret = pk_backend_unload (backend);
-	g_assert_true (ret);
-
-	/* done */
-	g_object_unref (backend_spawn);
-}
-
 static void
 pk_test_dbus_func (void)
 {
@@ -578,240 +346,7 @@ pk_test_dbus_func (void)
 	g_assert_true (dbus != NULL);
 }
 
-PkSpawnExitType mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-guint stdout_count = 0;
-guint finished_count = 0;
-
-static void
-pk_test_exit_cb (PkSpawn *spawn, PkSpawnExitType exit, gpointer user_data)
-{
-	g_debug ("spawn exit=%i", exit);
-	mexit = exit;
-	finished_count++;
-	_g_test_loop_quit ();
-}
-
-static void
-pk_test_stdout_cb (PkSpawn *spawn, const gchar *line, gpointer user_data)
-{
-	g_debug ("stdout '%s'", line);
-	stdout_count++;
-}
-
-static gboolean
-cancel_cb (gpointer data)
-{
-	PkSpawn *spawn = PK_SPAWN (data);
-	pk_spawn_kill (spawn);
-	return FALSE;
-}
-
-static void
-new_spawn_object (PkSpawn **pspawn)
-{
-	g_autoptr(GKeyFile) conf = NULL;
-	if (*pspawn != NULL)
-		g_object_unref (*pspawn);
-	conf = pk_test_conf_new ();
-	*pspawn = pk_spawn_new (conf);
-	g_signal_connect (*pspawn, "exit", G_CALLBACK (pk_test_exit_cb), NULL);
-	g_signal_connect (*pspawn, "stdout", G_CALLBACK (pk_test_stdout_cb), NULL);
-	stdout_count = 0;
-}
-
-static gboolean
-idle_cb (gpointer user_data)
-{
-	/* make sure dispatcher has closed when run idle add */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT);
-	return FALSE;
-}
-
-static void
-pk_test_spawn_func (void)
-{
-	GError *error = NULL;
-	gboolean ret;
-	g_autoptr(PkSpawn) spawn = NULL;
-	g_auto(GStrv) argv = NULL;
-	g_auto(GStrv) envp = NULL;
-
-	new_spawn_object (&spawn);
-
-	/* make sure return error for missing file */
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit ("pk-spawn-test-xxx.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_error (error, 1, 0);
-	g_strfreev (argv);
-	g_assert_true (!ret);
-	g_clear_error (&error);
-
-	/* make sure finished wasn't called */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_UNKNOWN);
-
-	/* make sure run correct helper */
-	mexit = -1;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (10000);
-
-	/* make sure finished okay */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SUCCESS);
-
-	/* make sure finished was called only once */
-	g_assert_cmpint (finished_count, ==, 1);
-
-	/* make sure we got the right stdout data */
-	g_assert_cmpint (stdout_count, ==, 4 + 11);
-
-	/* get new object */
-	new_spawn_object (&spawn);
-
-	/* make sure we set the proxy */
-	mexit = -1;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-proxy.sh", " ", 0);
-	envp = g_strsplit ("http_proxy=username:password@server:port "
-			   "ftp_proxy=username:password@server:port",
-			   " ",
-			   0);
-	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-	g_strfreev (envp);
-
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (10000);
-
-	/* get new object */
-	new_spawn_object (&spawn);
-
-	/* run a helper that ignores SIGTERM, so it has to be SIGKILLed */
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-ignore-term.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-
-	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished (SIGKILL fires PK_SPAWN_SIGKILL_DELAY after the cancel) */
-	_g_test_loop_run_with_timeout (10000);
-
-	/* make sure finished in SIGKILL */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGKILL);
-
-	/* get new object */
-	new_spawn_object (&spawn);
-
-	/* with SIGKILL disabled the helper is only ever sent SIGTERM */
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test.sh", " ", 0);
-	g_object_set (spawn, "allow-sigkill", FALSE, NULL);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-
-	g_timeout_add_seconds (1, cancel_cb, spawn);
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (10000);
-
-	/* make sure finished in SIGTERM */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGTERM);
-
-	/* get new object */
-	new_spawn_object (&spawn);
-
-	/* run a helper that handles SIGTERM and exits cleanly */
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-sigterm.py", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-
-	g_timeout_add (1000, cancel_cb, spawn);
-	/* wait for finished */
-	_g_test_loop_run_with_timeout (2000);
-
-	/* make sure finished in SIGTERM */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_SIGTERM);
-
-	/* run lots of data for profiling */
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-test-profiling.sh", " ", 0);
-	ret = pk_spawn_argv (spawn, argv, NULL, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-	g_strfreev (argv);
-
-	/* get new object */
-	new_spawn_object (&spawn);
-
-	/* run the dispatcher */
-	mexit = PK_SPAWN_EXIT_TYPE_UNKNOWN;
-	argv = g_strsplit (TESTDATADIR "/pk-spawn-dispatcher.py\tsearch-name\tnone\tpower manager",
-			   "\t",
-			   0);
-	envp = g_strsplit ("NETWORK=TRUE LANG=C.UTF-8 BACKGROUND=TRUE INTERACTIVE=TRUE UID=500",
-			   " ",
-			   0);
-	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-
-	/* wait 2+2 seconds for the dispatcher */
-	_g_test_loop_wait (4000);
-
-	/* we got a package (+finished)? */
-	g_assert_cmpint (stdout_count, ==, 2);
-
-	/* dispatcher still alive? */
-	g_assert_true (pk_spawn_is_running (spawn));
-
-	/* run the dispatcher with new input */
-	ret = pk_spawn_argv (spawn, argv, envp, PK_SPAWN_ARGV_FLAGS_NONE, &error);
-	g_assert_no_error (error);
-	g_assert_true (ret);
-
-	/* this may take a while */
-	_g_test_loop_wait (100);
-
-	/* we got another package (and finished) */
-	g_assert_cmpint (stdout_count, ==, 4);
-
-	/* see if pk_spawn_exit blocks (required) */
-	g_idle_add (idle_cb, NULL);
-
-	/* ask dispatcher to close */
-	ret = pk_spawn_exit (spawn);
-	g_assert_true (ret);
-
-	/* ask dispatcher to close (again, should be closing) */
-	ret = pk_spawn_exit (spawn);
-	g_assert_true (!ret);
-
-	/* this may take a while */
-	_g_test_loop_wait (100);
-
-	/* did dispatcher close? */
-	g_assert_true (!pk_spawn_is_running (spawn));
-
-	/* did we get the right exit code */
-	g_assert_cmpint (mexit, ==, PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT);
-
-	/* ask dispatcher to close (again) */
-	ret = pk_spawn_exit (spawn);
-	g_assert_true (!ret);
-}
-
-/* ---- PkBackendProcess ---- */
+/* ---- PkBackendSpawn ---- */
 
 static GPtrArray *bp_lines = NULL;
 static gint bp_exit_type = -1;
@@ -819,7 +354,7 @@ static gint bp_exit_status = -1;
 static guint bp_exited_count = 0;
 
 static void
-pk_test_backend_process_line_cb (PkBackendProcess *process, const gchar *line, gpointer user_data)
+pk_test_backend_spawn_line_cb (PkBackendSpawn *process, const gchar *line, gpointer user_data)
 {
 	g_debug ("protocol line '%s'", line);
 	g_ptr_array_add (bp_lines, g_strdup (line));
@@ -828,24 +363,24 @@ pk_test_backend_process_line_cb (PkBackendProcess *process, const gchar *line, g
 }
 
 static void
-pk_test_backend_process_exited_cb (PkBackendProcess *process,
-				   gint exit_type,
-				   gint status,
-				   gpointer user_data)
+pk_test_backend_spawn_exited_cb (PkBackendSpawn *process,
+				 gint exit_type,
+				 gint status,
+				 gpointer user_data)
 {
 	bp_exit_type = exit_type;
 	bp_exit_status = status;
 	bp_exited_count++;
-	g_assert_false (pk_backend_process_is_running (process));
+	g_assert_false (pk_backend_spawn_is_running (process));
 	_g_test_loop_quit ();
 }
 
-static PkBackendProcess *
-pk_test_backend_process_new (void)
+static PkBackendSpawn *
+pk_test_backend_spawn_new (void)
 {
-	PkBackendProcess *process = pk_backend_process_new ("test");
-	g_signal_connect (process, "line", G_CALLBACK (pk_test_backend_process_line_cb), NULL);
-	g_signal_connect (process, "exited", G_CALLBACK (pk_test_backend_process_exited_cb), NULL);
+	PkBackendSpawn *process = pk_backend_spawn_new ("test");
+	g_signal_connect (process, "line", G_CALLBACK (pk_test_backend_spawn_line_cb), NULL);
+	g_signal_connect (process, "exited", G_CALLBACK (pk_test_backend_spawn_exited_cb), NULL);
 	g_clear_pointer (&bp_lines, g_ptr_array_unref);
 	bp_lines = g_ptr_array_new_with_free_func (g_free);
 	bp_exit_type = -1;
@@ -855,31 +390,31 @@ pk_test_backend_process_new (void)
 }
 
 static gboolean
-pk_test_backend_process_kill_cb (gpointer user_data)
+pk_test_backend_spawn_kill_cb (gpointer user_data)
 {
-	pk_backend_process_kill (PK_BACKEND_PROCESS (user_data));
+	pk_backend_spawn_kill (PK_BACKEND_SPAWN (user_data));
 	return G_SOURCE_REMOVE;
 }
 
 static void
-pk_test_backend_process_func (void)
+pk_test_backend_spawn_func (void)
 {
-	g_autoptr(PkBackendProcess) process = NULL;
+	g_autoptr(PkBackendSpawn) process = NULL;
 	g_autoptr(GError) error = NULL;
 	const gchar *extra_env[] = { "PK_TEST_EXTRA=yes", NULL };
 	gboolean ret;
 
 	/* a missing executable fails synchronously and never emits ::exited */
-	process = pk_test_backend_process_new ();
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-does-not-exist.sh",
-					NULL,
-					&error);
+	process = pk_test_backend_spawn_new ();
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-does-not-exist.sh",
+				      NULL,
+				      &error);
 	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND);
 	g_assert_false (ret);
-	g_assert_false (pk_backend_process_is_running (process));
+	g_assert_false (pk_backend_spawn_is_running (process));
 	g_clear_error (&error);
-	ret = pk_backend_process_send_line (process, "hello", &error);
+	ret = pk_backend_spawn_send_line (process, "hello", &error);
 	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_NOT_CONNECTED);
 	g_assert_false (ret);
 	g_clear_error (&error);
@@ -888,19 +423,19 @@ pk_test_backend_process_func (void)
 
 	/* protocol round trip on fd 3, stdout noise ignored, stderr logged as a warning */
 	g_clear_object (&process);
-	process = pk_test_backend_process_new ();
+	process = pk_test_backend_spawn_new ();
 	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-echo.py",
-					extra_env,
-					&error);
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-echo.py",
+				      extra_env,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_true (pk_backend_process_is_running (process));
+	g_assert_true (pk_backend_spawn_is_running (process));
 
-	ret = pk_backend_process_send_line (process, "hello world", &error);
+	ret = pk_backend_spawn_send_line (process, "hello world", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
@@ -908,7 +443,7 @@ pk_test_backend_process_func (void)
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "echo:hello world");
 
 	/* second request on the same instance */
-	ret = pk_backend_process_send_line (process, "again", &error);
+	ret = pk_backend_spawn_send_line (process, "again", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
@@ -916,21 +451,21 @@ pk_test_backend_process_func (void)
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 1), ==, "echo:again");
 
 	/* a deadline that is cleared in time does nothing */
-	pk_backend_process_set_exit_deadline (process, 100);
-	pk_backend_process_clear_exit_deadline (process);
+	pk_backend_spawn_set_exit_deadline (process, 100);
+	pk_backend_spawn_clear_exit_deadline (process);
 	_g_test_loop_wait (300);
-	g_assert_true (pk_backend_process_is_running (process));
+	g_assert_true (pk_backend_spawn_is_running (process));
 	g_assert_cmpuint (bp_exited_count, ==, 0);
 
 	/* clean exit on request */
-	ret = pk_backend_process_send_line (process, "exit", &error);
+	ret = pk_backend_spawn_send_line (process, "exit", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SUCCESS);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_SUCCESS);
 	g_assert_cmpint (bp_exit_status, ==, 0);
-	g_assert_false (pk_backend_process_is_running (process));
+	g_assert_false (pk_backend_spawn_is_running (process));
 	g_test_assert_expected_messages ();
 
 	/* the same object can be started again; a non-zero exit is reported as failed */
@@ -938,87 +473,87 @@ pk_test_backend_process_func (void)
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
 	bp_exited_count = 0;
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-echo.py",
-					NULL,
-					&error);
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-echo.py",
+				      NULL,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-echo.py",
-					NULL,
-					&error);
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-echo.py",
+				      NULL,
+				      &error);
 	g_assert_error (error, G_IO_ERROR, G_IO_ERROR_BUSY);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_process_send_line (process, "die", &error);
+	ret = pk_backend_spawn_send_line (process, "die", &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_FAILED);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_FAILED);
 	g_assert_cmpint (bp_exit_status, ==, 3);
 	g_test_assert_expected_messages ();
 
 	/* a helper that handles SIGTERM gets to say goodbye and exits cleanly */
 	g_clear_object (&process);
-	process = pk_test_backend_process_new ();
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-sigterm.py",
-					NULL,
-					&error);
+	process = pk_test_backend_spawn_new ();
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-sigterm.py",
+				      NULL,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_lines->len, ==, 1);
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
-	pk_backend_process_set_exit_deadline (process, 200);
+	pk_backend_spawn_set_exit_deadline (process, 200);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SUCCESS);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_SUCCESS);
 	/* the goodbye line was delivered before ::exited */
 	g_assert_cmpuint (bp_lines->len, ==, 2);
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 1), ==, "bye");
 
 	/* a helper without a SIGTERM handler dies from it */
 	g_clear_object (&process);
-	process = pk_test_backend_process_new ();
+	process = pk_test_backend_spawn_new ();
 	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-echo.py",
-					NULL,
-					&error);
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-echo.py",
+				      NULL,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_timeout_add (200, pk_test_backend_process_kill_cb, process);
+	g_timeout_add (200, pk_test_backend_spawn_kill_cb, process);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGTERM);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_SIGTERM);
 	g_assert_cmpint (bp_exit_status, ==, SIGTERM);
 	g_test_assert_expected_messages ();
 
 	/* a helper that ignores SIGTERM is SIGKILLed after the escalation delay */
 	g_clear_object (&process);
-	process = pk_test_backend_process_new ();
+	process = pk_test_backend_spawn_new ();
 	g_object_set (process, "allow-sigkill", TRUE, NULL);
 	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*ignored SIGTERM, sending SIGKILL*");
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-ignore-term.sh",
-					NULL,
-					&error);
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-ignore-term.sh",
+				      NULL,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	/* wait until the helper has installed its trap */
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
-	pk_backend_process_set_exit_deadline (process, 200);
+	pk_backend_spawn_set_exit_deadline (process, 200);
 	_g_test_loop_run_with_timeout (10000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGKILL);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_SIGKILL);
 	g_assert_cmpint (bp_exit_status, ==, SIGKILL);
 	g_test_assert_expected_messages ();
 
@@ -1026,27 +561,27 @@ pk_test_backend_process_func (void)
 	 * escalation delay; a second kill with allow-sigkill enabled then ends it
 	 * immediately */
 	g_clear_object (&process);
-	process = pk_test_backend_process_new ();
-	ret = pk_backend_process_start (process,
-					TESTDATADIR "/pk-backend-process-ignore-term.sh",
-					NULL,
-					&error);
+	process = pk_test_backend_spawn_new ();
+	ret = pk_backend_spawn_start (process,
+				      TESTDATADIR "/pk-backend-spawn-ignore-term.sh",
+				      NULL,
+				      &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpstr (g_ptr_array_index (bp_lines, 0), ==, "ready");
-	pk_backend_process_kill (process);
+	pk_backend_spawn_kill (process);
 	_g_test_loop_wait (6000);
-	g_assert_true (pk_backend_process_is_running (process));
+	g_assert_true (pk_backend_spawn_is_running (process));
 	g_assert_cmpuint (bp_exited_count, ==, 0);
 	g_object_set (process, "allow-sigkill", TRUE, NULL);
 	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*ignored SIGTERM, sending SIGKILL*");
-	pk_backend_process_kill (process);
+	pk_backend_spawn_kill (process);
 	_g_test_loop_run_with_timeout (5000);
 	g_assert_cmpuint (bp_exited_count, ==, 1);
-	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_PROCESS_EXIT_SIGKILL);
+	g_assert_cmpint (bp_exit_type, ==, PK_BACKEND_SPAWN_EXIT_SIGKILL);
 	g_test_assert_expected_messages ();
 
 	g_clear_object (&process);
@@ -2530,8 +2065,7 @@ main (int argc, char **argv)
 	/* components */
 	g_test_add_func ("/packagekit/transaction", pk_test_transaction_func);
 	g_test_add_func ("/packagekit/dbus", pk_test_dbus_func);
-	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
-	g_test_add_func ("/packagekit/backend-process", pk_test_backend_process_func);
+	g_test_add_func ("/packagekit/backend-spawn", pk_test_backend_spawn_func);
 	g_test_add_func ("/packagekit/backend-protocol", pk_test_backend_protocol_func);
 	g_test_add_func ("/packagekit/spawn-module", pk_test_spawn_module_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
@@ -2540,7 +2074,6 @@ main (int argc, char **argv)
 
 	/* backend stuff */
 	g_test_add_func ("/packagekit/backend", pk_test_backend_func);
-	g_test_add_func ("/packagekit/backend_spawn", pk_test_backend_spawn_func);
 
 	return g_test_run ();
 }

@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2007-2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2025-2026 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (C) 2007-2008 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -18,1043 +19,815 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+/**
+ * PkBackendSpawn:
+ *
+ * Runs one spawned-backend helper process and handles its lifetime,
+ * the stdout/stderr forwarding and the communication fd.
+ */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+#include "config.h"
+
 #include <errno.h>
-
+#include <signal.h>
 #include <string.h>
-#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif /* HAVE_UNISTD_H */
+#endif
 
-#include <glib/gi18n.h>
-#include <glib/gprintf.h>
-#include <gmodule.h>
-#include <pk-enum.h>
-#include <pk-common.h>
-#include <pk-package-id.h>
+#include <gio/gio.h>
+#include <gio/gunixinputstream.h>
+#include <gio/gunixoutputstream.h>
 
-#include "pk-backend.h"
 #include "pk-backend-spawn.h"
-#include "pk-spawn.h"
 #include "pk-shared.h"
 
-//#define ENABLE_STRACE
+/* how long to wait for SIGTERM to work before sending SIGKILL */
+#define PK_BACKEND_SPAWN_SIGKILL_DELAY 5000 /* ms */
 
-#define PK_BACKEND_SPAWN_PERCENTAGE_INVALID 101
+/* how long to keep reading remaining output after the process has exited before giving up */
+#define PK_BACKEND_SPAWN_DRAIN_TIMEOUT 1000 /* ms */
 
-#define PK_UNSAFE_DELIMITERS "\\\f\r\t"
+#define PK_BACKEND_SPAWN_DEFAULT_PATH "/usr/bin:/bin"
 
 struct _PkBackendSpawn
 {
 	GObject parent;
 
-	PkSpawn *spawn;
-	PkBackend *backend;
-	PkBackendJob *job;
 	gchar *name;
-	guint kill_id;
-	GKeyFile *conf;
-	gboolean finished;
+	gchar *log_domain;
+	gchar *log_context;
+	gboolean background;
 	gboolean allow_sigkill;
-	gboolean is_busy;
-	PkBackendSpawnFilterFunc stdout_func;
-	PkBackendSpawnFilterFunc stderr_func;
+	gboolean inherit_environment;
+
+	GSubprocess *subprocess;
+	gint proto_fd;
+	GDataInputStream *proto_in;
+	GOutputStream *proto_out;
+	GDataInputStream *stdout_in;
+	GDataInputStream *stderr_in;
+	GCancellable *cancellable;
+
+	guint deadline_id;
+	guint sigkill_id;
+	guint drain_id;
+
+	gboolean sent_sigterm;
+	gboolean sent_sigkill;
+	gboolean waited;
+	guint readers_open;
+	gboolean exited_emitted;
+	PkBackendSpawnExitType exit_type;
+	gint exit_status;
 };
+
+enum {
+	SIGNAL_LINE,
+	SIGNAL_EXITED,
+	SIGNAL_LAST
+};
+
+enum {
+	PROP_0,
+	PROP_BACKGROUND,
+	PROP_ALLOW_SIGKILL,
+	PROP_INHERIT_ENVIRONMENT,
+	PROP_LAST
+};
+
+static guint signals[SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE (PkBackendSpawn, pk_backend_spawn, G_TYPE_OBJECT)
 
-gboolean
-pk_backend_spawn_set_filter_stdout (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	backend_spawn->stdout_func = func;
-	return TRUE;
-}
+static void pk_backend_spawn_read_protocol_line (PkBackendSpawn *self);
+static void pk_backend_spawn_read_log_line (PkBackendSpawn *self, GDataInputStream *stream);
 
-gboolean
-pk_backend_spawn_set_filter_stderr (PkBackendSpawn *backend_spawn, PkBackendSpawnFilterFunc func)
+/**
+ * pk_backend_spawn_exit_type_to_string:
+ */
+const gchar *
+pk_backend_spawn_exit_type_to_string (PkBackendSpawnExitType exit_type)
 {
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	backend_spawn->stderr_func = func;
-	return TRUE;
-}
-
-static gboolean
-pk_backend_spawn_exit_timeout_cb (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* only try to close if running */
-	if (pk_spawn_is_running (backend_spawn->spawn)) {
-		g_debug ("closing dispatcher as running and is idle");
-		pk_spawn_exit (backend_spawn->spawn);
+	switch (exit_type) {
+	case PK_BACKEND_SPAWN_EXIT_SUCCESS:
+		return "success";
+	case PK_BACKEND_SPAWN_EXIT_FAILED:
+		return "failed";
+	case PK_BACKEND_SPAWN_EXIT_SIGTERM:
+		return "sigterm";
+	case PK_BACKEND_SPAWN_EXIT_SIGKILL:
+		return "sigkill";
+	case PK_BACKEND_SPAWN_EXIT_SIGNAL:
+		return "signal";
+	default:
+		return "unknown";
 	}
-	backend_spawn->kill_id = 0;
-	return FALSE;
+}
+
+static const gchar *
+pk_backend_spawn_log_prefix (PkBackendSpawn *self)
+{
+	return self->log_context != NULL ? self->log_context : self->name;
+}
+
+/**
+ * pk_backend_spawn_child_setup:
+ *
+ * Reset the signal mask to empty so the helper starts with all signals unblocked:
+ * we rely on SIGTERM to stop a helper that no longer answers, but a signal that is
+ * blocked in the inherited mask stays pending and never reaches the helper's handler.
+ */
+static void
+pk_backend_spawn_child_setup (gpointer user_data)
+{
+	sigset_t set;
+	sigemptyset (&set);
+	sigprocmask (SIG_SETMASK, &set, NULL);
 }
 
 static void
-pk_backend_spawn_start_kill_timer (PkBackendSpawn *backend_spawn)
+pk_backend_spawn_reset_state (PkBackendSpawn *self)
 {
-	gint timeout;
+	g_clear_handle_id (&self->deadline_id, g_source_remove);
+	g_clear_handle_id (&self->sigkill_id, g_source_remove);
+	g_clear_handle_id (&self->drain_id, g_source_remove);
 
-	/* we finished okay, so we don't need to emulate Finished() for a crashing script */
-	backend_spawn->finished = TRUE;
-	g_debug ("backend marked as finished, so starting kill timer");
+	if (self->cancellable != NULL)
+		g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
-	if (backend_spawn->kill_id > 0)
-		g_source_remove (backend_spawn->kill_id);
-
-	/* get policy timeout */
-	timeout = g_key_file_get_integer (backend_spawn->conf,
-					  "Daemon",
-					  "BackendShutdownTimeout",
-					  NULL);
-	if (timeout == 0) {
-		g_warning ("using built in default value");
-		timeout = 5;
+	g_clear_object (&self->proto_in);
+	g_clear_object (&self->proto_out);
+	g_clear_object (&self->stdout_in);
+	g_clear_object (&self->stderr_in);
+	if (self->proto_fd != -1) {
+		close (self->proto_fd);
+		self->proto_fd = -1;
 	}
+	g_clear_object (&self->subprocess);
 
-	/* close down the dispatcher if it is still open after this much time */
-	backend_spawn->kill_id = g_timeout_add_seconds (
-	    timeout,
-	    (GSourceFunc) pk_backend_spawn_exit_timeout_cb,
-	    backend_spawn);
-	g_source_set_name_by_id (backend_spawn->kill_id, "[PkBackendSpawn] exit");
+	self->sent_sigterm = FALSE;
+	self->sent_sigkill = FALSE;
+	self->waited = FALSE;
+	self->readers_open = 0;
+	self->exited_emitted = FALSE;
+	self->exit_type = PK_BACKEND_SPAWN_EXIT_UNKNOWN;
+	self->exit_status = 0;
+}
+
+/**
+ * pk_backend_spawn_maybe_emit_exited:
+ *
+ * Emit ::exited once the process has been reaped and all output has been
+ * read (or we gave up waiting for it).
+ */
+static void
+pk_backend_spawn_maybe_emit_exited (PkBackendSpawn *self)
+{
+	PkBackendSpawnExitType exit_type;
+	gint exit_status;
+
+	if (!self->waited || self->readers_open > 0 || self->exited_emitted)
+		return;
+	self->exited_emitted = TRUE;
+
+	exit_type = self->exit_type;
+	exit_status = self->exit_status;
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: helper exited: %s (%i)",
+	       pk_backend_spawn_log_prefix (self),
+	       pk_backend_spawn_exit_type_to_string (exit_type),
+	       exit_status);
+
+	/* tear down before emitting, so handlers see a stopped process and
+	 * may start a new one from inside the handler */
+	pk_backend_spawn_reset_state (self);
+	g_signal_emit (self, signals[SIGNAL_EXITED], 0, exit_type, exit_status);
 }
 
 static gboolean
-pk_backend_spawn_parse_stdout (PkBackendSpawn *backend_spawn,
-			       PkBackendJob *job,
-			       const gchar *line,
-			       GError **error)
+pk_backend_spawn_drain_timeout_cb (gpointer user_data)
 {
-	guint size;
-	gchar *command;
-	gchar *text;
-	guint64 speed;
-	guint64 download_size_remaining;
-	PkInfoEnum info;
-	PkRestartEnum restart;
-	PkGroupEnum group;
-	gulong package_size;
-	gulong download_size;
-	gint percentage;
-	PkErrorEnum error_enum;
-	PkStatusEnum status_enum;
-	PkRestartEnum restart_enum;
-	PkSigTypeEnum sig_type;
-	PkUpdateStateEnum update_state_enum;
-	PkDistroUpgradeEnum distro_upgrade_enum;
-	g_auto(GStrv) sections = NULL;
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (user_data);
 
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* check if output line */
-	if (line == NULL)
-		return FALSE;
-
-	/* split by tab */
-	sections = g_strsplit (line, "\t", 0);
-	command = sections[0];
-
-	/* get size */
-	size = g_strv_length (sections);
-
-	if (g_strcmp0 (command, "package") == 0) {
-		g_autoptr(GPtrArray) packages = NULL;
-		if (size != 4) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (pk_package_id_check (sections[2]) == FALSE) {
-			g_set_error_literal (error, 1, 0, "invalid package_id");
-			return FALSE;
-		}
-		info = pk_info_enum_from_string (sections[1]);
-		if (info == PK_INFO_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Info enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[3], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[3]);
-			return FALSE;
-		}
-		/* the line protocol does not tell results and status events apart,
-		 * so everything goes through the plural path to keep the summary */
-		packages = g_ptr_array_new_with_free_func (g_object_unref);
-		pk_backend_packages_add (packages,
-					 info,
-					 sections[2],
-					 sections[3],
-					 PK_INFO_ENUM_UNKNOWN);
-		pk_backend_job_packages (job, packages);
-	} else if (g_strcmp0 (command, "details") == 0) {
-		if (size != 9) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		group = pk_group_enum_from_string (sections[4]);
-
-		/* ITS4: ignore, checked for overflow */
-		if (!pk_strtoulong (sections[7], &package_size)) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "failed to parse package size: '%s'",
-				     sections[7]);
-			return FALSE;
-		}
-		if (!pk_strtoulong (sections[8], &download_size)) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "failed to parse download size: '%s'",
-				     sections[7]);
-			return FALSE;
-		}
-
-		g_strdelimit (sections[5], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[4], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[5]);
-			return FALSE;
-		}
-		text = g_strdup (sections[5]);
-		/* convert ; to \n as we can't emit them on stdout */
-		g_strdelimit (text, ";", '\n');
-		pk_backend_job_details (job,
-					sections[1],
-					sections[2],
-					sections[3],
-					group,
-					text,
-					sections[6],
-					package_size,
-					download_size);
-		g_free (text);
-	} else if (g_strcmp0 (command, "finished") == 0) {
-		if (size != 1) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		pk_backend_job_finished (job);
-		backend_spawn->is_busy = FALSE;
-
-		/* from this point on, we can start the kill timer */
-		pk_backend_spawn_start_kill_timer (backend_spawn);
-
-	} else if (g_strcmp0 (command, "files") == 0) {
-		g_auto(GStrv) tmp = NULL;
-		if (size != 3) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		tmp = g_strsplit (sections[2], ";", -1);
-		pk_backend_job_files (job, sections[1], tmp);
-	} else if (g_strcmp0 (command, "repo-detail") == 0) {
-		if (size != 4) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		g_strdelimit (sections[2], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[2], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[2]);
-			return FALSE;
-		}
-		if (g_strcmp0 (sections[3], "true") == 0) {
-			pk_backend_job_repo_detail (job, sections[1], sections[2], TRUE);
-		} else if (g_strcmp0 (sections[3], "false") == 0) {
-			pk_backend_job_repo_detail (job, sections[1], sections[2], FALSE);
-		} else {
-			g_set_error (error, 1, 0, "invalid qualifier '%s'", sections[3]);
-			return FALSE;
-		}
-	} else if (g_strcmp0 (command, "updatedetail") == 0) {
-		g_auto(GStrv) updates = NULL;
-		g_auto(GStrv) obsoletes = NULL;
-		g_auto(GStrv) vendor_urls = NULL;
-		g_auto(GStrv) bugzilla_urls = NULL;
-		g_auto(GStrv) cve_urls = NULL;
-		g_autoptr(PkUpdateDetail) item = NULL;
-		g_autoptr(GPtrArray) update_details = NULL;
-		if (size != 13) {
-			g_set_error (error, 1, 0, "invalid command '%s', size %i", command, size);
-			return FALSE;
-		}
-		restart = pk_restart_enum_from_string (sections[7]);
-		if (restart == PK_RESTART_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Restart enum not recognised, and hence ignored: '%s'",
-				     sections[7]);
-			return FALSE;
-		}
-		g_strdelimit (sections[12], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[12], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[12]);
-			return FALSE;
-		}
-		update_state_enum = pk_update_state_enum_from_string (sections[10]);
-		/* convert ; to \n as we can't emit them on stdout */
-		g_strdelimit (sections[8], ";", '\n');
-		g_strdelimit (sections[9], ";", '\n');
-		updates = g_strsplit (sections[2], "&", -1);
-		obsoletes = g_strsplit (sections[3], "&", -1);
-		vendor_urls = g_strsplit (sections[4], ";", -1);
-		bugzilla_urls = g_strsplit (sections[5], ";", -1);
-		cve_urls = g_strsplit (sections[6], ";", -1);
-		item = pk_update_detail_new_full (sections[1],
-						  updates,
-						  obsoletes,
-						  vendor_urls,
-						  bugzilla_urls,
-						  cve_urls,
-						  restart,
-						  sections[8],
-						  sections[9],
-						  update_state_enum,
-						  sections[11],
-						  sections[12]);
-		update_details = g_ptr_array_new_with_free_func (g_object_unref);
-		g_ptr_array_add (update_details, g_steal_pointer (&item));
-		pk_backend_job_update_details (job, update_details);
-	} else if (g_strcmp0 (command, "percentage") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (!pk_strtoint (sections[1], &percentage)) {
-			g_set_error (error, 1, 0, "invalid percentage value %s", sections[1]);
-			return FALSE;
-		} else if (percentage < 0 || percentage > 100) {
-			g_set_error (error, 1, 0, "invalid percentage value %i", percentage);
-			return FALSE;
-		} else {
-			pk_backend_job_set_percentage (job, percentage);
-		}
-	} else if (g_strcmp0 (command, "item-progress") == 0) {
-		if (size != 4) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (!pk_package_id_check (sections[1])) {
-			g_set_error (error, 1, 0, "invalid package_id");
-			return FALSE;
-		}
-		status_enum = pk_status_enum_from_string (sections[2]);
-		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Status enum not recognised, and hence ignored: '%s'",
-				     sections[2]);
-			return FALSE;
-		}
-		if (!pk_strtoint (sections[3], &percentage)) {
-			g_set_error (error, 1, 0, "invalid item-progress value %s", sections[3]);
-			return FALSE;
-		}
-		if (percentage < 0 || percentage > 100) {
-			g_set_error (error, 1, 0, "invalid item-progress value %i", percentage);
-			return FALSE;
-		}
-		pk_backend_job_set_item_progress (job, sections[1], status_enum, percentage);
-	} else if (g_strcmp0 (command, "error") == 0) {
-		if (size != 3) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		error_enum = pk_error_enum_from_string (sections[1]);
-		if (error_enum == PK_ERROR_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Error enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		/* convert back all the ;'s to newlines */
-		text = g_strdup (sections[2]);
-
-		/* convert ; to \n as we can't emit them on stdout */
-		g_strdelimit (text, ";", '\n');
-
-		/* convert % else we try to format them */
-		g_strdelimit (text, "%", '$');
-
-		pk_backend_job_error_code (job, error_enum, "%s", text);
-		g_free (text);
-	} else if (g_strcmp0 (command, "requirerestart") == 0) {
-		if (size != 3) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		restart_enum = pk_restart_enum_from_string (sections[1]);
-		if (restart_enum == PK_RESTART_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Restart enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		if (!pk_package_id_check (sections[2])) {
-			g_set_error (error, 1, 0, "invalid package_id");
-			return FALSE;
-		}
-		pk_backend_job_require_restart (job, restart_enum, sections[2]);
-	} else if (g_strcmp0 (command, "status") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		status_enum = pk_status_enum_from_string (sections[1]);
-		if (status_enum == PK_STATUS_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Status enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		pk_backend_job_set_status (job, status_enum);
-	} else if (g_strcmp0 (command, "speed") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (!pk_strtouint64 (sections[1], &speed)) {
-			g_set_error (error, 1, 0, "failed to parse speed: '%s'", sections[1]);
-			return FALSE;
-		}
-		pk_backend_job_set_speed (job, speed);
-	} else if (g_strcmp0 (command, "download-size-remaining") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (!pk_strtouint64 (sections[1], &download_size_remaining)) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "failed to parse download_size_remaining: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		pk_backend_job_set_download_size_remaining (job, download_size_remaining);
-	} else if (g_strcmp0 (command, "allow-cancel") == 0) {
-		if (size != 2) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		if (g_strcmp0 (sections[1], "true") == 0) {
-			pk_backend_job_set_allow_cancel (job, TRUE);
-		} else if (g_strcmp0 (sections[1], "false") == 0) {
-			pk_backend_job_set_allow_cancel (job, FALSE);
-		} else {
-			g_set_error (error, 1, 0, "invalid section '%s'", sections[1]);
-			return FALSE;
-		}
-	} else if (g_strcmp0 (command, "no-percentage-updates") == 0) {
-		if (size != 1) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-		pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
-	} else if (g_strcmp0 (command, "repo-signature-required") == 0) {
-
-		if (size != 9) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-
-		sig_type = pk_sig_type_enum_from_string (sections[8]);
-		if (sig_type == PK_SIGTYPE_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "Sig enum not recognised, and hence ignored: '%s'",
-				     sections[8]);
-			return FALSE;
-		}
-		if (pk_strzero (sections[1])) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "package_id blank, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		if (pk_strzero (sections[2])) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "repository name blank, and hence ignored: '%s'",
-				     sections[2]);
-			return FALSE;
-		}
-
-		/* pass _all_ of the data */
-		pk_backend_job_repo_signature_required (job,
-							sections[1],
-							sections[2],
-							sections[3],
-							sections[4],
-							sections[5],
-							sections[6],
-							sections[7],
-							sig_type);
-	} else if (g_strcmp0 (command, "eula-required") == 0) {
-
-		if (size != 5) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-
-		if (pk_strzero (sections[1])) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "eula_id blank, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-
-		if (pk_strzero (sections[2])) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "package_id blank, and hence ignored: '%s'",
-				     sections[2]);
-			return FALSE;
-		}
-
-		if (pk_strzero (sections[4])) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "agreement name blank, and hence ignored: '%s'",
-				     sections[4]);
-			return FALSE;
-		}
-
-		pk_backend_job_eula_required (job,
-					      sections[1],
-					      sections[2],
-					      sections[3],
-					      sections[4]);
-	} else if (g_strcmp0 (command, "distro-upgrade") == 0) {
-
-		if (size != 4) {
-			g_set_error (error, 1, 0, "invalid command'%s', size %i", command, size);
-			return FALSE;
-		}
-
-		distro_upgrade_enum = pk_distro_upgrade_enum_from_string (sections[1]);
-		if (distro_upgrade_enum == PK_DISTRO_UPGRADE_ENUM_UNKNOWN) {
-			g_set_error (error,
-				     1,
-				     0,
-				     "distro upgrade enum not recognised, and hence ignored: '%s'",
-				     sections[1]);
-			return FALSE;
-		}
-		g_strdelimit (sections[3], PK_UNSAFE_DELIMITERS, ' ');
-		if (!g_utf8_validate (sections[3], -1, NULL)) {
-			g_set_error (error, 1, 0, "text '%s' was not valid UTF8!", sections[3]);
-			return FALSE;
-		}
-
-		pk_backend_job_distro_upgrade (job, distro_upgrade_enum, sections[2], sections[3]);
-	} else {
-		g_set_error (error, 1, 0, "invalid command '%s'", command);
-		return FALSE;
+	self->drain_id = 0;
+	if (self->readers_open > 0) {
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: giving up on remaining helper output (%u streams still open)",
+		       pk_backend_spawn_log_prefix (self),
+		       self->readers_open);
+		/* abort the outstanding reads; their callbacks close the readers */
+		g_cancellable_cancel (self->cancellable);
 	}
-	return TRUE;
+	return G_SOURCE_REMOVE;
 }
 
 static void
-pk_backend_spawn_exit_cb (PkSpawn *spawn, PkSpawnExitType exit_enum, PkBackendSpawn *backend_spawn)
+pk_backend_spawn_wait_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 {
-	gboolean ret;
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
+	g_autoptr(PkBackendSpawn) self = PK_BACKEND_SPAWN (user_data);
+	GSubprocess *subprocess = G_SUBPROCESS (source);
+	g_autoptr(GError) error = NULL;
 
-	/* reset the busy flag */
-	backend_spawn->is_busy = FALSE;
-
-	/* if we force killed the process, set an error */
-	if (exit_enum == PK_SPAWN_EXIT_TYPE_SIGKILL) {
-		/* we just call this failed, and set an error */
-		pk_backend_job_error_code (backend_spawn->job,
-					   PK_ERROR_ENUM_PROCESS_KILL,
-					   "Process had to be killed to be cancelled");
-	}
-
-	if (exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_EXIT ||
-	    exit_enum == PK_SPAWN_EXIT_TYPE_DISPATCHER_CHANGED) {
-		g_debug ("dispatcher exited, nothing to see here");
+	if (!g_subprocess_wait_finish (subprocess, res, &error)) {
+		/* only happens when we were cancelled during teardown */
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: waiting for helper failed: %s",
+		       pk_backend_spawn_log_prefix (self),
+		       error->message);
 		return;
 	}
 
-	/* only emit if not finished */
-	if (!backend_spawn->finished) {
-		g_debug ("script exited without doing finished, tidying up");
-		ret = pk_backend_job_has_set_error_code (backend_spawn->job);
-		if (!ret) {
-			pk_backend_job_error_code (backend_spawn->job,
-						   PK_ERROR_ENUM_INTERNAL_ERROR,
-						   "The backend exited unexpectedly. "
-						   "This is a serious error as the spawned backend "
-						   "did not complete the pending transaction.");
-		}
-		pk_backend_job_finished (backend_spawn->job);
+	/* the object may have been reset and restarted meanwhile */
+	if (subprocess != self->subprocess)
+		return;
+
+	if (g_subprocess_get_if_exited (subprocess)) {
+		self->exit_status = g_subprocess_get_exit_status (subprocess);
+		self->exit_type = self->exit_status == 0 ? PK_BACKEND_SPAWN_EXIT_SUCCESS
+							 : PK_BACKEND_SPAWN_EXIT_FAILED;
+	} else if (g_subprocess_get_if_signaled (subprocess)) {
+		self->exit_status = g_subprocess_get_term_sig (subprocess);
+		if (self->exit_status == SIGKILL && self->sent_sigkill)
+			self->exit_type = PK_BACKEND_SPAWN_EXIT_SIGKILL;
+		else if (self->exit_status == SIGTERM && self->sent_sigterm)
+			self->exit_type = PK_BACKEND_SPAWN_EXIT_SIGTERM;
+		else
+			self->exit_type = PK_BACKEND_SPAWN_EXIT_SIGNAL;
+	} else {
+		self->exit_status = -1;
+		self->exit_type = PK_BACKEND_SPAWN_EXIT_FAILED;
 	}
+	self->waited = TRUE;
+
+	/* no need to escalate or enforce a deadline any more */
+	g_clear_handle_id (&self->deadline_id, g_source_remove);
+	g_clear_handle_id (&self->sigkill_id, g_source_remove);
+
+	/* let the readers deliver what is still buffered, but not forever */
+	if (self->readers_open > 0 && self->drain_id == 0) {
+		self->drain_id = g_timeout_add (PK_BACKEND_SPAWN_DRAIN_TIMEOUT,
+						pk_backend_spawn_drain_timeout_cb,
+						self);
+		g_source_set_name_by_id (self->drain_id, "[PkBackendSpawn] drain");
+	}
+
+	pk_backend_spawn_maybe_emit_exited (self);
 }
-
-gboolean
-pk_backend_spawn_inject_data (PkBackendSpawn *backend_spawn,
-			      PkBackendJob *job,
-			      const gchar *line,
-			      GError **error)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* do we ignore with a filter func ? */
-	if (backend_spawn->stdout_func != NULL) {
-		if (!backend_spawn->stdout_func (job, line))
-			return TRUE;
-	}
-
-	return pk_backend_spawn_parse_stdout (backend_spawn, job, line, error);
-}
-
-static void
-pk_backend_spawn_stdout_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
-{
-	gboolean ret;
-	g_autoptr(GError) error = NULL;
-	ret = pk_backend_spawn_inject_data (backend_spawn, backend_spawn->job, line, &error);
-	if (!ret)
-		g_warning ("failed to parse: %s: %s", line, error->message);
-}
-
-static void
-pk_backend_spawn_stderr_cb (PkBackendSpawn *spawn, const gchar *line, PkBackendSpawn *backend_spawn)
-{
-	gboolean ret;
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-
-	/* do we ignore with a filter func ? */
-	if (backend_spawn->stderr_func != NULL) {
-		ret = backend_spawn->stderr_func (backend_spawn->job, line);
-		if (!ret)
-			return;
-	}
-	g_warning ("STDERR: %s", line);
-}
-
-static gchar **
-pk_backend_spawn_get_envp (PkBackendSpawn *backend_spawn)
-{
-	gchar **envp;
-	gchar **env_item;
-	gchar *uri;
-	const gchar *value;
-	guint i;
-	guint cache_age;
-	GHashTableIter env_iter;
-	gchar *env_key;
-	gchar *env_value;
-	gboolean ret;
-	gboolean keep_environment;
-	g_autofree gchar *eulas = NULL;
-	const gchar *locale = NULL;
-	const gchar *no_proxy = NULL;
-	const gchar *pac = NULL;
-	const gchar *proxy_ftp = NULL;
-	const gchar *proxy_http = NULL;
-	const gchar *proxy_https = NULL;
-	const gchar *proxy_socks = NULL;
-	g_autofree gchar *transaction_id = NULL;
-	g_autoptr(GHashTable) env_table = NULL;
-
-	env_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
-	keep_environment = g_key_file_get_boolean (backend_spawn->conf,
-						   "Daemon",
-						   "KeepEnvironment",
-						   NULL);
-	g_debug ("keep_environment: %i", keep_environment);
-
-	/* copy environment if so specified (for debugging) */
-	if (keep_environment) {
-		g_auto(GStrv) environ = g_get_environ ();
-		for (env_item = environ; env_item && *env_item; env_item++) {
-			g_auto(GStrv) env_item_split = NULL;
-			env_item_split = g_strsplit (*env_item, "=", 2);
-			if (env_item_split && (g_strv_length (env_item_split) == 2))
-				g_hash_table_replace (env_table,
-						      g_strdup (env_item_split[0]),
-						      g_strdup (env_item_split[1]));
-		}
-	}
-
-	/* accepted eulas */
-	eulas = pk_backend_get_accepted_eula_string (backend_spawn->backend);
-	if (eulas != NULL)
-		g_hash_table_replace (env_table, g_strdup ("accepted_eulas"), g_strdup (eulas));
-
-	/* http_proxy */
-	proxy_http = pk_backend_job_get_proxy_http (backend_spawn->job);
-	if (!pk_strzero (proxy_http)) {
-		uri = pk_backend_convert_uri (proxy_http);
-		g_hash_table_replace (env_table, g_strdup ("http_proxy"), uri);
-	}
-
-	/* https_proxy */
-	proxy_https = pk_backend_job_get_proxy_https (backend_spawn->job);
-	if (!pk_strzero (proxy_https)) {
-		uri = pk_backend_convert_uri (proxy_https);
-		g_hash_table_replace (env_table, g_strdup ("https_proxy"), uri);
-	}
-
-	/* ftp_proxy */
-	proxy_ftp = pk_backend_job_get_proxy_ftp (backend_spawn->job);
-	if (!pk_strzero (proxy_ftp)) {
-		uri = pk_backend_convert_uri (proxy_ftp);
-		g_hash_table_replace (env_table, g_strdup ("ftp_proxy"), uri);
-	}
-
-	/* socks_proxy */
-	proxy_socks = pk_backend_job_get_proxy_socks (backend_spawn->job);
-	if (!pk_strzero (proxy_socks)) {
-		uri = pk_backend_convert_uri_socks (proxy_socks);
-		g_hash_table_replace (env_table, g_strdup ("all_proxy"), uri);
-	}
-
-	/* no_proxy */
-	no_proxy = pk_backend_job_get_no_proxy (backend_spawn->job);
-	if (!pk_strzero (no_proxy)) {
-		g_hash_table_replace (env_table, g_strdup ("no_proxy"), g_strdup (no_proxy));
-	}
-
-	/* pac */
-	pac = pk_backend_job_get_pac (backend_spawn->job);
-	if (!pk_strzero (pac)) {
-		uri = pk_backend_convert_uri (pac);
-		g_hash_table_replace (env_table, g_strdup ("pac"), uri);
-	}
-
-	/* LANG */
-	locale = pk_backend_job_get_locale (backend_spawn->job);
-	if (!pk_strzero (locale))
-		g_hash_table_replace (env_table, g_strdup ("LANG"), g_strdup (locale));
-
-	/* FRONTEND SOCKET */
-	value = pk_backend_job_get_frontend_socket (backend_spawn->job);
-	if (!pk_strzero (value))
-		g_hash_table_replace (env_table, g_strdup ("FRONTEND_SOCKET"), g_strdup (value));
-
-	/* NETWORK */
-	ret = pk_backend_is_online (backend_spawn->backend);
-	g_hash_table_replace (env_table, g_strdup ("NETWORK"), g_strdup (ret ? "TRUE" : "FALSE"));
-
-	/* BACKGROUND */
-	ret = pk_backend_job_get_background (backend_spawn->job);
-	g_hash_table_replace (env_table,
-			      g_strdup ("BACKGROUND"),
-			      g_strdup (ret ? "TRUE" : "FALSE"));
-
-	/* INTERACTIVE */
-	ret = pk_backend_job_get_interactive (backend_spawn->job);
-	g_hash_table_replace (env_table,
-			      g_strdup ("INTERACTIVE"),
-			      g_strdup (ret ? "TRUE" : "FALSE"));
-
-	/* UID */
-	g_hash_table_replace (env_table,
-			      g_strdup ("UID"),
-			      g_strdup_printf ("%u", pk_backend_job_get_uid (backend_spawn->job)));
-
-	/* CACHE_AGE */
-	cache_age = pk_backend_job_get_cache_age (backend_spawn->job);
-	if (cache_age == G_MAXUINT) {
-		g_hash_table_replace (env_table, g_strdup ("CACHE_AGE"), g_strdup ("-1"));
-	} else if (cache_age > 0) {
-		g_hash_table_replace (env_table,
-				      g_strdup ("CACHE_AGE"),
-				      g_strdup_printf ("%u", cache_age));
-	}
-
-	/* copy hashed environment key/value pairs to envp */
-	envp = g_new0 (gchar *, g_hash_table_size (env_table) + 1);
-	g_hash_table_iter_init (&env_iter, env_table);
-	i = 0;
-	while (g_hash_table_iter_next (&env_iter, (void **) &env_key, (void **) &env_value)) {
-		env_key = g_strdup (env_key);
-		env_value = g_strdup (env_value);
-		if (!keep_environment) {
-			/* ensure malicious users can't inject anything from the session,
-			 * unless keeping the environment is specified (used for debugging) */
-			g_strdelimit (env_key, "\\;{}[]()*?%\n\r\t", '_');
-			g_strdelimit (env_value, "\\;{}[]()*?%\n\r\t", '_');
-		}
-		envp[i] = g_strdup_printf ("%s=%s", env_key, env_value);
-		g_debug ("setting envp '%s'", envp[i]);
-		g_free (env_key);
-		g_free (env_value);
-		i++;
-	}
-	return envp;
-}
-
-#ifdef ENABLE_STRACE
-#define PK_BACKEND_SPAWN_ARGV0 4
-#else
-#define PK_BACKEND_SPAWN_ARGV0 0
-#endif
 
 /**
- * pk_backend_spawn_va_list_to_argv:
- * @string_first: the first string
- * @args: any subsequant string's
+ * pk_backend_spawn_reader_closed:
  *
- * Form a composite string array of the va_list
- *
- * Return value: the string array, or %NULL if invalid
- **/
-static gchar **
-pk_backend_spawn_va_list_to_argv (const gchar *string_first, va_list *args)
+ * One of the three streams hit EOF or was cancelled.
+ */
+static void
+pk_backend_spawn_reader_closed (PkBackendSpawn *self)
 {
-	GPtrArray *ptr_array;
-	gchar *value_temp;
+	g_return_if_fail (self->readers_open > 0);
+	self->readers_open--;
+	pk_backend_spawn_maybe_emit_exited (self);
+}
 
-	g_return_val_if_fail (args != NULL, NULL);
-	g_return_val_if_fail (string_first != NULL, NULL);
+static void
+pk_backend_spawn_protocol_line_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	g_autoptr(PkBackendSpawn) self = PK_BACKEND_SPAWN (user_data);
+	GDataInputStream *stream = G_DATA_INPUT_STREAM (source);
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *line = NULL;
+	gsize len = 0;
 
-	/* find how many elements we have in a temp array */
-	ptr_array = g_ptr_array_new ();
-#ifdef ENABLE_STRACE
-	g_ptr_array_add (ptr_array, g_strdup ("strace"));
-	g_ptr_array_add (ptr_array, g_strdup ("-T"));
-	g_ptr_array_add (ptr_array, g_strdup ("-tt"));
-	g_ptr_array_add (
-	    ptr_array,
-	    g_strdup_printf ("-o/var/log/PackageKit-strace-%06i", g_random_int_range (1, 999999)));
-#endif
-	g_ptr_array_add (ptr_array, g_strdup (string_first));
-
-	/* process all the va_list entries */
-	while (TRUE) {
-		value_temp = va_arg (*args, gchar *);
-		if (value_temp == NULL)
-			break;
-		g_ptr_array_add (ptr_array, g_strdup (value_temp));
+	line = g_data_input_stream_read_line_finish (stream, res, &len, &error);
+	if (stream != self->proto_in)
+		return; /* stale callback from a previous instance */
+	if (line == NULL) {
+		/* a helper killed with our request still unread resets the socket */
+		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CONNECTION_CLOSED)) {
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "%s: failed to read from helper protocol socket: %s",
+			       pk_backend_spawn_log_prefix (self),
+			       error->message);
+		}
+		pk_backend_spawn_reader_closed (self);
+		return;
 	}
 
-	g_ptr_array_add (ptr_array, NULL);
-	return (gchar **) g_ptr_array_free (ptr_array, FALSE);
+	/* strip a CR that a careless helper may have added */
+	if (len > 0 && line[len - 1] == '\r')
+		line[len - 1] = '\0';
+
+	g_signal_emit (self, signals[SIGNAL_LINE], 0, line);
+
+	/* the handler may have killed or restarted us */
+	if (stream == self->proto_in)
+		pk_backend_spawn_read_protocol_line (self);
+}
+
+static void
+pk_backend_spawn_read_protocol_line (PkBackendSpawn *self)
+{
+	g_data_input_stream_read_line_async (self->proto_in,
+					     G_PRIORITY_DEFAULT,
+					     self->cancellable,
+					     pk_backend_spawn_protocol_line_cb,
+					     g_object_ref (self));
+}
+
+static void
+pk_backend_spawn_log_line_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	g_autoptr(PkBackendSpawn) self = PK_BACKEND_SPAWN (user_data);
+	GDataInputStream *stream = G_DATA_INPUT_STREAM (source);
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *line = NULL;
+	g_autofree gchar *valid = NULL;
+	gboolean is_stderr;
+
+	line = g_data_input_stream_read_line_finish (stream, res, NULL, &error);
+	if (stream != self->stdout_in && stream != self->stderr_in)
+		return; /* stale callback from a previous instance */
+	is_stderr = stream == self->stderr_in;
+	if (line == NULL) {
+		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "%s: failed to read helper %s: %s",
+			       pk_backend_spawn_log_prefix (self),
+			       is_stderr ? "stderr" : "stdout",
+			       error->message);
+		}
+		pk_backend_spawn_reader_closed (self);
+		return;
+	}
+
+	/* we never know what garbage we receive from the helper, so keep the log valid UTF-8 */
+	valid = g_utf8_make_valid (line, -1);
+	if (is_stderr)
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "%s: stderr: %s",
+		       pk_backend_spawn_log_prefix (self),
+		       valid);
+	else
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: stdout: %s",
+		       pk_backend_spawn_log_prefix (self),
+		       valid);
+
+	pk_backend_spawn_read_log_line (self, stream);
+}
+
+static void
+pk_backend_spawn_read_log_line (PkBackendSpawn *self, GDataInputStream *stream)
+{
+	g_data_input_stream_read_line_async (stream,
+					     G_PRIORITY_DEFAULT,
+					     self->cancellable,
+					     pk_backend_spawn_log_line_cb,
+					     g_object_ref (self));
+}
+
+static GDataInputStream *
+pk_backend_spawn_wrap_line_reader (GInputStream *base)
+{
+	GDataInputStream *stream = g_data_input_stream_new (base);
+	g_data_input_stream_set_newline_type (stream, G_DATA_STREAM_NEWLINE_TYPE_LF);
+	return stream;
+}
+
+static gchar **
+pk_backend_spawn_build_environment (PkBackendSpawn *self, const gchar *const *extra_env)
+{
+	g_auto(GStrv) envp = NULL;
+	const gchar *path;
+
+	if (self->inherit_environment) {
+		envp = g_get_environ ();
+	} else {
+		envp = g_new0 (gchar *, 1);
+		path = g_getenv ("PATH");
+		envp = g_environ_setenv (envp,
+					 "PATH",
+					 path != NULL ? path : PK_BACKEND_SPAWN_DEFAULT_PATH,
+					 TRUE);
+	}
+
+	envp = g_environ_setenv (envp,
+				 PK_BACKEND_SPAWN_PROTOCOL_FD_ENV,
+				 G_STRINGIFY (PK_BACKEND_SPAWN_PROTOCOL_FD),
+				 TRUE);
+
+	for (guint i = 0; extra_env != NULL && extra_env[i] != NULL; i++) {
+		g_auto(GStrv) kv = g_strsplit (extra_env[i], "=", 2);
+		if (kv[0] == NULL || kv[1] == NULL) {
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "ignoring malformed environment entry '%s'",
+			       extra_env[i]);
+			continue;
+		}
+		envp = g_environ_setenv (envp, kv[0], kv[1], TRUE);
+	}
+
+	return g_steal_pointer (&envp);
+}
+
+static void
+pk_backend_spawn_apply_background_priority (PkBackendSpawn *self)
+{
+	const gchar *identifier;
+	GPid pid;
+
+	if (!self->background)
+		return;
+
+	identifier = g_subprocess_get_identifier (self->subprocess);
+	if (identifier == NULL)
+		return;
+	pid = (GPid) g_ascii_strtoll (identifier, NULL, 10);
+	if (pid <= 0)
+		return;
+
+#if HAVE_SETPRIORITY
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: renice helper to 10",
+	       pk_backend_spawn_log_prefix (self));
+	if (setpriority (PRIO_PROCESS, pid, 10) != 0)
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "failed to renice helper: %s",
+		       g_strerror (errno));
+#endif
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: setting helper ioprio class to idle",
+	       pk_backend_spawn_log_prefix (self));
+	pk_ioprio_set_idle (pid);
+}
+
+/**
+ * pk_backend_spawn_start:
+ * @self: a #PkBackendSpawn
+ * @executable: absolute path of the helper program
+ * @extra_env: (nullable): additional `KEY=VALUE` entries for the helper's environment
+ * @error: return location for a #GError
+ *
+ * Starts the helper with no arguments. The protocol socket is mapped to
+ * %PK_BACKEND_SPAWN_PROTOCOL_FD in the child and announced in
+ * %PK_BACKEND_SPAWN_PROTOCOL_FD_ENV. Unless #PkBackendSpawn:inherit-environment
+ * is set, the helper only gets `PATH`, that variable and @extra_env.
+ *
+ * Returns: %TRUE if the process was started
+ */
+gboolean
+pk_backend_spawn_start (PkBackendSpawn *self,
+			const gchar *executable,
+			const gchar *const *extra_env,
+			GError **error)
+{
+	g_autoptr(GSubprocessLauncher) launcher = NULL;
+	g_auto(GStrv) envp = NULL;
+	g_autoptr(GInputStream) protocol_base_in = NULL;
+	const gchar *argv[2] = { executable, NULL };
+	gint fds[2];
+
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (self), FALSE);
+	g_return_val_if_fail (executable != NULL, FALSE);
+
+	if (self->subprocess != NULL) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     G_IO_ERROR_BUSY,
+			     "helper %s is already running",
+			     self->name);
+		return FALSE;
+	}
+	pk_backend_spawn_reset_state (self);
+
+	if (!g_file_test (executable, G_FILE_TEST_IS_EXECUTABLE)) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     G_IO_ERROR_NOT_FOUND,
+			     "helper %s is not an executable file",
+			     executable);
+		return FALSE;
+	}
+
+	if (socketpair (AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, fds) != 0) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     g_io_error_from_errno (errno),
+			     "failed to create protocol socket pair: %s",
+			     g_strerror (errno));
+		return FALSE;
+	}
+	self->proto_fd = fds[0];
+
+	launcher = g_subprocess_launcher_new (G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					      G_SUBPROCESS_FLAGS_STDERR_PIPE);
+	g_subprocess_launcher_set_stdin_file_path (launcher, "/dev/null");
+	envp = pk_backend_spawn_build_environment (self, extra_env);
+	g_subprocess_launcher_set_environ (launcher, envp);
+	/* the launcher owns fds[1] from here on and closes it after spawning */
+	g_subprocess_launcher_take_fd (launcher, fds[1], PK_BACKEND_SPAWN_PROTOCOL_FD);
+	g_subprocess_launcher_set_child_setup (launcher, pk_backend_spawn_child_setup, NULL, NULL);
+
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: starting helper %s",
+	       pk_backend_spawn_log_prefix (self),
+	       executable);
+	self->subprocess = g_subprocess_launcher_spawnv (launcher, argv, error);
+	if (self->subprocess == NULL) {
+		g_prefix_error (error, "failed to start helper %s: ", executable);
+		pk_backend_spawn_reset_state (self);
+		return FALSE;
+	}
+
+	pk_backend_spawn_apply_background_priority (self);
+
+	self->cancellable = g_cancellable_new ();
+
+	protocol_base_in = g_unix_input_stream_new (self->proto_fd, FALSE);
+	self->proto_in = pk_backend_spawn_wrap_line_reader (protocol_base_in);
+	self->proto_out = g_unix_output_stream_new (self->proto_fd, FALSE);
+	self->stdout_in = pk_backend_spawn_wrap_line_reader (
+	    g_subprocess_get_stdout_pipe (self->subprocess));
+	self->stderr_in = pk_backend_spawn_wrap_line_reader (
+	    g_subprocess_get_stderr_pipe (self->subprocess));
+
+	self->readers_open = 3;
+	pk_backend_spawn_read_protocol_line (self);
+	pk_backend_spawn_read_log_line (self, self->stdout_in);
+	pk_backend_spawn_read_log_line (self, self->stderr_in);
+
+	g_subprocess_wait_async (self->subprocess,
+				 NULL,
+				 pk_backend_spawn_wait_cb,
+				 g_object_ref (self));
+	return TRUE;
+}
+
+/**
+ * pk_backend_spawn_is_running:
+ *
+ * Returns: %TRUE between a successful pk_backend_spawn_start() and the
+ * #PkBackendSpawn::exited signal
+ */
+gboolean
+pk_backend_spawn_is_running (PkBackendSpawn *self)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (self), FALSE);
+	return self->subprocess != NULL && !self->waited;
+}
+
+/**
+ * pk_backend_spawn_send_line:
+ * @self: a #PkBackendSpawn
+ * @line: text without a trailing newline
+ * @error: return location for a #GError
+ *
+ * Writes @line plus a newline to the helper's protocol socket.
+ * The write is synchronous.
+ *
+ * Returns: %TRUE if the whole line was written
+ */
+gboolean
+pk_backend_spawn_send_line (PkBackendSpawn *self, const gchar *line, GError **error)
+{
+	g_autofree gchar *buf = NULL;
+
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (self), FALSE);
+	g_return_val_if_fail (line != NULL, FALSE);
+
+	if (!pk_backend_spawn_is_running (self)) {
+		g_set_error (error,
+			     G_IO_ERROR,
+			     G_IO_ERROR_NOT_CONNECTED,
+			     "helper %s is not running",
+			     self->name);
+		return FALSE;
+	}
+
+	buf = g_strconcat (line, "\n", NULL);
+	if (!g_output_stream_write_all (self->proto_out, buf, strlen (buf), NULL, NULL, error)) {
+		g_prefix_error (error, "failed to send to helper %s: ", self->name);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 static gboolean
-pk_backend_spawn_helper_va_list (PkBackendSpawn *backend_spawn,
-				 PkBackendJob *job,
-				 const gchar *executable,
-				 va_list *args)
+pk_backend_spawn_sigkill_cb (gpointer user_data)
 {
-	gboolean background;
-	PkSpawnArgvFlags flags = PK_SPAWN_ARGV_FLAGS_NONE;
-#ifdef SOURCEROOTDIR
-	const gchar *directory;
-#endif
-	g_autoptr(GError) error = NULL;
-	g_autofree gchar *filename = NULL;
-	g_auto(GStrv) argv = NULL;
-	g_auto(GStrv) envp = NULL;
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (user_data);
 
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
+	self->sigkill_id = 0;
+	if (!pk_backend_spawn_is_running (self))
+		return G_SOURCE_REMOVE;
 
-	/* convert to a argv */
-	argv = pk_backend_spawn_va_list_to_argv (executable, args);
-	if (argv == NULL) {
-		g_warning ("argv NULL");
-		return FALSE;
-	}
-
-#ifdef SOURCEROOTDIR
-	/* prefer the local version */
-	directory = backend_spawn->name;
-	if (g_str_has_prefix (directory, "test_"))
-		directory = "test";
-
-	filename = g_build_filename (SOURCEROOTDIR,
-				     "backends",
-				     directory,
-				     "helpers",
-				     argv[PK_BACKEND_SPAWN_ARGV0],
-				     NULL);
-	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		g_debug ("local helper not found '%s'", filename);
-		g_free (filename);
-		filename = g_build_filename (SOURCEROOTDIR,
-					     "backends",
-					     directory,
-					     argv[PK_BACKEND_SPAWN_ARGV0],
-					     NULL);
-	}
-	if (g_file_test (filename, G_FILE_TEST_EXISTS) == FALSE) {
-		g_debug ("local helper not found '%s'", filename);
-		g_free (filename);
-		filename = g_build_filename (DATADIR,
-					     "PackageKit",
-					     "helpers",
-					     backend_spawn->name,
-					     argv[PK_BACKEND_SPAWN_ARGV0],
-					     NULL);
-	}
-#else
-	filename = g_build_filename (DATADIR,
-				     "PackageKit",
-				     "helpers",
-				     backend_spawn->name,
-				     argv[PK_BACKEND_SPAWN_ARGV0],
-				     NULL);
-#endif
-	g_debug ("using spawn filename %s", filename);
-
-	/* replace the filename with the full path */
-	g_free (argv[PK_BACKEND_SPAWN_ARGV0]);
-	argv[PK_BACKEND_SPAWN_ARGV0] = g_strdup (filename);
-
-	/* copy idle setting from backend to PkSpawn instance */
-	background = pk_backend_job_get_background (job);
-	g_object_set (backend_spawn->spawn, "background", (background == TRUE), NULL);
-
-#ifdef ENABLE_STRACE
-	/* we can't reuse when using strace */
-	flags |= PK_SPAWN_ARGV_FLAGS_NEVER_REUSE;
-#endif
-
-	backend_spawn->finished = FALSE;
-	envp = pk_backend_spawn_get_envp (backend_spawn);
-	if (!pk_spawn_argv (backend_spawn->spawn, argv, envp, flags, &error)) {
-		pk_backend_job_error_code (backend_spawn->job,
-					   PK_ERROR_ENUM_INTERNAL_ERROR,
-					   "Spawn of helper '%s' failed: %s",
-					   argv[PK_BACKEND_SPAWN_ARGV0],
-					   error->message);
-		pk_backend_job_finished (backend_spawn->job);
-		return FALSE;
-	}
-	return TRUE;
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_WARNING,
+	       "%s: helper ignored SIGTERM, sending SIGKILL",
+	       pk_backend_spawn_log_prefix (self));
+	self->sent_sigkill = TRUE;
+	g_subprocess_force_exit (self->subprocess);
+	return G_SOURCE_REMOVE;
 }
 
-const gchar *
-pk_backend_spawn_get_name (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), NULL);
-	return backend_spawn->name;
-}
-
-gboolean
-pk_backend_spawn_set_name (PkBackendSpawn *backend_spawn, const gchar *name)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	g_return_val_if_fail (name != NULL, FALSE);
-
-	g_free (backend_spawn->name);
-	backend_spawn->name = g_strdup (name);
-	return TRUE;
-}
-
-gboolean
-pk_backend_spawn_kill (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-
-	/* set an error as the script will just exit without doing finished */
-	pk_backend_job_error_code (backend_spawn->job,
-				   PK_ERROR_ENUM_TRANSACTION_CANCELLED,
-				   "the script was killed as the action was cancelled");
-	pk_spawn_kill (backend_spawn->spawn);
-	return TRUE;
-}
-
-gboolean
-pk_backend_spawn_is_busy (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	return backend_spawn->is_busy;
-}
-
-gboolean
-pk_backend_spawn_exit (PkBackendSpawn *backend_spawn)
-{
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	pk_spawn_exit (backend_spawn->spawn);
-	return TRUE;
-}
-
-gboolean
-pk_backend_spawn_helper (PkBackendSpawn *backend_spawn,
-			 PkBackendJob *job,
-			 const gchar *first_element,
-			 ...)
-{
-	gboolean ret = TRUE;
-	va_list args;
-
-	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn), FALSE);
-	g_return_val_if_fail (first_element != NULL, FALSE);
-	g_return_val_if_fail (backend_spawn->name != NULL, FALSE);
-
-	/* save this */
-	backend_spawn->is_busy = TRUE;
-	backend_spawn->job = job;
-	backend_spawn->backend = g_object_ref (pk_backend_job_get_backend (job));
-
-	/* don't auto-kill this */
-	if (backend_spawn->kill_id > 0) {
-		g_source_remove (backend_spawn->kill_id);
-		backend_spawn->kill_id = 0;
-	}
-
-	/* get the argument list */
-	va_start (args, first_element);
-	ret = pk_backend_spawn_helper_va_list (backend_spawn, job, first_element, &args);
-	va_end (args);
-
-	return ret;
-}
-
+/**
+ * pk_backend_spawn_kill:
+ *
+ * Sends SIGTERM to the helper now. If #PkBackendSpawn:allow-sigkill is set
+ * and the helper is still alive after %PK_BACKEND_SPAWN_SIGKILL_DELAY, it
+ * is sent SIGKILL. Calling this again while SIGTERM is pending sends SIGKILL
+ * at once if allowed. Does nothing if the helper is not running.
+ */
 void
-pk_backend_spawn_set_allow_sigkill (PkBackendSpawn *backend_spawn, gboolean allow_sigkill)
+pk_backend_spawn_kill (PkBackendSpawn *self)
 {
-	g_return_if_fail (PK_IS_BACKEND_SPAWN (backend_spawn));
-	g_object_set (backend_spawn->spawn, "allow-sigkill", allow_sigkill, NULL);
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (self));
+
+	g_clear_handle_id (&self->deadline_id, g_source_remove);
+	if (!pk_backend_spawn_is_running (self))
+		return;
+	if (self->sent_sigterm) {
+		/* asked to kill harder: skip the rest of the grace period */
+		if (self->allow_sigkill && !self->sent_sigkill) {
+			g_clear_handle_id (&self->sigkill_id, g_source_remove);
+			pk_backend_spawn_sigkill_cb (self);
+		}
+		return;
+	}
+
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: sending SIGTERM to helper",
+	       pk_backend_spawn_log_prefix (self));
+	self->sent_sigterm = TRUE;
+	g_subprocess_send_signal (self->subprocess, SIGTERM);
+
+	if (self->allow_sigkill) {
+		self->sigkill_id = g_timeout_add (PK_BACKEND_SPAWN_SIGKILL_DELAY,
+						  pk_backend_spawn_sigkill_cb,
+						  self);
+		g_source_set_name_by_id (self->sigkill_id, "[PkBackendSpawn] sigkill");
+	}
+}
+
+static gboolean
+pk_backend_spawn_deadline_cb (gpointer user_data)
+{
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (user_data);
+
+	self->deadline_id = 0;
+	if (pk_backend_spawn_is_running (self)) {
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: helper did not exit in time",
+		       pk_backend_spawn_log_prefix (self));
+		pk_backend_spawn_kill (self);
+	}
+	return G_SOURCE_REMOVE;
+}
+
+/**
+ * pk_backend_spawn_set_exit_deadline:
+ * @self: a #PkBackendSpawn
+ * @timeout_ms: grace period in milliseconds
+ *
+ * Gives the helper @timeout_ms to exit by itself, after which
+ * pk_backend_spawn_kill() is called.
+ * A later call replaces the pending deadline.
+ */
+void
+pk_backend_spawn_set_exit_deadline (PkBackendSpawn *self, guint timeout_ms)
+{
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (self));
+
+	g_clear_handle_id (&self->deadline_id, g_source_remove);
+	if (!pk_backend_spawn_is_running (self))
+		return;
+	self->deadline_id = g_timeout_add (timeout_ms, pk_backend_spawn_deadline_cb, self);
+	g_source_set_name_by_id (self->deadline_id, "[PkBackendSpawn] exit deadline");
+}
+
+/**
+ * pk_backend_spawn_clear_exit_deadline:
+ *
+ * Cancels a pending deadline set with pk_backend_spawn_set_exit_deadline().
+ * An escalation already started by pk_backend_spawn_kill() continues.
+ */
+void
+pk_backend_spawn_clear_exit_deadline (PkBackendSpawn *self)
+{
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (self));
+	g_clear_handle_id (&self->deadline_id, g_source_remove);
+}
+
+/**
+ * pk_backend_spawn_get_log_domain:
+ *
+ * Returns: the GLib log domain used for everything about this helper,
+ * "PackageKit-<name>", valid as long as @self is
+ */
+const gchar *
+pk_backend_spawn_get_log_domain (PkBackendSpawn *self)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_SPAWN (self), NULL);
+	return self->log_domain;
+}
+
+/**
+ * pk_backend_spawn_set_log_context:
+ * @self: a #PkBackendSpawn
+ * @context: (nullable): prefix for log lines, e.g. "portage"; %NULL resets to the name
+ *
+ * Sets the prefix used when the helper's stdout and stderr are logged, so
+ * that output can be attributed to the running job.
+ */
+void
+pk_backend_spawn_set_log_context (PkBackendSpawn *self, const gchar *context)
+{
+	g_return_if_fail (PK_IS_BACKEND_SPAWN (self));
+	g_free (self->log_context);
+	self->log_context = g_strdup (context);
+}
+
+static void
+pk_backend_spawn_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (object);
+
+	switch (prop_id) {
+	case PROP_BACKGROUND:
+		g_value_set_boolean (value, self->background);
+		break;
+	case PROP_ALLOW_SIGKILL:
+		g_value_set_boolean (value, self->allow_sigkill);
+		break;
+	case PROP_INHERIT_ENVIRONMENT:
+		g_value_set_boolean (value, self->inherit_environment);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+pk_backend_spawn_set_property (GObject *object,
+			       guint prop_id,
+			       const GValue *value,
+			       GParamSpec *pspec)
+{
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (object);
+
+	switch (prop_id) {
+	case PROP_BACKGROUND:
+		self->background = g_value_get_boolean (value);
+		break;
+	case PROP_ALLOW_SIGKILL:
+		self->allow_sigkill = g_value_get_boolean (value);
+		break;
+	case PROP_INHERIT_ENVIRONMENT:
+		self->inherit_environment = g_value_get_boolean (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 static void
 pk_backend_spawn_finalize (GObject *object)
 {
-	PkBackendSpawn *backend_spawn = PK_BACKEND_SPAWN (object);
+	PkBackendSpawn *self = PK_BACKEND_SPAWN (object);
 
-	g_clear_handle_id (&backend_spawn->kill_id, g_source_remove);
-	g_clear_pointer (&backend_spawn->name, g_free);
-	g_clear_pointer (&backend_spawn->conf, g_key_file_unref);
-	g_clear_object (&backend_spawn->spawn);
-	g_clear_object (&backend_spawn->backend);
+	if (pk_backend_spawn_is_running (self)) {
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: helper still running in finalize, sending SIGTERM",
+		       pk_backend_spawn_log_prefix (self));
+		g_subprocess_send_signal (self->subprocess, SIGTERM);
+	}
+	pk_backend_spawn_reset_state (self);
+
+	g_free (self->name);
+	g_free (self->log_domain);
+	g_free (self->log_context);
 
 	G_OBJECT_CLASS (pk_backend_spawn_parent_class)->finalize (object);
 }
@@ -1063,31 +836,109 @@ static void
 pk_backend_spawn_class_init (PkBackendSpawnClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GParamSpec *pspec;
+
 	object_class->finalize = pk_backend_spawn_finalize;
+	object_class->get_property = pk_backend_spawn_get_property;
+	object_class->set_property = pk_backend_spawn_set_property;
+
+	/**
+	 * PkBackendSpawn:background:
+	 *
+	 * Start the helper with lowered CPU and I/O priority.
+	 */
+	pspec = g_param_spec_boolean ("background",
+				      NULL,
+				      NULL,
+				      FALSE,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	g_object_class_install_property (object_class, PROP_BACKGROUND, pspec);
+
+	/**
+	 * PkBackendSpawn:allow-sigkill:
+	 *
+	 * Whether a helper that ignores SIGTERM may be sent SIGKILL. This
+	 * makes cancellation reliable, but may corrupt package databases the
+	 * helper had open.
+	 */
+	pspec = g_param_spec_boolean ("allow-sigkill",
+				      NULL,
+				      NULL,
+				      FALSE,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	g_object_class_install_property (object_class, PROP_ALLOW_SIGKILL, pspec);
+
+	/**
+	 * PkBackendSpawn:inherit-environment:
+	 *
+	 * Pass the daemon's whole environment to the helper instead of a
+	 * minimal one. Corresponds to KeepEnvironment in PackageKit.conf.
+	 */
+	pspec = g_param_spec_boolean ("inherit-environment",
+				      NULL,
+				      NULL,
+				      FALSE,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+	g_object_class_install_property (object_class, PROP_INHERIT_ENVIRONMENT, pspec);
+
+	/**
+	 * PkBackendSpawn::line:
+	 * @line: one line received on the protocol socket, without the newline
+	 */
+	signals[SIGNAL_LINE] = g_signal_new ("line",
+					     G_TYPE_FROM_CLASS (object_class),
+					     G_SIGNAL_RUN_LAST,
+					     0,
+					     NULL,
+					     NULL,
+					     g_cclosure_marshal_VOID__STRING,
+					     G_TYPE_NONE,
+					     1,
+					     G_TYPE_STRING);
+
+	/**
+	 * PkBackendSpawn::exited:
+	 * @exit_type: a #PkBackendSpawnExitType
+	 * @status: the exit status, or the signal number for the signal exit types
+	 *
+	 * Emitted once after the helper has ended and all its output has been
+	 * delivered. The process is no longer running when this is emitted.
+	 */
+	signals[SIGNAL_EXITED] = g_signal_new ("exited",
+					       G_TYPE_FROM_CLASS (object_class),
+					       G_SIGNAL_RUN_LAST,
+					       0,
+					       NULL,
+					       NULL,
+					       NULL,
+					       G_TYPE_NONE,
+					       2,
+					       G_TYPE_INT,
+					       G_TYPE_INT);
 }
 
 static void
-pk_backend_spawn_init (PkBackendSpawn *backend_spawn)
-{}
-
-PkBackendSpawn *
-pk_backend_spawn_new (GKeyFile *conf)
+pk_backend_spawn_init (PkBackendSpawn *self)
 {
-	PkBackendSpawn *backend_spawn;
-	backend_spawn = g_object_new (PK_TYPE_BACKEND_SPAWN, NULL);
-	backend_spawn->conf = g_key_file_ref (conf);
-	backend_spawn->spawn = pk_spawn_new (backend_spawn->conf);
-	g_signal_connect (backend_spawn->spawn,
-			  "exit",
-			  G_CALLBACK (pk_backend_spawn_exit_cb),
-			  backend_spawn);
-	g_signal_connect (backend_spawn->spawn,
-			  "stdout",
-			  G_CALLBACK (pk_backend_spawn_stdout_cb),
-			  backend_spawn);
-	g_signal_connect (backend_spawn->spawn,
-			  "stderr",
-			  G_CALLBACK (pk_backend_spawn_stderr_cb),
-			  backend_spawn);
-	return PK_BACKEND_SPAWN (backend_spawn);
+	self->proto_fd = -1;
+	self->exit_type = PK_BACKEND_SPAWN_EXIT_UNKNOWN;
+}
+
+/**
+ * pk_backend_spawn_new:
+ * @name: backend name, used in log messages
+ *
+ * Returns: (transfer full): a new #PkBackendSpawn
+ */
+PkBackendSpawn *
+pk_backend_spawn_new (const gchar *name)
+{
+	PkBackendSpawn *self;
+
+	g_return_val_if_fail (name != NULL, NULL);
+
+	self = g_object_new (PK_TYPE_BACKEND_SPAWN, NULL);
+	self->name = g_strdup (name);
+	self->log_domain = g_strdup_printf ("PackageKit-%s", name);
+	return self;
 }

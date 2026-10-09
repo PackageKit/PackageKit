@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# Test helper for PkBackendProcess: ignores SIGTERM so the daemon has to
+# Test helper for PkBackendSpawn: ignores SIGTERM so the daemon has to
 # escalate to SIGKILL.
 
 trap '' TERM

@@ -2192,12 +2192,10 @@ pk_transaction_strvalidate (const gchar *text, GError **error)
 		return FALSE;
 	}
 
-	/* reject the delimiters of the spawned-backend stdin protocol: when a
-	 * running helper is reused, pk_spawn_argv() feeds it its arguments as a
-	 * tab-separated, newline-terminated command line. A tab or newline
-	 * smuggled into a caller-supplied string (e.g. a search term, which
-	 * needs no authorization) would otherwise be parsed by the helper as an
-	 * additional, unauthorized command. */
+	/* no caller-supplied string (e.g. a search term, which needs no
+	 * authorization) has a legitimate use for line or field separators;
+	 * reject them so that a backend handing the string to a line-oriented
+	 * tool can never be made to see an additional command */
 	if (strpbrk (text, "\t\n\r") != NULL) {
 		g_set_error_literal (
 		    error,

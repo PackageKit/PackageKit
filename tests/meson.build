@@ -147,12 +147,8 @@ if get_option('daemon_tests')
         run_with_dbus,
         args: [pk_test_daemon_priv_exe],
         depends: [
-            packagekit_test_py,
             pk_test_daemon_priv_exe,
             pk_test_root,
-        ],
-        env: [
-            'PYTHONPATH=@0@'.format(join_paths(build_root, 'python')),
         ],
         suite: 'daemon',
         is_parallel: false,

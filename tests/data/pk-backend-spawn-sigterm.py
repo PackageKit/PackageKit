@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 #
-# Test helper for PkBackendProcess: handles SIGTERM by saying goodbye on the
+# Test helper for PkBackendSpawn: handles SIGTERM by saying goodbye on the
 # protocol socket and exiting with status 0, then waits to be terminated.
 
 import os

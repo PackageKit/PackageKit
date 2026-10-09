@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-/* see docs/backend-spawn-protocol.md */
+/* see docs/extra/backend-spawn-protocol.md */
 #define PK_BACKEND_PROTOCOL_VERSION  1
 #define PK_BACKEND_PROTOCOL_MAX_LINE (16 * 1024 * 1024)
 
