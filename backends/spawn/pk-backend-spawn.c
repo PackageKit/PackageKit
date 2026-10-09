@@ -475,7 +475,8 @@ pk_backend_get_author (PkBackend *backend)
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
-	return priv->hello->roles;
+	/* cancel is handled by this module, not by the helper */
+	return priv->hello->roles | pk_bitfield_value (PK_ROLE_ENUM_CANCEL);
 }
 
 PkBitfield
