@@ -59,11 +59,11 @@ if get_option('elogind')
 endif
 
 
-# ensure we get newer POSIX stuff like realpath(3), wcwidth, etc. are available
+# expose everything the C library has: on glibc and musl _GNU_SOURCE implies
+# the POSIX and X/Open levels we need plus the extensions (SOCK_CLOEXEC, ...),
+# and on the BSDs the default environment already shows all of them
 feature_args = [
-    '-D_DEFAULT_SOURCE',
-    '-D_XOPEN_SOURCE=700',
-    '-D_POSIX_C_SOURCE=200809L',
+    '-D_GNU_SOURCE',
 ]
 
 # set our minimum GLib version
