@@ -468,6 +468,38 @@ pk_backend_get_filters (PkBackend *backend)
         -1);
 }
 
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
+{
+    return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
+        PK_ROLE_ENUM_DEPENDS_ON,
+        PK_ROLE_ENUM_GET_DETAILS_LOCAL,
+        PK_ROLE_ENUM_GET_FILES_LOCAL,
+        PK_ROLE_ENUM_GET_DETAILS,
+        PK_ROLE_ENUM_GET_FILES,
+        PK_ROLE_ENUM_REQUIRED_BY,
+        PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+        PK_ROLE_ENUM_GET_UPDATES,
+        PK_ROLE_ENUM_INSTALL_PACKAGES,
+        PK_ROLE_ENUM_INSTALL_SIGNATURE,
+        PK_ROLE_ENUM_INSTALL_FILES,
+        PK_ROLE_ENUM_REFRESH_CACHE,
+        PK_ROLE_ENUM_RESOLVE,
+        PK_ROLE_ENUM_REMOVE_PACKAGES,
+        PK_ROLE_ENUM_SEARCH_DETAILS,
+        PK_ROLE_ENUM_SEARCH_FILE,
+        PK_ROLE_ENUM_SEARCH_GROUP,
+        PK_ROLE_ENUM_SEARCH_NAME,
+        PK_ROLE_ENUM_UPDATE_PACKAGES,
+        PK_ROLE_ENUM_GET_REPO_LIST,
+        PK_ROLE_ENUM_REPO_SET_DATA,
+        PK_ROLE_ENUM_WHAT_PROVIDES,
+        PK_ROLE_ENUM_GET_PACKAGES,
+        PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+        PK_ROLE_ENUM_REPAIR_SYSTEM,
+        -1);
+}
+
 gchar **
 pk_backend_get_mime_types (PkBackend *backend)
 {
@@ -487,8 +519,8 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
     }
 }
 
-void
-pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
+static void
+pk_freebsd_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
 {
     PKJobFinisher jf (job);
 
@@ -544,8 +576,8 @@ pk_backend_depends_on (PkBackend *backend, PkBackendJob *job, PkBitfield filters
     pk_backend_job_packages (job, packages);
 }
 
-void
-pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
+static void
+pk_freebsd_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
     PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -585,14 +617,8 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
     }
 }
 
-void
-pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **_files)
-{
-    g_error("pk_backend_get_files_local not implemented yet");
-}
-
-void
-pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+static void
+pk_freebsd_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -629,20 +655,8 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 // {
 // }
 
-void
-pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-    g_error("pk_backend_get_files not implemented yet");
-}
-
-void
-pk_backend_required_by (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids, gboolean recursive)
-{
-    g_error("pk_backend_required_by not implemented yet");
-}
-
-void
-pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
+static void
+pk_freebsd_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
     PKJobFinisher jf (job);
     PackageDatabase pkgDb (job);
@@ -757,8 +771,8 @@ pk_backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer use
     emitter.emitPackages();
 }
 
-void
-pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+static void
+pk_freebsd_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -931,32 +945,6 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
                                    "Internal libpkg error");
 }
 
-void
-pk_backend_install_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
-{
-    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
-
-    if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
-        pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install packages when offline");
-        return;
-    }
-
-    pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
-}
-
-void
-pk_backend_install_signature (PkBackend *backend, PkBackendJob *job, PkSigTypeEnum type,
-                              const gchar *key_id, const gchar *package_id)
-{
-    g_error("pk_backend_install_signature not implemented yet");
-}
-
-void
-pk_backend_install_files (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
-{
-    g_error("pk_backend_install_files not implemented yet");
-}
-
 static void
 pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -1037,14 +1025,8 @@ pk_backend_refresh_cache_thread (PkBackendJob *job, GVariant *params, gpointer u
     pk_backend_job_set_percentage (job, 100);
 }
 
-void
-pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-    pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
-}
-
-void
-pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
+static void
+pk_freebsd_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
 {
     PKJobFinisher jf (job);
 
@@ -1228,51 +1210,8 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
     pkgdb_compact (pkgDb.handle());
 }
 
-void
-pk_backend_remove_packages (PkBackend *backend, PkBackendJob *job,
-                PkBitfield transaction_flags,
-                gchar **package_ids,
-                gboolean allow_deps,
-                gboolean autoremove)
-{
-    // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
-
-    pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
-}
-
-void
-pk_backend_search_details (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_freebsd_search(job, filters, values);
-}
-
-void
-pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_freebsd_search(job, filters, values);
-}
-
-void
-pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_freebsd_search(job, filters, values);
-}
-
-void
-pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_freebsd_search (job, filters, values);
-}
-
-void
-pk_backend_update_packages (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
-{
-    pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+static void
+pk_freebsd_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
     PKJobFinisher jf (job);
     pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
@@ -1291,31 +1230,6 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
     }
 
     pkg_shutdown();
-}
-
-void
-pk_backend_repo_set_data (PkBackend *backend, PkBackendJob *job, const gchar *rid, const gchar *parameter, const gchar *value)
-{
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
-    g_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
-    pk_backend_job_finished (job);
-    g_error("pk_backend_repo_set_data not implemented yet");
-}
-
-void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
-    pk_backend_job_set_allow_cancel (job, TRUE);
-    pk_backend_job_set_percentage (job, 0);
-    g_error("pk_backend_what_provides not implemented yet");
-}
-
-void
-pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-    gchar* values = { NULL };
-    pk_freebsd_search (job, filters, &values);
 }
 
 static void
@@ -1412,12 +1326,6 @@ pk_backend_download_packages_thread (PkBackendJob *job, GVariant *params, gpoint
     }
 }
 
-void
-pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory0)
-{
-    pk_backend_job_thread_create (job, pk_backend_download_packages_thread, NULL, NULL);
-}
-
 // TODO: Do we want "freebsd-update" support here?
 // void
 // pk_backend_upgrade_system (PkBackend *backend,
@@ -1430,11 +1338,148 @@ pk_backend_download_packages (PkBackend *backend, PkBackendJob *job, gchar **pac
 //     g_error("pk_backend_upgrade_system not implemented yet");
 // }
 
+// Dispatch a job to the implementation of its role
 void
-pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 {
-    pk_backend_job_finished (job);
-    g_error("pk_backend_repair_system not implemented yet"); // GOS-396
+    PkRoleEnum role = pk_backend_job_get_role (job);
+    GVariant *params = pk_backend_job_get_parameters (job);
+
+    switch (role) {
+    case PK_ROLE_ENUM_DEPENDS_ON:
+    {
+        PkBitfield filters;
+        g_autofree gchar **package_ids = NULL;
+        gboolean recursive;
+        g_variant_get (params, "(t^a&sb)", &filters, &package_ids, &recursive);
+        pk_freebsd_depends_on (backend, job, filters, package_ids, recursive);
+        break;
+    }
+    case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+    {
+        g_autofree gchar **files = NULL;
+        g_variant_get (params, "(^a&s)", &files);
+        pk_freebsd_get_details_local (backend, job, files);
+        break;
+    }
+    case PK_ROLE_ENUM_GET_FILES_LOCAL:
+        g_error("pk_backend_get_files_local not implemented yet");
+        break;
+    case PK_ROLE_ENUM_GET_DETAILS:
+    {
+        g_autofree gchar **package_ids = NULL;
+        g_variant_get (params, "(^a&s)", &package_ids);
+        pk_freebsd_get_details (backend, job, package_ids);
+        break;
+    }
+    case PK_ROLE_ENUM_GET_FILES:
+        g_error("pk_backend_get_files not implemented yet");
+        break;
+    case PK_ROLE_ENUM_REQUIRED_BY:
+        g_error("pk_backend_required_by not implemented yet");
+        break;
+    case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+    {
+        g_autofree gchar **package_ids = NULL;
+        g_variant_get (params, "(^a&s)", &package_ids);
+        pk_freebsd_get_update_detail (backend, job, package_ids);
+        break;
+    }
+    case PK_ROLE_ENUM_GET_UPDATES:
+    {
+        PkBitfield filters;
+        g_variant_get (params, "(t)", &filters);
+        pk_freebsd_get_updates (backend, job, filters);
+        break;
+    }
+    case PK_ROLE_ENUM_INSTALL_PACKAGES:
+        // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
+        if (!pk_backend_is_online (reinterpret_cast<PkBackend*>(pk_backend_job_get_backend (job)))) {
+            pk_backend_job_error_code (job, PK_ERROR_ENUM_NO_NETWORK, "Cannot install packages when offline");
+            break;
+        }
+        pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_INSTALL_SIGNATURE:
+        g_error("pk_backend_install_signature not implemented yet");
+        break;
+    case PK_ROLE_ENUM_INSTALL_FILES:
+        g_error("pk_backend_install_files not implemented yet");
+        break;
+    case PK_ROLE_ENUM_REFRESH_CACHE:
+        pk_backend_job_thread_create (job, pk_backend_refresh_cache_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_RESOLVE:
+    {
+        PkBitfield filters;
+        g_autofree gchar **packages = NULL;
+        g_variant_get (params, "(t^a&s)", &filters, &packages);
+        pk_freebsd_resolve (backend, job, filters, packages);
+        break;
+    }
+    case PK_ROLE_ENUM_REMOVE_PACKAGES:
+        // No need for PKJobFinisher here as we are using pk_backend_job_thread_create
+        pk_backend_job_set_status (job, PK_STATUS_ENUM_QUERY);
+        pk_backend_job_thread_create (job, pk_backend_remove_packages_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_SEARCH_DETAILS:
+    case PK_ROLE_ENUM_SEARCH_FILE:
+    case PK_ROLE_ENUM_SEARCH_GROUP:
+    case PK_ROLE_ENUM_SEARCH_NAME:
+    {
+        PkBitfield filters;
+        g_autofree gchar **values = NULL;
+        g_variant_get (params, "(t^a&s)", &filters, &values);
+        pk_freebsd_search (job, filters, values);
+        break;
+    }
+    case PK_ROLE_ENUM_UPDATE_PACKAGES:
+        pk_backend_job_thread_create (job, pk_backend_install_update_packages_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_GET_REPO_LIST:
+    {
+        PkBitfield filters;
+        g_variant_get (params, "(t)", &filters);
+        pk_freebsd_get_repo_list (backend, job, filters);
+        break;
+    }
+    case PK_ROLE_ENUM_REPO_SET_DATA:
+    {
+        const gchar *rid, *parameter, *value;
+        g_variant_get (params, "(&s&s&s)", &rid, &parameter, &value);
+        pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
+        g_warning ("REPO '%s' PARAMETER '%s' TO '%s'", rid, parameter, value);
+        pk_backend_job_finished (job);
+        g_error("pk_backend_repo_set_data not implemented yet");
+        break;
+    }
+    case PK_ROLE_ENUM_WHAT_PROVIDES:
+        pk_backend_job_set_status (job, PK_STATUS_ENUM_REQUEST);
+        pk_backend_job_set_allow_cancel (job, TRUE);
+        pk_backend_job_set_percentage (job, 0);
+        g_error("pk_backend_what_provides not implemented yet");
+        break;
+    case PK_ROLE_ENUM_GET_PACKAGES:
+    {
+        PkBitfield filters;
+        gchar* values = { NULL };
+        g_variant_get (params, "(t)", &filters);
+        pk_freebsd_search (job, filters, &values);
+        break;
+    }
+    case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+        pk_backend_job_thread_create (job, pk_backend_download_packages_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_REPAIR_SYSTEM:
+        pk_backend_job_finished (job);
+        g_error("pk_backend_repair_system not implemented yet"); // GOS-396
+        break;
+    default:
+        pk_backend_job_error_code (job, PK_ERROR_ENUM_NOT_SUPPORTED,
+                                   "role %s is not supported", pk_role_enum_to_string (role));
+        pk_backend_job_finished (job);
+        break;
+    }
 }
 
 void
