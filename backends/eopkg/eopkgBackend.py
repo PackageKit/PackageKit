@@ -35,6 +35,7 @@
 
 import os.path
 import re
+import traceback
 from collections import Counter
 from operator import attrgetter
 
@@ -46,22 +47,8 @@ import pisi.db
 import pisi.fetcher
 import pisi.ui
 import pisi.util
-from packagekit.backend import *
-from packagekit.enums import *
-from packagekit.package import PackagekitPackage
-from packagekit.progress import *
+import packagekit_backend as pkb
 from pisi.package import PackageResource
-
-
-def _format_str(text):
-    """
-    Convert a multi line string to a list separated by ';'
-    """
-    if text:
-        lines = text.split("\n")
-        return ";".join(lines)
-    else:
-        return ""
 
 
 # Override PiSi UI so we can get callbacks for progress and events
@@ -109,7 +96,7 @@ class SimplePisiHandler(pisi.ui.UI):
 
                 if pisi.db.packagedb.PackageDB().has_package(pkg_name):
                     pkg = pisi.db.packagedb.PackageDB().get_package(pkg_name)
-                    self.base.item_progress(self.base._pkg_to_id(pkg), STATUS_DOWNLOAD, percent)
+                    self.base.item_progress(self.base._pkg_to_id(pkg), pkb.STATUS_DOWNLOAD, percent)
 
         elif operation == "extracting":
             if self.cur_pkg and self.cur_status:
@@ -141,8 +128,8 @@ class SimplePisiHandler(pisi.ui.UI):
 
             if pisi.db.packagedb.PackageDB().has_package(pkg_resource.name):
                 pkg = pisi.db.packagedb.PackageDB().get_package(pkg_resource.name)
-                self.base.status(STATUS_DOWNLOAD)
-                self.base._set_status(pkg, INFO_DOWNLOADING)
+                self.base.status(pkb.STATUS_DOWNLOAD)
+                self.base._set_status(pkg, pkb.INFO_DOWNLOADING)
 
         elif event in (pisi.ui.installing, pisi.ui.upgrading):
             if self.is_downloading:
@@ -151,8 +138,8 @@ class SimplePisiHandler(pisi.ui.UI):
 
             self.currentpackage += 1
             self.cur_pkg = keywords["package"]
-            self.cur_status = STATUS_INSTALL if event == pisi.ui.installing else STATUS_UPDATE
-            info = INFO_INSTALLING if event == pisi.ui.installing else INFO_UPDATING
+            self.cur_status = pkb.STATUS_INSTALL if event == pisi.ui.installing else pkb.STATUS_UPDATE
+            info = pkb.INFO_INSTALLING if event == pisi.ui.installing else pkb.INFO_UPDATING
 
             self.base.status(self.cur_status)
             self.base._set_status(self.cur_pkg, info)
@@ -164,9 +151,9 @@ class SimplePisiHandler(pisi.ui.UI):
                 self.currentpackage = 0
             self.currentpackage += 1
             self.cur_pkg = keywords["package"]
-            self.cur_status = STATUS_REMOVE
+            self.cur_status = pkb.STATUS_REMOVE
             self.base.status(self.cur_status)
-            self.base._set_status(self.cur_pkg, INFO_REMOVING)
+            self.base._set_status(self.cur_pkg, pkb.INFO_REMOVING)
             self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), self.cur_status, 0)
 
         elif event == pisi.ui.extracting:
@@ -174,11 +161,11 @@ class SimplePisiHandler(pisi.ui.UI):
             # Item progress and global percentage are now handled live in display_progress
 
         elif event in (pisi.ui.installed, pisi.ui.upgraded, pisi.ui.removed):
-            status = STATUS_INSTALL
+            status = pkb.STATUS_INSTALL
             if event == pisi.ui.upgraded:
-                status = STATUS_UPDATE
+                status = pkb.STATUS_UPDATE
             if event == pisi.ui.removed:
-                status = STATUS_REMOVE
+                status = pkb.STATUS_REMOVE
 
             if self.cur_pkg:
                 self.base.item_progress(self.base._pkg_to_id(self.cur_pkg), status, 100)
@@ -187,14 +174,47 @@ class SimplePisiHandler(pisi.ui.UI):
             self.base._set_percent(90)
 
 
-class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
+class PackageKitEopkgBackend(pkb.Backend):
     SETTINGS_FILE = "/etc/PackageKit/eopkg.d/groups.list"
 
-    def __init__(self, args):
+    name = "eopkg"
+    description = "Eopkg - Solus Package Manager"
+    author = "Solus Developers <releng@getsol.us>"
+    filters = (pkb.FILTER_GUI, pkb.FILTER_INSTALLED)
+    groups = (
+        pkb.GROUP_UTILITIES,
+        pkb.GROUP_EDUCATION,
+        pkb.GROUP_GAMES,
+        pkb.GROUP_INTERNET,
+        pkb.GROUP_OTHER,
+        pkb.GROUP_PROGRAMMING,
+        pkb.GROUP_MULTIMEDIA,
+        pkb.GROUP_SYSTEM,
+        pkb.GROUP_DESKTOP_GNOME,
+        pkb.GROUP_DESKTOP_KDE,
+        pkb.GROUP_DESKTOP_OTHER,
+        pkb.GROUP_PUBLISHING,
+        pkb.GROUP_SERVERS,
+        pkb.GROUP_FONTS,
+        pkb.GROUP_ADMIN,
+        pkb.GROUP_EDITORS,
+        pkb.GROUP_SECURITY,
+        pkb.GROUP_LANG_HASKELL,
+        pkb.GROUP_LANG_JAVA,
+        pkb.GROUP_LANG_PERL,
+        pkb.GROUP_LANG_PYTHON,
+        pkb.GROUP_LANG_RUBY,
+        pkb.GROUP_LOCALIZATION,
+        pkb.GROUP_VIRTUALIZATION,
+        pkb.GROUP_UNKNOWN,
+    )
+    mime_types = ("application/zip",)
+
+    def __init__(self):
         self.bug_regex = None
         self.bug_uri = None
         self._load_settings()
-        PackageKitBaseBackend.__init__(self, args)
+        pkb.Backend.__init__(self)
 
         self.get_db()
 
@@ -239,7 +259,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def _set_percent(self, percent):
         if percent <= 100:
-            self.percentage(percent)
+            self.percentage(int(percent))
 
     def privileged(func):
         """
@@ -251,12 +271,10 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             pisi.api.set_userinterface(ui)
             try:
                 func(self, *__args, **__kw)
-            except Exception as e:
-                raise e
-            self.percentage(100)
-            self.finished()
-            self.get_db()
-            pisi.api.set_userinterface(self.saved_ui)
+                self.percentage(100)
+            finally:
+                self.get_db()
+                pisi.api.set_userinterface(self.saved_ui)
 
         return wrapper
 
@@ -276,12 +294,12 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             else:
                 repo = "local"
         version = self.__get_package_version(pkg)
-        pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, repo, data)
+        pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, repo, data)
         return pkg_id
 
     def _get_package_obj_from_id(self, package_id):
         """Centralized helper to get package object and origin from id"""
-        name, version, arch, origin, data = self.get_package_from_id(package_id)
+        name, version, arch, origin, data = pkb.split_package_id(package_id)
         pkg = None
 
         if origin == "local" or data == "installed":
@@ -297,13 +315,12 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             origin = "local"
 
         if pkg is None:
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % name)
+            raise pkb.PkError(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % name)
 
         return pkg, origin
 
-    def _set_status(self, pkg, status):
-        package_id = self._pkg_to_id(pkg)
-        self.package(package_id, status, pkg.summary)
+    def _set_status(self, pkg, info):
+        self.package_status(self._pkg_to_id(pkg), info)
 
     def __get_package_version(self, package):
         """Returns version string of given package"""
@@ -328,23 +345,23 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # Not found
         if installed is None and available is None:
-            raise PkError(ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
+            raise pkb.PkError(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s not found" % package)
 
         # We will collect candidate packages here: (pkg, status, origin, data)
         candidates = []
 
         # Check if we have any status filters
-        status_filters = [FILTER_INSTALLED, FILTER_NOT_INSTALLED, FILTER_NEWEST]
+        status_filters = [pkb.FILTER_INSTALLED, pkb.FILTER_NOT_INSTALLED, pkb.FILTER_NEWEST]
         has_status_filter = filters and any(f in status_filters for f in filters)
 
         if has_status_filter:
-            if FILTER_INSTALLED in filters:
+            if pkb.FILTER_INSTALLED in filters:
                 if installed:
-                    candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
-            elif FILTER_NOT_INSTALLED in filters:
+                    candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+            elif pkb.FILTER_NOT_INSTALLED in filters:
                 if available:
-                    candidates.append((available, INFO_AVAILABLE, repo, ""))
-            elif FILTER_NEWEST in filters:
+                    candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
+            elif pkb.FILTER_NEWEST in filters:
                 if installed and available:
                     # Compare versions/releases
                     v_inst = self.installdb.get_version_and_distro_release(package)
@@ -356,74 +373,74 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                     # In Solus/eopkg, release is the primary versioning for updates.
                     if v_inst[0] == v_avail[0]:
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, INFO_AVAILABLE, repo, ""))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         elif int(v_avail[1]) == int(v_inst[1]):
                             # Same version, show both
-                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
-                            candidates.append((available, INFO_AVAILABLE, repo, ""))
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         else:
                             # Installed is newer
-                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
                     else:
                         # Versions differ, we'd need a version comparison tool here.
                         # For now, if versions differ, we'll just show both or available
                         # if it looks newer (e.g. higher release).
                         # Most often, version is the same.
                         if int(v_avail[1]) > int(v_inst[1]):
-                            candidates.append((available, INFO_AVAILABLE, repo, ""))
+                            candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         else:
-                            candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
                 elif available:
-                    candidates.append((available, INFO_AVAILABLE, repo, ""))
+                    candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                 elif installed:
-                    candidates.append((installed, INFO_INSTALLED, "", "installed"))
+                    candidates.append((installed, pkb.INFO_INSTALLED, "", "installed"))
         else:
             # No status filters, show both if they exist
             if installed:
-                candidates.append((installed, INFO_INSTALLED, repo or "", "installed"))
+                candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
             if available:
-                candidates.append((available, INFO_AVAILABLE, repo, ""))
+                candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
 
         for pkg, status, origin, data in candidates:
             if filters is not None:
-                if FILTER_GUI in filters and "app:gui" not in pkg.isA:
+                if pkb.FILTER_GUI in filters and "app:gui" not in pkg.isA:
                     continue
-                if FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
+                if pkb.FILTER_NOT_GUI in filters and "app:gui" in pkg.isA:
                     continue
                 # FIXME: To lower
                 nonfree = ["EULA", "Distributable"]
-                if FILTER_FREE in filters:
+                if pkb.FILTER_FREE in filters:
                     if any(l in pkg.license for l in nonfree):
                         continue
-                if FILTER_NOT_FREE in filters:
+                if pkb.FILTER_NOT_FREE in filters:
                     if not any(l in pkg.license for l in nonfree):
                         continue
-                if FILTER_DEVELOPMENT in filters and "-devel" not in pkg.name:
+                if pkb.FILTER_DEVELOPMENT in filters and "-devel" not in pkg.name:
                     continue
-                if FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
+                if pkb.FILTER_NOT_DEVELOPMENT in filters and "-devel" in pkg.name:
                     continue
                 pkg_subtypes = ["-devel", "-dbginfo", "-32bit", "-docs"]
-                if FILTER_BASENAME in filters:
+                if pkb.FILTER_BASENAME in filters:
                     if any(suffix in pkg.name for suffix in pkg_subtypes):
                         continue
-                if FILTER_NOT_BASENAME in filters:
+                if pkb.FILTER_NOT_BASENAME in filters:
                     if not any(suffix in pkg.name for suffix in pkg_subtypes):
                         continue
 
             version = self.__get_package_version(pkg)
-            pkg_id = self.get_package_id(pkg.name, version, pkg.architecture, origin, data)
+            pkg_id = pkb.get_package_id(pkg.name, version, pkg.architecture, origin, data)
             self.package(pkg_id, status, pkg.summary)
 
     def depends_on(self, filters, package_ids, recursive):
         """Prints a list of depends for a given package"""
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
         for package_id in package_ids:
             try:
                 pkg, origin = self._get_package_obj_from_id(package_id)
-            except PkError as e:
+            except pkb.PkError as e:
                 self.error(e.code, e.details)
                 continue
 
@@ -433,39 +450,39 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
     def repair_system(self, transaction_flags):
         """Deletes caches, rebuilds filesdb and reinits pisi caches"""
 
-        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+        if pkb.TRANSACTION_FLAG_SIMULATE in transaction_flags:
             return
 
-        self.status(STATUS_CLEANUP)
+        self.status(pkb.STATUS_CLEANUP)
         pisi.api.delete_cache()
-        self.status(STATUS_REFRESH_CACHE)
+        self.status(pkb.STATUS_REFRESH_CACHE)
         pisi.api.rebuild_db(files=True)
         pisi.db.update_caches()
 
     def get_details(self, package_ids):
         """Prints a detailed description for a given packages"""
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
         for package_id in package_ids:
             try:
                 pkg, origin = self._get_package_obj_from_id(package_id)
-            except PkError as e:
+            except pkb.PkError as e:
                 self.error(e.code, e.details)
                 continue
 
             size = pkg.installedSize
             dl_size = pkg.packageSize
 
-            pkg_id = self.get_package_id(
+            pkg_id = pkb.get_package_id(
                 pkg.name, self.__get_package_version(pkg), pkg.architecture, origin
             )
 
             if pkg.partOf in self.groups:
                 group = self.groups[pkg.partOf]
             else:
-                group = GROUP_UNKNOWN
+                group = pkb.GROUP_UNKNOWN
             homepage = pkg.source.homepage if pkg.source.homepage is not None else ""
 
             description = str(pkg.description).replace("\n", " ")
@@ -485,30 +502,29 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         for f in files:
             if not f.endswith(".eopkg"):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Eopkg %s was not found" % f)
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Eopkg %s was not found" % f)
             try:
                 metadata, files = pisi.api.info_file(f)
-            except PkError as e:
-                if e.code == ERROR_PACKAGE_NOT_FOUND:
-                    self.message("COULD_NOT_FIND_PACKAGE", e.details)
+            except pkb.PkError as e:
+                if e.code == pkb.ERROR_PACKAGE_NOT_FOUND:
+                    self.log("warning", e.details)
                     continue
-                self.error(e.code, e.details, exit=True)
-                return
+                raise
             if metadata:
                 pkg = metadata.package
 
-            pkg_id = self.get_package_id(
+            pkg_id = pkb.get_package_id(
                 pkg.name, self.__get_package_version(pkg), pkg.architecture, "local"
             )
 
             if pkg.partOf in self.groups:
                 group = self.groups[pkg.partOf]
             else:
-                group = GROUP_UNKNOWN
+                group = pkb.GROUP_UNKNOWN
             homepage = pkg.source.homepage if pkg.source.homepage is not None else ""
 
             size = pkg.installedSize
@@ -533,29 +549,27 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             try:
                 pkg, origin = self._get_package_obj_from_id(package_id)
-            except PkError as e:
+            except pkb.PkError as e:
                 self.error(e.code, e.details)
                 continue
 
             if self.installdb.has_package(pkg.name):
-                pkg_id = self.get_package_id(
+                pkg_id = pkb.get_package_id(
                     pkg.name, self.__get_package_version(pkg), pkg.architecture, origin, "installed"
                 )
 
                 pkg_files = self.installdb.get_files(pkg.name)
 
                 files = ["/%s" % y.path for y in pkg_files.list]
-
-                file_list = ";".join(files)
-                self.files(pkg_id, file_list)
+                self.files(pkg_id, files)
             else:
                 self.error(
-                    ERROR_PACKAGE_NOT_FOUND,
+                    pkb.ERROR_PACKAGE_NOT_FOUND,
                     "Package %s must be installed to get file list" % pkg.name,
                 )
 
     def get_packages(self, filters):
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -563,9 +577,9 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         installed = self.installdb.list_installed()
         available = self.packagedb.list_packages(None)
 
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             packages = installed
-        elif FILTER_NOT_INSTALLED in filters:
+        elif pkb.FILTER_NOT_INSTALLED in filters:
             cntInstalled = Counter(installed)
             cntAvailable = Counter(available)
 
@@ -581,7 +595,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """Prints available repositories"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         for repo in self.repodb.list_repos(only_active=False):
             uri = self.repodb.get_repo_url(repo)
@@ -592,14 +606,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
     def required_by(self, filters, package_ids, recursive):
         """Prints a list of requires for a given package"""
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(None)
 
         for package_id in package_ids:
             try:
                 pkg, origin = self._get_package_obj_from_id(package_id)
-            except PkError as e:
+            except pkb.PkError as e:
                 self.error(e.code, e.details)
                 continue
 
@@ -617,18 +631,18 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 pkg, repo = self.packagedb.get_package_repo(package, None)
 
             version = self.__get_package_version(pkg)
-            id = self.get_package_id(pkg.name, version, pkg.architecture, repo)
+            id = pkb.get_package_id(pkg.name, version, pkg.architecture, repo)
             installed_package = self.installdb.get_package(package)
 
             oldRelease = int(installed_package.release)
             histories = self._get_history_between(oldRelease, pkg)
 
             securities = [x for x in histories if x.type == "security"]
-            # FIXME: INFO_BUGFIX Support? We would have to match against #123 Github issues
+            # FIXME: pkb.INFO_BUGFIX Support? We would have to match against #123 Github issues
             if len(securities) > 0:
-                self.package(id, INFO_SECURITY, pkg.summary)
+                self.package(id, pkb.INFO_SECURITY, pkg.summary)
             else:
-                self.package(id, INFO_NORMAL, pkg.summary)
+                self.package(id, pkb.INFO_NORMAL, pkg.summary)
 
     def _get_history_between(self, old_release, new):
         """Get the history items between the old release and new pkg"""
@@ -641,7 +655,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         return sorted(ret, key=attrgetter("release"), reverse=True)
 
     def get_update_detail(self, package_ids):
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -650,7 +664,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         for package_id in package_ids:
             try:
                 pkg, origin = self._get_package_obj_from_id(package_id)
-            except PkError:
+            except pkb.PkError:
                 continue
 
             if pkg.name not in upgradables:
@@ -661,31 +675,26 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 # Note: installed pkgs do not record their repo of origin, assume it's the same for now
                 #       we could cross-examine but it's of little benefit
                 version = self.__get_package_version(current_pkg)
-                updates = self.get_package_id(
+                updates = pkb.get_package_id(
                     current_pkg.name, version, current_pkg.architecture, origin, "installed"
                 )
             else:
                 updates = ""
 
-            obsoletes = ""
-
             package_url = pkg.source.homepage
             vendor_url = package_url if package_url is not None else ""
 
             update_message = pkg.history[0].comment
-            update_message = update_message.replace("\n", ";")
 
             updated_date = pkg.history[0].date
 
-            bugURI = ""  # we would have to match against #123 which would be too fragile
             changelog = ""  # we do not have an enforced standard for changelogs in commit msgs
 
             cvelist = re.findall(r"(CVE\-[0-9]+\-[0-9]+)", str(update_message))
-            cves = ";".join(cvelist)
 
             # TODO: Other than repo naming convection we have no mechanism to
             #       determine the stability of an update
-            state = UPDATE_STATE_STABLE
+            state = pkb.UPDATE_STATE_STABLE
             reboot = "none"
 
             # TODO: Eopkg doesn't provide any time
@@ -696,35 +705,33 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
             self.update_detail(
                 package_id,
-                updates,
-                obsoletes,
-                vendor_url,
-                bugURI,
-                cves,
-                reboot,
-                update_message,
-                changelog,
-                state,
-                issued,
-                updated,
+                updates=[updates] if updates else [],
+                vendor_urls=[vendor_url] if vendor_url else [],
+                cve_urls=cvelist,
+                restart=reboot,
+                update_text=update_message,
+                changelog=changelog,
+                state=state,
+                issued=issued,
+                updated=updated,
             )
 
     @privileged
-    def download_packages(self, directory, package_ids):
+    def download_packages(self, package_ids, directory):
         """Download the given packages to a directory"""
         self.allow_cancel(True)
         self.percentage(0)
-        self.status(STATUS_DOWNLOAD)
+        self.status(pkb.STATUS_DOWNLOAD)
 
         packages = list()
 
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            package = pkb.split_package_id(package_id)[0]
             packages.append(package)
             try:
                 pkg = self.packagedb.get_package(package)
             except:
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package was not found")
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Package was not found")
         try:
             if directory is None:
                 directory = os.path.curdir
@@ -734,23 +741,19 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 package_obj = self.packagedb.get_package(package)
                 uri = package_obj.packageURI.split("/")[-1]
                 location = os.path.join(directory, uri)
-                self.files(package_id, location)
+                self.files(package_id, [location])
         except pisi.fetcher.FetchError as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except IOError as e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+            self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except Exception:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     @privileged
     def install_files(self, transaction_flags, inst_files):
@@ -758,30 +761,30 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # FIXME: use only_trusted
 
-        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+        if pkb.TRANSACTION_FLAG_SIMULATE in transaction_flags:
             for f in inst_files:
                 metadata, _ = pisi.api.info_file(f)
-                pkg_id = self.get_package_id(
+                pkg_id = pkb.get_package_id(
                     metadata.package.name,
                     metadata.package.version,
                     metadata.package.architecture,
                     "local",
                 )
-                self.package(pkg_id, INFO_INSTALL, metadata.package.summary)
+                self.package(pkg_id, pkb.INFO_INSTALL, metadata.package.summary)
                 for dep in metadata.package.runtimeDependencies():
                     if not dep.satisfied_by_installed():
                         if not self.packagedb.has_package(dep.package):
                             self.error(
-                                ERROR_DEP_RESOLUTION_FAILED,
+                                pkb.ERROR_DEP_RESOLUTION_FAILED,
                                 "Cannot install: %s. Can't resolve dependency %s"
                                 % (f, dep.package),
                             )
                         dep_pkg = self.packagedb.get_package(dep.package)
                         pkg, repo = self.packagedb.get_package_repo(dep_pkg.name, None)
-                        dep_id = self.get_package_id(
+                        dep_id = pkb.get_package_id(
                             dep_pkg.name, dep_pkg.version, dep_pkg.architecture, repo
                         )
-                        self.package(dep_id, INFO_INSTALL, dep_pkg.summary)
+                        self.package(dep_id, pkb.INFO_INSTALL, dep_pkg.summary)
             return
 
         self.allow_cancel(False)
@@ -790,16 +793,14 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             pisi.api.install(inst_files)
         except pisi.fetcher.FetchError as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except IOError as e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+            self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e, exit=False)
+            self.error(pkb.ERROR_LOCAL_INSTALL_FAILED, "Could not install: %s" % e)
         except Exception:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     @privileged
     def install_packages(self, transaction_flags, package_ids):
@@ -810,12 +811,12 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
 
         # FIXME: use only_trusted
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            package = pkb.split_package_id(package_id)[0]
             if self.installdb.has_package(package):
-                self.error(ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed")
+                self.error(pkb.ERROR_PACKAGE_ALREADY_INSTALLED, "Package is already installed")
             packages.append(package)
 
-        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+        if pkb.TRANSACTION_FLAG_SIMULATE in transaction_flags:
             pkgSet = set(packages)
             order = pisi.api.get_install_order(pkgSet)
             # Merge any forced system.base upgrades to the order as well
@@ -825,27 +826,25 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 dep_pkg = self.packagedb.get_package(dep)
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
-                self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
+                pkg_id = pkb.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
+                self.package(pkg_id, pkb.INFO_INSTALL, dep_pkg.summary)
             return
 
-        if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
+        if pkb.TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
             pisi.context.set_option("fetch_only", True)
 
         try:
             pisi.api.install(packages)
         except pisi.fetcher.FetchError as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except IOError as e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+            self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e, exit=False)
+            self.error(pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not install: %s" % e)
         except Exception:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     @privileged
     def refresh_cache(self, force):
@@ -853,9 +852,9 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         # TODO: use force ?
         self.allow_cancel(False)
         self.percentage(0)
-        self.status(STATUS_REFRESH_CACHE)
+        self.status(pkb.STATUS_REFRESH_CACHE)
 
-        slice = (100 / len(pisi.api.list_repos())) / 2
+        slice = (100 // len(pisi.api.list_repos())) // 2
 
         percentage = 0
         for repo in pisi.api.list_repos():
@@ -871,25 +870,25 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         packages = list()
 
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            package = pkb.split_package_id(package_id)[0]
             if not self.installdb.has_package(package):
-                self.error(ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
+                self.error(pkb.ERROR_PACKAGE_NOT_INSTALLED, "Package is not installed")
             packages.append(package)
 
-        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+        if pkb.TRANSACTION_FLAG_SIMULATE in transaction_flags:
             pkgSet = set(packages)
             order = pisi.api.get_remove_order(pkgSet, autoremove)
             for dep in order:
                 dep_pkg = self.packagedb.get_package(dep)
                 if dep_pkg.partOf == "system.base":
                     self.error(
-                        ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
+                        pkb.ERROR_CANNOT_REMOVE_SYSTEM_PACKAGE,
                         "Cannot remove system.base package: %s" % dep_pkg.name,
                     )
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
-                self.package(pkg_id, INFO_REMOVE, dep_pkg.summary)
+                pkg_id = pkb.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
+                self.package(pkg_id, pkb.INFO_REMOVE, dep_pkg.summary)
             return
 
         try:
@@ -899,27 +898,25 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 pisi.api.remove(packages)
         except pisi.fetcher.FetchError as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except IOError as e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+            self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e, exit=False)
+            self.error(pkb.ERROR_PACKAGE_FAILED_TO_REMOVE, "Could not remove: %s" % e)
         except Exception:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     @privileged
     def repo_enable(self, repoid, enable):
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
         if self.repodb.has_repo(repoid):
             pisi.api.set_repo_activity(repoid, enable)
             return
         else:
-            self.error(ERROR_REPO_NOT_FOUND, "Repository %s was not found" % repoid)
+            self.error(pkb.ERROR_REPO_NOT_FOUND, "Repository %s was not found" % repoid)
 
     @privileged
     def repo_set_data(self, repoid, parameter, value):
@@ -931,44 +928,43 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             try:
                 pisi.api.add_repo(repoid, value)
             except pisi.Error as e:
-                self.error(ERROR_UNKNOWN, e)
+                self.error(pkb.ERROR_UNKNOWN, e)
 
             try:
                 pisi.api.update_repo(repoid)
             except pisi.fetcher.FetchError:
                 pisi.api.remove_repo(repoid)
                 err = "Could not reach the repository, removing from system"
-                self.error(ERROR_REPO_NOT_FOUND, err)
+                self.error(pkb.ERROR_REPO_NOT_FOUND, err)
         elif parameter == "remove-repo":
             try:
                 pisi.api.remove_repo(repoid)
             except pisi.Error:
-                self.error(ERROR_REPO_NOT_FOUND, "Repository does not exist")
+                self.error(pkb.ERROR_REPO_NOT_FOUND, "Repository does not exist")
         else:
-            self.error(ERROR_NOT_SUPPORTED, "Valid parameters are add-repo and remove-repo")
+            self.error(pkb.ERROR_NOT_SUPPORTED, "Valid parameters are add-repo and remove-repo")
 
     def resolve(self, filters, values):
         """Turns a single package name into a package_id
         suitable for the other methods"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
 
         for package in values:
-            name = self.get_package_from_id(package)[0]
+            name = pkb.split_package_id(package)[0]
             try:
                 self.__get_package(name, filters)
-            except PkError as e:
-                if e.code == ERROR_PACKAGE_NOT_FOUND:
+            except pkb.PkError as e:
+                if e.code == pkb.ERROR_PACKAGE_NOT_FOUND:
                     continue
-                self.error(e.code, e.details, exit=True)
-                return
+                raise
 
     def search_details(self, filters, values):
         """Prints a detailed list of packages contains search term"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         # Internal FIXME: Use search_details instead of _package when API
         # gains that ability :)
@@ -979,7 +975,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """Prints the installed package which contains the specified file"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         for value in values:
             # Internal FIXME: Why it is needed?
@@ -992,7 +988,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """Prints a list of packages belongs to searched group"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         for value in values:
             packages = list()
@@ -1002,7 +998,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                         pkgs = self.componentdb.get_packages(item, walk=False)
                         packages.extend(pkgs)
                     except:
-                        self.error(ERROR_GROUP_NOT_FOUND, "Component %s was not found" % value)
+                        self.error(pkb.ERROR_GROUP_NOT_FOUND, "Component %s was not found" % value)
             for pkg in packages:
                 self.__get_package(pkg, filters)
 
@@ -1010,7 +1006,7 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         """Prints a list of packages contains search term in its name"""
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
 
         for value in values:
             for pkg in pisi.api.search_package([value]):
@@ -1024,19 +1020,19 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
         # FIXME: install progress
         self.allow_cancel(True)
         self.percentage(None)
-        self.status(STATUS_RUNNING)
+        self.status(pkb.STATUS_RUNNING)
 
         packages = list()
         for package_id in package_ids:
-            package = self.get_package_from_id(package_id)[0]
+            package = pkb.split_package_id(package_id)[0]
             if not self.installdb.has_package(package):
                 self.error(
-                    ERROR_PACKAGE_NOT_INSTALLED,
+                    pkb.ERROR_PACKAGE_NOT_INSTALLED,
                     "Cannot update a package that is not installed",
                 )
             packages.append(package)
 
-        if TRANSACTION_FLAG_SIMULATE in transaction_flags:
+        if pkb.TRANSACTION_FLAG_SIMULATE in transaction_flags:
             pkgSet = set(packages)
             order = pisi.api.get_upgrade_order(pkgSet)
             # Merge any forced system.base upgrades to the order as well
@@ -1046,11 +1042,11 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
                 dep_pkg = self.packagedb.get_package(dep)
                 repo = self.packagedb.get_package_repo(dep_pkg.name, None)
                 version = self.__get_package_version(dep_pkg)
-                pkg_id = self.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
-                self.package(pkg_id, INFO_INSTALL, dep_pkg.summary)
+                pkg_id = pkb.get_package_id(dep_pkg.name, version, dep_pkg.architecture, repo[1])
+                self.package(pkg_id, pkb.INFO_INSTALL, dep_pkg.summary)
             return
 
-        if TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
+        if pkb.TRANSACTION_FLAG_ONLY_DOWNLOAD in transaction_flags:
             pisi.context.set_option("fetch_only", True)
 
         try:
@@ -1058,21 +1054,18 @@ class PackageKitEopkgBackend(PackageKitBaseBackend, PackagekitPackage):
             pisi.api.upgrade(packages)
         except pisi.fetcher.FetchError as e:
             self.error(
-                ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e,
-                exit=False,
-            )
+                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
+                "Could not download package: %s" % e)
         except IOError as e:
-            self.error(ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
+            self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e, exit=False)
+            self.error(pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, "Could not update: %s" % e)
         except Exception:
-            self.error(ERROR_INTERNAL_ERROR, _format_str(traceback.format_exc()))
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
 
 def main():
-    backend = PackageKitEopkgBackend("")
-    backend.dispatcher(sys.argv[1:])
+    PackageKitEopkgBackend().main()
 
 
 if __name__ == "__main__":
