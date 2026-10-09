@@ -69,149 +69,6 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	pk_backend_job_finished (job);
 }
 
-void
-pk_backend_download_packages (PkBackend *backend,
-			      PkBackendJob *job,
-			      gchar **package_ids,
-			      const gchar *directory)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_depends_on (PkBackend *backend,
-		       PkBackendJob *job,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean recursive)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_required_by (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield filters,
-			gchar **package_ids,
-			gboolean recursive)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_install_packages (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     gchar **package_ids)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_install_signature (PkBackend *backend,
-			      PkBackendJob *job,
-			      PkSigTypeEnum type,
-			      const gchar *key_id,
-			      const gchar *package_id)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_install_files (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield transaction_flags,
-			  gchar **full_paths)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_remove_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids,
-			    gboolean allow_deps,
-			    gboolean autoremove)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_search_details (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield filters,
-			   gchar **values)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_backend_job_finished (job);
-}
-
 static gboolean
 pk_backend_search_name_timeout (gpointer data)
 {
@@ -221,61 +78,133 @@ pk_backend_search_name_timeout (gpointer data)
 }
 
 void
-pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 {
-	pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
-	g_timeout_add (200, pk_backend_search_name_timeout, backend);
+	PkRoleEnum role = pk_backend_job_get_role (job);
+
+	switch (role) {
+	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_DEPENDS_ON:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_FILES_LOCAL:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_DISTRO_UPGRADES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_FILES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_REQUIRED_BY:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_UPDATES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_INSTALL_SIGNATURE:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_INSTALL_FILES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_RESOLVE:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_SEARCH_FILE:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_SEARCH_NAME:
+		pk_backend_job_set_percentage (job, PK_BACKEND_PERCENTAGE_INVALID);
+		g_timeout_add (200, pk_backend_search_name_timeout, backend);
+		break;
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_REPO_LIST:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_REPO_ENABLE:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_REPO_SET_DATA:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_GET_PACKAGES:
+		pk_backend_job_finished (job);
+		break;
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+		pk_backend_job_finished (job);
+		break;
+	default:
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "role %s is not supported",
+					   pk_role_enum_to_string (role));
+		pk_backend_job_finished (job);
+		break;
+	}
 }
 
-void
-pk_backend_update_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids)
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
 {
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_repo_enable (PkBackend *backend, PkBackendJob *job, const gchar *rid, gboolean enabled)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_repo_set_data (PkBackend *backend,
-			  PkBackendJob *job,
-			  const gchar *rid,
-			  const gchar *parameter,
-			  const gchar *value)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_backend_job_finished (job);
-}
-
-void
-pk_backend_upgrade_system (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield transaction_flags,
-			   const gchar *distro_id,
-			   PkUpgradeKindEnum upgrade_kind)
-{
-	pk_backend_job_finished (job);
+	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
+				       PK_ROLE_ENUM_DOWNLOAD_PACKAGES,
+				       PK_ROLE_ENUM_DEPENDS_ON,
+				       PK_ROLE_ENUM_GET_DETAILS,
+				       PK_ROLE_ENUM_GET_DETAILS_LOCAL,
+				       PK_ROLE_ENUM_GET_FILES_LOCAL,
+				       PK_ROLE_ENUM_GET_DISTRO_UPGRADES,
+				       PK_ROLE_ENUM_GET_FILES,
+				       PK_ROLE_ENUM_REQUIRED_BY,
+				       PK_ROLE_ENUM_GET_UPDATE_DETAIL,
+				       PK_ROLE_ENUM_GET_UPDATES,
+				       PK_ROLE_ENUM_INSTALL_PACKAGES,
+				       PK_ROLE_ENUM_INSTALL_SIGNATURE,
+				       PK_ROLE_ENUM_INSTALL_FILES,
+				       PK_ROLE_ENUM_REFRESH_CACHE,
+				       PK_ROLE_ENUM_REMOVE_PACKAGES,
+				       PK_ROLE_ENUM_RESOLVE,
+				       PK_ROLE_ENUM_SEARCH_DETAILS,
+				       PK_ROLE_ENUM_SEARCH_FILE,
+				       PK_ROLE_ENUM_SEARCH_GROUP,
+				       PK_ROLE_ENUM_SEARCH_NAME,
+				       PK_ROLE_ENUM_UPDATE_PACKAGES,
+				       PK_ROLE_ENUM_GET_REPO_LIST,
+				       PK_ROLE_ENUM_REPO_ENABLE,
+				       PK_ROLE_ENUM_REPO_SET_DATA,
+				       PK_ROLE_ENUM_WHAT_PROVIDES,
+				       PK_ROLE_ENUM_GET_PACKAGES,
+				       PK_ROLE_ENUM_UPGRADE_SYSTEM,
+				       -1);
 }

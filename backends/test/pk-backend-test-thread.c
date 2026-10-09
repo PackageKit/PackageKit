@@ -64,12 +64,6 @@ pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer u
 	pk_backend_job_packages (job, packages);
 }
 
-void
-pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_backend_job_thread_create (job, pk_backend_search_groups_thread, NULL, NULL);
-}
-
 static void
 pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer user_data)
 {
@@ -118,14 +112,39 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 }
 
 void
-pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_backend_job_thread_create (job, pk_backend_search_names_thread, NULL, NULL);
-}
-
-void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
 	g_debug ("cancelling %p", backend);
 	is_cancelled = TRUE;
+}
+
+void
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
+{
+	PkRoleEnum role = pk_backend_job_get_role (job);
+
+	switch (role) {
+	case PK_ROLE_ENUM_SEARCH_GROUP:
+		pk_backend_job_thread_create (job, pk_backend_search_groups_thread, NULL, NULL);
+		break;
+	case PK_ROLE_ENUM_SEARCH_NAME:
+		pk_backend_job_thread_create (job, pk_backend_search_names_thread, NULL, NULL);
+		break;
+	default:
+		pk_backend_job_error_code (job,
+					   PK_ERROR_ENUM_NOT_SUPPORTED,
+					   "role %s is not supported",
+					   pk_role_enum_to_string (role));
+		pk_backend_job_finished (job);
+		break;
+	}
+}
+
+PkBitfield
+pk_backend_get_roles (PkBackend *backend)
+{
+	return pk_bitfield_from_enums (PK_ROLE_ENUM_CANCEL,
+				       PK_ROLE_ENUM_SEARCH_GROUP,
+				       PK_ROLE_ENUM_SEARCH_NAME,
+				       -1);
 }
