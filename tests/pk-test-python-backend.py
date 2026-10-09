@@ -39,7 +39,10 @@ class TestBackend(Backend):
 
     def search_name(self, filters, values):
         self.status(STATUS_QUERY)
-        self.log('info', 'env LANG=%s http_proxy=%s' % (os.environ.get('LANG'), os.environ.get('http_proxy')))
+        self.log(
+            'info',
+            'env LANG=%s http_proxy=%s' % (os.environ.get('LANG'), os.environ.get('http_proxy')),
+        )
         for i, value in enumerate(values):
             self.package('%s;1.%d;x86_64;main;' % (value, i), INFO_AVAILABLE, 'A ' + value)
         self.package('ctx;%d;x86_64;main;' % self.ctx.uid, INFO_INSTALLED, str(filters))
@@ -127,21 +130,32 @@ class PythonBackendTest(unittest.TestCase):
 
     def test_search_batches_ctx(self):
         events = self.run_job('1', 'search-name', filters=['installed'], values=['a', 'b', 'c'])
-        self.assertEqual([e['ev'] for e in events], ['status', 'log', 'packages', 'packages', 'finished'])
+        self.assertEqual(
+            [e['ev'] for e in events], ['status', 'log', 'packages', 'packages', 'finished']
+        )
         self.assertEqual(events[0]['status'], 'query')
         self.assertEqual(events[1]['message'], 'env LANG=de_DE.UTF-8 http_proxy=http://proxy:3128')
         items = events[2]['items'] + events[3]['items']
         self.assertEqual(len(events[2]['items']), 2)
         self.assertEqual(
             [i['package_id'] for i in items],
-            ['a;1.0;x86_64;main;', 'b;1.1;x86_64;main;', 'c;1.2;x86_64;main;', 'ctx;1000;x86_64;main;'],
+            [
+                'a;1.0;x86_64;main;',
+                'b;1.1;x86_64;main;',
+                'c;1.2;x86_64;main;',
+                'ctx;1000;x86_64;main;',
+            ],
         )
-        self.assertEqual(items[0], {'package_id': 'a;1.0;x86_64;main;', 'info': 'available', 'summary': 'A a'})
+        self.assertEqual(
+            items[0], {'package_id': 'a;1.0;x86_64;main;', 'info': 'available', 'summary': 'A a'}
+        )
         self.assertEqual(items[3]['summary'], "['installed']")
 
     def test_details_flush_before_other_event(self):
         events = self.run_job('2', 'get-details', package_ids=['x;1;a;r;'])
-        self.assertEqual([e['ev'] for e in events], ['details', 'percentage', 'percentage', 'finished'])
+        self.assertEqual(
+            [e['ev'] for e in events], ['details', 'percentage', 'percentage', 'finished']
+        )
         item = events[0]['items'][0]
         self.assertEqual(item['description'], 'd\ne')
         self.assertIsNone(item['size'])
@@ -182,8 +196,16 @@ class PythonBackendTest(unittest.TestCase):
         self.exit()
 
     def test_sigterm(self):
-        self.send(op='run', job='9', role='remove-packages', ctx={}, flags=[], package_ids=[],
-                  allow_deps=False, autoremove=False)
+        self.send(
+            op='run',
+            job='9',
+            role='remove-packages',
+            ctx={},
+            flags=[],
+            package_ids=[],
+            allow_deps=False,
+            autoremove=False,
+        )
         time.sleep(0.2)
         self.proc.send_signal(signal.SIGTERM)
         error = self.recv()

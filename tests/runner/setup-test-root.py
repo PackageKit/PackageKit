@@ -30,18 +30,40 @@ def main():
         help='the installed backend module directory, e.g. /usr/lib/packagekit/backends',
     )
     parser.add_argument('--stamp', required=True, help='stamp file to touch when done')
+    parser.add_argument(
+        '--link',
+        action='append',
+        default=[],
+        metavar='INSTALLED=SOURCE',
+        help='symlink INSTALLED (an installed path, e.g. /usr/share/PackageKit/helpers/x) '
+        'inside the root to SOURCE',
+    )
     parser.add_argument('modules', nargs='*', help='backend modules to link into the root')
     args = parser.parse_args()
 
     root = os.path.abspath(args.root)
     backend_dir = os.path.join(root, args.backend_dir.lstrip('/'))
     os.makedirs(backend_dir, exist_ok=True)
+    # drop links to modules that no longer exist, they would shadow a manifest
+    wanted = {os.path.basename(m) for m in args.modules}
+    for name in os.listdir(backend_dir):
+        path = os.path.join(backend_dir, name)
+        if os.path.islink(path) and name not in wanted:
+            os.unlink(path)
     for module in args.modules:
         module = os.path.abspath(module)
         link = os.path.join(backend_dir, os.path.basename(module))
         if os.path.islink(link) or os.path.exists(link):
             os.unlink(link)
         os.symlink(module, link)
+
+    for entry in args.link:
+        installed, source = entry.split('=', 1)
+        link = os.path.join(root, installed.lstrip('/'))
+        os.makedirs(os.path.dirname(link), exist_ok=True)
+        if os.path.islink(link) or os.path.exists(link):
+            os.unlink(link)
+        os.symlink(os.path.abspath(source), link)
 
     # the daemon expects its state directory to exist, as it does on an installed system
     os.makedirs(os.path.join(root, 'var', 'lib', 'PackageKit'), exist_ok=True)

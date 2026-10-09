@@ -192,7 +192,6 @@ class Backend:
         except PkError as e:
             self.error(e.code, e.details)
         except Exception:  # noqa: BLE001 - the helper must survive any bug in a job
-            traceback.print_exc()
             self.error(enums.ERROR_INTERNAL_ERROR, traceback.format_exc())
         finally:
             self._finish()

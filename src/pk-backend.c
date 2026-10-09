@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2008-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2025-2026 Matthias Klumpp <matthias@tenstral.net>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -388,7 +389,24 @@ pk_backend_build_library_path (PkBackend *backend, const gchar *name)
 	return path;
 }
 
+/*
+ * pk_backend_build_manifest_path:
+ *
+ * The manifest a spawned backend of this name would have, see
+ * docs/extra/backend-spawn-protocol.md.
+ */
+static gchar *
+pk_backend_build_manifest_path (PkBackend *backend, const gchar *name)
+{
+	g_autofree gchar *root_dir = pk_util_get_root_dir (backend->conf);
+	return g_build_filename (root_dir, PK_BACKENDS_DIR, name, "backend.conf", NULL);
+}
+
 typedef gchar *(*PkBackendGetCompatStringFunc) (PkBackend *backend);
+typedef gboolean (*PkBackendInitializeManifestFunc) (GKeyFile *conf,
+						     PkBackend *backend,
+						     const gchar *manifest_path,
+						     GError **error);
 
 /**
  * pk_backend_load:
@@ -406,8 +424,10 @@ pk_backend_load (PkBackend *backend, GError **error)
 	GModule *handle;
 	gboolean ret = FALSE;
 	gpointer func = NULL;
+	PkBackendGetCompatStringFunc backend_vfunc;
 	g_autofree gchar *backend_name = NULL;
 	g_autofree gchar *path = NULL;
+	g_autofree gchar *manifest = NULL;
 
 	g_return_val_if_fail (PK_IS_BACKEND (backend), FALSE);
 	g_return_val_if_fail (pk_is_thread_default (), FALSE);
@@ -432,6 +452,19 @@ pk_backend_load (PkBackend *backend, GError **error)
 
 	g_debug ("Trying to load : %s", backend_name);
 	path = pk_backend_build_library_path (backend, backend_name);
+	if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
+		/* a backend without a module of its own may be a spawned one */
+		manifest = pk_backend_build_manifest_path (backend, backend_name);
+		if (g_file_test (manifest, G_FILE_TEST_EXISTS)) {
+			g_debug ("using the spawn module for %s with manifest %s",
+				 backend_name,
+				 manifest);
+			g_free (path);
+			path = pk_backend_build_library_path (backend, "spawn");
+		} else {
+			g_clear_pointer (&manifest, g_free);
+		}
+	}
 	handle = g_module_open (path, 0);
 	if (handle == NULL) {
 		g_set_error (error,
@@ -447,7 +480,6 @@ pk_backend_load (PkBackend *backend, GError **error)
 	ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *) &func);
 	if (ret) {
 		PkBackendDesc *desc;
-		PkBackendGetCompatStringFunc backend_vfunc;
 		desc = g_new0 (PkBackendDesc, 1);
 
 		/* clang-format off */
@@ -494,18 +526,6 @@ pk_backend_load (PkBackend *backend, GError **error)
 		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *) &desc->repair_system);
 		/* clang-format on */
 
-		/* get old static string data */
-		ret = g_module_symbol (handle,
-				       "pk_backend_get_author",
-				       (gpointer *) &backend_vfunc);
-		if (ret)
-			desc->author = backend_vfunc (backend);
-		ret = g_module_symbol (handle,
-				       "pk_backend_get_description",
-				       (gpointer *) &backend_vfunc);
-		if (ret)
-			desc->description = backend_vfunc (backend);
-
 		/* make available */
 		backend->desc = desc;
 	} else {
@@ -524,11 +544,39 @@ pk_backend_load (PkBackend *backend, GError **error)
 	backend->handle = handle;
 
 	/* initialize if we can */
-	if (backend->desc->initialize != NULL) {
+	if (manifest != NULL) {
+		PkBackendInitializeManifestFunc initialize_manifest = NULL;
+		ret = g_module_symbol (handle,
+				       "pk_backend_initialize_manifest",
+				       (gpointer *) &initialize_manifest);
+		if (ret) {
+			backend->during_initialize = TRUE;
+			ret = initialize_manifest (backend->conf, backend, manifest, error);
+			backend->during_initialize = FALSE;
+		} else {
+			g_set_error (error, 1, 0, "module %s cannot load manifest backends", path);
+		}
+		if (!ret) {
+			g_prefix_error (error, "failed to load spawned backend %s: ", backend_name);
+			g_clear_pointer (&backend->desc, g_free);
+			g_module_close (handle);
+			backend->handle = NULL;
+			return FALSE;
+		}
+	} else if (backend->desc->initialize != NULL) {
 		backend->during_initialize = TRUE;
 		backend->desc->initialize (backend->conf, backend);
 		backend->during_initialize = FALSE;
 	}
+
+	/* static string data */
+	ret = g_module_symbol (handle, "pk_backend_get_author", (gpointer *) &backend_vfunc);
+	if (ret)
+		backend->desc->author = backend_vfunc (backend);
+	ret = g_module_symbol (handle, "pk_backend_get_description", (gpointer *) &backend_vfunc);
+	if (ret)
+		backend->desc->description = backend_vfunc (backend);
+
 	backend->loaded = TRUE;
 	return TRUE;
 }

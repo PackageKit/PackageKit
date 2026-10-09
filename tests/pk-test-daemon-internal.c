@@ -1641,6 +1641,342 @@ pk_test_scheduler_create_transaction (PkScheduler *tlist)
 	return tid;
 }
 
+/* ---- generic spawn module, driven through the real loader and a Python helper ---- */
+
+static guint sm_packages = 0;
+static guint sm_details = 0;
+static guint sm_update_details = 0;
+static guint sm_files = 0;
+static guint sm_repo_details = 0;
+static guint sm_distro_upgrades = 0;
+static guint sm_item_progress = 0;
+static guint sm_require_restart = 0;
+static guint sm_eula = 0;
+static guint sm_repo_sig = 0;
+static guint sm_percentage = 0;
+static gint sm_status = -1;
+static gint sm_error = -1;
+static gint sm_exit = -1;
+
+static void
+pk_test_spawn_module_packages_cb (PkBackendJob *job, GPtrArray *packages, gpointer user_data)
+{
+	sm_packages += packages->len;
+}
+
+static void
+pk_test_spawn_module_details_cb (PkBackendJob *job, PkDetails *item, gpointer user_data)
+{
+	g_assert_cmpstr (pk_details_get_license (item), ==, "MIT");
+	g_assert_cmpuint (pk_details_get_size (item), ==, 1234);
+	sm_details++;
+}
+
+static void
+pk_test_spawn_module_update_details_cb (PkBackendJob *job, GPtrArray *items, gpointer user_data)
+{
+	sm_update_details += items->len;
+}
+
+static void
+pk_test_spawn_module_files_cb (PkBackendJob *job, PkFiles *item, gpointer user_data)
+{
+	g_assert_cmpuint (g_strv_length (pk_files_get_files (item)), ==, 2);
+	sm_files++;
+}
+
+static void
+pk_test_spawn_module_repo_detail_cb (PkBackendJob *job, PkRepoDetail *item, gpointer user_data)
+{
+	sm_repo_details++;
+}
+
+static void
+pk_test_spawn_module_distro_upgrade_cb (PkBackendJob *job,
+					PkDistroUpgrade *item,
+					gpointer user_data)
+{
+	sm_distro_upgrades++;
+}
+
+static void
+pk_test_spawn_module_item_progress_cb (PkBackendJob *job, PkItemProgress *item, gpointer user_data)
+{
+	sm_item_progress++;
+}
+
+static void
+pk_test_spawn_module_require_restart_cb (PkBackendJob *job,
+					 PkRequireRestart *item,
+					 gpointer user_data)
+{
+	sm_require_restart++;
+}
+
+static void
+pk_test_spawn_module_eula_cb (PkBackendJob *job, PkEulaRequired *item, gpointer user_data)
+{
+	g_assert_cmpstr (pk_eula_required_get_eula_id (item), ==, "eula-1");
+	sm_eula++;
+}
+
+static void
+pk_test_spawn_module_repo_sig_cb (PkBackendJob *job,
+				  PkRepoSignatureRequired *item,
+				  gpointer user_data)
+{
+	g_autofree gchar *key_id = NULL;
+	g_object_get (item, "key-id", &key_id, NULL);
+	g_assert_cmpstr (key_id, ==, "ABCDEF");
+	sm_repo_sig++;
+}
+
+static void
+pk_test_spawn_module_percentage_cb (PkBackendJob *job, guint percentage, gpointer user_data)
+{
+	sm_percentage = percentage;
+}
+
+static void
+pk_test_spawn_module_status_cb (PkBackendJob *job, PkStatusEnum status, gpointer user_data)
+{
+	sm_status = status;
+}
+
+static void
+pk_test_spawn_module_error_cb (PkBackendJob *job, PkError *item, gpointer user_data)
+{
+	sm_error = pk_error_get_code (item);
+}
+
+static void
+pk_test_spawn_module_finished_cb (PkBackendJob *job, PkExitEnum exit, gpointer user_data)
+{
+	sm_exit = exit;
+	_g_test_loop_quit ();
+}
+
+static PkBackendJob *
+pk_test_spawn_module_job_new (GKeyFile *conf, PkBackend *backend)
+{
+	PkBackendJob *job = pk_backend_job_new (conf);
+	struct
+	{
+		PkBackendJobSignal signal;
+		gpointer cb;
+	} vfuncs[] = {
+		{ PK_BACKEND_SIGNAL_PACKAGES, pk_test_spawn_module_packages_cb },
+		{ PK_BACKEND_SIGNAL_DETAILS, pk_test_spawn_module_details_cb },
+		{ PK_BACKEND_SIGNAL_UPDATE_DETAILS, pk_test_spawn_module_update_details_cb },
+		{ PK_BACKEND_SIGNAL_FILES, pk_test_spawn_module_files_cb },
+		{ PK_BACKEND_SIGNAL_REPO_DETAIL, pk_test_spawn_module_repo_detail_cb },
+		{ PK_BACKEND_SIGNAL_DISTRO_UPGRADE, pk_test_spawn_module_distro_upgrade_cb },
+		{ PK_BACKEND_SIGNAL_ITEM_PROGRESS, pk_test_spawn_module_item_progress_cb },
+		{ PK_BACKEND_SIGNAL_REQUIRE_RESTART, pk_test_spawn_module_require_restart_cb },
+		{ PK_BACKEND_SIGNAL_EULA_REQUIRED, pk_test_spawn_module_eula_cb },
+		{ PK_BACKEND_SIGNAL_REPO_SIGNATURE_REQUIRED, pk_test_spawn_module_repo_sig_cb },
+		{ PK_BACKEND_SIGNAL_PERCENTAGE, pk_test_spawn_module_percentage_cb },
+		{ PK_BACKEND_SIGNAL_STATUS_CHANGED, pk_test_spawn_module_status_cb },
+		{ PK_BACKEND_SIGNAL_ERROR_CODE, pk_test_spawn_module_error_cb },
+		{ PK_BACKEND_SIGNAL_FINISHED, pk_test_spawn_module_finished_cb },
+	};
+
+	pk_backend_job_set_backend (job, backend);
+	for (guint i = 0; i < G_N_ELEMENTS (vfuncs); i++)
+		pk_backend_job_set_vfunc (job,
+					  vfuncs[i].signal,
+					  PK_BACKEND_JOB_VFUNC (vfuncs[i].cb),
+					  NULL);
+	sm_packages = sm_details = sm_update_details = sm_files = sm_repo_details = 0;
+	sm_distro_upgrades = sm_item_progress = sm_require_restart = sm_eula = sm_repo_sig = 0;
+	sm_percentage = 0;
+	sm_status = sm_error = sm_exit = -1;
+	pk_backend_start_job (backend, job);
+	return job;
+}
+
+/* waits for the job to finish, then releases it */
+static void
+pk_test_spawn_module_job_wait (PkBackend *backend, PkBackendJob *job, guint timeout_ms)
+{
+	_g_test_loop_run_with_timeout (timeout_ms);
+	g_assert_true (pk_backend_job_get_is_finished (job));
+	pk_backend_stop_job (backend, job);
+	g_object_unref (job);
+}
+
+static void
+pk_test_spawn_module_func (void)
+{
+	gboolean ret;
+	const gchar *package_ids[] = { "foo;1.0;x86_64;main;", "bar;2.1;x86_64;main;", NULL };
+	const gchar *values[] = { "ba", "foo", NULL };
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GKeyFile) conf = NULL;
+	g_autoptr(PkBackend) backend = NULL;
+	g_autoptr(PkBackend) broken = NULL;
+	g_autofree gchar *root_dir = NULL;
+	g_autofree gchar *broken_dir = NULL;
+	g_autofree gchar *broken_manifest = NULL;
+	g_auto(GStrv) mime_types = NULL;
+	PkBackendJob *job;
+
+	conf = pk_test_conf_new ();
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_spawn");
+	g_key_file_set_integer (conf, "Daemon", "BackendShutdownTimeout", 1);
+
+	/* no module of that name, but a manifest: the spawn module is loaded and says hello */
+	backend = pk_backend_new (conf);
+	ret = pk_backend_load (backend, &error);
+	g_assert_no_error (error);
+	g_assert_true (ret);
+	g_assert_cmpstr (pk_backend_get_name (backend), ==, "test_spawn");
+	g_assert_cmpstr (pk_backend_get_description (backend), ==, "Test spawn backend");
+	g_assert_cmpstr (pk_backend_get_author (backend), ==, "PackageKit developers");
+	g_assert_true (
+	    pk_bitfield_contain (pk_backend_get_roles (backend), PK_ROLE_ENUM_SEARCH_NAME));
+	g_assert_true (pk_bitfield_contain (pk_backend_get_roles (backend), PK_ROLE_ENUM_RESOLVE));
+	g_assert_false (
+	    pk_bitfield_contain (pk_backend_get_roles (backend), PK_ROLE_ENUM_SEARCH_GROUP));
+	g_assert_true (
+	    pk_bitfield_contain (pk_backend_get_filters (backend), PK_FILTER_ENUM_DEVELOPMENT));
+	g_assert_true (pk_bitfield_contain (pk_backend_get_groups (backend), PK_GROUP_ENUM_SYSTEM));
+	mime_types = pk_backend_get_mime_types (backend);
+	g_assert_cmpstr (mime_types[0], ==, "application/x-test");
+	g_assert_null (mime_types[1]);
+
+	/* a query: two batches of packages, progress, status */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_search_names (backend,
+				 job,
+				 pk_bitfield_value (PK_FILTER_ENUM_INSTALLED),
+				 (gchar **) values);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_exit, ==, PK_EXIT_ENUM_SUCCESS);
+	g_assert_cmpint (sm_error, ==, -1);
+	g_assert_cmpuint (sm_packages, ==, 3);
+	g_assert_cmpuint (sm_percentage, ==, 100);
+	g_assert_cmpint (sm_status, ==, PK_STATUS_ENUM_FINISHED);
+
+	/* the other result events, on the same helper */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_get_details (backend, job, (gchar **) package_ids);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_exit, ==, PK_EXIT_ENUM_SUCCESS);
+	g_assert_cmpuint (sm_details, ==, 2);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_get_update_detail (backend, job, (gchar **) package_ids);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_update_details, ==, 2);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_get_files (backend, job, (gchar **) package_ids);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_files, ==, 2);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_get_repo_list (backend, job, 0);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_repo_details, ==, 2);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_get_distro_upgrades (backend, job);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_distro_upgrades, ==, 1);
+
+	/* transaction progress events */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_install_packages (backend,
+				     job,
+				     pk_bitfield_value (PK_TRANSACTION_FLAG_ENUM_SIMULATE),
+				     (gchar **) package_ids);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_exit, ==, PK_EXIT_ENUM_SUCCESS);
+	g_assert_cmpuint (sm_item_progress, ==, 2);
+	g_assert_cmpuint (sm_require_restart, ==, 1);
+
+	/* interaction events */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_repo_enable (backend, job, "main", TRUE);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_eula, ==, 1);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_repo_set_data (backend, job, "main", "key", "value");
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_repo_sig, ==, 1);
+
+	/* errors: a specific one, and an exception in the helper */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_install_signature (backend, job, PK_SIGTYPE_ENUM_GPG, "KEY", package_ids[0]);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_GPG_FAILURE);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_resolve (backend, job, 0, (gchar **) values);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_INTERNAL_ERROR);
+	g_assert_cmpint (sm_exit, ==, PK_EXIT_ENUM_FAILED);
+
+	/* in-band cancel: the helper stops at its next check */
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_install_packages (backend, job, 0, (gchar **) package_ids);
+	pk_backend_cancel (backend, job);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_TRANSACTION_CANCELLED);
+
+	/* the helper exits mid-job: internal error, and the next job gets a fresh helper */
+	g_test_expect_message ("PackageKit-Spawn",
+			       G_LOG_LEVEL_WARNING,
+			       "*helper exited during job*");
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_refresh_cache (backend, job, TRUE);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_INTERNAL_ERROR);
+
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_refresh_cache (backend, job, FALSE);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpint (sm_exit, ==, PK_EXIT_ENUM_SUCCESS);
+
+	/* idle exit after BackendShutdownTimeout, restart on the next job */
+	_g_test_loop_wait (2500);
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_search_names (backend, job, 0, (gchar **) values);
+	pk_test_spawn_module_job_wait (backend, job, 5000);
+	g_assert_cmpuint (sm_packages, ==, 3);
+
+	/* cancel escalation: cancel and SIGTERM are ignored, SIGKILL is allowed by the manifest */
+	g_test_expect_message ("PackageKit-Spawn", G_LOG_LEVEL_WARNING, "*did not finish job*");
+	g_test_expect_message (G_LOG_DOMAIN,
+			       G_LOG_LEVEL_WARNING,
+			       "*ignored SIGTERM, sending SIGKILL*");
+	job = pk_test_spawn_module_job_new (conf, backend);
+	pk_backend_remove_packages (backend, job, 0, (gchar **) package_ids, FALSE, FALSE);
+	pk_backend_cancel (backend, job);
+	pk_test_spawn_module_job_wait (backend, job, 15000);
+	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_PROCESS_KILL);
+	g_test_assert_expected_messages ();
+
+	ret = pk_backend_unload (backend);
+	g_assert_true (ret);
+
+	/* a manifest whose helper cannot be started fails the load */
+	root_dir = pk_util_get_root_dir (conf);
+	broken_dir = g_build_filename (root_dir, PK_BACKENDS_DIR, "test_broken", NULL);
+	broken_manifest = g_build_filename (broken_dir, "backend.conf", NULL);
+	g_assert_cmpint (g_mkdir_with_parents (broken_dir, 0755), ==, 0);
+	ret = g_file_set_contents (broken_manifest, "[Backend]\nExec=does-not-exist\n", -1, NULL);
+	g_assert_true (ret);
+	g_key_file_set_string (conf, "Daemon", "DefaultBackend", "test_broken");
+	broken = pk_backend_new (conf);
+	ret = pk_backend_load (broken, &error);
+	g_assert_false (ret);
+	g_assert_nonnull (error);
+	g_assert_nonnull (strstr (error->message, "does-not-exist"));
+}
+
 static void
 pk_test_scheduler_func (void)
 {
@@ -2171,6 +2507,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/packagekit/spawn", pk_test_spawn_func);
 	g_test_add_func ("/packagekit/backend-process", pk_test_backend_process_func);
 	g_test_add_func ("/packagekit/backend-protocol", pk_test_backend_protocol_func);
+	g_test_add_func ("/packagekit/spawn-module", pk_test_spawn_module_func);
 	g_test_add_func ("/packagekit/scheduler", pk_test_scheduler_func);
 	g_test_add_func ("/packagekit/scheduler-parallel", pk_test_scheduler_parallel_func);
 	g_test_add_func ("/packagekit/transaction-db", pk_test_transaction_db_func);

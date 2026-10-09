@@ -301,7 +301,9 @@ pk_backend_process_protocol_line_cb (GObject *source, GAsyncResult *res, gpointe
 	if (stream != self->proto_in)
 		return; /* stale callback from a previous instance */
 	if (line == NULL) {
-		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* a helper killed with our request still unread resets the socket */
+		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CONNECTION_CLOSED)) {
 			g_warning ("%s: failed to read from helper protocol socket: %s",
 				   pk_backend_process_log_prefix (self),
 				   error->message);
