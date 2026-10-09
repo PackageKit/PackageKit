@@ -244,26 +244,6 @@ static void backend_depends_on_or_requires_thread(PkBackendJob *job, GVariant *p
     apt->emitPackages(output, filters);
 }
 
-void pk_backend_depends_on(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield filters,
-    gchar **package_ids,
-    gboolean recursive)
-{
-    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
-}
-
-void pk_backend_required_by(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield filters,
-    gchar **package_ids,
-    gboolean recursive)
-{
-    pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
-}
-
 static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **package_ids;
@@ -300,11 +280,6 @@ static void backend_get_files_thread(PkBackendJob *job, GVariant *params, gpoint
     }
 }
 
-void pk_backend_get_files(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-    pk_backend_job_thread_create(job, backend_get_files_thread, nullptr, nullptr);
-}
-
 static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **package_ids = nullptr;
@@ -339,21 +314,6 @@ static void backend_get_details_thread(PkBackendJob *job, GVariant *params, gpoi
     }
 }
 
-void pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
-}
-
-void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
-}
-
-void pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-    pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
-}
-
 static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     g_autofree gchar **files = nullptr;
@@ -362,11 +322,6 @@ static void backend_get_files_local_thread(PkBackendJob *job, GVariant *params, 
 
     for (guint i = 0; files[i] != nullptr; ++i)
         apt->emitPackageFilesLocal(files[i]);
-}
-
-void pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-    pk_backend_job_thread_create(job, backend_get_files_local_thread, nullptr, nullptr);
 }
 
 static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -400,11 +355,6 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     apt->emitPackages(blocked, filters, PK_INFO_ENUM_BLOCKED);
 }
 
-void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-    pk_backend_job_thread_create(job, backend_get_updates_thread, nullptr, nullptr);
-}
-
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkBitfield filters;
@@ -431,14 +381,6 @@ static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gp
 
     // It's faster to emit the packages here rather than in the matching part
     apt->emitPackages(output, filters);
-}
-
-/**
- * pk_backend_what_provides
- */
-void pk_backend_what_provides(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_thread_create(job, backend_what_provides_thread, nullptr, nullptr);
 }
 
 /**
@@ -540,11 +482,6 @@ static void pk_backend_download_packages_thread(PkBackendJob *job, GVariant *par
     }
 }
 
-void pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
-{
-    pk_backend_job_thread_create(job, pk_backend_download_packages_thread, nullptr, nullptr);
-}
-
 static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     pk_backend_job_set_allow_cancel(job, true);
@@ -567,11 +504,6 @@ static void pk_backend_refresh_cache_thread(PkBackendJob *job, GVariant *params,
     }
 }
 
-void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-    pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, nullptr, nullptr);
-}
-
 static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **search;
@@ -590,11 +522,6 @@ static void pk_backend_resolve_thread(PkBackendJob *job, GVariant *params, gpoin
 
     // It's faster to emit the packages here rather than in the matching part
     apt->emitPackages(pkgs, filters, PK_INFO_ENUM_UNKNOWN, true);
-}
-
-void pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
-{
-    pk_backend_job_thread_create(job, pk_backend_resolve_thread, nullptr, nullptr);
 }
 
 static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -623,11 +550,6 @@ static void pk_backend_search_files_thread(PkBackendJob *job, GVariant *params, 
     }
 }
 
-void pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_thread_create(job, pk_backend_search_files_thread, nullptr, nullptr);
-}
-
 static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     gchar **search;
@@ -647,11 +569,6 @@ static void backend_search_groups_thread(PkBackendJob *job, GVariant *params, gp
     apt->emitPackages(output, filters);
 
     pk_backend_job_set_percentage(job, 100);
-}
-
-void pk_backend_search_groups(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_thread_create(job, backend_search_groups_thread, nullptr, nullptr);
 }
 
 static void backend_search_package_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -695,16 +612,6 @@ static void backend_search_package_thread(PkBackendJob *job, GVariant *params, g
     apt->emitPackages(output, filters, PK_INFO_ENUM_UNKNOWN, true);
 
     pk_backend_job_set_percentage(job, 100);
-}
-
-void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
-}
-
-void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
 }
 
 static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -795,45 +702,6 @@ static void backend_manage_packages_thread(PkBackendJob *job, GVariant *params, 
         g_debug("AptJob::runTransaction() failed: %i", _error->PendingError());
         return;
     }
-}
-
-void pk_backend_install_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids)
-{
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
-}
-
-void pk_backend_update_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids)
-{
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
-}
-
-void pk_backend_install_files(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
-{
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
-}
-
-void pk_backend_remove_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids,
-    gboolean allow_deps,
-    gboolean autoremove)
-{
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
-}
-
-void pk_backend_repair_system(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-    pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
 }
 
 static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
@@ -960,26 +828,6 @@ static void backend_repo_manager_thread(PkBackendJob *job, GVariant *params, gpo
     }
 }
 
-void pk_backend_get_repo_list(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
-}
-
-void pk_backend_repo_enable(PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
-{
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
-}
-
-void pk_backend_repo_remove(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    const gchar *repo_id,
-    gboolean autoremove)
-{
-    pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
-}
-
 static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 {
     PkBitfield filters;
@@ -999,9 +847,95 @@ static void backend_get_packages_thread(PkBackendJob *job, GVariant *params, gpo
     apt->emitPackages(output, filters);
 }
 
-void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+void pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 {
-    pk_backend_job_thread_create(job, backend_get_packages_thread, nullptr, nullptr);
+    const PkRoleEnum role = pk_backend_job_get_role(job);
+
+    switch (role) {
+    case PK_ROLE_ENUM_DEPENDS_ON:
+        pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REQUIRED_BY:
+        pk_backend_job_thread_create(job, backend_depends_on_or_requires_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_FILES:
+        pk_backend_job_thread_create(job, backend_get_files_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+        pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_DETAILS:
+        pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+        pk_backend_job_thread_create(job, backend_get_details_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_FILES_LOCAL:
+        pk_backend_job_thread_create(job, backend_get_files_local_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_UPDATES:
+        pk_backend_job_thread_create(job, backend_get_updates_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_WHAT_PROVIDES:
+        pk_backend_job_thread_create(job, backend_what_provides_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+        pk_backend_job_thread_create(job, pk_backend_download_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REFRESH_CACHE:
+        pk_backend_job_thread_create(job, pk_backend_refresh_cache_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_RESOLVE:
+        pk_backend_job_thread_create(job, pk_backend_resolve_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_SEARCH_FILE:
+        pk_backend_job_thread_create(job, pk_backend_search_files_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_SEARCH_GROUP:
+        pk_backend_job_thread_create(job, backend_search_groups_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_SEARCH_NAME:
+        pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_SEARCH_DETAILS:
+        pk_backend_job_thread_create(job, backend_search_package_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_INSTALL_PACKAGES:
+        pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_UPDATE_PACKAGES:
+        pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_INSTALL_FILES:
+        pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REMOVE_PACKAGES:
+        pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REPAIR_SYSTEM:
+        pk_backend_job_thread_create(job, backend_manage_packages_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_REPO_LIST:
+        pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REPO_ENABLE:
+        pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_REPO_REMOVE:
+        pk_backend_job_thread_create(job, backend_repo_manager_thread, nullptr, nullptr);
+        break;
+    case PK_ROLE_ENUM_GET_PACKAGES:
+        pk_backend_job_thread_create(job, backend_get_packages_thread, nullptr, nullptr);
+        break;
+    default:
+        pk_backend_job_error_code(
+            job,
+            PK_ERROR_ENUM_NOT_SUPPORTED,
+            "role %s is not supported",
+            pk_role_enum_to_string(role));
+        pk_backend_job_finished(job);
+        break;
+    }
 }
 
 PkBitfield pk_backend_get_roles(PkBackend *backend)
