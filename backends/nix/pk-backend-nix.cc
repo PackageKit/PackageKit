@@ -198,12 +198,6 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
     pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **packages)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, pk_backend_get_details_thread, NULL, NULL);
-}
-
 static nix::Path nix_get_user_profile(PkBackendJob *job)
 {
     guint uid = pk_backend_job_get_uid(job);
@@ -399,30 +393,6 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
     pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
-}
-
-void pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
-}
-
-void pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
-}
-
-void pk_backend_resolve(PkBackend *self, PkBackendJob *job, PkBitfield filters, gchar **search)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
-}
-
 static void nix_refresh_thread(PkBackendJob *job, GVariant *params, gpointer p)
 {
     nix::settings.tarballTtl = 0;
@@ -430,12 +400,6 @@ static void nix_refresh_thread(PkBackendJob *job, GVariant *params, gpointer p)
     nix::settings.tarballTtl = 60 * 60;
 
     pk_backend_job_set_percentage(job, 100);
-}
-
-void pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-    pk_backend_job_thread_create(job, nix_refresh_thread, NULL, NULL);
 }
 
 static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
@@ -546,16 +510,6 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
     pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_install_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
-    pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
-}
-
 static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
 {
     PkBitfield transaction_flags;
@@ -638,28 +592,6 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
     pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_remove_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids,
-    gboolean allow_deps,
-    gboolean autoremove)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_REMOVE);
-    pk_backend_job_thread_create(job, nix_remove_thread, NULL, NULL);
-}
-
-void pk_backend_update_packages(
-    PkBackend *backend,
-    PkBackendJob *job,
-    PkBitfield transaction_flags,
-    gchar **package_ids)
-{
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
-    pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
-}
-
 static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer p)
 {
     auto profile = nix_get_user_profile(job);
@@ -706,8 +638,49 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
     pk_backend_job_set_percentage(job, 100);
 }
 
-void pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
+void pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 {
-    pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-    pk_backend_job_thread_create(job, nix_get_updates_thread, NULL, NULL);
+    PkRoleEnum role = pk_backend_job_get_role(job);
+
+    switch (role) {
+    case PK_ROLE_ENUM_GET_DETAILS:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+        pk_backend_job_thread_create(job, pk_backend_get_details_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_GET_PACKAGES:
+    case PK_ROLE_ENUM_SEARCH_NAME:
+    case PK_ROLE_ENUM_SEARCH_DETAILS:
+    case PK_ROLE_ENUM_RESOLVE:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+        pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_REFRESH_CACHE:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
+        pk_backend_job_thread_create(job, nix_refresh_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_INSTALL_PACKAGES:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
+        pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_REMOVE_PACKAGES:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_REMOVE);
+        pk_backend_job_thread_create(job, nix_remove_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_UPDATE_PACKAGES:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
+        pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
+        break;
+    case PK_ROLE_ENUM_GET_UPDATES:
+        pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
+        pk_backend_job_thread_create(job, nix_get_updates_thread, NULL, NULL);
+        break;
+    default:
+        pk_backend_job_error_code(
+            job,
+            PK_ERROR_ENUM_NOT_SUPPORTED,
+            "role %s is not supported",
+            pk_role_enum_to_string(role));
+        pk_backend_job_finished(job);
+        break;
+    }
 }
