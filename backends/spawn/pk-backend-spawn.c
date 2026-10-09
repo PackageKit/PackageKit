@@ -51,6 +51,7 @@ typedef struct
 	guint idle_time;
 
 	PkBackendProcess *process;
+	const gchar *log_domain;
 	PkBackendHello *hello;
 	gboolean awaiting_hello;
 	guint hello_id;
@@ -120,7 +121,11 @@ pk_backend_spawn_handshake_failed (const gchar *reason)
 {
 	priv->awaiting_hello = FALSE;
 	g_clear_handle_id (&priv->hello_id, g_source_remove);
-	g_warning ("%s: helper handshake failed: %s", priv->name, reason);
+	g_log (priv->log_domain,
+	       G_LOG_LEVEL_WARNING,
+	       "%s: helper handshake failed: %s",
+	       priv->name,
+	       reason);
 	if (priv->hello_loop != NULL) {
 		g_clear_error (&priv->hello_error);
 		g_set_error_literal (&priv->hello_error, G_IO_ERROR, G_IO_ERROR_FAILED, reason);
@@ -155,7 +160,7 @@ pk_backend_spawn_hello_received (const gchar *line)
 	priv->hello = hello;
 	priv->awaiting_hello = FALSE;
 	g_clear_handle_id (&priv->hello_id, g_source_remove);
-	g_debug ("%s: helper is ready", priv->name);
+	g_log (priv->log_domain, G_LOG_LEVEL_DEBUG, "%s: helper is ready", priv->name);
 
 	if (priv->hello_loop != NULL)
 		g_main_loop_quit (priv->hello_loop);
@@ -176,14 +181,17 @@ pk_backend_spawn_line_cb (PkBackendProcess *process, const gchar *line, gpointer
 		pk_backend_spawn_hello_received (line);
 		return;
 	}
-	if (!pk_backend_protocol_handle_event (line,
+	if (!pk_backend_protocol_handle_event (priv->log_domain,
+					       line,
 					       in_job ? priv->job_id : NULL,
 					       in_job ? priv->job : NULL,
 					       &finished,
 					       &error)) {
-		g_warning ("%s: protocol error, terminating the helper: %s",
-			   priv->name,
-			   error->message);
+		g_log (priv->log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "%s: protocol error, terminating the helper: %s",
+		       priv->name,
+		       error->message);
 		pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "protocol error from the helper: %s",
 					   error->message);
@@ -214,12 +222,17 @@ pk_backend_spawn_exited_cb (PkBackendProcess *process,
 	}
 	if (priv->job == NULL || priv->job_finished) {
 		if (exit_type == PK_BACKEND_PROCESS_EXIT_SUCCESS && exit_requested)
-			g_debug ("%s: helper exited", priv->name);
+			g_log (priv->log_domain,
+			       G_LOG_LEVEL_DEBUG,
+			       "%s: helper exited",
+			       priv->name);
 		else
-			g_warning ("%s: helper exited unexpectedly while idle (%s, status %d)",
-				   priv->name,
-				   how,
-				   status);
+			g_log (priv->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "%s: helper exited unexpectedly while idle (%s, status %d)",
+			       priv->name,
+			       how,
+			       status);
 		return;
 	}
 	if (exit_requested) {
@@ -238,11 +251,13 @@ pk_backend_spawn_exited_cb (PkBackendProcess *process,
 		    PK_ERROR_ENUM_PROCESS_KILL,
 		    "the helper was killed after it ignored the cancel request");
 	} else {
-		g_warning ("%s: helper exited during job %s (%s, status %d)",
-			   priv->name,
-			   priv->job_id,
-			   how,
-			   status);
+		g_log (priv->log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "%s: helper exited during job %s (%s, status %d)",
+		       priv->name,
+		       priv->job_id,
+		       how,
+		       status);
 		pk_backend_spawn_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
 					   "the helper exited during the job (%s, status %d)",
 					   how,
@@ -290,10 +305,13 @@ pk_backend_spawn_idle_cb (gpointer user_data)
 	priv->idle_id = 0;
 	if (priv->job != NULL || !pk_backend_process_is_running (priv->process))
 		return G_SOURCE_REMOVE;
-	g_debug ("%s: helper is idle, asking it to exit", priv->name);
+	g_log (priv->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: helper is idle, asking it to exit",
+	       priv->name);
 	line = pk_backend_protocol_build_exit ();
 	if (!pk_backend_process_send_line (priv->process, line, &error)) {
-		g_warning ("%s: %s", priv->name, error->message);
+		g_log (priv->log_domain, G_LOG_LEVEL_WARNING, "%s: %s", priv->name, error->message);
 		pk_backend_process_kill (priv->process);
 		return G_SOURCE_REMOVE;
 	}
@@ -307,9 +325,11 @@ pk_backend_spawn_cancel_timeout_cb (gpointer user_data)
 {
 	priv->cancel_id = 0;
 	if (priv->job != NULL && !priv->job_finished) {
-		g_warning ("%s: helper did not finish job %s after cancel, terminating it",
-			   priv->name,
-			   priv->job_id);
+		g_log (priv->log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "%s: helper did not finish job %s after cancel, terminating it",
+		       priv->name,
+		       priv->job_id);
 		pk_backend_process_kill (priv->process);
 	}
 	return G_SOURCE_REMOVE;
@@ -423,6 +443,7 @@ pk_backend_initialize_manifest (GKeyFile *conf,
 	priv->env[0] = g_strconcat ("PYTHONPATH=", python_dir, NULL);
 
 	priv->process = pk_backend_process_new (priv->name);
+	priv->log_domain = pk_backend_process_get_log_domain (priv->process);
 	g_object_set (priv->process,
 		      "allow-sigkill",
 		      g_key_file_get_boolean (manifest, "Backend", "AllowSigkill", NULL),
@@ -545,7 +566,7 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 		return;
 	line = pk_backend_protocol_build_cancel (priv->job_id);
 	if (!pk_backend_process_send_line (priv->process, line, &error)) {
-		g_warning ("%s: %s", priv->name, error->message);
+		g_log (priv->log_domain, G_LOG_LEVEL_WARNING, "%s: %s", priv->name, error->message);
 		pk_backend_process_kill (priv->process);
 		return;
 	}

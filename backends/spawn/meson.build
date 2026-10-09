@@ -9,9 +9,6 @@ pk_backend_modules += shared_module(
     gmodule_dep,
     config_dep,
   ],
-  c_args: [
-    '-DG_LOG_DOMAIN="PackageKit-Spawn"',
-  ],
   install: true,
   install_dir: pk_backends_dir,
 )

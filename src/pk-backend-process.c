@@ -58,6 +58,7 @@ struct _PkBackendProcess
 	GObject parent;
 
 	gchar *name;
+	gchar *log_domain;
 	gchar *log_context;
 	gboolean background;
 	gboolean allow_sigkill;
@@ -196,10 +197,12 @@ pk_backend_process_maybe_emit_exited (PkBackendProcess *self)
 
 	exit_type = self->exit_type;
 	exit_status = self->exit_status;
-	g_debug ("%s: helper exited: %s (%i)",
-		 pk_backend_process_log_prefix (self),
-		 pk_backend_process_exit_type_to_string (exit_type),
-		 exit_status);
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: helper exited: %s (%i)",
+	       pk_backend_process_log_prefix (self),
+	       pk_backend_process_exit_type_to_string (exit_type),
+	       exit_status);
 
 	/* tear down before emitting, so handlers see a stopped process and
 	 * may start a new one from inside the handler */
@@ -214,9 +217,11 @@ pk_backend_process_drain_timeout_cb (gpointer user_data)
 
 	self->drain_id = 0;
 	if (self->readers_open > 0) {
-		g_debug ("%s: giving up on remaining helper output (%u streams still open)",
-			 pk_backend_process_log_prefix (self),
-			 self->readers_open);
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: giving up on remaining helper output (%u streams still open)",
+		       pk_backend_process_log_prefix (self),
+		       self->readers_open);
 		/* abort the outstanding reads; their callbacks close the readers */
 		g_cancellable_cancel (self->cancellable);
 	}
@@ -232,9 +237,11 @@ pk_backend_process_wait_cb (GObject *source, GAsyncResult *res, gpointer user_da
 
 	if (!g_subprocess_wait_finish (subprocess, res, &error)) {
 		/* only happens when we were cancelled during teardown */
-		g_debug ("%s: waiting for helper failed: %s",
-			 pk_backend_process_log_prefix (self),
-			 error->message);
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: waiting for helper failed: %s",
+		       pk_backend_process_log_prefix (self),
+		       error->message);
 		return;
 	}
 
@@ -304,9 +311,11 @@ pk_backend_process_protocol_line_cb (GObject *source, GAsyncResult *res, gpointe
 		/* a helper killed with our request still unread resets the socket */
 		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
 		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CONNECTION_CLOSED)) {
-			g_warning ("%s: failed to read from helper protocol socket: %s",
-				   pk_backend_process_log_prefix (self),
-				   error->message);
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "%s: failed to read from helper protocol socket: %s",
+			       pk_backend_process_log_prefix (self),
+			       error->message);
 		}
 		pk_backend_process_reader_closed (self);
 		return;
@@ -349,10 +358,12 @@ pk_backend_process_log_line_cb (GObject *source, GAsyncResult *res, gpointer use
 	is_stderr = stream == self->stderr_in;
 	if (line == NULL) {
 		if (error != NULL && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-			g_warning ("%s: failed to read helper %s: %s",
-				   pk_backend_process_log_prefix (self),
-				   is_stderr ? "stderr" : "stdout",
-				   error->message);
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "%s: failed to read helper %s: %s",
+			       pk_backend_process_log_prefix (self),
+			       is_stderr ? "stderr" : "stdout",
+			       error->message);
 		}
 		pk_backend_process_reader_closed (self);
 		return;
@@ -361,9 +372,17 @@ pk_backend_process_log_line_cb (GObject *source, GAsyncResult *res, gpointer use
 	/* we never know what garbage we receive from the helper, so keep the log valid UTF-8 */
 	valid = g_utf8_make_valid (line, -1);
 	if (is_stderr)
-		g_warning ("%s: stderr: %s", pk_backend_process_log_prefix (self), valid);
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "%s: stderr: %s",
+		       pk_backend_process_log_prefix (self),
+		       valid);
 	else
-		g_debug ("%s: stdout: %s", pk_backend_process_log_prefix (self), valid);
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: stdout: %s",
+		       pk_backend_process_log_prefix (self),
+		       valid);
 
 	pk_backend_process_read_log_line (self, stream);
 }
@@ -411,7 +430,10 @@ pk_backend_process_build_environment (PkBackendProcess *self, const gchar *const
 	for (guint i = 0; extra_env != NULL && extra_env[i] != NULL; i++) {
 		g_auto(GStrv) kv = g_strsplit (extra_env[i], "=", 2);
 		if (kv[0] == NULL || kv[1] == NULL) {
-			g_warning ("ignoring malformed environment entry '%s'", extra_env[i]);
+			g_log (self->log_domain,
+			       G_LOG_LEVEL_WARNING,
+			       "ignoring malformed environment entry '%s'",
+			       extra_env[i]);
 			continue;
 		}
 		envp = g_environ_setenv (envp, kv[0], kv[1], TRUE);
@@ -437,11 +459,20 @@ pk_backend_process_apply_background_priority (PkBackendProcess *self)
 		return;
 
 #if HAVE_SETPRIORITY
-	g_debug ("%s: renice helper to 10", pk_backend_process_log_prefix (self));
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: renice helper to 10",
+	       pk_backend_process_log_prefix (self));
 	if (setpriority (PRIO_PROCESS, pid, 10) != 0)
-		g_debug ("failed to renice helper: %s", g_strerror (errno));
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "failed to renice helper: %s",
+		       g_strerror (errno));
 #endif
-	g_debug ("%s: setting helper ioprio class to idle", pk_backend_process_log_prefix (self));
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: setting helper ioprio class to idle",
+	       pk_backend_process_log_prefix (self));
 	pk_ioprio_set_idle (pid);
 }
 
@@ -515,7 +546,11 @@ pk_backend_process_start (PkBackendProcess *self,
 					       NULL,
 					       NULL);
 
-	g_debug ("%s: starting helper %s", pk_backend_process_log_prefix (self), executable);
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: starting helper %s",
+	       pk_backend_process_log_prefix (self),
+	       executable);
 	self->subprocess = g_subprocess_launcher_spawnv (launcher, argv, error);
 	if (self->subprocess == NULL) {
 		g_prefix_error (error, "failed to start helper %s: ", executable);
@@ -605,8 +640,10 @@ pk_backend_process_sigkill_cb (gpointer user_data)
 	if (!pk_backend_process_is_running (self))
 		return G_SOURCE_REMOVE;
 
-	g_warning ("%s: helper ignored SIGTERM, sending SIGKILL",
-		   pk_backend_process_log_prefix (self));
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_WARNING,
+	       "%s: helper ignored SIGTERM, sending SIGKILL",
+	       pk_backend_process_log_prefix (self));
 	self->sent_sigkill = TRUE;
 	g_subprocess_force_exit (self->subprocess);
 	return G_SOURCE_REMOVE;
@@ -637,7 +674,10 @@ pk_backend_process_kill (PkBackendProcess *self)
 		return;
 	}
 
-	g_debug ("%s: sending SIGTERM to helper", pk_backend_process_log_prefix (self));
+	g_log (self->log_domain,
+	       G_LOG_LEVEL_DEBUG,
+	       "%s: sending SIGTERM to helper",
+	       pk_backend_process_log_prefix (self));
 	self->sent_sigterm = TRUE;
 	g_subprocess_send_signal (self->subprocess, SIGTERM);
 
@@ -656,7 +696,10 @@ pk_backend_process_deadline_cb (gpointer user_data)
 
 	self->deadline_id = 0;
 	if (pk_backend_process_is_running (self)) {
-		g_debug ("%s: helper did not exit in time", pk_backend_process_log_prefix (self));
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: helper did not exit in time",
+		       pk_backend_process_log_prefix (self));
 		pk_backend_process_kill (self);
 	}
 	return G_SOURCE_REMOVE;
@@ -694,6 +737,19 @@ pk_backend_process_clear_exit_deadline (PkBackendProcess *self)
 {
 	g_return_if_fail (PK_IS_BACKEND_PROCESS (self));
 	g_clear_handle_id (&self->deadline_id, g_source_remove);
+}
+
+/**
+ * pk_backend_process_get_log_domain:
+ *
+ * Returns: the GLib log domain used for everything about this helper,
+ * "PackageKit-<name>", valid as long as @self is
+ */
+const gchar *
+pk_backend_process_get_log_domain (PkBackendProcess *self)
+{
+	g_return_val_if_fail (PK_IS_BACKEND_PROCESS (self), NULL);
+	return self->log_domain;
 }
 
 /**
@@ -763,13 +819,16 @@ pk_backend_process_finalize (GObject *object)
 	PkBackendProcess *self = PK_BACKEND_PROCESS (object);
 
 	if (pk_backend_process_is_running (self)) {
-		g_debug ("%s: helper still running in finalize, sending SIGTERM",
-			 pk_backend_process_log_prefix (self));
+		g_log (self->log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "%s: helper still running in finalize, sending SIGTERM",
+		       pk_backend_process_log_prefix (self));
 		g_subprocess_send_signal (self->subprocess, SIGTERM);
 	}
 	pk_backend_process_reset_state (self);
 
 	g_free (self->name);
+	g_free (self->log_domain);
 	g_free (self->log_context);
 
 	G_OBJECT_CLASS (pk_backend_process_parent_class)->finalize (object);
@@ -882,5 +941,6 @@ pk_backend_process_new (const gchar *name)
 
 	self = g_object_new (PK_TYPE_BACKEND_PROCESS, NULL);
 	self->name = g_strdup (name);
+	self->log_domain = g_strdup_printf ("PackageKit-%s", name);
 	return self;
 }

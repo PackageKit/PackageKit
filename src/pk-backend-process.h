@@ -80,6 +80,7 @@ void		  pk_backend_process_set_exit_deadline (PkBackendProcess *self,
 							guint		  timeout_ms);
 void		  pk_backend_process_clear_exit_deadline (PkBackendProcess *self);
 
+const gchar	 *pk_backend_process_get_log_domain (PkBackendProcess *self);
 void		  pk_backend_process_set_log_context (PkBackendProcess *self,
 						      const gchar      *context);
 

@@ -854,7 +854,8 @@ pk_backend_protocol_handle_distro_upgrades (json_t *root, PkBackendJob *job, GEr
  * trusted and should be terminated
  */
 gboolean
-pk_backend_protocol_handle_event (const gchar *line,
+pk_backend_protocol_handle_event (const gchar *log_domain,
+				  const gchar *line,
 				  const gchar *job_id,
 				  PkBackendJob *job,
 				  gboolean *finished,
@@ -884,23 +885,27 @@ pk_backend_protocol_handle_event (const gchar *line,
 		    !pk_backend_protocol_get_string (root, "message", FALSE, &text, error))
 			return FALSE;
 		if (g_strcmp0 (level, "debug") == 0)
-			g_debug ("helper: %s", text);
+			g_log (log_domain, G_LOG_LEVEL_DEBUG, "helper: %s", text);
 		else if (g_strcmp0 (level, "info") == 0)
-			g_info ("helper: %s", text);
+			g_log (log_domain, G_LOG_LEVEL_INFO, "helper: %s", text);
 		else
-			g_warning ("helper: %s", text);
+			g_log (log_domain, G_LOG_LEVEL_WARNING, "helper: %s", text);
 		return TRUE;
 	}
 
 	if (g_strcmp0 (ev, "hello") == 0) {
-		g_warning ("ignoring unexpected hello event from spawned backend");
+		g_log (log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "ignoring unexpected hello event from spawned backend");
 		return TRUE;
 	}
 	if (job == NULL || g_strcmp0 (ev_job, job_id) != 0) {
-		g_debug ("ignoring event '%s' for job '%s' (running: '%s')",
-			 ev,
-			 ev_job != NULL ? ev_job : "(none)",
-			 job_id != NULL ? job_id : "(none)");
+		g_log (log_domain,
+		       G_LOG_LEVEL_DEBUG,
+		       "ignoring event '%s' for job '%s' (running: '%s')",
+		       ev,
+		       ev_job != NULL ? ev_job : "(none)",
+		       job_id != NULL ? job_id : "(none)");
 		return TRUE;
 	}
 
@@ -1060,7 +1065,10 @@ pk_backend_protocol_handle_event (const gchar *line,
 							key_timestamp,
 							value);
 	} else {
-		g_warning ("ignoring unknown event '%s' from helper", ev);
+		g_log (log_domain,
+		       G_LOG_LEVEL_WARNING,
+		       "ignoring unknown event '%s' from helper",
+		       ev);
 	}
 	return TRUE;
 }

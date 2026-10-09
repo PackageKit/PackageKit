@@ -889,7 +889,7 @@ pk_test_backend_process_func (void)
 	/* protocol round trip on fd 3, stdout noise ignored, stderr logged as a warning */
 	g_clear_object (&process);
 	process = pk_test_backend_process_new ();
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
 	ret = pk_backend_process_start (process,
@@ -934,7 +934,7 @@ pk_test_backend_process_func (void)
 	g_test_assert_expected_messages ();
 
 	/* the same object can be started again; a non-zero exit is reported as failed */
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
 	bp_exited_count = 0;
@@ -983,7 +983,7 @@ pk_test_backend_process_func (void)
 	/* a helper without a SIGTERM handler dies from it */
 	g_clear_object (&process);
 	process = pk_test_backend_process_new ();
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*stderr: helper started, PATH=*");
 	ret = pk_backend_process_start (process,
@@ -1003,7 +1003,7 @@ pk_test_backend_process_func (void)
 	g_clear_object (&process);
 	process = pk_test_backend_process_new ();
 	g_object_set (process, "allow-sigkill", TRUE, NULL);
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*ignored SIGTERM, sending SIGKILL*");
 	ret = pk_backend_process_start (process,
@@ -1040,7 +1040,7 @@ pk_test_backend_process_func (void)
 	g_assert_true (pk_backend_process_is_running (process));
 	g_assert_cmpuint (bp_exited_count, ==, 0);
 	g_object_set (process, "allow-sigkill", TRUE, NULL);
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test",
 			       G_LOG_LEVEL_WARNING,
 			       "*ignored SIGTERM, sending SIGKILL*");
 	pk_backend_process_kill (process);
@@ -1247,19 +1247,30 @@ pk_test_backend_protocol_func (void)
 	/* events: fatal protocol errors */
 	g_clear_object (&job);
 	job = pk_test_backend_protocol_job_new (conf);
-	ret = pk_backend_protocol_handle_event ("this is not json", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (NULL,
+						"this is not json",
+						"1",
+						job,
+						&finished,
+						&error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_PARSE_FAILED);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_protocol_handle_event ("[1,2]", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (NULL, "[1,2]", "1", job, &finished, &error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
-	ret = pk_backend_protocol_handle_event ("{\"job\":\"1\"}", "1", job, &finished, &error);
+	ret = pk_backend_protocol_handle_event (NULL,
+						"{\"job\":\"1\"}",
+						"1",
+						job,
+						&finished,
+						&error);
 	g_assert_error (error, PK_JSON_ERROR, PK_JSON_ERROR_INVALID);
 	g_assert_false (ret);
 	g_clear_error (&error);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"status\",\"job\":\"1\",\"status\":\"dancing\"}",
 	    "1",
 	    job,
@@ -1269,6 +1280,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_false (ret);
 	g_clear_error (&error);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":\"50\"}",
 	    "1",
 	    job,
@@ -1278,6 +1290,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_false (ret);
 	g_clear_error (&error);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"packages\",\"job\":\"1\",\"items\":[{\"package_id\":\"broken\",\"info\":"
 	    "\"installed\"}]}",
 	    "1",
@@ -1292,7 +1305,8 @@ pk_test_backend_protocol_func (void)
 	g_test_expect_message (G_LOG_DOMAIN,
 			       G_LOG_LEVEL_WARNING,
 			       "ignoring unknown event 'dance' from helper");
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"dance\",\"job\":\"1\"}",
+	ret = pk_backend_protocol_handle_event (NULL,
+						"{\"ev\":\"dance\",\"job\":\"1\"}",
 						"1",
 						job,
 						&finished,
@@ -1301,6 +1315,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_true (ret);
 	g_test_assert_expected_messages ();
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"percentage\",\"job\":\"2\",\"value\":99}",
 	    "1",
 	    job,
@@ -1309,6 +1324,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":99}",
 	    NULL,
 	    NULL,
@@ -1317,6 +1333,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"log\",\"job\":null,\"level\":\"debug\",\"message\":\"hi\"}",
 	    NULL,
 	    NULL,
@@ -1329,6 +1346,7 @@ pk_test_backend_protocol_func (void)
 
 	/* events: the happy path of a job */
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"status\",\"job\":\"1\",\"status\":\"query\"}",
 	    "1",
 	    job,
@@ -1337,6 +1355,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":null}",
 	    "1",
 	    job,
@@ -1347,6 +1366,7 @@ pk_test_backend_protocol_func (void)
 	_g_test_loop_wait (10);
 	g_assert_cmpuint (proto_percentage, ==, PK_BACKEND_PERCENTAGE_INVALID);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"percentage\",\"job\":\"1\",\"value\":42}",
 	    "1",
 	    job,
@@ -1355,6 +1375,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"packages\",\"job\":\"1\",\"items\":["
 	    "{\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installed\",\"summary\":\"A foo\"},"
 	    "{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"available\",\"summary\":\"A "
@@ -1366,6 +1387,7 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	ret = pk_backend_protocol_handle_event (
+	    NULL,
 	    "{\"ev\":\"package-status\",\"job\":\"1\",\"package_id\":\"foo;1;x86_64;main;\","
 	    "\"info\":\"installing\"}",
 	    "1",
@@ -1374,7 +1396,8 @@ pk_test_backend_protocol_func (void)
 	    &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"error\",\"job\":\"1\",\"code\":"
+	ret = pk_backend_protocol_handle_event (NULL,
+						"{\"ev\":\"error\",\"job\":\"1\",\"code\":"
 						"\"package-not-found\",\"details\":\"no\\nsuch\"}",
 						"1",
 						job,
@@ -1383,7 +1406,8 @@ pk_test_backend_protocol_func (void)
 	g_assert_no_error (error);
 	g_assert_true (ret);
 	g_assert_false (finished);
-	ret = pk_backend_protocol_handle_event ("{\"ev\":\"finished\",\"job\":\"1\"}",
+	ret = pk_backend_protocol_handle_event (NULL,
+						"{\"ev\":\"finished\",\"job\":\"1\"}",
 						"1",
 						job,
 						&finished,
@@ -1927,7 +1951,7 @@ pk_test_spawn_module_func (void)
 	g_assert_cmpint (sm_error, ==, PK_ERROR_ENUM_TRANSACTION_CANCELLED);
 
 	/* the helper exits mid-job: internal error, and the next job gets a fresh helper */
-	g_test_expect_message ("PackageKit-Spawn",
+	g_test_expect_message ("PackageKit-test_spawn",
 			       G_LOG_LEVEL_WARNING,
 			       "*helper exited during job*");
 	job = pk_test_spawn_module_job_new (conf, backend);
@@ -1948,8 +1972,10 @@ pk_test_spawn_module_func (void)
 	g_assert_cmpuint (sm_packages, ==, 3);
 
 	/* cancel escalation: cancel and SIGTERM are ignored, SIGKILL is allowed by the manifest */
-	g_test_expect_message ("PackageKit-Spawn", G_LOG_LEVEL_WARNING, "*did not finish job*");
-	g_test_expect_message (G_LOG_DOMAIN,
+	g_test_expect_message ("PackageKit-test_spawn",
+			       G_LOG_LEVEL_WARNING,
+			       "*did not finish job*");
+	g_test_expect_message ("PackageKit-test_spawn",
 			       G_LOG_LEVEL_WARNING,
 			       "*ignored SIGTERM, sending SIGKILL*");
 	job = pk_test_spawn_module_job_new (conf, backend);
