@@ -413,7 +413,7 @@ void AptJob::stagePackageForEmit(
     GPtrArray *array,
     const pkgCache::VerIterator &ver,
     PkInfoEnum state,
-    PkInfoEnum updateSeverity) const
+    PkSeverityEnum updateSeverity) const
 {
     g_autofree gchar *package_id = m_cache->buildPackageId(ver);
 
@@ -475,9 +475,10 @@ void AptJob::emitRequireRestart(PkgList &output)
     }
 }
 
-void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
+void AptJob::emitUpdates(PkgList &output, PkBitfield filters, bool blocked)
 {
     PkInfoEnum state;
+    PkSeverityEnum severity;
     // Sort so we can remove the duplicated entries
     output.sort();
 
@@ -495,7 +496,8 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
             break;
 
         // the default update info
-        state = PK_INFO_ENUM_NORMAL;
+        state = PK_INFO_ENUM_UPDATE;
+        severity = PK_SEVERITY_ENUM_NONE;
 
         // let find what kind of upgrade this is
         pkgCache::VerFileIterator vf = pkgInfo.ver.FileList();
@@ -504,19 +506,23 @@ void AptJob::emitUpdates(PkgList &output, PkBitfield filters)
         std::string label = safeStr(vf.File().Label());
 
         if (origin == "Backports.org archive" || ends_with(origin, "-backports")) {
-            state = PK_INFO_ENUM_ENHANCEMENT;
+            state = PK_INFO_ENUM_UPDATE_ENHANCEMENT;
         } else if (ends_with(archive, "-security") || label == "Debian-Security") {
-            state = PK_INFO_ENUM_SECURITY;
+            state = PK_INFO_ENUM_UPDATE_SECURITY;
         } else if (ends_with(archive, "-backports")) {
-            state = PK_INFO_ENUM_ENHANCEMENT;
+            state = PK_INFO_ENUM_UPDATE_ENHANCEMENT;
         } else if (ends_with(archive, "-proposed-updates") || ends_with(archive, "-updates-proposed")) {
-            state = PK_INFO_ENUM_LOW;
-        } else if (ends_with(archive, "-updates")) {
-            state = PK_INFO_ENUM_BUGFIX;
+            severity = PK_SEVERITY_ENUM_LOW;
         }
 
-        // NOTE: Frontends expect us to pass the update urgency as both its state *and* actual urgency value here.
-        stagePackageForEmit(pkgArray, pkgInfo.ver, state, state);
+        // a blocked update keeps the severity it would have had as an update
+        if (blocked) {
+            if (severity == PK_SEVERITY_ENUM_NONE)
+                severity = pk_backend_default_update_severity(state);
+            state = PK_INFO_ENUM_BLOCKED;
+        }
+
+        stagePackageForEmit(pkgArray, pkgInfo.ver, state, severity);
     }
 
     // emit

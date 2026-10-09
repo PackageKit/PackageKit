@@ -370,8 +370,15 @@
 
       This method typically emits `Progress`, `Error` and `Packages`.
 
-      `Packages` info enumerated types should be `blocked`, `low`, `normal`,
-      `important` or `security`.
+      `Packages` info enumerated types should be `update`, `update-security`,
+      `update-enhancement` or `blocked` for the packages that have an update.
+      Packages that are affected by applying the updates may be included with
+      the types `install`, `remove`, `obsolete` or `downgrade`.
+
+      The urgency of an update is given by the `severity` enumerated type of
+      each package, which is one of `low`, `medium`, `high` or `critical`.
+      A blocked update carries the severity it would have if it was not
+      blocked, or `none` if the backend can not tell.
 
       The status `blocked` signifies the package cannot be updated, probably
       due to other dependencies not being met. This type allows the GUI tools
@@ -942,6 +949,8 @@
       fields:
 
       - `info`: A valid `info` enumerated type [`u`]
+      - `severity`: A valid `severity` enumerated type, describing how urgent
+        a package update is. This is `none` for any package that is not an update. [`u`]
       - `package_id`: This identifier is of the form
         `name;version;arch;origin;data` in a single string and is meant to
         represent a single package unique across all local and remote data
@@ -962,7 +971,7 @@
         [`s`]
     -->
     <signal name="Packages">
-      <arg type="a(uss)" name="packages" direction="out"/>
+      <arg type="a(uuss)" name="packages" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QVariantList"/>
     </signal>
 

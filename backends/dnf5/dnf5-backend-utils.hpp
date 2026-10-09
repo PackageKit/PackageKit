@@ -53,7 +53,7 @@ void dnf5_setup_base(
 void dnf5_update_network_state(PkBackendDnf5Private *priv, gboolean online);
 void dnf5_refresh_cache(PkBackendDnf5Private *priv, gboolean force);
 PkInfoEnum dnf5_advisory_kind_to_info_enum(const std::string &type);
-PkInfoEnum dnf5_update_severity_to_enum(const std::string &severity);
+PkSeverityEnum dnf5_update_severity_to_enum(const std::string &severity);
 bool dnf5_force_distupgrade_on_upgrade(libdnf5::Base &base);
 bool dnf5_repo_is_devel(const libdnf5::repo::Repo &repo);
 bool dnf5_repo_is_source(const libdnf5::repo::Repo &repo);
@@ -76,7 +76,7 @@ void dnf5_stage_pkg(
 	GPtrArray *packages,
 	const libdnf5::rpm::Package &pkg,
 	PkInfoEnum info = PK_INFO_ENUM_UNKNOWN,
-	PkInfoEnum severity = PK_INFO_ENUM_UNKNOWN);
+	PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE);
 void dnf5_sort_and_emit(PkBackendJob *job, std::vector<libdnf5::rpm::Package> &pkgs);
 void dnf5_apply_filters(libdnf5::Base &base, libdnf5::rpm::PackageQuery &query, PkBitfield filters);
 std::vector<libdnf5::rpm::Package>

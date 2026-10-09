@@ -309,6 +309,17 @@ pk_test_enum_func (void)
 		}
 	}
 
+	/* check we convert all the severity bitfield */
+	for (i = 1; i < PK_SEVERITY_ENUM_LAST; i++) {
+		string = pk_severity_enum_to_string (i);
+		if (string == NULL) {
+			/* so we get the value of i in the assert text */
+			g_assert_cmpint (0, ==, i);
+			break;
+		}
+		g_assert_cmpint (pk_severity_enum_from_string (string), ==, i);
+	}
+
 	/* check we convert all the sig_type bitfield */
 	for (i = 0; i < PK_SIGTYPE_ENUM_LAST; i++) {
 		string = pk_sig_type_enum_to_string (i);

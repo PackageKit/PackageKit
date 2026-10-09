@@ -30,7 +30,7 @@ void		 pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info);
 
 /* Append a PkPackage for @pkg to @packages (element-type PkPackage), to be
  * reported as a query result with pk_backend_job_packages(). */
-void		 pk_alpm_pkg_stage (GPtrArray *packages, alpm_pkg_t *pkg, PkInfoEnum info);
+PkPackage	*pk_alpm_pkg_stage (GPtrArray *packages, alpm_pkg_t *pkg, PkInfoEnum info);
 
 alpm_pkg_t	*pk_alpm_find_pkg (PkBackendJob *job,
 					 const gchar *package_id,

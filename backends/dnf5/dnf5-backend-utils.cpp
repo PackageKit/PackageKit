@@ -205,28 +205,24 @@ PkInfoEnum
 dnf5_advisory_kind_to_info_enum(const std::string &type)
 {
 	if (type == "security")
-		return PK_INFO_ENUM_SECURITY;
-	if (type == "bugfix")
-		return PK_INFO_ENUM_BUGFIX;
+		return PK_INFO_ENUM_UPDATE_SECURITY;
 	if (type == "enhancement")
-		return PK_INFO_ENUM_ENHANCEMENT;
-	if (type == "newpackage")
-		return PK_INFO_ENUM_NORMAL;
-	return PK_INFO_ENUM_UNKNOWN;
+		return PK_INFO_ENUM_UPDATE_ENHANCEMENT;
+	return PK_INFO_ENUM_UPDATE;
 }
 
-PkInfoEnum
+PkSeverityEnum
 dnf5_update_severity_to_enum(const std::string &severity)
 {
 	if (severity == "low")
-		return PK_INFO_ENUM_LOW;
+		return PK_SEVERITY_ENUM_LOW;
 	if (severity == "moderate")
-		return PK_INFO_ENUM_NORMAL;
+		return PK_SEVERITY_ENUM_MEDIUM;
 	if (severity == "important")
-		return PK_INFO_ENUM_IMPORTANT;
+		return PK_SEVERITY_ENUM_HIGH;
 	if (severity == "critical")
-		return PK_INFO_ENUM_CRITICAL;
-	return PK_INFO_ENUM_UNKNOWN;
+		return PK_SEVERITY_ENUM_CRITICAL;
+	return PK_SEVERITY_ENUM_NONE;
 }
 
 bool
@@ -417,7 +413,7 @@ dnf5_emit_pkg(PkBackendJob *job, const libdnf5::rpm::Package &pkg, PkInfoEnum in
 }
 
 void
-dnf5_stage_pkg(GPtrArray *packages, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkInfoEnum severity)
+dnf5_stage_pkg(GPtrArray *packages, const libdnf5::rpm::Package &pkg, PkInfoEnum info, PkSeverityEnum severity)
 {
 	std::string package_id = dnf5_build_package_id(pkg);
 	pk_backend_packages_add(

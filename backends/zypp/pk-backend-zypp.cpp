@@ -1265,7 +1265,7 @@ static void
 zypp_backend_stage_package (GPtrArray *packages, PkInfoEnum info,
 			    const sat::Solvable &pkg,
 			    const char *opt_summary,
-			    PkInfoEnum update_severity = PK_INFO_ENUM_UNKNOWN)
+			    PkSeverityEnum update_severity = PK_SEVERITY_ENUM_NONE)
 {
 	gchar *id = zypp_build_package_id_from_resolvable (pkg);
 
@@ -2587,21 +2587,18 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		ResObject::constPtr res = ci->resolvable();
 
 		// Emit the package
-		PkInfoEnum infoEnum = PK_INFO_ENUM_ENHANCEMENT;
+		PkInfoEnum infoEnum = PK_INFO_ENUM_UPDATE;
+		PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE;
 		if (detail == SelfUpdate::kYesAndShaddowsSecurity) {
-			infoEnum = PK_INFO_ENUM_SECURITY;	// bsc#951592: raise priority if security patch is shadowed
+			infoEnum = PK_INFO_ENUM_UPDATE_SECURITY;	// bsc#951592: raise priority if security patch is shadowed
 		} else if (isKind<Patch>(res)) {
 			Patch::constPtr patch = asKind<Patch>(res);
-			if (patch->category () == "recommended") {
-				infoEnum = PK_INFO_ENUM_BUGFIX;
-			} else if (patch->category () == "optional") {
-				infoEnum = PK_INFO_ENUM_LOW;
+			if (patch->category () == "optional") {
+				severity = PK_SEVERITY_ENUM_LOW;
 			} else if (patch->category () == "security") {
-				infoEnum = PK_INFO_ENUM_SECURITY;
+				infoEnum = PK_INFO_ENUM_UPDATE_SECURITY;
 			} else if (patch->category () == "distupgrade") {
 				continue;
-			} else {
-				infoEnum = PK_INFO_ENUM_NORMAL;
 			}
 		}
 
@@ -2611,7 +2608,7 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			// res->summary ().c_str ());
 			// Test if this still happens!
 			zypp_backend_stage_package (packages, infoEnum, res->satSolvable (),
-						    res->summary ().c_str (), infoEnum);
+						    res->summary ().c_str (), severity);
 		}
 	}
 

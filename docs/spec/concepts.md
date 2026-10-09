@@ -53,15 +53,35 @@ For example:
 |----|----|----|
 | Searching | `installed` | If installed |
 |  | `available` | If available to install |
-| Getting Updates | `low` | If update is of low severity |
-|  | `normal` | If update is of normal severity |
-|  | `important` | If update is very important |
-|  | `security` | If the update is security sensitive |
+| Getting Updates | `update` | If the package will be updated |
+|  | `update-security` | If the update is security sensitive |
+|  | `update-enhancement` | If the update is an optional enhancement |
+|  | `blocked` | If an update exists, but cannot be installed |
+|  | `install` | If the package will be newly installed by the update |
+|  | `remove` | If the package will be removed by the update |
+|  | `obsolete` | If the package is obsoleted by the update |
+|  | `downgrade` | If the package will be downgraded by the update |
 | Installing/Updating/Removing | `downloading` | If we are downloading this package |
 |  | `updating` | If we are updating this package |
 |  | `installing` | If we are installing this package |
 |  | `removing` | If we are removing this package |
 | Otherwise | `unknown` | If we cannot use any other option |
+
+How urgent an update is, is not part of the `PkInfoEnum`. Every package is
+accompanied by a separate `PkSeverityEnum` value for this:
+
+| Value | Description |
+|----|----|
+| `none` | The package is not an update, or the severity is not known |
+| `low` | If update is of low severity |
+| `medium` | If update is of medium severity |
+| `high` | If update is of high severity |
+| `critical` | If update is of critical severity |
+
+If a backend does not know the severity of an update, the daemon assumes
+`low` for `update-enhancement`, `high` for `update-security` and `medium`
+for `update`. A blocked update keeps the severity `none` unless the
+backend provides one.
 
 The backend must ensure that the package_id only matches on one
 single package.

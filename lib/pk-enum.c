@@ -299,12 +299,6 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
 	{PK_INFO_ENUM_UNAVAILABLE,		"unavailable"},
-	{PK_INFO_ENUM_LOW,			"low"},
-	{PK_INFO_ENUM_NORMAL,			"normal"},
-	{PK_INFO_ENUM_IMPORTANT,		"important"},
-	{PK_INFO_ENUM_SECURITY,			"security"},
-	{PK_INFO_ENUM_BUGFIX,			"bugfix"},
-	{PK_INFO_ENUM_ENHANCEMENT,		"enhancement"},
 	{PK_INFO_ENUM_BLOCKED,			"blocked"},
 	{PK_INFO_ENUM_DOWNLOADING,		"downloading"},
 	{PK_INFO_ENUM_UPDATING,			"updating"},
@@ -319,11 +313,22 @@ static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_DECOMPRESSING,		"decompressing"},
 	{PK_INFO_ENUM_UNTRUSTED,		"untrusted"},
 	{PK_INFO_ENUM_TRUSTED,			"trusted"},
-	{PK_INFO_ENUM_CRITICAL,			"critical"},
 	{PK_INFO_ENUM_INSTALL,			"install"},
 	{PK_INFO_ENUM_REMOVE,			"remove"},
 	{PK_INFO_ENUM_OBSOLETE,			"obsolete"},
 	{PK_INFO_ENUM_DOWNGRADE,		"downgrade"},
+	{PK_INFO_ENUM_UPDATE,			"update"},
+	{PK_INFO_ENUM_UPDATE_SECURITY,		"update-security"},
+	{PK_INFO_ENUM_UPDATE_ENHANCEMENT,	"update-enhancement"},
+	{0, NULL}
+};
+
+static const PkEnumMatch enum_severity[] = {
+	{PK_SEVERITY_ENUM_NONE,			"none"},	/* fall though value */
+	{PK_SEVERITY_ENUM_LOW,			"low"},
+	{PK_SEVERITY_ENUM_MEDIUM,		"medium"},
+	{PK_SEVERITY_ENUM_HIGH,			"high"},
+	{PK_SEVERITY_ENUM_CRITICAL,		"critical"},
 	{0, NULL}
 };
 
@@ -527,6 +532,38 @@ const gchar *
 pk_info_enum_to_string (PkInfoEnum info)
 {
 	return pk_enum_find_string (enum_info, info);
+}
+
+/**
+ * pk_severity_enum_from_string:
+ * @severity: Text describing the enumerated type
+ *
+ * Converts a text enumerated type to its unsigned integer representation
+ *
+ * Return value: the enumerated constant value, e.g. PK_SEVERITY_ENUM_HIGH
+ *
+ * Since: 2.0.0
+ **/
+PkSeverityEnum
+pk_severity_enum_from_string (const gchar *severity)
+{
+	return pk_enum_find_value (enum_severity, severity);
+}
+
+/**
+ * pk_severity_enum_to_string:
+ * @severity: The enumerated type value
+ *
+ * Converts a enumerated type to its text representation
+ *
+ * Return value: the enumerated constant value, e.g. "high"
+ *
+ * Since: 2.0.0
+ **/
+const gchar *
+pk_severity_enum_to_string (PkSeverityEnum severity)
+{
+	return pk_enum_find_string (enum_severity, severity);
 }
 
 /**
@@ -928,30 +965,6 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 {
 	const gchar *text = NULL;
 	switch (info) {
-	case PK_INFO_ENUM_LOW:
-		/* TRANSLATORS: The type of update */
-		text = _("Trivial");
-		break;
-	case PK_INFO_ENUM_NORMAL:
-		/* TRANSLATORS: The type of update */
-		text = dgettext ("PackageKit", "Normal");
-		break;
-	case PK_INFO_ENUM_IMPORTANT:
-		/* TRANSLATORS: The type of update */
-		text = dgettext ("PackageKit", "Important");
-		break;
-	case PK_INFO_ENUM_SECURITY:
-		/* TRANSLATORS: The type of update */
-		text = dgettext ("PackageKit", "Security");
-		break;
-	case PK_INFO_ENUM_BUGFIX:
-		/* TRANSLATORS: The type of update */
-		text = dgettext ("PackageKit", "Bug fix");
-		break;
-	case PK_INFO_ENUM_ENHANCEMENT:
-		/* TRANSLATORS: The type of update */
-		text = dgettext ("PackageKit", "Enhancement");
-		break;
 	case PK_INFO_ENUM_BLOCKED:
 		/* TRANSLATORS: The type of update */
 		text = dgettext ("PackageKit", "Blocked");
@@ -983,6 +996,18 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 	case PK_INFO_ENUM_DOWNGRADE:
 		/* TRANSLATORS: The state of a package: package is to be downgraded */
 		text = dgettext ("PackageKit", "Downgrade");
+		break;
+	case PK_INFO_ENUM_UPDATE:
+		/* TRANSLATORS: The state of a package: package is to be updated */
+		text = dgettext ("PackageKit", "Update");
+		break;
+	case PK_INFO_ENUM_UPDATE_SECURITY:
+		/* TRANSLATORS: The state of a package: to be updated with a security fix */
+		text = dgettext ("PackageKit", "Security update");
+		break;
+	case PK_INFO_ENUM_UPDATE_ENHANCEMENT:
+		/* TRANSLATORS: The state of a package: to be updated with an enhancement */
+		text = dgettext ("PackageKit", "Enhancement update");
 		break;
 	default:
 		g_warning ("info unrecognised: %s", pk_info_enum_to_string (info));

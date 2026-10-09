@@ -138,7 +138,9 @@ class SimplePisiHandler(pisi.ui.UI):
 
             self.currentpackage += 1
             self.cur_pkg = keywords["package"]
-            self.cur_status = pkb.STATUS_INSTALL if event == pisi.ui.installing else pkb.STATUS_UPDATE
+            self.cur_status = (
+                pkb.STATUS_INSTALL if event == pisi.ui.installing else pkb.STATUS_UPDATE
+            )
             info = pkb.INFO_INSTALLING if event == pisi.ui.installing else pkb.INFO_UPDATING
 
             self.base.status(self.cur_status)
@@ -376,11 +378,15 @@ class PackageKitEopkgBackend(pkb.Backend):
                             candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         elif int(v_avail[1]) == int(v_inst[1]):
                             # Same version, show both
-                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append(
+                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
+                            )
                             candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         else:
                             # Installed is newer
-                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append(
+                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
+                            )
                     else:
                         # Versions differ, we'd need a version comparison tool here.
                         # For now, if versions differ, we'll just show both or available
@@ -389,7 +395,9 @@ class PackageKitEopkgBackend(pkb.Backend):
                         if int(v_avail[1]) > int(v_inst[1]):
                             candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                         else:
-                            candidates.append((installed, pkb.INFO_INSTALLED, repo or "", "installed"))
+                            candidates.append(
+                                (installed, pkb.INFO_INSTALLED, repo or "", "installed")
+                            )
                 elif available:
                     candidates.append((available, pkb.INFO_AVAILABLE, repo, ""))
                 elif installed:
@@ -638,11 +646,10 @@ class PackageKitEopkgBackend(pkb.Backend):
             histories = self._get_history_between(oldRelease, pkg)
 
             securities = [x for x in histories if x.type == "security"]
-            # FIXME: pkb.INFO_BUGFIX Support? We would have to match against #123 Github issues
             if len(securities) > 0:
-                self.package(id, pkb.INFO_SECURITY, pkg.summary)
+                self.package(id, pkb.INFO_UPDATE_SECURITY, pkg.summary)
             else:
-                self.package(id, pkb.INFO_NORMAL, pkg.summary)
+                self.package(id, pkb.INFO_UPDATE, pkg.summary)
 
     def _get_history_between(self, old_release, new):
         """Get the history items between the old release and new pkg"""
@@ -743,15 +750,11 @@ class PackageKitEopkgBackend(pkb.Backend):
                 location = os.path.join(directory, uri)
                 self.files(package_id, [location])
         except pisi.fetcher.FetchError as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except IOError as e:
             self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except Exception:
             self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
@@ -792,9 +795,7 @@ class PackageKitEopkgBackend(pkb.Backend):
             # Actually install
             pisi.api.install(inst_files)
         except pisi.fetcher.FetchError as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except IOError as e:
             self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
@@ -836,9 +837,7 @@ class PackageKitEopkgBackend(pkb.Backend):
         try:
             pisi.api.install(packages)
         except pisi.fetcher.FetchError as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except IOError as e:
             self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
@@ -897,9 +896,7 @@ class PackageKitEopkgBackend(pkb.Backend):
             else:
                 pisi.api.remove(packages)
         except pisi.fetcher.FetchError as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except IOError as e:
             self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:
@@ -1053,9 +1050,7 @@ class PackageKitEopkgBackend(pkb.Backend):
             # Actually upgrade
             pisi.api.upgrade(packages)
         except pisi.fetcher.FetchError as e:
-            self.error(
-                pkb.ERROR_PACKAGE_DOWNLOAD_FAILED,
-                "Could not download package: %s" % e)
+            self.error(pkb.ERROR_PACKAGE_DOWNLOAD_FAILED, "Could not download package: %s" % e)
         except IOError as e:
             self.error(pkb.ERROR_NO_SPACE_ON_DEVICE, "Disk error: %s" % e)
         except pisi.Error as e:

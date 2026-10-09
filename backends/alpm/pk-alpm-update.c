@@ -448,7 +448,9 @@ pk_alpm_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 	packages = g_ptr_array_new_with_free_func (g_object_unref);
 	syncdbs = alpm_get_syncdbs (handle);
 	for (i = alpm_db_get_pkgcache (priv->localdb); i != NULL; i = i->next) {
-		PkInfoEnum info = PK_INFO_ENUM_NORMAL;
+		PkInfoEnum info = PK_INFO_ENUM_UPDATE;
+		PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE;
+		PkPackage *package;
 		alpm_pkg_t *upgrade = pk_alpm_pkg_find_update (i->data, syncdbs);
 		if (upgrade == NULL)
 			continue;
@@ -457,7 +459,7 @@ pk_alpm_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 		if (pk_alpm_pkg_is_ignorepkg (backend, upgrade)) {
 			info = PK_INFO_ENUM_BLOCKED;
 		} else if (pk_alpm_pkg_is_syncfirst (priv->syncfirsts, upgrade)) {
-			info = PK_INFO_ENUM_IMPORTANT;
+			severity = PK_SEVERITY_ENUM_HIGH;
 		}
 
 		/* want downloaded packages */
@@ -469,7 +471,9 @@ pk_alpm_get_updates_thread (PkBackendJob *job, GVariant* params, gpointer p)
 			continue;
 
 		update_count++;
-		pk_alpm_pkg_stage (packages, upgrade, info);
+		package = pk_alpm_pkg_stage (packages, upgrade, info);
+		if (package != NULL && severity != PK_SEVERITY_ENUM_NONE)
+			pk_package_set_update_severity (package, severity);
 	}
 
 	pk_backend_job_packages (job, packages);

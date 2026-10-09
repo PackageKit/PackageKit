@@ -476,16 +476,20 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 {
 	const gchar *package_id;
 	PkInfoEnum info;
+	PkSeverityEnum severity;
 	g_auto(GStrv) split = NULL;
 	const gchar *name, *version, *arch, *origin, *data;
 	const gchar *info_color = COLOR_RESET;
 	const gchar *info_symbol = SYMBOL_PACKAGE;
+	const gchar *severity_color = NULL;
+	const gchar *severity_text = NULL;
 
 	if (!package)
 		return;
 
 	package_id = pk_package_get_id (package);
 	info = pk_package_get_info (package);
+	severity = pk_package_get_update_severity (package);
 	split = pk_package_id_split (package_id);
 
 	if (split == NULL || split[0] == NULL)
@@ -507,11 +511,9 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		info_color = COLOR_BLUE;
 		info_symbol = SYMBOL_PACKAGE;
 		break;
-	case PK_INFO_ENUM_NORMAL:
-	case PK_INFO_ENUM_BUGFIX:
-	case PK_INFO_ENUM_IMPORTANT:
-	case PK_INFO_ENUM_SECURITY:
-	case PK_INFO_ENUM_CRITICAL:
+	case PK_INFO_ENUM_UPDATE:
+	case PK_INFO_ENUM_UPDATE_SECURITY:
+	case PK_INFO_ENUM_UPDATE_ENHANCEMENT:
 	case PK_INFO_ENUM_UPDATING:
 		info_color = COLOR_CYAN;
 		info_symbol = SYMBOL_UP;
@@ -530,10 +532,35 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		info_color = COLOR_RED;
 		info_symbol = SYMBOL_CROSS;
 		break;
+	case PK_INFO_ENUM_BLOCKED:
+		info_color = COLOR_GRAY;
+		info_symbol = SYMBOL_CROSS;
+		break;
 	default:
 		info_color = COLOR_RESET;
 		break;
 	}
+
+	/* the severity of an update is shown by color, urgent ones are labeled as well */
+	switch (severity) {
+	case PK_SEVERITY_ENUM_LOW:
+		severity_color = COLOR_GRAY;
+		break;
+	case PK_SEVERITY_ENUM_HIGH:
+		severity_color = COLOR_YELLOW;
+		/* TRANSLATORS: the severity of a package update, keep this short */
+		severity_text = _("high");
+		break;
+	case PK_SEVERITY_ENUM_CRITICAL:
+		severity_color = COLOR_RED;
+		/* TRANSLATORS: the severity of a package update, keep this short */
+		severity_text = _("critical");
+		break;
+	default:
+		break;
+	}
+	if (severity_color != NULL && info != PK_INFO_ENUM_BLOCKED)
+		info_color = severity_color;
 
 	if (ctx->output_mode == PKGCLI_MODE_JSON) {
 		g_autoptr(json_t) root = json_object ();
@@ -543,6 +570,10 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 		json_object_set_new (root, "repo", json_string (origin));
 		json_object_set_new (root, "data", json_string (data));
 		json_object_set_new (root, "state", json_string (pk_info_enum_to_string (info)));
+		if (severity != PK_SEVERITY_ENUM_NONE)
+			json_object_set_new (root,
+					     "severity",
+					     json_string (pk_severity_enum_to_string (severity)));
 		pkgc_print_json (root);
 
 		return;
@@ -564,6 +595,12 @@ pkgc_print_package (PkgcliContext *ctx, PkPackage *package)
 
 	if (g_strcmp0 (origin, "") != 0)
 		g_print (" [%s%s%s]", get_color (ctx, COLOR_GRAY), origin, get_reset_color (ctx));
+
+	if (severity_text != NULL)
+		g_print (" %s%s%s",
+			 get_color (ctx, severity_color),
+			 severity_text,
+			 get_reset_color (ctx));
 
 	g_print ("\n");
 }

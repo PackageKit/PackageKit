@@ -612,15 +612,17 @@ typedef enum {
 /**
  * PkInfoEnum:
  * @PK_INFO_ENUM_UNKNOWN: 	Package status is unknown
- * @PK_INFO_ENUM_INSTALLED: 	Package is installed
  * @PK_INFO_ENUM_AVAILABLE: 	Package is available to be installed
- * @PK_INFO_ENUM_LOW:		Package update has a low priority
- * @PK_INFO_ENUM_ENHANCEMENT:	Package update is an enhancement
- * @PK_INFO_ENUM_NORMAL:	Package update has normal priority
- * @PK_INFO_ENUM_BUGFIX:	Package update fixes bugs
- * @PK_INFO_ENUM_IMPORTANT:	Package update is important
- * @PK_INFO_ENUM_SECURITY:	Package update contains a security fix
+ * @PK_INFO_ENUM_INSTALLED: 	Package is installed
  * @PK_INFO_ENUM_BLOCKED: 	Package is blocked
+ * @PK_INFO_ENUM_UNAVAILABLE:	Package is unavailable
+ * @PK_INFO_ENUM_INSTALL:	Package is intended for installation. Since 1.3.0
+ * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
+ * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
+ * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
+ * @PK_INFO_ENUM_UPDATE:	Package is intended to be updated. Since 2.0.0
+ * @PK_INFO_ENUM_UPDATE_SECURITY: Package is intended to be updated and has a security fix. Since 2.0.0
+ * @PK_INFO_ENUM_UPDATE_ENHANCEMENT: Package is intended to be updated, the update is an enhancement. Since 2.0.0
  * @PK_INFO_ENUM_DOWNLOADING: 	Package is being downloaded
  * @PK_INFO_ENUM_UPDATING: 	Package is updating
  * @PK_INFO_ENUM_INSTALLING:	Package is being installed
@@ -634,27 +636,23 @@ typedef enum {
  * @PK_INFO_ENUM_DECOMPRESSING: Package is decompressing
  * @PK_INFO_ENUM_UNTRUSTED:
  * @PK_INFO_ENUM_TRUSTED:
- * @PK_INFO_ENUM_UNAVAILABLE:	Package is unavailable
- * @PK_INFO_ENUM_CRITICAL: 	Package update severity is critical. Since: 1.2.4
- * @PK_INFO_ENUM_INSTALL:	Package is intended for installation. Since 1.3.0
- * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
- * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
- * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
  *
  * The enumerated types used in Package() - these have to refer to a specific
  * package action, rather than a general state
  **/
 typedef enum {
 	PK_INFO_ENUM_UNKNOWN,
-	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_AVAILABLE,
-	PK_INFO_ENUM_LOW,
-	PK_INFO_ENUM_ENHANCEMENT,
-	PK_INFO_ENUM_NORMAL,
-	PK_INFO_ENUM_BUGFIX,
-	PK_INFO_ENUM_IMPORTANT,
-	PK_INFO_ENUM_SECURITY,
+	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_BLOCKED,
+	PK_INFO_ENUM_UNAVAILABLE,
+	PK_INFO_ENUM_INSTALL,
+	PK_INFO_ENUM_REMOVE,
+	PK_INFO_ENUM_OBSOLETE,
+	PK_INFO_ENUM_DOWNGRADE,
+	PK_INFO_ENUM_UPDATE,
+	PK_INFO_ENUM_UPDATE_SECURITY,
+	PK_INFO_ENUM_UPDATE_ENHANCEMENT,
 	PK_INFO_ENUM_DOWNLOADING,
 	PK_INFO_ENUM_UPDATING,
 	PK_INFO_ENUM_INSTALLING,
@@ -668,15 +666,31 @@ typedef enum {
 	PK_INFO_ENUM_DECOMPRESSING,
 	PK_INFO_ENUM_UNTRUSTED,
 	PK_INFO_ENUM_TRUSTED,
-	PK_INFO_ENUM_UNAVAILABLE,
-	PK_INFO_ENUM_CRITICAL,
-	PK_INFO_ENUM_INSTALL,
-	PK_INFO_ENUM_REMOVE,
-	PK_INFO_ENUM_OBSOLETE,
-	PK_INFO_ENUM_DOWNGRADE,
 	/*< private >*/
 	PK_INFO_ENUM_LAST
 } PkInfoEnum;
+
+/**
+ * PkSeverityEnum:
+ * @PK_SEVERITY_ENUM_NONE:	No severity is known, or does not apply
+ * @PK_SEVERITY_ENUM_LOW:	Update has a low severity
+ * @PK_SEVERITY_ENUM_MEDIUM:	Update has a medium severity
+ * @PK_SEVERITY_ENUM_HIGH:	Update has a high severity
+ * @PK_SEVERITY_ENUM_CRITICAL:	Update has a critical severity
+ *
+ * The severity of a package update, i.e. how urgently it should be applied.
+ *
+ * Since: 2.0.0
+ **/
+typedef enum {
+	PK_SEVERITY_ENUM_NONE,
+	PK_SEVERITY_ENUM_LOW,
+	PK_SEVERITY_ENUM_MEDIUM,
+	PK_SEVERITY_ENUM_HIGH,
+	PK_SEVERITY_ENUM_CRITICAL,
+	/*< private >*/
+	PK_SEVERITY_ENUM_LAST
+} PkSeverityEnum;
 
 /**
  * PkDistroUpgradeEnum:
@@ -779,6 +793,9 @@ const gchar	     *pk_sig_type_enum_to_string (PkSigTypeEnum sig_type);
 
 PkInfoEnum	      pk_info_enum_from_string (const gchar *info);
 const gchar	     *pk_info_enum_to_string (PkInfoEnum info);
+
+PkSeverityEnum	      pk_severity_enum_from_string (const gchar *severity);
+const gchar	     *pk_severity_enum_to_string (PkSeverityEnum severity);
 
 PkUpdateStateEnum     pk_update_state_enum_from_string (const gchar *update_state);
 const gchar	     *pk_update_state_enum_to_string (PkUpdateStateEnum update_state);

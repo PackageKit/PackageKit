@@ -330,9 +330,12 @@ pk_backend_load (PkBackend *backend, GError **error)
 		if (desc->run_job == NULL || desc->get_roles == NULL) {
 			g_free (desc);
 			g_module_close (handle);
-			g_set_error (error, 1, 0,
-				     "plugin %s must export pk_backend_run_job and pk_backend_get_roles",
-				     backend_name);
+			g_set_error (
+			    error,
+			    1,
+			    0,
+			    "plugin %s must export pk_backend_run_job and pk_backend_get_roles",
+			    backend_name);
 			return FALSE;
 		}
 

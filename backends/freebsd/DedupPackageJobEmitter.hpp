@@ -58,7 +58,7 @@ public:
         if (typeOverride.has_value())
             pk_type = typeOverride.value();
 
-        pk_backend_packages_add (packages, pk_type, packageKitId.c_str(), pkgView.comment(), PK_INFO_ENUM_UNKNOWN);
+        pk_backend_packages_add (packages, pk_type, packageKitId.c_str(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
 
         alreadyStaged.insert(packageKitId);
     }

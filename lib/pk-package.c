@@ -69,7 +69,7 @@ struct _PkPackagePrivate
 	PkUpdateStateEnum update_state;
 	gchar *update_issued;
 	gchar *update_updated;
-	PkInfoEnum update_severity;
+	PkSeverityEnum update_severity;
 };
 
 enum {
@@ -118,7 +118,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (PkPackage, pk_package, PK_TYPE_SOURCE)
  *
  * Do the #PkPackage's have the same ID.
  *
- * Returns: %TRUE if the packages have the same package_id, info and summary.
+ * Returns: %TRUE if the packages have the same package_id, info, summary
+ *   and update severity.
  *
  * Since: 0.5.4
  **/
@@ -133,7 +134,7 @@ pk_package_equal (PkPackage *package1, PkPackage *package2)
 
 	return (g_strcmp0 (priv1->summary, priv2->summary) == 0 &&
 		g_strcmp0 (priv1->package_id, priv2->package_id) == 0 &&
-		priv1->info == priv2->info);
+		priv1->info == priv2->info && priv1->update_severity == priv2->update_severity);
 }
 
 /**
@@ -683,7 +684,7 @@ pk_package_class_init (PkPackageClass *klass)
 	obj_properties[PROP_INFO] = g_param_spec_enum (
 	    "info",
 	    NULL,
-	    "The PkInfoEnum package type, e.g. PK_INFO_ENUM_NORMAL",
+	    "The PkInfoEnum package type, e.g. PK_INFO_ENUM_INSTALLED",
 	    PK_TYPE_INFO_ENUM,
 	    PK_INFO_ENUM_UNKNOWN,
 	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
@@ -910,10 +911,8 @@ pk_package_class_init (PkPackageClass *klass)
 	/**
 	 * PkPackage:update-severity:
 	 *
-	 * Can be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
-	 * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
-	 * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
-	 * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
+	 * The #PkSeverityEnum of the update, or %PK_SEVERITY_ENUM_NONE if the
+	 * package is not an update or its severity is not known.
 	 *
 	 * Since: 1.2.4
 	 */
@@ -921,8 +920,8 @@ pk_package_class_init (PkPackageClass *klass)
 	    "update-severity",
 	    NULL,
 	    "Package update severity",
-	    PK_TYPE_INFO_ENUM,
-	    PK_INFO_ENUM_UNKNOWN,
+	    PK_TYPE_SEVERITY_ENUM,
+	    PK_SEVERITY_ENUM_NONE,
 	    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_properties);
@@ -1009,8 +1008,8 @@ pk_package_new (void)
  * @info: the #PkInfoEnum
  * @package_id: the package-id, e.g. "gnome-power-manager;2.30.1;i386;fedora"
  * @summary: (nullable): the one-line package summary
- * @update_severity: the #PkInfoEnum describing the update severity, or
- *   %PK_INFO_ENUM_UNKNOWN if not known or not applicable
+ * @update_severity: the #PkSeverityEnum describing the update severity, or
+ *   %PK_SEVERITY_ENUM_NONE if not known or not applicable
  * @error: a #GError, or %NULL
  *
  * Creates a new #PkPackage with all its main properties set. The @package_id
@@ -1025,7 +1024,7 @@ PkPackage *
 pk_package_new_full (PkInfoEnum info,
 		     const gchar *package_id,
 		     const gchar *summary,
-		     PkInfoEnum update_severity,
+		     PkSeverityEnum update_severity,
 		     GError **error)
 {
 	g_autoptr(PkPackage) package = NULL;
@@ -1047,22 +1046,19 @@ pk_package_new_full (PkInfoEnum info,
  * pk_package_get_update_severity:
  * @package: a #PkPackage
  *
- * Returns the @package update severity. Can be one of
- * %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
- * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
- * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
- * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
+ * Returns the @package update severity, which is %PK_SEVERITY_ENUM_NONE
+ * if the package is not an update or its severity is not known.
  *
  * Returns: the @package update severity, if known.
  *
  * Since: 1.2.4
  **/
-PkInfoEnum
+PkSeverityEnum
 pk_package_get_update_severity (PkPackage *package)
 {
 	PkPackagePrivate *priv = GET_PRIVATE (package);
 
-	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_INFO_ENUM_UNKNOWN);
+	g_return_val_if_fail (PK_IS_PACKAGE (package), PK_SEVERITY_ENUM_NONE);
 
 	return priv->update_severity;
 }
@@ -1070,27 +1066,19 @@ pk_package_get_update_severity (PkPackage *package)
 /**
  * pk_package_set_update_severity:
  * @package: a #PkPackage
- * @update_severity: a #PkInfoEnum
+ * @update_severity: a #PkSeverityEnum
  *
- * Set an update severity for the @package. The @update_severity can
- * be one of %PK_INFO_ENUM_UNKNOWN, %PK_INFO_ENUM_LOW,
- * %PK_INFO_ENUM_ENHANCEMENT, %PK_INFO_ENUM_NORMAL,
- * %PK_INFO_ENUM_BUGFIX, %PK_INFO_ENUM_IMPORTANT,
- * %PK_INFO_ENUM_SECURITY or %PK_INFO_ENUM_CRITICAL.
+ * Set an update severity for the @package.
  *
  * Since: 1.2.4
  **/
 void
-pk_package_set_update_severity (PkPackage *package, PkInfoEnum update_severity)
+pk_package_set_update_severity (PkPackage *package, PkSeverityEnum update_severity)
 {
 	PkPackagePrivate *priv = GET_PRIVATE (package);
 
 	g_return_if_fail (PK_IS_PACKAGE (package));
-	g_return_if_fail (
-	    update_severity == PK_INFO_ENUM_UNKNOWN || update_severity == PK_INFO_ENUM_LOW ||
-	    update_severity == PK_INFO_ENUM_ENHANCEMENT || update_severity == PK_INFO_ENUM_NORMAL ||
-	    update_severity == PK_INFO_ENUM_BUGFIX || update_severity == PK_INFO_ENUM_IMPORTANT ||
-	    update_severity == PK_INFO_ENUM_SECURITY || update_severity == PK_INFO_ENUM_CRITICAL);
+	g_return_if_fail (update_severity < PK_SEVERITY_ENUM_LAST);
 
 	if (priv->update_severity == update_severity)
 		return;

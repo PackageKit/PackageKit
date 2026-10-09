@@ -464,6 +464,7 @@ pk_backend_protocol_get_enum (json_t *obj,
 /* Lazy hack: the PK_*_ENUM_UNKNOWN constants do not share a naming scheme, so map them */
 #define pk_status_ENUM_UNKNOWN_VALUE	     PK_STATUS_ENUM_UNKNOWN
 #define pk_info_ENUM_UNKNOWN_VALUE	     PK_INFO_ENUM_UNKNOWN
+#define pk_severity_ENUM_UNKNOWN_VALUE	     PK_SEVERITY_ENUM_NONE
 #define pk_restart_ENUM_UNKNOWN_VALUE	     PK_RESTART_ENUM_UNKNOWN
 #define pk_error_ENUM_UNKNOWN_VALUE	     PK_ERROR_ENUM_UNKNOWN
 #define pk_group_ENUM_UNKNOWN_VALUE	     PK_GROUP_ENUM_UNKNOWN
@@ -631,7 +632,7 @@ pk_backend_protocol_handle_packages (json_t *root, PkBackendJob *job, GError **e
 		const gchar *summary = NULL;
 		const gchar *severity_text = NULL;
 		PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
-		PkInfoEnum severity = PK_INFO_ENUM_UNKNOWN;
+		PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE;
 
 		if (!json_is_object (item))
 			return pk_backend_protocol_invalid (error,
@@ -645,7 +646,7 @@ pk_backend_protocol_handle_packages (json_t *root, PkBackendJob *job, GError **e
 		    !pk_backend_protocol_get_string (item, "summary", TRUE, &summary, error) ||
 		    !pk_backend_protocol_get_string (item, "severity", TRUE, &severity_text, error))
 			return FALSE;
-		if (severity_text != NULL && !GET_ENUM (item, "severity", pk_info, &severity))
+		if (severity_text != NULL && !GET_ENUM (item, "severity", pk_severity, &severity))
 			return FALSE;
 		pk_backend_packages_add (packages,
 					 info,

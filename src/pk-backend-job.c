@@ -1002,15 +1002,45 @@ pk_backend_job_set_status (PkBackendJob *job, PkStatusEnum status)
 }
 
 /**
+ * pk_backend_default_update_severity:
+ * @info: the #PkInfoEnum of a pending update
+ *
+ * Gets the severity that is assumed for an update of the given kind if the
+ * backend does not know a better value. Backends can use this to assign a
+ * severity to a blocked update, by passing the @info the update would have
+ * had if it was not blocked.
+ *
+ * Returns: a #PkSeverityEnum, %PK_SEVERITY_ENUM_NONE if @info does not
+ *   describe an update
+ **/
+PkSeverityEnum
+pk_backend_default_update_severity (PkInfoEnum info)
+{
+	switch (info) {
+	case PK_INFO_ENUM_UPDATE_ENHANCEMENT:
+		return PK_SEVERITY_ENUM_LOW;
+	case PK_INFO_ENUM_UPDATE_SECURITY:
+		return PK_SEVERITY_ENUM_HIGH;
+	case PK_INFO_ENUM_UPDATE:
+		return PK_SEVERITY_ENUM_MEDIUM;
+	default:
+		return PK_SEVERITY_ENUM_NONE;
+	}
+}
+
+/**
  * pk_backend_packages_add:
  * @packages: (element-type PkPackage): an array, to be reported with %pk_backend_job_packages()
  * @info: the #PkInfoEnum of the package
  * @package_id: the package-id
  * @summary: (nullable): the one-line package summary
- * @update_severity: the update severity, or %PK_INFO_ENUM_UNKNOWN
+ * @update_severity: the update severity, or %PK_SEVERITY_ENUM_NONE
  *
  * Adds a package to @packages. Packages with an invalid @package_id are
  * skipped with a warning.
+ *
+ * If @update_severity is %PK_SEVERITY_ENUM_NONE and @info describes an
+ * update, the severity from %pk_backend_default_update_severity() is used.
  *
  * Returns: (transfer none) (nullable): the staged package, owned by
  *   @packages, or %NULL if @package_id is not valid
@@ -1020,13 +1050,16 @@ pk_backend_packages_add (GPtrArray *packages,
 			 PkInfoEnum info,
 			 const gchar *package_id,
 			 const gchar *summary,
-			 PkInfoEnum update_severity)
+			 PkSeverityEnum update_severity)
 {
 	g_autoptr(GError) error = NULL;
 	PkPackage *package;
 
 	g_return_val_if_fail (packages != NULL, NULL);
 	g_return_val_if_fail (package_id != NULL, NULL);
+
+	if (update_severity == PK_SEVERITY_ENUM_NONE)
+		update_severity = pk_backend_default_update_severity (info);
 
 	package = pk_package_new_full (info, package_id, summary, update_severity, &error);
 	if (package == NULL) {
@@ -1131,7 +1164,7 @@ pk_backend_job_package_status (PkBackendJob *job, const gchar *package_id, PkInf
 	g_return_if_fail (package_id != NULL);
 
 	/* check we are valid */
-	item = pk_package_new_full (info, package_id, NULL, PK_INFO_ENUM_UNKNOWN, &error);
+	item = pk_package_new_full (info, package_id, NULL, PK_SEVERITY_ENUM_NONE, &error);
 	if (item == NULL) {
 		g_warning ("package_id %s invalid and cannot be processed: %s",
 			   package_id,

@@ -153,18 +153,18 @@ backend_depends_on (PkBackend *backend,
 					 PK_INFO_ENUM_AVAILABLE,
 					 "scribus-clipart;1.3.4-1.fc8;i386;fedora;",
 					 "Clipart for scribus",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	} else {
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_INSTALLED,
 					 "glib2;2.14.0;i386;fedora;",
 					 "The GLib library",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_AVAILABLE,
 					 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
 					 "GTK+ Libraries for GIMP",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	}
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
@@ -381,12 +381,12 @@ backend_required_by (PkBackend *backend,
 				 PK_INFO_ENUM_INSTALLED,
 				 "glib2;2.14.0;i386;fedora;",
 				 "The GLib library",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_INSTALLED,
 				 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
 				 "GTK+ Libraries for GIMP",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
 }
@@ -576,35 +576,36 @@ pk_backend_get_updates_timeout (gpointer data)
 
 	if (priv->use_blocked) {
 		if (!priv->updated_powertop && !priv->updated_kernel && !priv->updated_gtkhtml) {
-			pk_backend_packages_add (packages,
-						 PK_INFO_ENUM_BLOCKED,
-						 "vino;2.24.2.fc9;i386;fedora;",
-						 "Remote desktop server for the desktop",
-						 PK_INFO_ENUM_UNKNOWN);
+			pk_backend_packages_add (
+			    packages,
+			    PK_INFO_ENUM_BLOCKED,
+			    "vino;2.24.2.fc9;i386;fedora;",
+			    "Remote desktop server for the desktop",
+			    /* a blocked security update */
+			    pk_backend_default_update_severity (PK_INFO_ENUM_UPDATE_SECURITY));
 		}
 	}
-	/* frontends expect the update urgency as both the info and the severity */
 	if (!priv->updated_powertop) {
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_NORMAL,
+					 PK_INFO_ENUM_UPDATE,
 					 "powertop;1.8-1.fc8;i386;fedora;",
 					 "Power consumption monitor",
-					 PK_INFO_ENUM_NORMAL);
+					 PK_SEVERITY_ENUM_LOW);
 	}
 	if (!priv->updated_kernel) {
 		pk_backend_packages_add (
 		    packages,
-		    PK_INFO_ENUM_BUGFIX,
+		    PK_INFO_ENUM_UPDATE,
 		    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed",
 		    "The Linux kernel (the core of the Linux operating system)",
-		    PK_INFO_ENUM_BUGFIX);
+		    PK_SEVERITY_ENUM_NONE);
 	}
 	if (!priv->updated_gtkhtml) {
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_SECURITY,
+					 PK_INFO_ENUM_UPDATE_SECURITY,
 					 "gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 					 "An HTML widget for GTK+ 2.0",
-					 PK_INFO_ENUM_SECURITY);
+					 PK_SEVERITY_ENUM_CRITICAL);
 	}
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
@@ -703,38 +704,38 @@ backend_install_packages (PkBackend *backend,
 					 PK_INFO_ENUM_REMOVING,
 					 "powertop;1.8-1.fc8;i386;fedora;",
 					 "Power consumption monitor",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_INSTALLING,
 					 "gtk2;2.11.6-6.fc8;i386;fedora;",
 					 "GTK+ Libraries for GIMP",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_UPDATING,
 					 "lib7;7.0.1-6.fc13;i386;fedora;",
 					 "C Libraries",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_REINSTALLING,
 					 "libssl;3.5.7-2.fc13;i386;fedora;",
 					 "SSL Libraries",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (
 		    packages,
 		    PK_INFO_ENUM_DOWNGRADING,
 		    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed",
 		    "The Linux kernel (the core of the Linux operating system)",
-		    PK_INFO_ENUM_UNKNOWN);
+		    PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_UPDATING,
 					 "gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 					 "An HTML widget for GTK+ 2.0",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_job_packages (job, packages);
 		pk_backend_job_finished (job);
@@ -956,7 +957,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 							 PK_INFO_ENUM_AVAILABLE,
 							 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 							 "The vips documentation package.",
-							 PK_INFO_ENUM_UNKNOWN);
+							 PK_SEVERITY_ENUM_NONE);
 			}
 		} else if (g_strcmp0 (search[i], "glib2") == 0 ||
 			   g_strcmp0 (search[i], "glib2;2.14.0;i386;fedora;") == 0) {
@@ -965,7 +966,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 							 PK_INFO_ENUM_INSTALLED,
 							 "glib2;2.14.0;i386;fedora;",
 							 "The GLib library",
-							 PK_INFO_ENUM_UNKNOWN);
+							 PK_SEVERITY_ENUM_NONE);
 			}
 		} else if (g_strcmp0 (search[i], "powertop") == 0 ||
 			   g_strcmp0 (search[i], "powertop;1.8-1.fc8;i386;fedora;") == 0)
@@ -973,7 +974,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 						 PK_INFO_ENUM_INSTALLED,
 						 "powertop;1.8-1.fc8;i386;fedora;",
 						 "Power consumption monitor",
-						 PK_INFO_ENUM_UNKNOWN);
+						 PK_SEVERITY_ENUM_NONE);
 		else if (g_strcmp0 (search[i], "kernel") == 0 ||
 			 g_strcmp0 (search[i],
 				    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed") == 0)
@@ -982,14 +983,14 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 			    PK_INFO_ENUM_INSTALLED,
 			    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed",
 			    "The Linux kernel (the core of the Linux operating system)",
-			    PK_INFO_ENUM_UNKNOWN);
+			    PK_SEVERITY_ENUM_NONE);
 		else if (g_strcmp0 (search[i], "gtkhtml2") == 0 ||
 			 g_strcmp0 (search[i], "gtkhtml2;2.19.1-4.fc8;i386;fedora;") == 0)
 			pk_backend_packages_add (packages,
 						 PK_INFO_ENUM_INSTALLED,
 						 "gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 						 "An HTML widget for GTK+ 2.0",
-						 PK_INFO_ENUM_UNKNOWN);
+						 PK_SEVERITY_ENUM_NONE);
 		else if (g_strcmp0 (search[i], "foobar") == 0 ||
 			 g_strcmp0 (search[i], "foobar;1.1.0;i386;debian;") == 0) {
 			if (!pk_bitfield_contain (filters, PK_FILTER_ENUM_INSTALLED)) {
@@ -997,7 +998,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 							 PK_INFO_ENUM_AVAILABLE,
 							 "foobar;1.1.0;i386;debian;",
 							 "The awesome FooBar application",
-							 PK_INFO_ENUM_UNKNOWN);
+							 PK_SEVERITY_ENUM_NONE);
 			}
 		} else if (g_strcmp0 (search[i], "libawesome") == 0 ||
 			   g_strcmp0 (search[i], "libawesome;42;i386;debian;") == 0) {
@@ -1006,7 +1007,7 @@ pk_backend_resolve_thread (PkBackendJob *job, GVariant *params, gpointer user_da
 							 PK_INFO_ENUM_AVAILABLE,
 							 "libawesome;42;i386;debian;",
 							 "Simple library for warping reality",
-							 PK_INFO_ENUM_UNKNOWN);
+							 PK_SEVERITY_ENUM_NONE);
 			}
 		}
 	}
@@ -1061,7 +1062,7 @@ pk_backend_search_details_thread (PkBackendJob *job, GVariant *params, gpointer 
 				 PK_INFO_ENUM_AVAILABLE,
 				 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 				 "The vips \"documentation\" package.",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 }
 
@@ -1083,13 +1084,13 @@ backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters,
 					 PK_INFO_ENUM_AVAILABLE,
 					 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 					 "The vips documentation package",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	else
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_INSTALLED,
 					 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 					 "The vips documentation package",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
 }
@@ -1105,12 +1106,12 @@ backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters
 				 PK_INFO_ENUM_AVAILABLE,
 				 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 				 "The vips documentation package.",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_AVAILABLE,
 				 "bǣwulf-utf8;0.1;noarch;hughsie;data",
 				 "The bǣwulf server test name.",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
 }
@@ -1150,29 +1151,29 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 					 PK_INFO_ENUM_INSTALLED,
 					 "evince;0.9.3-5.fc8;i386;;installed",
 					 "PDF Dokument Ƥrŏgrȃɱ",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	} else {
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_INSTALLED,
 					 "evince;0.9.3-5.fc8;i386;;installed",
 					 "PDF Document viewer",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 	}
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_INSTALLED,
 				 "tetex;3.0-41.fc8;i386;fedora;",
 				 "TeTeX is an implementation of TeX for Linux or UNIX systems.",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_AVAILABLE,
 				 "scribus;1.3.4-1.fc8;i386;fedora;",
 				 "Scribus is an desktop open source page layout program",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_AVAILABLE,
 				 "vips-doc;7.12.4-2.fc8;noarch;linva;",
 				 "The vips documentation package.",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 }
 
@@ -1681,7 +1682,7 @@ pk_backend_what_provides_timeout (gpointer data)
 			    PK_INFO_ENUM_AVAILABLE,
 			    "gstreamer-plugins-bad;0.10.3-5.lvn;i386;livna;",
 			    "GStreamer streaming media framework \"bad\" plug-ins",
-			    PK_INFO_ENUM_UNKNOWN);
+			    PK_SEVERITY_ENUM_NONE);
 		} else if (g_strcmp0 (priv->values[0],
 				      "gstreamer0.10(decoder-video/x-wma)(wmaversion=3)") == 0) {
 			pk_backend_packages_add (
@@ -1689,7 +1690,7 @@ pk_backend_what_provides_timeout (gpointer data)
 			    PK_INFO_ENUM_AVAILABLE,
 			    "gstreamer-plugins-flumpegdemux;0.10.15-5.lvn;i386;livna;",
 			    "MPEG demuxer for GStreamer",
-			    PK_INFO_ENUM_UNKNOWN);
+			    PK_SEVERITY_ENUM_NONE);
 		} else {
 			/* pkcon install vips-doc says it's installed cause evince is INSTALLED */
 			if (g_strcmp0 (priv->values[0], "vips-doc") != 0) {
@@ -1700,7 +1701,7 @@ pk_backend_what_provides_timeout (gpointer data)
 					    PK_INFO_ENUM_INSTALLED,
 					    "evince;0.9.3-5.fc8;i386;;installed",
 					    "PDF Document viewer",
-					    PK_INFO_ENUM_UNKNOWN);
+					    PK_SEVERITY_ENUM_NONE);
 				}
 				if (!pk_bitfield_contain (priv->filters,
 							  PK_FILTER_ENUM_INSTALLED)) {
@@ -1710,7 +1711,7 @@ pk_backend_what_provides_timeout (gpointer data)
 					    "scribus;1.3.4-1.fc8;i386;fedora;",
 					    "Scribus is an desktop open source "
 					    "page layout program",
-					    PK_INFO_ENUM_UNKNOWN);
+					    PK_SEVERITY_ENUM_NONE);
 				}
 			}
 		}
@@ -1745,7 +1746,7 @@ backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 				 PK_INFO_ENUM_INSTALLED,
 				 "update1;2.19.1-4.fc8;i386;fedora;",
 				 "The first update",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 	pk_backend_job_finished (job);
 }
@@ -1799,17 +1800,17 @@ pk_backend_upgrade_system_timeout (gpointer data)
 					 PK_INFO_ENUM_INSTALLING,
 					 "gtk2;2.11.6-6.fc8;i386;fedora;",
 					 "GTK+ Libraries for GIMP",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_REMOVING,
 					 "gnome-software;2.18.2.fc24;i386;fedora;",
 					 "Software center for GNOME",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_packages_add (packages,
 					 PK_INFO_ENUM_UPDATING,
 					 "lib7;7.0.1-6.fc13;i386;fedora;",
 					 "C Libraries",
-					 PK_INFO_ENUM_UNKNOWN);
+					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_job_packages (job, packages);
 		pk_backend_job_finished (job);
 		return FALSE;

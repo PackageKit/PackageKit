@@ -42,11 +42,11 @@ static void poldek_backend_package (PkBackendJob *job,
 				    struct pkg *pkg,
 				    PkInfoEnum infoenum,
 				    PkBitfield filters);
-static void poldek_backend_stage_package (PkBackendJob *job,
-					  GPtrArray *packages,
-					  struct pkg *pkg,
-					  PkInfoEnum infoenum,
-					  PkBitfield filters);
+static PkPackage *poldek_backend_stage_package (PkBackendJob *job,
+						GPtrArray *packages,
+						struct pkg *pkg,
+						PkInfoEnum infoenum,
+						PkBitfield filters);
 static long do_get_bytes_to_download (struct poldek_ts *ts, tn_array *pkgs);
 static gint do_get_files_to_download (const struct poldek_ts *ts, const gchar *mark);
 static void pb_load_packages (PkBackendJob *job);
@@ -1552,7 +1552,7 @@ poldek_backend_package (PkBackendJob *job, struct pkg *pkg, PkInfoEnum infoenum,
  * elements (created with g_ptr_array_new_with_free_func (g_object_unref)).
  * The array is emitted later with pk_backend_job_packages().
  */
-static void
+static PkPackage *
 poldek_backend_stage_package (PkBackendJob *job,
 			      GPtrArray *packages,
 			      struct pkg *pkg,
@@ -1560,6 +1560,7 @@ poldek_backend_stage_package (PkBackendJob *job,
 			      PkBitfield filters)
 {
 	struct pkguinf *pkgu = NULL;
+	PkPackage *package;
 	gchar *package_id;
 	const gchar *summary = "";
 
@@ -1570,11 +1571,17 @@ poldek_backend_stage_package (PkBackendJob *job,
 	if ((pkgu = pkg_uinf_i18n (job, pkg)))
 		summary = pkguinf_get (pkgu, PKGUINF_SUMMARY);
 
-	pk_backend_packages_add (packages, infoenum, package_id, summary, PK_INFO_ENUM_UNKNOWN);
+	package = pk_backend_packages_add (packages,
+					   infoenum,
+					   package_id,
+					   summary,
+					   PK_SEVERITY_ENUM_NONE);
 
 	if (pkgu != NULL)
 		pkguinf_free (pkgu);
 	g_free (package_id);
+
+	return package;
 }
 
 static struct pkg *
@@ -3130,27 +3137,24 @@ backend_get_updates_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 			if (sigint_reached ())
 				break;
 
-			/* mark held packages as blocked */
-			if (pkg->flags & PKG_HELD)
-				poldek_backend_stage_package (job,
-							      pk_packages,
-							      pkg,
-							      PK_INFO_ENUM_BLOCKED,
-							      PK_FILTER_ENUM_NONE);
-			else if (poldek_pkg_in_array (pkg,
-						      secupgrades,
-						      (tn_fn_cmp) pkg_cmp_name_evr))
-				poldek_backend_stage_package (job,
-							      pk_packages,
-							      pkg,
-							      PK_INFO_ENUM_SECURITY,
-							      PK_FILTER_ENUM_NONE);
-			else
-				poldek_backend_stage_package (job,
-							      pk_packages,
-							      pkg,
-							      PK_INFO_ENUM_NORMAL,
-							      PK_FILTER_ENUM_NONE);
+			PkInfoEnum info = PK_INFO_ENUM_UPDATE;
+			PkPackage *package;
+
+			if (poldek_pkg_in_array (pkg, secupgrades, (tn_fn_cmp) pkg_cmp_name_evr))
+				info = PK_INFO_ENUM_UPDATE_SECURITY;
+
+			/* mark held packages as blocked, they keep the severity
+			 * the update would have had */
+			package = poldek_backend_stage_package (
+			    job,
+			    pk_packages,
+			    pkg,
+			    (pkg->flags & PKG_HELD) ? PK_INFO_ENUM_BLOCKED : info,
+			    PK_FILTER_ENUM_NONE);
+			if (package != NULL && (pkg->flags & PKG_HELD))
+				pk_package_set_update_severity (
+				    package,
+				    pk_backend_default_update_severity (info));
 		}
 
 		pk_backend_job_packages (job, pk_packages);

@@ -198,7 +198,7 @@ public:
     /**
      * Emits a list of updates that matches the given filters
      */
-    void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE);
+    void emitUpdates(PkgList &output, PkBitfield filters = PK_FILTER_ENUM_NONE, bool blocked = false);
 
     /**
      * Checks if a given package matches the filters
@@ -279,7 +279,7 @@ private:
         GPtrArray *array,
         const pkgCache::VerIterator &ver,
         PkInfoEnum state = PK_INFO_ENUM_UNKNOWN,
-        PkInfoEnum updateSeverity = PK_INFO_ENUM_UNKNOWN) const;
+        PkSeverityEnum updateSeverity = PK_SEVERITY_ENUM_NONE) const;
     void stageUpdateDetail(GPtrArray *updateArray, const pkgCache::VerIterator &candver);
 
     /**

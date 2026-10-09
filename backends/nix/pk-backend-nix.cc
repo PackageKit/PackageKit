@@ -372,7 +372,7 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
                         system.c_str(),
                         priv->defaultFlake.c_str(),
                         NULL);
-                    pk_backend_packages_add(packages, info, package_id, description.c_str(), PK_INFO_ENUM_UNKNOWN);
+                    pk_backend_packages_add(packages, info, package_id, description.c_str(), PK_SEVERITY_ENUM_NONE);
                 }
             }
 
@@ -504,7 +504,7 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
-        pk_backend_packages_add(packages, PK_INFO_ENUM_INSTALLED, package_ids[i], NULL, PK_INFO_ENUM_UNKNOWN);
+        pk_backend_packages_add(packages, PK_INFO_ENUM_INSTALLED, package_ids[i], NULL, PK_SEVERITY_ENUM_NONE);
     pk_backend_job_packages(job, packages);
 
     pk_backend_job_set_percentage(job, 100);
@@ -586,7 +586,7 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
-        pk_backend_packages_add(packages, PK_INFO_ENUM_AVAILABLE, package_ids[i], NULL, PK_INFO_ENUM_UNKNOWN);
+        pk_backend_packages_add(packages, PK_INFO_ENUM_AVAILABLE, package_ids[i], NULL, PK_SEVERITY_ENUM_NONE);
     pk_backend_job_packages(job, packages);
 
     pk_backend_job_set_percentage(job, 100);
@@ -626,10 +626,10 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
                     NULL);
                 pk_backend_packages_add(
                     packages,
-                    PK_INFO_ENUM_NORMAL,
+                    PK_INFO_ENUM_UPDATE,
                     package_id,
                     drv->queryMetaString("description").c_str(),
-                    PK_INFO_ENUM_UNKNOWN);
+                    PK_SEVERITY_ENUM_NONE);
             }
         }
     }

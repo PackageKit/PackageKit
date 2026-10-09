@@ -352,7 +352,7 @@ static void backend_get_updates_thread(PkBackendJob *job, GVariant *params, gpoi
     apt->emitPackages(removals, filters, PK_INFO_ENUM_REMOVE);
     apt->emitPackages(obsoleted, filters, PK_INFO_ENUM_OBSOLETE);
     apt->emitPackages(downgrades, filters, PK_INFO_ENUM_DOWNGRADE);
-    apt->emitPackages(blocked, filters, PK_INFO_ENUM_BLOCKED);
+    apt->emitUpdates(blocked, filters, true);
 }
 
 static void backend_what_provides_thread(PkBackendJob *job, GVariant *params, gpointer user_data)

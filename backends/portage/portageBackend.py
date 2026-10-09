@@ -1577,21 +1577,21 @@ class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
                         if self._cmp_cpv(cpv, atom.cpv) >= 0:
                             # cpv is a security update and removed from list
                             cpv_updates[atom.cp][slot].remove(cpv)
-                            self._package(cpv, pkb.INFO_SECURITY)
+                            self._package(cpv, pkb.INFO_UPDATE_SECURITY)
             else:  # update also non-world and non-system packages if security
-                self._package(atom.cpv, pkb.INFO_SECURITY)
+                self._package(atom.cpv, pkb.INFO_UPDATE_SECURITY)
 
         # downgrades
         for cp in cpv_downgra:
             for slot in cpv_downgra[cp]:
                 for cpv in cpv_downgra[cp][slot]:
-                    self._package(cpv, pkb.INFO_IMPORTANT)
+                    self._package(cpv, pkb.INFO_DOWNGRADE)
 
         # normal updates
         for cp in cpv_updates:
             for slot in cpv_updates[cp]:
                 for cpv in cpv_updates[cp][slot]:
-                    self._package(cpv, pkb.INFO_NORMAL)
+                    self._package(cpv, pkb.INFO_UPDATE)
 
     def install_packages(self, transaction_flags, pkgs):
 

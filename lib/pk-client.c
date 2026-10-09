@@ -872,7 +872,7 @@ pk_client_properties_changed_cb (GDBusProxy *proxy,
 static void
 pk_client_signal_package (PkClientState *state,
 			  PkInfoEnum info_enum,
-			  PkInfoEnum update_severity,
+			  PkSeverityEnum update_severity,
 			  const gchar *package_id,
 			  const gchar *summary)
 {
@@ -1271,18 +1271,14 @@ pk_client_signal_cb (GDBusProxy *proxy,
 	}
 	if (g_strcmp0 (signal_name, "Packages") == 0) {
 		g_autoptr(GVariantIter) iter = NULL;
-		guint flags;
-		PkInfoEnum info, severity;
+		guint info, severity;
 		const gchar *package_id, *summary;
 
-		g_variant_get (parameters, "(a(uss))", &iter);
+		g_variant_get (parameters, "(a(uuss))", &iter);
 
-		while (g_variant_iter_loop (iter, "(u&s&s)", &flags, &package_id, &summary)) {
-			/* The 'info' and 'update-severity' are encoded in the single value */
-			info = flags & 0xFFFF;
-			severity = (flags >> 16) & 0xFFFF;
+		while (
+		    g_variant_iter_loop (iter, "(uu&s&s)", &info, &severity, &package_id, &summary))
 			pk_client_signal_package (state, info, severity, package_id, summary);
-		}
 
 		return;
 	}

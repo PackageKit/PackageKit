@@ -220,13 +220,14 @@ Results are **batched**: emit the items of a query in one event, or a few
 for very large sets. One item per event defeats the purpose.
 
 `packages`: query results, `pk_backend_job_packages`. `info` is `enum_info`,
-`summary` and `severity` (`enum_info` severity for updates) are optional.
+`summary` and `severity` (`enum_severity`, for updates) are optional. An
+update without `severity` gets a default derived from its `info`.
 Items already emitted for the job are dropped.
 
 ```json
 {"ev":"packages","job":"42","items":[
   {"package_id":"foo;1.0;x86_64;main;","info":"installed","summary":"A foo"},
-  {"package_id":"bar;2.1;x86_64;main;","info":"available","summary":"A bar","severity":"security"}]}
+  {"package_id":"bar;2.1;x86_64;main;","info":"update-security","summary":"A bar","severity":"critical"}]}
 ```
 
 `package-status`: what is happening to one package during a transaction,

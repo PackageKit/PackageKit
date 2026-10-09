@@ -28,9 +28,14 @@ PkPackage *pk_backend_packages_add(
     PkInfoEnum info,
     const gchar *package_id,
     const gchar *summary,
-    PkInfoEnum update_severity)
+    PkSeverityEnum update_severity)
 {
     return NULL;
+}
+
+PkSeverityEnum pk_backend_default_update_severity(PkInfoEnum info)
+{
+    return PK_SEVERITY_ENUM_NONE;
 }
 
 void pk_backend_job_set_download_size_remaining(PkBackendJob *job, guint64 download_size_remaining) {}

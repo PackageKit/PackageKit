@@ -1209,7 +1209,7 @@ pk_transaction_emit_packages_batch (PkTransaction *transaction, GVariantBuilder 
 					    transaction->tid,
 					    PK_DBUS_INTERFACE_TRANSACTION,
 					    "Packages",
-					    g_variant_new ("(a(uss))", builder),
+					    g_variant_new ("(a(uuss))", builder),
 					    &error))
 		g_warning ("Failed to emit Packages signal: %s", error->message);
 }
@@ -1225,7 +1225,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 			    GPtrArray *package_array,
 			    PkTransaction *transaction)
 {
-	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(uss)"));
+	g_auto(GVariantBuilder) builder = G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE ("a(uuss)"));
 	guint n_added_packages = 0;
 	guint n_in_batch = 0;
 
@@ -1243,10 +1243,8 @@ pk_transaction_packages_cb (PkBackend *backend,
 		PkPackage *item = g_ptr_array_index (package_array, i);
 		const gchar *role_text;
 		PkInfoEnum info;
-		PkInfoEnum update_severity;
 		const gchar *package_id;
 		const gchar *summary = NULL;
-		guint encoded_value;
 
 		/* check the backend is doing the right thing */
 		info = pk_package_get_info (item);
@@ -1297,15 +1295,10 @@ pk_transaction_packages_cb (PkBackend *backend,
 				 summary);
 		}
 
-		/* Safety checks, that the two values do not interleave, neither overflow */
-		g_assert ((PK_INFO_ENUM_LAST & (~0xFFFF)) == 0);
-
-		update_severity = pk_package_get_update_severity (item);
-		encoded_value = info | (((guint32) update_severity) << 16);
-
 		g_variant_builder_add (&builder,
-				       "(uss)",
-				       encoded_value,
+				       "(uuss)",
+				       info,
+				       pk_package_get_update_severity (item),
 				       package_id,
 				       summary ? summary : "");
 		n_added_packages++;
@@ -1314,7 +1307,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 		/* emit a full batch and start a new one */
 		if (n_in_batch >= PK_TRANSACTION_PACKAGES_BATCH_SIZE) {
 			pk_transaction_emit_packages_batch (transaction, &builder);
-			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uss)"));
+			g_variant_builder_init (&builder, G_VARIANT_TYPE ("a(uuss)"));
 			n_in_batch = 0;
 		}
 	}

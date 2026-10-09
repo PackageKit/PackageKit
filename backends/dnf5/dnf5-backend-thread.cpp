@@ -184,8 +184,8 @@ dnf5_query_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 					packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 				for (const auto &pkg : update_pkgs) {
 					if (dnf5_package_filter(pkg, filters)) {
-						PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
-						PkInfoEnum severity = PK_INFO_ENUM_UNKNOWN;
+						PkInfoEnum info = PK_INFO_ENUM_UPDATE;
+						PkSeverityEnum severity = PK_SEVERITY_ENUM_NONE;
 
 						std::string key = pkg.get_name() + ";" + pkg.get_evr() + ";"
 								  + pkg.get_arch();

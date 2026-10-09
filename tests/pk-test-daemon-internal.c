@@ -591,6 +591,7 @@ pk_test_backend_spawn_func (void)
 /* ---- PkBackendProtocol ---- */
 
 static guint proto_packages = 0;
+static PkSeverityEnum proto_severities[3];
 static guint proto_percentage = 0;
 static gint proto_error = -1;
 static gint proto_exit = -1;
@@ -598,6 +599,9 @@ static gint proto_exit = -1;
 static void
 pk_test_backend_protocol_packages_cb (PkBackendJob *job, GPtrArray *packages, gpointer user_data)
 {
+	for (guint i = 0; i < packages->len && proto_packages + i < 3; i++)
+		proto_severities[proto_packages + i] = pk_package_get_update_severity (
+		    g_ptr_array_index (packages, i));
 	proto_packages += packages->len;
 }
 
@@ -913,8 +917,10 @@ pk_test_backend_protocol_func (void)
 	    NULL,
 	    "{\"ev\":\"packages\",\"job\":\"1\",\"items\":["
 	    "{\"package_id\":\"foo;1;x86_64;main;\",\"info\":\"installed\",\"summary\":\"A foo\"},"
-	    "{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"available\",\"summary\":\"A "
-	    "bar\",\"severity\":\"security\"}]}",
+	    "{\"package_id\":\"bar;2;x86_64;main;\",\"info\":\"update-security\",\"summary\":\"A "
+	    "bar\"},"
+	    "{\"package_id\":\"baz;3;x86_64;main;\",\"info\":\"blocked\",\"summary\":\"A "
+	    "baz\",\"severity\":\"critical\"}]}",
 	    "1",
 	    job,
 	    &finished,
@@ -952,7 +958,11 @@ pk_test_backend_protocol_func (void)
 	g_assert_true (finished);
 	_g_test_loop_wait (50);
 	g_assert_cmpuint (proto_percentage, ==, 42);
-	g_assert_cmpuint (proto_packages, ==, 2);
+	g_assert_cmpuint (proto_packages, ==, 3);
+	/* not an update, an update with the default severity, an explicit severity */
+	g_assert_cmpint (proto_severities[0], ==, PK_SEVERITY_ENUM_NONE);
+	g_assert_cmpint (proto_severities[1], ==, PK_SEVERITY_ENUM_HIGH);
+	g_assert_cmpint (proto_severities[2], ==, PK_SEVERITY_ENUM_CRITICAL);
 	g_assert_cmpint (proto_error, ==, PK_ERROR_ENUM_PACKAGE_NOT_FOUND);
 	g_assert_cmpint (proto_exit, ==, PK_EXIT_ENUM_FAILED);
 }

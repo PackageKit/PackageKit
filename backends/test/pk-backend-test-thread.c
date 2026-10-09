@@ -55,12 +55,12 @@ pk_backend_search_groups_thread (PkBackendJob *job, GVariant *params, gpointer u
 				 PK_INFO_ENUM_INSTALLED,
 				 "glib2;2.14.0;i386;fedora;",
 				 "The GLib library",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_INSTALLED,
 				 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
 				 "GTK+ Libraries for GIMP",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 }
 
@@ -102,12 +102,12 @@ pk_backend_search_names_thread (PkBackendJob *job, GVariant *params, gpointer us
 				 PK_INFO_ENUM_INSTALLED,
 				 "glib2;2.14.0;i386;fedora;",
 				 "The GLib library",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_packages_add (packages,
 				 PK_INFO_ENUM_INSTALLED,
 				 "gtk2;gtk2-2.11.6-6.fc8;i386;fedora;",
 				 "GTK+ Libraries for GIMP",
-				 PK_INFO_ENUM_UNKNOWN);
+				 PK_SEVERITY_ENUM_NONE);
 	pk_backend_job_packages (job, packages);
 }
 

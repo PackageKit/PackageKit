@@ -67,42 +67,42 @@ struct _PkPackageClass
 	void (*_pk_reserved5) (void);
 };
 
-GType	     pk_package_get_type (void);
-PkPackage   *pk_package_new (void);
-PkPackage   *pk_package_new_full (PkInfoEnum   info,
-				  const gchar *package_id,
-				  const gchar *summary,
-				  PkInfoEnum   update_severity,
-				  GError     **error);
+GType	       pk_package_get_type (void);
+PkPackage     *pk_package_new (void);
+PkPackage     *pk_package_new_full (PkInfoEnum	   info,
+				    const gchar	  *package_id,
+				    const gchar	  *summary,
+				    PkSeverityEnum update_severity,
+				    GError	 **error);
 
-gboolean     pk_package_set_id (PkPackage   *package,
-				const gchar *package_id,
-				GError	   **error);
-gboolean     pk_package_parse (PkPackage   *package,
-			       const gchar *data,
-			       GError	  **error);
-void	     pk_package_print (PkPackage *package);
-gboolean     pk_package_equal (PkPackage *package1,
-			       PkPackage *package2);
-gboolean     pk_package_equal_id (PkPackage *package1,
-				  PkPackage *package2);
+gboolean       pk_package_set_id (PkPackage   *package,
+				  const gchar *package_id,
+				  GError     **error);
+gboolean       pk_package_parse (PkPackage   *package,
+				 const gchar *data,
+				 GError	    **error);
+void	       pk_package_print (PkPackage *package);
+gboolean       pk_package_equal (PkPackage *package1,
+				 PkPackage *package2);
+gboolean       pk_package_equal_id (PkPackage *package1,
+				    PkPackage *package2);
 
 /* accessors */
-const gchar *pk_package_get_id (PkPackage *package);
-PkInfoEnum   pk_package_get_info (PkPackage *package);
-void	     pk_package_set_info (PkPackage *package,
-				  PkInfoEnum info);
-const gchar *pk_package_get_summary (PkPackage *package);
-void	     pk_package_set_summary (PkPackage	 *package,
-				     const gchar *summary);
-const gchar *pk_package_get_name (PkPackage *package);
-const gchar *pk_package_get_version (PkPackage *package);
-const gchar *pk_package_get_arch (PkPackage *package);
-const gchar *pk_package_get_origin (PkPackage *package);
-const gchar *pk_package_get_data (PkPackage *package);
-PkInfoEnum   pk_package_get_update_severity (PkPackage *package);
-void	     pk_package_set_update_severity (PkPackage *package,
-					     PkInfoEnum update_severity);
+const gchar   *pk_package_get_id (PkPackage *package);
+PkInfoEnum     pk_package_get_info (PkPackage *package);
+void	       pk_package_set_info (PkPackage *package,
+				    PkInfoEnum info);
+const gchar   *pk_package_get_summary (PkPackage *package);
+void	       pk_package_set_summary (PkPackage   *package,
+				       const gchar *summary);
+const gchar   *pk_package_get_name (PkPackage *package);
+const gchar   *pk_package_get_version (PkPackage *package);
+const gchar   *pk_package_get_arch (PkPackage *package);
+const gchar   *pk_package_get_origin (PkPackage *package);
+const gchar   *pk_package_get_data (PkPackage *package);
+PkSeverityEnum pk_package_get_update_severity (PkPackage *package);
+void	       pk_package_set_update_severity (PkPackage     *package,
+					       PkSeverityEnum update_severity);
 G_END_DECLS
 
 #endif /* __PK_PACKAGE_H */

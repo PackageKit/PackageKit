@@ -62,17 +62,17 @@ pk_alpm_pkg_emit (PkBackendJob *job, alpm_pkg_t *pkg, PkInfoEnum info)
 	g_free (package);
 }
 
-void
+PkPackage *
 pk_alpm_pkg_stage (GPtrArray *packages, alpm_pkg_t *pkg, PkInfoEnum info)
 {
 	g_autofree gchar *package_id = NULL;
 
-	g_return_if_fail (packages != NULL);
-	g_return_if_fail (pkg != NULL);
+	g_return_val_if_fail (packages != NULL, NULL);
+	g_return_val_if_fail (pkg != NULL, NULL);
 
 	package_id = pk_alpm_pkg_build_id (pkg);
-	pk_backend_packages_add (packages, info, package_id,
-				      alpm_pkg_get_desc (pkg), PK_INFO_ENUM_UNKNOWN);
+	return pk_backend_packages_add (packages, info, package_id,
+					alpm_pkg_get_desc (pkg), PK_SEVERITY_ENUM_NONE);
 }
 
 alpm_pkg_t *

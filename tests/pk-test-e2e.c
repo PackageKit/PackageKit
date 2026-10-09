@@ -434,6 +434,7 @@ pk_test_client_get_updates_cb (GObject *object, GAsyncResult *res, gpointer user
 	PkResults *results = NULL;
 	PkExitEnum exit_enum;
 	PkPackageSack *sack;
+	PkPackage *package;
 	guint size;
 
 	/* get the results */
@@ -450,6 +451,27 @@ pk_test_client_get_updates_cb (GObject *object, GAsyncResult *res, gpointer user
 	/* check size */
 	size = pk_package_sack_get_size (sack);
 	g_assert_cmpint (size, ==, 3);
+
+	/* an explicit severity */
+	package = pk_package_sack_find_by_id (sack, "powertop;1.8-1.fc8;i386;fedora;");
+	g_assert_nonnull (package);
+	g_assert_cmpint (pk_package_get_info (package), ==, PK_INFO_ENUM_UPDATE);
+	g_assert_cmpint (pk_package_get_update_severity (package), ==, PK_SEVERITY_ENUM_LOW);
+	g_object_unref (package);
+
+	/* the default severity of an update */
+	package = pk_package_sack_find_by_id (sack,
+					      "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed");
+	g_assert_nonnull (package);
+	g_assert_cmpint (pk_package_get_info (package), ==, PK_INFO_ENUM_UPDATE);
+	g_assert_cmpint (pk_package_get_update_severity (package), ==, PK_SEVERITY_ENUM_MEDIUM);
+	g_object_unref (package);
+
+	package = pk_package_sack_find_by_id (sack, "gtkhtml2;2.19.1-4.fc8;i386;fedora;");
+	g_assert_nonnull (package);
+	g_assert_cmpint (pk_package_get_info (package), ==, PK_INFO_ENUM_UPDATE_SECURITY);
+	g_assert_cmpint (pk_package_get_update_severity (package), ==, PK_SEVERITY_ENUM_CRITICAL);
+	g_object_unref (package);
 
 	g_object_unref (sack);
 
