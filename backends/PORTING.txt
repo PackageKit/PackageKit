@@ -1,3 +1,17 @@
+Guide to porting backends from 1.x to 2.0
+
+ * Spawned backends no longer need a C shim: ship a backend.conf manifest
+   and the helper in $libdir/packagekit/backends/<name>/ and talk the JSON
+   Lines protocol (see docs/spec/backend-spawn.md), e.g. via the
+   packagekit_backend Python library.
+
+ * Compiled backends export a single pk_backend_run_job(backend, job) that
+   switches on pk_backend_job_get_role() and reads the arguments from the
+   GVariant tuple returned by pk_backend_job_get_parameters() (the same one
+   threaded backends already receive as 'params'). The per-role
+   pk_backend_foo() entry points still work but are deprecated. A backend
+   exporting pk_backend_run_job() must also export pk_backend_get_roles().
+
 Guide to porting backends from 0.8.x to 0.9.x
 
  * Do not use pk_backend_job_message() -- either use an error if the transaction

@@ -332,34 +332,6 @@ pk_spawn_module_cancel_timeout_cb (gpointer user_data)
 	return G_SOURCE_REMOVE;
 }
 
-static void
-pk_spawn_module_run (PkBackendJob *job)
-{
-	g_autoptr(GError) error = NULL;
-
-	if (job != priv->job) {
-		if (!pk_backend_job_has_set_error_code (job))
-			pk_backend_job_error_code (job,
-						   PK_ERROR_ENUM_INTERNAL_ERROR,
-						   "job was not started on the spawned backend");
-		pk_backend_job_finished (job);
-		return;
-	}
-	if (!pk_backend_spawn_is_running (priv->process)) {
-		/* the request is sent once the new helper has said hello */
-		if (!pk_spawn_module_start (&error)) {
-			pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
-						  "failed to start the helper: %s",
-						  error->message);
-		}
-		return;
-	}
-	/* a helper that is still shutting down is restarted from the exited callback */
-	if (priv->awaiting_hello || priv->exit_requested)
-		return;
-	pk_spawn_module_send_run ();
-}
-
 /* ---- module interface ---- */
 
 gboolean pk_backend_initialize_manifest (GKeyFile *conf,
@@ -572,225 +544,30 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 	}
 }
 
-/* ---- roles: the request is built from the job, so these only forward ---- */
-
 void
-pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+pk_backend_run_job (PkBackend *backend, PkBackendJob *job)
 {
-	pk_spawn_module_run (job);
-}
+	g_autoptr(GError) error = NULL;
 
-void
-pk_backend_search_details (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield filters,
-			   gchar **values)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **packages)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_depends_on (PkBackend *backend,
-		       PkBackendJob *job,
-		       PkBitfield filters,
-		       gchar **package_ids,
-		       gboolean recursive)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_required_by (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield filters,
-			gchar **package_ids,
-			gboolean recursive)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_download_packages (PkBackend *backend,
-			      PkBackendJob *job,
-			      gchar **package_ids,
-			      const gchar *directory)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_install_packages (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     gchar **package_ids)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_update_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_install_files (PkBackend *backend,
-			  PkBackendJob *job,
-			  PkBitfield transaction_flags,
-			  gchar **full_paths)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_remove_packages (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield transaction_flags,
-			    gchar **package_ids,
-			    gboolean allow_deps,
-			    gboolean autoremove)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_install_signature (PkBackend *backend,
-			      PkBackendJob *job,
-			      PkSigTypeEnum type,
-			      const gchar *key_id,
-			      const gchar *package_id)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_repo_enable (PkBackend *backend,
-			PkBackendJob *job,
-			const gchar *repo_id,
-			gboolean enabled)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_repo_set_data (PkBackend *backend,
-			  PkBackendJob *job,
-			  const gchar *repo_id,
-			  const gchar *parameter,
-			  const gchar *value)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_repo_remove (PkBackend *backend,
-			PkBackendJob *job,
-			PkBitfield transaction_flags,
-			const gchar *repo_id,
-			gboolean autoremove)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_upgrade_system (PkBackend *backend,
-			   PkBackendJob *job,
-			   PkBitfield transaction_flags,
-			   const gchar *distro_id,
-			   PkUpgradeKindEnum upgrade_kind)
-{
-	pk_spawn_module_run (job);
-}
-
-void
-pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	pk_spawn_module_run (job);
+	if (job != priv->job) {
+		if (!pk_backend_job_has_set_error_code (job))
+			pk_backend_job_error_code (job,
+						   PK_ERROR_ENUM_INTERNAL_ERROR,
+						   "job was not started on the spawned backend");
+		pk_backend_job_finished (job);
+		return;
+	}
+	if (!pk_backend_spawn_is_running (priv->process)) {
+		/* the request is sent once the new helper has said hello */
+		if (!pk_spawn_module_start (&error)) {
+			pk_spawn_module_fail_job (PK_ERROR_ENUM_INTERNAL_ERROR,
+						  "failed to start the helper: %s",
+						  error->message);
+		}
+		return;
+	}
+	/* a helper that is still shutting down is restarted from the exited callback */
+	if (priv->awaiting_hello || priv->exit_requested)
+		return;
+	pk_spawn_module_send_run ();
 }

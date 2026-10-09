@@ -99,6 +99,8 @@ void	     pk_backend_start_job (PkBackend	*backend,
 				   PkBackendJob *job);
 void	     pk_backend_stop_job (PkBackend    *backend,
 				  PkBackendJob *job);
+void	     pk_backend_run_job (PkBackend    *backend,
+				 PkBackendJob *job);
 void	     pk_backend_cancel (PkBackend    *backend,
 				PkBackendJob *job);
 void	     pk_backend_download_packages (PkBackend	*backend,
