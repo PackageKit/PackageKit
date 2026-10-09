@@ -25,5 +25,5 @@
 const gchar *
 pk_backend_get_description (PkBackend *backend)
 {
-	return g_strdup ("Test NOP");
+	return "Test NOP";
 }
