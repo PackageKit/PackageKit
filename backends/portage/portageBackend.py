@@ -23,8 +23,6 @@
 
 import os
 import re
-import signal
-import sys
 import traceback
 from collections import defaultdict
 
@@ -33,13 +31,7 @@ from itertools import zip_longest
 import subprocess
 
 # packagekit imports
-from packagekit.backend import (
-    PackageKitBaseBackend,
-    get_package_id,
-    split_package_id,
-)
-from packagekit.enums import *
-from packagekit.progress import PackagekitProgress
+import packagekit_backend as pkb
 
 # portage imports
 import _emerge.AtomArg
@@ -81,7 +73,8 @@ import portage.elog
 
 
 def compute_equal_steps(iterable):
-    return [idx * (100.0 / len(iterable)) for idx, _ in enumerate(iterable, start=1)]
+    '''The percentage reached after each item of iterable'''
+    return [idx * 100 // len(iterable) for idx, _ in enumerate(iterable, start=1)]
 
 
 class PortagePackageGroups(dict):
@@ -212,7 +205,7 @@ class PortageBridge:
             self.myopts = emerge_config.opts
         except BaseException as e:
             self.error(
-                ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
+                pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
             )
 
         getbin = bool(self.myopts.get("--getbinpkg"))
@@ -222,7 +215,7 @@ class PortageBridge:
 
         if getbin and getbinonly:
             self.error(
-                ERROR_DEP_RESOLUTION_FAILED,
+                pkb.ERROR_DEP_RESOLUTION_FAILED,
                 "Conflicting binary package options: both '--getbinpkg' and '--getbinpkgonly' are enabled.\n"
                 "The system is configured to both prefer binary packages and require them exclusively.\n"
                 "Please disable one of these options in EMERGE_DEFAULT_OPTS",
@@ -239,7 +232,7 @@ class PortageBridge:
                 try:
                     bintree.populate(getbinpkgs=True)
                 except Exception as e:
-                    self.message(MESSAGE_INFO, f"bintree.populate(getbinpkg) failed: {e}")
+                    self.log('info', f"bintree.populate(getbinpkg) failed: {e}")
 
         elif getbinonly:
             self.myopts["--usepkgonly"] = True
@@ -249,7 +242,7 @@ class PortageBridge:
                     bintree.populate(getbinpkgs=True)
                 except Exception as e:
                     self.error(
-                        ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
+                        pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
                     )
                     return
         else:
@@ -300,24 +293,11 @@ class PackageKitPortageMixin(object):
         object.__init__(self)
 
         self.pvar = PortageBridge()
-        # TODO: should be removed when using non-verbose function API
-        # FIXME: avoid using /dev/null, dangerous (ro fs)
-        self._dev_null = open('/dev/null', 'w')
         # TODO: atm, this stack keep tracks of elog messages
         self._elog_messages = []
         self._error_message = ""
         self._error_phase = ""
         self._buildid_cache = {}
-
-    # TODO: should be removed when using non-verbose function API
-    def _block_output(self):
-        sys.stdout = self._dev_null
-        sys.stderr = self._dev_null
-
-    # TODO: should be removed when using non-verbose function API
-    def _unblock_output(self):
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
 
     def _has_flag(self, flags, flag):
         try:
@@ -326,19 +306,19 @@ class PackageKitPortageMixin(object):
             return flag in flags
 
     def _is_allow_downgrade(self, transaction_flags):
-        return self._has_flag(transaction_flags, TRANSACTION_FLAG_ALLOW_DOWNGRADE)
+        return self._has_flag(transaction_flags, pkb.TRANSACTION_FLAG_ALLOW_DOWNGRADE)
 
     def _is_allow_reinstall(self, transaction_flags):
-        return self._has_flag(transaction_flags, TRANSACTION_FLAG_ALLOW_REINSTALL)
+        return self._has_flag(transaction_flags, pkb.TRANSACTION_FLAG_ALLOW_REINSTALL)
 
     def _is_only_trusted(self, transaction_flags):
-        return self._has_flag(transaction_flags, TRANSACTION_FLAG_ONLY_TRUSTED)
+        return self._has_flag(transaction_flags, pkb.TRANSACTION_FLAG_ONLY_TRUSTED)
 
     def _is_simulate(self, transaction_flags):
-        return self._has_flag(transaction_flags, TRANSACTION_FLAG_SIMULATE)
+        return self._has_flag(transaction_flags, pkb.TRANSACTION_FLAG_SIMULATE)
 
     def _is_only_download(self, transaction_flags):
-        return self._has_flag(transaction_flags, TRANSACTION_FLAG_ONLY_DOWNLOAD)
+        return self._has_flag(transaction_flags, pkb.TRANSACTION_FLAG_ONLY_DOWNLOAD)
 
     def _eselect_enabled_repos(self):
         """Return a set of enabled repository names via eselect-repository."""
@@ -434,7 +414,7 @@ class PackageKitPortageMixin(object):
         try:
             generic_group_name = group_data.pop(0)
         except IndexError:
-            return GROUP_UNKNOWN
+            return pkb.GROUP_UNKNOWN
 
         return PackageKitPortageBackend.GROUP_MAP[generic_group_name]
 
@@ -489,7 +469,9 @@ class PackageKitPortageMixin(object):
             tcpv = self._strip_buildid_for_db(cpv)
             cp, ver, rev = portage.versions.pkgsplit(tcpv)
         except Exception:
-            self.error(ERROR_PACKAGE_ID_INVALID, f"Failed to parse package version from CPV: {cpv}")
+            self.error(
+                pkb.ERROR_PACKAGE_ID_INVALID, f"Failed to parse package version from CPV: {cpv}"
+            )
             return False
 
         installed_cpvs = self.pvar.vardb.match(cp)
@@ -573,7 +555,7 @@ class PackageKitPortageMixin(object):
                         for file_info in files
                     ]
                 )
-                self.error(ERROR_RESTRICTED_DOWNLOAD, message)
+                self.error(pkb.ERROR_RESTRICTED_DOWNLOAD, message)
 
     def _elog_listener(self, settings, key, logentries, fulltext):
         '''
@@ -712,13 +694,13 @@ class PackageKitPortageMixin(object):
             "config",
             "info",
         ):
-            error_type = ERROR_PACKAGE_FAILED_TO_CONFIGURE
+            error_type = pkb.ERROR_PACKAGE_FAILED_TO_CONFIGURE
         elif self._error_phase in ("compile", "test"):
-            error_type = ERROR_PACKAGE_FAILED_TO_BUILD
+            error_type = pkb.ERROR_PACKAGE_FAILED_TO_BUILD
         elif self._error_phase in ("install", "preinst", "postinst", "package"):
-            error_type = ERROR_PACKAGE_FAILED_TO_INSTALL
+            error_type = pkb.ERROR_PACKAGE_FAILED_TO_INSTALL
         elif self._error_phase in ("prerm", "postrm"):
-            error_type = ERROR_PACKAGE_FAILED_TO_REMOVE
+            error_type = pkb.ERROR_PACKAGE_FAILED_TO_REMOVE
         else:
             error_type = default
         self.error(error_type, self._error_message)
@@ -857,12 +839,12 @@ class PackageKitPortageMixin(object):
             metadata = self._get_metadata(cpv, ["LICENSE", "USE", "SLOT"], True)
             return not self.pvar.settings._getMissingLicenses(cpv, metadata)
 
-        if FILTER_FREE in filters or FILTER_NOT_FREE in filters:
+        if pkb.FILTER_FREE in filters or pkb.FILTER_NOT_FREE in filters:
             licenses = ""
             free_licenses = "@FSF-APPROVED"
-            if FILTER_FREE in filters:
+            if pkb.FILTER_FREE in filters:
                 licenses = "-* " + free_licenses
-            elif FILTER_NOT_FREE in filters:
+            elif pkb.FILTER_NOT_FREE in filters:
                 licenses = "* -" + free_licenses
             backup_licenses = self.pvar.settings["ACCEPT_LICENSE"]
 
@@ -876,10 +858,10 @@ class PackageKitPortageMixin(object):
         if len(cpv_list) == 0:
             return cpv_list
 
-        if FILTER_NEWEST not in filters:
+        if pkb.FILTER_NEWEST not in filters:
             return cpv_list
 
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             # we have one package per slot, so it's the newest
             return cpv_list
 
@@ -893,7 +875,7 @@ class PackageKitPortageMixin(object):
 
         for k in slots:
             # if not_intalled on, no need to check for newest installed
-            if FILTER_NOT_INSTALLED not in filters:
+            if pkb.FILTER_NOT_INSTALLED not in filters:
                 newest_installed = self._get_newest_cpv(cpv_dict[k], True)
                 if newest_installed != "":
                     cpv_list.append(newest_installed)
@@ -913,9 +895,9 @@ class PackageKitPortageMixin(object):
         # - newest: ok (should be finished with cpv)
         cp_list = []
 
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             cp_list = self.pvar.vardb.cp_all()
-        elif FILTER_NOT_INSTALLED in filters:
+        elif pkb.FILTER_NOT_INSTALLED in filters:
             cp_list = self.pvar.portdb.cp_all()
         else:
             # need installed packages first
@@ -944,9 +926,9 @@ class PackageKitPortageMixin(object):
         if getattr(self.pvar, "_allow_binpkgs", False):
             bin_cpvs = [x for x in self.pvar.bindb.match(cp) if not self._is_installed(x)]
 
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             cpv_list = installed_cpvs
-        elif FILTER_NOT_INSTALLED in filters:
+        elif pkb.FILTER_NOT_INSTALLED in filters:
             cpv_list = available_cpvs + bin_cpvs
         else:
             cpv_list = []
@@ -966,15 +948,15 @@ class PackageKitPortageMixin(object):
         '''
         Transform the package id (packagekit) to a cpv (portage)
         '''
-        ret = split_package_id(pkgid)
+        ret = pkb.split_package_id(pkgid)
 
         if len(ret) < 5:
             self.error(
-                ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 5 fields" % pkgid
+                pkb.ERROR_PACKAGE_ID_INVALID, "The package id %s does not contain 5 fields" % pkgid
             )
         if '/' not in ret[0]:
             self.error(
-                ERROR_PACKAGE_ID_INVALID,
+                pkb.ERROR_PACKAGE_ID_INVALID,
                 "The first field of the package id must contain" " a category",
             )
         cp = ret[0]
@@ -1041,7 +1023,7 @@ class PackageKitPortageMixin(object):
         else:
             repo = repo_meta
 
-        return get_package_id(package, version, ' '.join(keywords), repo, data)
+        return pkb.get_package_id(package, version, ' '.join(keywords), repo, data)
 
     def _get_required_packages(self, cpv_input, recursive):
         '''
@@ -1059,10 +1041,10 @@ class PackageKitPortageMixin(object):
             self.pvar.settings, self.pvar.trees, myopts, myparams, None
         )
 
-        # TODO: atm, using FILTER_INSTALLED because it's quicker
+        # TODO: atm, using pkb.FILTER_INSTALLED because it's quicker
         # and we don't want to manage non-installed packages
-        for cp in self._get_all_cp([FILTER_INSTALLED]):
-            for cpv in self._get_all_cpv(cp, [FILTER_INSTALLED]):
+        for cp in self._get_all_cp([pkb.FILTER_INSTALLED]):
+            for cpv in self._get_all_cpv(cp, [pkb.FILTER_INSTALLED]):
                 depgraph._dynamic_config._dep_stack.append(
                     _emerge.Dependency.Dependency(
                         atom=portage.dep.Atom('=' + cpv),
@@ -1072,7 +1054,7 @@ class PackageKitPortageMixin(object):
                 )
 
         if not depgraph._complete_graph():
-            self.error(ERROR_INTERNAL_ERROR, "Error when generating depgraph")
+            self.error(pkb.ERROR_INTERNAL_ERROR, "Error when generating depgraph")
             return
 
         def _add_children_to_list(packages_list, node):
@@ -1099,42 +1081,78 @@ class PackageKitPortageMixin(object):
         return list(filter(filter_cpv_input, packages_list))
 
 
-class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
+class PackageKitPortageBackend(PackageKitPortageMixin, pkb.Backend):
+
+    name = 'portage'
+    description = 'Portage'
+    author = (
+        'Mounir Lamouri (volkmar) <mounir.lamouri@gmail.com>, '
+        'Fabio Erculiani (lxnay) <lxnay@gentoo.org>, '
+        'Mihai Morovan <hithack9@gmail.com>'
+    )
+    filters = (pkb.FILTER_INSTALLED, pkb.FILTER_FREE, pkb.FILTER_NEWEST, pkb.FILTER_APPLICATION)
+    # These filters are candidates for further add:
+    # pkb.FILTER_GUI (need new PROPERTIES entry)
+    # pkb.FILTER_ARCH (need some work, see ML)
+    # pkb.FILTER_SOURCE (need some work/support, see ML)
+    groups = (
+        pkb.GROUP_ACCESSIBILITY,
+        pkb.GROUP_UTILITIES,
+        pkb.GROUP_ADMIN,
+        pkb.GROUP_COMMUNICATION,
+        pkb.GROUP_DESKTOP_GNOME,
+        pkb.GROUP_DESKTOP_KDE,
+        pkb.GROUP_DESKTOP_OTHER,
+        pkb.GROUP_FONTS,
+        pkb.GROUP_GAMES,
+        pkb.GROUP_GRAPHICS,
+        pkb.GROUP_INTERNET,
+        pkb.GROUP_LEGACY,
+        pkb.GROUP_LOCALIZATION,
+        pkb.GROUP_MULTIMEDIA,
+        pkb.GROUP_NETWORK,
+        pkb.GROUP_OFFICE,
+        pkb.GROUP_OTHER,
+        pkb.GROUP_PROGRAMMING,
+        pkb.GROUP_REPOS,
+        pkb.GROUP_SERVERS,
+        pkb.GROUP_SYSTEM,
+        pkb.GROUP_VIRTUALIZATION,
+        pkb.GROUP_SCIENCE,
+        pkb.GROUP_DOCUMENTATION,
+        pkb.GROUP_UNKNOWN,
+    )
 
     # Portage <-> PackageKit groups map
     GROUP_MAP = {
-        'accessibility': GROUP_ACCESSIBILITY,
-        'development': GROUP_PROGRAMMING,
-        'games': GROUP_GAMES,
-        'gnome': GROUP_DESKTOP_GNOME,
-        'kde': GROUP_DESKTOP_KDE,
-        'lxde': GROUP_DESKTOP_OTHER,
-        'multimedia': GROUP_MULTIMEDIA,
-        'networking': GROUP_NETWORK,
-        'office': GROUP_OFFICE,
-        'science': GROUP_SCIENCE,
-        'system': GROUP_SYSTEM,
-        'security': GROUP_SYSTEM,
-        'x11': GROUP_OTHER,
-        'xfce': GROUP_DESKTOP_OTHER,
-        'unknown': GROUP_UNKNOWN,
+        'accessibility': pkb.GROUP_ACCESSIBILITY,
+        'development': pkb.GROUP_PROGRAMMING,
+        'games': pkb.GROUP_GAMES,
+        'gnome': pkb.GROUP_DESKTOP_GNOME,
+        'kde': pkb.GROUP_DESKTOP_KDE,
+        'lxde': pkb.GROUP_DESKTOP_OTHER,
+        'multimedia': pkb.GROUP_MULTIMEDIA,
+        'networking': pkb.GROUP_NETWORK,
+        'office': pkb.GROUP_OFFICE,
+        'science': pkb.GROUP_SCIENCE,
+        'system': pkb.GROUP_SYSTEM,
+        'security': pkb.GROUP_SYSTEM,
+        'x11': pkb.GROUP_OTHER,
+        'xfce': pkb.GROUP_DESKTOP_OTHER,
+        'unknown': pkb.GROUP_UNKNOWN,
     }
 
-    def __sigterm(self, signum, frame):
-        raise SystemExit(1)
-
-    def __init__(self, args):
-        signal.signal(signal.SIGTERM, self.__sigterm)
+    def __init__(self):
         PackageKitPortageMixin.__init__(self)
-        PackageKitBaseBackend.__init__(self, args)
+        pkb.Backend.__init__(self)
 
     def _package(self, cpv, info=None):
         desc = self._get_metadata(cpv, ["DESCRIPTION"])[0]
         if not info:
             if self._is_installed(cpv):
-                info = INFO_INSTALLED
+                info = pkb.INFO_INSTALLED
             else:
-                info = INFO_AVAILABLE
+                info = pkb.INFO_AVAILABLE
 
         prev_bid = getattr(self, "_selected_build_id", None)
         limit_buildids = getattr(self, "_limit_buildids_to_latest", False)
@@ -1172,7 +1190,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - free: ok
         # - newest: ignored because only one version of a package is installed
 
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -1182,7 +1200,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         for pkg in pkgs:
             cpv = self._id_to_cpv(pkg)
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
                 continue
             cpv_input.append('=' + cpv)
 
@@ -1197,7 +1215,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         retval, fav = depgraph.select_files(cpv_input)
 
         if not retval:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
+            self.error(pkb.ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
             return
 
         def _add_children_to_list(cpv_list, node):
@@ -1233,9 +1251,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         cpv_list = list(filter(_filter_uninstall, cpv_list))
 
         # install filter
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             cpv_list = list(filter(_filter_installed, cpv_list))
-        if FILTER_NOT_INSTALLED in filters:
+        if pkb.FILTER_NOT_INSTALLED in filters:
             cpv_list = list(filter(_filter_not_installed, cpv_list))
 
         # now we can change cpv_list to a real cpv list
@@ -1255,17 +1273,16 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     continue
 
     def get_details(self, pkgs):
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
 
-        progress = PackagekitProgress(compute_equal_steps(pkgs))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
-        for percentage, pkg in zip(progress, pkgs):
+        for percentage, pkg in zip(compute_equal_steps(pkgs), pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
                 continue
 
             metadata = self._get_metadata(
@@ -1289,44 +1306,42 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         self.percentage(100)
 
     def get_files(self, pkgs):
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
 
-        progress = PackagekitProgress(compute_equal_steps(pkgs))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
-        for percentage, pkg in zip(progress, pkgs):
+        for percentage, pkg in zip(compute_equal_steps(pkgs), pkgs):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
                 continue
 
             if not self._is_installed(cpv):
                 self.error(
-                    ERROR_CANNOT_GET_FILELIST,
+                    pkb.ERROR_CANNOT_GET_FILELIST,
                     "get-files is only available for installed" " packages",
                 )
                 continue
 
-            self.files(pkg, ';'.join(sorted(self._get_file_list(cpv))))
+            self.files(pkg, sorted(self._get_file_list(cpv)))
 
             self.percentage(percentage)
 
         self.percentage(100)
 
     def get_packages(self, filters):
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
         self.percentage(0)
 
-        if FILTER_INSTALLED in filters:
+        if pkb.FILTER_INSTALLED in filters:
             cp_list = self.pvar.vardb.cp_all()
         else:
             cp_list = self._get_all_cp(filters)
-        progress = PackagekitProgress(compute_equal_steps(cp_list))
 
-        for percentage, cp in zip(progress, cp_list):
+        for percentage, cp in zip(compute_equal_steps(cp_list), cp_list):
             for cpv in self._get_all_cpv(cp, filters):
                 try:
                     self._package(cpv)
@@ -1339,14 +1354,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
     def get_repo_list(self, filters):
         """Get list of repositories (via eselect-repository)."""
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
         # Always include gentoo (dummy entry like original)
         self.repo_detail('gentoo', 'Gentoo Portage tree', True)
 
-        if FILTER_NOT_DEVELOPMENT not in filters:
+        if pkb.FILTER_NOT_DEVELOPMENT not in filters:
             for repo_name, enabled in self._eselect_all_repos():
                 if repo_name == "gentoo":
                     continue
@@ -1360,16 +1375,16 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - free: ok
         # - newest: ignored because only one version of a package is installed
 
-        self.status(STATUS_RUNNING)
+        self.status(pkb.STATUS_RUNNING)
         self.allow_cancel(True)
         self.percentage(None)
 
         cpv_input = []
         cpv_list = []
 
-        if FILTER_NOT_INSTALLED in filters:
+        if pkb.FILTER_NOT_INSTALLED in filters:
             self.error(
-                ERROR_CANNOT_GET_REQUIRES,
+                pkb.ERROR_CANNOT_GET_REQUIRES,
                 "required-by returns only installed packages" " at the moment",
             )
             return
@@ -1378,11 +1393,11 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             cpv = self._id_to_cpv(pkg)
 
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, "Package %s was not found" % pkg)
                 continue
             if not self._is_installed(cpv):
                 self.error(
-                    ERROR_CANNOT_GET_REQUIRES,
+                    pkb.ERROR_CANNOT_GET_REQUIRES,
                     "required-by is only available for installed" " packages at the moment",
                 )
                 continue
@@ -1408,16 +1423,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
     def get_update_detail(self, pkgs):
         # TODO: a lot of informations are missing
 
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
         for pkg in pkgs:
             updates = []
-            obsoletes = ""
-            vendor_url = ""
-            bugzilla_url = ""
-            cve_url = ""
 
             cpv = self._id_to_cpv(pkg)
 
@@ -1427,27 +1438,17 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
             for cpv in self.pvar.vardb.match(portage.versions.pkgsplit(cpv)[0]):
                 updates.append(cpv)
-            updates = "&".join(updates)
 
             # temporarily set vendor_url = homepage
             homepage = self._get_metadata(cpv, ["HOMEPAGE"])[0]
-            vendor_url = homepage
-            issued = ""
-            updated = ""
 
             self.update_detail(
                 pkg,
-                updates,
-                obsoletes,
-                vendor_url,
-                bugzilla_url,
-                cve_url,
-                "none",
-                "No update text",
-                "No ChangeLog",
-                UPDATE_STATE_STABLE,
-                issued,
-                updated,
+                updates=updates,
+                vendor_urls=[homepage] if homepage else [],
+                update_text="No update text",
+                changelog="No ChangeLog",
+                state=pkb.UPDATE_STATE_STABLE,
             )
 
     def get_updates(self, filters):
@@ -1469,10 +1470,10 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - newest: ok
 
         # Need to include for the moment, might need to change behaviour later, but it seems nobody sets obvious flags anymore
-        if FILTER_NEWEST not in filters:
-            filters.append(FILTER_NEWEST)
+        if pkb.FILTER_NEWEST not in filters:
+            filters.append(pkb.FILTER_NEWEST)
 
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
@@ -1552,7 +1553,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 if len(cpv_list_updates) == 0:
                     break
 
-                if FILTER_NEWEST in filters:
+                if pkb.FILTER_NEWEST in filters:
                     best_cpv = portage.versions.best(cpv_list_updates)
                     cpv_list_updates = [best_cpv]
 
@@ -1576,21 +1577,21 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                         if self._cmp_cpv(cpv, atom.cpv) >= 0:
                             # cpv is a security update and removed from list
                             cpv_updates[atom.cp][slot].remove(cpv)
-                            self._package(cpv, INFO_SECURITY)
+                            self._package(cpv, pkb.INFO_SECURITY)
             else:  # update also non-world and non-system packages if security
-                self._package(atom.cpv, INFO_SECURITY)
+                self._package(atom.cpv, pkb.INFO_SECURITY)
 
         # downgrades
         for cp in cpv_downgra:
             for slot in cpv_downgra[cp]:
                 for cpv in cpv_downgra[cp][slot]:
-                    self._package(cpv, INFO_IMPORTANT)
+                    self._package(cpv, pkb.INFO_IMPORTANT)
 
         # normal updates
         for cp in cpv_updates:
             for slot in cpv_updates[cp]:
                 for cpv in cpv_updates[cp][slot]:
-                    self._package(cpv, INFO_NORMAL)
+                    self._package(cpv, pkb.INFO_NORMAL)
 
     def install_packages(self, transaction_flags, pkgs):
 
@@ -1622,7 +1623,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         Install packages using the same depgraph + scheduler sequence as emerge.
         """
 
-        self.status(STATUS_RUNNING)
+        self.status(pkb.STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
 
@@ -1630,18 +1631,19 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         for pkg in pkgs:
             cpv = self._id_to_cpv(pkg)
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} not found or not visible")
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} not found or not visible")
                 continue
             if not reinstall:
                 if self._is_installed(cpv):
                     self.error(
-                        ERROR_PACKAGE_ALREADY_INSTALLED, f"Package {pkg} is already installed boy"
+                        pkb.ERROR_PACKAGE_ALREADY_INSTALLED,
+                        f"Package {pkg} is already installed boy",
                     )
                     continue
             if not downgrade:
                 if not self._is_strictly_newer_than_installed(cpv):
                     self.error(
-                        ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} Is a downgrade and not allowed"
+                        pkb.ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} Is a downgrade and not allowed"
                     )
                     continue
             cpv_list.append("=" + cpv)
@@ -1651,7 +1653,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         if only_trusted:
             self.error(
-                ERROR_MISSING_GPG_SIGNATURE,
+                pkb.ERROR_MISSING_GPG_SIGNATURE,
                 "Portage backend does not support GPG signature verification",
             )
             return
@@ -1670,7 +1672,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             myopts = emerge_config.opts
         except BaseException as e:
             self.error(
-                ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
+                pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
             )
 
         myopts["--with-bdeps"] = "y"
@@ -1681,7 +1683,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # both flags set : error and stop
         if getbin and getbinonly:
             self.error(
-                ERROR_DEP_RESOLUTION_FAILED,
+                pkb.ERROR_DEP_RESOLUTION_FAILED,
                 "Conflicting binary package options: both '--getbinpkg' and '--getbinpkgonly' are enabled.\n"
                 "The system is configured to both prefer binary packages and require them exclusively.\n"
                 "Please disable one of these options in EMERGE_DEFAULT_OPTS",
@@ -1699,7 +1701,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     bintree.populate(getbinpkgs=True)
                 except Exception as e:
                     # not fatal: scheduler will fall back to source if needed
-                    self.message(MESSAGE_INFO, f"bintree.populate(getbinpkg) failed: {e}")
+                    self.log('info', f"bintree.populate(getbinpkg) failed: {e}")
 
         elif getbinonly:
             myopts["--usepkgonly"] = True
@@ -1710,7 +1712,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 except Exception as e:
                     # fatal: only binpkgs
                     self.error(
-                        ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
+                        pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
                     )
                     return
         else:
@@ -1734,35 +1736,33 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             myopts["--ignore-downgrade"] = "y"
 
         # resolve deps (first attempt)
-        self.status(STATUS_DEP_RESOLVE)
+        self.status(pkb.STATUS_DEP_RESOLVE)
         myparams = create_depgraph_params(myopts, "")
         dep = depgraph(self.pvar.settings, self.pvar.trees, myopts, myparams, None)
 
         retval, favorites = dep.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
+            self.error(pkb.ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
             return
 
         altlist = dep.altlist()
         try:
             alt_cpvs = [getattr(x, "cpv", str(x)) for x in altlist]
-            self.message(MESSAGE_INFO, f"dep.altlist: {alt_cpvs}")
-            self.message(MESSAGE_INFO, f"favorites: {favorites}")
+            self.log('info', f"dep.altlist: {alt_cpvs}")
+            self.log('info', f"favorites: {favorites}")
         except Exception:
             pass
 
         if not altlist:
             if getbinonly:
                 self.error(
-                    ERROR_DEP_RESOLUTION_FAILED,
+                    pkb.ERROR_DEP_RESOLUTION_FAILED,
                     "No binary candidates found and --getbinpkgonly was requested; aborting.",
                 )
                 return
             elif getbin:
                 try:
-                    self.message(
-                        MESSAGE_INFO, "No binary candidates found; falling back to source builds."
-                    )
+                    self.log('info', "No binary candidates found; falling back to source builds.")
                 except Exception:
                     pass
 
@@ -1778,7 +1778,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 retval2, favorites2 = dep_fb.select_files(cpv_list)
                 if not retval2:
                     self.error(
-                        ERROR_DEP_RESOLUTION_FAILED,
+                        pkb.ERROR_DEP_RESOLUTION_FAILED,
                         "Wasn't able to get dependency graph (fallback to source).",
                     )
                     return
@@ -1786,14 +1786,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 altlist = dep_fb.altlist()
                 try:
                     alt_cpvs = [getattr(x, "cpv", str(x)) for x in altlist]
-                    self.message(MESSAGE_INFO, f"dep.altlist (fallback): {alt_cpvs}")
-                    self.message(MESSAGE_INFO, f"favorites (fallback): {favorites2}")
+                    self.log('info', f"dep.altlist (fallback): {alt_cpvs}")
+                    self.log('info', f"favorites (fallback): {favorites2}")
                 except Exception:
                     pass
 
                 if not altlist:
                     self.error(
-                        ERROR_DEP_RESOLUTION_FAILED,
+                        pkb.ERROR_DEP_RESOLUTION_FAILED,
                         "Resolver produced an empty merge list for: " + ", ".join(cpv_list),
                     )
                     return
@@ -1802,24 +1802,23 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 favorites = favorites2
             else:
                 self.error(
-                    ERROR_DEP_RESOLUTION_FAILED,
+                    pkb.ERROR_DEP_RESOLUTION_FAILED,
                     "Resolver produced an empty merge list for: " + ", ".join(cpv_list),
                 )
                 return
 
-        self.message("MESSAGE_INFO", f"About to merge: {[getattr(x,'cpv',x) for x in altlist]}")
+        self.log('info', f"About to merge: {[getattr(x,'cpv',x) for x in altlist]}")
 
         # fetch restrictions
         self._check_fetch_restrict(altlist)
 
-        self.status(STATUS_INSTALL)
+        self.status(pkb.STATUS_INSTALL)
         if simulate:
             return
 
         # run scheduler
         portage.elog.add_listener(self._elog_listener)
         try:
-            self._block_output()
             mergetask = Scheduler(
                 self.pvar.settings,
                 self.pvar.trees,
@@ -1832,24 +1831,23 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             )
             rval = mergetask.merge()
         finally:
-            self._unblock_output()
             portage.elog.remove_listener(self._elog_listener)
 
         # refresh portage internal state
         try:
             self.pvar.update()
         except Exception:
-            self.message("MESSAGE_INFO", "Warning: failed to refresh internal portage state")
+            self.log('info', "Warning: failed to refresh internal portage state")
 
         # validate result
         for entry in self._elog_messages:
             try:
-                self.message(MESSAGE_INFO, str(entry))
+                self.log('info', str(entry))
             except Exception:
                 pass
         installed_ok = all(self._is_installed(cpv.lstrip('=')) for cpv in cpv_list)
         if rval != os.EX_OK and not installed_ok:
-            self._send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
+            self._send_merge_error(pkb.ERROR_PACKAGE_FAILED_TO_INSTALL)
 
         self._elog_messages = []
         self._signal_config_update()
@@ -1858,7 +1856,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # NOTES: can't manage progress even if it could be better
         # TODO: do not wait for exception, check timestamp
         # TODO: message if overlay repo has changed (layman)
-        self.status(STATUS_REFRESH_CACHE)
+        self.status(pkb.STATUS_REFRESH_CACHE)
         self.allow_cancel(False)
         self.percentage(None)
 
@@ -1875,12 +1873,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     pass
 
         try:
-            self._block_output()
             action_sync(self.pvar.settings, self.pvar.trees, self.pvar.mtimedb, myopts, "")
-        except:
-            self.error(ERROR_INTERNAL_ERROR, traceback.format_exc())
-        finally:
-            self._unblock_output()
+        except Exception:
+            self.error(pkb.ERROR_INTERNAL_ERROR, traceback.format_exc())
 
     def remove_packages(self, transaction_flags, pkgs, allowdep, autoremove):
         return self._remove_packages(transaction_flags, pkgs, allowdep, autoremove)
@@ -1895,7 +1890,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # FIXME: Problems with removing binpkgs, graph can not be computed correctly in certain cases
         # For now skip and use unmerge with atoms not altlist
 
-        self.status(STATUS_RUNNING)
+        self.status(pkb.STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
 
@@ -1918,13 +1913,13 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             cpv = self._strip_buildid_for_db(cpv)
 
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} was not found")
+                self.error(pkb.ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} was not found")
                 continue
 
             installed_cpvs = self.pvar.vardb.match(portage.versions.cpv_getkey(cpv))
             if not installed_cpvs:
                 self.error(
-                    ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} was not found (no installed cpv)"
+                    pkb.ERROR_PACKAGE_NOT_FOUND, f"Package {pkg} was not found (no installed cpv)"
                 )
                 continue
 
@@ -1946,7 +1941,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             myopts = dict(emerge_config.opts) if isinstance(emerge_config.opts, dict) else {}
         except Exception as e:
             self.error(
-                ERROR_PACKAGE_FAILED_TO_REMOVE, f"parse_opts exploded: {type(e).__name__}: {e}"
+                pkb.ERROR_PACKAGE_FAILED_TO_REMOVE, f"parse_opts exploded: {type(e).__name__}: {e}"
             )
             return
 
@@ -1954,29 +1949,27 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             myopts["--pretend"] = True
 
         # resolver
-        self.status(STATUS_DEP_RESOLVE)
+        self.status(pkb.STATUS_DEP_RESOLVE)
         myparams = create_depgraph_params(myopts, "unmerge")
         dep = depgraph(self.pvar.settings, self.pvar.trees, myopts, myparams, None)
 
         retval, favorites = dep.select_files(atoms)
         if not retval:
-            # self.message(MESSAGE_INFO, "depgraph failed to resolve removal targets, falling back to direct unmerge")
+            # self.log('info', "depgraph failed to resolve removal targets, falling back to direct unmerge")
             altlist = []
         else:
             altlist = dep.altlist()
 
         if not altlist:
             pass
-            # self.message(MESSAGE_INFO, "depgraph returned empty removal list, falling back to direct unmerge")
+            # self.log('info', "depgraph returned empty removal list, falling back to direct unmerge")
 
         try:
-            self.message(
-                MESSAGE_INFO, f"About to remove: {[getattr(x,'cpv',str(x)) for x in altlist]}"
-            )
+            self.log('info', f"About to remove: {[getattr(x,'cpv',str(x)) for x in altlist]}")
         except Exception:
             pass
 
-        self.status(STATUS_REMOVE)
+        self.status(pkb.STATUS_REMOVE)
         if simulate or only_download:
             return
 
@@ -2009,12 +2002,12 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         try:
             self.pvar.update()
         except Exception:
-            self.message(MESSAGE_INFO, "Warning: failed to refresh internal portage state")
+            self.log('info', "Warning: failed to refresh internal portage state")
 
         # Show collected elog messages
         for entry in self._elog_messages:
             try:
-                self.message(MESSAGE_INFO, str(entry))
+                self.log('info', str(entry))
             except Exception:
                 pass
 
@@ -2022,7 +2015,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         removed_ok = all(not self._is_installed(cpv.lstrip('=')) for cpv in atoms)
 
         if rval != os.EX_OK or not removed_ok:
-            self._send_merge_error(ERROR_PACKAGE_FAILED_TO_REMOVE)
+            self._send_merge_error(pkb.ERROR_PACKAGE_FAILED_TO_REMOVE)
 
         self._elog_messages = []
         self._signal_config_update()
@@ -2030,16 +2023,18 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         try:
             self.pvar.update()
         except Exception:
-            self.message("MESSAGE_INFO", "Warning: failed to refresh internal portage state")
+            self.log('info', "Warning: failed to refresh internal portage state")
 
     def repo_enable(self, repoid, enable):
-        self.status(STATUS_INFO)
+        self.status(pkb.STATUS_INFO)
         self.allow_cancel(True)
         self.percentage(None)
 
         if repoid == 'gentoo':
             if not enable:
-                self.error(ERROR_CANNOT_DISABLE_REPOSITORY, "gentoo repository can't be disabled")
+                self.error(
+                    pkb.ERROR_CANNOT_DISABLE_REPOSITORY, "gentoo repository can't be disabled"
+                )
             return
 
         cmd = ["eselect", "repository", "enable" if enable else "disable", repoid]
@@ -2047,19 +2042,18 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception as exc:
             self.error(
-                ERROR_INTERNAL_ERROR,
+                pkb.ERROR_INTERNAL_ERROR,
                 "Failed to {action} repository {repoid}: {err}".format(
                     action="enable" if enable else "disable", repoid=repoid, err=str(exc)
                 ),
             )
 
     def resolve(self, filters, pkgs):
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
 
         cp_list = self._get_all_cp(filters)
-        progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
         reg_expr = []
         for pkg in pkgs:
@@ -2069,18 +2063,18 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # specifications says "be case sensitive"
         s = re.compile(reg_expr)
 
-        for percentage, cp in zip(progress, cp_list):
+        for percentage, cp in zip(compute_equal_steps(cp_list), cp_list):
             if s.match(cp):
                 cpv_list = self._get_all_cpv(cp, filters, filter_newest=False)
 
                 cpv_list = self._filter_free(cpv_list, filters)
 
                 tmp_filters = list(filters) if not isinstance(filters, list) else filters[:]
-                if FILTER_NEWEST not in tmp_filters:
-                    tmp_filters.append(FILTER_NEWEST)
+                if pkb.FILTER_NEWEST not in tmp_filters:
+                    tmp_filters.append(pkb.FILTER_NEWEST)
                 cpv_list = self._filter_newest(cpv_list, tmp_filters)
 
-                if FILTER_NEWEST in filters:
+                if pkb.FILTER_NEWEST in filters:
                     cpv_list = cpv_list[:1]
 
                 # suppress per-build-id expansion and emit only latest build id
@@ -2101,21 +2095,20 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
     def search_details(self, filters, keys):
 
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
 
         cp_list = self._get_all_cp(filters)
         search_list = self._get_search_list(keys)
 
-        progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
         portdb = self.pvar.portdb
 
         # metadata cache locations
         repo_paths = portdb.porttrees
 
-        for percentage, cp in zip(progress, cp_list):
+        for percentage, cp in zip(compute_equal_steps(cp_list), cp_list):
             match = False
 
             # Split category/package
@@ -2196,22 +2189,21 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # - ~installed is not accepted (error)
         # - free: ok
         # - newest: as only installed, by himself
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
 
-        if FILTER_NOT_INSTALLED in filters:
+        if pkb.FILTER_NOT_INSTALLED in filters:
             self.error(
-                ERROR_CANNOT_GET_FILELIST, "search-file isn't available with ~installed filter"
+                pkb.ERROR_CANNOT_GET_FILELIST, "search-file isn't available with ~installed filter"
             )
             return
 
         cpv_list = self.pvar.vardb.cpv_all()
         is_full_path = True
 
-        progress = PackagekitProgress(compute_equal_steps(values))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
-        for percentage, key in zip(progress, values):
+        for percentage, key in zip(compute_equal_steps(values), values):
 
             if key[0] != "/":
                 is_full_path = False
@@ -2234,15 +2226,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
     def search_group(self, filters, groups):
         # TODO: filter unknown groups before searching ? (optimization)
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
 
         cp_list = self._get_all_cp(filters)
 
-        progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
-        for percentage, cp in zip(progress, cp_list):
+        for percentage, cp in zip(compute_equal_steps(cp_list), cp_list):
             for group in groups:
                 if self._get_pk_group(cp) == group:
                     for cpv in self._get_all_cpv(cp, filters):
@@ -2256,7 +2247,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         # searching for all keys in package name
         # also filtering by categories if categery is specified in a key
         # keys contain more than one category name, no results can be found
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.allow_cancel(True)
 
         categories = []
@@ -2281,10 +2272,9 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         cp_list = self._get_all_cp(filters)
 
-        progress = PackagekitProgress(compute_equal_steps(cp_list))
-        self.percentage(progress.percent)
+        self.percentage(0)
 
-        for percentage, cp in zip(progress, cp_list):
+        for percentage, cp in zip(compute_equal_steps(cp_list), cp_list):
             if category_filter:
                 cat, pkg_name = portage.versions.catsplit(cp)
                 if cat != category_filter:
@@ -2323,7 +2313,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         #       see around _emerge.Scheduler.Scheduler
         # TODO: return only the latest binpkg
 
-        self.status(STATUS_RUNNING)
+        self.status(pkb.STATUS_RUNNING)
         self.allow_cancel(False)
         self.percentage(None)
 
@@ -2331,7 +2321,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         for pkg in pkgs:
             cpv = self._id_to_cpv(pkg)
             if not self._is_cpv_valid(cpv):
-                self.error(ERROR_UPDATE_NOT_FOUND, f"Package {pkg} not found")
+                self.error(pkb.ERROR_UPDATE_NOT_FOUND, f"Package {pkg} not found")
                 continue
             cpv_list.append("=" + cpv)
 
@@ -2354,7 +2344,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             myopts = emerge_config.opts
         except BaseException as e:
             self.error(
-                ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
+                pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"parse_opts exploded: {type(e).__name__}: {e}"
             )
 
         myopts["--with-bdeps"] = "y"
@@ -2364,7 +2354,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
 
         if getbin and getbinonly:
             self.error(
-                ERROR_DEP_RESOLUTION_FAILED,
+                pkb.ERROR_DEP_RESOLUTION_FAILED,
                 "Conflicting binary package options: both '--getbinpkg' and '--getbinpkgonly' are enabled.\n"
                 "The system is configured to both prefer binary packages and require them exclusively.\n"
                 "Please disable one of these options in EMERGE_DEFAULT_OPTS",
@@ -2381,7 +2371,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 try:
                     bintree.populate(getbinpkgs=True)
                 except Exception as e:
-                    self.message(MESSAGE_INFO, f"bintree.populate(getbinpkg) failed: {e}")
+                    self.log('info', f"bintree.populate(getbinpkg) failed: {e}")
 
         elif getbinonly:
             myopts["--usepkgonly"] = True
@@ -2391,7 +2381,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                     bintree.populate(getbinpkgs=True, getbinpkgonly=True)
                 except Exception as e:
                     self.error(
-                        ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
+                        pkb.ERROR_PACKAGE_FAILED_TO_INSTALL, f"No binary packages available: {e}"
                     )
                     return
         else:
@@ -2407,35 +2397,33 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
         else:
             myopts["--selective"] = "y"
 
-        self.status(STATUS_DEP_RESOLVE)
+        self.status(pkb.STATUS_DEP_RESOLVE)
         myparams = create_depgraph_params(myopts, "")
         dep = depgraph(self.pvar.settings, self.pvar.trees, myopts, myparams, None)
 
         retval, favorites = dep.select_files(cpv_list)
         if not retval:
-            self.error(ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
+            self.error(pkb.ERROR_DEP_RESOLUTION_FAILED, "Wasn't able to get dependency graph")
             return
 
         altlist = dep.altlist()
         try:
             alt_cpvs = [getattr(x, "cpv", str(x)) for x in altlist]
-            self.message(MESSAGE_INFO, f"dep.altlist: {alt_cpvs}")
-            self.message(MESSAGE_INFO, f"favorites: {favorites}")
+            self.log('info', f"dep.altlist: {alt_cpvs}")
+            self.log('info', f"favorites: {favorites}")
         except Exception:
             pass
 
         if not altlist:
             if getbinonly:
                 self.error(
-                    ERROR_DEP_RESOLUTION_FAILED,
+                    pkb.ERROR_DEP_RESOLUTION_FAILED,
                     "No binary candidates found and --getbinpkgonly was requested; aborting.",
                 )
                 return
             elif getbin:
                 try:
-                    self.message(
-                        MESSAGE_INFO, "No binary candidates found; falling back to source builds."
-                    )
+                    self.log('info', "No binary candidates found; falling back to source builds.")
                 except Exception:
                     pass
 
@@ -2450,7 +2438,7 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 retval2, favorites2 = dep_fb.select_files(cpv_list)
                 if not retval2:
                     self.error(
-                        ERROR_DEP_RESOLUTION_FAILED,
+                        pkb.ERROR_DEP_RESOLUTION_FAILED,
                         "Wasn't able to get dependency graph (fallback to source).",
                     )
                     return
@@ -2458,14 +2446,14 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 altlist = dep_fb.altlist()
                 try:
                     alt_cpvs = [getattr(x, "cpv", str(x)) for x in altlist]
-                    self.message(MESSAGE_INFO, f"dep.altlist (fallback): {alt_cpvs}")
-                    self.message(MESSAGE_INFO, f"favorites (fallback): {favorites2}")
+                    self.log('info', f"dep.altlist (fallback): {alt_cpvs}")
+                    self.log('info', f"favorites (fallback): {favorites2}")
                 except Exception:
                     pass
 
                 if not altlist:
                     self.error(
-                        ERROR_DEP_RESOLUTION_FAILED,
+                        pkb.ERROR_DEP_RESOLUTION_FAILED,
                         "Resolver produced an empty merge list for: " + ", ".join(cpv_list),
                     )
                     return
@@ -2474,22 +2462,21 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
                 favorites = favorites2
             else:
                 self.error(
-                    ERROR_DEP_RESOLUTION_FAILED,
+                    pkb.ERROR_DEP_RESOLUTION_FAILED,
                     "Resolver produced an empty merge list for: " + ", ".join(cpv_list),
                 )
                 return
 
-        self.message("MESSAGE_INFO", f"About to merge: {[getattr(x,'cpv',x) for x in altlist]}")
+        self.log('info', f"About to merge: {[getattr(x,'cpv',x) for x in altlist]}")
 
         self._check_fetch_restrict(altlist)
 
-        self.status(STATUS_INSTALL)
+        self.status(pkb.STATUS_INSTALL)
         if simulate:
             return
 
         portage.elog.add_listener(self._elog_listener)
         try:
-            self._block_output()
             mergetask = Scheduler(
                 self.pvar.settings,
                 self.pvar.trees,
@@ -2502,30 +2489,28 @@ class PackageKitPortageBackend(PackageKitPortageMixin, PackageKitBaseBackend):
             )
             rval = mergetask.merge()
         finally:
-            self._unblock_output()
             portage.elog.remove_listener(self._elog_listener)
 
         try:
             self.pvar.update()
         except Exception:
-            self.message("MESSAGE_INFO", "Warning: failed to refresh internal portage state")
+            self.log('info', "Warning: failed to refresh internal portage state")
 
         for entry in self._elog_messages:
             try:
-                self.message(MESSAGE_INFO, str(entry))
+                self.log('info', str(entry))
             except Exception:
                 pass
         installed_ok = all(self._is_installed(cpv.lstrip('=')) for cpv in cpv_list)
         if rval != os.EX_OK and not installed_ok:
-            self._send_merge_error(ERROR_PACKAGE_FAILED_TO_INSTALL)
+            self._send_merge_error(pkb.ERROR_PACKAGE_FAILED_TO_INSTALL)
 
         self._elog_messages = []
         self._signal_config_update()
 
 
 def main():
-    backend = PackageKitPortageBackend("")
-    backend.dispatcher(sys.argv[1:])
+    PackageKitPortageBackend().main()
 
 
 if __name__ == "__main__":
