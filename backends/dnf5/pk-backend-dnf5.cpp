@@ -181,248 +181,65 @@ pk_backend_stop_job(PkBackend *backend, PkBackendJob *job)
 }
 
 void
-pk_backend_search_names(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
+pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 {
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", filters, values);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
+	PkRoleEnum role = pk_backend_job_get_role(job);
 
-void
-pk_backend_search_details(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", filters, values);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_search_files(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", filters, values);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_packages(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t)", filters);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_resolve(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", filters, package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_details(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as)", package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_files(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as)", package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_repo_list(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t)", filters);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_updates(PkBackend *backend, PkBackendJob *job, PkBitfield filters)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t)", filters);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_what_provides(PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **search)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", filters, search);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_depends_on(
-	PkBackend *backend,
-	PkBackendJob *job,
-	PkBitfield filters,
-	gchar **package_ids,
-	gboolean recursive)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^asb)", filters, package_ids, recursive);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_required_by(
-	PkBackend *backend,
-	PkBackendJob *job,
-	PkBitfield filters,
-	gchar **package_ids,
-	gboolean recursive)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^asb)", filters, package_ids, recursive);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_update_detail(PkBackend *backend, PkBackendJob *job, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as)", package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_download_packages(PkBackend *backend, PkBackendJob *job, gchar **package_ids, const gchar *directory)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as&s)", package_ids, directory);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_details_local(PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as)", files);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_get_files_local(PkBackend *backend, PkBackendJob *job, gchar **files)
-{
-	g_autoptr(GVariant) params = g_variant_new("(^as)", files);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
-}
-
-void
-pk_backend_install_packages(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", transaction_flags, package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_remove_packages(
-	PkBackend *backend,
-	PkBackendJob *job,
-	PkBitfield transaction_flags,
-	gchar **package_ids,
-	gboolean allow_deps,
-	gboolean autoremove)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^asbb)", transaction_flags, package_ids, allow_deps, autoremove);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_update_packages(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **package_ids)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", transaction_flags, package_ids);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_install_files(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags, gchar **full_paths)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t^as)", transaction_flags, full_paths);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_upgrade_system(
-	PkBackend *backend,
-	PkBackendJob *job,
-	PkBitfield transaction_flags,
-	const gchar *distro_id,
-	PkUpgradeKindEnum upgrade_kind)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t&su)", transaction_flags, distro_id, upgrade_kind);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_repair_system(PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t)", transaction_flags);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
-}
-
-void
-pk_backend_repo_enable(PkBackend *backend, PkBackendJob *job, const gchar *repo_id, gboolean enabled)
-{
-	g_autoptr(GVariant) params = g_variant_new("(sb)", repo_id, enabled);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
-}
-
-void
-pk_backend_repo_set_data(
-	PkBackend *backend,
-	PkBackendJob *job,
-	const gchar *repo_id,
-	const gchar *parameter,
-	const gchar *value)
-{
-	g_autoptr(GVariant) params = g_variant_new("(sss)", repo_id, parameter, value);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
-}
-
-void
-pk_backend_repo_remove(
-	PkBackend *backend,
-	PkBackendJob *job,
-	PkBitfield transaction_flags,
-	const gchar *repo_id,
-	gboolean autoremove)
-{
-	g_autoptr(GVariant) params = g_variant_new("(t&sb)", transaction_flags, repo_id, autoremove);
-	pk_backend_job_set_parameters(job, g_steal_pointer(&params));
-	pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
-}
-
-void
-pk_backend_refresh_cache(PkBackend *backend, PkBackendJob *job, gboolean force)
-{
-	pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-	PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
-	try {
-		dnf5_refresh_cache(priv, force);
-	} catch (const std::exception &e) {
-		pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
+	switch (role) {
+	case PK_ROLE_ENUM_SEARCH_NAME:
+	case PK_ROLE_ENUM_SEARCH_DETAILS:
+	case PK_ROLE_ENUM_SEARCH_FILE:
+	case PK_ROLE_ENUM_GET_PACKAGES:
+	case PK_ROLE_ENUM_RESOLVE:
+	case PK_ROLE_ENUM_GET_DETAILS:
+	case PK_ROLE_ENUM_GET_FILES:
+	case PK_ROLE_ENUM_GET_REPO_LIST:
+	case PK_ROLE_ENUM_GET_UPDATES:
+	case PK_ROLE_ENUM_WHAT_PROVIDES:
+	case PK_ROLE_ENUM_DEPENDS_ON:
+	case PK_ROLE_ENUM_REQUIRED_BY:
+	case PK_ROLE_ENUM_GET_UPDATE_DETAIL:
+	case PK_ROLE_ENUM_DOWNLOAD_PACKAGES:
+	case PK_ROLE_ENUM_GET_DETAILS_LOCAL:
+	case PK_ROLE_ENUM_GET_FILES_LOCAL:
+		pk_backend_job_thread_create(job, dnf5_query_thread, NULL, NULL);
+		break;
+	case PK_ROLE_ENUM_INSTALL_PACKAGES:
+	case PK_ROLE_ENUM_REMOVE_PACKAGES:
+	case PK_ROLE_ENUM_UPDATE_PACKAGES:
+	case PK_ROLE_ENUM_INSTALL_FILES:
+	case PK_ROLE_ENUM_UPGRADE_SYSTEM:
+	case PK_ROLE_ENUM_REPAIR_SYSTEM:
+		pk_backend_job_thread_create(job, dnf5_transaction_thread, NULL, NULL);
+		break;
+	case PK_ROLE_ENUM_REPO_ENABLE:
+	case PK_ROLE_ENUM_REPO_SET_DATA:
+	case PK_ROLE_ENUM_REPO_REMOVE:
+		pk_backend_job_thread_create(job, dnf5_repo_thread, NULL, NULL);
+		break;
+	case PK_ROLE_ENUM_REFRESH_CACHE: {
+		gboolean force;
+		g_variant_get(pk_backend_job_get_parameters(job), "(b)", &force);
+		pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
+		PkBackendDnf5Private *priv = (PkBackendDnf5Private *) pk_backend_get_user_data(backend);
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->mutex);
+		try {
+			dnf5_refresh_cache(priv, force);
+		} catch (const std::exception &e) {
+			pk_backend_job_error_code(job, PK_ERROR_ENUM_INTERNAL_ERROR, "%s", e.what());
+		}
+		pk_backend_job_finished(job);
+		break;
 	}
-	pk_backend_job_finished(job);
+	default:
+		pk_backend_job_error_code(
+			job,
+			PK_ERROR_ENUM_NOT_SUPPORTED,
+			"role %s is not supported",
+			pk_role_enum_to_string(role));
+		pk_backend_job_finished(job);
+		break;
+	}
 }
 
 void
