@@ -60,97 +60,6 @@ typedef struct
 	void (*job_stop) (PkBackend *backend, PkBackendJob *job);
 	void (*run_job) (PkBackend *backend, PkBackendJob *job);
 	void (*cancel) (PkBackend *backend, PkBackendJob *job);
-	void (*download_packages) (PkBackend *backend,
-				   PkBackendJob *job,
-				   gchar **package_ids,
-				   const gchar *directory);
-	void (*depends_on) (PkBackend *backend,
-			    PkBackendJob *job,
-			    PkBitfield filters,
-			    gchar **package_ids,
-			    gboolean recursive);
-	void (*get_details) (PkBackend *backend, PkBackendJob *job, gchar **package_ids);
-	void (*get_details_local) (PkBackend *backend, PkBackendJob *job, gchar **files);
-	void (*get_files_local) (PkBackend *backend, PkBackendJob *job, gchar **files);
-	void (*get_distro_upgrades) (PkBackend *backend, PkBackendJob *job);
-	void (*get_files) (PkBackend *backend, PkBackendJob *job, gchar **package_ids);
-	void (*get_packages) (PkBackend *backend, PkBackendJob *job, PkBitfield filters);
-	void (*get_repo_list) (PkBackend *backend, PkBackendJob *job, PkBitfield filters);
-	void (*required_by) (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield filters,
-			     gchar **package_ids,
-			     gboolean recursive);
-	void (*get_update_detail) (PkBackend *backend, PkBackendJob *job, gchar **package_ids);
-	void (*get_updates) (PkBackend *backend, PkBackendJob *job, PkBitfield filters);
-	void (*install_files) (PkBackend *backend,
-			       PkBackendJob *job,
-			       PkBitfield transaction_flags,
-			       gchar **full_paths);
-	void (*install_packages) (PkBackend *backend,
-				  PkBackendJob *job,
-				  PkBitfield transaction_flags,
-				  gchar **package_ids);
-	void (*install_signature) (PkBackend *backend,
-				   PkBackendJob *job,
-				   PkSigTypeEnum type,
-				   const gchar *key_id,
-				   const gchar *package_id);
-	void (*refresh_cache) (PkBackend *backend, PkBackendJob *job, gboolean force);
-	void (*remove_packages) (PkBackend *backend,
-				 PkBackendJob *job,
-				 PkBitfield transaction_flags,
-				 gchar **package_ids,
-				 gboolean allow_deps,
-				 gboolean autoremove);
-	void (*repo_enable) (PkBackend *backend,
-			     PkBackendJob *job,
-			     const gchar *repo_id,
-			     gboolean enabled);
-	void (*repo_set_data) (PkBackend *backend,
-			       PkBackendJob *job,
-			       const gchar *repo_id,
-			       const gchar *parameter,
-			       const gchar *value);
-	void (*repo_remove) (PkBackend *backend,
-			     PkBackendJob *job,
-			     PkBitfield transaction_flags,
-			     const gchar *repo_id,
-			     gboolean autoremove);
-	void (*resolve) (PkBackend *backend,
-			 PkBackendJob *job,
-			 PkBitfield filters,
-			 gchar **packages);
-	void (*search_details) (PkBackend *backend,
-				PkBackendJob *job,
-				PkBitfield filters,
-				gchar **values);
-	void (*search_files) (PkBackend *backend,
-			      PkBackendJob *job,
-			      PkBitfield filters,
-			      gchar **values);
-	void (*search_groups) (PkBackend *backend,
-			       PkBackendJob *job,
-			       PkBitfield filters,
-			       gchar **values);
-	void (*search_names) (PkBackend *backend,
-			      PkBackendJob *job,
-			      PkBitfield filters,
-			      gchar **values);
-	void (*update_packages) (PkBackend *backend,
-				 PkBackendJob *job,
-				 PkBitfield transaction_flags,
-				 gchar **package_ids);
-	void (*what_provides) (PkBackend *backend,
-			       PkBackendJob *job,
-			       PkBitfield filters,
-			       gchar **values);
-	void (*upgrade_system) (PkBackend *backend,
-				PkBackendJob *job,
-				PkBitfield transaction_flags,
-				const gchar *distro_id,
-				PkUpgradeKindEnum upgrade_kind);
-	void (*repair_system) (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags);
 } PkBackendDesc;
 
 struct _PkBackend
@@ -168,7 +77,6 @@ struct _PkBackend
 	PkBitfield roles;
 	GKeyFile *conf;
 	GFileMonitor *monitor;
-	gboolean backend_roles_set;
 	gpointer user_data;
 	GHashTable *thread_hash;
 	GMutex thread_hash_mutex;
@@ -274,92 +182,12 @@ pk_backend_get_filters (PkBackend *backend)
 PkBitfield
 pk_backend_get_roles (PkBackend *backend)
 {
-	PkBitfield roles = backend->roles;
-	PkBackendDesc *desc;
-
 	g_return_val_if_fail (PK_IS_BACKEND (backend), PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (backend->loaded, PK_ROLE_ENUM_UNKNOWN);
 	g_return_val_if_fail (pk_is_thread_default (), PK_ROLE_ENUM_UNKNOWN);
 
-	/* optimise - we only skip here if we already loaded backend settings,
-	 * so we don't override preexisting settings (e.g. by plugins) */
-	if (backend->backend_roles_set)
-		goto out;
-
-	/* not compulsory, but use it if we've got it */
-	if (backend->desc->get_roles != NULL) {
-		backend->roles = backend->desc->get_roles (backend);
-		pk_bitfield_add (backend->roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
-		goto out;
-	}
-
-	/* lets reduce pointer dereferences... */
-	desc = backend->desc;
-	if (desc->cancel != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_CANCEL);
-	if (desc->depends_on != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_DEPENDS_ON);
-	if (desc->get_details != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS);
-	if (desc->get_details_local != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
-	if (desc->get_files_local != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_FILES_LOCAL);
-	if (desc->get_files != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_FILES);
-	if (desc->required_by != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REQUIRED_BY);
-	if (desc->get_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_PACKAGES);
-	if (desc->what_provides != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_WHAT_PROVIDES);
-	if (desc->get_updates != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATES);
-	if (desc->get_update_detail != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
-	if (desc->install_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_PACKAGES);
-	if (desc->install_signature != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_SIGNATURE);
-	if (desc->install_files != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_INSTALL_FILES);
-	if (desc->refresh_cache != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REFRESH_CACHE);
-	if (desc->remove_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REMOVE_PACKAGES);
-	if (desc->download_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
-	if (desc->resolve != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_RESOLVE);
-	if (desc->search_details != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_DETAILS);
-	if (desc->search_files != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_FILE);
-	if (desc->search_groups != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_GROUP);
-	if (desc->search_names != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_SEARCH_NAME);
-	if (desc->update_packages != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_UPDATE_PACKAGES);
-	if (desc->get_repo_list != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_REPO_LIST);
-	if (desc->repo_enable != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_ENABLE);
-	if (desc->repo_set_data != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_SET_DATA);
-	if (desc->repo_remove != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REPO_REMOVE);
-	if (desc->get_distro_upgrades != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	if (desc->upgrade_system != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_UPGRADE_SYSTEM);
-	if (desc->repair_system != NULL)
-		pk_bitfield_add (roles, PK_ROLE_ENUM_REPAIR_SYSTEM);
-	pk_bitfield_add (roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
-	backend->roles = roles;
-
-	backend->backend_roles_set = TRUE;
-out:
+	backend->roles = backend->desc->get_roles (backend);
+	pk_bitfield_add (backend->roles, PK_ROLE_ENUM_GET_OLD_TRANSACTIONS);
 	return backend->roles;
 }
 
@@ -487,52 +315,23 @@ pk_backend_load (PkBackend *backend, GError **error)
 		/* connect up exported methods */
 		g_module_symbol (handle, "pk_backend_cancel", (gpointer *) &desc->cancel);
 		g_module_symbol (handle, "pk_backend_destroy", (gpointer *) &desc->destroy);
-		g_module_symbol (handle, "pk_backend_download_packages", (gpointer *) &desc->download_packages);
-		g_module_symbol (handle, "pk_backend_depends_on", (gpointer *) &desc->depends_on);
-		g_module_symbol (handle, "pk_backend_get_details", (gpointer *) &desc->get_details);
-		g_module_symbol (handle, "pk_backend_get_details_local", (gpointer *) &desc->get_details_local);
-		g_module_symbol (handle, "pk_backend_get_files_local", (gpointer *) &desc->get_files_local);
-		g_module_symbol (handle, "pk_backend_get_distro_upgrades", (gpointer *) &desc->get_distro_upgrades);
-		g_module_symbol (handle, "pk_backend_get_files", (gpointer *) &desc->get_files);
 		g_module_symbol (handle, "pk_backend_get_filters", (gpointer *) &desc->get_filters);
 		g_module_symbol (handle, "pk_backend_get_groups", (gpointer *) &desc->get_groups);
 		g_module_symbol (handle, "pk_backend_get_mime_types", (gpointer *) &desc->get_mime_types);
 		g_module_symbol (handle, "pk_backend_supports_parallelization", (gpointer *) &desc->supports_parallelization);
-		g_module_symbol (handle, "pk_backend_get_packages", (gpointer *) &desc->get_packages);
-		g_module_symbol (handle, "pk_backend_get_repo_list", (gpointer *) &desc->get_repo_list);
-		g_module_symbol (handle, "pk_backend_required_by", (gpointer *) &desc->required_by);
 		g_module_symbol (handle, "pk_backend_get_roles", (gpointer *) &desc->get_roles);
 		g_module_symbol (handle, "pk_backend_get_provides", (gpointer *) &desc->get_provides);
-		g_module_symbol (handle, "pk_backend_get_update_detail", (gpointer *) &desc->get_update_detail);
-		g_module_symbol (handle, "pk_backend_get_updates", (gpointer *) &desc->get_updates);
 		g_module_symbol (handle, "pk_backend_initialize", (gpointer *) &desc->initialize);
-		g_module_symbol (handle, "pk_backend_install_files", (gpointer *) &desc->install_files);
-		g_module_symbol (handle, "pk_backend_install_packages", (gpointer *) &desc->install_packages);
-		g_module_symbol (handle, "pk_backend_install_signature", (gpointer *) &desc->install_signature);
-		g_module_symbol (handle, "pk_backend_refresh_cache", (gpointer *) &desc->refresh_cache);
-		g_module_symbol (handle, "pk_backend_remove_packages", (gpointer *) &desc->remove_packages);
-		g_module_symbol (handle, "pk_backend_repo_enable", (gpointer *) &desc->repo_enable);
-		g_module_symbol (handle, "pk_backend_repo_set_data", (gpointer *) &desc->repo_set_data);
-		g_module_symbol (handle, "pk_backend_repo_remove", (gpointer *) &desc->repo_remove);
-		g_module_symbol (handle, "pk_backend_resolve", (gpointer *) &desc->resolve);
-		g_module_symbol (handle, "pk_backend_search_details", (gpointer *) &desc->search_details);
-		g_module_symbol (handle, "pk_backend_search_files", (gpointer *) &desc->search_files);
-		g_module_symbol (handle, "pk_backend_search_groups", (gpointer *) &desc->search_groups);
-		g_module_symbol (handle, "pk_backend_search_names", (gpointer *) &desc->search_names);
 		g_module_symbol (handle, "pk_backend_start_job", (gpointer *) &desc->job_start);
 		g_module_symbol (handle, "pk_backend_stop_job", (gpointer *) &desc->job_stop);
 		g_module_symbol (handle, "pk_backend_run_job", (gpointer *) &desc->run_job);
-		g_module_symbol (handle, "pk_backend_update_packages", (gpointer *) &desc->update_packages);
-		g_module_symbol (handle, "pk_backend_what_provides", (gpointer *) &desc->what_provides);
-		g_module_symbol (handle, "pk_backend_upgrade_system", (gpointer *) &desc->upgrade_system);
-		g_module_symbol (handle, "pk_backend_repair_system", (gpointer *) &desc->repair_system);
 		/* clang-format on */
 
-		if (desc->run_job != NULL && desc->get_roles == NULL) {
+		if (desc->run_job == NULL || desc->get_roles == NULL) {
 			g_free (desc);
 			g_module_close (handle);
 			g_set_error (error, 1, 0,
-				     "plugin %s exports pk_backend_run_job but not pk_backend_get_roles",
+				     "plugin %s must export pk_backend_run_job and pk_backend_get_roles",
 				     backend_name);
 			return FALSE;
 		}
@@ -1137,15 +936,6 @@ pk_backend_class_init (PkBackendClass *klass)
 							0);
 }
 
-static gboolean
-pk_backend_dispatch_run_job (PkBackend *backend, PkBackendJob *job)
-{
-	if (backend->desc->run_job == NULL)
-		return FALSE;
-	backend->desc->run_job (backend, job);
-	return TRUE;
-}
-
 void
 pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 {
@@ -1160,8 +950,9 @@ pk_backend_cancel (PkBackend *backend, PkBackendJob *job)
 		return;
 	g_cancellable_cancel (cancellable);
 
-	/* call into the backend */
-	backend->desc->cancel (backend, job);
+	/* call into the backend, if it wants to know */
+	if (backend->desc->cancel != NULL)
+		backend->desc->cancel (backend, job);
 }
 
 void
@@ -1171,7 +962,6 @@ pk_backend_download_packages (PkBackend *backend,
 			      const gchar *directory)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->download_packages != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1179,8 +969,7 @@ pk_backend_download_packages (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_DOWNLOAD_PACKAGES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^ass)", package_ids, directory));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->download_packages (backend, job, package_ids, directory);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1191,7 +980,6 @@ pk_backend_depends_on (PkBackend *backend,
 		       gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->depends_on != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1200,15 +988,13 @@ pk_backend_depends_on (PkBackend *backend,
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_DEPENDS_ON);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^asb)", filters, package_ids, recursive));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->depends_on (backend, job, filters, package_ids, recursive);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_details != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1216,15 +1002,13 @@ pk_backend_get_details (PkBackend *backend, PkBackendJob *job, gchar **package_i
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_details (backend, job, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_details_local != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1232,15 +1016,13 @@ pk_backend_get_details_local (PkBackend *backend, PkBackendJob *job, gchar **fil
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DETAILS_LOCAL);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", files));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_details_local (backend, job, files);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_details != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1248,30 +1030,26 @@ pk_backend_get_files_local (PkBackend *backend, PkBackendJob *job, gchar **files
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_FILES_LOCAL);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", files));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_files_local (backend, job, files);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_distro_upgrades (PkBackend *backend, PkBackendJob *job)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_distro_upgrades != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_DISTRO_UPGRADES);
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_distro_upgrades (backend, job);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_files != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1279,8 +1057,7 @@ pk_backend_get_files (PkBackend *backend, PkBackendJob *job, gchar **package_ids
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_FILES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_files (backend, job, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1291,7 +1068,6 @@ pk_backend_required_by (PkBackend *backend,
 			gboolean recursive)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->required_by != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1300,15 +1076,13 @@ pk_backend_required_by (PkBackend *backend,
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REQUIRED_BY);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^asb)", filters, package_ids, recursive));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->required_by (backend, job, filters, package_ids, recursive);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_update_detail != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1316,15 +1090,13 @@ pk_backend_get_update_detail (PkBackend *backend, PkBackendJob *job, gchar **pac
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATE_DETAIL);
 	pk_backend_job_set_parameters (job, g_variant_new ("(^as)", package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_update_detail (backend, job, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_updates != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1332,8 +1104,7 @@ pk_backend_get_updates (PkBackend *backend, PkBackendJob *job, PkBitfield filter
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_UPDATES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)", filters));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_updates (backend, job, filters);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1343,7 +1114,6 @@ pk_backend_install_packages (PkBackend *backend,
 			     gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->install_packages != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1353,8 +1123,7 @@ pk_backend_install_packages (PkBackend *backend,
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^as)", transaction_flags, package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->install_packages (backend, job, transaction_flags, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1365,7 +1134,6 @@ pk_backend_install_signature (PkBackend *backend,
 			      const gchar *package_id)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->install_signature != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1373,8 +1141,7 @@ pk_backend_install_signature (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_INSTALL_SIGNATURE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(uss)", type, key_id, package_id));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->install_signature (backend, job, type, key_id, package_id);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1384,7 +1151,6 @@ pk_backend_install_files (PkBackend *backend,
 			  gchar **full_paths)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->install_files != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1394,15 +1160,13 @@ pk_backend_install_files (PkBackend *backend,
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^as)", transaction_flags, full_paths));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->install_files (backend, job, transaction_flags, full_paths);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->refresh_cache != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1410,8 +1174,7 @@ pk_backend_refresh_cache (PkBackend *backend, PkBackendJob *job, gboolean force)
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REFRESH_CACHE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(b)", force));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->refresh_cache (backend, job, force);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1423,7 +1186,6 @@ pk_backend_remove_packages (PkBackend *backend,
 			    gboolean autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->remove_packages != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1434,20 +1196,13 @@ pk_backend_remove_packages (PkBackend *backend,
 	pk_backend_job_set_parameters (
 	    job,
 	    g_variant_new ("(t^asbb)", transaction_flags, package_ids, allow_deps, autoremove));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->remove_packages (backend,
-						job,
-						transaction_flags,
-						package_ids,
-						allow_deps,
-						autoremove);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->resolve != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1455,8 +1210,7 @@ pk_backend_resolve (PkBackend *backend, PkBackendJob *job, PkBitfield filters, g
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_RESOLVE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->resolve (backend, job, filters, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1466,7 +1220,6 @@ pk_backend_search_details (PkBackend *backend,
 			   gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->search_details != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1474,15 +1227,13 @@ pk_backend_search_details (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_DETAILS);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, values));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->search_details (backend, job, filters, values);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->search_files != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1490,15 +1241,13 @@ pk_backend_search_files (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_FILE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, values));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->search_files (backend, job, filters, values);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->search_groups != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1506,15 +1255,13 @@ pk_backend_search_groups (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_GROUP);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, values));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->search_groups (backend, job, filters, values);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->search_names != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1522,8 +1269,7 @@ pk_backend_search_names (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_SEARCH_NAME);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, values));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->search_names (backend, job, filters, values);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1533,7 +1279,6 @@ pk_backend_update_packages (PkBackend *backend,
 			    gchar **package_ids)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->update_packages != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1543,15 +1288,13 @@ pk_backend_update_packages (PkBackend *backend,
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job,
 				       g_variant_new ("(t^as)", transaction_flags, package_ids));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->update_packages (backend, job, transaction_flags, package_ids);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_repo_list != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1559,8 +1302,7 @@ pk_backend_get_repo_list (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_REPO_LIST);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)", filters));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_repo_list (backend, job, filters);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1570,7 +1312,6 @@ pk_backend_repo_enable (PkBackend *backend,
 			gboolean enabled)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->repo_enable != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1578,8 +1319,7 @@ pk_backend_repo_enable (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_ENABLE);
 	pk_backend_job_set_parameters (job, g_variant_new ("(sb)", repo_id, enabled));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->repo_enable (backend, job, repo_id, enabled);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1590,7 +1330,6 @@ pk_backend_repo_set_data (PkBackend *backend,
 			  const gchar *value)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->repo_set_data != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1598,8 +1337,7 @@ pk_backend_repo_set_data (PkBackend *backend,
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPO_SET_DATA);
 	pk_backend_job_set_parameters (job, g_variant_new ("(sss)", repo_id, parameter, value));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->repo_set_data (backend, job, repo_id, parameter, value);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1610,7 +1348,6 @@ pk_backend_repo_remove (PkBackend *backend,
 			gboolean autoremove)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->repo_remove != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1620,15 +1357,13 @@ pk_backend_repo_remove (PkBackend *backend,
 	pk_backend_job_set_parameters (
 	    job,
 	    g_variant_new ("(tsb)", transaction_flags, repo_id, autoremove));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->repo_remove (backend, job, transaction_flags, repo_id, autoremove);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filters, gchar **values)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->what_provides != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1636,15 +1371,13 @@ pk_backend_what_provides (PkBackend *backend, PkBackendJob *job, PkBitfield filt
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_WHAT_PROVIDES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t^as)", filters, values));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->what_provides (backend, job, filters, values);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filters)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->get_packages != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1652,8 +1385,7 @@ pk_backend_get_packages (PkBackend *backend, PkBackendJob *job, PkBitfield filte
 
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_GET_PACKAGES);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)", filters));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->get_packages (backend, job, filters);
+	backend->desc->run_job (backend, job);
 }
 
 void
@@ -1664,7 +1396,6 @@ pk_backend_upgrade_system (PkBackend *backend,
 			   PkUpgradeKindEnum upgrade_kind)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->upgrade_system != NULL || backend->desc->run_job != NULL);
 
 	/* final pre-flight checks */
 	g_assert (pk_backend_job_get_vfunc_enabled (job, PK_BACKEND_SIGNAL_FINISHED));
@@ -1674,15 +1405,13 @@ pk_backend_upgrade_system (PkBackend *backend,
 	pk_backend_job_set_parameters (
 	    job,
 	    g_variant_new ("(tsu)", transaction_flags, distro_id, upgrade_kind));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->upgrade_system (backend, job, transaction_flags, distro_id, upgrade_kind);
+	backend->desc->run_job (backend, job);
 }
 
 void
 pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield transaction_flags)
 {
 	g_return_if_fail (PK_IS_BACKEND (backend));
-	g_return_if_fail (backend->desc->repair_system != NULL || backend->desc->run_job != NULL);
 	g_return_if_fail (pk_is_thread_default ());
 
 	/* final pre-flight checks */
@@ -1691,8 +1420,7 @@ pk_backend_repair_system (PkBackend *backend, PkBackendJob *job, PkBitfield tran
 	pk_backend_job_set_role (job, PK_ROLE_ENUM_REPAIR_SYSTEM);
 	pk_backend_job_set_transaction_flags (job, transaction_flags);
 	pk_backend_job_set_parameters (job, g_variant_new ("(t)", transaction_flags));
-	if (!pk_backend_dispatch_run_job (backend, job))
-		backend->desc->repair_system (backend, job, transaction_flags);
+	backend->desc->run_job (backend, job);
 }
 
 static void

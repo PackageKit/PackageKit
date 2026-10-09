@@ -8,9 +8,9 @@ Guide to porting backends from 1.x to 2.0
  * Compiled backends export a single pk_backend_run_job(backend, job) that
    switches on pk_backend_job_get_role() and reads the arguments from the
    GVariant tuple returned by pk_backend_job_get_parameters() (the same one
-   threaded backends already receive as 'params'). The per-role
-   pk_backend_foo() entry points still work but are deprecated. A backend
-   exporting pk_backend_run_job() must also export pk_backend_get_roles().
+   threaded backends already receive as 'params'). The daemon no longer
+   looks up or calls the per-role pk_backend_foo() entry points; both
+   pk_backend_run_job() and pk_backend_get_roles() are mandatory.
 
 Guide to porting backends from 0.8.x to 0.9.x
 
