@@ -37,6 +37,7 @@ custom_target(
         'spec/concepts.md',
         'spec/introduction.md',
         'spec/offline-updates.md',
+        'extra/backend-spawn-protocol.md',
         'extra/provides-component-naming.md',
         'extra/security.md',
         'extra/setting-the-proxy.md',

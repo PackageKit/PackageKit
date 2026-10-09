@@ -3,50 +3,37 @@ Title: Spawned Backends
 ## Introduction
 
 If there is no C or C++ binding for a package manager, PackageKit can
-run the backend as a separate helper process written in any language.
-The daemon starts the helper, keeps it running between transactions,
-and exchanges JSONL messages with it over a dedicated socket.
-The helper's standard output and standard error are captured as log
-output and are never interpreted as protocol data.
+run the backend as a separate helper program written in any language.
+The daemon starts the helper once, keeps it running between transactions, and exchanges
+JSON Lines messages with it over a dedicated socket. The helper's standard output and
+standard error are captured as log output.
 
-Even when using helpers, a compiled backend stub is still used for
-two reasons:
+A spawned backend consists of a directory `$libdir/packagekit/backends/<name>/` holding a
+keyfile manifest, `backend.conf`, and the helper program it names:
 
-- It is still needed for the dlopen internally in PackageKit.
+```ini
+[Backend]
+Exec=portageBackend.py
+Description=Portage
+Author=Jane Example <jane@example.org>
+AllowSigkill=true
+```
 
-- You can add cleverness in the C backend that you might not want to
-  do in the scripted backend, for example using a hash table in C
-  rather than checking all the names in awk.
+When `DefaultBackend=<name>` names a backend for which no
+`libpk_backend_<name>.so` exists but such a manifest does, the daemon
+loads its generic `spawn` module for it. Everything else about the
+backend, including the roles, filters and groups it supports, is
+reported by the helper itself in the handshake.
 
-Backends are typically open-programmable, which means we can define a
-standard for what goes on stdin and stdout to try and maximise
-the common code between the backends.
+## Writing a helper
 
-If you are unable to write scripts that conform to these specifications
-then just launch a PkSpawn object in the compiled helper with stdout
-callbacks and then try to do screenscraping in the backend.
+Python helpers use the `packagekit_backend` library that PackageKit
+installs privately for them: subclass `Backend`, implement the roles
+you support as methods named after them, and call `main()`. The
+library speaks the protocol, exports the transaction context to the
+environment, turns exceptions into errors, and handles cancellation.
 
-Backends scripts are run with arguments and data is sent to standard out
-and standard error asynchronously so that PackageKit can proxy this to D-Bus.
-A method has command line arguments separated with tabs, and data is also
-separated with tabs.
-
-It is important to flush the standard output after each output, else
-Linux will helpfully buffer the output into more efficient size chunks.
-If you do not flush, then there will be a long IPC delay.
-Flushing can be achieved in C using `fflush` or in python
-using `sys.stdout.flush()`.
-
-The "dispatcher" mode is where a command is used to startup the
-backend, for instance `yumBackend.py search-name none power`
-and then the backend then sits and waits for more standard input.
-Further operations can be done on the loaded backend sending commands
-to stdin, e.g. `search-name none power`.
-If there are no more operations after a preset time (default 5 seconds)
-then the backend is sent `exit` over stdin, and the
-backend terminates.
-The daemon will ensure the operations are serialised, and that backends
-not sending `finished` are cleaned up properly.
-
-The dispatcher mode does not have to implemented in python; any
-language that can read from stdin can block and be used in this way.
+Helpers in other languages read the protocol descriptor number from
+the `PK_BACKEND_PROTOCOL_FD` environment variable and implement the
+protocol directly. It is specified in full in
+[the spawned backend protocol](backend-spawn-protocol.html).
