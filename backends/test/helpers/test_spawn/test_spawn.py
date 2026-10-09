@@ -13,26 +13,26 @@ import os
 import signal
 import time
 
-from packagekit_backend import *  # noqa: F403
+import packagekit_backend as pkb
 
 PACKAGES = {
-    'foo': ('foo;1.0;x86_64;main;', INFO_INSTALLED, 'A foo'),
-    'bar': ('bar;2.1;x86_64;main;', INFO_AVAILABLE, 'A bar'),
-    'baz': ('baz;0.3;noarch;extra;', INFO_AVAILABLE, 'A baz'),
+    'foo': ('foo;1.0;x86_64;main;', pkb.INFO_INSTALLED, 'A foo'),
+    'bar': ('bar;2.1;x86_64;main;', pkb.INFO_AVAILABLE, 'A bar'),
+    'baz': ('baz;0.3;noarch;extra;', pkb.INFO_AVAILABLE, 'A baz'),
 }
 
 
-class TestSpawnBackend(Backend):
+class TestSpawnBackend(pkb.Backend):
     name = 'test_spawn'
     description = 'Test spawn backend'
     author = 'PackageKit developers'
-    filters = (FILTER_INSTALLED, FILTER_DEVELOPMENT)
-    groups = (GROUP_SYSTEM, GROUP_OTHER)
+    filters = (pkb.FILTER_INSTALLED, pkb.FILTER_DEVELOPMENT)
+    groups = (pkb.GROUP_SYSTEM, pkb.GROUP_OTHER)
     mime_types = ('application/x-test',)
     batch_size = 2
 
     def search_name(self, filters, values):
-        self.status(STATUS_QUERY)
+        self.status(pkb.STATUS_QUERY)
         self.percentage(None)
         self.log(
             'info', 'searching %r with filters %r for uid %d' % (values, filters, self.ctx.uid)
@@ -48,7 +48,7 @@ class TestSpawnBackend(Backend):
                 package_id,
                 summary='A package',
                 license='MIT',
-                group=GROUP_SYSTEM,
+                group=pkb.GROUP_SYSTEM,
                 description='Long\ndescription',
                 url='https://example.org',
                 size=1234,
@@ -60,9 +60,9 @@ class TestSpawnBackend(Backend):
                 package_id,
                 updates=['foo;0.9;x86_64;installed;'],
                 cve_urls=['https://www.cve.org/CVERecord?id=CVE-2026-0001'],
-                restart=RESTART_SESSION,
+                restart=pkb.RESTART_SESSION,
                 update_text='Fixes things.',
-                state=UPDATE_STATE_STABLE,
+                state=pkb.UPDATE_STATE_STABLE,
                 issued='2026-01-01T00:00:00Z',
             )
 
@@ -75,21 +75,21 @@ class TestSpawnBackend(Backend):
         self.repo_detail('extra', 'Extra repository', False)
 
     def get_distro_upgrades(self):
-        self.distro_upgrade(DISTRO_UPGRADE_STABLE, 'test-2', 'Test OS 2')
+        self.distro_upgrade(pkb.DISTRO_UPGRADE_STABLE, 'test-2', 'Test OS 2')
 
     def install_packages(self, flags, package_ids):
         self.allow_cancel(True)
-        self.status(STATUS_DOWNLOAD)
+        self.status(pkb.STATUS_DOWNLOAD)
         for package_id in package_ids:
-            self.package_status(package_id, INFO_DOWNLOADING)
-            self.item_progress(package_id, STATUS_DOWNLOAD, 50)
+            self.package_status(package_id, pkb.INFO_DOWNLOADING)
+            self.item_progress(package_id, pkb.STATUS_DOWNLOAD, 50)
             self.speed(1024)
             self.download_size_remaining(4096)
-        if TRANSACTION_FLAG_SIMULATE in flags:
-            self.require_restart(RESTART_SESSION, package_ids[0])
+        if pkb.TRANSACTION_FLAG_SIMULATE in flags:
+            self.require_restart(pkb.RESTART_SESSION, package_ids[0])
             return
         # a real install only ends through an in-band cancel
-        self.status(STATUS_INSTALL)
+        self.status(pkb.STATUS_INSTALL)
         while True:
             self.check_cancelled()
             time.sleep(0.05)
@@ -118,7 +118,7 @@ class TestSpawnBackend(Backend):
         )
 
     def install_signature(self, sig_type, key_id, package_id):
-        raise PkError(ERROR_GPG_FAILURE, 'bad key %s' % key_id)
+        raise pkb.PkError(pkb.ERROR_GPG_FAILURE, 'bad key %s' % key_id)
 
     def resolve(self, filters, values):
         raise ValueError('resolve always fails here')
