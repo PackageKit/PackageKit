@@ -1,9 +1,9 @@
 add_languages('cpp', native: false)
 
-nix_expr_dep = dependency('nix-expr', version: '>=2.9')
-nix_main_dep = dependency('nix-main', version: '>=2.9')
-nix_store_dep = dependency('nix-store', version: '>=2.9')
-nix_cmd_dep = dependency('nix-cmd', version: '>=2.9')
+nix_expr_dep = dependency('nix-expr', version: '>=2.34')
+nix_main_dep = dependency('nix-main', version: '>=2.34')
+nix_store_dep = dependency('nix-store', version: '>=2.34')
+nix_cmd_dep = dependency('nix-cmd', version: '>=2.34')
 
 pk_backend_modules += shared_module(
   'pk_backend_nix',

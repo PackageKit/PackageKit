@@ -21,18 +21,20 @@
 #include <pk-backend.h>
 #include <pk-backend-job.h>
 
-#include <nix/config.h>
-
-#include <nix/globals.hh>
-#include <nix/eval.hh>
-#include <nix/store-api.hh>
-#include <nix/names.hh>
-#include <nix/eval-cache.hh>
-#include <nix/attr-path.hh>
-#include <nix/profiles.hh>
+#include <nix/store/globals.hh>
+#include <nix/store/store-open.hh>
+#include <nix/store/names.hh>
+#include <nix/store/profiles.hh>
+#include <nix/expr/eval.hh>
+#include <nix/expr/eval-gc.hh>
+#include <nix/expr/eval-settings.hh>
+#include <nix/expr/eval-cache.hh>
+#include <nix/expr/attr-path.hh>
+#include <nix/fetchers/fetch-settings.hh>
 #include <nix/flake/flake.hh>
-#include <nix/experimental-features.hh>
-#include <nix/installables.hh>
+#include <nix/flake/settings.hh>
+#include <nix/util/experimental-features.hh>
+#include <nix/cmd/common-eval-args.hh>
 
 #include <pwd.h>
 #include <regex>
@@ -47,26 +49,27 @@ static PkBackendNixPrivate *priv;
 
 void pk_backend_initialize(GKeyFile *conf, PkBackend *backend)
 {
-    priv = g_new0(PkBackendNixPrivate, 1);
-
-    nix::loadConfFile();
+    nix::initLibStore();
     nix::initGC();
+#if NIX_USE_BOEHMGC
+    GC_allow_register_threads();
+#endif
 
     nix::verbosity = nix::lvlWarn;
     nix::settings.verboseBuild = false;
-    nix::settings.experimentalFeatures = {nix::ExperimentalFeature::Flakes};
+    nix::experimentalFeatureSettings.experimentalFeatures = {nix::ExperimentalFeature::Flakes};
     nix::evalSettings.pureEval = true;
 
-    const nix::Strings searchPath;
-    priv->state = nix::ref<nix::EvalState>(std::make_shared<nix::EvalState>(searchPath, nix::openStore()));
-
-    // this might be useful as a configuration setting in the future
-    priv->defaultFlake = "nixpkgs";
+    priv = new PkBackendNixPrivate{
+        nix::make_ref<nix::EvalState>(nix::LookupPath{}, nix::openStore(), nix::fetchSettings, nix::evalSettings),
+        // this might be useful as a configuration setting in the future
+        "nixpkgs",
+    };
 }
 
 void pk_backend_destroy(PkBackend *backend)
 {
-    g_free(priv);
+    delete priv;
 }
 
 gboolean pk_backend_supports_parallelization(PkBackend *backend)
@@ -128,12 +131,12 @@ static nix::OrSuggestions<nix::ref<nix::eval_cache::AttrCursor>> nix_get_attr_or
     std::string attrPath)
 {
     nix::flake::LockFlags lockFlags;
-    auto lockedFlake = std::make_shared<nix::flake::LockedFlake>(
-        nix::flake::lockFlake(state, nix::parseFlakeRef(flake), lockFlags));
+    auto lockedFlake = nix::make_ref<nix::flake::LockedFlake>(
+        nix::flake::lockFlake(nix::flakeSettings, state, nix::parseFlakeRef(nix::fetchSettings, flake), lockFlags));
 
-    auto evalCache = nix::openEvalCache(state, lockedFlake);
+    auto evalCache = nix::flake::openEvalCache(state, lockedFlake);
 
-    return evalCache->getRoot()->findAlongAttrPath(nix::parseAttrPath(state, attrPath));
+    return evalCache->getRoot()->findAlongAttrPath(nix::AttrPath::parse(state, attrPath));
 }
 
 static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, gpointer p)
@@ -198,7 +201,7 @@ static void pk_backend_get_details_thread(PkBackendJob *job, GVariant *params, g
     pk_backend_job_set_percentage(job, 100);
 }
 
-static nix::Path nix_get_user_profile(PkBackendJob *job)
+static std::filesystem::path nix_get_user_profile(PkBackendJob *job)
 {
     guint uid = pk_backend_job_get_uid(job);
 
@@ -206,13 +209,26 @@ static nix::Path nix_get_user_profile(PkBackendJob *job)
     if ((uid_ent = getpwuid(uid)) == NULL)
         g_error("Failed to get HOME");
 
-    return std::string(uid_ent->pw_dir) + "/.nix-profile";
+    return std::filesystem::path(uid_ent->pw_dir) / ".nix-profile";
+}
+
+static nix::PackageInfos nix_query_installed(const std::filesystem::path &profile)
+{
+    std::error_code ec;
+    auto userEnv = std::filesystem::canonical(profile, ec);
+    if (ec)
+        return {};
+
+    // evaluation is pure, so the user environment has to be allowed explicitly
+    priv->state->allowClosure(priv->state->store->toStorePath(userEnv.string()).first);
+
+    return nix::queryInstalled(*priv->state, userEnv);
 }
 
 static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
 {
-    const gchar **search;
-    PkBitfield filters;
+    const gchar **search = NULL;
+    PkBitfield filters = 0;
 
     PkRoleEnum role = pk_backend_job_get_role(job);
 
@@ -241,30 +257,14 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
         for (; *search != NULL; search++)
             regexes.push_back(std::regex(*search, std::regex::extended | std::regex::icase));
 
-    nix::DrvInfos installedDrvs;
+    nix::PackageInfos installedDrvs;
 
     if (pk_bitfield_contain(filters, PK_FILTER_ENUM_INSTALLED)
         || pk_bitfield_contain(filters, PK_FILTER_ENUM_NOT_INSTALLED)) {
-        std::optional<nix::PathSet> oldAllowedPaths = priv->state->allowedPaths;
-        priv->state->allowedPaths = std::nullopt;
-
-        std::string userProfile = nix_get_user_profile(job);
-        if (nix::pathExists(userProfile + "/manifest.nix")) {
-            nix::Value v;
-            priv->state->evalFile(userProfile + "/manifest.nix", v);
-            nix::Bindings &bindings(*priv->state->allocBindings(0));
-            nix::getDerivations(*priv->state, v, "", bindings, installedDrvs, false);
-        }
-
-        std::string defaultProfile = nix::settings.nixStateDir + "/profiles/default";
-        if (nix::pathExists(defaultProfile + "/manifest.nix")) {
-            nix::Value v;
-            priv->state->evalFile(defaultProfile + "/manifest.nix", v);
-            nix::Bindings &bindings(*priv->state->allocBindings(0));
-            nix::getDerivations(*priv->state, v, "", bindings, installedDrvs, false);
-        }
-
-        priv->state->allowedPaths = oldAllowedPaths;
+        installedDrvs = nix_query_installed(nix_get_user_profile(job));
+        installedDrvs.splice(
+            installedDrvs.end(),
+            nix_query_installed(nix::settings.nixStateDir / "profiles" / "default"));
     }
 
     int totalDrvs = 0;
@@ -272,8 +272,8 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
 
-    std::function<void(nix::eval_cache::AttrCursor & cursor, const std::vector<nix::Symbol> &attrPath)> visit;
-    visit = [&](nix::eval_cache::AttrCursor &cursor, const std::vector<nix::Symbol> &attrPath) {
+    std::function<void(nix::eval_cache::AttrCursor & cursor, const nix::AttrPath &attrPath)> visit;
+    visit = [&](nix::eval_cache::AttrCursor &cursor, const nix::AttrPath &attrPath) {
         try {
             if (pk_backend_job_is_cancelled(job))
                 return;
@@ -306,7 +306,7 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
                 auto description = aDescription ? aDescription->getString() : "";
                 std::replace(description.begin(), description.end(), '\n', ' ');
 
-                auto attrPath2 = concatStringsSep(".", priv->state->symbols.resolve(attrPath));
+                auto attrPath2 = attrPath.to_string(*priv->state);
 
                 for (auto &regex : regexes) {
                     switch (role) {
@@ -380,7 +380,7 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
                 recurse();
 
             else if (attrPath.size() >= 1) {
-                auto attr = cursor.maybeGetAttr(priv->state->sRecurseForDerivations);
+                auto attr = cursor.maybeGetAttr(priv->state->s.recurseForDerivations);
                 if (attr && attr->getBool())
                     recurse();
             }
@@ -395,9 +395,9 @@ static void nix_search_thread(PkBackendJob *job, GVariant *params, gpointer p)
 
 static void nix_refresh_thread(PkBackendJob *job, GVariant *params, gpointer p)
 {
-    nix::settings.tarballTtl = 0;
+    nix::fetchSettings.tarballTtl = 0;
     nix_search_thread(job, params, p);
-    nix::settings.tarballTtl = 60 * 60;
+    nix::fetchSettings.tarballTtl = 60 * 60;
 
     pk_backend_job_set_percentage(job, 100);
 }
@@ -408,7 +408,7 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
     gchar **package_ids;
     g_variant_get(params, "(t^a&s)", &flags, &package_ids);
 
-    nix::DrvInfos newElems;
+    nix::PackageInfos newElems;
     gchar **parts;
 
     for (size_t i = 0; package_ids[i] != NULL; i++) {
@@ -428,7 +428,7 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
         auto cursor = *attrOrSuggestions;
 
         if (attrOrSuggestions && cursor->isDerivation()) {
-            std::optional<nix::DrvInfo> drv;
+            std::optional<nix::PackageInfo> drv;
             drv = nix::getDerivation(*priv->state, cursor->forceValue(), false);
             if (drv) {
                 try {
@@ -450,28 +450,23 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
         }
     }
 
-    std::string profile = nix_get_user_profile(job);
-
-    std::optional<nix::PathSet> oldAllowedPaths = priv->state->allowedPaths;
-    priv->state->allowedPaths = std::nullopt;
+    auto profile = nix_get_user_profile(job);
 
     while (true) {
         if (pk_backend_job_is_cancelled(job)) {
-            priv->state->allowedPaths = oldAllowedPaths;
             return;
         }
 
         std::string lockToken = nix::optimisticLockProfile(profile);
 
-        nix::DrvInfos allElems(newElems);
+        nix::PackageInfos allElems(newElems);
 
         /* Add in the already installed derivations, unless they have
            the same name as a to-be-installed element. */
-        nix::DrvInfos installedElems;
+        nix::PackageInfos installedElems;
         try {
-            installedElems = nix::queryInstalled(*priv->state, profile);
+            installedElems = nix_query_installed(profile);
         } catch (nix::Error &e) {
-            priv->state->allowedPaths = oldAllowedPaths;
             pk_backend_job_error_code(job, PK_ERROR_ENUM_UNKNOWN, "failed to create new environment: %s", e.what());
             return;
         }
@@ -494,13 +489,10 @@ static void nix_install_thread(PkBackendJob *job, GVariant *params, gpointer p)
             if (nix::createUserEnv(*priv->state, allElems, profile, false, lockToken))
                 break;
         } catch (nix::Error &e) {
-            priv->state->allowedPaths = oldAllowedPaths;
             pk_backend_job_error_code(job, PK_ERROR_ENUM_UNKNOWN, "failed to create new environment: %s", e.what());
             return;
         }
     }
-
-    priv->state->allowedPaths = oldAllowedPaths;
 
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
@@ -517,9 +509,9 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
     gboolean allow_deps, autoremove;
     g_variant_get(params, "(t^a&sbb)", &transaction_flags, &package_ids, &allow_deps, &autoremove);
 
-    nix::Path profile = nix_get_user_profile(job);
+    auto profile = nix_get_user_profile(job);
 
-    nix::DrvInfos elemsToDelete;
+    nix::PackageInfos elemsToDelete;
     gchar **parts;
 
     for (size_t i = 0; package_ids[i] != NULL; i++) {
@@ -550,19 +542,15 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
         pk_backend_job_package_status(job, package_ids[i], PK_INFO_ENUM_REMOVING);
     }
 
-    std::optional<nix::PathSet> oldAllowedPaths = priv->state->allowedPaths;
-    priv->state->allowedPaths = std::nullopt;
-
     while (true) {
         if (pk_backend_job_is_cancelled(job)) {
-            priv->state->allowedPaths = oldAllowedPaths;
             return;
         }
 
         std::string lockToken = nix::optimisticLockProfile(profile);
 
-        nix::DrvInfos installedElems = nix::queryInstalled(*priv->state, profile);
-        nix::DrvInfos newElems;
+        nix::PackageInfos installedElems = nix_query_installed(profile);
+        nix::PackageInfos newElems;
 
         for (auto &i : installedElems) {
             bool found = false;
@@ -582,8 +570,6 @@ static void nix_remove_thread(PkBackendJob *job, GVariant *params, gpointer p)
             break;
     }
 
-    priv->state->allowedPaths = oldAllowedPaths;
-
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
     for (size_t i = 0; package_ids[i] != NULL; i++)
         pk_backend_packages_add(packages, PK_INFO_ENUM_AVAILABLE, package_ids[i], NULL, PK_SEVERITY_ENUM_NONE);
@@ -596,12 +582,7 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
 {
     auto profile = nix_get_user_profile(job);
 
-    std::optional<nix::PathSet> oldAllowedPaths = priv->state->allowedPaths;
-    priv->state->allowedPaths = std::nullopt;
-
-    nix::DrvInfos installedElems = nix::queryInstalled(*priv->state, profile);
-
-    priv->state->allowedPaths = oldAllowedPaths;
+    nix::PackageInfos installedElems = nix_query_installed(profile);
 
     g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func(g_object_unref);
 
@@ -638,6 +619,23 @@ static void nix_get_updates_thread(PkBackendJob *job, GVariant *params, gpointer
     pk_backend_job_set_percentage(job, 100);
 }
 
+// the collector has to know about every thread that touches the evaluator,
+// and the job threads are not created through it
+static void nix_job_thread(PkBackendJob *job, GVariant *params, gpointer func)
+{
+#if NIX_USE_BOEHMGC
+    GC_stack_base stackBase;
+    GC_get_stack_base(&stackBase);
+    GC_register_my_thread(&stackBase);
+#endif
+
+    ((PkBackendJobThreadFunc)func)(job, params, NULL);
+
+#if NIX_USE_BOEHMGC
+    GC_unregister_my_thread();
+#endif
+}
+
 void pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
 {
     PkRoleEnum role = pk_backend_job_get_role(job);
@@ -645,34 +643,34 @@ void pk_backend_run_job(PkBackend *backend, PkBackendJob *job)
     switch (role) {
     case PK_ROLE_ENUM_GET_DETAILS:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-        pk_backend_job_thread_create(job, pk_backend_get_details_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)pk_backend_get_details_thread, NULL);
         break;
     case PK_ROLE_ENUM_GET_PACKAGES:
     case PK_ROLE_ENUM_SEARCH_NAME:
     case PK_ROLE_ENUM_SEARCH_DETAILS:
     case PK_ROLE_ENUM_RESOLVE:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-        pk_backend_job_thread_create(job, nix_search_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_search_thread, NULL);
         break;
     case PK_ROLE_ENUM_REFRESH_CACHE:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_REFRESH_CACHE);
-        pk_backend_job_thread_create(job, nix_refresh_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_refresh_thread, NULL);
         break;
     case PK_ROLE_ENUM_INSTALL_PACKAGES:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_INSTALL);
-        pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_install_thread, NULL);
         break;
     case PK_ROLE_ENUM_REMOVE_PACKAGES:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_REMOVE);
-        pk_backend_job_thread_create(job, nix_remove_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_remove_thread, NULL);
         break;
     case PK_ROLE_ENUM_UPDATE_PACKAGES:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_UPDATE);
-        pk_backend_job_thread_create(job, nix_install_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_install_thread, NULL);
         break;
     case PK_ROLE_ENUM_GET_UPDATES:
         pk_backend_job_set_status(job, PK_STATUS_ENUM_QUERY);
-        pk_backend_job_thread_create(job, nix_get_updates_thread, NULL, NULL);
+        pk_backend_job_thread_create(job, nix_job_thread, (gpointer)nix_get_updates_thread, NULL);
         break;
     default:
         pk_backend_job_error_code(

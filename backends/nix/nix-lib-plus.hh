@@ -13,18 +13,20 @@
 
 #pragma once
 
-#include <nix/get-drvs.hh>
+#include <nix/expr/get-drvs.hh>
+
+#include <filesystem>
 
 namespace nix
 {
 
 bool createUserEnv(
     EvalState &state,
-    DrvInfos &elems,
-    const Path &profile,
+    PackageInfos &elems,
+    const std::filesystem::path &profile,
     bool keepDerivations,
     const std::string &lockToken);
 
-DrvInfos queryInstalled(EvalState &state, const Path &userEnv);
+PackageInfos queryInstalled(EvalState &state, const std::filesystem::path &userEnv);
 
 } // namespace nix
