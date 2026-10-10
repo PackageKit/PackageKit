@@ -2695,12 +2695,30 @@ backend_install_files_thread (PkBackendJob *job, GVariant *params, gpointer user
 			return;
 		}
 
-		// copy the rpm into tmpdir
-		string tempDest = tmpDir.path ().asString () + "/" + rpmHeader->tag_name () + ".rpm";
-		if (zypp::filesystem::copy (full_paths[i], tempDest) != 0) {
-			zypp_backend_finished_error (
-				job, PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
-				"Could not copy the rpm-file into the temp-dir");
+		/*
+		 * Copy the rpm into tmpdir.
+		 * Sanitize the tag name to retain only the base filename, and
+		 * the destination path stays within the /tmp directory before
+		 * copying files to the target directory.
+		 */
+		string raw_name = rpmHeader->tag_name();
+		size_t last_slash = raw_name.find_last_of("/\\");
+		if (last_slash != string::npos) {
+			raw_name = raw_name.substr(last_slash + 1);
+		}
+
+		zypp::Pathname safeDest = tmpDir.path() / (raw_name + ".rpm");
+		if (safeDest.dirname() != tmpDir.path()) {
+			zypp_backend_finished_error (job,
+						     PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
+						     "Invalid RPM name tag: path traversal detected");
+			return;
+		}
+
+		if (zypp::filesystem::copy (full_paths[i], safeDest.asString()) != 0) {
+			zypp_backend_finished_error (job,
+						     PK_ERROR_ENUM_LOCAL_INSTALL_FAILED,
+						     "Could not copy the rpm-file into the temp-dir");
 			return;
 		}
 	}
