@@ -531,7 +531,7 @@
       @transaction_flags: If the transaction should be simulated or prepared.
       @package_ids: An array of package IDs.
       @allow_deps: Either `true` or `false`. If `true` allow other packages to be removed with the package, but `false` should cause the script to abort if other packages are dependant on the package.
-      @autoremove: Either `true` or `false`. This option is only really interesting on embedded devices with a limited amount of flash storage. It suggests to the packagekit backend that dependencies installed at the same time as the package should also be removed if they are not required by anything else. For instance, if you install OpenOffice, it might download libneon as a dependency. When `auto_remove` is set to true, and you remove OpenOffice then libneon will also get removed automatically.
+      @autoremove: Either `true` or `false`. This option is only really interesting on embedded devices with a limited amount of flash storage. It suggests to the packagekit backend that dependencies installed at the same time as the package should also be removed if they are not required by anything else. For instance, if you install LibreOffice, it might download libneon as a dependency. When `auto_remove` is set to true, and you remove LibreOffice then libneon will also get removed automatically.
 
       This method removes packages from the local system.
 
@@ -825,7 +825,10 @@
       UpgradeSystem:
       @transaction_flags: If this method is can only install trusted files, and the files are unsigned, then the backend will send a `ErrorCode(missing-gpg-signature)`.
       @distro_id: The distribution ID to upgrade to, e.g. `fedora-14`.
-      @upgrade_kind: The type of upgrade, e.g. `minimal`, `default` or `complete`. Minimal upgrades will download the smallest amount of data before launching a installer. The default is to download enough data to launch a full graphical installer, but a complete upgrade will be required if there is no internet access during install time.
+      @upgrade_kind: The type of upgrade, e.g. `minimal`, `default` or `complete`. Minimal upgrades will download the smallest amount of data
+        before launching a installer.
+        The default is to download enough data to launch a full graphical installer, but a complete upgrade will be required if there is no
+        internet access during install time.
 
       This method perfoms a distribution upgrade to the specified version.
 
@@ -883,7 +886,7 @@
       - `detail`: The multi-line package description in markdown syntax.[`s`]
       - `url`: The upstream project homepage [`s`]
       - `size`: The size of the package in bytes [`t`]
-      - `summary`: The one line package summary, e.g. Clipart for OpenOffice
+      - `summary`: The one line package summary, e.g. Clipart for LibreOffice
         [`s`]
     -->
     <signal name="Details">
@@ -973,8 +976,9 @@
         contents are backend-specific and it is usually empty. Frontends must
         not parse it and should rely on the `info` enumerated type for state
         information instead. [`s`]
-      - `summary`: The one line package summary, e.g. Clipart for OpenOffice
-        [`s`]
+      - `summary`: The one line package summary, e.g. Clipart for LibreOffice.
+        This may be empty when the package is emitted to show progress while
+        a transaction is modifying the system. [`s`]
     -->
     <signal name="Packages">
       <arg type="a(uuss)" name="packages" direction="out"/>
