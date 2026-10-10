@@ -633,19 +633,19 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 				auto action = item.get_action();
 				PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 				if (action == libdnf5::transaction::TransactionItemAction::INSTALL)
-					info = PK_INFO_ENUM_INSTALLING;
+					info = PK_INFO_ENUM_INSTALL;
 				else if (action == libdnf5::transaction::TransactionItemAction::UPGRADE)
-					info = PK_INFO_ENUM_UPDATING;
+					info = PK_INFO_ENUM_UPDATE;
 				else if (action == libdnf5::transaction::TransactionItemAction::REMOVE)
-					info = PK_INFO_ENUM_REMOVING;
+					info = PK_INFO_ENUM_REMOVE;
 				else if (action == libdnf5::transaction::TransactionItemAction::REINSTALL)
-					info = PK_INFO_ENUM_REINSTALLING;
+					info = PK_INFO_ENUM_REINSTALL;
 				else if (action == libdnf5::transaction::TransactionItemAction::DOWNGRADE)
-					info = PK_INFO_ENUM_DOWNGRADING;
+					info = PK_INFO_ENUM_DOWNGRADE;
 				else if (action == libdnf5::transaction::TransactionItemAction::REPLACED) {
 					if (continuing_names.find(item.get_package().get_name())
 					    == continuing_names.end()) {
-						info = PK_INFO_ENUM_OBSOLETING;
+						info = PK_INFO_ENUM_OBSOLETE;
 					}
 				}
 
@@ -677,22 +677,22 @@ dnf5_transaction_thread(PkBackendJob *job, GVariant *params, gpointer user_data)
 		trans.download();
 
 		if (pk_bitfield_contain(transaction_flags, PK_TRANSACTION_FLAG_ENUM_ONLY_DOWNLOAD)) {
-			// Iterate over transaction items and report them as if they were being processed
+			// Iterate over transaction items and report what the prepared transaction will do
 			g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 			for (const auto &item : trans.get_transaction_packages()) {
 				auto action = item.get_action();
 				PkInfoEnum info = PK_INFO_ENUM_UNKNOWN;
 
 				if (action == libdnf5::transaction::TransactionItemAction::INSTALL)
-					info = PK_INFO_ENUM_INSTALLING;
+					info = PK_INFO_ENUM_INSTALL;
 				else if (action == libdnf5::transaction::TransactionItemAction::UPGRADE)
-					info = PK_INFO_ENUM_UPDATING;
+					info = PK_INFO_ENUM_UPDATE;
 				else if (action == libdnf5::transaction::TransactionItemAction::REMOVE)
-					info = PK_INFO_ENUM_REMOVING;
+					info = PK_INFO_ENUM_REMOVE;
 				else if (action == libdnf5::transaction::TransactionItemAction::REINSTALL)
-					info = PK_INFO_ENUM_REINSTALLING;
+					info = PK_INFO_ENUM_REINSTALL;
 				else if (action == libdnf5::transaction::TransactionItemAction::DOWNGRADE)
-					info = PK_INFO_ENUM_DOWNGRADING;
+					info = PK_INFO_ENUM_DOWNGRADE;
 
 				if (info != PK_INFO_ENUM_UNKNOWN)
 					dnf5_stage_pkg(packages, item.get_package(), info);

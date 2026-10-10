@@ -1280,8 +1280,7 @@ pk_transaction_packages_cb (PkBackend *backend,
 		}
 
 		/* add to results even if we already got a result */
-		if (info != PK_INFO_ENUM_FINISHED)
-			pk_results_add_package (transaction->results, item);
+		pk_results_add_package (transaction->results, item);
 
 		/* emit */
 		package_id = pk_package_get_id (item);

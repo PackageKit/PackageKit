@@ -2053,7 +2053,7 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 				poldek_backend_stage_package (job,
 							      packages,
 							      pkg,
-							      PK_INFO_ENUM_INSTALLING,
+							      PK_INFO_ENUM_INSTALL,
 							      PK_FILTER_ENUM_NONE);
 			}
 
@@ -2067,7 +2067,7 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 				poldek_backend_stage_package (job,
 							      packages,
 							      pkg,
-							      PK_INFO_ENUM_UPDATING,
+							      PK_INFO_ENUM_UPDATE,
 							      PK_FILTER_ENUM_NONE);
 			}
 
@@ -2081,7 +2081,7 @@ do_simulate_packages (PkBackendJob *job, GVariant *params, gpointer user_data)
 				poldek_backend_stage_package (job,
 							      packages,
 							      pkg,
-							      PK_INFO_ENUM_REMOVING,
+							      PK_INFO_ENUM_REMOVE,
 							      PK_FILTER_ENUM_NONE);
 			}
 

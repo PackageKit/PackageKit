@@ -63,11 +63,18 @@ pk_alpm_pkg_has_basename (PkBackend *backend, alpm_pkg_t *pkg, const gchar *base
 }
 
 static void
+pk_alpm_transaction_pkg_finished (PkBackendJob *job, alpm_pkg_t *pkg)
+{
+	g_autofree gchar *package_id = pk_alpm_pkg_build_id (pkg);
+	pk_backend_job_set_item_progress (job, package_id, PK_STATUS_ENUM_FINISHED, 100);
+}
+
+static void
 pk_alpm_transaction_download_end (PkBackendJob *job)
 {
 	g_return_if_fail (dpkg != NULL);
 
-	pk_alpm_pkg_emit (job, dpkg, PK_INFO_ENUM_FINISHED);
+	pk_alpm_transaction_pkg_finished (job, dpkg);
 
 	/* tell DownloadPackages what files were downloaded */
 	if (dfiles != NULL) {
@@ -452,7 +459,7 @@ pk_alpm_transaction_add_done (PkBackendJob *job, alpm_pkg_t *pkg)
 
 	alpm_logaction (priv->alpm, PK_LOG_PREFIX, "installed %s (%s)\n", name,
 			version);
-	pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_FINISHED);
+	pk_alpm_transaction_pkg_finished (job, pkg);
 
 	optdepends = alpm_pkg_get_optdepends (pkg);
 	if (optdepends != NULL) {
@@ -491,7 +498,7 @@ pk_alpm_transaction_remove_done (PkBackendJob *job, alpm_pkg_t *pkg)
 	version = alpm_pkg_get_version (pkg);
 
 	alpm_logaction (priv->alpm, PK_LOG_PREFIX, "removed %s (%s)\n", name, version);
-	pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_FINISHED);
+	pk_alpm_transaction_pkg_finished (job, pkg);
 	pk_alpm_transaction_output_end ();
 }
 
@@ -595,7 +602,7 @@ pk_alpm_transaction_upgrade_done (PkBackendJob *job, alpm_pkg_t *pkg,
 		alpm_logaction (priv->alpm, PK_LOG_PREFIX, "reinstalled %s (%s)\n",
 				name, post);
 	}
-	pk_alpm_pkg_emit (job, pkg, PK_INFO_ENUM_FINISHED);
+	pk_alpm_transaction_pkg_finished (job, pkg);
 
 	if (direction != ALPM_PACKAGE_REINSTALL)
 		pk_alpm_transaction_process_new_optdepends (pkg, old);
@@ -1009,9 +1016,9 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 		name = alpm_pkg_get_name (i->data);
 
 		if (alpm_db_get_pkg (priv->localdb, name) != NULL) {
-			info = PK_INFO_ENUM_UPDATING;
+			info = PK_INFO_ENUM_UPDATE;
 		} else {
-			info = PK_INFO_ENUM_INSTALLING;
+			info = PK_INFO_ENUM_INSTALL;
 		}
 
 		pk_alpm_pkg_stage (packages, i->data, info);
@@ -1019,11 +1026,11 @@ pk_alpm_transaction_packages (PkBackendJob *job)
 
 	switch (pk_backend_job_get_role (job)) {
 	case PK_ROLE_ENUM_UPDATE_PACKAGES:
-		info = PK_INFO_ENUM_OBSOLETING;
+		info = PK_INFO_ENUM_OBSOLETE;
 		break;
 
 	default:
-		info = PK_INFO_ENUM_REMOVING;
+		info = PK_INFO_ENUM_REMOVE;
 		break;
 	}
 

@@ -701,38 +701,38 @@ backend_install_packages (PkBackend *backend,
 		pk_backend_job_set_status (job, PK_STATUS_ENUM_DEP_RESOLVE);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_REMOVING,
+					 PK_INFO_ENUM_REMOVE,
 					 "powertop;1.8-1.fc8;i386;fedora;",
 					 "Power consumption monitor",
 					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_INSTALLING,
+					 PK_INFO_ENUM_INSTALL,
 					 "gtk2;2.11.6-6.fc8;i386;fedora;",
 					 "GTK+ Libraries for GIMP",
 					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_UPDATING,
+					 PK_INFO_ENUM_UPDATE,
 					 "lib7;7.0.1-6.fc13;i386;fedora;",
 					 "C Libraries",
 					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_REINSTALLING,
+					 PK_INFO_ENUM_REINSTALL,
 					 "libssl;3.5.7-2.fc13;i386;fedora;",
 					 "SSL Libraries",
 					 PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (
 		    packages,
-		    PK_INFO_ENUM_DOWNGRADING,
+		    PK_INFO_ENUM_DOWNGRADE,
 		    "kernel;2.6.23-0.115.rc3.git1.fc8;i386;;installed",
 		    "The Linux kernel (the core of the Linux operating system)",
 		    PK_SEVERITY_ENUM_NONE);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_UPDATING,
+					 PK_INFO_ENUM_UPDATE,
 					 "gtkhtml2;2.19.1-4.fc8;i386;fedora;",
 					 "An HTML widget for GTK+ 2.0",
 					 PK_SEVERITY_ENUM_NONE);
@@ -1797,17 +1797,17 @@ pk_backend_upgrade_system_timeout (gpointer data)
 		g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
 
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_INSTALLING,
+					 PK_INFO_ENUM_INSTALL,
 					 "gtk2;2.11.6-6.fc8;i386;fedora;",
 					 "GTK+ Libraries for GIMP",
 					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_REMOVING,
+					 PK_INFO_ENUM_REMOVE,
 					 "gnome-software;2.18.2.fc24;i386;fedora;",
 					 "Software center for GNOME",
 					 PK_SEVERITY_ENUM_NONE);
 		pk_backend_packages_add (packages,
-					 PK_INFO_ENUM_UPDATING,
+					 PK_INFO_ENUM_UPDATE,
 					 "lib7;7.0.1-6.fc13;i386;fedora;",
 					 "C Libraries",
 					 PK_SEVERITY_ENUM_NONE);

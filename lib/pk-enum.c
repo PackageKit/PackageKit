@@ -296,30 +296,28 @@ static const PkEnumMatch enum_update_state[] = {
 
 static const PkEnumMatch enum_info[] = {
 	{PK_INFO_ENUM_UNKNOWN,			"unknown"},	/* fall though value */
-	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_AVAILABLE,		"available"},
-	{PK_INFO_ENUM_UNAVAILABLE,		"unavailable"},
+	{PK_INFO_ENUM_INSTALLED,		"installed"},
 	{PK_INFO_ENUM_BLOCKED,			"blocked"},
-	{PK_INFO_ENUM_DOWNLOADING,		"downloading"},
-	{PK_INFO_ENUM_UPDATING,			"updating"},
-	{PK_INFO_ENUM_INSTALLING,		"installing"},
-	{PK_INFO_ENUM_REMOVING,			"removing"},
-	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
-	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
-	{PK_INFO_ENUM_FINISHED,			"finished"},
-	{PK_INFO_ENUM_REINSTALLING,		"reinstalling"},
-	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
-	{PK_INFO_ENUM_PREPARING,		"preparing"},
-	{PK_INFO_ENUM_DECOMPRESSING,		"decompressing"},
 	{PK_INFO_ENUM_UNTRUSTED,		"untrusted"},
 	{PK_INFO_ENUM_TRUSTED,			"trusted"},
 	{PK_INFO_ENUM_INSTALL,			"install"},
 	{PK_INFO_ENUM_REMOVE,			"remove"},
-	{PK_INFO_ENUM_OBSOLETE,			"obsolete"},
+	{PK_INFO_ENUM_REINSTALL,		"reinstall"},
 	{PK_INFO_ENUM_DOWNGRADE,		"downgrade"},
+	{PK_INFO_ENUM_OBSOLETE,			"obsolete"},
 	{PK_INFO_ENUM_UPDATE,			"update"},
 	{PK_INFO_ENUM_UPDATE_SECURITY,		"update-security"},
 	{PK_INFO_ENUM_UPDATE_ENHANCEMENT,	"update-enhancement"},
+	{PK_INFO_ENUM_PREPARING,		"preparing"},
+	{PK_INFO_ENUM_DOWNLOADING,		"downloading"},
+	{PK_INFO_ENUM_INSTALLING,		"installing"},
+	{PK_INFO_ENUM_UPDATING,			"updating"},
+	{PK_INFO_ENUM_REINSTALLING,		"reinstalling"},
+	{PK_INFO_ENUM_DOWNGRADING,		"downgrading"},
+	{PK_INFO_ENUM_REMOVING,			"removing"},
+	{PK_INFO_ENUM_OBSOLETING,		"obsoleting"},
+	{PK_INFO_ENUM_CLEANUP,			"cleanup"},
 	{0, NULL}
 };
 
@@ -977,10 +975,6 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 		/* TRANSLATORS: The state of a package, i.e. not installed */
 		text = dgettext ("PackageKit", "Available");
 		break;
-	case PK_INFO_ENUM_UNAVAILABLE:
-		/* TRANSLATORS: The state of a package, i.e. not installed */
-		text = dgettext ("PackageKit", "Unavailable");
-		break;
 	case PK_INFO_ENUM_INSTALL:
 		/* TRANSLATORS: The state of a package: to be installed with the next action */
 		text = dgettext ("PackageKit", "Install");
@@ -988,6 +982,10 @@ pk_info_enum_to_localised_text (PkInfoEnum info)
 	case PK_INFO_ENUM_REMOVE:
 		/* TRANSLATORS: The state of a package: to be removed with the next action */
 		text = dgettext ("PackageKit", "Remove");
+		break;
+	case PK_INFO_ENUM_REINSTALL:
+		/* TRANSLATORS: The state of a package: to be reinstalled with the next action */
+		text = dgettext ("PackageKit", "Reinstall");
 		break;
 	case PK_INFO_ENUM_OBSOLETE:
 		/* TRANSLATORS: The state of a package: package is obsolete */

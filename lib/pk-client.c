@@ -899,7 +899,7 @@ pk_client_signal_package (PkClientState *state,
 		      NULL);
 
 	/* add to results */
-	if (state->results != NULL && info_enum != PK_INFO_ENUM_FINISHED)
+	if (state->results != NULL)
 		pk_results_add_package (state->results, package);
 
 	/* only emit progress for verb packages */
@@ -913,8 +913,6 @@ pk_client_signal_package (PkClientState *state,
 	case PK_INFO_ENUM_REINSTALLING:
 	case PK_INFO_ENUM_DOWNGRADING:
 	case PK_INFO_ENUM_PREPARING:
-	case PK_INFO_ENUM_DECOMPRESSING:
-	case PK_INFO_ENUM_FINISHED:
 		pk_progress_set_package_id (state->progress, package_id);
 		pk_progress_set_package (state->progress, package);
 		break;

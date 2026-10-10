@@ -216,7 +216,7 @@ void AcqPackageKitStatus::updateStatus(pkgAcquire::ItemDesc &Itm, int status)
     }
 
     if (status == 100) {
-        m_apt->emitPackage(ver, PK_INFO_ENUM_FINISHED);
+        m_apt->emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
     } else {
         // emit the package
         m_apt->emitPackage(ver, PK_INFO_ENUM_DOWNLOADING);

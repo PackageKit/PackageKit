@@ -1677,11 +1677,11 @@ PkgList AptJob::checkChangedPackages(bool emitChanged)
 
     if (emitChanged) {
         // emit packages that have changes
-        emitPackages(obsoleting, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_OBSOLETING);
-        emitPackages(removing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVING);
-        emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADING);
-        emitPackages(installing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALLING);
-        emitPackages(updating, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATING);
+        emitPackages(obsoleting, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_OBSOLETE);
+        emitPackages(removing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_REMOVE);
+        emitPackages(downgrading, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_DOWNGRADE);
+        emitPackages(installing, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_INSTALL);
+        emitPackages(updating, PK_FILTER_ENUM_NONE, PK_INFO_ENUM_UPDATE);
     }
 
     return ret;
@@ -1731,7 +1731,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
     if (!m_lastPackage.empty() && m_lastPackage.compare(pkg) != 0) {
         const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
         if (!ver.end()) {
-            emitPackage(ver, PK_INFO_ENUM_FINISHED);
+            emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
         }
         m_lastSubProgress = 0;
     }
@@ -1896,7 +1896,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
         } else if (starts_with(str, "Unpacking")) {
             const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
             if (!ver.end()) {
-                emitPackage(ver, PK_INFO_ENUM_DECOMPRESSING);
+                emitPackage(ver, PK_INFO_ENUM_INSTALLING);
                 emitPackageProgress(ver, PK_STATUS_ENUM_INSTALL, 50);
             }
         } else if (starts_with(str, "Configuring")) {
@@ -1904,7 +1904,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
                 const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                 if (!ver.end()) {
-                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                    emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
                 }
                 m_lastSubProgress = 0;
             }
@@ -1923,7 +1923,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             if (!m_lastPackage.empty()) {
                 const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                 if (!ver.end()) {
-                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                    emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
                 }
             }
             m_lastSubProgress = 0;
@@ -1936,7 +1936,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             if (m_lastSubProgress >= 100 && !m_lastPackage.empty()) {
                 const pkgCache::VerIterator &ver = findTransactionPackage(m_lastPackage);
                 if (!ver.end()) {
-                    emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                    emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
                 }
             }
             m_lastSubProgress += 25;
@@ -1950,7 +1950,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
             m_lastSubProgress = 100;
             const pkgCache::VerIterator &ver = findTransactionPackage(pkg);
             if (!ver.end()) {
-                emitPackage(ver, PK_INFO_ENUM_FINISHED);
+                emitPackageProgress(ver, PK_STATUS_ENUM_FINISHED, 100);
             }
         } else {
             g_warning("Unmaped dpkg status value: %s", line.c_str());

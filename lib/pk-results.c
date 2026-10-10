@@ -205,12 +205,6 @@ pk_results_add_package (PkResults *results, PkPackage *item)
 	g_return_val_if_fail (PK_IS_RESULTS (results), FALSE);
 	g_return_val_if_fail (item != NULL, FALSE);
 
-	/* do not allow finished types */
-	if (pk_package_get_info (item) == PK_INFO_ENUM_FINISHED) {
-		g_warning ("Finished packages cannot be added to PkResults");
-		return FALSE;
-	}
-
 	pk_package_sack_add_package (priv->package_sack, item);
 	return TRUE;
 }

@@ -929,11 +929,11 @@ pk_backend_install_update_packages_thread (PkBackendJob *job, GVariant *params, 
 
             if (it.itemType() == PKG_SOLVED_DELETE) {
                 g_warning ("%s: have to remove some packages", context);
-                pk_backend_packages_add (packages, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
+                pk_backend_packages_add (packages, PK_INFO_ENUM_REMOVE, pkgView.packageKitId(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
                 continue;
             }
 
-            PkInfoEnum jobInfo = installRole ? PK_INFO_ENUM_INSTALLING : PK_INFO_ENUM_UPDATING;
+            PkInfoEnum jobInfo = installRole ? PK_INFO_ENUM_INSTALL : PK_INFO_ENUM_UPDATE;
             pk_backend_packages_add (packages, jobInfo, pkgView.packageKitId(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
         }
         pk_backend_job_packages (job, packages);
@@ -1195,7 +1195,7 @@ pk_backend_remove_packages_thread (PkBackendJob *job, GVariant *params, gpointer
         g_autoptr(GPtrArray) packages = g_ptr_array_new_with_free_func (g_object_unref);
         for (auto it = jobs.begin(); it != jobs.end(); ++it) {
             PackageView pkgView = it.newPkgView();
-            pk_backend_packages_add (packages, PK_INFO_ENUM_REMOVING, pkgView.packageKitId(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
+            pk_backend_packages_add (packages, PK_INFO_ENUM_REMOVE, pkgView.packageKitId(), pkgView.comment(), PK_SEVERITY_ENUM_NONE);
         }
         pk_backend_job_packages (job, packages);
         return;

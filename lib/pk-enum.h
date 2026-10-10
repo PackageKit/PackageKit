@@ -611,61 +611,74 @@ typedef enum {
 
 /**
  * PkInfoEnum:
- * @PK_INFO_ENUM_UNKNOWN: 	Package status is unknown
- * @PK_INFO_ENUM_AVAILABLE: 	Package is available to be installed
- * @PK_INFO_ENUM_INSTALLED: 	Package is installed
- * @PK_INFO_ENUM_BLOCKED: 	Package is blocked
- * @PK_INFO_ENUM_UNAVAILABLE:	Package is unavailable
+ * @PK_INFO_ENUM_UNKNOWN:	Package status is unknown
+ * @PK_INFO_ENUM_AVAILABLE:	Package is available to be installed
+ * @PK_INFO_ENUM_INSTALLED:	Package is installed
+ * @PK_INFO_ENUM_BLOCKED:	Package has an update that is blocked
+ * @PK_INFO_ENUM_UNTRUSTED:	Package is not signed or can not be verified
+ * @PK_INFO_ENUM_TRUSTED:	Package is signed and verified
  * @PK_INFO_ENUM_INSTALL:	Package is intended for installation. Since 1.3.0
  * @PK_INFO_ENUM_REMOVE:	Package is intended for removal. Since 1.3.0
- * @PK_INFO_ENUM_OBSOLETE:	Package is obsoleted. Since 1.3.0
+ * @PK_INFO_ENUM_REINSTALL:	Package is intended for reinstallation. Since 2.0.0
  * @PK_INFO_ENUM_DOWNGRADE:	Package is intended for downgrade. Since 1.3.0
+ * @PK_INFO_ENUM_OBSOLETE:	Package is intended for removal because another
+ *				package replaces it. Since 1.3.0
  * @PK_INFO_ENUM_UPDATE:	Package is intended to be updated. Since 2.0.0
  * @PK_INFO_ENUM_UPDATE_SECURITY: Package is intended to be updated and has a security fix. Since 2.0.0
  * @PK_INFO_ENUM_UPDATE_ENHANCEMENT: Package is intended to be updated, the update is an enhancement. Since 2.0.0
- * @PK_INFO_ENUM_DOWNLOADING: 	Package is being downloaded
- * @PK_INFO_ENUM_UPDATING: 	Package is updating
+ * @PK_INFO_ENUM_PREPARING:	Package is preparing for installation/removal
+ * @PK_INFO_ENUM_DOWNLOADING:	Package is being downloaded
  * @PK_INFO_ENUM_INSTALLING:	Package is being installed
- * @PK_INFO_ENUM_REMOVING: 	Package is being removed
- * @PK_INFO_ENUM_CLEANUP:	Package is running cleanup
- * @PK_INFO_ENUM_OBSOLETING:	Package is being obsoleted
- * @PK_INFO_ENUM_FINISHED:
- * @PK_INFO_ENUM_REINSTALLING: 	Package is being reinstalled
- * @PK_INFO_ENUM_DOWNGRADING: 	Package is being downgraded
- * @PK_INFO_ENUM_PREPARING: 	Package is preparing for installation/removal
- * @PK_INFO_ENUM_DECOMPRESSING: Package is decompressing
- * @PK_INFO_ENUM_UNTRUSTED:
- * @PK_INFO_ENUM_TRUSTED:
+ * @PK_INFO_ENUM_UPDATING:	Package is being updated
+ * @PK_INFO_ENUM_REINSTALLING:	Package is being reinstalled
+ * @PK_INFO_ENUM_DOWNGRADING:	Package is being downgraded
+ * @PK_INFO_ENUM_REMOVING:	Package is being removed
+ * @PK_INFO_ENUM_OBSOLETING:	Package is being removed because another package
+ *				replaces it
+ * @PK_INFO_ENUM_CLEANUP:	The old version of an updated package is being
+ *				removed
  *
- * The enumerated types used in Package() - these have to refer to a specific
- * package action, rather than a general state
+ * The enumerated types used in Packages(). The values fall into three
+ * groups:
+ *
+ * State, what a package is: `AVAILABLE`, `INSTALLED`, `BLOCKED`, and the
+ * attributes `UNTRUSTED` and `TRUSTED`.
+ *
+ * Planned action, what would happen to a package: `INSTALL` to
+ * `UPDATE_ENHANCEMENT`. These are returned by GetUpdates() and by simulated
+ * transactions.
+ *
+ * Progress, what is happening to a package right now: `PREPARING` to
+ * `CLEANUP`. These are only emitted while a transaction is modifying the
+ * system.
  **/
 typedef enum {
 	PK_INFO_ENUM_UNKNOWN,
+	/* state */
 	PK_INFO_ENUM_AVAILABLE,
 	PK_INFO_ENUM_INSTALLED,
 	PK_INFO_ENUM_BLOCKED,
-	PK_INFO_ENUM_UNAVAILABLE,
+	PK_INFO_ENUM_UNTRUSTED,
+	PK_INFO_ENUM_TRUSTED,
+	/* planned action */
 	PK_INFO_ENUM_INSTALL,
 	PK_INFO_ENUM_REMOVE,
-	PK_INFO_ENUM_OBSOLETE,
+	PK_INFO_ENUM_REINSTALL,
 	PK_INFO_ENUM_DOWNGRADE,
+	PK_INFO_ENUM_OBSOLETE,
 	PK_INFO_ENUM_UPDATE,
 	PK_INFO_ENUM_UPDATE_SECURITY,
 	PK_INFO_ENUM_UPDATE_ENHANCEMENT,
+	/* progress */
+	PK_INFO_ENUM_PREPARING,
 	PK_INFO_ENUM_DOWNLOADING,
-	PK_INFO_ENUM_UPDATING,
 	PK_INFO_ENUM_INSTALLING,
-	PK_INFO_ENUM_REMOVING,
-	PK_INFO_ENUM_CLEANUP,
-	PK_INFO_ENUM_OBSOLETING,
-	PK_INFO_ENUM_FINISHED,
+	PK_INFO_ENUM_UPDATING,
 	PK_INFO_ENUM_REINSTALLING,
 	PK_INFO_ENUM_DOWNGRADING,
-	PK_INFO_ENUM_PREPARING,
-	PK_INFO_ENUM_DECOMPRESSING,
-	PK_INFO_ENUM_UNTRUSTED,
-	PK_INFO_ENUM_TRUSTED,
+	PK_INFO_ENUM_REMOVING,
+	PK_INFO_ENUM_OBSOLETING,
+	PK_INFO_ENUM_CLEANUP,
 	/*< private >*/
 	PK_INFO_ENUM_LAST
 } PkInfoEnum;

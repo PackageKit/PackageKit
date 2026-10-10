@@ -210,32 +210,33 @@ pk_task_text_eula_question (PkTask *task, guint request, PkResults *results)
 static const gchar *
 pk_task_text_simulate_question_type_to_string (PkInfoEnum info)
 {
-	if (info == PK_INFO_ENUM_REMOVING) {
+	if (info == PK_INFO_ENUM_REMOVE) {
 		/* TRANSLATORS: When processing, we might have to remove other dependencies */
 		return _("The following packages have to be removed:");
 	}
 
-	if (info == PK_INFO_ENUM_INSTALLING) {
+	if (info == PK_INFO_ENUM_INSTALL) {
 		/* TRANSLATORS: When processing, we might have to install other dependencies */
 		return _("The following packages have to be installed:");
 	}
 
-	if (info == PK_INFO_ENUM_UPDATING) {
+	if (info == PK_INFO_ENUM_UPDATE || info == PK_INFO_ENUM_UPDATE_SECURITY ||
+	    info == PK_INFO_ENUM_UPDATE_ENHANCEMENT) {
 		/* TRANSLATORS: When processing, we might have to update other dependencies */
 		return _("The following packages have to be updated:");
 	}
 
-	if (info == PK_INFO_ENUM_REINSTALLING) {
+	if (info == PK_INFO_ENUM_REINSTALL) {
 		/* TRANSLATORS: When processing, we might have to reinstall other dependencies */
 		return _("The following packages have to be reinstalled:");
 	}
 
-	if (info == PK_INFO_ENUM_DOWNGRADING) {
+	if (info == PK_INFO_ENUM_DOWNGRADE) {
 		/* TRANSLATORS: When processing, we might have to downgrade other dependencies */
 		return _("The following packages have to be downgraded:");
 	}
 
-	if (info == PK_INFO_ENUM_OBSOLETING) {
+	if (info == PK_INFO_ENUM_OBSOLETE) {
 		/* TRANSLATORS: When processing, we might have to obsolete other dependencies */
 		return _("The following packages have to be obsoleted:");
 	}

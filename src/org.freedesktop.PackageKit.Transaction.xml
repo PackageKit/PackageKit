@@ -428,6 +428,8 @@
 
       `Packages` info enumerated types should be `downloading`, `updating`,
       `installing` or `removing`.
+      When simulating, they should be `install`, `update`, `remove`,
+      `reinstall`, `downgrade` or `obsolete` instead.
 
       Callers need the org.freedesktop.packagekit.localinstall-untrusted
       permission.
@@ -461,6 +463,8 @@
 
       `Packages` info enumerated types should be `downloading`, `updating`,
       `installing` or `removing`.
+      When simulating, they should be `install`, `update`, `remove`,
+      `reinstall`, `downgrade` or `obsolete` instead.
 
       Callers need the org.freedesktop.packagekit.install-untrusted
       permission.
@@ -536,6 +540,8 @@
 
       `Packages` info enumerated types should be `downloading`, `updating`,
       `installing` or `removing`.
+      When simulating, they should be `install`, `update`, `remove`,
+      `reinstall`, `downgrade` or `obsolete` instead.
 
       Callers need the org.freedesktop.packagekit.remove permission.
     -->
@@ -1159,6 +1165,9 @@
 
       This signal allows the backend to send infomation about package or
       repository progress when using Simultanous mode.
+
+      A backend signals that it is done with a package by sending the status
+      `finished` with a percentage of 100.
 
       Notes on `id`:
 
