@@ -9,7 +9,7 @@ Introduction:
  2. _If_ the distro wants PackageKit to handle the codec install, and
     not an application like codeina then you need to symlink
     pk-gstreamer-install to gst-install-plugins-helper
- 4. Distribution patches /etc/PackageKit/Vendor.conf with URLs to wiki pages.
+ 4. Distribution patches /usr/share/packagekit/Vendor.conf with URLs to wiki pages.
  3. Done. It's really that simple.
 
 Detecting the calling application:

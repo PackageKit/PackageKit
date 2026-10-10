@@ -116,7 +116,7 @@ install_data(
 
 install_data(
   'pkconffile.nodiff',
-  install_dir: join_paths(get_option('datadir'), 'PackageKit', 'helpers', 'apt'),
+  install_dir: join_paths(get_option('datadir'), 'packagekit', 'helpers', 'apt'),
 )
 
 if get_option('systemd')

@@ -12,5 +12,5 @@ install_data(
 
 install_data(
   'groups.list',
-  install_dir: join_paths(get_option('sysconfdir'), 'PackageKit', 'eopkg.d')
+  install_dir: join_paths(get_option('sysconfdir'), 'packagekit', 'eopkg.d')
 )

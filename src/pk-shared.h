@@ -43,7 +43,9 @@ gboolean       pk_strtouint64 (const gchar *text,
 GDBusNodeInfo *pk_load_introspection (const gchar *filename,
 				      GError	 **error);
 
-gchar	      *pk_util_get_config_filename (void);
+gboolean       pk_util_load_config (GKeyFile	*conf,
+				    const gchar *filename,
+				    GError     **error);
 gchar	      *pk_util_get_root_dir (GKeyFile *conf);
 gboolean       pk_util_set_auto_backend (GKeyFile *conf,
 					 GError	 **error);

@@ -183,8 +183,8 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %files -f %{name}.lang
 %license COPYING
 %doc README.md AUTHORS NEWS
-%dir %{_datadir}/PackageKit
-%dir %{_sysconfdir}/PackageKit
+%dir %{_datadir}/packagekit
+%dir %{_sysconfdir}/packagekit
 %dir %{_localstatedir}/lib/PackageKit
 %dir %{_localstatedir}/cache/app-info
 %dir %{_localstatedir}/cache/app-info/icons
@@ -192,11 +192,11 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %dir %{_localstatedir}/cache/PackageKit
 %{_datadir}/bash-completion/completions/pkgcli
 %dir %{_libdir}/packagekit-backend
-%config(noreplace) %{_sysconfdir}/PackageKit/PackageKit.conf
-%config(noreplace) %{_sysconfdir}/PackageKit/Vendor.conf
+%{_datadir}/packagekit/PackageKit.conf
+%{_datadir}/packagekit/Vendor.conf
 %{_datadir}/polkit-1/actions/*.policy
 %{_datadir}/polkit-1/rules.d/*
-%{_datadir}/PackageKit/pk-upgrade-distro.sh
+%{_datadir}/packagekit/pk-upgrade-distro.sh
 %{_libdir}/packagekit/backends/test_spawn/
 %{_metainfodir}/org.freedesktop.packagekit.metainfo.xml
 %{_libexecdir}/packagekitd
@@ -236,7 +236,7 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %files command-not-found
 %{_sysconfdir}/profile.d/*
 %{_libexecdir}/pk-command-not-found
-%config(noreplace) %{_sysconfdir}/PackageKit/CommandNotFound.conf
+%config(noreplace) %{_sysconfdir}/packagekit/CommandNotFound.conf
 
 %files devel
 # Empty on purpose

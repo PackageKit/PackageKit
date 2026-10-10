@@ -15,7 +15,7 @@ else
 fi
 
 export G_DEBUG=fatal_criticals
-sudo touch /etc/PackageKit/PackageKit.conf
+sudo touch /etc/packagekit/PackageKit.conf
 sudo G_DEBUG=fatal_criticals gdb --args src/packagekitd --verbose \
     --config tests/PackageKit.conf \
     --disable-timer \

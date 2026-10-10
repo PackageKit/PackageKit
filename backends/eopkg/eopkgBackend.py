@@ -21,7 +21,7 @@
 # Copyright (C) 2024 Solus Developers <releng@getsol.us>
 
 # Notes to PiSi based distribution maintainers
-# /etc/PackageKit/pisi.conf must contain a mapping of PiSi component to
+# /etc/packagekit/pisi.conf must contain a mapping of PiSi component to
 # PackageKit groups for correct operation, i.e.
 #   system.utils       = system
 #   desktop.gnome      = desktop-gnome
@@ -177,7 +177,7 @@ class SimplePisiHandler(pisi.ui.UI):
 
 
 class PackageKitEopkgBackend(pkb.Backend):
-    SETTINGS_FILE = "/etc/PackageKit/eopkg.d/groups.list"
+    SETTINGS_FILE = "/etc/packagekit/eopkg.d/groups.list"
 
     name = "eopkg"
     description = "Eopkg - Solus Package Manager"

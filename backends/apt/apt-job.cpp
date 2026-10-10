@@ -1783,7 +1783,7 @@ void AptJob::handleDpkgStatusLine(const std::string &line, int writeFd, bool *er
 
         g_auto(GStrv) envp = nullptr;
         g_auto(GStrv) argv = (gchar **)g_malloc(5 * sizeof(gchar *));
-        argv[0] = g_build_filename(DATADIR, "PackageKit", "helpers", "apt", "pkconffile", nullptr);
+        argv[0] = g_build_filename(DATADIR, "packagekit", "helpers", "apt", "pkconffile", nullptr);
         argv[1] = g_strdup(m_lastPackage.c_str());
         argv[2] = g_strdup(orig_file.c_str());
         argv[3] = g_strdup(new_file.c_str());

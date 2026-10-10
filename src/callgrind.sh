@@ -15,7 +15,7 @@ else
 fi
 
 export G_DEBUG=fatal_criticals
-sudo touch /etc/PackageKit/PackageKit.conf
+sudo touch /etc/packagekit/PackageKit.conf
 sudo valgrind --tool=callgrind --collect-systime=yes src/packagekitd \
     --config tests/PackageKit.conf \
     --disable-timer \

@@ -4,7 +4,7 @@ subdir('policy')
 
 install_data(
   'pk-upgrade-distro.sh',
-  install_dir: join_paths(get_option('datadir'), 'PackageKit'),
+  install_dir: join_paths(get_option('datadir'), 'packagekit'),
 )
 
 dbus_config_data = configuration_data()

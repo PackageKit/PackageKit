@@ -487,14 +487,7 @@ main (int argc, char *argv[])
 
 	/* get values from the config file */
 	conf = g_key_file_new ();
-	if (conf_filename == NULL)
-		conf_filename = pk_util_get_config_filename ();
-	if (conf_filename == NULL) {
-		g_print ("%s\n", _("Config file was not found."));
-		retval = EXIT_FAILURE;
-		goto out;
-	}
-	ret = g_key_file_load_from_file (conf, conf_filename, G_KEY_FILE_NONE, &error);
+	ret = pk_util_load_config (conf, conf_filename, &error);
 	if (!ret) {
 		/* TRANSLATORS: probably not yet installed */
 		g_print ("%s: %s\n", _("Failed to load the config file"), error->message);

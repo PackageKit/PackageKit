@@ -1451,8 +1451,8 @@ zypp_get_updates (PkBackendJob *job, ZYpp::Ptr zypp, set<PoolItem> &candidates)
 		}
 
 		bool hidePackages = false;
-		if (PathInfo("/etc/PackageKit/ZYpp.conf").isExist()) {
-			parser::IniDict vendorConf(InputStream("/etc/PackageKit/ZYpp.conf"));
+		if (PathInfo("/etc/packagekit/ZYpp.conf").isExist()) {
+			parser::IniDict vendorConf(InputStream("/etc/packagekit/ZYpp.conf"));
 			if (vendorConf.hasSection("Updates")) {
 				for ( parser::IniDict::entry_const_iterator eit = vendorConf.entriesBegin("Updates");
 				      eit != vendorConf.entriesEnd("Updates");

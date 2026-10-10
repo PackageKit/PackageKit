@@ -595,7 +595,7 @@ pk_cnf_get_config (void)
 
 	/* load file */
 	file = g_key_file_new ();
-	path = g_build_filename (SYSCONFDIR, "PackageKit", "CommandNotFound.conf", NULL);
+	path = g_build_filename (SYSCONFDIR, "packagekit", "CommandNotFound.conf", NULL);
 	ret = g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error);
 	if (!ret) {
 		g_printerr ("failed to load config file: %s\n", error->message);

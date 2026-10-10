@@ -35,7 +35,7 @@ def main():
         action='append',
         default=[],
         metavar='INSTALLED=SOURCE',
-        help='symlink INSTALLED (an installed path, e.g. /usr/share/PackageKit/helpers/x) '
+        help='symlink INSTALLED (an installed path, e.g. /usr/share/packagekit/helpers/x) '
         'inside the root to SOURCE',
     )
     parser.add_argument('modules', nargs='*', help='backend modules to link into the root')

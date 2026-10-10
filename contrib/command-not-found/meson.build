@@ -23,5 +23,5 @@ configure_file(
 
 install_data(
   'CommandNotFound.conf',
-  install_dir: join_paths(get_option('sysconfdir'), 'PackageKit'),
+  install_dir: join_paths(get_option('sysconfdir'), 'packagekit'),
 )

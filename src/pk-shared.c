@@ -341,18 +341,56 @@ pk_strlen (const gchar *text, guint len)
 	return i;
 }
 
-gchar *
-pk_util_get_config_filename (void)
+/**
+ * pk_util_load_config:
+ * @conf: the key file to fill
+ * @filename: (nullable): an explicit config file, or %NULL for the defaults
+ * @error: a #GError, or %NULL
+ *
+ * Loads the daemon configuration. Without an explicit @filename the vendor
+ * defaults from the data directory are read first and every key set in the
+ * system configuration directory overrides them.
+ *
+ * Returns: %TRUE on success
+ */
+gboolean
+pk_util_load_config (GKeyFile *conf, const gchar *filename, GError **error)
 {
-	gchar *path;
+	const gchar *dirs[] = { DATADIR "/packagekit", SYSCONFDIR "/packagekit", NULL };
 
-	path = g_build_filename (SYSCONFDIR, "PackageKit", "PackageKit.conf", NULL);
-	if (g_file_test (path, G_FILE_TEST_EXISTS))
-		return path;
+	if (filename != NULL)
+		return g_key_file_load_from_file (conf, filename, G_KEY_FILE_NONE, error);
 
-	g_warning ("config file not found '%s'", path);
-	g_free (path);
-	return NULL;
+	for (guint i = 0; dirs[i] != NULL; i++) {
+		g_autofree gchar *path = g_build_filename (dirs[i], "PackageKit.conf", NULL);
+		g_autoptr(GKeyFile) file = g_key_file_new ();
+		g_autoptr(GError) error_local = NULL;
+		g_auto(GStrv) groups = NULL;
+
+		if (!g_key_file_load_from_file (file, path, G_KEY_FILE_NONE, &error_local)) {
+			if (g_error_matches (error_local, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+				continue;
+			g_propagate_prefixed_error (error,
+						    g_steal_pointer (&error_local),
+						    "%s: ",
+						    path);
+			return FALSE;
+		}
+
+		g_debug ("loading config from %s", path);
+		groups = g_key_file_get_groups (file, NULL);
+		for (guint j = 0; groups[j] != NULL; j++) {
+			g_auto(GStrv) keys = g_key_file_get_keys (file, groups[j], NULL, NULL);
+			for (guint k = 0; keys[k] != NULL; k++) {
+				g_autofree gchar *value = g_key_file_get_value (file,
+										groups[j],
+										keys[k],
+										NULL);
+				g_key_file_set_value (conf, groups[j], keys[k], value);
+			}
+		}
+	}
+	return TRUE;
 }
 
 /**
