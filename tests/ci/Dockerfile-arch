@@ -1,0 +1,25 @@
+FROM docker.io/library/archlinux:latest
+
+RUN pacman -Syu --noconfirm
+RUN pacman -S --noconfirm --needed \
+	appstream \
+	base-devel \
+	bash-completion \
+	dbus \
+	docbook-xsl \
+	glib2-devel \
+	gobject-introspection \
+	gst-plugins-base \
+	gtk3 \
+	jansson \
+	libxslt \
+	meson \
+	pacman \
+	polkit \
+	python \
+	sqlite \
+	systemd \
+	vala
+
+RUN mkdir /build
+WORKDIR /build

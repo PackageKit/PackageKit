@@ -32,6 +32,11 @@ meson test -C build \
     -v \
     --print-errorlogs
 
+# The end-to-end suite only exists if the daemon tests are enabled
+case " $* " in
+  *" -Ddaemon_tests=false "*) exit 0 ;;
+esac
+
 # Run the end-to-end integration suite. It needs the D-Bus and polkit policy
 # installed to their system paths so the bus and polkitd honour them; the test
 # wrapper starts a private system bus and polkitd on demand (and tears them

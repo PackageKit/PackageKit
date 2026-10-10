@@ -17,12 +17,18 @@ jobs:
             backend: apt
           - distro: fedora
             backend: dnf5
-          - distro: fedora
+          - distro: arch
             backend: alpm
-          - distro: fedora
+          - distro: opensuse
             backend: zypp
           - distro: solus
             backend: eopkg
+          - distro: gentoo
+            backend: portage
+          - distro: nix
+            backend: nix
+            # the nixos/nix image has no system D-Bus or polkit setup
+            options: -Ddaemon_tests=false
       fail-fast: false
 
     steps:
@@ -40,8 +46,8 @@ jobs:
         run: podman build -t packagekit-${{ matrix.distro }} -f tests/ci/Dockerfile-${{ matrix.distro }} .
 
       - name: Build & Test
-        run: podman run -t -v `pwd`:/build packagekit-${{ matrix.distro }}
-             ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }}
+        run: podman run -t --privileged -v `pwd`:/build packagekit-${{ matrix.distro }}
+             ./tests/ci/build-and-test.sh -Dpackaging_backend=${{ matrix.backend }} ${{ matrix.options }}
 
   freebsd-build-test:
     name: FreeBSD (Build & Test)

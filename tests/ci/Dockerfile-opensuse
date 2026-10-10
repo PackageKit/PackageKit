@@ -1,0 +1,29 @@
+FROM registry.opensuse.org/opensuse/tumbleweed:latest
+
+RUN zypper -n dup
+RUN zypper -n install --no-recommends \
+	AppStream \
+	bash-completion-devel \
+	dbus-1-daemon \
+	docbook5-xsl-stylesheets \
+	gcc \
+	gcc-c++ \
+	gettext-tools \
+	glib2-devel \
+	gobject-introspection-devel \
+	gstreamer-devel \
+	gstreamer-plugins-base-devel \
+	gtk3-devel \
+	libjansson-devel \
+	libxslt-tools \
+	libzypp-devel \
+	meson \
+	polkit \
+	polkit-devel \
+	python3 \
+	sqlite3-devel \
+	systemd-devel \
+	vala
+
+RUN mkdir /build
+WORKDIR /build

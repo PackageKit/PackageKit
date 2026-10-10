@@ -28,5 +28,5 @@ jobs:
 
       - name: Build & Test
         continue-on-error: true  # ignore the ABI check as we change the ABI for PackageKit 2.0
-        run: podman run -t -v `pwd`:/build packagekit-debian
+        run: podman run -t --privileged -v `pwd`:/build packagekit-debian
              ./tests/ci/check-abi.sh -Dpackaging_backend=apt

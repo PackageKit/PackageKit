@@ -1,0 +1,24 @@
+FROM docker.io/gentoo/stage3:systemd
+
+RUN emerge-webrsync -q
+RUN emerge -q --getbinpkg --jobs 4 \
+	app-shells/bash-completion \
+	app-text/docbook-xsl-ns-stylesheets \
+	dev-build/meson \
+	dev-db/sqlite \
+	dev-lang/vala \
+	dev-libs/glib \
+	dev-libs/gobject-introspection \
+	dev-libs/jansson \
+	dev-libs/libxslt \
+	dev-util/glib-utils \
+	media-libs/gst-plugins-base \
+	sys-apps/dbus \
+	sys-auth/polkit \
+	x11-libs/gtk+:3
+
+# Gentoo only installs versioned Vala binaries
+RUN ln -s valac-0.56 /usr/bin/valac && ln -s vapigen-0.56 /usr/bin/vapigen
+
+RUN mkdir /build
+WORKDIR /build

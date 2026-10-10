@@ -1,0 +1,36 @@
+FROM docker.io/nixos/nix:latest
+
+RUN nix-channel --update
+
+RUN mkdir /build
+WORKDIR /build
+
+# Nix has no global install location for libraries, so collect the build
+# dependencies in a nix-shell and save its environment for the entrypoint
+RUN nix-shell -p \
+	appstream \
+	bash-completion \
+	boost \
+	dbus \
+	docbook_xsl_ns \
+	gettext \
+	glib \
+	gobject-introspection \
+	gst_all_1.gst-plugins-base \
+	gst_all_1.gstreamer \
+	gtk3 \
+	jansson \
+	libxslt \
+	meson \
+	ninja \
+	nix \
+	nlohmann_json \
+	pkg-config \
+	polkit \
+	python3 \
+	sqlite \
+	systemd \
+	vala \
+	--run 'unset TMPDIR TMP TEMP TEMPDIR NIX_BUILD_TOP; export -p > /etc/ci-env'
+
+ENTRYPOINT ["/bin/sh", "-c", ". /etc/ci-env && exec \"$@\"", "--"]
