@@ -32,6 +32,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <pk-common.h>
+
 #include "pk-shared.h"
 
 #ifdef linux
@@ -159,7 +161,7 @@ pk_load_introspection (const gchar *filename, GError **error)
 	g_autofree gchar *path = NULL;
 
 	/* lookup data */
-	path = g_build_filename ("/org/freedesktop/PackageKit", filename, NULL);
+	path = g_build_filename (PK_DBUS_PATH, filename, NULL);
 	data = g_resource_lookup_data (pk_get_resource (),
 				       path,
 				       G_RESOURCE_LOOKUP_FLAGS_NONE,

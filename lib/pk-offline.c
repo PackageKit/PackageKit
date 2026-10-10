@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "pk-common.h"
 #include "pk-offline.h"
 #include "pk-offline-private.h"
 
@@ -277,9 +278,9 @@ pk_offline_cancel_with_flags (PkOfflineFlags flags, GCancellable *cancellable, G
 	if (connection == NULL)
 		return FALSE;
 	res = g_dbus_connection_call_sync (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Offline",
+					   PK_DBUS_SERVICE,
+					   PK_DBUS_PATH,
+					   PK_DBUS_INTERFACE_OFFLINE,
 					   "Cancel",
 					   NULL,
 					   NULL,
@@ -341,9 +342,9 @@ pk_offline_clear_results_with_flags (PkOfflineFlags flags,
 	if (connection == NULL)
 		return FALSE;
 	res = g_dbus_connection_call_sync (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Offline",
+					   PK_DBUS_SERVICE,
+					   PK_DBUS_PATH,
+					   PK_DBUS_INTERFACE_OFFLINE,
 					   "ClearResults",
 					   NULL,
 					   NULL,
@@ -411,9 +412,9 @@ pk_offline_trigger_with_flags (PkOfflineAction action,
 		return FALSE;
 	tmp = pk_offline_action_to_string (action);
 	res = g_dbus_connection_call_sync (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Offline",
+					   PK_DBUS_SERVICE,
+					   PK_DBUS_PATH,
+					   PK_DBUS_INTERFACE_OFFLINE,
 					   "Trigger",
 					   g_variant_new ("(s)", tmp),
 					   NULL,
@@ -481,9 +482,9 @@ pk_offline_trigger_upgrade_with_flags (PkOfflineAction action,
 		return FALSE;
 	tmp = pk_offline_action_to_string (action);
 	res = g_dbus_connection_call_sync (connection,
-					   "org.freedesktop.PackageKit",
-					   "/org/freedesktop/PackageKit",
-					   "org.freedesktop.PackageKit.Offline",
+					   PK_DBUS_SERVICE,
+					   PK_DBUS_PATH,
+					   PK_DBUS_INTERFACE_OFFLINE,
 					   "TriggerUpgrade",
 					   g_variant_new ("(s)", tmp),
 					   NULL,

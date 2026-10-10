@@ -1,16 +1,16 @@
 <!DOCTYPE node PUBLIC
 "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
-  <!ENTITY ERROR_GENERAL "org.freedesktop.PackageKit.Denied">
+  <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit1.Denied">
 ]>
 <node name="/">
   <!--
-    org.freedesktop.PackageKit.Transaction:
+    org.freedesktop.packagekit1.Transaction:
 
     The transaction interface is used for interacting with individual
     transactions.
   -->
-  <interface name="org.freedesktop.PackageKit.Transaction">
+  <interface name="org.freedesktop.packagekit1.Transaction">
 
     <!--*********************************************************************-->
     <!--

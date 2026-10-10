@@ -28,6 +28,8 @@
 #include <systemd/sd-login.h>
 #endif
 
+#include <pk-common.h>
+
 #include "pk-dbus.h"
 
 struct _PkDbus
@@ -58,7 +60,7 @@ pk_dbus_get_uid_pid (PkDbus *dbus, const gchar *sender, guint32 *uid, guint32 *p
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
 	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+	if (g_strcmp0 (sender, ":" PK_DBUS_SERVICE) == 0) {
 		g_debug ("using self-check shortcut");
 		if (uid != NULL)
 			*uid = 500;
@@ -129,7 +131,7 @@ pk_dbus_get_uid (PkDbus *dbus, const gchar *sender)
 		return G_MAXUINT;
 
 	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+	if (g_strcmp0 (sender, ":" PK_DBUS_SERVICE) == 0) {
 		g_debug ("using self-check shortcut");
 		return 500;
 	}
@@ -168,7 +170,7 @@ pk_dbus_get_pid (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (sender != NULL, G_MAXUINT);
 
 	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+	if (g_strcmp0 (sender, ":" PK_DBUS_SERVICE) == 0) {
 		g_debug ("using self-check shortcut");
 		return G_MAXUINT - 1;
 	}
@@ -244,7 +246,7 @@ pk_dbus_get_session (PkDbus *dbus, const gchar *sender)
 	g_return_val_if_fail (sender != NULL, NULL);
 
 	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+	if (g_strcmp0 (sender, ":" PK_DBUS_SERVICE) == 0) {
 		g_debug ("using self-check shortcut");
 		session = g_strdup ("xxx");
 		goto out;

@@ -2128,7 +2128,7 @@ pk_transaction_set_sender (PkTransaction *transaction, const gchar *sender)
 	}
 
 	/* set in the test suite */
-	if (g_strcmp0 (sender, ":org.freedesktop.PackageKit") == 0) {
+	if (g_strcmp0 (sender, ":" PK_DBUS_SERVICE) == 0) {
 		g_debug ("using self-check shortcut");
 		transaction->cmdline = g_strdup ("/usr/sbin/packagekit");
 	}
@@ -5150,7 +5150,7 @@ pk_transaction_set_tid (PkTransaction *transaction, const gchar *tid)
 
 	transaction->tid = g_strdup (tid);
 
-	/* register org.freedesktop.PackageKit.Transaction */
+	/* register org.freedesktop.packagekit1.Transaction */
 	transaction->connection = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, NULL);
 	g_assert (transaction->connection != NULL);
 	transaction->registration_id = g_dbus_connection_register_object (

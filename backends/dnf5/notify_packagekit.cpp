@@ -56,11 +56,11 @@ struct NotifyPackagekitData {
 
 		try {
 #if SDBUSCPP_VERSION_MAJOR >= 2
-			auto serviceName = sdbus::ServiceName{"org.freedesktop.PackageKit"};
-			auto objectPath = sdbus::ObjectPath{"/org/freedesktop/PackageKit"};
+			auto serviceName = sdbus::ServiceName{"org.freedesktop.packagekit1"};
+			auto objectPath = sdbus::ObjectPath{"/org/freedesktop/packagekit1"};
 #else
-			auto serviceName = "org.freedesktop.PackageKit"s;
-			auto objectPath = "/org/freedesktop/PackageKit"s;
+			auto serviceName = "org.freedesktop.packagekit1"s;
+			auto objectPath = "/org/freedesktop/packagekit1"s;
 #endif
 
 			connection = sdbus::createSystemBusConnection();
@@ -86,10 +86,10 @@ struct NotifyPackagekitData {
 
 		try {
 #if SDBUSCPP_VERSION_MAJOR >= 2
-			auto interfaceName = sdbus::InterfaceName{"org.freedesktop.PackageKit"};
+			auto interfaceName = sdbus::InterfaceName{"org.freedesktop.packagekit1"};
 			auto methodName = sdbus::MethodName{"StateHasChanged"};
 #else
-			auto interfaceName = "org.freedesktop.PackageKit"s;
+			auto interfaceName = "org.freedesktop.packagekit1"s;
 			auto methodName = "StateHasChanged"s;
 #endif
 

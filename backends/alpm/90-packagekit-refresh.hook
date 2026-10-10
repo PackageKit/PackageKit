@@ -8,4 +8,4 @@ Target = *
 [Action]
 Description = Refreshing PackageKit...
 When = PostTransaction
-Exec = /bin/sh -c 'gdbus call --system --timeout 30 --dest org.freedesktop.PackageKit --object-path /org/freedesktop/PackageKit --method org.freedesktop.PackageKit.StateHasChanged posttrans > /dev/null'
+Exec = /bin/sh -c 'gdbus call --system --timeout 30 --dest org.freedesktop.packagekit1 --object-path /org/freedesktop/packagekit1 --method org.freedesktop.packagekit1.StateHasChanged posttrans > /dev/null'

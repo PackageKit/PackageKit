@@ -3,13 +3,13 @@
 packagekit_dbus_md = custom_target(
     'dbus-docs',
     input: [
-        join_paths(source_root, 'src', 'org.freedesktop.PackageKit.xml'),
-        join_paths(source_root, 'src', 'org.freedesktop.PackageKit.Transaction.xml'),
+        join_paths(source_root, 'src', 'org.freedesktop.packagekit1.xml'),
+        join_paths(source_root, 'src', 'org.freedesktop.packagekit1.Transaction.xml'),
     ],
     output: [
-        'dbus-org.freedesktop.PackageKit.md',
-        'dbus-org.freedesktop.PackageKit.Offline.md',
-        'dbus-org.freedesktop.PackageKit.Transaction.md',
+        'dbus-org.freedesktop.packagekit1.md',
+        'dbus-org.freedesktop.packagekit1.Offline.md',
+        'dbus-org.freedesktop.packagekit1.Transaction.md',
     ],
     command: [
         find_program('gdbus-codegen'),

@@ -8,6 +8,6 @@ Wants=network-online.target
 
 [Service]
 Type=dbus
-BusName=org.freedesktop.PackageKit
+BusName=org.freedesktop.packagekit1
 User=@PACKAGEKIT_USER@
 ExecStart=@libexecdir@/packagekitd

@@ -36,35 +36,35 @@ G_BEGIN_DECLS
  *
  * The well-known name for the PackageKit system D-Bus service.
  */
-#define PK_DBUS_SERVICE "org.freedesktop.PackageKit"
+#define PK_DBUS_SERVICE "org.freedesktop.packagekit1"
 
 /**
  * PK_DBUS_PATH:
  *
  * The path to the main PackageKit service D-Bus object.
  */
-#define PK_DBUS_PATH "/org/freedesktop/PackageKit"
+#define PK_DBUS_PATH "/org/freedesktop/packagekit1"
 
 /**
  * PK_DBUS_INTERFACE:
  *
  * The D-Bus interface used by the PackageKit service.
  */
-#define PK_DBUS_INTERFACE "org.freedesktop.PackageKit"
+#define PK_DBUS_INTERFACE "org.freedesktop.packagekit1"
 
 /**
  * PK_DBUS_INTERFACE_TRANSACTION:
  *
  * The D-Bus interface for PackageKit transactions.
  */
-#define PK_DBUS_INTERFACE_TRANSACTION "org.freedesktop.PackageKit.Transaction"
+#define PK_DBUS_INTERFACE_TRANSACTION "org.freedesktop.packagekit1.Transaction"
 
 /**
  * PK_DBUS_INTERFACE_OFFLINE:
  *
  * The D-Bus interface for PackageKit offline update functionality
  */
-#define PK_DBUS_INTERFACE_OFFLINE "org.freedesktop.PackageKit.Offline"
+#define PK_DBUS_INTERFACE_OFFLINE "org.freedesktop.packagekit1.Offline"
 
 /**
  * PK_PACKAGE_LIST_FILENAME:

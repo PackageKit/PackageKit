@@ -34,9 +34,9 @@ content_files = [
   "provides-component-naming.md",
   "setting-the-proxy.md",
   "security.md",
-  "dbus-org.freedesktop.PackageKit.md",
-  "dbus-org.freedesktop.PackageKit.Transaction.md",
-  "dbus-org.freedesktop.PackageKit.Offline.md",
+  "dbus-org.freedesktop.packagekit1.md",
+  "dbus-org.freedesktop.packagekit1.Transaction.md",
+  "dbus-org.freedesktop.packagekit1.Offline.md",
 ]
 content_images = [
   "pk-structure.png",

@@ -1936,7 +1936,7 @@ pk_engine_on_bus_acquired_cb (GDBusConnection *connection, const gchar *name, gp
 			  pk_engine_proxy_logind_cb,
 			  engine);
 
-	/* register org.freedesktop.PackageKit */
+	/* register org.freedesktop.packagekit1 */
 	registration_id = g_dbus_connection_register_object (connection,
 							     PK_DBUS_PATH,
 							     engine->introspection->interfaces[0],

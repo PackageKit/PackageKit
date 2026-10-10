@@ -21,7 +21,7 @@ state it writes ends up in a temporary directory that is removed afterwards
 and neither the host system nor the build tree is touched.
 
 Prerequisites:
-  * /usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf  (D-Bus policy)
+  * /usr/share/dbus-1/system.d/org.freedesktop.packagekit1.conf  (D-Bus policy)
   * /usr/share/polkit-1/actions/org.freedesktop.packagekit.policy  (polkit actions)
   * run as the configured PackageKit user (root by default)
 
@@ -52,8 +52,8 @@ from utils import (
 # meson interprets this exit code as "test skipped"
 EXIT_SKIP = 77
 
-PK_BUS_NAME = 'org.freedesktop.PackageKit'
-DBUS_CONF = '/usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf'
+PK_BUS_NAME = 'org.freedesktop.packagekit1'
+DBUS_CONF = '/usr/share/dbus-1/system.d/org.freedesktop.packagekit1.conf'
 POLKIT_POLICY = '/usr/share/polkit-1/actions/org.freedesktop.packagekit.policy'
 
 
@@ -63,7 +63,7 @@ def check_prerequisites():
     if not os.path.exists(DBUS_CONF):
         reasons.append(
             'Missing D-Bus policy {!r}. Install it with:\n'
-            '    sudo cp <builddir>/data/org.freedesktop.PackageKit.conf '
+            '    sudo cp <builddir>/data/org.freedesktop.packagekit1.conf '
             '/usr/share/dbus-1/system.d/'.format(DBUS_CONF)
         )
     if not os.path.exists(POLKIT_POLICY):

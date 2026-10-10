@@ -1203,7 +1203,7 @@ pk_test_scheduler_create_transaction (PkScheduler *tlist)
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create PkTransaction instance */
-	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	ret = pk_scheduler_create (tlist, tid, ":" PK_DBUS_SERVICE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -1590,7 +1590,7 @@ pk_test_scheduler_func (void)
 	g_assert_true (tid != NULL);
 
 	/* create a transaction object */
-	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	ret = pk_scheduler_create (tlist, tid, ":" PK_DBUS_SERVICE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 
@@ -1610,7 +1610,7 @@ pk_test_scheduler_func (void)
 	g_strfreev (array);
 
 	/* add again the same tid (should fail) */
-	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	ret = pk_scheduler_create (tlist, tid, ":" PK_DBUS_SERVICE, &error);
 	g_assert_error (error, 1, 0);
 	g_assert_true (!ret);
 	g_clear_error (&error);
@@ -1628,7 +1628,7 @@ pk_test_scheduler_func (void)
 	tid = pk_transaction_db_generate_id (db);
 
 	/* create another transaction */
-	ret = pk_scheduler_create (tlist, tid, ":org.freedesktop.PackageKit", &error);
+	ret = pk_scheduler_create (tlist, tid, ":" PK_DBUS_SERVICE, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
 

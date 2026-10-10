@@ -560,8 +560,8 @@ pk_client_fixup_dbus_error (GError *error)
 	/* parse the remote error */
 	name = g_dbus_error_get_remote_error (error);
 	g_dbus_error_strip_remote_error (error);
-	if (g_str_has_prefix (name, "org.freedesktop.PackageKit.Transaction."))
-		name_suffix = &name[39];
+	if (g_str_has_prefix (name, PK_DBUS_INTERFACE_TRANSACTION "."))
+		name_suffix = name + strlen (PK_DBUS_INTERFACE_TRANSACTION ".");
 	if (g_strcmp0 (name_suffix, "Denied") == 0 ||
 	    g_strcmp0 (name_suffix, "RefusedByPolicy") == 0) {
 		error->code = PK_CLIENT_ERROR_FAILED_AUTH;
@@ -2210,7 +2210,7 @@ pk_client_create_helper_socket (PkClientState *state)
 	state->client_helper = pk_client_helper_new ();
 
 	/* create socket to read from /tmp */
-	socket_id = g_strdup_printf ("gpk-%s.socket", &state->tid[1]);
+	socket_id = g_strdup_printf ("gpk-%s.socket", strrchr (state->tid, '/') + 1);
 	socket_filename = g_build_filename (g_get_tmp_dir (), socket_id, NULL);
 
 	/* start the helper process */

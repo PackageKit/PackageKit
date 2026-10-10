@@ -1466,7 +1466,7 @@ pk_control_can_authorize_proxy_cb (GObject *source_object, GAsyncResult *res, gp
 /**
  * pk_control_can_authorize_async:
  * @control: a valid #PkControl instance
- * @action_id: The action ID, for instance "org.freedesktop.PackageKit.install-untrusted"
+ * @action_id: The action ID, for instance "org.freedesktop.packagekit.install-untrusted"
  * @cancellable: a #GCancellable or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback

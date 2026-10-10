@@ -97,7 +97,7 @@ if get_option('python_backend')
 endif
 
 install_data(
-  'org.freedesktop.PackageKit.xml',
-  'org.freedesktop.PackageKit.Transaction.xml',
+  'org.freedesktop.packagekit1.xml',
+  'org.freedesktop.packagekit1.Transaction.xml',
   install_dir: join_paths(get_option('datadir'), 'dbus-1', 'interfaces')
 )

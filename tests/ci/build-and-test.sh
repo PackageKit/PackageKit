@@ -37,8 +37,8 @@ meson test -C build \
 # wrapper starts a private system bus and polkitd on demand (and tears them
 # down) if none are running. It runs as root so packagekitd can own its name.
 BUILD_DATA_DIR=build/data
-install -Dm644 $BUILD_DATA_DIR/org.freedesktop.PackageKit.conf \
-    /usr/share/dbus-1/system.d/org.freedesktop.PackageKit.conf
+install -Dm644 $BUILD_DATA_DIR/org.freedesktop.packagekit1.conf \
+    /usr/share/dbus-1/system.d/org.freedesktop.packagekit1.conf
 install -Dm644 $BUILD_DATA_DIR/policy/org.freedesktop.packagekit.policy \
     /usr/share/polkit-1/actions/org.freedesktop.packagekit.policy
 install -Dm644 data/policy/org.freedesktop.packagekit.rules \

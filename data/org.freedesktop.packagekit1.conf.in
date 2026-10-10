@@ -10,22 +10,22 @@
 
   <!-- Only user @PACKAGEKIT_USER@ can own the PackageKit service -->
   <policy user="@PACKAGEKIT_USER@">
-    <allow own="org.freedesktop.PackageKit"/>
+    <allow own="org.freedesktop.packagekit1"/>
   </policy>
 
  <!-- Allow anyone to call into the service - we'll reject callers using PolicyKit -->
   <policy context="default">
-    <allow send_destination="org.freedesktop.PackageKit"
-           send_interface="org.freedesktop.PackageKit"/>
-    <allow send_destination="org.freedesktop.PackageKit"
-           send_interface="org.freedesktop.PackageKit.Transaction"/>
-    <allow send_destination="org.freedesktop.PackageKit"
-           send_interface="org.freedesktop.PackageKit.Offline"/>
-    <allow send_destination="org.freedesktop.PackageKit"
+    <allow send_destination="org.freedesktop.packagekit1"
+           send_interface="org.freedesktop.packagekit1"/>
+    <allow send_destination="org.freedesktop.packagekit1"
+           send_interface="org.freedesktop.packagekit1.Transaction"/>
+    <allow send_destination="org.freedesktop.packagekit1"
+           send_interface="org.freedesktop.packagekit1.Offline"/>
+    <allow send_destination="org.freedesktop.packagekit1"
            send_interface="org.freedesktop.DBus.Properties"/>
-    <allow send_destination="org.freedesktop.PackageKit"
+    <allow send_destination="org.freedesktop.packagekit1"
            send_interface="org.freedesktop.DBus.Introspectable"/>
-    <allow send_destination="org.freedesktop.PackageKit"
+    <allow send_destination="org.freedesktop.packagekit1"
            send_interface="org.freedesktop.DBus.Peer"/>
   </policy>
 

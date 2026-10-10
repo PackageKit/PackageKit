@@ -448,12 +448,12 @@ PackageKit does not ask the user questions when the transaction is running.
 It also supports a fire-and-forget method invocation, which means that transactions will
 have one calling method, and have many signals going back to the caller.
 
-Each transaction is a new path on the `org.freedesktop.PackageKit`
+Each transaction is a new path on the `org.freedesktop.packagekit1`
 service, and to create a path you have to call `CreateTransaction` on the base
 interface which creates the new D-Bus path, and returns the new path for you to connect to.
 In the libpackagekit binding, `PkControl` handles the base interface,
 whilst `PkClient` handles all the transaction interface stuff.
-The `org.freedesktop.PackageKit.Transaction` interface can be used
+The `org.freedesktop.packagekit1.Transaction` interface can be used
 on the newly created path, but only used once.
 New methods require a new transaction path (i.e. another call to `CreateTransaction`)
 which is synchronous and thus very fast.

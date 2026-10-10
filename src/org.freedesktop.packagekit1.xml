@@ -1,15 +1,15 @@
 <!DOCTYPE node PUBLIC
 "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
-  <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit.Denied">
+  <!ENTITY ERROR_GENERAL "org.freedesktop.packagekit1.Denied">
 ]>
 <node name="/">
   <!--
-    org.freedesktop.PackageKit:
+    org.freedesktop.packagekit1:
 
     The root interface is used for interacting with the daemon.
   -->
-  <interface name="org.freedesktop.PackageKit">
+  <interface name="org.freedesktop.packagekit1">
 
     <!--*********************************************************************-->
     <!--
@@ -321,11 +321,11 @@
 
   <!--*********************************************************************-->
   <!--
-    org.freedesktop.PackageKit.Offline:
+    org.freedesktop.packagekit1.Offline:
 
     The interface used for interacting with offline actions.
   -->
-  <interface name="org.freedesktop.PackageKit.Offline">
+  <interface name="org.freedesktop.packagekit1.Offline">
 
     <!--*********************************************************************-->
     <!--

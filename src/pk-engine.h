@@ -22,10 +22,7 @@
 #define __PK_ENGINE_H
 
 #include <glib-object.h>
-
-#define PK_DBUS_SERVICE	  "org.freedesktop.PackageKit"
-#define PK_DBUS_PATH	  "/org/freedesktop/PackageKit"
-#define PK_DBUS_INTERFACE "org.freedesktop.PackageKit"
+#include <pk-common.h>
 
 G_BEGIN_DECLS
 

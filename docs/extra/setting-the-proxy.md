@@ -6,7 +6,7 @@ packages can be downloaded when on a corporate or managed network.
 The session proxy is read by a session process that is started at login time,
 and then relayed to PackageKit. In GNOME, this is done by gnome-software, which
 reads the settings from GSettings, and executes SetProxy on
-org.freedesktop.PackageKit.
+org.freedesktop.packagekit1.
 
 Note: this method is on the main interface, not a transaction interface. The
 rationale for this is that every client using PackageKit should not have to
