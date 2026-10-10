@@ -32,7 +32,6 @@ INCLUDE_LOCATIONS = [
     'data',
     'docs',
     'lib',
-    'python',
     'src',
     'tests',
 ]
