@@ -335,7 +335,7 @@ struct RemoveResolvableReportReceiver : public zypp::callback::ReceiveReport<zyp
 
 	virtual void finish (zypp::Resolvable::constPtr resolvable, Error error, const std::string &reason) {
 		if (_package_id != NULL) {
-			pk_backend_job_package_status (_job, _package_id, PK_INFO_ENUM_FINISHED);
+			pk_backend_job_set_item_progress (_job, _package_id, PK_STATUS_ENUM_FINISHED, 100);
 			clear_package_id ();
 		}
 	}
@@ -1539,14 +1539,14 @@ zypp_backend_pool_item_notify (PkBackendJob  *job,
 
 	if (item.status ().isToBeUninstalledDueToUpgrade ()) {
 		MIL << "updating " << item << endl;
-		status = PK_INFO_ENUM_UPDATING;
+		status = PK_INFO_ENUM_UPDATE;
 	} else if (item.status ().isToBeUninstalledDueToObsolete ()) {
-		status = PK_INFO_ENUM_OBSOLETING;
+		status = PK_INFO_ENUM_OBSOLETE;
 	} else if (item.status ().isToBeInstalled ()) {
 		MIL << "installing " << item << endl;
-		status = PK_INFO_ENUM_INSTALLING;
+		status = PK_INFO_ENUM_INSTALL;
 	} else if (item.status ().isToBeUninstalled ()) {
-		status = PK_INFO_ENUM_REMOVING;
+		status = PK_INFO_ENUM_REMOVE;
 
 		const string &name = item.satSolvable().name();
 		if (name == "glibc" || name == "PackageKit" ||
@@ -2064,12 +2064,14 @@ backend_required_by_thread (PkBackendJob *job, GVariant *params, gpointer user_d
 		}
 
 		// look for packages which would be uninstalled
-		bool error = false;
 		for (ResPool::byKind_iterator it = pool.byKindBegin (ResKind::package);
 				it != pool.byKindEnd (ResKind::package); ++it) {
 
-			if (!error && !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
-				error = !zypp_backend_pool_item_notify (job, packages, *it);
+			if (it->status ().isToBeUninstalled () &&
+			    !zypp_filter_solvable (_filters, it->resolvable()->satSolvable()))
+				zypp_backend_stage_package (packages, PK_INFO_ENUM_INSTALLED,
+							    it->resolvable()->satSolvable(),
+							    it->resolvable ()->summary ().c_str ());
 		}
 
 		solver.setForceResolve (false);
