@@ -782,8 +782,10 @@ Dnf5DownloadCallbacks::progress(void *user_cb_data, double total_to_download, do
 
 	// only registered packages count towards the download size
 	if (package_ids.empty() || !item.package_id.empty()) {
-		downloaded_size += downloaded - item.downloaded;
-		transferred_size += downloaded - item.downloaded;
+		double delta = downloaded - item.downloaded;
+		downloaded_size += delta;
+		// A retry resets progress without undoing bytes already transferred.
+		transferred_size += delta >= 0 ? delta : downloaded;
 	}
 
 	// the second stage of a repository metadata download
