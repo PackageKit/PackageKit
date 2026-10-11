@@ -250,6 +250,33 @@ dnf5_test_download_speed(void)
 }
 
 static void
+dnf5_test_download_speed_retry(void)
+{
+	dnf5_test_job.reset();
+	Dnf5DownloadCallbacks cb(test_job);
+	cb.add_package(FOO_NEVRA, FOO_ID, 1000);
+	void *foo = cb.add_new_download(nullptr, FOO_NEVRA, 1000);
+
+	cb.progress(foo, 1000, 800);
+	g_assert_cmpuint(dnf5_test_job.download_size_remaining.back(), ==, 200);
+
+	// A retry resets package progress, but its bytes still count towards speed.
+	g_usleep(G_USEC_PER_SEC + G_USEC_PER_SEC / 10);
+	cb.progress(foo, 1000, 100);
+	g_assert_cmpuint(dnf5_test_job.download_size_remaining.back(), ==, 900);
+	g_assert_cmpuint(dnf5_test_job.speeds.size(), ==, 1);
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), >, 0);
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), <=, 100);
+
+	g_usleep(G_USEC_PER_SEC + G_USEC_PER_SEC / 10);
+	cb.progress(foo, 1000, 300);
+	g_assert_cmpuint(dnf5_test_job.download_size_remaining.back(), ==, 700);
+	g_assert_cmpuint(dnf5_test_job.speeds.size(), ==, 2);
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), >, 0);
+	g_assert_cmpuint(dnf5_test_job.speeds.back(), <=, 200);
+}
+
+static void
 dnf5_test_download_speed_starts_with_data(void)
 {
 	dnf5_test_job.reset();
@@ -568,6 +595,7 @@ main(int argc, char **argv)
 	g_test_add_func("/dnf5/download/metadata-failed", dnf5_test_download_metadata_failed);
 	g_test_add_func("/dnf5/download/metadata-unknown-size", dnf5_test_download_metadata_unknown_size);
 	g_test_add_func("/dnf5/download/speed", dnf5_test_download_speed);
+	g_test_add_func("/dnf5/download/speed-retry", dnf5_test_download_speed_retry);
 	g_test_add_func("/dnf5/download/speed-starts-with-data", dnf5_test_download_speed_starts_with_data);
 	g_test_add_func("/dnf5/download/speed-ignores-existing", dnf5_test_download_speed_ignores_existing);
 	g_test_add_func("/dnf5/transaction/phases", dnf5_test_transaction_phases);
