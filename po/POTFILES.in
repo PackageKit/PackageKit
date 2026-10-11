@@ -1,5 +1,6 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+client/pk-offline-update.c
 client/pkgc-context.c
 client/pkgc-manage.c
 client/pkgc-monitor.c
@@ -7,9 +8,6 @@ client/pkgc-query.c
 client/pkgc-repo.c
 client/pkgc-util.c
 client/pkgcli.c
-client/pkcon/pk-console.c
-client/pkcon/pk-monitor.c
-client/pk-offline-update.c
 contrib/command-not-found/pk-command-not-found.c
 data/policy/org.freedesktop.packagekit.policy.in
 lib/pk-console-private.c
