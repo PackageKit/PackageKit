@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
-"POT-Creation-Date: 2026-09-23 18:22+0200\n"
+"POT-Creation-Date: 2026-10-10 10:05+0200\n"
 "PO-Revision-Date: 2026-09-27 21:51+0000\n"
 "Last-Translator: Baurzhan Muftakhidinov <baurthefirst@gmail.com>\n"
 "Language-Team: Kazakh <https://hosted.weblate.org/projects/packagekit/translations/kk/>\n"
@@ -20,707 +20,53 @@ msgstr ""
 "X-Generator: Weblate 2026.10.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
-#: client/pk-offline-update.c:166
+#: client/pk-offline-update.c:165
 #, c-format
 msgid "%i%%"
 msgstr "%i%%"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing system upgrades
-#: client/pk-offline-update.c:172
+#: client/pk-offline-update.c:171
 msgid "Installing System Upgrade"
 msgstr "Жүйе жаңғыртуын орнату"
 
 #. TRANSLATORS: this is the message we send plymouth to
 #. * advise of the new percentage completion when installing updates
-#: client/pk-offline-update.c:176
+#: client/pk-offline-update.c:175
 msgid "Installing Updates"
 msgstr "Жаңартуларды орнату"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:207
+#: client/pk-offline-update.c:206
 msgid "Rebooting after installing updates…"
 msgstr "Жаңартуларды орнатқаннан кейін қайта жүктелуде…"
 
 #. TRANSLATORS: we've finished doing offline updates
-#: client/pk-offline-update.c:246
+#: client/pk-offline-update.c:245
 msgid "Shutting down after installing updates…"
 msgstr "Жаңартуларды орнатқаннан кейін сөндірілуде…"
 
 #. TRANSLATORS: we've started doing offline updates
-#: client/pk-offline-update.c:392
+#: client/pk-offline-update.c:391
 msgid "Installing updates; this could take a while..."
 msgstr "Жаңартулар орнатылуда; бұл біраз уақыт алуы мүмкін..."
 
 #. TRANSLATORS: we've started doing offline system upgrade
-#: client/pk-offline-update.c:430
+#: client/pk-offline-update.c:429
 msgid "Installing system upgrade; this could take a while..."
 msgstr "Жүйе жаңғыртуы орнатылуда; бұл біраз уақыт алуы мүмкін..."
 
-#. TRANSLATORS: this is an atomic transaction
-#. TRANSLATORS: the role is the point of the transaction,
-#. * e.g. update-packages
-#: client/pkcon/pk-console.c:173 client/pkcon/pk-console.c:603
-msgid "Transaction"
-msgstr "Транзакция"
-
-#. TRANSLATORS: this is the time the transaction was started in system timezone
-#: client/pkcon/pk-console.c:175
-msgid "System time"
-msgstr "Жүйелік уақыт"
-
-#: client/pkcon/pk-console.c:177 client/pkgc-util.c:1014
-msgid "False"
-msgstr "Жалған"
-
-#. TRANSLATORS: this is if the transaction succeeded or not
-#: client/pkcon/pk-console.c:177
-msgid "Succeeded"
-msgstr "Сәтті аяқталды"
-
-#: client/pkcon/pk-console.c:177 client/pkgc-util.c:1013
-msgid "True"
-msgstr "Ақиқат"
-
-#. TRANSLATORS: this is the transactions role, e.g. "update-packages"
-#: client/pkcon/pk-console.c:179
-msgid "Role"
-msgstr "Роль"
-
-#: client/pkcon/pk-console.c:184
-msgid "(seconds)"
-msgstr "(секунд)"
-
-#. TRANSLATORS: this is The duration of the transaction
-#: client/pkcon/pk-console.c:184
-msgid "Duration"
-msgstr "Ұзақтығы"
-
-#. TRANSLATORS: this is The command line used to do the action
-#: client/pkcon/pk-console.c:188
-msgid "Command line"
-msgstr "Командалық жол"
-
-#. TRANSLATORS: this is the user ID of the user that started the action
-#: client/pkcon/pk-console.c:190
-msgid "User ID"
-msgstr "Пайдаланушы ID-і"
-
-#. TRANSLATORS: this is the username, e.g. hughsie
-#: client/pkcon/pk-console.c:197
-msgid "Username"
-msgstr "Пайдаланушы аты"
-
-#. TRANSLATORS: this is the users real name, e.g. "Richard Hughes"
-#: client/pkcon/pk-console.c:201
-msgid "Real name"
-msgstr "Нақты аты"
-
-#. TRANSLATORS: Label for affected packages in transaction
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:209 client/pkgc-util.c:1064
-#: client/pkgc-util.c:1082
-msgid "Affected packages:"
-msgstr "Әсер еткен дестелер:"
-
-#. TRANSLATORS: these are packages touched by the transaction
-#: client/pkcon/pk-console.c:212
-msgid "Affected packages: None"
-msgstr "Әсер еткен дестелер: Ешқандай"
-
-#. TRANSLATORS: this is the distro, e.g. Fedora 10
-#: client/pkcon/pk-console.c:234
-msgid "Distribution"
-msgstr "Дистрибутив"
-
-#. TRANSLATORS: this is type of update, stable or testing
-#: client/pkcon/pk-console.c:236
-msgid "Type"
-msgstr "Түрі"
-
-#. TRANSLATORS: this is any summary text describing the upgrade
-#. TRANSLATORS: this is the summary of the group
-#: client/pkcon/pk-console.c:238 client/pkcon/pk-console.c:276
-msgid "Summary"
-msgstr "Жиынтық"
-
-#. TRANSLATORS: this is the group category name
-#: client/pkcon/pk-console.c:265
-msgid "Category"
-msgstr "Санат"
-
-#. TRANSLATORS: this is group identifier
-#: client/pkcon/pk-console.c:267
-msgid "ID"
-msgstr "ID"
-
-#. TRANSLATORS: this is the parent group
-#: client/pkcon/pk-console.c:270
-msgid "Parent"
-msgstr "Аталық"
-
-#. TRANSLATORS: this is the name of the parent group
-#. TRANSLATORS: this is the name of the backend
-#: client/pkcon/pk-console.c:273 client/pkcon/pk-console.c:2482
-msgid "Name"
-msgstr "Аты"
-
-#. TRANSLATORS: this is preferred icon for the group
-#: client/pkcon/pk-console.c:279
-msgid "Icon"
-msgstr "Таңбаша"
-
-#. TRANSLATORS: this is a header for the package that can be updated
-#: client/pkcon/pk-console.c:329
-msgid "Details about the update:"
-msgstr "Жаңарту туралы мәліметтер:"
-
-#. TRANSLATORS: details about the update, package name and version
-#. TRANSLATORS: the package that is being processed
-#. TRANSLATORS: the package that is not signed by a known key
-#. TRANSLATORS: the package name that was trying to be installed
-#: client/pkcon/pk-console.c:335 client/pkcon/pk-console.c:620
-#: lib/pk-task-text.c:115 lib/pk-task-text.c:186
-msgid "Package"
-msgstr "Десте"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update updates
-#: client/pkcon/pk-console.c:340
-msgid "Updates"
-msgstr "Жаңартулар"
-
-#. TRANSLATORS: details about the update, any packages that
-#. * this update obsoletes
-#: client/pkcon/pk-console.c:347
-msgid "Obsoletes"
-msgstr "Ескіргендер"
-
-#. TRANSLATORS: details about the update, the vendor URLs
-#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
-#: client/pkcon/pk-console.c:353 lib/pk-task-text.c:189
-msgid "Vendor"
-msgstr "Жеткізуші"
-
-#. TRANSLATORS: details about the update, the bugzilla URLs
-#: client/pkcon/pk-console.c:359
-msgid "Bugzilla"
-msgstr "Bugzilla"
-
-#. TRANSLATORS: details about the update, the CVE URLs
-#: client/pkcon/pk-console.c:365
-msgid "CVE"
-msgstr "CVE"
-
-#. TRANSLATORS: details about the update, if the package
-#. * requires a restart
-#: client/pkcon/pk-console.c:371
-msgid "Restart"
-msgstr "Қайта іске қосу"
-
-#. TRANSLATORS: details about the update, any description of
-#. * the update
-#: client/pkcon/pk-console.c:376
-msgid "Update text"
-msgstr "Жаңарту мәтіні"
-
-#. TRANSLATORS: details about the update, the changelog for
-#. * the package
-#: client/pkcon/pk-console.c:381
-msgid "Changes"
-msgstr "Өзгерістер"
-
-#. TRANSLATORS: details about the update, the ongoing state
-#. * of the update
-#: client/pkcon/pk-console.c:386
-msgid "State"
-msgstr "Күйі"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was issued
-#: client/pkcon/pk-console.c:391
-msgid "Issued"
-msgstr "Шығарылған"
-
-#. TRANSLATORS: details about the update, date the update
-#. * was updated
-#. TRANSLATORS: The action of the package, in past tense
-#: client/pkcon/pk-console.c:396 lib/pk-enum.c:1111
-msgid "Updated"
-msgstr "Жаңартылды"
-
-#. TRANSLATORS: if the repo is enabled
-#: client/pkcon/pk-console.c:421
-msgid "Enabled"
-msgstr "Іске қосылған"
-
-#. TRANSLATORS: if the repo is disabled
-#: client/pkcon/pk-console.c:424
-msgid "Disabled"
-msgstr "Сөндірілген"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#: client/pkcon/pk-console.c:450
-msgid "System restart required by:"
-msgstr "Жүйені қайта іске қосуды талап етеді:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#: client/pkcon/pk-console.c:453
-msgid "Session restart required:"
-msgstr "Сеансты қайта іске қосу қажет:"
-
-#. TRANSLATORS: a package requires the system to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:457
-msgid "System restart (security) required by:"
-msgstr "Жүйені қайта іске қосу (қауіпсіздік) талап етіледі:"
-
-#. TRANSLATORS: a package requires the session to be restarted
-#. * due to a security update
-#: client/pkcon/pk-console.c:461
-msgid "Session restart (security) required:"
-msgstr "Сеансты қайта іске қосу (қауіпсіздік) қажет:"
-
-#. TRANSLATORS: a package requires the application to be restarted
-#: client/pkcon/pk-console.c:464
-msgid "Application restart required by:"
-msgstr "Қолданбаны қайта іске қосуды талап етеді:"
-
-#. TRANSLATORS: This a list of details about the package
-#: client/pkcon/pk-console.c:517
-msgid "Package description"
-msgstr "Десте сипаттамасы"
-
-#. TRANSLATORS: This where the package has no files
-#: client/pkcon/pk-console.c:538
-msgid "No files"
-msgstr "Файлдар жоқ"
-
-#. TRANSLATORS: This a list files contained in the package
-#: client/pkcon/pk-console.c:543
-msgid "Package files"
-msgstr "Десте файлдары"
-
-#. TRANSLATORS: the percentage complete of the transaction
-#: client/pkcon/pk-console.c:634
-msgid "Percentage"
-msgstr "Пайыз"
-
-#. TRANSLATORS: the status of the transaction (e.g. downloading)
-#: client/pkcon/pk-console.c:659
-msgid "Status"
-msgstr "Күйі"
-
-#. TRANSLATORS: the results from the transaction
-#: client/pkcon/pk-console.c:696
-msgid "Results:"
-msgstr "Нәтижелер:"
-
-#. TRANSLATORS: we failed to get any results, which is pretty
-#. * fatal in my book
-#: client/pkcon/pk-console.c:702 client/pkcon/pk-console.c:866
-msgid "Fatal error"
-msgstr "Өлімшіл қате"
-
-#. TRANSLATORS: the user asked to update everything,
-#. * but there is nothing that can be updated
-#: client/pkcon/pk-console.c:727
-msgid "There are no packages to update."
-msgstr "Жаңартылатын дестелер жоқ."
-
-#. TRANSLATORS: the transaction failed in a way we could
-#. * not expect
-#. TRANSLATORS: the transaction failed in a way we could not expect
-#: client/pkcon/pk-console.c:732
-#: contrib/command-not-found/pk-command-not-found.c:705
-msgid "The transaction failed"
-msgstr "Транзакция сәтсіз аяқталды"
-
-#. TRANSLATORS: print a message when there are no updates
-#: client/pkcon/pk-console.c:760
-msgid "There are no updates available at this time."
-msgstr "Қазіргі уақытта қолжетімді жаңартулар жоқ."
-
-#: client/pkcon/pk-console.c:783
-msgid "There are no upgrades available at this time."
-msgstr "Қазіргі уақытта қолжетімді жаңғыртулар жоқ."
-
-#. TRANSLATORS: a package needs to restart their system
-#: client/pkcon/pk-console.c:845
-msgid "Please restart the computer to complete the update."
-msgstr "Жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
-
-#. TRANSLATORS: a package needs to restart the session
-#: client/pkcon/pk-console.c:848
-msgid "Please logout and login to complete the update."
-msgstr "Жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
-
-#. TRANSLATORS: a package needs to restart their system (due to security)
-#: client/pkcon/pk-console.c:853
-msgid "Please restart the computer to complete the update as important security updates have been installed."
-msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
-
-#. TRANSLATORS: a package needs to restart the session (due to security)
-#: client/pkcon/pk-console.c:857
-msgid "Please logout and login to complete the update as important security updates have been installed."
-msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
-
-#. TRANSLATORS: more than one package could be found that matched,
-#. * to follow is a list of possible packages
-#: client/pkcon/pk-console.c:961 client/pkgc-util.c:1174
-msgid "More than one package matches:"
-msgstr "Бірден көп десте сәйкес келеді:"
-
-#. prompt user for selection
-#. TRANSLATORS: This finds out which package in the list to use
-#: client/pkcon/pk-console.c:973 client/pkgc-util.c:1186
-#, c-format
-msgid "Please choose the correct package: "
-msgstr "Дұрыс дестені таңдаңыз: "
-
-#. TRANSLATORS: we asked to install a package
-#. * that could not be found in any repo
-#: client/pkcon/pk-console.c:1008
-msgid "Package not found"
-msgstr "Десте табылмады"
-
-#. TRANSLATORS: we couldn't find anything
-#: client/pkcon/pk-console.c:1025
-msgid "No packages were found"
-msgstr "Дестелер табылмады"
-
-#. TRANSLATORS: The user used
-#. * 'pkcon install dave.rpm' rather than
-#. * 'pkcon install-local dave.rpm'
-#: client/pkcon/pk-console.c:1050
-#, c-format
-msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
-msgstr "Десте аты күтілді, бірақ файл алынды. Оның орнына 'pkcon install-local %s' пайдаланып көріңіз."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation. The detailed error follows.
-#: client/pkcon/pk-console.c:1087
-#, c-format
-msgid "This tool could not find any available package: %s"
-msgstr "Бұл сайман қолжетімді десте таба алмады: %s"
-
-#. TRANSLATORS: We were unable to find a package for installation.
-#: client/pkcon/pk-console.c:1105
-msgid "This tool could not find any available package."
-msgstr "Бұл сайман ешқандай қолжетімді десте таба алмады."
-
-#. TRANSLATORS: There was an error finding a package
-#. * for installation, it may already be installed.
-#: client/pkcon/pk-console.c:1114
-msgid "The selected packages may already be installed."
-msgstr "Таңдалған дестелер орнатылып қойған болуы мүмкін."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1148
-#, c-format
-msgid "This tool could not find the installed package: %s"
-msgstr "Бұл сайман орнатылған дестені таба алмады: %s"
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#: client/pkcon/pk-console.c:1183 client/pkcon/pk-console.c:1215
-#, c-format
-msgid "This tool could not find the package: %s"
-msgstr "Бұл сайман дестені таба алмады: %s"
-
-#. TRANSLATORS: there are no updates, so nothing to do
-#: client/pkcon/pk-console.c:1264
-msgid "No packages require updating to newer versions."
-msgstr "Жаңа нұсқаларға жаңартуды талап ететін дестелер жоқ."
-
-#. TRANSLATORS: There was an error getting the list
-#. * of files for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * dependencies for the package. The detailed error follows
-#. TRANSLATORS: There was an error getting the
-#. * details about the package. The detailed error follows
-#. TRANSLATORS: The package name was not found in
-#. * any software repositories. The detailed error follows
-#: client/pkcon/pk-console.c:1309 client/pkcon/pk-console.c:1340
-#: client/pkcon/pk-console.c:1383 client/pkcon/pk-console.c:1450
-#: client/pkcon/pk-console.c:1480
-#, c-format
-msgid "This tool could not find all the packages: %s"
-msgstr "Бұл сайман барлық дестелерді таба алмады: %s"
-
 #. TRANSLATORS: This is when the daemon crashed, and we are up
 #. * shit creek without a paddle
-#: client/pkcon/pk-console.c:1507 client/pkgc-context.c:130
+#: client/pkgc-context.c:130
 msgid "The daemon crashed mid-transaction!"
 msgstr "Транзакция ортасында қызмет (daemon) істен шықты!"
 
-#. TRANSLATORS: This is the header to the --help menu
-#: client/pkcon/pk-console.c:1539
-msgid "PackageKit Console Interface"
-msgstr "PackageKit консольдік интерфейсі"
-
-#. these are commands we can use with pkcon
-#: client/pkcon/pk-console.c:1541
-msgid "Subcommands:"
-msgstr "Ішкі командалар:"
-
-#. TRANSLATORS: we keep a database updated with the time that an
-#. * action was last executed
-#: client/pkcon/pk-console.c:1642 client/pkgc-query.c:913
-msgid "Failed to get the time since this action was last completed"
-msgstr "Бұл әрекеттің соңғы рет аяқталғанынан бері өткен уақытты алу сәтсіз аяқталды"
-
-#. TRANSLATORS: this is the time since this role was used
-#: client/pkcon/pk-console.c:1647
-msgid "Time since"
-msgstr "Содан бергі уақыт"
-
-#. TRANSLATORS: There follows a list of packages downloaded and ready
-#. * to be updated
-#: client/pkcon/pk-console.c:1667
-msgid "Prepared updates:"
-msgstr "Дайындалған жаңартулар:"
-
-#. TRANSLATORS: The network settings could not be sent
-#: client/pkcon/pk-console.c:1737
-msgid "The proxy could not be set"
-msgstr "Проксиді орнату мүмкін болмады"
-
-#. TRANSLATORS: command line argument, just show the version string
-#: client/pkcon/pk-console.c:1780 client/pkcon/pk-monitor.c:354
-msgid "Show the program version and exit"
-msgstr "Бағдарлама нұсқасын көрсету және шығу"
-
-#. TRANSLATORS: command line argument, use a filter to narrow down results
-#: client/pkcon/pk-console.c:1783
-msgid "Set the filter, e.g. installed"
-msgstr "Сүзгіні орнату, мысалы, орнатылған"
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1786
-msgid "Install the packages without asking for confirmation"
-msgstr "Дестелерді растауды сұрамай-ақ орнату"
-
 #. TRANSLATORS: command line argument, do we just download or apply changes
-#. command line argument, do we just download or apply changes
-#: client/pkcon/pk-console.c:1789 client/pkgc-manage.c:43
+#: client/pkgc-manage.c:43
 msgid "Prepare the transaction by downloading packages only"
 msgstr "Транзакцияны тек дестелерді жүктеп алу арқылы дайындау"
-
-#. command line argument, do we allow package downgrades
-#: client/pkcon/pk-console.c:1792
-msgid "Allow packages to be downgraded during transaction"
-msgstr "Транзакция кезінде дестелер нұсқасын төмендетуге рұқсат беру"
-
-#: client/pkcon/pk-console.c:1794
-msgid "Allow packages to be reinstalled during transaction"
-msgstr "Транзакция кезінде дестелерді қайта орнатуға рұқсат беру"
-
-#: client/pkcon/pk-console.c:1796
-msgid "Automatically remove unused dependencies"
-msgstr "Пайдаланылмаған тәуелділіктерді автоматты түрде өшіру"
-
-#. TRANSLATORS: command line argument, this command is not a priority
-#: client/pkcon/pk-console.c:1799 client/pkgcli.c:98
-msgid "Run the command using idle network bandwidth and also using less power"
-msgstr "Команданы желінің бос өткізу қабілетін және азырақ қуатты пайдаланып орындау"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1802
-msgid "Print to screen a machine readable output, rather than using animated widgets"
-msgstr "Анимациялық виджеттерді пайдаланудың орнына, экранға машина оқи алатын шығысты басып шығару"
-
-#. TRANSLATORS: command line argument, just output without fancy formatting
-#: client/pkcon/pk-console.c:1805
-msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
-msgstr "Метадеректер кэшінің максималды жасы (секундпен). Тек кэшті пайдалану үшін -1, кэшті қайта жүктеу үшін 1 мәнін пайдаланыңыз."
-
-#. command line argument, do we ask questions
-#: client/pkcon/pk-console.c:1808
-msgid "Allow untrusted packages to be installed."
-msgstr "Сенімсіз дестелерді орнатуға рұқсат беру."
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1840
-msgid "Failed to parse command line"
-msgstr "Командалық жолды талдау сәтсіз аяқталды"
-
-#. TRANSLATORS: we failed to contact the daemon
-#: client/pkcon/pk-console.c:1850
-msgid "Failed to contact PackageKit"
-msgstr "PackageKit-пен байланысу сәтсіз аяқталды"
-
-#. TRANSLATORS: The user specified
-#. * an incorrect filter
-#: client/pkcon/pk-console.c:1921 client/pkgcli.c:261
-msgid "The filter specified was invalid"
-msgstr "Көрсетілген сүзгі жарамсыз болды"
-
-#. TRANSLATORS: a search type can
-#. * be name, details, file, etc
-#: client/pkcon/pk-console.c:1947
-msgid "A search type is required, e.g. name"
-msgstr "Іздеу түрі қажет, мысалы, name"
-
-#. TRANSLATORS: the user
-#. * needs to provide a search term
-#. TRANSLATORS: the user needs
-#. * to provide a search term
-#: client/pkcon/pk-console.c:1958 client/pkcon/pk-console.c:1978
-#: client/pkcon/pk-console.c:1998 client/pkcon/pk-console.c:2018
-msgid "A search term is required"
-msgstr "Іздеу сөзі қажет"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:2049
-msgid "A package name to install is required"
-msgstr "Орнатылатын десте аты қажет"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to install
-#: client/pkcon/pk-console.c:2062
-msgid "A filename to install is required"
-msgstr "Орнатылатын файл аты қажет"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:2081
-msgid "A type, key_id and package_id are required"
-msgstr "Түрі, key_id және package_id қажет"
-
-#. TRANSLATORS: the user did not
-#. * specify what they wanted to remove
-#: client/pkcon/pk-console.c:2102
-msgid "A package name to remove is required"
-msgstr "Өшірілетін десте аты қажет"
-
-#. TRANSLATORS: the user did not
-#. * specify anything about what to
-#. * download or where
-#: client/pkcon/pk-console.c:2116
-msgid "A destination directory and the package names to download are required"
-msgstr "Мақсатты бума мен жүктеп алынатын десте аттары қажет"
-
-#. TRANSLATORS: the directory does
-#. * not exist, so we can't continue
-#: client/pkcon/pk-console.c:2127
-msgid "Directory not found"
-msgstr "Бума табылмады"
-
-#. TRANSLATORS: geeky error, real
-#. * users won't see this
-#: client/pkcon/pk-console.c:2140
-msgid "A licence identifier (eula-id) is required"
-msgstr "Лицензия идентификаторы (eula-id) қажет"
-
-#. TRANSLATORS: The user did not
-#. * specify a package name
-#: client/pkcon/pk-console.c:2167
-msgid "A package name to resolve is required"
-msgstr "Шешілетін десте аты қажет"
-
-#. TRANSLATORS: The user did not
-#. * specify a repository name
-#: client/pkcon/pk-console.c:2187 client/pkcon/pk-console.c:2207
-msgid "A repository name is required"
-msgstr "Репозиторий аты қажет"
-
-#. TRANSLATORS: The user didn't provide any data
-#: client/pkcon/pk-console.c:2226
-msgid "A repo name, parameter and value are required"
-msgstr "Репозиторий аты, параметрі және мәні қажет"
-
-#. TRANSLATORS: The user didn't provide any data
-#: client/pkcon/pk-console.c:2246
-msgid "A repo id and autoremove required"
-msgstr "Репозиторий ID-і және автоматты өшіру қажет"
-
-#. TRANSLATORS: The user didn't specify what action to use
-#. TRANSLATORS: The user didn't
-#. * specify what action to use
-#: client/pkcon/pk-console.c:2278 client/pkgc-query.c:963
-msgid "An action, e.g. 'update-packages' is required"
-msgstr "Әрекет қажет, мысалы, 'update-packages'"
-
-#. TRANSLATORS: The user specified an invalid action
-#. TRANSLATORS: The user specified
-#. * an invalid action
-#: client/pkcon/pk-console.c:2289 client/pkgc-query.c:971
-msgid "A correct role is required"
-msgstr "Дұрыс роль қажет"
-
-#. TRANSLATORS: The user did not provide a package name
-#. TRANSLATORS: The user did not
-#. * provide a package name
-#. TRANSLATORS: The user did not provide a package name
-#: client/pkcon/pk-console.c:2310 client/pkcon/pk-console.c:2331
-#: client/pkcon/pk-console.c:2344 client/pkcon/pk-console.c:2379
-#: client/pkcon/pk-console.c:2418
-msgid "A package name is required"
-msgstr "Десте аты қажет"
-
-#. TRANSLATORS: each package
-#. * "provides" certain things, e.g.
-#. * mime(gstreamer-decoder-mp3),
-#. * the user didn't specify it
-#: client/pkcon/pk-console.c:2359
-msgid "A package provide string is required"
-msgstr "Десте ұсынатын мүмкіндік жолы қажет"
-
-#. TRANSLATORS: The user did not provide a package name
-#: client/pkcon/pk-console.c:2392 client/pkcon/pk-console.c:2405
-msgid "A filename is required"
-msgstr "Файл аты қажет"
-
-#. TRANSLATORS: this is the description of the backend
-#: client/pkcon/pk-console.c:2486
-msgid "Description"
-msgstr "Сипаттамасы"
-
-#. TRANSLATORS: this is the author of the backend
-#: client/pkcon/pk-console.c:2490
-msgid "Author"
-msgstr "Авторы"
-
-#. TRANSLATORS: The user did not provide a distro name
-#: client/pkcon/pk-console.c:2570
-msgid "You need to specify a list file to create"
-msgstr "Жасалатын тізім файлын көрсетуіңіз керек"
-
-#. TRANSLATORS: There was an error
-#. * getting the list of packages.
-#. * The filename follows
-#: client/pkcon/pk-console.c:2583
-#, c-format
-msgid "File already exists: %s"
-msgstr "Файл бар болып шықты: %s"
-
-#. TRANSLATORS: The user tried to use an
-#. * unsupported option on the command line
-#: client/pkcon/pk-console.c:2605
-#, c-format
-msgid "Option '%s' is not supported"
-msgstr "'%s' опциясына қолдау көрсетілмейді"
-
-#. TRANSLATORS: Generic failure of what they asked to do
-#: client/pkcon/pk-console.c:2615
-msgid "Command failed"
-msgstr "Команда сәтсіз аяқталды"
-
-#: client/pkcon/pk-monitor.c:276 client/pkgc-monitor.c:424
-msgid "Failed to get daemon state"
-msgstr "Қызмет (daemon) күйін алу сәтсіз аяқталды"
-
-#: client/pkcon/pk-monitor.c:331 client/pkgc-monitor.c:494
-msgid "Failed to get properties"
-msgstr "Қасиеттерді алу сәтсіз аяқталды"
-
-#. TRANSLATORS: this is a program that monitors PackageKit
-#: client/pkcon/pk-monitor.c:366
-msgid "PackageKit Monitor"
-msgstr "PackageKit мониторы"
 
 #. TRANSLATORS: command line argument, do we allow package downgrades
 #: client/pkgc-manage.c:50
@@ -794,7 +140,7 @@ msgstr "Дестелерді орнатпастан көрсетілген бу�
 
 #. TRANSLATORS: There was an error getting the
 #. * details about the package. The detailed error follows
-#: client/pkgc-manage.c:448 client/pkgc-query.c:441 client/pkgc-query.c:788
+#: client/pkgc-manage.c:448 client/pkgc-query.c:439 client/pkgc-query.c:786
 #, c-format
 msgid "Could not find packages: %s"
 msgstr "Дестелер табылмады: %s"
@@ -998,50 +344,58 @@ msgstr "Десте жүйесін жөндеу"
 msgid "Safely stop the PackageKit daemon"
 msgstr "PackageKit қызметін қауіпсіз тоқтату"
 
+#: client/pkgc-monitor.c:400
+msgid "Failed to get daemon state"
+msgstr "Қызмет (daemon) күйін алу сәтсіз аяқталды"
+
+#: client/pkgc-monitor.c:470
+msgid "Failed to get properties"
+msgstr "Қасиеттерді алу сәтсіз аяқталды"
+
 #. TRANSLATORS: Description for pkgcli monitor
-#: client/pkgc-monitor.c:516
+#: client/pkgc-monitor.c:492
 msgid "Monitor PackageKit D-Bus events"
 msgstr "PackageKit D-Bus оқиғаларын бақылау"
 
 #. TRANSLATORS: Description for monitor command in pkgcli help
-#: client/pkgc-monitor.c:638
+#: client/pkgc-monitor.c:614
 msgid "Monitor PackageKit bus events"
 msgstr "PackageKit шина оқиғаларын бақылау"
 
 #. TRANSLATORS: Description for pkgcli backend
-#: client/pkgc-query.c:166
+#: client/pkgc-query.c:165
 msgid "Show PackageKit backend information."
 msgstr "PackageKit бэкэнд ақпаратын көрсету."
 
-#: client/pkgc-query.c:211
+#: client/pkgc-query.c:209
 #, c-format
 msgid "Backend: %s"
 msgstr "Бэкэнд: %s"
 
-#: client/pkgc-query.c:214
+#: client/pkgc-query.c:212
 #, c-format
 msgid "Description: %s"
 msgstr "Сипаттамасы: %s"
 
-#: client/pkgc-query.c:217
+#: client/pkgc-query.c:215
 #, c-format
 msgid "Author: %s"
 msgstr "Авторы: %s"
 
 #. add some extra space before the potentially long roles list
 #. TRANSLATORS: List of backend-roles
-#: client/pkgc-query.c:223
+#: client/pkgc-query.c:221
 #, c-format
 msgid "Roles: %s"
 msgstr "Рольдер: %s"
 
 #. TRANSLATORS: Description for pkgcli history
-#: client/pkgc-query.c:247
+#: client/pkgc-query.c:245
 msgid "Show recent package management transactions."
 msgstr "Соңғы дестелерді басқару транзакцияларын көрсету."
 
 #. TRANSLATORS: Description of the pkgcli search command. MODE values must not be translated!
-#: client/pkgc-query.c:286
+#: client/pkgc-query.c:284
 msgid ""
 "Search for packages matching the given patterns. If MODE is not specified, \n"
 "'details' search is performed.\n"
@@ -1059,171 +413,186 @@ msgstr ""
 "  file    - файл аты бойынша іздеу\n"
 "  group   - десте тобы бойынша іздеу"
 
-#: client/pkgc-query.c:314
+#: client/pkgc-query.c:312
 msgid "No search pattern specified"
 msgstr "Іздеу үлгісі көрсетілмеген"
 
 #. TRANSLATORS: Description for pkgcli list
-#: client/pkgc-query.c:375
+#: client/pkgc-query.c:373
 msgid "List all packages or those matching a pattern."
 msgstr "Барлық дестелерді не үлгіге сәйкес келетіндерін тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli show
-#: client/pkgc-query.c:420
+#: client/pkgc-query.c:418
 msgid "Show information about one or more packages."
 msgstr "Бір немесе бірнеше десте туралы ақпаратты көрсету."
 
-#: client/pkgc-query.c:479 client/pkgc-query.c:768
+#: client/pkgc-query.c:477 client/pkgc-query.c:766
 msgid "Check dependencies recursively"
 msgstr "Тәуелділіктерді рекурсивті түрде тексеру"
 
 #. TRANSLATORS: Description for pkgcli depends-on
-#: client/pkgc-query.c:490
+#: client/pkgc-query.c:488
 msgid "Show dependencies for one or more packages."
 msgstr "Бір немесе бірнеше десте үшін тәуелділіктерді көрсету."
 
-#: client/pkgc-query.c:498 client/pkgc-query.c:582 client/pkgc-query.c:699
+#: client/pkgc-query.c:496 client/pkgc-query.c:580 client/pkgc-query.c:697
 #, c-format
 msgid "Could not resolve packages: %s"
 msgstr "Дестелерді шешу мүмкін емес: %s"
 
 #. TRANSLATORS: Description for pkgcli what-provides
-#: client/pkgc-query.c:531
+#: client/pkgc-query.c:529
 msgid "Show which packages provide the specified capability."
 msgstr "Көрсетілген мүмкіндікті қай дестелер беретінін көрсету."
 
 #. TRANSLATORS: Description for pkgcli files
-#: client/pkgc-query.c:563
+#: client/pkgc-query.c:561
 msgid "List all files contained in one or more packages."
 msgstr "Бір немесе бірнеше дестедегі барлық файлдарды тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli list-updates
-#: client/pkgc-query.c:659
+#: client/pkgc-query.c:657
 msgid "List all currently available package updates."
 msgstr "Қазіргі уақытта қолжетімді барлық десте жаңартуларын тізімдеу."
 
 #. TRANSLATORS: Description for pkgcli show-update
-#: client/pkgc-query.c:692
+#: client/pkgc-query.c:690
 msgid "Show detailed information about the specified package update."
 msgstr "Көрсетілген десте жаңартуы туралы егжей-тегжейлі ақпаратты көрсету."
 
 #. TRANSLATORS: Description for pkgcli resolve
-#: client/pkgc-query.c:731
+#: client/pkgc-query.c:729
 msgid "Resolve package names to package IDs."
 msgstr "Десте аттарын десте ID-леріне шешу."
 
 #. TRANSLATORS: Description for pkgcli required-by
-#: client/pkgc-query.c:779
+#: client/pkgc-query.c:777
 msgid "Show which packages require the specified packages."
 msgstr "Көрсетілген дестелерді қай дестелер талап ететінін көрсету."
 
 #. TRANSLATORS: Description for pkgcli organization
-#: client/pkgc-query.c:823
-msgid "List all available filters, groups and categories for package organization."
+#: client/pkgc-query.c:821
+#, fuzzy
+#| msgid "List all available filters, groups and categories for package organization."
+msgid "List all available filters and groups for package organization."
 msgstr "Дестелерді ұйымдастыруға арналған барлық қолжетімді сүзгілерді, топтарды және санаттарды тізімдеу."
 
 #. TRANSLATORS: Header for list of available package filters
-#: client/pkgc-query.c:831
+#: client/pkgc-query.c:829
 msgid "Filters:"
 msgstr "Сүзгілер:"
 
 #. TRANSLATORS: Header for list of available package groups
-#: client/pkgc-query.c:843
+#: client/pkgc-query.c:841
 msgid "Groups:"
 msgstr "Топтар:"
 
-#. TRANSLATORS: Header for list of available package categories
-#: client/pkgc-query.c:855
-msgid "Categories:"
-msgstr "Санаттар:"
-
 #. TRANSLATORS: Description for pkgcli show-distro-upgrade
-#: client/pkgc-query.c:881
+#: client/pkgc-query.c:864
 msgid "Show distribution version upgrades, if any are available."
 msgstr "Дистрибутив нұсқасын жаңғыртулар қолжетімді болса, оларды көрсету."
 
+#. TRANSLATORS: we keep a database updated with the time that an
+#. * action was last executed
+#: client/pkgc-query.c:896
+msgid "Failed to get the time since this action was last completed"
+msgstr "Бұл әрекеттің соңғы рет аяқталғанынан бері өткен уақытты алу сәтсіз аяқталды"
+
 #. TRANSLATORS: this is the time since this role was used
-#: client/pkgc-query.c:927
+#: client/pkgc-query.c:909
 msgid "Elapsed time"
 msgstr "Өткен уақыт"
 
 #. TRANSLATORS: Description for pkgcli last-time
-#: client/pkgc-query.c:952
+#: client/pkgc-query.c:934
 msgid "Get time in seconds since the last specified action."
 msgstr "Соңғы көрсетілген әрекеттен бері өткен уақытты секундпен алу."
 
+#. TRANSLATORS: The user didn't specify what action to use
+#: client/pkgc-query.c:945
+msgid "An action, e.g. 'update-packages' is required"
+msgstr "Әрекет қажет, мысалы, 'update-packages'"
+
+#. TRANSLATORS: The user specified an invalid action
+#: client/pkgc-query.c:953
+msgid "A correct role is required"
+msgstr "Дұрыс роль қажет"
+
 #. TRANSLATORS: Description for backend command in pkgcli help
-#: client/pkgc-query.c:995
+#: client/pkgc-query.c:977
 msgid "Show backend information"
 msgstr "Бэкэнд ақпаратын көрсету"
 
 #. TRANSLATORS: Description for history command in pkgcli help
-#: client/pkgc-query.c:1002
+#: client/pkgc-query.c:984
 msgid "Show transaction history"
 msgstr "Транзакциялар тарихын көрсету"
 
 #. TRANSLATORS: Description for search command in pkgcli help
-#: client/pkgc-query.c:1009
+#: client/pkgc-query.c:991
 msgid "Search for packages"
 msgstr "Дестелерді іздеу"
 
 #. TRANSLATORS: Description for list command in pkgcli help
-#: client/pkgc-query.c:1016
+#: client/pkgc-query.c:998
 msgid "List packages"
 msgstr "Дестелерді тізімдеу"
 
 #. TRANSLATORS: Description for show command in pkgcli help
-#: client/pkgc-query.c:1023
+#: client/pkgc-query.c:1005
 msgid "Show package information"
 msgstr "Десте ақпаратын көрсету"
 
 #. TRANSLATORS: Description for list-depends command in pkgcli help
-#: client/pkgc-query.c:1030
+#: client/pkgc-query.c:1012
 msgid "List dependencies of the specified package(s)"
 msgstr "Таңдалған десте(лер) үшін тәуелділіктерді тізіп шығару"
 
 #. TRANSLATORS: Description for list-requiring command in pkgcli help
-#: client/pkgc-query.c:1037
+#: client/pkgc-query.c:1019
 msgid "List other packages requiring the specified package(s)"
 msgstr "Көрсетілген десте(лер)ді талап ететін басқа дестелерді тізіп шығару"
 
 #. TRANSLATORS: Description for what-provides command in pkgcli help
-#: client/pkgc-query.c:1044
+#: client/pkgc-query.c:1026
 msgid "List packages providing a capability"
 msgstr "Мүмкіндікті беретін дестелерді тізімдеу"
 
 #. TRANSLATORS: Description for files command in pkgcli help
-#: client/pkgc-query.c:1051
+#: client/pkgc-query.c:1033
 msgid "Show files in package"
 msgstr "Дестедегі файлдарды көрсету"
 
 #. TRANSLATORS: Description for list-updates command in pkgcli help
-#: client/pkgc-query.c:1058
+#: client/pkgc-query.c:1040
 msgid "Get available updates"
 msgstr "Қолжетімді жаңартуларды алу"
 
 #. TRANSLATORS: Description for show-update command in pkgcli help
-#: client/pkgc-query.c:1065
+#: client/pkgc-query.c:1047
 msgid "Get update details"
 msgstr "Жаңарту мәліметтерін алу"
 
 #. TRANSLATORS: Description for resolve command in pkgcli help
-#: client/pkgc-query.c:1072
+#: client/pkgc-query.c:1054
 msgid "Resolve package names"
 msgstr "Десте аттарын шешу"
 
 #. TRANSLATORS: Description for organization command in pkgcli help
-#: client/pkgc-query.c:1079
-msgid "List available filters and categories"
+#: client/pkgc-query.c:1061
+#, fuzzy
+#| msgid "List available filters and categories"
+msgid "List available filters and groups"
 msgstr "Қолжетімді сүзгілер мен санаттарды тізімдеу"
 
 #. TRANSLATORS: Description for show-os-upgrade command in pkgcli help
-#: client/pkgc-query.c:1086
+#: client/pkgc-query.c:1068
 msgid "Show available distribution upgrades"
 msgstr "Қолжетімді дистрибутив жаңғыртуларын көрсету"
 
 #. TRANSLATORS: Description for last-time command in pkgcli help
-#: client/pkgc-query.c:1093
+#: client/pkgc-query.c:1075
 msgid "Get time since last action"
 msgstr "Соңғы әрекеттен бергі уақытты алу"
 
@@ -1332,184 +701,217 @@ msgstr "%u күн %u сағ"
 msgid "%u days"
 msgstr "%u күн"
 
-#: client/pkgc-util.c:279
+#: client/pkgc-util.c:278
 msgid "Error"
 msgstr "Қате"
 
 #. TRANSLATORS: A warning message prefix, displayed on the command-line
-#: client/pkgc-util.c:312
+#: client/pkgc-util.c:310
 msgid "Warning:"
 msgstr "Ескерту:"
 
 #. TRANSLATORS: Failed to parse command-line options in pkgcli
-#: client/pkgc-util.c:436 client/pkgcli.c:194
+#: client/pkgc-util.c:433 client/pkgcli.c:194
 #, c-format
 msgid "Failed to parse options: %s"
 msgstr "Опцияларды талдау сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: Usage summary in pkgcli if the user has provided the wrong number of parameters
-#: client/pkgc-util.c:444
+#: client/pkgc-util.c:441
 #, c-format
 msgid "Usage: %s %s %s"
 msgstr "Қолданылуы: %s %s %s"
 
+#. TRANSLATORS: the severity of a package update, keep this short
+#: client/pkgc-util.c:552
+msgid "high"
+msgstr ""
+
+#. TRANSLATORS: the severity of a package update, keep this short
+#: client/pkgc-util.c:557
+msgid "critical"
+msgstr ""
+
 #. TRANSLATORS: Label for the package name in package details
 #. TRANSLATORS: Label for package update infos
-#: client/pkgc-util.c:639 client/pkgc-util.c:794
+#: client/pkgc-util.c:673 client/pkgc-util.c:828
 msgid "Package:"
 msgstr "Десте:"
 
 #. TRANSLATORS: Label for the package version in package details
-#: client/pkgc-util.c:643
+#: client/pkgc-util.c:677
 msgid "Version:"
 msgstr "Нұсқасы:"
 
 #. TRANSLATORS: Label for the package summary in package details
-#: client/pkgc-util.c:649
+#: client/pkgc-util.c:683
 msgid "Summary:"
 msgstr "Жиынтық:"
 
 #. TRANSLATORS: Label for the package description in package details
-#: client/pkgc-util.c:657
+#: client/pkgc-util.c:691
 msgid "Description:"
 msgstr "Сипаттамасы:"
 
 #. TRANSLATORS: Label for the package license in package details
-#: client/pkgc-util.c:664
+#: client/pkgc-util.c:698
 msgid "License:"
 msgstr "Лицензия:"
 
 #. TRANSLATORS: Label for the package URL in package details
-#: client/pkgc-util.c:671
+#: client/pkgc-util.c:705
 msgid "URL:"
 msgstr "URL:"
 
 #. TRANSLATORS: Label for the package group in package details
-#: client/pkgc-util.c:679
+#: client/pkgc-util.c:713
 msgid "Group:"
 msgstr "Топ:"
 
 #. TRANSLATORS: Label for the package size in package details
-#: client/pkgc-util.c:687
+#: client/pkgc-util.c:721
 msgid "Installed Size:"
 msgstr "Орнатылған өлшемі:"
 
 #. TRANSLATORS: Label for the package download size in package details
-#: client/pkgc-util.c:696
+#: client/pkgc-util.c:730
 msgid "Download Size:"
 msgstr "Жүктеп алу өлшемі:"
 
 #. TRANSLATORS: Header for the update details section
-#: client/pkgc-util.c:790
+#: client/pkgc-util.c:824
 msgid "Update Details:"
 msgstr "Жаңарту мәліметтері:"
 
 #. TRANSLATORS: Label for update details
-#: client/pkgc-util.c:801
+#: client/pkgc-util.c:835
 msgid "Updates:"
 msgstr "Жаңартулар:"
 
 #. TRANSLATORS: Label for obsoleted packages in update details
-#: client/pkgc-util.c:810
+#: client/pkgc-util.c:844
 msgid "Obsoletes:"
 msgstr "Ескіргендер:"
 
 #. TRANSLATORS: Label for vendor in update details
-#: client/pkgc-util.c:819
+#: client/pkgc-util.c:853
 msgid "Vendor:"
 msgstr "Жеткізуші:"
 
 #. TRANSLATORS: Label for issue-tracker in update details
-#: client/pkgc-util.c:828
+#: client/pkgc-util.c:862
 msgid "Issue Tracker:"
 msgstr "Мәселелер трекері:"
 
 #. TRANSLATORS: Label for CVE information in update details
-#: client/pkgc-util.c:837
+#: client/pkgc-util.c:871
 msgid "CVE:"
 msgstr "CVE:"
 
 #. TRANSLATORS: Label for restart information in update details
-#: client/pkgc-util.c:845
+#: client/pkgc-util.c:879
 msgid "Restart:"
 msgstr "Қайта іске қосу:"
 
 #. TRANSLATORS: Label for update text in update details
-#: client/pkgc-util.c:854
+#: client/pkgc-util.c:888
 msgid "Update text:"
 msgstr "Жаңарту мәтіні:"
 
 #. TRANSLATORS: Label for changelog in update details
-#: client/pkgc-util.c:861
+#: client/pkgc-util.c:895
 msgid "Changes:"
 msgstr "Өзгерістер:"
 
 #. TRANSLATORS: Label for update state in update details
-#: client/pkgc-util.c:868
+#: client/pkgc-util.c:902
 msgid "State:"
 msgstr "Күйі:"
 
 #. TRANSLATORS: Label for issued date in update details
-#: client/pkgc-util.c:877
+#: client/pkgc-util.c:911
 msgid "Issued:"
 msgstr "Шығарылған:"
 
 #. TRANSLATORS: Label for updated date in update details
-#: client/pkgc-util.c:884
+#: client/pkgc-util.c:918
 msgid "Updated:"
 msgstr "Жаңартылды:"
 
 #. TRANSLATORS: Label for transaction information
-#: client/pkgc-util.c:1001
+#: client/pkgc-util.c:1035
 msgid "Transaction:"
 msgstr "Транзакция:"
 
 #. TRANSLATORS: Label for system time of the transaction
-#: client/pkgc-util.c:1005
+#: client/pkgc-util.c:1039
 msgid "System time:"
 msgstr "Жүйелік уақыт:"
 
 #. TRANSLATORS: Label for transaction success status
-#: client/pkgc-util.c:1009
+#: client/pkgc-util.c:1043
 msgid "Succeeded:"
 msgstr "Сәтті аяқталды:"
 
+#: client/pkgc-util.c:1047
+msgid "True"
+msgstr "Ақиқат"
+
+#: client/pkgc-util.c:1048
+msgid "False"
+msgstr "Жалған"
+
 #. TRANSLATORS: Label for transaction role
-#: client/pkgc-util.c:1018
+#: client/pkgc-util.c:1052
 msgid "Role:"
 msgstr "Роль:"
 
 #. TRANSLATORS: Label for transaction duration
-#: client/pkgc-util.c:1025
+#: client/pkgc-util.c:1059
 msgid "Duration:"
 msgstr "Ұзақтығы:"
 
 #. TRANSLATORS: Label for transaction command line
-#: client/pkgc-util.c:1032
+#: client/pkgc-util.c:1066
 msgid "Command line:"
 msgstr "Командалық жол:"
 
 #. TRANSLATORS: Label for transaction user ID
-#: client/pkgc-util.c:1038
+#: client/pkgc-util.c:1072
 msgid "User ID:"
 msgstr "Пайдаланушы ID-і:"
 
 #. TRANSLATORS: Label for transaction username
-#: client/pkgc-util.c:1047
+#: client/pkgc-util.c:1081
 msgid "Username:"
 msgstr "Пайдаланушы аты:"
 
 #. TRANSLATORS: Label for transaction real name
-#: client/pkgc-util.c:1053
+#: client/pkgc-util.c:1087
 msgid "Real name:"
 msgstr "Нақты аты:"
 
+#. TRANSLATORS: Label for affected packages in transaction
+#: client/pkgc-util.c:1098 client/pkgc-util.c:1116
+msgid "Affected packages:"
+msgstr "Әсер еткен дестелер:"
+
 #. TRANSLATORS: No packages were affected by the transaction
-#: client/pkgc-util.c:1085
+#: client/pkgc-util.c:1119
 msgid "None"
 msgstr "Ешқандай"
 
-#: client/pkgc-util.c:1230
+#: client/pkgc-util.c:1208
+msgid "More than one package matches:"
+msgstr "Бірден көп десте сәйкес келеді:"
+
+#. prompt user for selection
+#: client/pkgc-util.c:1220
+#, c-format
+msgid "Please choose the correct package: "
+msgstr "Дұрыс дестені таңдаңыз: "
+
+#: client/pkgc-util.c:1264
 #, c-format
 msgid "Package not found: %s"
 msgstr "Десте табылмады: %s"
@@ -1553,6 +955,11 @@ msgstr "СҮЗГІ"
 msgid "Filter packages (installed, available, etc.)"
 msgstr "Дестелерді сүзгілеу (орнатылған, қолжетімді және т.б.)"
 
+#. TRANSLATORS: command line argument, this command is not a priority
+#: client/pkgcli.c:98
+msgid "Run the command using idle network bandwidth and also using less power"
+msgstr "Команданы желінің бос өткізу қабілетін және азырақ қуатты пайдаланып орындау"
+
 #: client/pkgcli.c:122
 msgid "No command specified. Use --help for usage information."
 msgstr "Команда көрсетілмеген. Қолдану туралы ақпарат алу үшін --help параметрін пайдаланыңыз."
@@ -1580,102 +987,113 @@ msgstr "Қолжетімді командалар:"
 msgid "Use 'pkgcli COMMAND --help' for command-specific help."
 msgstr "Командаға тән көмек алу үшін 'pkgcli КОМАНДА --help' пайдаланыңыз."
 
+#. TRANSLATORS: The user specified
+#. * an incorrect filter
+#: client/pkgcli.c:261
+msgid "The filter specified was invalid"
+msgstr "Көрсетілген сүзгі жарамсыз болды"
+
 #. TRANSLATORS: downloading repo data so we can search
-#: contrib/command-not-found/pk-command-not-found.c:426
+#: contrib/command-not-found/pk-command-not-found.c:425
 msgid "Downloading details about the software repositories."
 msgstr "Бағдарламалық қамта репозиторийлері туралы мәліметтерді жүктеп алу."
 
 #. TRANSLATORS: downloading file lists so we can search
-#: contrib/command-not-found/pk-command-not-found.c:430
+#: contrib/command-not-found/pk-command-not-found.c:429
 msgid "Downloading filelists (this may take some time to complete)."
 msgstr "Файлдар тізімін жүктеп алу (бұл біраз уақыт алуы мүмкін)."
 
 #. TRANSLATORS: waiting for native lock
-#: contrib/command-not-found/pk-command-not-found.c:434
+#: contrib/command-not-found/pk-command-not-found.c:433
 msgid "Waiting for package manager lock."
 msgstr "Дестелер менеджерінің құлыптауын күту."
 
 #. TRANSLATORS: loading package cache so we can search
-#: contrib/command-not-found/pk-command-not-found.c:438
+#: contrib/command-not-found/pk-command-not-found.c:437
 msgid "Loading list of packages."
 msgstr "Дестелер тізімін жүктеу."
 
 #. TRANSLATORS: we failed to find the package, this shouldn't happen
-#: contrib/command-not-found/pk-command-not-found.c:502
+#: contrib/command-not-found/pk-command-not-found.c:501
 msgid "Failed to search for file"
 msgstr "Файлды іздеу сәтсіз аяқталды"
 
 #. TRANSLATORS: the transaction failed in a way we could not expect
-#: contrib/command-not-found/pk-command-not-found.c:516
+#: contrib/command-not-found/pk-command-not-found.c:515
 msgid "Getting the list of files failed"
 msgstr "Файлдар тізімін алу сәтсіз аяқталды"
 
 #. TRANSLATORS: we failed to launch the executable, the error follows
-#: contrib/command-not-found/pk-command-not-found.c:669
+#: contrib/command-not-found/pk-command-not-found.c:668
 msgid "Failed to launch:"
 msgstr "Жөнелту сәтсіз аяқталды:"
 
 #. TRANSLATORS: we failed to install the package
-#: contrib/command-not-found/pk-command-not-found.c:696
+#: contrib/command-not-found/pk-command-not-found.c:695
 msgid "Failed to install packages"
 msgstr "Дестелерді орнату сәтсіз аяқталды"
+
+#. TRANSLATORS: the transaction failed in a way we could not expect
+#: contrib/command-not-found/pk-command-not-found.c:704
+msgid "The transaction failed"
+msgstr "Транзакция сәтсіз аяқталды"
 
 #. TRANSLATORS: the prefix of all the output telling the user
 #. * why it's not executing. NOTE: this is lowercase to mimic
 #. * the style of bash itself -- apologies
-#: contrib/command-not-found/pk-command-not-found.c:821
+#: contrib/command-not-found/pk-command-not-found.c:820
 msgid "command not found"
 msgstr "команда табылмады"
 
 #. TRANSLATORS: tell the user what we think the command is
-#: contrib/command-not-found/pk-command-not-found.c:841
+#: contrib/command-not-found/pk-command-not-found.c:840
 msgid "Similar command is:"
 msgstr "Ұқсас команда:"
 
 #. TRANSLATORS: Ask the user if we should run the similar command
-#: contrib/command-not-found/pk-command-not-found.c:854
+#: contrib/command-not-found/pk-command-not-found.c:853
 msgid "Run similar command:"
 msgstr "Ұқсас команданы орындау:"
 
 #. TRANSLATORS: show the user a list of commands that they could have meant
 #. TRANSLATORS: show the user a list of commands we could run
-#: contrib/command-not-found/pk-command-not-found.c:866
-#: contrib/command-not-found/pk-command-not-found.c:875
+#: contrib/command-not-found/pk-command-not-found.c:865
+#: contrib/command-not-found/pk-command-not-found.c:874
 msgid "Similar commands are:"
 msgstr "Ұқсас командалар:"
 
 #. TRANSLATORS: ask the user to choose a file to run
-#: contrib/command-not-found/pk-command-not-found.c:882
+#: contrib/command-not-found/pk-command-not-found.c:881
 msgid "Please choose a command to run"
 msgstr "Орындалатын команданы таңдаңыз"
 
 #. TRANSLATORS: tell the user what package provides the command
-#: contrib/command-not-found/pk-command-not-found.c:904
+#: contrib/command-not-found/pk-command-not-found.c:903
 msgid "The package providing this file is:"
 msgstr "Бұл файлды ұсынатын десте:"
 
 #. TRANSLATORS: as the user if we want to install a package to provide the command
-#: contrib/command-not-found/pk-command-not-found.c:913
+#: contrib/command-not-found/pk-command-not-found.c:912
 #, c-format
 msgid "Install package '%s' to provide command '%s'?"
 msgstr "'%s' дестесін '%s' командасын ұсыну үшін орнату керек пе?"
 
 #. TRANSLATORS: Show the user a list of packages that provide this command
-#: contrib/command-not-found/pk-command-not-found.c:940
+#: contrib/command-not-found/pk-command-not-found.c:939
 msgid "Packages providing this file are:"
 msgstr "Бұл файлды ұсынатын дестелер:"
 
 #. TRANSLATORS: Show the user a list of packages that they can install to provide this command
-#: contrib/command-not-found/pk-command-not-found.c:950
+#: contrib/command-not-found/pk-command-not-found.c:949
 msgid "Suitable packages are:"
 msgstr "Сәйкес келетін дестелер:"
 
 #. TRANSLATORS: ask the user to choose a file to install
-#: contrib/command-not-found/pk-command-not-found.c:958
+#: contrib/command-not-found/pk-command-not-found.c:957
 msgid "Please choose a package to install"
 msgstr "Орнатылатын дестені таңдаңыз"
 
-#: contrib/command-not-found/pk-command-not-found.c:961
+#: contrib/command-not-found/pk-command-not-found.c:960
 msgid "User aborted selection"
 msgstr "Пайдаланушы таңдаудан бас тартты"
 
@@ -1780,7 +1198,7 @@ msgstr "EULA қабылдау үшін аутентификация қажет"
 #. be removed. If this is not possible, change this authentication to
 #. 'auth_admin'.
 #. TRANSLATORS: command description
-#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:463
+#: data/policy/org.freedesktop.packagekit.policy.in:148 src/pk-direct.c:462
 msgid "Remove package"
 msgstr "Дестені өшіру"
 
@@ -1888,829 +1306,1130 @@ msgstr "Желіден тыс жаңарту туралы хабарламаны
 msgid "Authentication is required to clear the offline updates message"
 msgstr "Желіден тыс жаңартулар туралы хабарламаны тазалау үшін аутентификация қажет"
 
-#: lib/pk-console-private.c:228
+#: lib/pk-console-private.c:227
 #, c-format
 msgid "Please enter a number from 1 to %i: "
 msgstr "1-ден %i-ге дейінгі санды енгізіңіз: "
 
-#: lib/pk-console-private.c:335
+#: lib/pk-console-private.c:334
 msgid "[N/y]"
 msgstr "[Ж/и]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
-#: lib/pk-console-private.c:335
+#: lib/pk-console-private.c:334
 msgid "[Y/n]"
 msgstr "[И/ж]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
-#: lib/pk-console-private.c:352
+#: lib/pk-console-private.c:351
 msgctxt "Answer"
 msgid "y"
 msgstr "и"
 
 #. TRANSLATORS: full "yes" answer
-#: lib/pk-console-private.c:356
+#: lib/pk-console-private.c:355
 msgctxt "Answer"
 msgid "yes"
 msgstr "иә"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
-#: lib/pk-console-private.c:363
+#: lib/pk-console-private.c:362
 msgctxt "Answer"
 msgid "n"
 msgstr "ж"
 
 #. TRANSLATORS: full "no" answer
-#: lib/pk-console-private.c:367
+#: lib/pk-console-private.c:366
 msgctxt "Answer"
 msgid "no"
 msgstr "жоқ"
 
 #. TRANSLATORS: This is when the transaction status is not known
-#: lib/pk-console-private.c:392
+#: lib/pk-console-private.c:391
 msgid "Unknown state"
 msgstr "Белгісіз күй"
 
 #. TRANSLATORS: transaction state, the daemon is in the process of starting
-#: lib/pk-console-private.c:396
+#: lib/pk-console-private.c:395
 msgid "Starting"
 msgstr "Іске қосылуда"
 
 #. TRANSLATORS: transaction state, the transaction is waiting for another to complete
-#: lib/pk-console-private.c:400
+#: lib/pk-console-private.c:399
 msgid "Waiting in queue"
 msgstr "Кезекте күтуде"
 
 #. TRANSLATORS: transaction state, just started
-#: lib/pk-console-private.c:404
+#: lib/pk-console-private.c:403
 msgid "Running"
 msgstr "Орындалуда"
 
 #. TRANSLATORS: transaction state, is querying data
-#: lib/pk-console-private.c:408
+#: lib/pk-console-private.c:407
 msgid "Querying"
 msgstr "Сұрау салынуда"
 
 #. TRANSLATORS: transaction state, getting data from a server
-#: lib/pk-console-private.c:412
+#: lib/pk-console-private.c:411
 msgid "Getting information"
 msgstr "Ақпарат алу"
 
 #. TRANSLATORS: transaction state, removing packages
-#: lib/pk-console-private.c:416
+#: lib/pk-console-private.c:415
 msgid "Removing packages"
 msgstr "Дестелерді өшіру"
 
 #. TRANSLATORS: transaction state, downloading package files
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-console-private.c:420 lib/pk-enum.c:1262
+#: lib/pk-console-private.c:419 lib/pk-enum.c:1237
 msgid "Downloading packages"
 msgstr "Дестелерді жүктеп алу"
 
 #. TRANSLATORS: transaction state, installing packages
-#: lib/pk-console-private.c:424
+#: lib/pk-console-private.c:423
 msgid "Installing packages"
 msgstr "Дестелерді орнату"
 
 #. TRANSLATORS: transaction state, refreshing internal lists
-#: lib/pk-console-private.c:428
+#: lib/pk-console-private.c:427
 msgid "Refreshing software list"
 msgstr "Бағдарламалық қамта тізімін жаңарту"
 
 #. TRANSLATORS: transaction state, installing updates
-#: lib/pk-console-private.c:432
+#: lib/pk-console-private.c:431
 msgid "Installing updates"
 msgstr "Жаңартуларды орнату"
 
 #. TRANSLATORS: transaction state, removing old packages, and cleaning config files
-#: lib/pk-console-private.c:436
+#: lib/pk-console-private.c:435
 msgid "Cleaning up packages"
 msgstr "Дестелерді тазалау"
 
 #. TRANSLATORS: transaction state, obsoleting old packages
-#: lib/pk-console-private.c:440
+#: lib/pk-console-private.c:439
 msgid "Obsoleting packages"
 msgstr "Дестелерді ескірген деп белгілеу"
 
 #. TRANSLATORS: transaction state, checking the transaction before we do it
-#: lib/pk-console-private.c:444
+#: lib/pk-console-private.c:443
 msgid "Resolving dependencies"
 msgstr "Тәуелділіктерді шешу"
 
 #. TRANSLATORS: transaction state, checking if we have all the security keys for the operation
-#: lib/pk-console-private.c:448
+#: lib/pk-console-private.c:447
 msgid "Checking signatures"
 msgstr "Қолтаңбаларды тексеру"
 
 #. TRANSLATORS: transaction state, when we're doing a test transaction
-#: lib/pk-console-private.c:452
+#: lib/pk-console-private.c:451
 msgid "Testing changes"
 msgstr "Өзгерістерді сынау"
 
 #. TRANSLATORS: transaction state, when we're writing to the system package database
-#: lib/pk-console-private.c:456
+#: lib/pk-console-private.c:455
 msgid "Committing changes"
 msgstr "Өзгерістерді бекіту"
 
 #. TRANSLATORS: transaction state, requesting data from a server
-#: lib/pk-console-private.c:460
+#: lib/pk-console-private.c:459
 msgid "Requesting data"
 msgstr "Мәліметтерді сұрау"
 
 #. TRANSLATORS: transaction state, all done!
-#: lib/pk-console-private.c:464
+#: lib/pk-console-private.c:463
 msgid "Finished"
 msgstr "Аяқталды"
 
 #. TRANSLATORS: transaction state, in the process of cancelling
-#: lib/pk-console-private.c:468
+#: lib/pk-console-private.c:467
 msgid "Cancelling"
 msgstr "Бас тартылуда"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:472
+#: lib/pk-console-private.c:471
 msgid "Downloading repository information"
 msgstr "Репозиторий ақпаратын жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:476
+#: lib/pk-console-private.c:475
 msgid "Downloading list of packages"
 msgstr "Дестелер тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:480
+#: lib/pk-console-private.c:479
 msgid "Downloading file lists"
 msgstr "Файлдар тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:484
+#: lib/pk-console-private.c:483
 msgid "Downloading lists of changes"
 msgstr "Өзгерістер тізімін жүктеп алу"
 
 #. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:488
-msgid "Downloading groups"
-msgstr "Топтарды жүктеп алу"
-
-#. TRANSLATORS: transaction state, downloading metadata
-#: lib/pk-console-private.c:492
+#: lib/pk-console-private.c:487
 msgid "Downloading update information"
 msgstr "Жаңарту ақпаратын жүктеп алу"
 
 #. TRANSLATORS: transaction state, repackaging delta files
-#: lib/pk-console-private.c:496
+#: lib/pk-console-private.c:491
 msgid "Repackaging files"
 msgstr "Файлдарды қайта дестелеу"
 
 #. TRANSLATORS: transaction state, loading databases
-#: lib/pk-console-private.c:500
+#: lib/pk-console-private.c:495
 msgid "Loading cache"
 msgstr "Кэшті жүктеу"
 
-#. TRANSLATORS: transaction state, scanning for running processes
-#: lib/pk-console-private.c:504
-msgid "Scanning applications"
-msgstr "Қолданбаларды сканерлеу"
-
-#. TRANSLATORS: transaction state, generating a list of packages installed on the system
-#: lib/pk-console-private.c:508
-msgid "Generating package lists"
-msgstr "Дестелер тізімін жасау"
-
 #. TRANSLATORS: transaction state, when we're waiting for the native tools to exit
-#: lib/pk-console-private.c:512
+#: lib/pk-console-private.c:499
 msgid "Waiting for package manager lock"
 msgstr "Дестелер менеджерінің құлыптауын күту"
 
 #. TRANSLATORS: transaction state, waiting for user to type in a password
-#: lib/pk-console-private.c:516
+#: lib/pk-console-private.c:503
 msgid "Waiting for authentication"
 msgstr "Аутентификацияны күту"
 
-#. TRANSLATORS: transaction state, we are updating the list of processes
-#: lib/pk-console-private.c:520
-msgid "Updating running applications"
-msgstr "Орындалып тұрған қолданбаларды жаңарту"
-
-#. TRANSLATORS: transaction state, we are checking executable files currently in use
-#: lib/pk-console-private.c:524
-msgid "Checking applications in use"
-msgstr "Қолданыстағы қолданбаларды тексеру"
-
-#. TRANSLATORS: transaction state, we are checking for libraries currently in use
-#: lib/pk-console-private.c:528
-msgid "Checking libraries in use"
-msgstr "Қолданыстағы кітапханаларды тексеру"
-
 #. TRANSLATORS: transaction state, we are copying package files before or after the transaction
-#: lib/pk-console-private.c:532
+#: lib/pk-console-private.c:507
 msgid "Copying files"
 msgstr "Файлдарды көшіру"
 
 #. TRANSLATORS: transaction state, we are running hooks before or after the transaction
-#: lib/pk-console-private.c:536
+#: lib/pk-console-private.c:511
 msgid "Running hooks"
 msgstr "Ілмектерді (hooks) орындау"
 
 #. TRANSLATORS: turn on all debugging
-#: lib/pk-debug.c:149
+#: lib/pk-debug.c:148
 msgid "Show debugging information for all files"
 msgstr "Барлық файлдар үшін жөндеу ақпаратын көрсету"
 
-#: lib/pk-debug.c:230
+#: lib/pk-debug.c:229
 msgid "Debugging Options"
 msgstr "Жөндеу опциялары"
 
-#: lib/pk-debug.c:231
+#: lib/pk-debug.c:230
 msgid "Show debugging options"
 msgstr "Жөндеу опцияларын көрсету"
 
 #. TRANSLATORS: The type of update
-#: lib/pk-enum.c:979
-msgid "Trivial"
-msgstr "Болымсыз"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:983
-msgid "Normal"
-msgstr "Қалыпты"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:987
-msgid "Important"
-msgstr "Маңызды"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:991
-msgid "Security"
-msgstr "Қауіпсіздік"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:995
-msgid "Bug fix"
-msgstr "Қателерді түзету"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:999
-msgid "Enhancement"
-msgstr "Жақсарту"
-
-#. TRANSLATORS: The type of update
-#: lib/pk-enum.c:1003
+#: lib/pk-enum.c:968
 msgid "Blocked"
 msgstr "Блокталған"
 
 #. TRANSLATORS: The state of a package
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1008 lib/pk-enum.c:1115
+#: lib/pk-enum.c:972 lib/pk-enum.c:1090
 msgid "Installed"
 msgstr "Орнатылған"
 
 #. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/pk-enum.c:1013
+#: lib/pk-enum.c:976
 msgid "Available"
 msgstr "Қолжетімді"
 
-#. TRANSLATORS: The state of a package, i.e. not installed
-#: lib/pk-enum.c:1017
-msgid "Unavailable"
-msgstr "Қолжетімді емес"
-
 #. TRANSLATORS: The state of a package: to be installed with the next action
-#: lib/pk-enum.c:1021
+#: lib/pk-enum.c:980
 msgid "Install"
 msgstr "Орнату"
 
 #. TRANSLATORS: The state of a package: to be removed with the next action
-#: lib/pk-enum.c:1025
+#: lib/pk-enum.c:984
 msgid "Remove"
 msgstr "Өшіру"
 
+#. TRANSLATORS: The state of a package: to be reinstalled with the next action
+#: lib/pk-enum.c:988
+#, fuzzy
+#| msgid "Reinstalled"
+msgid "Reinstall"
+msgstr "Қайта орнатылды"
+
 #. TRANSLATORS: The state of a package: package is obsolete
-#: lib/pk-enum.c:1029
+#: lib/pk-enum.c:992
 msgid "Obsolete"
 msgstr "Ескірген"
 
 #. TRANSLATORS: The state of a package: package is to be downgraded
-#: lib/pk-enum.c:1033
+#: lib/pk-enum.c:996
 msgid "Downgrade"
 msgstr "Нұсқасын төмендету"
 
+#. TRANSLATORS: The state of a package: package is to be updated
+#: lib/pk-enum.c:1000
+#, fuzzy
+#| msgid "Updates"
+msgid "Update"
+msgstr "Жаңартулар"
+
+#. TRANSLATORS: The state of a package: to be updated with a security fix
+#: lib/pk-enum.c:1004
+#, fuzzy
+#| msgid "Security"
+msgid "Security update"
+msgstr "Қауіпсіздік"
+
+#. TRANSLATORS: The state of a package: to be updated with an enhancement
+#: lib/pk-enum.c:1008
+#, fuzzy
+#| msgid "Enhancement"
+msgid "Enhancement update"
+msgstr "Жақсарту"
+
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1058
+#: lib/pk-enum.c:1033
 msgid "Downloading"
 msgstr "Жүктеп алу"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1062
+#: lib/pk-enum.c:1037
 msgid "Updating"
 msgstr "Жаңарту"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1066 lib/pk-enum.c:1201
+#: lib/pk-enum.c:1041 lib/pk-enum.c:1176
 msgid "Installing"
 msgstr "Орнату"
 
 #. TRANSLATORS: The action of the package, in present tense
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1070 lib/pk-enum.c:1197
+#: lib/pk-enum.c:1045 lib/pk-enum.c:1172
 msgid "Removing"
 msgstr "Өшіру"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1074
+#: lib/pk-enum.c:1049
 msgid "Cleaning up"
 msgstr "Тазалау"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1078
+#: lib/pk-enum.c:1053
 msgid "Obsoleting"
 msgstr "Ескірген деп белгілеу"
 
 #. TRANSLATORS: The action of the package, in present tense
-#: lib/pk-enum.c:1082
+#: lib/pk-enum.c:1057
 msgid "Reinstalling"
 msgstr "Қайта орнату"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1107
+#: lib/pk-enum.c:1082
 msgid "Downloaded"
 msgstr "Жүктеп алынды"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1119
+#: lib/pk-enum.c:1086
+msgid "Updated"
+msgstr "Жаңартылды"
+
+#. TRANSLATORS: The action of the package, in past tense
+#: lib/pk-enum.c:1094
 msgid "Removed"
 msgstr "Өшірілді"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1123
+#: lib/pk-enum.c:1098
 msgid "Cleaned up"
 msgstr "Тазаланды"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1127
+#: lib/pk-enum.c:1102
 msgid "Obsoleted"
 msgstr "Ескірді"
 
 #. TRANSLATORS: The action of the package, in past tense
-#: lib/pk-enum.c:1131
+#: lib/pk-enum.c:1106
 msgid "Reinstalled"
 msgstr "Қайта орнатылды"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1156
+#: lib/pk-enum.c:1131
 msgid "Unknown role type"
 msgstr "Белгісіз роль түрі"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1160
+#: lib/pk-enum.c:1135
 msgid "Getting dependencies"
 msgstr "Тәуелділіктерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1164
+#: lib/pk-enum.c:1139
 msgid "Getting update details"
 msgstr "Жаңарту мәліметтерін алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1169
+#: lib/pk-enum.c:1144
 msgid "Getting details"
 msgstr "Мәліметтерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1173
+#: lib/pk-enum.c:1148
 msgid "Getting requires"
 msgstr "Талаптарды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1177
+#: lib/pk-enum.c:1152
 msgid "Getting updates"
 msgstr "Жаңартуларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1181
+#: lib/pk-enum.c:1156
 msgid "Searching by details"
 msgstr "Мәліметтері бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1185
+#: lib/pk-enum.c:1160
 msgid "Searching by file"
 msgstr "Файлы бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1189
+#: lib/pk-enum.c:1164
 msgid "Searching groups"
 msgstr "Топтарды іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1193
+#: lib/pk-enum.c:1168
 msgid "Searching by name"
 msgstr "Аты бойынша іздеу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1205
+#: lib/pk-enum.c:1180
 msgid "Installing files"
 msgstr "Файлдарды орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1209
+#: lib/pk-enum.c:1184
 msgid "Refreshing cache"
 msgstr "Кэшті жаңарту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1213
+#: lib/pk-enum.c:1188
 msgid "Updating packages"
 msgstr "Дестелерді жаңарту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1217
+#: lib/pk-enum.c:1192
 msgid "Canceling"
 msgstr "Бас тартылуда"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1221
+#: lib/pk-enum.c:1196
 msgid "Getting repositories"
 msgstr "Репозиторийлерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1225
+#: lib/pk-enum.c:1200
 msgid "Modifying repository"
 msgstr "Репозиторийді өзгерту"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1229
+#: lib/pk-enum.c:1204
 msgid "Setting data"
 msgstr "Мәліметтерді орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1233
+#: lib/pk-enum.c:1208
 msgid "Removing repository"
 msgstr "Репозиторийді өшіру"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1237
+#: lib/pk-enum.c:1212
 msgid "Resolving"
 msgstr "Шешілуде"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1242
+#: lib/pk-enum.c:1217
 msgid "Getting file list"
 msgstr "Файлдар тізімін алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1246
+#: lib/pk-enum.c:1221
 msgid "Getting provides"
 msgstr "Ұсынылатын мүмкіндіктерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1250
+#: lib/pk-enum.c:1225
 msgid "Installing signature"
 msgstr "Қолтаңбаны орнату"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1254
+#: lib/pk-enum.c:1229
 msgid "Getting packages"
 msgstr "Дестелерді алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1258
+#: lib/pk-enum.c:1233
 msgid "Accepting EULA"
 msgstr "EULA қабылдау"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1266
+#: lib/pk-enum.c:1241
 msgid "Getting upgrades"
 msgstr "Жаңғыртуларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1270
-msgid "Getting categories"
-msgstr "Санаттарды алу"
-
-#. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1274
+#: lib/pk-enum.c:1245
 msgid "Getting transactions"
 msgstr "Транзакцияларды алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1278
+#: lib/pk-enum.c:1249
 msgid "Getting system upgrades"
 msgstr "Жүйе жаңғыртуларын алу"
 
 #. TRANSLATORS: The role of the transaction, in present tense
-#: lib/pk-enum.c:1282
+#: lib/pk-enum.c:1253
 msgid "Repairing system"
 msgstr "Жүйені жөндеу"
 
 #. TRANSLATORS: ask the user if they are comfortable installing insecure packages
-#: lib/pk-task-text.c:54
+#: lib/pk-task-text.c:52
 msgid "Do you want to allow installing of unsigned software?"
 msgstr "Қолтаңбасы жоқ бағдарламалық қамтаны орнатуға рұқсат бересіз бе?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: lib/pk-task-text.c:60
+#: lib/pk-task-text.c:58
 msgid "The unsigned software will not be installed."
 msgstr "Қолтаңбасы жоқ бағдарламалық қамта орнатылмайды."
 
 #. TRANSLATORS: the package repository is signed by a key that is not recognised
-#: lib/pk-task-text.c:112
+#: lib/pk-task-text.c:110
 msgid "Software source signature required"
 msgstr "Бағдарламалық қамта көзінің қолтаңбасы қажет"
 
+#. TRANSLATORS: the package that is not signed by a known key
+#. TRANSLATORS: the package name that was trying to be installed
+#: lib/pk-task-text.c:113 lib/pk-task-text.c:184
+msgid "Package"
+msgstr "Десте"
+
 #. TRANSLATORS: the package repository name
-#: lib/pk-task-text.c:118
+#: lib/pk-task-text.c:116
 msgid "Software source name"
 msgstr "Бағдарламалық қамта көзінің аты"
 
 #. TRANSLATORS: the key URL
-#: lib/pk-task-text.c:121
+#: lib/pk-task-text.c:119
 msgid "Key URL"
 msgstr "Кілт URL-і"
 
 #. TRANSLATORS: the username of the key
-#: lib/pk-task-text.c:124
+#: lib/pk-task-text.c:122
 msgid "Key user"
 msgstr "Кілт пайдаланушысы"
 
 #. TRANSLATORS: the key ID, usually a few hex digits
-#: lib/pk-task-text.c:127
+#: lib/pk-task-text.c:125
 msgid "Key ID"
 msgstr "Кілт ID-і"
 
 #. TRANSLATORS: the key fingerprint, again, yet more hex
-#: lib/pk-task-text.c:130
+#: lib/pk-task-text.c:128
 msgid "Key fingerprint"
 msgstr "Кілт саусақ ізі"
 
 #. TRANSLATORS: the timestamp (a bit like a machine readable time)
-#: lib/pk-task-text.c:133
+#: lib/pk-task-text.c:131
 msgid "Key Timestamp"
 msgstr "Кілт уақыт таңбасы"
 
 #. TRANSLATORS: ask the user if they want to import
-#: lib/pk-task-text.c:146
+#: lib/pk-task-text.c:144
 msgid "Do you accept this signature?"
 msgstr "Бұл қолтаңбаны қабылдайсыз ба?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: lib/pk-task-text.c:151
+#: lib/pk-task-text.c:149
 msgid "The signature was not accepted."
 msgstr "Қолтаңба қабылданбады."
 
 #. TRANSLATORS: this is another name for a software licence that has to be read before installing
-#: lib/pk-task-text.c:183
+#: lib/pk-task-text.c:181
 msgid "End user licence agreement required"
 msgstr "Соңғы пайдаланушының лицензиялық келісімі қажет"
 
+#. TRANSLATORS: the vendor (e.g. vmware) that is providing the EULA
+#: lib/pk-task-text.c:187
+msgid "Vendor"
+msgstr "Жеткізуші"
+
 #. TRANSLATORS: the EULA text itself (long and boring)
-#: lib/pk-task-text.c:193
+#: lib/pk-task-text.c:191
 msgid "Agreement"
 msgstr "Келісім"
 
 #. TRANSLATORS: ask the user if they've read and accepted the EULA
-#: lib/pk-task-text.c:197
+#: lib/pk-task-text.c:195
 msgid "Do you accept this agreement?"
 msgstr "Бұл келісімді қабылдайсыз ба?"
 
 #. TRANSLATORS: tell the user we've not done anything
-#: lib/pk-task-text.c:202
+#: lib/pk-task-text.c:200
 msgid "The agreement was not accepted."
 msgstr "Келісім қабылданбады."
 
-#. TRANSLATORS: the user needs to change media inserted into the computer
-#: lib/pk-task-text.c:240
-msgid "Media change required"
-msgstr "Тасушыны ауыстыру қажет"
-
-#. TRANSLATORS: the type, e.g. DVD, CD, etc
-#: lib/pk-task-text.c:243
-msgid "Media type"
-msgstr "Тасушы түрі"
-
-#. TRANSLATORS: the media label, usually like 'disk-1of3'
-#: lib/pk-task-text.c:246
-msgid "Media label"
-msgstr "Тасушы белгісі"
-
-#. TRANSLATORS: the media description, usually like 'Fedora 12 disk 5'
-#: lib/pk-task-text.c:249
-msgid "Text"
-msgstr "Мәтін"
-
-#. TRANSLATORS: ask the user to insert the media
-#: lib/pk-task-text.c:255
-msgid "Please insert the correct media"
-msgstr "Дұрыс тасушыны салыңыз"
-
-#. TRANSLATORS: tell the user we've not done anything as they are lazy
-#: lib/pk-task-text.c:260
-msgid "The correct media was not inserted."
-msgstr "Дұрыс тасушы салынбады."
-
 #. TRANSLATORS: When processing, we might have to remove other dependencies
-#: lib/pk-task-text.c:275
+#: lib/pk-task-text.c:215
 msgid "The following packages have to be removed:"
 msgstr "Келесі дестелер өшірілуі керек:"
 
 #. TRANSLATORS: When processing, we might have to install other dependencies
-#: lib/pk-task-text.c:280
+#: lib/pk-task-text.c:220
 msgid "The following packages have to be installed:"
 msgstr "Келесі дестелер орнатылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to update other dependencies
-#: lib/pk-task-text.c:285
+#: lib/pk-task-text.c:226
 msgid "The following packages have to be updated:"
 msgstr "Келесі дестелер жаңартылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to reinstall other dependencies
-#: lib/pk-task-text.c:290
+#: lib/pk-task-text.c:231
 msgid "The following packages have to be reinstalled:"
 msgstr "Келесі дестелер қайта орнатылуы керек:"
 
 #. TRANSLATORS: When processing, we might have to downgrade other dependencies
-#: lib/pk-task-text.c:295
+#: lib/pk-task-text.c:236
 msgid "The following packages have to be downgraded:"
 msgstr "Келесі дестелердің нұсқасы төмендетілуі керек:"
 
 #. TRANSLATORS: When processing, we might have to obsolete other dependencies
-#: lib/pk-task-text.c:300
+#: lib/pk-task-text.c:241
 msgid "The following packages have to be obsoleted:"
 msgstr "Келесі дестелер ескірген деп белгіленуі керек:"
 
 #. TRANSLATORS: When processing, untrusted and non-verified packages may be encountered
-#: lib/pk-task-text.c:305
+#: lib/pk-task-text.c:246
 msgid "The following packages are untrusted:"
 msgstr "Келесі дестелер сенімсіз:"
 
 #. TRANSLATORS: ask the user if the proposed changes are okay
-#: lib/pk-task-text.c:438
+#: lib/pk-task-text.c:379
 msgid "Proceed with changes?"
 msgstr "Өзгерістерді жалғастыру керек пе?"
 
 #. TRANSLATORS: tell the user we didn't do anything
-#: lib/pk-task-text.c:443
+#: lib/pk-task-text.c:384
 msgid "The transaction did not proceed."
 msgstr "Транзакция жалғастырылмады."
 
 #. TRANSLATORS: this is a command alias
-#: src/pk-direct.c:99
+#: src/pk-direct.c:98
 #, c-format
 msgid "Alias to %s"
 msgstr "%s үшін бүркеншік ат"
 
-#: src/pk-direct.c:166
+#: src/pk-direct.c:165
 msgid "Command not found, valid commands are:"
 msgstr "Команда табылмады, жарамды командалар:"
 
 #. TRANSLATORS: a backend is the system package tool, e.g. dnf, apt
-#: src/pk-direct.c:411 src/pk-main.c:124
+#: src/pk-direct.c:410 src/pk-main.c:123
 msgid "Packaging backend to use, e.g. dummy"
 msgstr "Пайдаланылатын дестелеу бэкэнді, мысалы, dummy"
 
-#: src/pk-direct.c:414 src/pk-main.c:142
+#: src/pk-direct.c:413 src/pk-main.c:141
 msgid "FILE"
 msgstr "ФАЙЛ"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
-#: src/pk-direct.c:414 src/pk-main.c:142
+#: src/pk-direct.c:413 src/pk-main.c:141
 msgid "Use this configuration file instead of the default"
 msgstr "Үнсіз келісім бойынша файлдың орнына осы конфигурация файлын пайдалану"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:433
+#: src/pk-direct.c:432
 msgid "Refresh the cache"
 msgstr "Кэшті жаңарту"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:438
+#: src/pk-direct.c:437
 msgid "Refresh the cache (forced)"
 msgstr "Кэшті жаңарту (мәжбүрлі)"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:443
+#: src/pk-direct.c:442
 msgid "Search by names"
 msgstr "Аттары бойынша іздеу"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:448
+#: src/pk-direct.c:447
 msgid "Search by details"
 msgstr "Мәліметтері бойынша іздеу"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:453
+#: src/pk-direct.c:452
 msgid "Search by files"
 msgstr "Файлдар бойынша іздеу"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:458
+#: src/pk-direct.c:457
 msgid "Install package"
 msgstr "Дестені орнату"
 
 #. TRANSLATORS: command description
-#: src/pk-direct.c:468
+#: src/pk-direct.c:467
 msgid "Set repository options"
 msgstr "Репозиторий опцияларын орнату"
 
 #. TRANSLATORS: program name
-#: src/pk-direct.c:479
+#: src/pk-direct.c:478
 msgid "PackageKit"
 msgstr "PackageKit"
 
 #. TRANSLATORS: the user didn't read the man page
-#: src/pk-direct.c:485
+#: src/pk-direct.c:484
 msgid "Failed to parse arguments"
 msgstr "Аргументтерді талдау сәтсіз аяқталды"
 
-#: src/pk-direct.c:494 src/pk-main.c:186
-msgid "Config file was not found."
-msgstr "Конфигурациялық файл табылмады."
-
 #. TRANSLATORS: probably not yet installed
-#: src/pk-direct.c:501
+#: src/pk-direct.c:493
 msgid "Failed to load the config file"
 msgstr "Конфигурациялық файлды жүктеу сәтсіз аяқталды"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-direct.c:533
+#: src/pk-direct.c:525
 msgid "Failed to load the backend"
 msgstr "Бэкендті жүктеу сәтсіз аяқталды"
 
 #. TRANSLATORS: cannot unload the backend the user specified
-#: src/pk-direct.c:584
+#: src/pk-direct.c:576
 msgid "Failed to unload the backend"
 msgstr "Бэкендті шығару сәтсіз аяқталды"
 
 #. TRANSLATORS: if we should not monitor how long we are inactive for
-#: src/pk-main.c:127
+#: src/pk-main.c:126
 msgid "Disable the idle timer"
 msgstr "Бос тұру таймерін сөндіру"
 
 #. TRANSLATORS: show version
-#: src/pk-main.c:130
+#: src/pk-main.c:129
 msgid "Show version and exit"
 msgstr "Нұсқаны көрсету және шығу"
 
 #. TRANSLATORS: exit after we've started up, used for user profiling
-#: src/pk-main.c:133
+#: src/pk-main.c:132
 msgid "Exit after a small delay"
 msgstr "Кішкене кідірістен кейін шығу"
 
 #. TRANSLATORS: exit straight away, used for automatic profiling
-#: src/pk-main.c:136
+#: src/pk-main.c:135
 msgid "Exit after the engine has loaded"
 msgstr "Қозғалтқыш жүктелгеннен кейін шығу"
 
 #. TRANSLATORS: don't unset environment variables, used for debugging
-#: src/pk-main.c:139
+#: src/pk-main.c:138
 msgid "Don't clear environment on startup"
 msgstr "Іске қосылғанда ортаны тазаламау"
 
 #. TRANSLATORS: describing the service that is running
-#: src/pk-main.c:157
+#: src/pk-main.c:156
 msgid "PackageKit service"
 msgstr "PackageKit қызметі"
 
 #. TRANSLATORS: The placeholder is an error message
-#: src/pk-main.c:192
+#: src/pk-main.c:185
 #, c-format
 msgid "Failed to load config file: %s"
 msgstr "Конфигурациялық файлды жүктеу сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: The placeholder is an error message.
 #. * `auto` is a potential value of the DefaultBackend= configuration key.
-#: src/pk-main.c:237
+#: src/pk-main.c:230
 #, c-format
 msgid "Failed to resolve auto: %s"
 msgstr "auto шешілуі сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: cannot load the backend the user specified
-#: src/pk-main.c:256
+#: src/pk-main.c:249
 #, c-format
 msgid "Failed to load the backend: %s"
 msgstr "Бэкэндті жүктеу сәтсіз аяқталды: %s"
 
 #. TRANSLATORS: is not GPG signed
-#: src/pk-transaction.c:2751
+#: src/pk-transaction.c:2499
 msgid "The software is not from a trusted source."
 msgstr "Бағдарламалық қамта сенімді көзден емес."
 
-#: src/pk-transaction.c:2759
+#: src/pk-transaction.c:2507
 msgid "Do not update this package unless you are sure it is safe to do so."
 msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестені жаңартпаңыз."
 
-#: src/pk-transaction.c:2761
+#: src/pk-transaction.c:2509
 msgid "Do not update these packages unless you are sure it is safe to do so."
 msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестелерді жаңартпаңыз."
 
-#: src/pk-transaction.c:2772
+#: src/pk-transaction.c:2520
 msgid "Do not install this package unless you are sure it is safe to do so."
 msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестені орнатпаңыз."
 
-#: src/pk-transaction.c:2774
+#: src/pk-transaction.c:2522
 msgid "Do not install these packages unless you are sure it is safe to do so."
 msgstr "Егер қауіпсіз екеніне сенімді болмасаңыз, бұл дестелерді орнатпаңыз."
+
+#~ msgid "Transaction"
+#~ msgstr "Транзакция"
+
+#~ msgid "System time"
+#~ msgstr "Жүйелік уақыт"
+
+#~ msgid "Succeeded"
+#~ msgstr "Сәтті аяқталды"
+
+#~ msgid "Role"
+#~ msgstr "Роль"
+
+#~ msgid "(seconds)"
+#~ msgstr "(секунд)"
+
+#~ msgid "Duration"
+#~ msgstr "Ұзақтығы"
+
+#~ msgid "Command line"
+#~ msgstr "Командалық жол"
+
+#~ msgid "User ID"
+#~ msgstr "Пайдаланушы ID-і"
+
+#~ msgid "Username"
+#~ msgstr "Пайдаланушы аты"
+
+#~ msgid "Real name"
+#~ msgstr "Нақты аты"
+
+#~ msgid "Affected packages: None"
+#~ msgstr "Әсер еткен дестелер: Ешқандай"
+
+#~ msgid "Distribution"
+#~ msgstr "Дистрибутив"
+
+#~ msgid "Type"
+#~ msgstr "Түрі"
+
+#~ msgid "Summary"
+#~ msgstr "Жиынтық"
+
+#~ msgid "Category"
+#~ msgstr "Санат"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Parent"
+#~ msgstr "Аталық"
+
+#~ msgid "Name"
+#~ msgstr "Аты"
+
+#~ msgid "Icon"
+#~ msgstr "Таңбаша"
+
+#~ msgid "Details about the update:"
+#~ msgstr "Жаңарту туралы мәліметтер:"
+
+#~ msgid "Obsoletes"
+#~ msgstr "Ескіргендер"
+
+#~ msgid "Bugzilla"
+#~ msgstr "Bugzilla"
+
+#~ msgid "CVE"
+#~ msgstr "CVE"
+
+#~ msgid "Restart"
+#~ msgstr "Қайта іске қосу"
+
+#~ msgid "Update text"
+#~ msgstr "Жаңарту мәтіні"
+
+#~ msgid "Changes"
+#~ msgstr "Өзгерістер"
+
+#~ msgid "State"
+#~ msgstr "Күйі"
+
+#~ msgid "Issued"
+#~ msgstr "Шығарылған"
+
+#~ msgid "Enabled"
+#~ msgstr "Іске қосылған"
+
+#~ msgid "Disabled"
+#~ msgstr "Сөндірілген"
+
+#~ msgid "System restart required by:"
+#~ msgstr "Жүйені қайта іске қосуды талап етеді:"
+
+#~ msgid "Session restart required:"
+#~ msgstr "Сеансты қайта іске қосу қажет:"
+
+#~ msgid "System restart (security) required by:"
+#~ msgstr "Жүйені қайта іске қосу (қауіпсіздік) талап етіледі:"
+
+#~ msgid "Session restart (security) required:"
+#~ msgstr "Сеансты қайта іске қосу (қауіпсіздік) қажет:"
+
+#~ msgid "Application restart required by:"
+#~ msgstr "Қолданбаны қайта іске қосуды талап етеді:"
+
+#~ msgid "Package description"
+#~ msgstr "Десте сипаттамасы"
+
+#~ msgid "No files"
+#~ msgstr "Файлдар жоқ"
+
+#~ msgid "Package files"
+#~ msgstr "Десте файлдары"
+
+#~ msgid "Percentage"
+#~ msgstr "Пайыз"
+
+#~ msgid "Status"
+#~ msgstr "Күйі"
+
+#~ msgid "Results:"
+#~ msgstr "Нәтижелер:"
+
+#~ msgid "Fatal error"
+#~ msgstr "Өлімшіл қате"
+
+#~ msgid "There are no packages to update."
+#~ msgstr "Жаңартылатын дестелер жоқ."
+
+#~ msgid "There are no updates available at this time."
+#~ msgstr "Қазіргі уақытта қолжетімді жаңартулар жоқ."
+
+#~ msgid "There are no upgrades available at this time."
+#~ msgstr "Қазіргі уақытта қолжетімді жаңғыртулар жоқ."
+
+#~ msgid "Please restart the computer to complete the update."
+#~ msgstr "Жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
+
+#~ msgid "Please logout and login to complete the update."
+#~ msgstr "Жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
+
+#~ msgid "Please restart the computer to complete the update as important security updates have been installed."
+#~ msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін компьютерді қайта іске қосыңыз."
+
+#~ msgid "Please logout and login to complete the update as important security updates have been installed."
+#~ msgstr "Маңызды қауіпсіздік жаңартулары орнатылғандықтан, жаңартуды аяқтау үшін жүйеден шығып, қайта кіріңіз."
+
+#~ msgid "Package not found"
+#~ msgstr "Десте табылмады"
+
+#~ msgid "No packages were found"
+#~ msgstr "Дестелер табылмады"
+
+#, c-format
+#~ msgid "Expected package name, actually got file. Try using 'pkcon install-local %s' instead."
+#~ msgstr "Десте аты күтілді, бірақ файл алынды. Оның орнына 'pkcon install-local %s' пайдаланып көріңіз."
+
+#, c-format
+#~ msgid "This tool could not find any available package: %s"
+#~ msgstr "Бұл сайман қолжетімді десте таба алмады: %s"
+
+#~ msgid "This tool could not find any available package."
+#~ msgstr "Бұл сайман ешқандай қолжетімді десте таба алмады."
+
+#~ msgid "The selected packages may already be installed."
+#~ msgstr "Таңдалған дестелер орнатылып қойған болуы мүмкін."
+
+#, c-format
+#~ msgid "This tool could not find the installed package: %s"
+#~ msgstr "Бұл сайман орнатылған дестені таба алмады: %s"
+
+#, c-format
+#~ msgid "This tool could not find the package: %s"
+#~ msgstr "Бұл сайман дестені таба алмады: %s"
+
+#~ msgid "No packages require updating to newer versions."
+#~ msgstr "Жаңа нұсқаларға жаңартуды талап ететін дестелер жоқ."
+
+#, c-format
+#~ msgid "This tool could not find all the packages: %s"
+#~ msgstr "Бұл сайман барлық дестелерді таба алмады: %s"
+
+#~ msgid "PackageKit Console Interface"
+#~ msgstr "PackageKit консольдік интерфейсі"
+
+#~ msgid "Subcommands:"
+#~ msgstr "Ішкі командалар:"
+
+#~ msgid "Time since"
+#~ msgstr "Содан бергі уақыт"
+
+#~ msgid "Prepared updates:"
+#~ msgstr "Дайындалған жаңартулар:"
+
+#~ msgid "The proxy could not be set"
+#~ msgstr "Проксиді орнату мүмкін болмады"
+
+#~ msgid "Show the program version and exit"
+#~ msgstr "Бағдарлама нұсқасын көрсету және шығу"
+
+#~ msgid "Set the filter, e.g. installed"
+#~ msgstr "Сүзгіні орнату, мысалы, орнатылған"
+
+#~ msgid "Install the packages without asking for confirmation"
+#~ msgstr "Дестелерді растауды сұрамай-ақ орнату"
+
+#~ msgid "Allow packages to be downgraded during transaction"
+#~ msgstr "Транзакция кезінде дестелер нұсқасын төмендетуге рұқсат беру"
+
+#~ msgid "Allow packages to be reinstalled during transaction"
+#~ msgstr "Транзакция кезінде дестелерді қайта орнатуға рұқсат беру"
+
+#~ msgid "Automatically remove unused dependencies"
+#~ msgstr "Пайдаланылмаған тәуелділіктерді автоматты түрде өшіру"
+
+#~ msgid "Print to screen a machine readable output, rather than using animated widgets"
+#~ msgstr "Анимациялық виджеттерді пайдаланудың орнына, экранға машина оқи алатын шығысты басып шығару"
+
+#~ msgid "The maximum metadata cache age (in seconds). Use -1 to use only cache, 1 to reload cache."
+#~ msgstr "Метадеректер кэшінің максималды жасы (секундпен). Тек кэшті пайдалану үшін -1, кэшті қайта жүктеу үшін 1 мәнін пайдаланыңыз."
+
+#~ msgid "Allow untrusted packages to be installed."
+#~ msgstr "Сенімсіз дестелерді орнатуға рұқсат беру."
+
+#~ msgid "Failed to parse command line"
+#~ msgstr "Командалық жолды талдау сәтсіз аяқталды"
+
+#~ msgid "Failed to contact PackageKit"
+#~ msgstr "PackageKit-пен байланысу сәтсіз аяқталды"
+
+#~ msgid "A search type is required, e.g. name"
+#~ msgstr "Іздеу түрі қажет, мысалы, name"
+
+#~ msgid "A search term is required"
+#~ msgstr "Іздеу сөзі қажет"
+
+#~ msgid "A package name to install is required"
+#~ msgstr "Орнатылатын десте аты қажет"
+
+#~ msgid "A filename to install is required"
+#~ msgstr "Орнатылатын файл аты қажет"
+
+#~ msgid "A type, key_id and package_id are required"
+#~ msgstr "Түрі, key_id және package_id қажет"
+
+#~ msgid "A package name to remove is required"
+#~ msgstr "Өшірілетін десте аты қажет"
+
+#~ msgid "A destination directory and the package names to download are required"
+#~ msgstr "Мақсатты бума мен жүктеп алынатын десте аттары қажет"
+
+#~ msgid "Directory not found"
+#~ msgstr "Бума табылмады"
+
+#~ msgid "A licence identifier (eula-id) is required"
+#~ msgstr "Лицензия идентификаторы (eula-id) қажет"
+
+#~ msgid "A package name to resolve is required"
+#~ msgstr "Шешілетін десте аты қажет"
+
+#~ msgid "A repository name is required"
+#~ msgstr "Репозиторий аты қажет"
+
+#~ msgid "A repo name, parameter and value are required"
+#~ msgstr "Репозиторий аты, параметрі және мәні қажет"
+
+#~ msgid "A repo id and autoremove required"
+#~ msgstr "Репозиторий ID-і және автоматты өшіру қажет"
+
+#~ msgid "A package name is required"
+#~ msgstr "Десте аты қажет"
+
+#~ msgid "A package provide string is required"
+#~ msgstr "Десте ұсынатын мүмкіндік жолы қажет"
+
+#~ msgid "A filename is required"
+#~ msgstr "Файл аты қажет"
+
+#~ msgid "Description"
+#~ msgstr "Сипаттамасы"
+
+#~ msgid "Author"
+#~ msgstr "Авторы"
+
+#~ msgid "You need to specify a list file to create"
+#~ msgstr "Жасалатын тізім файлын көрсетуіңіз керек"
+
+#, c-format
+#~ msgid "File already exists: %s"
+#~ msgstr "Файл бар болып шықты: %s"
+
+#, c-format
+#~ msgid "Option '%s' is not supported"
+#~ msgstr "'%s' опциясына қолдау көрсетілмейді"
+
+#~ msgid "Command failed"
+#~ msgstr "Команда сәтсіз аяқталды"
+
+#~ msgid "PackageKit Monitor"
+#~ msgstr "PackageKit мониторы"
+
+#~ msgid "Categories:"
+#~ msgstr "Санаттар:"
+
+#~ msgid "Downloading groups"
+#~ msgstr "Топтарды жүктеп алу"
+
+#~ msgid "Scanning applications"
+#~ msgstr "Қолданбаларды сканерлеу"
+
+#~ msgid "Generating package lists"
+#~ msgstr "Дестелер тізімін жасау"
+
+#~ msgid "Updating running applications"
+#~ msgstr "Орындалып тұрған қолданбаларды жаңарту"
+
+#~ msgid "Checking applications in use"
+#~ msgstr "Қолданыстағы қолданбаларды тексеру"
+
+#~ msgid "Checking libraries in use"
+#~ msgstr "Қолданыстағы кітапханаларды тексеру"
+
+#~ msgid "Trivial"
+#~ msgstr "Болымсыз"
+
+#~ msgid "Normal"
+#~ msgstr "Қалыпты"
+
+#~ msgid "Important"
+#~ msgstr "Маңызды"
+
+#~ msgid "Bug fix"
+#~ msgstr "Қателерді түзету"
+
+#~ msgid "Unavailable"
+#~ msgstr "Қолжетімді емес"
+
+#~ msgid "Getting categories"
+#~ msgstr "Санаттарды алу"
+
+#~ msgid "Media change required"
+#~ msgstr "Тасушыны ауыстыру қажет"
+
+#~ msgid "Media type"
+#~ msgstr "Тасушы түрі"
+
+#~ msgid "Media label"
+#~ msgstr "Тасушы белгісі"
+
+#~ msgid "Text"
+#~ msgstr "Мәтін"
+
+#~ msgid "Please insert the correct media"
+#~ msgstr "Дұрыс тасушыны салыңыз"
+
+#~ msgid "The correct media was not inserted."
+#~ msgstr "Дұрыс тасушы салынбады."
+
+#~ msgid "Config file was not found."
+#~ msgstr "Конфигурациялық файл табылмады."
 
 #~ msgid "List package dependencies"
 #~ msgstr "Десте тәуелділіктерін тізімдеу"
