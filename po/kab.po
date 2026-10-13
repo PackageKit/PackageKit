@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PackageKit\n"
 "Report-Msgid-Bugs-To: packagekit@lists.freedesktop.org\n"
 "POT-Creation-Date: 2026-10-10 10:05+0200\n"
-"PO-Revision-Date: 2026-04-16 09:49+0000\n"
+"PO-Revision-Date: 2026-10-13 07:51+0000\n"
 "Last-Translator: ButterflyOfFire <boffire@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Kabyle <https://hosted.weblate.org/projects/packagekit/translations/kab/>\n"
 "Language: kab\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #. TRANSLATORS: this is a percentage value we use in messages, e.g. "90%"
 #: client/pk-offline-update.c:165
@@ -93,7 +93,7 @@ msgstr ""
 
 #: client/pkgc-manage.c:78
 msgid "SECONDS"
-msgstr ""
+msgstr "TASININ"
 
 #. TRANSLATORS: Description for pkgcli refresh
 #: client/pkgc-manage.c:203
@@ -463,7 +463,7 @@ msgstr ""
 #. TRANSLATORS: Header for list of available package filters
 #: client/pkgc-query.c:829
 msgid "Filters:"
-msgstr ""
+msgstr "Imsizdigen:"
 
 #. TRANSLATORS: Header for list of available package groups
 #: client/pkgc-query.c:841
@@ -825,9 +825,8 @@ msgstr "Yettuleqqem:"
 
 #. TRANSLATORS: Label for transaction information
 #: client/pkgc-util.c:1035
-#, fuzzy
 msgid "Transaction:"
-msgstr "Tanzagt"
+msgstr "Tanigawt:"
 
 #. TRANSLATORS: Label for system time of the transaction
 #: client/pkgc-util.c:1039
@@ -841,11 +840,11 @@ msgstr "Yedda:"
 
 #: client/pkgc-util.c:1047
 msgid "True"
-msgstr ""
+msgstr "Uzɣan"
 
 #: client/pkgc-util.c:1048
 msgid "False"
-msgstr ""
+msgstr "Aruzɣan"
 
 #. TRANSLATORS: Label for transaction role
 #: client/pkgc-util.c:1052
@@ -1299,37 +1298,37 @@ msgstr ""
 
 #: lib/pk-console-private.c:334
 msgid "[N/y]"
-msgstr ""
+msgstr "[U/i]"
 
 #. TRANSLATORS: shown after a yes/no question, the capital letter is the
 #. * default answer; the letters must match the translated "y" and "n" answers
 #: lib/pk-console-private.c:334
 msgid "[Y/n]"
-msgstr ""
+msgstr "[I/u]"
 
 #. TRANSLATORS: short "yes" answer, must match [Y/n]
 #: lib/pk-console-private.c:351
 msgctxt "Answer"
 msgid "y"
-msgstr ""
+msgstr "i"
 
 #. TRANSLATORS: full "yes" answer
 #: lib/pk-console-private.c:355
 msgctxt "Answer"
 msgid "yes"
-msgstr ""
+msgstr "ih"
 
 #. TRANSLATORS: short "no" answer, must match [N/y]
 #: lib/pk-console-private.c:362
 msgctxt "Answer"
 msgid "n"
-msgstr ""
+msgstr "u"
 
 #. TRANSLATORS: full "no" answer
 #: lib/pk-console-private.c:366
 msgctxt "Answer"
 msgid "no"
-msgstr ""
+msgstr "uhu"
 
 #. TRANSLATORS: This is when the transaction status is not known
 #: lib/pk-console-private.c:391
@@ -1528,10 +1527,8 @@ msgstr "Kkes"
 
 #. TRANSLATORS: The state of a package: to be reinstalled with the next action
 #: lib/pk-enum.c:988
-#, fuzzy
-#| msgid "Install"
 msgid "Reinstall"
-msgstr "Sebded"
+msgstr "Ales asebded"
 
 #. TRANSLATORS: The state of a package: package is obsolete
 #: lib/pk-enum.c:992
@@ -1545,10 +1542,8 @@ msgstr ""
 
 #. TRANSLATORS: The state of a package: package is to be updated
 #: lib/pk-enum.c:1000
-#, fuzzy
-#| msgid "Updates"
 msgid "Update"
-msgstr "Ileqman"
+msgstr "Leqqem"
 
 #. TRANSLATORS: The state of a package: to be updated with a security fix
 #: lib/pk-enum.c:1004
@@ -1607,7 +1602,7 @@ msgstr ""
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1086
 msgid "Updated"
-msgstr ""
+msgstr "Yettwalqem"
 
 #. TRANSLATORS: The action of the package, in past tense
 #: lib/pk-enum.c:1094
@@ -1918,7 +1913,7 @@ msgstr ""
 
 #: src/pk-direct.c:413 src/pk-main.c:141
 msgid "FILE"
-msgstr ""
+msgstr "AFAYLU"
 
 #. TRANSLATORS: path to an alternative configuration file, used for testing
 #: src/pk-direct.c:413 src/pk-main.c:141
