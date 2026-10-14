@@ -1,6 +1,6 @@
 [library]
 version = "@VERSION@"
-description = "PackageKit reference manual: specification, D-Bus API and the packagekit-glib2 library"
+description = "PackageKit reference manual: specification, D-Bus API and the libpackagekit client library"
 authors = "The PackageKit Authors"
 license = "LGPL-2.1-or-later"
 website_url = "https://packagekit.freedesktop.org/"

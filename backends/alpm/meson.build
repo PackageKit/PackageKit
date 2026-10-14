@@ -27,7 +27,7 @@ pk_backend_modules += shared_module(
     'pk-alpm-update.h',
     include_directories: packagekit_src_include,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         alpm_dep,
         gmodule_dep,
     ],

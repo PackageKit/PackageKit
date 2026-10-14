@@ -13,7 +13,7 @@ pk_backend_modules += shared_module(
     ],
     include_directories: packagekit_src_include,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         gmodule_dep,
         libpkg_dep
     ],

@@ -8,7 +8,7 @@ pk_backend_modules += shared_module(
     'pk-backend-poldek.c',
     include_directories: packagekit_src_include,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         poldek_dep,
         poclidek_dep,
         gmodule_dep,

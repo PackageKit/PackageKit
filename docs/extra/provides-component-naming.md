@@ -50,7 +50,7 @@ In general, the component naming should be `type(component-name)`.
   same as `plasma4(servicetype-name)`.
 
 - `SHARED_LIB`: Name of a shared library
-  Example: `libpackagekit-glib2.so.14`
+  Example: `libpackagekit.so.1`
 
 - `PYTHON`: A string in the format of `python<version>(module-name)`,
   or just the name of the Python module.

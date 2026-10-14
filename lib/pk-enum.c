@@ -22,9 +22,9 @@
 /**
  * SECTION:pk-enum
  * @title: Enumerations
- * @short_description: Enumerations used in packagekit-glib2
+ * @short_description: Enumerations used in libpackagekit
  *
- * Enumerated values used in packagekit-glib2 and functions for using these.
+ * Enumerated values used in libpackagekit and functions for using these.
  */
 
 #include "config.h"

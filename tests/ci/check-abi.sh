@@ -35,10 +35,10 @@ DESTDIR=$DUMMY_ORIG_DESTDIR ninja -C build install
 popd
 
 abidiff \
-    --headers-dir1 ${DUMMY_ORIG_DESTDIR}/usr/local/include/packagekit/packagekit-glib2 \
-    --headers-dir2 ${DUMMY_DESTDIR}/usr/local/include/packagekit/packagekit-glib2 \
+    --headers-dir1 ${DUMMY_ORIG_DESTDIR}/usr/local/include/packagekit/packagekit \
+    --headers-dir2 ${DUMMY_DESTDIR}/usr/local/include/packagekit/packagekit \
     --drop-private-types \
     --fail-no-debug-info \
     --no-added-syms \
-    ${DUMMY_ORIG_DESTDIR}/usr/local/lib/x86_64-linux-gnu/libpackagekit-glib2.so \
-    ${DUMMY_DESTDIR}/usr/local/lib/x86_64-linux-gnu/libpackagekit-glib2.so
+    ${DUMMY_ORIG_DESTDIR}/usr/local/lib/x86_64-linux-gnu/libpackagekit.so \
+    ${DUMMY_DESTDIR}/usr/local/lib/x86_64-linux-gnu/libpackagekit.so

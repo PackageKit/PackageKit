@@ -12,7 +12,7 @@ pk_backend_modules += shared_module(
     'dnf5-backend-vendor-@0@.cpp'.format(get_option('dnf_vendor')),
     dependencies: [
         dnf5_dep,
-        packagekit_glib2_dep,
+        libpackagekit_dep,
     ],
     cpp_args: [
         '-std=c++20',

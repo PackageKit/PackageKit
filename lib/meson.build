@@ -94,7 +94,7 @@ libpackagekit_priv_src = files(
     'pk-spawn-polkit-agent.h',
 )
 
-install_headers(libpackagekit_pub_headers, subdir : join_paths('packagekit', 'packagekit-glib2'))
+install_headers(libpackagekit_pub_headers, subdir : join_paths('packagekit', 'packagekit'))
 
 version_parts = meson.project_version().split('.')
 version_configuration = configuration_data()
@@ -106,7 +106,7 @@ pk_version_header = configure_file(
     input: 'pk-version.h.in',
     output: 'pk-version.h',
     configuration: version_configuration,
-    install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit-glib2'),
+    install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit'),
 )
 
 pk_enum_type = gnome.mkenums(
@@ -115,7 +115,7 @@ pk_enum_type = gnome.mkenums(
     h_template: 'pk-enum-types.h.template',
     sources: libpackagekit_pub_headers,
     install_header: true,
-    install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit-glib2')
+    install_dir: join_paths(get_option('includedir'), 'packagekit', 'packagekit')
 )
 
 pkprivate_library = static_library(
@@ -140,7 +140,7 @@ pkprivate_library = static_library(
 )
 
 libpackagekit_library = shared_library(
-    'packagekit-glib2',
+    'packagekit',
     pk_enum_type,
     pk_version_header,
     libpackagekit_src,
@@ -191,14 +191,14 @@ if get_option('gobject_introspection')
             pk_enum_type,
             pk_version_header,
         ],
-        namespace: 'PackageKitGlib',
+        namespace: 'PackageKit',
         nsversion: '1.0',
         include_directories: libpackagekit_includes,
         includes: ['GObject-2.0', 'Gio-2.0', 'GLib-2.0'],
-        header: 'packagekit-glib2/packagekit.h',
+        header: 'packagekit/packagekit.h',
         identifier_prefix: 'Pk',
         symbol_prefix: 'pk',
-        export_packages: 'packagekit-glib2',
+        export_packages: 'packagekit',
         extra_args: [
             '-DPK_COMPILATION=1',
         ],
@@ -213,7 +213,7 @@ if get_option('gobject_introspection')
     )
 
     gnome.generate_vapi(
-        'packagekit-glib2',
+        'packagekit',
         packages: ['glib-2.0', 'gio-2.0', 'gobject-2.0'],
         sources: libpackagekit_gir[0],
         install: true
@@ -222,8 +222,8 @@ endif
 
 pkg.generate(
     libpackagekit_library,
-    filebase: 'packagekit-glib2',
-    name: 'packagekit-glib2',
+    filebase: 'packagekit',
+    name: 'packagekit',
     description: 'PackageKit is a system daemon for installing stuff.',
     version: meson.project_version(),
     requires: [

@@ -218,8 +218,8 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 %{_rpmmacrodir}/macros.transaction_notify_packagekit
 
 %files glib
-%{_libdir}/*packagekit-glib2.so.*
-%{_libdir}/girepository-1.0/PackageKitGlib-1.0.typelib
+%{_libdir}/*packagekit.so.*
+%{_libdir}/girepository-1.0/PackageKit-1.0.typelib
 
 %files cron
 %config %{_sysconfdir}/cron.daily/packagekit-background.cron
@@ -243,15 +243,15 @@ systemctl disable packagekit-offline-update.service > /dev/null 2>&1 || :
 # helper for multilibs computation - See rhbz#1901065
 
 %files glib-devel
-%{_libdir}/libpackagekit-glib2.so
-%{_libdir}/pkgconfig/packagekit-glib2.pc
+%{_libdir}/libpackagekit.so
+%{_libdir}/pkgconfig/packagekit.pc
 %dir %{_includedir}/packagekit
-%dir %{_includedir}/packagekit/packagekit-glib2
-%{_includedir}/packagekit/packagekit-glib*/*.h
-%{_datadir}/gir-1.0/PackageKitGlib-1.0.gir
+%dir %{_includedir}/packagekit/packagekit
+%{_includedir}/packagekit/packagekit/*.h
+%{_datadir}/gir-1.0/PackageKit-1.0.gir
 %{_datadir}/doc/packagekit
-%{_datadir}/vala/vapi/packagekit-glib2.vapi
-%{_datadir}/vala/vapi/packagekit-glib2.deps
+%{_datadir}/vala/vapi/packagekit.vapi
+%{_datadir}/vala/vapi/packagekit.deps
 
 %changelog
 * #LONGDATE# Neal Gompa <neal@gompa.dev> #VERSION#~#BUILD##ALPHATAG#-0

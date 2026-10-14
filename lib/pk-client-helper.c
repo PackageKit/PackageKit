@@ -32,7 +32,7 @@
  * such as debconf to be used that needs direct console access.
  *
  *
- *   client ----> packagekit-glib ---> dbus ---> packagekitd ---> apt
+ *   client ----> libpackagekit ---> dbus ---> packagekitd ---> apt
  *          .------------^                                         ^
  *   debconf ___________________               (SetHints)          |
  *    | \___|  PkClientHelper   \__.____.____.______/_.____.____.__/

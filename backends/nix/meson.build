@@ -11,7 +11,7 @@ pk_backend_modules += shared_module(
     'nix-lib-plus.cc',
     include_directories: packagekit_src_include,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         nix_expr_dep,
         nix_main_dep,
         nix_cmd_dep,

@@ -13,7 +13,7 @@ pk_backend_modules += shared_module(
     'pk-backend-zypp.cpp',
     include_directories: packagekit_src_include,
     dependencies: [
-        packagekit_glib2_dep,
+        libpackagekit_dep,
         zypp_dep,
         gmodule_dep,
     ],

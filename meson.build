@@ -9,7 +9,7 @@ project('PackageKit', 'c',
 source_root = meson.project_source_root()
 build_root = meson.project_build_root()
 pk_version = meson.project_version()
-pk_api_level = '19'
+pk_api_level = '1'
 
 gnome = import('gnome')
 i18n = import('i18n')

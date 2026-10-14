@@ -1082,17 +1082,17 @@ main (int argc, char **argv)
 	pk_offline_set_root_dir (PK_TEST_OFFLINE_ROOT);
 
 	/* tests go here */
-	g_test_add_func ("/packagekit-glib2/common", pk_test_common_func);
-	g_test_add_func ("/packagekit-glib2/enum", pk_test_enum_func);
-	g_test_add_func ("/packagekit-glib2/bitfield", pk_test_bitfield_func);
-	g_test_add_func ("/packagekit-glib2/package-id", pk_test_package_id_func);
-	g_test_add_func ("/packagekit-glib2/package-ids", pk_test_package_ids_func);
-	g_test_add_func ("/packagekit-glib2/results", pk_test_results_func);
-	g_test_add_func ("/packagekit-glib2/package", pk_test_package_func);
-	g_test_add_func ("/packagekit-glib2/offline", pk_test_offline_func);
-	g_test_add_func ("/packagekit-glib2/offline-upgrade", pk_test_offline_upgrade_func);
-	g_test_add_func ("/packagekit-glib2/object-types", pk_test_object_types_func);
-	g_test_add_func ("/packagekit-glib2/client-helper", pk_test_client_helper_func);
+	g_test_add_func ("/libpackagekit/common", pk_test_common_func);
+	g_test_add_func ("/libpackagekit/enum", pk_test_enum_func);
+	g_test_add_func ("/libpackagekit/bitfield", pk_test_bitfield_func);
+	g_test_add_func ("/libpackagekit/package-id", pk_test_package_id_func);
+	g_test_add_func ("/libpackagekit/package-ids", pk_test_package_ids_func);
+	g_test_add_func ("/libpackagekit/results", pk_test_results_func);
+	g_test_add_func ("/libpackagekit/package", pk_test_package_func);
+	g_test_add_func ("/libpackagekit/offline", pk_test_offline_func);
+	g_test_add_func ("/libpackagekit/offline-upgrade", pk_test_offline_upgrade_func);
+	g_test_add_func ("/libpackagekit/object-types", pk_test_object_types_func);
+	g_test_add_func ("/libpackagekit/client-helper", pk_test_client_helper_func);
 
 	return g_test_run ();
 }
